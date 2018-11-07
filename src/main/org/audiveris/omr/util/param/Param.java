@@ -43,7 +43,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 public class Param<E>
 {
 
-    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -56,7 +55,19 @@ public class Param<E>
     /** Parent param, if any, to inherit from. */
     protected Param<E> parent;
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // getSourceValue //
+    //----------------//
+    /**
+     * Report the source value if any, by default this return null.
+     *
+     * @return the source value
+     */
+    public E getSourceValue ()
+    {
+        return null;
+    }
+
     //-------------//
     // getSpecific //
     //-------------//
@@ -91,19 +102,6 @@ public class Param<E>
             return parent.getValue();
         }
 
-        return null;
-    }
-
-    //----------------//
-    // getSourceValue //
-    //----------------//
-    /**
-     * Report the source value if any, by default this return null.
-     *
-     * @return the source value
-     */
-    public E getSourceValue ()
-    {
         return null;
     }
 

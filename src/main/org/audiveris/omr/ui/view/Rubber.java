@@ -53,7 +53,7 @@ import javax.swing.event.MouseInputAdapter;
 /**
  * Class {@code Rubber} keeps track of nothing more than a rectangle,
  * to define an area of interest.
- *
+ * <p>
  * The rectangle can be degenerated to a simple point, when both its width and height are zero.
  * Moreover, the display can be moved or resized (see the precise triggers below).
  * <p>
@@ -77,12 +77,12 @@ import javax.swing.event.MouseInputAdapter;
  * subclass.
  * <p>
  * Mouse Events are handled in the following way: <ul>
- *
+ * <p>
  * <li> <b>Low-level events</b> originate from a JComponent, where the Rubber is registered as a
  * MouseListener and a MouseMotionListener. The component can be linked by the Rubber constructor,
  * or later by using the {@link #connectComponent} method. Rubber is then called on its
  * <i>mouseDragged, mousePressed, mouseReleased</i> methods.
- *
+ * <p>
  * <li> <b>High-level events</b>, as computed by Rubber from low-level mouse events, are forwarded
  * to a connected {@link MouseMonitor} if any, which is then called on its <i>pointSelected,
  * pointAdded, contextSelected, rectangleSelected, rectangleZoomed</i> methods. Generally, this
@@ -97,7 +97,6 @@ import javax.swing.event.MouseInputAdapter;
 public class Rubber
         extends MouseInputAdapter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -112,7 +111,6 @@ public class Rubber
 
     private static final double factor = Math.pow(base, 1d / intervals);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** View from which the rubber will receive physical mouse events. */
     protected JComponent component;
 
@@ -137,7 +135,6 @@ public class Rubber
     // To ease debugging
     private final int id;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a rubber, with no predefined parameter (zoom, component) which are meant
      * to be provided later.
@@ -174,7 +171,6 @@ public class Rubber
         setZoom(zoom);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // connectComponent //
     //------------------//
@@ -257,11 +253,8 @@ public class Rubber
 
         if (isDragWanted(e)) {
             final Rectangle vr = component.getVisibleRect();
-            vr.setBounds(
-                    (vr.x + rawRect.x) - e.getX(),
-                    (vr.y + rawRect.y) - e.getY(),
-                    vr.width,
-                    vr.height);
+            vr.setBounds((vr.x + rawRect.x) - e.getX(), (vr.y + rawRect.y) - e.getY(), vr.width,
+                         vr.height);
             SwingUtilities.invokeLater(
                     new Runnable()
             {
@@ -479,11 +472,8 @@ public class Rubber
 
             // Vector
             if (vector != null) {
-                Line2D v = new Line2D.Double(
-                        vector.getX1(),
-                        vector.getY1(),
-                        vector.getX2(),
-                        vector.getY2());
+                Line2D v = new Line2D.Double(vector.getX1(), vector.getY1(), vector.getX2(), vector
+                                             .getY2());
 
                 if (zoom != null) {
                     zoom.scale(v);
@@ -603,17 +593,11 @@ public class Rubber
     private void normalize ()
     {
         if (rect == null) {
-            rect = new Rectangle(
-                    unscaled(rawRect.x),
-                    unscaled(rawRect.y),
-                    unscaled(rawRect.width),
-                    unscaled(rawRect.height));
+            rect = new Rectangle(unscaled(rawRect.x), unscaled(rawRect.y), unscaled(rawRect.width),
+                                 unscaled(rawRect.height));
         } else {
-            rect.setBounds(
-                    unscaled(rawRect.x),
-                    unscaled(rawRect.y),
-                    unscaled(rawRect.width),
-                    unscaled(rawRect.height));
+            rect.setBounds(unscaled(rawRect.x), unscaled(rawRect.y), unscaled(rawRect.width),
+                           unscaled(rawRect.height));
         }
 
         // The x & y are the original coordinates when mouse began
@@ -737,22 +721,17 @@ public class Rubber
         component.repaint();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean showCross = new Constant.Boolean(
-                true,
-                "Should we show just a cross for rubber (or whole lines)");
+        private final Constant.Boolean showCross = new Constant.Boolean(true,
+                                                                        "Should we show just a cross for rubber (or whole lines)");
 
-        private final Constant.Integer crossLegLength = new Constant.Integer(
-                "Pixels",
-                100,
-                "Length for each leg of the rubber cross");
+        private final Constant.Integer crossLegLength = new Constant.Integer("Pixels", 100,
+                                                                             "Length for each leg of the rubber cross");
     }
 }

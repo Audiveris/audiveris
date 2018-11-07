@@ -42,12 +42,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 public class Skew
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Skew.class);
+    private static final Logger logger = LoggerFactory.getLogger(Skew.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -72,7 +69,6 @@ public class Skew
     /** Height of de-skewed sheet. */
     private double deskewedHeight;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Skew object.
      *
@@ -99,7 +95,6 @@ public class Skew
         this.deskewedHeight = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // deskewed //
     //----------//

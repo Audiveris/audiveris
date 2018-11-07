@@ -59,22 +59,18 @@ import java.util.ConcurrentModificationException;
  */
 public abstract class SheetPainter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SheetPainter.class);
 
     /** Font for annotations. */
-    protected static final Font basicFont = new Font(
-            "Sans Serif",
-            Font.PLAIN,
-            constants.basicFontSize.getValue());
+    protected static final Font basicFont = new Font("Sans Serif", Font.PLAIN,
+                                                     constants.basicFontSize.getValue());
 
     /** A transformation to half scale. (used for slot time annotation) */
     protected static final AffineTransform halfAT = AffineTransform.getScaleInstance(0.5, 0.5);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Sheet. */
     protected final Sheet sheet;
 
@@ -87,7 +83,6 @@ public abstract class SheetPainter
     /** Painter for Inter instances. */
     protected SigPainter sigPainter;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SheetPainter object.
      *
@@ -103,13 +98,12 @@ public abstract class SheetPainter
         clip = g.getClipBounds();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
     /**
      * Paint the sheet.
-     *
+     * <p>
      */
     public void process ()
     {
@@ -191,18 +185,14 @@ public abstract class SheetPainter
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Integer basicFontSize = new Constant.Integer(
-                "points",
-                30,
-                "Standard font size for annotations");
+        private final Constant.Integer basicFontSize = new Constant.Integer("points", 30,
+                                                                            "Standard font size for annotations");
     }
 }

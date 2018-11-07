@@ -45,15 +45,12 @@ import java.util.Objects;
  */
 public class ScoreReduction
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ScoreReduction.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related score. */
     private final Score score;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ScoreReduction object.
      *
@@ -64,7 +61,6 @@ public class ScoreReduction
         this.score = score;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // reduce //
     //--------//
@@ -110,10 +106,9 @@ public class ScoreReduction
 
             if (partList != null) {
                 for (LogicalPart logicalPart : partList) {
-                    Candidate candidate = new LogicalPartCandidate(
-                            logicalPart,
-                            page,
-                            page.getSystemPartsById(logicalPart.getId()));
+                    Candidate candidate = new LogicalPartCandidate(logicalPart, page, page
+                                                                   .getSystemPartsById(logicalPart
+                                                                           .getId()));
                     candidates.add(candidate);
                 }
             }
@@ -151,7 +146,6 @@ public class ScoreReduction
         return false;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------------------//
     // LogicalPartCandidate //
     //----------------------//
@@ -161,7 +155,6 @@ public class ScoreReduction
     private static class LogicalPartCandidate
             implements Candidate
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final LogicalPart logicalPart;
 
@@ -169,7 +162,6 @@ public class ScoreReduction
 
         private final List<Part> systemParts;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public LogicalPartCandidate (LogicalPart logicalPart,
                                      Page page,
                                      List<Part> systemParts)
@@ -179,7 +171,6 @@ public class ScoreReduction
             this.systemParts = systemParts;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String getAbbreviation ()
         {

@@ -33,7 +33,6 @@ import java.net.URL;
  */
 public abstract class UriUtil
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     //--------//
     // toFile //

@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.ui;
 
-import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.ui.util.UIUtil;
@@ -44,7 +43,7 @@ import javax.swing.SwingUtilities;
 /**
  * Class {@code MemoryMeter} encapsulates the display of a linear memory meter in MB
  * (both used and total), together with a garbage-collection button.
- *
+ * <p>
  * <P>
  * There is a alarm threshold that triggers a color switch to red whenever the used memory exceeds
  * the threshold.
@@ -53,14 +52,12 @@ import javax.swing.SwingUtilities;
  */
 public class MemoryMeter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     /** A mega as 2**20 */
     private static final double MEGA = 1024 * 1024;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Default foreground color, when under alarm threshold */
     private Color defaultForeground;
 
@@ -85,7 +82,6 @@ public class MemoryMeter
     /** Last value for threshold, in order to save on display */
     private int lastThreshold = 0;
 
-    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // MemoryMeter //
     //-------------//
@@ -104,7 +100,6 @@ public class MemoryMeter
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // collectGarbage //
     //----------------//
@@ -237,24 +232,19 @@ public class MemoryMeter
         monitorThread.start();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Display period */
-        private final Constant.Integer samplingPeriod = new Constant.Integer(
-                "MilliSeconds",
-                2000,
-                "Memory display period");
+        private final Constant.Integer samplingPeriod = new Constant.Integer("MilliSeconds", 2000,
+                                                                             "Memory display period");
 
         /** Alarm threshold ratio */
-        private final Constant.Ratio alarmThreshold = new Constant.Ratio(
-                0.75,
-                "Memory alarm threshold, expressed in ratio of total memory");
+        private final Constant.Ratio alarmThreshold = new Constant.Ratio(0.75,
+                                                                         "Memory alarm threshold, expressed in ratio of total memory");
     }
 }

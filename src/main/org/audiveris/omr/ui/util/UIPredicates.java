@@ -34,7 +34,6 @@ import javax.swing.SwingUtilities;
  */
 public abstract class UIPredicates
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Not meant to be instantiated.
@@ -43,7 +42,6 @@ public abstract class UIPredicates
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // isAdditionWanted //
     //------------------//
@@ -63,7 +61,7 @@ public abstract class UIPredicates
             return left && command && !e.isPopupTrigger();
         } else {
             return (SwingUtilities.isRightMouseButton(e) != SwingUtilities.isLeftMouseButton(e))
-                   && e.isControlDown();
+                           && e.isControlDown();
         }
     }
 
@@ -141,9 +139,9 @@ public abstract class UIPredicates
     {
         int onmask = BUTTON1_DOWN_MASK | SHIFT_DOWN_MASK;
         int offmask = BUTTON2_DOWN_MASK | BUTTON3_DOWN_MASK;
-//        int onmask = SHIFT_DOWN_MASK;
-//        int offmask = BUTTON2_DOWN_MASK; // middle button = wheel
 
+        //        int onmask = SHIFT_DOWN_MASK;
+        //        int offmask = BUTTON2_DOWN_MASK; // middle button = wheel
         return (e.getModifiersEx() & (onmask | offmask)) == onmask;
     }
 }

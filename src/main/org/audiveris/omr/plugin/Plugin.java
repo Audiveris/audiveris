@@ -67,12 +67,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "plugin")
 public class Plugin
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Plugin.class);
+    private static final Logger logger = LoggerFactory.getLogger(Plugin.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Id. */
     @XmlAttribute(name = "id")
     private final String id;
@@ -85,7 +82,6 @@ public class Plugin
     @XmlElement(name = "arg")
     private final List<String> args;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Plugin} object.
      *
@@ -112,7 +108,6 @@ public class Plugin
         args = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // check //
     //-------//
@@ -315,7 +310,6 @@ public class Plugin
         return null;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // PluginTask //
     //------------//
@@ -326,17 +320,14 @@ public class Plugin
     private class PluginTask
             extends VoidTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Book book;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public PluginTask (Book book)
         {
             this.book = book;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         @SuppressWarnings("unchecked")
         protected Void doInBackground ()

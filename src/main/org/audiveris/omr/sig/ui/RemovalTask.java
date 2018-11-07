@@ -32,7 +32,6 @@ import org.audiveris.omr.sig.relation.Link;
 public class RemovalTask
         extends InterTask
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code RemovalTask} object.
@@ -44,7 +43,6 @@ public class RemovalTask
         super(inter.getSig(), inter, inter.getBounds(), null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void performDo ()
     {

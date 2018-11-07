@@ -73,12 +73,13 @@ import javax.swing.border.TitledBorder;
 public class Trainer
         extends SingleFrameApplication
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
+    // @formatter:off
     static {
         // We need class WellKnowns to be elaborated before anything else (when in standalone mode)
         WellKnowns.ensureLoaded();
     }
+    // @formatter:on
 
     private static final Logger logger = LoggerFactory.getLogger(Trainer.class);
 
@@ -108,14 +109,12 @@ public class Trainer
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related frame. */
     private JFrame frame;
 
     /** Panel for selection in repository. */
     private final SelectionPanel selectionPanel;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of Glyph Trainer (there should be just one)
      */
@@ -132,7 +131,6 @@ public class Trainer
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -295,7 +293,6 @@ public class Trainer
         return builder.getPanel();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Task //
     //------//
@@ -306,15 +303,12 @@ public class Trainer
     public static class Task
             extends Observable
     {
-        //~ Enumerations ---------------------------------------------------------------------------
 
         /**
          * Enum {@code Activity} defines all activities in training.
          */
         static enum Activity
         {
-            //~ Enumeration constant initializers --------------------------------------------------
-
             /** No ongoing activity */
             INACTIVE,
             /** Training on samples */
@@ -323,20 +317,17 @@ public class Trainer
             VALIDATION;
         }
 
-        //~ Instance fields ------------------------------------------------------------------------
         /** Managed classifier. */
         public final Classifier classifier;
 
         /** Current activity. */
         private Activity activity = Activity.INACTIVE;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Task (Classifier classifier)
         {
             this.classifier = classifier;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Report the current training activity
          *
@@ -366,16 +357,11 @@ public class Trainer
     private static class TitledPanel
             extends Panel
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public TitledPanel (String title)
         {
-            setBorder(
-                    BorderFactory.createTitledBorder(
-                            new EtchedBorder(),
-                            title,
-                            TitledBorder.CENTER,
-                            TitledBorder.TOP));
+            setBorder(BorderFactory.createTitledBorder(new EtchedBorder(), title,
+                                                       TitledBorder.CENTER, TitledBorder.TOP));
             setInsets(30, 10, 10, 10); // TLBR
         }
     }

@@ -61,10 +61,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordNameInter
         extends WordInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            ChordNameInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChordNameInter.class);
 
     /** Unicode value for <b>flat</b> sign: {@value}. */
     public static final String FLAT = "\u266D";
@@ -116,12 +114,13 @@ public class ChordNameInter
     private static final String STEP_CLASS = "[A-G]";
 
     /** Pattern for root value. A, A# or Ab */
-    private static final String rootPat = group(ROOT_STEP, STEP_CLASS)
-                                          + group(ROOT_ALTER, Alter.CLASS) + "?";
+    private static final String rootPat = group(ROOT_STEP, STEP_CLASS) + group(ROOT_ALTER,
+                                                                               Alter.CLASS) + "?";
 
     /** Pattern for bass value, if any. /A, /A# or /Ab */
-    private static final String bassPat = "(/" + group(BASS_STEP, STEP_CLASS)
-                                          + group(BASS_ALTER, Alter.CLASS) + "?" + ")";
+    private static final String bassPat = "(/" + group(BASS_STEP, STEP_CLASS) + group(BASS_ALTER,
+                                                                                      Alter.CLASS)
+                                                  + "?" + ")";
 
     /** Pattern for major indication. M, maj or DELTA */
     private static final String majPat = group(MAJ, "(M|[Mm][Aa][Jj]|" + DELTA + ")");
@@ -139,54 +138,48 @@ public class ChordNameInter
     private static final String hdimPat = group(HDIM, "\u00F8");
 
     /** Pattern for any of the indication alternatives. (except sus) */
-    private static final String modePat = "(" + majPat + "|" + minPat + "|" + augPat + "|"
-                                          + dimPat + "|" + hdimPat + ")";
+    private static final String modePat = "(" + majPat + "|" + minPat + "|" + augPat + "|" + dimPat
+                                                  + "|" + hdimPat + ")";
 
     /** Pattern for (maj7) in min(maj7) = MAJOR_MINOR. */
-    private static final String parMajPat = "(\\("
-                                            + group(PMAJ7, "(M|[Mm][Aa][Jj]|" + DELTA + ")7")
-                                            + "\\))";
+    private static final String parMajPat = "(\\(" + group(PMAJ7, "(M|[Mm][Aa][Jj]|" + DELTA + ")7")
+                                                    + "\\))";
 
     /** Pattern for any degree value. 5, 6, 7, 9, 11 or 13 */
     private static final String DEG_CLASS = "(5|6|7|9|11|13)";
 
     /** Pattern for a sequence of degrees. */
-    private static final String degsPat = group(
-            DEGS,
-            DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")?");
+    private static final String degsPat = group(DEGS, DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS
+                                                              + ")?");
 
     /** Pattern for a suspended indication. sus2 or sus4 */
     private static final String susPat = group(SUS, "([Ss][Uu][Ss][24])");
 
     /** Pattern for the whole kind value. */
-    private static final String kindPat = group(
-            KIND,
-            modePat + "?" + parMajPat + "?" + degsPat + "?" + susPat + "?");
+    private static final String kindPat = group(KIND, modePat + "?" + parMajPat + "?" + degsPat
+                                                              + "?" + susPat + "?");
 
     /** Pattern for parenthesized degrees if any. (6), (#9), (#11b13) */
-    private static final String parPat = "(\\("
-                                         + group(
-                    PARS,
-                    Alter.CLASS + "?" + DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")*") + "\\))";
+    private static final String parPat = "(\\(" + group(PARS, Alter.CLASS + "?" + DEG_CLASS + "("
+                                                                      + Alter.CLASS + DEG_CLASS
+                                                                      + ")*")
+                                                 + "\\))";
 
     /** Un-compiled patterns for whole chord symbol. */
-    private static final String[] raws = new String[]{
-        rootPat + kindPat + "?" + parPat + "?" + bassPat
-        + "?"
-    // TODO: add a pattern for functions
-    };
+    private static final String[] raws = new String[]{rootPat + kindPat + "?" + parPat + "?"
+                                                      + bassPat + "?" // TODO: add a pattern for functions
+};
 
     /** Compiled patterns for whole chord symbol. */
     private static List<Pattern> patterns;
 
     /** Pattern for one degree. (in a sequence of degrees) */
-    private static final String degPat = group(DEG_ALTER, Alter.CLASS) + "?"
-                                         + group(DEG_VALUE, DEG_CLASS);
+    private static final String degPat = group(DEG_ALTER, Alter.CLASS) + "?" + group(DEG_VALUE,
+                                                                                     DEG_CLASS);
 
     /** Compiled pattern for one degree. */
     private static final Pattern degPattern = Pattern.compile(degPat);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Root. */
     @XmlElement
     private final Pitch root;
@@ -203,7 +196,6 @@ public class ChordNameInter
     @XmlElement(name = "degree")
     private final List<Degree> degrees;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ChordInfo object, with all parameters.
      *
@@ -271,7 +263,6 @@ public class ChordNameInter
         this.degrees = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -293,11 +284,10 @@ public class ChordNameInter
      */
     public static SentenceInter create (TextLine line)
     {
-        SentenceInter sentence = new SentenceInter(
-                line.getBounds(),
-                line.getConfidence() * Grades.intrinsicRatio,
-                line.getMeanFont(),
-                line.getRole());
+        SentenceInter sentence = new SentenceInter(line.getBounds(), line.getConfidence()
+                                                                             * Grades.intrinsicRatio,
+                                                   line
+                                                           .getMeanFont(), line.getRole());
 
         return sentence;
     }
@@ -319,16 +309,15 @@ public class ChordNameInter
 
             if (matcher.matches()) {
                 // Root
-                Pitch root = Pitch.create(
-                        getGroup(matcher, ROOT_STEP),
-                        getGroup(matcher, ROOT_ALTER));
+                Pitch root = Pitch.create(getGroup(matcher, ROOT_STEP),
+                                          getGroup(matcher, ROOT_ALTER));
 
                 // Degrees
                 String degStr = getGroup(matcher, DEGS);
                 List<Degree> degrees = Degree.createList(degStr, null);
                 Degree firstDeg = (!degrees.isEmpty()) ? degrees.get(0) : null;
-                String firstDegStr = (firstDeg != null)
-                        ? Integer.toString(degrees.get(0).value) : "";
+                String firstDegStr = (firstDeg != null) ? Integer.toString(degrees.get(0).value)
+                        : "";
 
                 // (maj7) special stuff
                 String pmaj7 = standard(matcher, PMAJ7);
@@ -337,13 +326,11 @@ public class ChordNameInter
                 Kind kind = Kind.create(matcher, firstDegStr + pmaj7);
 
                 // Bass
-                Pitch bass = Pitch.create(
-                        getGroup(matcher, BASS_STEP),
-                        getGroup(matcher, BASS_ALTER));
+                Pitch bass = Pitch.create(getGroup(matcher, BASS_STEP),
+                                          getGroup(matcher, BASS_ALTER));
 
-                if ((firstDeg != null)
-                    && (kind.type != SUSPENDED_FOURTH)
-                    && (kind.type != SUSPENDED_SECOND)) {
+                if ((firstDeg != null) && (kind.type != SUSPENDED_FOURTH) && (kind.type
+                                                                                      != SUSPENDED_SECOND)) {
                     // Remove first degree
                     degrees.remove(firstDeg);
                 }
@@ -472,7 +459,6 @@ public class ChordNameInter
         return token.isEmpty() ? "" : name;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //-------//
     // Alter //
@@ -483,12 +469,10 @@ public class ChordNameInter
      */
     public static class Alter
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         /** Alter class. */
         private static final String CLASS = "[" + FLAT + "b" + SHARP + "#" + "]";
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Convert sharp/flat/empty sign to Integer.
          *
@@ -540,18 +524,14 @@ public class ChordNameInter
      */
     public static class Degree
     {
-        //~ Enumerations ---------------------------------------------------------------------------
 
         public static enum DegreeType
         {
-            //~ Enumeration constant initializers --------------------------------------------------
-
             ADD,
             ALTER,
             SUBTRACT;
         }
 
-        //~ Instance fields ------------------------------------------------------------------------
         //
         /** nth value of the degree, wrt the chord root. */
         @XmlAttribute
@@ -569,7 +549,6 @@ public class ChordNameInter
         @XmlAttribute
         public final String text;
 
-        //~ Constructors ---------------------------------------------------------------------------
         //
         public Degree (int value,
                        Integer alter,
@@ -589,7 +568,6 @@ public class ChordNameInter
             this.text = text;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //
         /**
          * Build a sequence of Degree instances from the provided string
@@ -666,12 +644,9 @@ public class ChordNameInter
      */
     public static class Kind
     {
-        //~ Enumerations ---------------------------------------------------------------------------
 
         public static enum Type
         {
-            //~ Enumeration constant initializers --------------------------------------------------
-
             MAJOR,
             MINOR,
             AUGMENTED,
@@ -708,7 +683,6 @@ public class ChordNameInter
             NONE;
         }
 
-        //~ Instance fields ------------------------------------------------------------------------
         //
         /** Precise type of kind. (subset of the 33 Music XML values) */
         @XmlAttribute
@@ -726,7 +700,6 @@ public class ChordNameInter
         @XmlAttribute
         public final String text;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Kind (Type type)
         {
             this(type, "", null, null);
@@ -765,7 +738,6 @@ public class ChordNameInter
             this.text = null;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -822,9 +794,9 @@ public class ChordNameInter
             }
 
             // Then check for other combinations
-            final String str = standard(matcher, MIN) + standard(matcher, MAJ)
-                               + standard(matcher, AUG) + standard(matcher, DIM)
-                               + standard(matcher, HDIM) + dominant;
+            final String str = standard(matcher, MIN) + standard(matcher, MAJ) + standard(matcher,
+                                                                                          AUG)
+                                       + standard(matcher, DIM) + standard(matcher, HDIM) + dominant;
             Type type = typeOf(str);
 
             // Special case for Triangle sign => maj7 rather than major
@@ -833,9 +805,8 @@ public class ChordNameInter
             }
 
             // Use of symbol?
-            Boolean symbol = (getGroup(matcher, MAJ).equals(DELTA)
-                              || getGroup(matcher, MIN).equals("-")
-                              || getGroup(matcher, AUG).equals("+")) ? Boolean.TRUE : null;
+            Boolean symbol = (getGroup(matcher, MAJ).equals(DELTA) || getGroup(matcher, MIN).equals(
+                    "-") || getGroup(matcher, AUG).equals("+")) ? Boolean.TRUE : null;
 
             return (type != null) ? new Kind(type, kindStr, symbol, parentheses) : null;
         }
@@ -935,7 +906,6 @@ public class ChordNameInter
     @XmlAccessorType(XmlAccessType.NONE)
     public static class Pitch
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Related step. */
         @XmlAttribute
@@ -945,7 +915,6 @@ public class ChordNameInter
         @XmlAttribute
         public final Integer alter;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Pitch (AbstractNoteInter.Step step,
                       Integer alter)
         {
@@ -965,7 +934,6 @@ public class ChordNameInter
             this.alter = null;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Create a Pitch object from provided step and alter strings
          *

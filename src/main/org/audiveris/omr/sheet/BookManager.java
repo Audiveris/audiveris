@@ -111,7 +111,6 @@ import java.util.List;
 public class BookManager
         implements OmrEngine
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -120,7 +119,6 @@ public class BookManager
     /** The single instance of this class. */
     private static volatile BookManager INSTANCE;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** All book instances. */
     private final List<Book> books = new ArrayList<Book>();
 
@@ -133,7 +131,6 @@ public class BookManager
     /** Book file history. (filled only when books are successfully loaded or saved) */
     private PathHistory bookHistory;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Private constructor for a singleton.
      */
@@ -141,7 +138,6 @@ public class BookManager
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // deletePaths //
     //-------------//
@@ -299,6 +295,21 @@ public class BookManager
         return getDefaultBookFolder(book).resolve(book.getRadix() + OMR.PRINT_EXTENSION);
     }
 
+    //--------------------//
+    // getExportExtension //
+    //--------------------//
+    /**
+     * Report the extension to use for book export, depending on the use (or not)
+     * of opus and of compression.
+     *
+     * @return the file extension to use.
+     */
+    public static String getExportExtension ()
+    {
+        return useOpus() ? OMR.OPUS_EXTENSION : (useCompression() ? OMR.COMPRESSED_SCORE_EXTENSION
+                : OMR.SCORE_EXTENSION);
+    }
+
     //-------------//
     // getInstance //
     //-------------//
@@ -314,19 +325,6 @@ public class BookManager
         }
 
         return INSTANCE;
-    }
-
-    //-------------//
-    // isMultiBook //
-    //-------------//
-    /**
-     * Report whether we are currently handling more than one book.
-     *
-     * @return true if more than one book
-     */
-    public static boolean isMultiBook ()
-    {
-        return getInstance().books.size() > 1;
     }
 
     //----------//
@@ -346,12 +344,32 @@ public class BookManager
         return book;
     }
 
-    //---------//
-    // useOpus //
-    //---------//
-    public static boolean useOpus ()
+    //-----------//
+    // loadInput //
+    //-----------//
+    @Override
+    public Book loadInput (Path path)
     {
-        return constants.useOpus.isSet();
+        final Book book = new Book(path);
+
+        // Alias?
+        if (AliasPatterns.useAliasPatterns()) {
+            final String nameSansExt = FileUtil.getNameSansExtension(path);
+            String alias = getAlias(nameSansExt);
+
+            if (alias != null) {
+                book.setAlias(alias);
+                logger.info("Found alias: {} for {}", alias, nameSansExt);
+            }
+        }
+
+        book.setModified(true);
+        book.setDirty(true);
+        addBook(book);
+
+        getImageHistory().add(path); // Insert in input history
+
+        return book;
     }
 
     //--------------//
@@ -360,6 +378,36 @@ public class BookManager
     public static boolean useSignature ()
     {
         return constants.defaultSigned.isSet();
+    }
+
+    //------------//
+    // removeBook //
+    //------------//
+    /**
+     * Remove the provided book from the collection of Book instances.
+     *
+     * @param book the book to remove
+     * @return true if actually removed
+     */
+    @Override
+    public synchronized boolean removeBook (Book book)
+    {
+        logger.debug("removeBook {}", book);
+
+        return books.remove(book);
+    }
+
+    //----------------//
+    // useCompression //
+    //----------------//
+    /**
+     * Report whether we should use compression (to .MXL files) or not (to .XML files).
+     *
+     * @return true for compression
+     */
+    public static boolean useCompression ()
+    {
+        return constants.useCompression.getValue();
     }
 
     //----------------//
@@ -373,11 +421,8 @@ public class BookManager
     public PathHistory getBookHistory ()
     {
         if (bookHistory == null) {
-            bookHistory = new PathHistory(
-                    "Book History",
-                    constants.bookHistory,
-                    null,
-                    constants.historySize.getValue());
+            bookHistory = new PathHistory("Book History", constants.bookHistory, null,
+                                          constants.historySize.getValue());
         }
 
         return bookHistory;
@@ -466,77 +511,25 @@ public class BookManager
         return getDefaultBookFolder(book).resolve(book.getRadix() + OMR.BOOK_EXTENSION);
     }
 
-    //--------------------//
-    // getExportExtension //
-    //--------------------//
+    //-------------//
+    // isMultiBook //
+    //-------------//
     /**
-     * Report the extension to use for book export, depending on the use (or not)
-     * of opus and of compression.
+     * Report whether we are currently handling more than one book.
      *
-     * @return the file extension to use.
+     * @return true if more than one book
      */
-    public static String getExportExtension ()
+    public static boolean isMultiBook ()
     {
-        return useOpus() ? OMR.OPUS_EXTENSION
-                : (useCompression() ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION);
+        return getInstance().books.size() > 1;
     }
 
-    //-----------//
-    // loadInput //
-    //-----------//
-    @Override
-    public Book loadInput (Path path)
+    //---------//
+    // useOpus //
+    //---------//
+    public static boolean useOpus ()
     {
-        final Book book = new Book(path);
-
-        // Alias?
-        if (AliasPatterns.useAliasPatterns()) {
-            final String nameSansExt = FileUtil.getNameSansExtension(path);
-            String alias = getAlias(nameSansExt);
-
-            if (alias != null) {
-                book.setAlias(alias);
-                logger.info("Found alias: {} for {}", alias, nameSansExt);
-            }
-        }
-
-        book.setModified(true);
-        book.setDirty(true);
-        addBook(book);
-
-        getImageHistory().add(path); // Insert in input history
-
-        return book;
-    }
-
-    //------------//
-    // removeBook //
-    //------------//
-    /**
-     * Remove the provided book from the collection of Book instances.
-     *
-     * @param book the book to remove
-     * @return true if actually removed
-     */
-    @Override
-    public synchronized boolean removeBook (Book book)
-    {
-        logger.debug("removeBook {}", book);
-
-        return books.remove(book);
-    }
-
-    //----------------//
-    // useCompression //
-    //----------------//
-    /**
-     * Report whether we should use compression (to .MXL files) or not (to .XML files).
-     *
-     * @return true for compression
-     */
-    public static boolean useCompression ()
-    {
-        return constants.useCompression.getValue();
+        return constants.useOpus.isSet();
     }
 
     //------------------------//
@@ -564,11 +557,9 @@ public class BookManager
     public PathHistory getImageHistory ()
     {
         if (imageHistory == null) {
-            imageHistory = new PathHistory(
-                    "Input History",
-                    constants.imageHistory,
-                    constants.defaultImageFolder,
-                    constants.historySize.getValue());
+            imageHistory = new PathHistory("Input History", constants.imageHistory,
+                                           constants.defaultImageFolder, constants.historySize
+                                                   .getValue());
         }
 
         return imageHistory;
@@ -607,50 +598,38 @@ public class BookManager
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean useOpus = new Constant.Boolean(
-                false,
-                "Should we use Opus notion for export (rather than separate files)?");
+        private final Constant.Boolean useOpus = new Constant.Boolean(false,
+                                                                      "Should we use Opus notion for export (rather than separate files)?");
 
-        private final Constant.Boolean useCompression = new Constant.Boolean(
-                true,
-                "Should we compress the MusicXML output?");
+        private final Constant.Boolean useCompression = new Constant.Boolean(true,
+                                                                             "Should we compress the MusicXML output?");
 
-        private final Constant.Boolean useSeparateBookFolders = new Constant.Boolean(
-                true,
-                "Should we use a separate folder for each book?");
+        private final Constant.Boolean useSeparateBookFolders = new Constant.Boolean(true,
+                                                                                     "Should we use a separate folder for each book?");
 
         private final Constant.String baseFolder = new Constant.String(
-                WellKnowns.DEFAULT_BASE_FOLDER.toString(),
-                "Base for output folders");
+                WellKnowns.DEFAULT_BASE_FOLDER.toString(), "Base for output folders");
 
         private final Constant.String defaultImageFolder = new Constant.String(
-                WellKnowns.EXAMPLES_FOLDER.toString(),
-                "Default folder for selection of image files");
+                WellKnowns.EXAMPLES_FOLDER.toString(), "Default folder for selection of image files");
 
-        private final Constant.Boolean defaultSigned = new Constant.Boolean(
-                true,
-                "Should we inject ProxyMusic signature in the exported scores?");
+        private final Constant.Boolean defaultSigned = new Constant.Boolean(true,
+                                                                            "Should we inject ProxyMusic signature in the exported scores?");
 
-        private final Constant.String imageHistory = new Constant.String(
-                "",
-                "History of images most recently loaded");
+        private final Constant.String imageHistory = new Constant.String("",
+                                                                         "History of images most recently loaded");
 
-        private final Constant.String bookHistory = new Constant.String(
-                "",
-                "History of books most recently loaded or saved");
+        private final Constant.String bookHistory = new Constant.String("",
+                                                                        "History of books most recently loaded or saved");
 
-        private final Constant.Integer historySize = new Constant.Integer(
-                "count",
-                10,
-                "Maximum number of files names kept in history");
+        private final Constant.Integer historySize = new Constant.Integer("count", 10,
+                                                                          "Maximum number of files names kept in history");
     }
 }

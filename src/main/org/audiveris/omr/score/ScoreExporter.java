@@ -45,15 +45,12 @@ import java.util.Objects;
  */
 public class ScoreExporter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ScoreExporter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related score. */
     private final Score score;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new {@code ScoreExporter} object, on a related score instance.
      *
@@ -68,7 +65,6 @@ public class ScoreExporter
         this.score = score;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // export //
     //--------//
@@ -125,8 +121,9 @@ public class ScoreExporter
                 scoreName = "score"; // Fall-back value
             }
 
-            mof.addEntry(
-                    new RootFile(scoreName + OMR.SCORE_EXTENSION, RootFile.MUSICXML_MEDIA_TYPE));
+            mof
+                    .addEntry(new RootFile(scoreName + OMR.SCORE_EXTENSION,
+                                           RootFile.MUSICXML_MEDIA_TYPE));
             Marshalling.marshal(scorePartwise, zos, signed, 2);
             mof.close();
         } else {

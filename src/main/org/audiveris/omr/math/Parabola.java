@@ -29,14 +29,13 @@ import java.util.List;
  * <pre>
  * y = a*x^2 + b*x + c
  * </pre>
- *
+ * <p>
  * See http://mathforum.org/library/drmath/view/72047.html
  *
  * @author Hervé Bitteur
  */
 public class Parabola
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private double a;
 
@@ -46,7 +45,6 @@ public class Parabola
 
     private final double dist;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Parabola object.
      *
@@ -70,7 +68,6 @@ public class Parabola
         dist = computeDistance(xx, yy);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public double getMeanDistance ()
     {
         return dist;
@@ -123,13 +120,22 @@ public class Parabola
             s21 += (x2 * y);
         }
 
-        double den = ((s00 * s20 * s40) - (s10 * s10 * s40) - (s00 * s30 * s30)
-                      + (2 * s10 * s20 * s30)) - (s20 * s20 * s20);
-        a = (((s01 * s10 * s30) - (s11 * s00 * s30) - (s01 * s20 * s20) + (s11 * s10 * s20)
-              + (s21 * s00 * s20)) - (s21 * s10 * s10)) / den;
-        b = (((s11 * s00 * s40) - (s01 * s10 * s40) + (s01 * s20 * s30)) - (s21 * s00 * s30)
-             - (s11 * s20 * s20) + (s21 * s10 * s20)) / den;
-        c = (((s01 * s20 * s40) - (s11 * s10 * s40) - (s01 * s30 * s30) + (s11 * s20 * s30)
-              + (s21 * s10 * s30)) - (s21 * s20 * s20)) / den;
+        double den = ((s00 * s20 * s40) - (s10 * s10 * s40) - (s00 * s30 * s30) + (2 * s10 * s20
+                                                                                           * s30))
+                             - (s20
+                                        * s20
+                                        * s20);
+        a = (((s01 * s10 * s30) - (s11 * s00 * s30) - (s01 * s20 * s20) + (s11 * s10 * s20) + (s21
+                                                                                                       * s00
+                                                                                               * s20))
+             - (s21 * s10 * s10)) / den;
+        b = (((s11 * s00 * s40) - (s01 * s10 * s40) + (s01 * s20 * s30)) - (s21 * s00 * s30) - (s11
+                                                                                                        * s20
+                                                                                                * s20)
+             + (s21 * s10 * s20)) / den;
+        c = (((s01 * s20 * s40) - (s11 * s10 * s40) - (s01 * s30 * s30) + (s11 * s20 * s30) + (s21
+                                                                                                       * s10
+                                                                                               * s30))
+             - (s21 * s20 * s20)) / den;
     }
 }

@@ -34,7 +34,6 @@ import java.util.concurrent.ConcurrentSkipListSet;
 public class PackageNode
         extends Node
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * The children, composed of either other {@code PackageNode} or
@@ -43,7 +42,6 @@ public class PackageNode
     private final ConcurrentSkipListSet<Node> children = new ConcurrentSkipListSet<Node>(
             Node.nameComparator);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new PackageNode.
      *
@@ -61,7 +59,6 @@ public class PackageNode
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addChild //
     //----------//

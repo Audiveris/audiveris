@@ -39,19 +39,16 @@ import java.util.Map;
  */
 public class TemplateFactory
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TemplateFactory.class);
 
     /** Singleton. */
     private static final TemplateFactory INSTANCE = new TemplateFactory();
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Catalog of all templates already allocated, mapped by point size. */
     private final Map<Integer, Catalog> allSizes;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * (Private) Creates the singleton object.
      */
@@ -60,7 +57,6 @@ public class TemplateFactory
         allSizes = new HashMap<Integer, Catalog>();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -95,7 +91,6 @@ public class TemplateFactory
         return catalog;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Catalog //
     //---------//
@@ -104,7 +99,6 @@ public class TemplateFactory
      */
     public static class Catalog
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Point size value for this catalog. */
         final int pointSize;
@@ -113,14 +107,12 @@ public class TemplateFactory
         final Map<Shape, ShapeDescriptor> descriptors = new EnumMap<Shape, ShapeDescriptor>(
                 Shape.class);
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Catalog (int pointSize)
         {
             this.pointSize = pointSize;
             buildAllTemplates();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //---------------//
         // getDescriptor //
         //---------------//

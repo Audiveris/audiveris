@@ -91,7 +91,6 @@ class SampleListing
         extends JScrollPane
         implements ChangeListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleListing.class);
 
@@ -105,7 +104,6 @@ class SampleListing
 
     private static final Point SAMPLE_OFFSET = new Point(SAMPLE_MARGIN, SAMPLE_MARGIN);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final String title = "Samples";
 
     private final ScrollablePanel scrollablePanel = new ScrollablePanel();
@@ -119,7 +117,6 @@ class SampleListing
     /** Listener on all shape lists. */
     private final ListMouseListener listener = new ListMouseListener();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleListing} object.
      */
@@ -144,7 +141,6 @@ class SampleListing
         setAlignmentX(LEFT_ALIGNMENT);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void stateChanged (ChangeEvent e)
     {
@@ -279,13 +275,11 @@ class SampleListing
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // GradedSample //
     //--------------//
     private static class GradedSample
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         public static final Comparator<GradedSample> byReverseGrade = new Comparator<GradedSample>()
         {
@@ -297,12 +291,10 @@ class SampleListing
             }
         };
 
-        //~ Instance fields ------------------------------------------------------------------------
         final double grade;
 
         final Sample sample;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public GradedSample (double grade,
                              Sample sample)
         {
@@ -321,23 +313,18 @@ class SampleListing
             extends JPanel
             implements ListCellRenderer<Sample>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** The sample being rendered. */
         private Sample sample;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public SampleRenderer (Dimension maxDimension)
         {
             setOpaque(true);
-            setPreferredSize(
-                    new Dimension(
-                            maxDimension.width + (2 * SAMPLE_MARGIN),
-                            maxDimension.height + (2 * SAMPLE_MARGIN)));
+            setPreferredSize(new Dimension(maxDimension.width + (2 * SAMPLE_MARGIN),
+                                           maxDimension.height + (2 * SAMPLE_MARGIN)));
             setBorder(SAMPLE_BORDER);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public Component getListCellRendererComponent (JList<? extends Sample> list,
                                                        Sample sample,
@@ -388,7 +375,6 @@ class SampleListing
             extends JPanel
             implements Scrollable
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Dimension getPreferredScrollableViewportSize ()
@@ -466,11 +452,9 @@ class SampleListing
             extends MouseInputAdapter
             implements ListSelectionListener
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         boolean alt; // True if Alt key is pressed down
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void mousePressed (MouseEvent e)
         {
@@ -545,9 +529,8 @@ class SampleListing
                         for (Sample alternative : sampleSheet.getSamples(shape)) {
                             Rectangle common = alternative.getBounds().intersection(box);
 
-                            if (!common.isEmpty()
-                                && (common.width >= (box.width / 2))
-                                && (common.height >= (box.height / 2))) {
+                            if (!common.isEmpty() && (common.width >= (box.width / 2))
+                                        && (common.height >= (box.height / 2))) {
                                 logger.debug("alternative: {}", alternative);
                                 alternatives.add(alternative);
                             }
@@ -585,7 +568,6 @@ class SampleListing
     private class SamplePopup
             extends JPopupMenu
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public SamplePopup ()
         {
@@ -613,7 +595,6 @@ class SampleListing
     private class ShapePane
             extends SampleBrowser.TitledPanel
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Shape shape;
 
@@ -622,7 +603,6 @@ class SampleListing
         /** Underlying list of all samples for the shape. */
         private final JList<Sample> list = new JList<Sample>(model);
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Build a ShapePane instance for the provided shape.
          *
@@ -676,9 +656,8 @@ class SampleListing
             add(list, BorderLayout.CENTER);
 
             // Support for delete key
-            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-                    KeyStroke.getKeyStroke("DELETE"),
-                    "RemoveAction");
+            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(
+                    "DELETE"), "RemoveAction");
             getActionMap().put("RemoveAction", new RemoveAction());
 
             // ShapePane popup inherited from scrollablePanel parent
@@ -690,7 +669,6 @@ class SampleListing
             list.setComponentPopupMenu(null);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public Shape getShape ()
         {
             return shape;
@@ -738,19 +716,16 @@ class SampleListing
                 h = Math.max(h, sample.getNormalizedHeight());
             }
 
-            return new Dimension(
-                    (int) Math.ceil(w * STANDARD_INTERLINE),
-                    (int) Math.ceil(h * STANDARD_INTERLINE));
+            return new Dimension((int) Math.ceil(w * STANDARD_INTERLINE), (int) Math.ceil(h
+                                                                                                  * STANDARD_INTERLINE));
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         /**
          * Action to remove the selected sample in this ShapePane.
          */
         private class RemoveAction
                 extends AbstractAction
         {
-            //~ Methods ----------------------------------------------------------------------------
 
             @Override
             public void actionPerformed (ActionEvent e)
@@ -770,24 +745,20 @@ class SampleListing
     private class SortByGradeAction
             extends AbstractAction
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Classifier classifier = ShapeClassifier.getInstance();
 
-        //~ Constructors ---------------------------------------------------------------------------
         public SortByGradeAction ()
         {
             super("Grade");
             putValue(SHORT_DESCRIPTION, "Sort items by grade in this ShapePane");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
             // To avoid repetitive grade computing, we save grade into GradedSample entities
-            final Sample currentSample = (Sample) browser.getSampleController()
-                    .getGlyphService()
+            final Sample currentSample = (Sample) browser.getSampleController().getGlyphService()
                     .getSelectedEntity();
             final ShapePane shapePane = getShapePane(currentSample.getShape());
             final List<GradedSample> list = new ArrayList<GradedSample>();
@@ -796,9 +767,7 @@ class SampleListing
 
             for (Enumeration<Sample> en = shapePane.model.elements(); en.hasMoreElements();) {
                 Sample sample = en.nextElement();
-                Evaluation[] evals = classifier.getNaturalEvaluations(
-                        sample,
-                        sample.getInterline());
+                Evaluation[] evals = classifier.getNaturalEvaluations(sample, sample.getInterline());
                 double grade = evals[sample.getShape().ordinal()].grade;
                 list.add(new GradedSample(grade, sample));
             }
@@ -822,7 +791,6 @@ class SampleListing
     private class SortByHeightAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public SortByHeightAction ()
         {
@@ -830,7 +798,6 @@ class SampleListing
             putValue(SHORT_DESCRIPTION, "Sort items by height in this ShapePane");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -844,7 +811,6 @@ class SampleListing
     private class SortByWeightAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public SortByWeightAction ()
         {
@@ -852,7 +818,6 @@ class SampleListing
             putValue(SHORT_DESCRIPTION, "Sort items by weight in this ShapePane");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -866,7 +831,6 @@ class SampleListing
     private class SortByWidthAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public SortByWidthAction ()
         {
@@ -874,7 +838,6 @@ class SampleListing
             putValue(SHORT_DESCRIPTION, "Sort items by width in this ShapePane");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {

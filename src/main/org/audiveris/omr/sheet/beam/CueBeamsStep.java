@@ -45,11 +45,9 @@ import java.util.List;
 public class CueBeamsStep
         extends AbstractSystemStep<CueBeamsStep.Context>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new CueBeamsStep object.
      */
@@ -57,7 +55,6 @@ public class CueBeamsStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -87,13 +84,11 @@ public class CueBeamsStep
         return new Context(spots, spotLag);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Context //
     //---------//
     protected static class Context
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Spot glyphs. */
         private final List<Glyph> spots;
@@ -101,7 +96,6 @@ public class CueBeamsStep
         /** Lag of spot sections. */
         public final Lag spotLag;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Context (List<Glyph> spots,
                         Lag spotLag)
         {
@@ -116,10 +110,8 @@ public class CueBeamsStep
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean displayCueBeamSpots = new Constant.Boolean(
-                false,
-                "Should we display the cue beam Spots view?");
+        private final Constant.Boolean displayCueBeamSpots = new Constant.Boolean(false,
+                                                                                  "Should we display the cue beam Spots view?");
     }
 }

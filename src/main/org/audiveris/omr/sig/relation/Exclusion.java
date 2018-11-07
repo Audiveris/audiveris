@@ -34,21 +34,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Exclusion
         extends Relation
 {
-    //~ Enumerations -------------------------------------------------------------------------------
 
     public enum Cause
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         OVERLAP,
         INCOMPATIBLE;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     @XmlAttribute
     public final Cause cause;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Exclusion object.
      *
@@ -67,7 +62,6 @@ public class Exclusion
         this.cause = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//

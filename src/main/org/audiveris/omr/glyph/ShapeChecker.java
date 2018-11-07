@@ -54,17 +54,14 @@ import java.util.List;
  */
 public class ShapeChecker
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            ShapeChecker.class);
+    private static final Logger logger = LoggerFactory.getLogger(ShapeChecker.class);
 
     /** Singleton */
     private static volatile ShapeChecker INSTANCE;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     //    /** Small dynamics with no 'P' or 'F' */
     //    private static final EnumSet<Shape> SmallDynamics = EnumSet.copyOf(
@@ -94,14 +91,12 @@ public class ShapeChecker
     /** Map of Shape => Sequence of checkers */
     private final EnumMap<Shape, Collection<Checker>> checkerMap;
 
-    //~ Constructors -------------------------------------------------------------------------------
     private ShapeChecker ()
     {
         checkerMap = new EnumMap<Shape, Collection<Checker>>(Shape.class);
         registerChecks();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // annotate //
     //----------//
@@ -236,14 +231,8 @@ public class ShapeChecker
     {
         // For debugging only
         if (eval.grade >= 0.1) {
-            logger.info(
-                    "{}{} {} weight:{} {} corrected as {}",
-                    system.getLogPrefix(),
-                    glyph,
-                    eval,
-                    glyph.getWeight(),
-                    glyph.getBounds(),
-                    newShape);
+            logger.info("{}{} {} weight:{} {} corrected as {}", system.getLogPrefix(), glyph, eval,
+                        glyph.getWeight(), glyph.getBounds(), newShape);
         }
     }
 
@@ -266,17 +255,15 @@ public class ShapeChecker
                 // Except a few shapes
                 Shape shape = eval.shape;
 
-                if ((shape == BRACKET)
-                    || (shape == BRACE)
-                    || (shape == TEXT)
-                    || (shape == CHARACTER)) {
+                if ((shape == BRACKET) || (shape == BRACE) || (shape == TEXT)
+                            || (shape == CHARACTER)) {
                     return true;
                 }
 
                 Rectangle glyphBox = glyph.getBounds();
 
-                if (((glyphBox.x + glyphBox.width) < system.getLeft())
-                    || (glyphBox.x > system.getRight())) {
+                if (((glyphBox.x + glyphBox.width) < system.getLeft()) || (glyphBox.x > system
+                        .getRight())) {
                     return false;
                 }
 
@@ -296,7 +283,7 @@ public class ShapeChecker
                  * These half / whole rest signs are generally on standard pitch values:
                  * Standard pitch for whole: -1.5
                  * Standard pitch for half: -0.5
-                 *
+                 * <p>
                  * But because of other notes in the same staff-measure, they may appear
                  * on different pitch values, as they see fit. See Telemann example.
                  * Whole is always stuck to an upper line, half is always stuck to a lower line.
@@ -424,8 +411,7 @@ public class ShapeChecker
                 // Check reasonable height (Cannot be too tall when close to staff)
                 final double pp = system.estimatedPitch(glyph.getCenter());
                 double maxHeight = (Math.abs(pp) >= constants.minTitlePitchPosition.getValue())
-                        ? constants.maxTitleHeight.getValue()
-                        : constants.maxLyricsHeight.getValue();
+                        ? constants.maxTitleHeight.getValue() : constants.maxLyricsHeight.getValue();
 
                 int interline = system.getSheet().getInterline();
                 double normedHeight = (double) glyph.getHeight() / interline;
@@ -706,9 +692,7 @@ public class ShapeChecker
             {
                 // Check that these markers are just above first system staff
                 Rectangle bounds = glyph.getBounds();
-                Point bottom = new Point(
-                        bounds.x + (bounds.width / 2),
-                        bounds.y + bounds.height);
+                Point bottom = new Point(bounds.x + (bounds.width / 2), bounds.y + bounds.height);
                 Staff staff = system.getClosestStaff(bottom);
 
                 if (staff != system.getFirstStaff()) {
@@ -717,13 +701,11 @@ public class ShapeChecker
 
                 double pitch = staff.pitchPositionOf(bottom);
 
-                return (constants.minDirectionPitchPosition.getValue() <= pitch)
-                       && (pitch <= -5);
+                return (constants.minDirectionPitchPosition.getValue() <= pitch) && (pitch <= -5);
             }
         };
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Checker //
     //---------//
@@ -733,12 +715,10 @@ public class ShapeChecker
      */
     private abstract class Checker
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Unique name for this check */
         public final String name;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Checker (String name,
                         Collection<Shape> shapes)
         {
@@ -793,7 +773,6 @@ public class ShapeChecker
             addChecker(this, all);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Run the specific test.
          *
@@ -820,54 +799,40 @@ public class ShapeChecker
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean applySpecificCheck = new Constant.Boolean(
-                true,
-                "Should we apply specific checks on shape candidates?");
+        private final Constant.Boolean applySpecificCheck = new Constant.Boolean(true,
+                                                                                 "Should we apply specific checks on shape candidates?");
 
-        private final Scale.Fraction maxTitleHeight = new Scale.Fraction(
-                4.0,
-                "Maximum normalized height for a title text");
+        private final Scale.Fraction maxTitleHeight = new Scale.Fraction(4.0,
+                                                                         "Maximum normalized height for a title text");
 
-        private final Scale.Fraction maxLyricsHeight = new Scale.Fraction(
-                2.5,
-                "Maximum normalized height for a lyrics text");
+        private final Scale.Fraction maxLyricsHeight = new Scale.Fraction(2.5,
+                                                                          "Maximum normalized height for a lyrics text");
 
         private final Constant.Double minDirectionPitchPosition = new Constant.Double(
-                "PitchPosition",
-                -13.0,
-                "Minimum pitch value for a  segno / coda direction");
+                "PitchPosition", -13.0, "Minimum pitch value for a  segno / coda direction");
 
-        private final Constant.Double minTitlePitchPosition = new Constant.Double(
-                "PitchPosition",
-                15.0,
-                "Minimum absolute pitch position for a title");
+        private final Constant.Double minTitlePitchPosition = new Constant.Double("PitchPosition",
+                                                                                  15.0,
+                                                                                  "Minimum absolute pitch position for a title");
 
-        private final Constant.Double maxTupletPitchPosition = new Constant.Double(
-                "PitchPosition",
-                17.0,
-                "Maximum absolute pitch position for a tuplet");
+        private final Constant.Double maxTupletPitchPosition = new Constant.Double("PitchPosition",
+                                                                                   17.0,
+                                                                                   "Maximum absolute pitch position for a tuplet");
 
         private final Constant.Double maxTimePitchPositionMargin = new Constant.Double(
-                "PitchPosition",
-                1.0,
-                "Maximum absolute pitch position margin for a time signature");
+                "PitchPosition", 1.0, "Maximum absolute pitch position margin for a time signature");
 
-        private final Scale.Fraction maxSmallDynamicsHeight = new Scale.Fraction(
-                1.5,
-                "Maximum height for small dynamics (no p, no f)");
+        private final Scale.Fraction maxSmallDynamicsHeight = new Scale.Fraction(1.5,
+                                                                                 "Maximum height for small dynamics (no p, no f)");
 
-        private final Scale.Fraction maxMediumDynamicsHeight = new Scale.Fraction(
-                2.0,
-                "Maximum height for small dynamics (with p, no f)");
+        private final Scale.Fraction maxMediumDynamicsHeight = new Scale.Fraction(2.0,
+                                                                                  "Maximum height for small dynamics (with p, no f)");
 
-        private final Scale.Fraction maxTallDynamicsHeight = new Scale.Fraction(
-                2.5,
-                "Maximum height for tall dynamics (with f)");
+        private final Scale.Fraction maxTallDynamicsHeight = new Scale.Fraction(2.5,
+                                                                                "Maximum height for tall dynamics (with f)");
 
-        private final Scale.Fraction maxGapToStaff = new Scale.Fraction(
-                8.0,
-                "Maximum vertical gap between a note-like glyph and closest staff");
+        private final Scale.Fraction maxGapToStaff = new Scale.Fraction(8.0,
+                                                                        "Maximum vertical gap between a note-like glyph and closest staff");
     }
 }

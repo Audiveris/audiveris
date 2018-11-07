@@ -72,11 +72,9 @@ import org.slf4j.LoggerFactory;
 public class VerticalFilter
         extends AdaptiveFilter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(VerticalFilter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an adaptive wrapper on a raw pixel source.
      *
@@ -97,7 +95,6 @@ public class VerticalFilter
                 true);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //--------//
     // MyTile //
@@ -108,14 +105,12 @@ public class VerticalFilter
     private class MyTile
             extends Tile
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public MyTile (boolean squared)
         {
             super(2 + (2 * HALF_WINDOW_SIZE), source.getHeight(), squared);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void shiftTile (int x2)
         {

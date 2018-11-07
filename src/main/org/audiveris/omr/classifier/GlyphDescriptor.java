@@ -41,15 +41,12 @@ import java.util.Collection;
  */
 public abstract class GlyphDescriptor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphDescriptor.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Descriptor name. */
     private final String name;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code GlyphDescriptor} object.
      *
@@ -60,7 +57,6 @@ public abstract class GlyphDescriptor
         this.name = name;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Export the provided collection of samples to a file (using CSV format).
      *
@@ -75,11 +71,8 @@ public abstract class GlyphDescriptor
         try {
             final String ext = "." + name + ".csv";
             final Path path = WellKnowns.TRAIN_FOLDER.resolve(radix + ext);
-            final PrintWriter out = new PrintWriter(
-                    new BufferedWriter(
-                            new OutputStreamWriter(
-                                    new FileOutputStream(path.toFile()),
-                                    WellKnowns.FILE_ENCODING)));
+            final PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
+                    new FileOutputStream(path.toFile()), WellKnowns.FILE_ENCODING)));
 
             for (Sample sample : samples) {
                 for (double in : getFeatures(sample, sample.getInterline())) {

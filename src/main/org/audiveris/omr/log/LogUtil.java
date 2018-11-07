@@ -60,7 +60,6 @@ import javax.swing.SwingUtilities;
  */
 public abstract class LogUtil
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** MDC key for book context. */
     public static final String BOOK = "BOOK";
@@ -77,7 +76,6 @@ public abstract class LogUtil
     /** Initial messages before logging is fully set. */
     private static final List<String> initialMessages = new ArrayList<String>();
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // addAppender //
     //-------------//

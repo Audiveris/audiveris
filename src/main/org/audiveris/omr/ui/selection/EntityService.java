@@ -54,11 +54,9 @@ public class EntityService<E extends Entity>
         extends SelectionService
         implements EventSubscriber<UserEvent>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(EntityService.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying entity index, if any. */
     protected final EntityIndex<E> index;
 
@@ -68,7 +66,6 @@ public class EntityService<E extends Entity>
     /** Basket of entities selected via location (rectangle/point). */
     protected final List<E> basket = new ArrayList<E>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code EntityService} object with no underlying index.
      *
@@ -103,7 +100,6 @@ public class EntityService<E extends Entity>
         this.locationService = locationService;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // connect //
     //---------//
@@ -249,8 +245,8 @@ public class EntityService<E extends Entity>
 
             if (entity != null) {
                 if (locationService != null) {
-                    locationService.publish(
-                            new LocationEvent(this, hint, listEvent.movement, entity.getBounds()));
+                    locationService.publish(new LocationEvent(this, hint, listEvent.movement, entity
+                                                              .getBounds()));
                 }
 
                 // Use this entity to start a basket

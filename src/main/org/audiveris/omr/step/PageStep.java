@@ -85,7 +85,6 @@ import java.util.Set;
 public class PageStep
         extends AbstractStep
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PageStep.class);
 
@@ -163,7 +162,6 @@ public class PageStep
         impactingClasses.addAll(forMeasures);
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PageStep} object.
      */
@@ -171,7 +169,6 @@ public class PageStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // doit //
     //------//
@@ -247,8 +244,8 @@ public class PageStep
                     impact.onVoices = true;
                 }
 
-                if (isImpactedBy(classe, forMeasures)
-                    && seq.isOptionSet(UITaskList.Option.UPDATE_MEASURES)) {
+                if (isImpactedBy(classe, forMeasures) && seq.isOptionSet(
+                        UITaskList.Option.UPDATE_MEASURES)) {
                     impact.onMeasures = true;
                 }
             } else if (task instanceof StackTask) {
@@ -340,13 +337,11 @@ public class PageStep
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Impact //
     //--------//
     private static class Impact
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         boolean onParts = false;
 
@@ -358,7 +353,6 @@ public class PageStep
 
         boolean onMeasures = false;
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

@@ -64,12 +64,10 @@ import java.util.TreeMap;
 public class BeamStructure
         implements Vip
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            BeamStructure.class);
+    private static final Logger logger = LoggerFactory.getLogger(BeamStructure.class);
 
     /** Comparator on abscissae. */
     public static final Comparator<BeamStructure> byAbscissa = new Comparator<BeamStructure>()
@@ -82,7 +80,6 @@ public class BeamStructure
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying glyph. */
     private final Glyph glyph;
 
@@ -104,7 +101,6 @@ public class BeamStructure
     /** VIP flag. */
     private boolean vip;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BeamItems object.
      *
@@ -122,7 +118,6 @@ public class BeamStructure
         center = glyph.getCentroid();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // adjustSides //
     //-------------//
@@ -237,13 +232,8 @@ public class BeamStructure
         }
 
         if (glyph.isVip()) {
-            logger.info(
-                    "{} {} pts:{} width:{} gWidth:{}",
-                    side,
-                    sectionLine.getMeanDistance(),
-                    sectionLine.getNumberOfPoints(),
-                    width,
-                    glyph.getWidth());
+            logger.info("{} {} pts:{} width:{} gWidth:{}", side, sectionLine.getMeanDistance(),
+                        sectionLine.getNumberOfPoints(), width, glyph.getWidth());
         }
 
         return sectionLine.getMeanDistance() / glyph.getWidth();
@@ -451,27 +441,16 @@ public class BeamStructure
         final Line2D median = line.median;
 
         if (logger.isDebugEnabled()) {
-            logger.debug(
-                    String.format(
-                            "Stuck beams #%d %d vs %.2f, gutter:%.1f",
-                            glyph.getId(),
-                            lines.size(),
-                            ratio,
-                            gutter));
+            logger.debug(String.format("Stuck beams #%d %d vs %.2f, gutter:%.1f", glyph.getId(),
+                                       lines.size(), ratio, gutter));
         }
 
         // Insert new lines
         double dy = (newHeight + gutter) / 2;
-        Line2D topMedian = new Line2D.Double(
-                median.getX1(),
-                median.getY1() - dy,
-                median.getX2(),
-                median.getY2() - dy);
-        Line2D botMedian = new Line2D.Double(
-                median.getX1(),
-                median.getY1() + dy,
-                median.getX2(),
-                median.getY2() + dy);
+        Line2D topMedian = new Line2D.Double(median.getX1(), median.getY1() - dy, median.getX2(),
+                                             median.getY2() - dy);
+        Line2D botMedian = new Line2D.Double(median.getX1(), median.getY1() + dy, median.getX2(),
+                                             median.getY2() + dy);
         lines.clear();
         lines.add(new BeamLine(topMedian, newHeight));
         lines.add(new BeamLine(botMedian, newHeight));
@@ -523,23 +502,20 @@ public class BeamStructure
 
             if (otherEntry == null) {
                 // Create a brand new map entry
-                otherMap.put(
-                        targetY,
-                        new Line2D.Double(
-                                base.getX1(),
-                                base.getY1() + dy,
-                                base.getX2(),
-                                base.getY2() + dy));
+                otherMap.put(targetY, new Line2D.Double(base.getX1(), base.getY1() + dy, base
+                                                        .getX2(), base.getY2() + dy));
             } else {
                 // Extend the map entry if needed
                 Line2D other = otherEntry.getValue();
                 double xMid = (other.getX1() + other.getX2()) / 2;
                 double yMid = (other.getY1() + other.getY2()) / 2;
                 double height = yMid - LineUtil.yAtX(base, xMid);
-                Point2D p1 = (base.getX1() < other.getX1())
-                        ? new Point2D.Double(base.getX1(), base.getY1() + height) : other.getP1();
-                Point2D p2 = (base.getX2() > other.getX2())
-                        ? new Point2D.Double(base.getX2(), base.getY2() + height) : other.getP2();
+                Point2D p1 = (base.getX1() < other.getX1()) ? new Point2D.Double(base.getX1(), base
+                                                                                 .getY1() + height)
+                        : other.getP1();
+                Point2D p2 = (base.getX2() > other.getX2()) ? new Point2D.Double(base.getX2(), base
+                                                                                 .getY2() + height)
+                        : other.getP2();
                 double x = (p1.getX() + p2.getX()) / 2;
                 double y = LineUtil.yAtX(p1, p2, x);
                 double offset = y - LineUtil.yAtX(center, globalSlope, x);
@@ -642,9 +618,8 @@ public class BeamStructure
                 int x = section.getFirstPos();
 
                 for (Run run : section.getRuns()) {
-                    sectionLine.includePoint(
-                            x,
-                            (side == VerticalSide.TOP) ? run.getStart() : run.getStop());
+                    sectionLine.includePoint(x, (side == VerticalSide.TOP) ? run.getStart() : run
+                                             .getStop());
                     x++;
                 }
 
@@ -705,9 +680,7 @@ public class BeamStructure
     {
         if (glyphSections == null) {
             glyphSections = new SectionFactory(spotLag, JunctionRatioPolicy.DEFAULT).createSections(
-                    glyph.getRunTable(),
-                    glyph.getTopLeft(),
-                    false);
+                    glyph.getRunTable(), glyph.getTopLeft(), false);
         }
 
         return glyphSections;
@@ -808,12 +781,11 @@ public class BeamStructure
 
                     if (dx > params.maxItemXGap) {
                         // End current item, start a new one
-                        items.add(
-                                new BeamItem(
-                                        new Line2D.Double(
-                                                LineUtil.intersectionAtX(median, start),
-                                                LineUtil.intersectionAtX(median, stop)),
-                                        beamLine.height));
+                        items.add(new BeamItem(new Line2D.Double(LineUtil.intersectionAtX(median,
+                                                                                          start),
+                                                                 LineUtil.intersectionAtX(median,
+                                                                                          stop)),
+                                               beamLine.height));
                         start = sctBox.x;
                     }
 
@@ -826,12 +798,9 @@ public class BeamStructure
         }
 
         if (stop != null) {
-            items.add(
-                    new BeamItem(
-                            new Line2D.Double(
-                                    LineUtil.intersectionAtX(median, start),
-                                    LineUtil.intersectionAtX(median, stop)),
-                            beamLine.height));
+            items.add(new BeamItem(new Line2D.Double(LineUtil.intersectionAtX(median, start),
+                                                     LineUtil.intersectionAtX(median, stop)),
+                                   beamLine.height));
         }
     }
 
@@ -855,23 +824,20 @@ public class BeamStructure
         return bestLine.getSlope();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Double maxSectionSlopeGap = new Constant.Double(
                 "tangent",
                 0.3, // 0.2,
                 "Maximum delta slope between sections of same border");
 
-        private final Constant.Ratio maxBorderJitter = new Constant.Ratio(
-                0.8,
-                "Maximum border vertical jitter, specified as ratio of typical beam height");
+        private final Constant.Ratio maxBorderJitter = new Constant.Ratio(0.8,
+                                                                          "Maximum border vertical jitter, specified as ratio of typical beam height");
     }
 
     //---------------//
@@ -882,7 +848,6 @@ public class BeamStructure
      */
     private static class SectionBorder
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         static Comparator<SectionBorder> byOrdinateOffset = new Comparator<SectionBorder>()
         {
@@ -905,14 +870,12 @@ public class BeamStructure
             }
         };
 
-        //~ Instance fields ------------------------------------------------------------------------
         final Section section; // Underlying section
 
         final BasicLine line; // Border line (top or bottom)
 
         double dy; // Ordinate offset WRT glyph reference line
 
-        //~ Constructors ---------------------------------------------------------------------------
         public SectionBorder (Section section,
                               BasicLine line)
         {
@@ -920,7 +883,6 @@ public class BeamStructure
             this.line = line;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public void setOffset (double dy)
         {
             this.dy = dy;

@@ -37,7 +37,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class SmallBeamInter
         extends AbstractBeamInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new SmallBeamInter object.
@@ -61,7 +60,6 @@ public class SmallBeamInter
         super(null, null, null, 0);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

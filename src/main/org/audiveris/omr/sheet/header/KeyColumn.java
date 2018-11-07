@@ -75,18 +75,14 @@ import java.util.TreeMap;
  */
 public class KeyColumn
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(KeyColumn.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
     /** Status of key replication within part. */
     public enum PartStatus
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /** Success. */
         OK,
         /** Slice count to be reduced. */
@@ -99,7 +95,6 @@ public class KeyColumn
         DESTROY;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related system. */
     private final SystemInfo system;
 
@@ -112,7 +107,6 @@ public class KeyColumn
     /** Theoretical abscissa offset for each slice. */
     private List<Integer> globalOffsets;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code KeyColumn} object.
      *
@@ -124,7 +118,6 @@ public class KeyColumn
         params = new Parameters(system.getSheet().getScale());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // addPlot //
     //---------//
@@ -168,9 +161,8 @@ public class KeyColumn
             Integer clefStop = staff.getClefStop(); // Not very reliable...
             int browseStart = (clefStop != null) ? (clefStop + 1) : (staff.getHeaderStop() + 1);
             //            int browseStart = staff.getHeaderStop() + 1;
-            builders.put(
-                    staff,
-                    new KeyBuilder(this, staff, projectionWidth, measStart, browseStart, true));
+            builders.put(staff, new KeyBuilder(this, staff, projectionWidth, measStart, browseStart,
+                                               true));
         }
 
         // Process each staff to get peaks, slices, alters, trailing space, clef compatibility
@@ -442,11 +434,8 @@ public class KeyColumn
             meanSliceWidth = (int) Math.rint(meanSliceWidth / (double) sliceCount);
         }
 
-        logger.debug(
-                "System#{} offsets:{} meanWidth:{}",
-                system.getId(),
-                globalOffsets,
-                meanSliceWidth);
+        logger.debug("System#{} offsets:{} meanWidth:{}", system.getId(), globalOffsets,
+                     meanSliceWidth);
 
         return meanSliceWidth;
     }
@@ -474,18 +463,15 @@ public class KeyColumn
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction maxSliceDist = new Scale.Fraction(
-                0.5,
-                "Maximum abscissa distance to theoretical slice");
+        private final Scale.Fraction maxSliceDist = new Scale.Fraction(0.5,
+                                                                       "Maximum abscissa distance to theoretical slice");
     }
 
     //------------//
@@ -493,11 +479,9 @@ public class KeyColumn
     //------------//
     private static final class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int maxSliceDist;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
             maxSliceDist = scale.toPixels(constants.maxSliceDist);

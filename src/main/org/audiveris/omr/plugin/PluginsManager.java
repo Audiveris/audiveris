@@ -62,7 +62,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 public class PluginsManager
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -77,7 +76,6 @@ public class PluginsManager
     /** Persistent default plugin id. */
     public static final Param<String> defaultPluginId = new Default();
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The concrete UI menu. */
     private JMenu menu;
@@ -88,7 +86,6 @@ public class PluginsManager
     /** The current default plugin. */
     private Plugin defaultPlugin;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Generates the menu to be inserted in the plugin menu hierarchy,
      * based on the plugins file discovered in Audiveris user config folder.
@@ -106,7 +103,6 @@ public class PluginsManager
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // setDefaultPlugin //
     //------------------//
@@ -260,14 +256,12 @@ public class PluginsManager
         return Collections.EMPTY_LIST;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.String defaultPlugin = new Constant.String("", "Name of default plugin");
     }
@@ -278,7 +272,6 @@ public class PluginsManager
     private static class Default
             extends Param<String>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String getSpecific ()
@@ -329,7 +322,6 @@ public class PluginsManager
     private class MyMenuListener
             extends AbstractMenuListener
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void menuSelected (MenuEvent e)
@@ -348,8 +340,8 @@ public class PluginsManager
 
                     if (action instanceof PluginAction) {
                         Plugin plugin = ((PluginAction) action).getPlugin();
-                        item.setText(
-                                plugin.getId() + ((plugin == defaultPlugin) ? " (default)" : ""));
+                        item.setText(plugin.getId()
+                                             + ((plugin == defaultPlugin) ? " (default)" : ""));
                     }
                 }
             }
@@ -366,13 +358,11 @@ public class PluginsManager
     @XmlRootElement(name = "plugins")
     private static class PluginsHolder
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** List of plugins. */
         @XmlElementRef
         private List<Plugin> list = new ArrayList<Plugin>();
 
-        //~ Constructors ---------------------------------------------------------------------------
         /** No-arg constructor meant for JAXB. */
         private PluginsHolder ()
         {

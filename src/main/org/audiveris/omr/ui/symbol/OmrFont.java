@@ -52,7 +52,6 @@ import java.util.Map;
 public abstract class OmrFont
         extends Font
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(OmrFont.class);
 
@@ -65,7 +64,6 @@ public abstract class OmrFont
     /** Cache for fonts. No style, no size. */
     private static final Map<String, Font> fontCache = new HashMap<String, Font>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new OmrFont object.
      *
@@ -80,7 +78,6 @@ public abstract class OmrFont
         super(createFont(name, style, pointSize));
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // layout //
     //--------//
@@ -149,9 +146,9 @@ public abstract class OmrFont
             // Compute symbol origin
             Rectangle2D bounds = layout.getBounds();
             Point2D toTextOrigin = alignment.toTextOrigin(bounds);
-            Point2D origin = new Point2D.Double(
-                    location.x + toTextOrigin.getX(),
-                    location.y + toTextOrigin.getY());
+            Point2D origin = new Point2D.Double(location.x + toTextOrigin.getX(), location.y
+                                                                                          + toTextOrigin
+                                                        .getY());
 
             // Draw the symbol
             layout.draw(g, (float) origin.getX(), (float) origin.getY());

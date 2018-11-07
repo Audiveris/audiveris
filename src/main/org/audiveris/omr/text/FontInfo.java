@@ -31,7 +31,6 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  */
 public class FontInfo
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(FontInfo.class);
 
@@ -41,7 +40,6 @@ public class FontInfo
     /** Separator in memo between attributes (if any) and point size. */
     private static final char SEPARATOR = '-';
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** True if bold. */
     public final boolean isBold;
 
@@ -66,7 +64,6 @@ public class FontInfo
     /** Font name. */
     public final String fontName;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new FontInfo object.
      *
@@ -107,18 +104,10 @@ public class FontInfo
     public FontInfo (FontInfo org,
                      int pointSize)
     {
-        this(
-                org.isBold,
-                org.isItalic,
-                org.isUnderlined,
-                org.isMonospace,
-                org.isSerif,
-                org.isSmallcaps,
-                pointSize,
-                org.fontName);
+        this(org.isBold, org.isItalic, org.isUnderlined, org.isMonospace, org.isSerif,
+             org.isSmallcaps, pointSize, org.fontName);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //
     //---------------//
     // createDefault //
@@ -143,15 +132,9 @@ public class FontInfo
         final String sizeStr = (sep != -1) ? str.substring(sep + 1) : str;
         final int size = Integer.decode(sizeStr);
 
-        return new FontInfo(
-                str.indexOf('B') != -1,
-                str.indexOf('I') != -1,
-                str.indexOf('U') != -1,
-                str.indexOf('M') != -1,
-                str.indexOf('S') != -1,
-                str.indexOf('C') != -1,
-                size,
-                "generic");
+        return new FontInfo(str.indexOf('B') != -1, str.indexOf('I') != -1, str.indexOf('U') != -1,
+                            str.indexOf('M') != -1, str.indexOf('S') != -1, str.indexOf('C') != -1,
+                            size, "generic");
     }
 
     //----------//
@@ -218,14 +201,12 @@ public class FontInfo
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
     public static class Adapter
             extends XmlAdapter<String, FontInfo>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String marshal (FontInfo info)

@@ -69,13 +69,11 @@ import javax.swing.SwingUtilities;
 class TrainingPanel
         implements TrainingMonitor, Observer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TrainingPanel.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The swing component. */
     protected final Panel component;
 
@@ -98,9 +96,8 @@ class TrainingPanel
     private final SelectionPanel selectionPanel;
 
     /** Field for maximum number of epochs to perform. */
-    private final LIntegerField maxEpochs = new LIntegerField(
-            "Max Epochs",
-            "Maximum number of epochs to perform");
+    private final LIntegerField maxEpochs = new LIntegerField("Max Epochs",
+                                                              "Maximum number of epochs to perform");
 
     /** Output for number of epochs performed so far. */
     private final LLabel epochIndex = new LLabel("Epoch:", "Current epoch");
@@ -120,7 +117,6 @@ class TrainingPanel
     /* Useful? */
     private boolean invoked;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TrainingPanel object.
      *
@@ -138,9 +134,8 @@ class TrainingPanel
 
         task.addObserver(this);
 
-        component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-                KeyStroke.getKeyStroke("ENTER"),
-                "readParams");
+        component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke
+                .getKeyStroke("ENTER"), "readParams");
         component.getActionMap().put("readParams", new ParamAction());
 
         resetAction = new ResetAction();
@@ -155,7 +150,6 @@ class TrainingPanel
         inputParams();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void epochStarted (int epoch)
     {
@@ -185,23 +179,23 @@ class TrainingPanel
     //    {
     //        return invoked;
     //    }
-//
-//        @Override
-//        public void iterationDone (Model model,
-//                                   int iteration)
-//        {
-//            iterCount++;
-//
-//            if ((iterCount % constants.listenerPeriod.getValue()) == 0) {
-//                ///invoke();
-//
-//                final double score = model.score();
-//                final int count = (int) iterCount;
-//                logger.info(String.format("Score at iteration %d is %.5f", count, score));
-//                display(epoch, count, score);
-//            }
-//        }
-//
+    //
+    //        @Override
+    //        public void iterationDone (Model model,
+    //                                   int iteration)
+    //        {
+    //            iterCount++;
+    //
+    //            if ((iterCount % constants.listenerPeriod.getValue()) == 0) {
+    //                ///invoke();
+    //
+    //                final double score = model.score();
+    //                final int count = (int) iterCount;
+    //                logger.info(String.format("Score at iteration %d is %.5f", count, score));
+    //                display(epoch, count, score);
+    //            }
+    //        }
+    //
     @Override
     public void iterationPeriodDone (int iter,
                                      double score)
@@ -311,12 +305,7 @@ class TrainingPanel
     {
         progressBar.setForeground(Colors.PROGRESS_BAR);
 
-        FormLayout layout = Panel.makeFormLayout(
-                3,
-                3,
-                "",
-                Trainer.LABEL_WIDTH,
-                Trainer.FIELD_WIDTH);
+        FormLayout layout = Panel.makeFormLayout(3, 3, "", Trainer.LABEL_WIDTH, Trainer.FIELD_WIDTH);
         PanelBuilder builder = new PanelBuilder(layout, component);
         CellConstraints cst = new CellConstraints();
 
@@ -391,14 +380,12 @@ class TrainingPanel
         progressBar.setMaximum(maxEpochs.getValue());
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ResetAction //
     //-------------//
     protected class ResetAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public ResetAction ()
         {
@@ -406,7 +393,6 @@ class TrainingPanel
             putValue(Action.SHORT_DESCRIPTION, "Restart from scratch");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -425,7 +411,6 @@ class TrainingPanel
     protected class StopAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public StopAction ()
         {
@@ -433,7 +418,6 @@ class TrainingPanel
             putValue(Action.SHORT_DESCRIPTION, "Stop the training");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -447,7 +431,6 @@ class TrainingPanel
     protected class TrainAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public TrainAction ()
         {
@@ -455,7 +438,6 @@ class TrainingPanel
             putValue(Action.SHORT_DESCRIPTION, "Train the classifier");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -495,12 +477,9 @@ class TrainingPanel
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Integer listenerPeriod = new Constant.Integer(
-                "period",
-                50,
-                "Period (in iterations) between listener calls");
+        private final Constant.Integer listenerPeriod = new Constant.Integer("period", 50,
+                                                                             "Period (in iterations) between listener calls");
     }
 
     //-------------//
@@ -509,7 +488,6 @@ class TrainingPanel
     private class ParamAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         // Purpose is just to read and remember the data from the various input fields.
         // Triggered when user presses Enter in one of these fields.

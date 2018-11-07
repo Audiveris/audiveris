@@ -70,20 +70,19 @@ import java.util.Set;
  */
 public abstract class Relations
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Relations.class);
+    private static final Logger logger = LoggerFactory.getLogger(Relations.class);
 
-    private static final Map<Class<? extends Inter>, Set<Class<? extends Relation>>> src = new LinkedHashMap<Class<? extends Inter>, Set<Class<? extends Relation>>>();
+    private static final Map<Class<? extends Inter>, Set<Class<? extends Relation>>> src
+            = new LinkedHashMap<Class<? extends Inter>, Set<Class<? extends Relation>>>();
 
-    private static final Map<Class<? extends Inter>, Set<Class<? extends Relation>>> tgt = new LinkedHashMap<Class<? extends Inter>, Set<Class<? extends Relation>>>();
+    private static final Map<Class<? extends Inter>, Set<Class<? extends Relation>>> tgt
+            = new LinkedHashMap<Class<? extends Inter>, Set<Class<? extends Relation>>>();
 
     static {
         buildMaps();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the defined relation classes between the provided source and target
      * inter classes.
@@ -96,7 +95,8 @@ public abstract class Relations
             Class<? extends Inter> sourceClass,
             Class<? extends Inter> targetClass)
     {
-        final Set<Class<? extends Relation>> defined = new LinkedHashSet<Class<? extends Relation>>();
+        final Set<Class<? extends Relation>> defined
+                = new LinkedHashSet<Class<? extends Relation>>();
         Set<Class<? extends Relation>> from = definedRelationsFrom(sourceClass);
         Set<Class<? extends Relation>> to = definedRelationsTo(targetClass);
         defined.addAll(from);
@@ -120,7 +120,8 @@ public abstract class Relations
     {
         Objects.requireNonNull(sourceClass, "Source class is null");
 
-        final Set<Class<? extends Relation>> defined = new LinkedHashSet<Class<? extends Relation>>();
+        final Set<Class<? extends Relation>> defined
+                = new LinkedHashSet<Class<? extends Relation>>();
         Class classe = sourceClass;
 
         while (true) {
@@ -155,7 +156,8 @@ public abstract class Relations
     {
         Objects.requireNonNull(targetClass, "Target class is null");
 
-        final Set<Class<? extends Relation>> defined = new LinkedHashSet<Class<? extends Relation>>();
+        final Set<Class<? extends Relation>> defined
+                = new LinkedHashSet<Class<? extends Relation>>();
         Class classe = targetClass;
 
         while (true) {

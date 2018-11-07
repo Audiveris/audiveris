@@ -16,7 +16,6 @@ import ij.process.ByteProcessor;
  */
 public interface ChamferDistance
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Value when on target location. */
     public static final int VALUE_TARGET = 0;
@@ -25,35 +24,26 @@ public interface ChamferDistance
     public static final int VALUE_UNKNOWN = -1;
 
     /** Chessboard mask. */
-    public static final int[][] chessboard = new int[][]{
-        new int[]{1, 0, 1}, new int[]{1, 1, 1}
-    };
+    public static final int[][] chessboard = new int[][]{new int[]{1, 0, 1}, new int[]{1, 1, 1}};
 
     /** 3x3 mask. */
     public static final int[][] chamfer3 = new int[][]{new int[]{1, 0, 3}, new int[]{1, 1, 4}};
 
     /** 5x5 mask. */
-    public static final int[][] chamfer5 = new int[][]{
-        new int[]{1, 0, 5}, new int[]{1, 1, 7},
-        new int[]{2, 1, 11}
-    };
+    public static final int[][] chamfer5 = new int[][]{new int[]{1, 0, 5}, new int[]{1, 1, 7},
+                                                       new int[]{2, 1, 11}};
 
     /** 7x7 mask. */
-    public static final int[][] chamfer7 = new int[][]{
-        new int[]{1, 0, 14}, new int[]{1, 1, 20},
-        new int[]{2, 1, 31}, new int[]{3, 1, 44}
-    };
+    public static final int[][] chamfer7 = new int[][]{new int[]{1, 0, 14}, new int[]{1, 1, 20},
+                                                       new int[]{2, 1, 31}, new int[]{3, 1, 44}};
 
     /** 13x13 mask. */
     public static final int[][] chamfer13 = new int[][]{
-        new int[]{1, 0, 68}, new int[]{1, 1, 96},
-        new int[]{2, 1, 152}, new int[]{3, 1, 215},
+        new int[]{1, 0, 68}, new int[]{1, 1, 96}, new int[]{2, 1, 152}, new int[]{3, 1, 215},
         new int[]{3, 2, 245}, new int[]{4, 1, 280},
-        new int[]{4, 3, 340}, new int[]{5, 1, 346},
-        new int[]{6, 1, 413}
+        new int[]{4, 3, 340}, new int[]{5, 1, 346}, new int[]{6, 1, 413}
     };
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // compute //
     //---------//
@@ -93,11 +83,9 @@ public interface ChamferDistance
      */
     DistanceTable computeToFore (ByteProcessor input);
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     public abstract class Abstract
             implements ChamferDistance
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** The local distance mask to apply. */
         private final int[][] chamfer;
@@ -105,7 +93,6 @@ public interface ChamferDistance
         /** Mask normalizer. */
         private final int normalizer;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Abstract object, with chamfer3 as default mask.
          */
@@ -125,7 +112,6 @@ public interface ChamferDistance
             normalizer = chamfer[0][2];
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //---------//
         // compute //
         //---------//
@@ -257,8 +243,8 @@ public interface ChamferDistance
         /**
          * Get Table instance of the proper type and size.
          *
-         * @param width  desired width
-         * @param height desired height
+         * @param width      desired width
+         * @param height     desired height
          * @param normalizer the normalizing value
          * @return the table of proper type and dimension
          */
@@ -330,7 +316,6 @@ public interface ChamferDistance
     public class Integer
             extends Abstract
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         protected DistanceTable allocateOutput (int width,
@@ -347,7 +332,6 @@ public interface ChamferDistance
     public class Short
             extends Abstract
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         protected DistanceTable allocateOutput (int width,

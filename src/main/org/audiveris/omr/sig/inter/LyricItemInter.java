@@ -50,7 +50,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class LyricItemInter
         extends WordInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -65,14 +64,11 @@ public class LyricItemInter
     /** String equivalent of Character used for hyphen. */
     public static final String HYPHEN_STRING = "-";
 
-    //~ Enumerations -------------------------------------------------------------------------------
     /**
      * Describes the kind of this lyrics item.
      */
     public static enum ItemKind
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /** Just an elision */
         Elision,
         /** Just an extension */
@@ -88,8 +84,6 @@ public class LyricItemInter
      */
     public static enum SyllabicType
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /** Single-syllable word */
         SINGLE,
         /** Syllable that begins a word */
@@ -100,7 +94,6 @@ public class LyricItemInter
         END;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Lyrics kind. */
     @XmlAttribute(name = "kind")
     private ItemKind itemKind;
@@ -109,7 +102,6 @@ public class LyricItemInter
     @XmlAttribute(name = "syllabic")
     private SyllabicType syllabicType;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LyricItemInter object.
      *
@@ -137,7 +129,6 @@ public class LyricItemInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -215,8 +206,8 @@ public class LyricItemInter
      */
     public static boolean isSeparator (String str)
     {
-        return str.equals(EXTENSION_STRING) || str.equals(ELISION_STRING)
-               || str.equals(HYPHEN_STRING);
+        return str.equals(EXTENSION_STRING) || str.equals(ELISION_STRING) || str.equals(
+                HYPHEN_STRING);
     }
 
     //------------//
@@ -248,8 +239,7 @@ public class LyricItemInter
         setStaff(relatedStaff);
 
         Part part = relatedStaff.getPart();
-        int maxDx = part.getSystem().getSheet().getScale()
-                .toPixels(constants.maxItemDx);
+        int maxDx = part.getSystem().getSheet().getScale().toPixels(constants.maxItemDx);
 
         // A word can start in a measure and finish in the next measure
         // Look for best aligned head-chord in proper staff
@@ -268,8 +258,7 @@ public class LyricItemInter
 
             if (lookAbove) {
                 for (AbstractChordInter chord : measure.getHeadChordsAbove(getLocation())) {
-                    if (chord instanceof HeadChordInter
-                        && (chord.getBottomStaff() == relatedStaff)) {
+                    if (chord instanceof HeadChordInter && (chord.getBottomStaff() == relatedStaff)) {
                         int dx = Math.abs(chord.getHeadLocation().x - centerX);
 
                         if (bestDx > dx) {
@@ -336,17 +325,14 @@ public class LyricItemInter
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction maxItemDx = new Scale.Fraction(
-                5,
-                "Maximum horizontal distance between a note and its lyric item");
+        private final Scale.Fraction maxItemDx = new Scale.Fraction(5,
+                                                                    "Maximum horizontal distance between a note and its lyric item");
     }
 }

@@ -40,12 +40,10 @@ import java.awt.Graphics2D;
  */
 public class RunsViewer
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The related sheet */
     private final Sheet sheet;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new RunsViewer object.
      *
@@ -56,7 +54,6 @@ public class RunsViewer
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // display //
     //---------//
@@ -76,16 +73,13 @@ public class RunsViewer
             table.setRunService(new RunService(name, table));
         }
 
-        BoardsPane boards = new BoardsPane(
-                new PixelBoard(sheet),
-                new BinarizationBoard(sheet),
-                new RunBoard(table, true));
+        BoardsPane boards = new BoardsPane(new PixelBoard(sheet), new BinarizationBoard(sheet),
+                                           new RunBoard(table, true));
 
         // Here we create new tab with the name of the table
         sheet.getStub().getAssembly().addViewTab(name, new ScrollView(view), boards);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------------//
     // MyRunsTableView //
     //-----------------//
@@ -96,7 +90,6 @@ public class RunsViewer
     private class MyRunsTableView
             extends RunTableView
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public MyRunsTableView (String name,
                                 RunTable table)
@@ -104,7 +97,6 @@ public class RunsViewer
             super(name, table, sheet.getLocationService());
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void renderItems (Graphics2D g)
         {

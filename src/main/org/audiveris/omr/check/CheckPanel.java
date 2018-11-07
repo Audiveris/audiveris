@@ -57,7 +57,6 @@ import javax.swing.KeyStroke;
  */
 public class CheckPanel<C>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CheckPanel.class);
 
@@ -75,7 +74,6 @@ public class CheckPanel<C>
 
     private static final int FIELD_WIDTH = 4;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The related check suite (the model) */
     private CheckSuite<C> suite;
@@ -95,7 +93,6 @@ public class CheckPanel<C>
     /** Last object checked */
     private C checkable;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a check panel for a given suite.
      *
@@ -111,7 +108,6 @@ public class CheckPanel<C>
         setSuite(suite);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getComponent //
     //--------------//
@@ -213,9 +209,8 @@ public class CheckPanel<C>
             component.setNoInsets();
 
             // Needed to process user input when RETURN/ENTER is pressed
-            component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-                    KeyStroke.getKeyStroke("ENTER"),
-                    "ParamAction");
+            component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke
+                    .getKeyStroke("ENTER"), "ParamAction");
             component.getActionMap().put("ParamAction", new ParamAction());
         } else {
             component.removeAll();
@@ -322,9 +317,8 @@ public class CheckPanel<C>
                 NamedDouble constant = (i == 0) ? check.getLowDouble() : check.getHighDouble();
 
                 field.setText(textOf(constant.getValue()));
-                field.setToolTipText(
-                        "<html>" + constant.getName() + "<br/>" + constant.getDescription()
-                        + "</html>");
+                field.setToolTipText("<html>" + constant.getName() + "<br/>" + constant
+                        .getDescription() + "</html>");
             }
         }
     }
@@ -414,7 +408,6 @@ public class CheckPanel<C>
         return Double.NaN;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //-------------//
     // ParamAction //
@@ -422,7 +415,6 @@ public class CheckPanel<C>
     private class ParamAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Method run whenever user presses Return/Enter in one of
@@ -449,8 +441,8 @@ public class CheckPanel<C>
 
                 // Check the bounds wrt the corresponding fields
                 for (int i = 0; i < 2; i++) {
-                    final NamedDouble constant = (i == 0) ? check.getLowDouble()
-                            : check.getHighDouble();
+                    final NamedDouble constant = (i == 0) ? check.getLowDouble() : check
+                            .getHighDouble();
 
                     // Simplistic test to detect modification
                     final JTextField field = bounds[ic][i];
@@ -475,8 +467,8 @@ public class CheckPanel<C>
                         try {
                             constant.setValue(valueOf(newString));
                             modified = true;
-                            sb.append(" modified from ").append(oldString).append(" to ")
-                                    .append(newString);
+                            sb.append(" modified from ").append(oldString).append(" to ").append(
+                                    newString);
                             logger.info(sb.toString());
                         } catch (Exception ex) {
                             logger.warn("Error in {}, {}", context, ex.getLocalizedMessage());

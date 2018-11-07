@@ -48,7 +48,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class AbstractVerticalInter
         extends AbstractInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Line width. */
     @XmlAttribute
@@ -59,7 +58,6 @@ public abstract class AbstractVerticalInter
     @XmlElement
     protected final Line2D median;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AbstractVerticalInter} object.
      *
@@ -108,7 +106,6 @@ public abstract class AbstractVerticalInter
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -167,20 +164,17 @@ public abstract class AbstractVerticalInter
         setBounds(getArea().getBounds());
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
             extends BasicImpacts
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{"core", "gap", "start", "stop"};
 
         private static final double[] WEIGHTS = new double[]{1, 1, 1, 1};
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double core,
                         double gap,
                         double start,

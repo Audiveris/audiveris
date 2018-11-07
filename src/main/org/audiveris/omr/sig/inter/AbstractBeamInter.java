@@ -78,12 +78,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class AbstractBeamInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractBeamInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractBeamInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -103,7 +100,6 @@ public abstract class AbstractBeamInter
     /** The containing beam group. */
     private BeamGroup group;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractBeamInter object.
      * Note there is no underlying glyph, cleaning will be based on beam area.
@@ -140,7 +136,6 @@ public abstract class AbstractBeamInter
         super(null, null, shape, grade);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -218,8 +213,9 @@ public abstract class AbstractBeamInter
         Point2D crossPt = LineUtil.intersection(stem.getMedian(), beamBorder);
 
         // Extension point
-        bRel.setExtensionPoint(
-                new Point2D.Double(crossPt.getX(), crossPt.getY() + (yDir * (getHeight() - 1))));
+        bRel.setExtensionPoint(new Point2D.Double(crossPt.getX(), crossPt.getY() + (yDir
+                                                                                            * (getHeight()
+                                                                                               - 1))));
 
         // Abscissa -> beamPortion
         // toLeft & toRight are >0 if within beam, <0 otherwise
@@ -242,8 +238,11 @@ public abstract class AbstractBeamInter
         }
 
         // Ordinate
-        final double yGap = (yDir > 0) ? Math.max(0, crossPt.getY() - stop.getY())
-                : Math.max(0, start.getY() - crossPt.getY());
+        final double yGap = (yDir > 0) ? Math.max(0, crossPt.getY() - stop.getY()) : Math.max(0,
+                                                                                              start
+                                                                                                      .getY()
+                                                                                              - crossPt
+                                                                                                      .getY());
 
         bRel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
 
@@ -269,11 +268,8 @@ public abstract class AbstractBeamInter
     {
         final double dy = (side == VerticalSide.TOP) ? (-height / 2) : (height / 2);
 
-        return new Line2D.Double(
-                median.getX1(),
-                median.getY1() + dy,
-                median.getX2(),
-                median.getY2() + dy);
+        return new Line2D.Double(median.getX1(), median.getY1() + dy, median.getX2(), median.getY2()
+                                                                                              + dy);
     }
 
     //-----------//
@@ -631,24 +627,20 @@ public abstract class AbstractBeamInter
         return links;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
             extends BasicImpacts
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
-        private static final String[] NAMES = new String[]{
-            "wdth", "minH", "maxH", "core", "belt", "jit"
-        };
+        private static final String[] NAMES = new String[]{"wdth", "minH", "maxH", "core", "belt",
+                                                           "jit"};
 
         private static final int DIST_INDEX = 5;
 
         private static final double[] WEIGHTS = new double[]{0.5, 1, 1, 2, 2, 2};
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double width,
                         double minHeight,
                         double maxHeight,
@@ -665,7 +657,6 @@ public abstract class AbstractBeamInter
             setImpact(5, dist);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public double getDistImpact ()
         {
             return getImpact(DIST_INDEX);

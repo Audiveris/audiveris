@@ -47,11 +47,9 @@ import javax.swing.JMenuItem;
  */
 public class InterMenu
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterMenu.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final SeparableMenu menu;
 
     private final Inter inter;
@@ -60,7 +58,6 @@ public class InterMenu
 
     private final InterController interController;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code InterMenu} object.
      *
@@ -89,7 +86,6 @@ public class InterMenu
         menu.trimSeparator();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getMenu //
     //---------//
@@ -115,26 +111,22 @@ public class InterMenu
             @Override
             public void mouseEntered (MouseEvent e)
             {
-                sheet.getInterIndex().getEntityService().publish(
-                        new EntityListEvent<Inter>(
-                                this,
-                                SelectionHint.ENTITY_INIT,
-                                MouseMovement.PRESSING,
-                                inter));
+                sheet.getInterIndex().getEntityService().publish(new EntityListEvent<Inter>(this,
+                                                                                            SelectionHint.ENTITY_INIT,
+                                                                                            MouseMovement.PRESSING,
+                                                                                            inter));
             }
         });
 
         return title;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------//
     // RelationListener //
     //------------------//
     private class RelationListener
             extends AbstractMouseListener
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void mouseEntered (MouseEvent e)

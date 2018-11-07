@@ -51,13 +51,11 @@ import javax.swing.SwingUtilities;
 public class InterIndex
         extends BasicIndex<Inter>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(InterIndex.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new InterManager object.
      */
@@ -65,7 +63,6 @@ public class InterIndex
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // initTransients //
     //----------------//
@@ -135,28 +132,21 @@ public class InterIndex
                 @Override
                 public void run ()
                 {
-                    interService.publish(
-                            new EntityListEvent<Inter>(
-                                    this,
-                                    SelectionHint.ENTITY_INIT,
-                                    MouseMovement.PRESSING,
-                                    inter));
+                    interService.publish(new EntityListEvent<Inter>(this, SelectionHint.ENTITY_INIT,
+                                                                    MouseMovement.PRESSING, inter));
                 }
             });
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.String vipInters = new Constant.String(
-                "",
-                "(Debug) Comma-separated values of VIP inters IDs");
+        private final Constant.String vipInters = new Constant.String("",
+                                                                      "(Debug) Comma-separated values of VIP inters IDs");
     }
 }

@@ -57,18 +57,15 @@ import javax.swing.JPopupMenu;
 public class SampleController
         extends GlyphsController
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleController.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final SampleRepository repository;
 
     private final ApplicationAction removeAction;
 
     private final AssignAction assignAction;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleController} object.
      *
@@ -84,7 +81,6 @@ public class SampleController
         assignAction = new AssignAction();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public void assignSample (Sample sample,
                               Shape newShape)
     {
@@ -92,14 +88,9 @@ public class SampleController
         final SampleSheet sampleSheet = repository.getSampleSheet(sample);
 
         // Add new sample
-        Sample newSample = new Sample(
-                sample.getLeft(),
-                sample.getTop(),
-                sample.getRunTable(),
-                sample.getInterline(),
-                sample.getId(),
-                newShape,
-                sample.getPitch());
+        Sample newSample = new Sample(sample.getLeft(), sample.getTop(), sample.getRunTable(),
+                                      sample.getInterline(), sample.getId(), newShape, sample
+                                      .getPitch());
         sampleModel.addSample(newSample, sampleSheet);
 
         // Remove old sample
@@ -149,7 +140,6 @@ public class SampleController
         SampleController.this.removeSample(sample);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // AssignAction //
     //--------------//
@@ -165,7 +155,6 @@ public class SampleController
     public class AssignAction
             extends AbstractAction
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Popup used by assign button in SampleBoard. */
         public JPopupMenu popup = new JPopupMenu();
@@ -186,7 +175,6 @@ public class SampleController
             }
         };
 
-        //~ Constructors ---------------------------------------------------------------------------
         public AssignAction ()
         {
             super("Assign to...");
@@ -199,7 +187,6 @@ public class SampleController
             menu.setToolTipText("Assign a new shape");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {

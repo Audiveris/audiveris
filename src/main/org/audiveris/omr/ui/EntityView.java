@@ -51,18 +51,15 @@ public class EntityView<E extends Entity>
         extends RubberPanel
         implements PropertyChangeListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(EntityView.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying entity service. */
     protected final EntityService<E> entityService;
 
     /** Underlying entity index. */
     protected final EntityIndex<E> entityIndex;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code EntityView} object.
      *
@@ -83,7 +80,6 @@ public class EntityView<E extends Entity>
         entityService.subscribeStrongly(EntityListEvent.class, this);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // onEvent //
     //---------//
@@ -130,8 +126,8 @@ public class EntityView<E extends Entity>
 
             if (!list.isEmpty()) {
                 // Display entities contour
-                locationService.publish(
-                        new LocationEvent(this, listEVent.hint, null, Entities.getBounds(list)));
+                locationService.publish(new LocationEvent(this, listEVent.hint, null, Entities
+                                                          .getBounds(list)));
             }
         }
     }

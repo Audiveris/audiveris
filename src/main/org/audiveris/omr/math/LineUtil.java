@@ -31,7 +31,6 @@ import java.awt.geom.Point2D;
  */
 public abstract class LineUtil
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     //----------//
     // bisector //
@@ -177,15 +176,8 @@ public abstract class LineUtil
     public static Point2D.Double intersection (Line2D l1,
                                                Line2D l2)
     {
-        return intersection(
-                l1.getX1(),
-                l1.getY1(),
-                l1.getX2(),
-                l1.getY2(),
-                l2.getX1(),
-                l2.getY1(),
-                l2.getX2(),
-                l2.getY2());
+        return intersection(l1.getX1(), l1.getY1(), l1.getX2(), l1.getY2(), l2.getX1(), l2.getY1(),
+                            l2.getX2(), l2.getY2());
     }
 
     //--------------//
@@ -206,15 +198,8 @@ public abstract class LineUtil
                                                Point2D p3,
                                                Point2D p4)
     {
-        return intersection(
-                p1.getX(),
-                p1.getY(),
-                p2.getX(),
-                p2.getY(),
-                p3.getX(),
-                p3.getY(),
-                p4.getX(),
-                p4.getY());
+        return intersection(p1.getX(), p1.getY(), p2.getX(), p2.getY(), p3.getX(), p3.getY(), p4
+                            .getX(), p4.getY());
     }
 
     //--------------//
@@ -306,15 +291,8 @@ public abstract class LineUtil
                                                   double slope,
                                                   double x)
     {
-        return intersection(
-                p1.getX(),
-                p1.getY(),
-                p1.getX() + 1000,
-                p1.getY() + (1000 * slope),
-                x,
-                0,
-                x,
-                1000);
+        return intersection(p1.getX(), p1.getY(), p1.getX() + 1000, p1.getY() + (1000 * slope), x, 0,
+                            x, 1000);
     }
 
     //-----------------//
@@ -352,15 +330,10 @@ public abstract class LineUtil
                                                   double invertedSlope,
                                                   double y)
     {
-        return intersection(
-                p1.getX(),
-                p1.getY(),
-                p1.getX() + (1000 * invertedSlope),
-                p1.getY() + 1000,
-                0,
-                y,
-                1000,
-                y);
+        return intersection(p1.getX(), p1.getY(), p1.getX() + (1000 * invertedSlope), p1.getY()
+                                                                                              + 1000,
+                            0, y,
+                            1000, y);
     }
 
     //-----------------//
@@ -473,15 +446,8 @@ public abstract class LineUtil
                                double slope,
                                double x)
     {
-        return intersection(
-                p1.getX(),
-                p1.getY(),
-                p1.getX() + 1000,
-                p1.getY() + (1000 * slope),
-                x,
-                0,
-                x,
-                1000).y;
+        return intersection(p1.getX(), p1.getY(), p1.getX() + 1000, p1.getY() + (1000 * slope), x, 0,
+                            x, 1000).y;
     }
 
     //------//

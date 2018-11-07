@@ -39,13 +39,11 @@ import javax.xml.bind.annotation.XmlAttribute;
 public abstract class AbstractNumberInter
         extends AbstractInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Integer value for the number. */
     @XmlAttribute
     protected final int value;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractNumberInter object.
      *
@@ -76,7 +74,6 @@ public abstract class AbstractNumberInter
         this.value = (shape != null) ? valueOf(shape) : (-1);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

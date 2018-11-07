@@ -39,7 +39,6 @@ import static javax.swing.Action.SHORT_DESCRIPTION;
 public class RelationAction
         extends AbstractAction
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Originating inter. */
     private final Inter inter;
@@ -50,7 +49,6 @@ public class RelationAction
     /** The other inter, if any. */
     private final Inter other;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new RelationAction object.
      *
@@ -84,7 +82,6 @@ public class RelationAction
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//
@@ -92,16 +89,6 @@ public class RelationAction
     public void actionPerformed (ActionEvent e)
     {
         publish();
-    }
-
-    //---------//
-    // publish //
-    //---------//
-    public void publish ()
-    {
-        if (other != null) {
-            other.getSig().publish(other);
-        }
     }
 
     /**
@@ -113,6 +100,14 @@ public class RelationAction
     }
 
     /**
+     * @return the other
+     */
+    public Inter getOther ()
+    {
+        return other;
+    }
+
+    /**
      * @return the relation
      */
     public Relation getRelation ()
@@ -120,11 +115,13 @@ public class RelationAction
         return relation;
     }
 
-    /**
-     * @return the other
-     */
-    public Inter getOther ()
+    //---------//
+    // publish //
+    //---------//
+    public void publish ()
     {
-        return other;
+        if (other != null) {
+            other.getSig().publish(other);
+        }
     }
 }

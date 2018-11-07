@@ -78,13 +78,11 @@ import java.util.TreeSet;
  */
 public class StickFactory
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StickFactory.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Sticks orientation. */
     private final Orientation orientation;
 
@@ -112,7 +110,6 @@ public class StickFactory
     /** Scale-dependent constants. */
     private final Parameters params;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StickFactory} object.
      *
@@ -142,7 +139,6 @@ public class StickFactory
         params = new Parameters(maxStickThickness, minCoreSectionLength, minSideRatio);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * At system level, retrieve all candidate sticks (stem seeds / ledgers).
      *
@@ -219,9 +215,8 @@ public class StickFactory
                 // Main orientation
                 for (LinkedSection linked : getNeighbors(ls, reverse)) {
                     // Must be thin & isolated on the border
-                    if ((linked.getCompound() == null)
-                        && (linked.getRunCount() == 1)
-                        && getNeighbors(linked, reverse).isEmpty()) {
+                    if ((linked.getCompound() == null) && (linked.getRunCount() == 1)
+                                && getNeighbors(linked, reverse).isEmpty()) {
                         stickers.add(linked);
                     }
                 }
@@ -230,11 +225,7 @@ public class StickFactory
                 if (oppStickers != null) {
                     Run endRun = reverse ? s.getFirstRun() : s.getLastRun();
                     int x = reverse ? (s.getFirstPos() - 1) : (s.getLastPos() + 1);
-                    Rectangle luArea = new Rectangle(
-                            x,
-                            endRun.getStart(),
-                            1,
-                            endRun.getLength());
+                    Rectangle luArea = new Rectangle(x, endRun.getStart(), 1, endRun.getLength());
                     List<Section> col = oppStickers.get(x);
 
                     if (col != null) {
@@ -266,8 +257,8 @@ public class StickFactory
     //-------------------//
     private List<LinkedSection> buildSectionGraph (List<Section> sections)
     {
-        StopWatch watch = new StopWatch(
-                "buildSectionGraph S#" + system.getId() + " size:" + sections.size());
+        StopWatch watch = new StopWatch("buildSectionGraph S#" + system.getId() + " size:"
+                                                + sections.size());
         watch.start("create list");
 
         List<LinkedSection> list = new ArrayList<LinkedSection>();
@@ -278,8 +269,7 @@ public class StickFactory
 
         watch.start("populate starts");
 
-        final int posCount = orientation.isVertical() ? sheet.getWidth()
-                : sheet.getHeight();
+        final int posCount = orientation.isVertical() ? sheet.getWidth() : sheet.getHeight();
         final SectionTally<LinkedSection> tally = new SectionTally<LinkedSection>(posCount, list);
 
         // Detect and record connections
@@ -365,8 +355,8 @@ public class StickFactory
 
         // Discard too thick or too short sections
         for (LinkedSection ls : allSections) {
-            if ((ls.getRunCount() <= params.maxStickThickness)
-                && (ls.getLength(orientation) >= params.minCoreSectionLength)) {
+            if ((ls.getRunCount() <= params.maxStickThickness) && (ls.getLength(orientation)
+                                                                           >= params.minCoreSectionLength)) {
                 if ((predicate == null) || predicate.check(ls)) {
                     candidates.add(ls);
                 }
@@ -382,9 +372,7 @@ public class StickFactory
             public int compare (Section ls1,
                                 Section ls2)
             {
-                return Integer.compare(
-                        ls2.getLength(orientation),
-                        ls1.getLength(orientation));
+                return Integer.compare(ls2.getLength(orientation), ls1.getLength(orientation));
             }
         });
 
@@ -502,8 +490,7 @@ public class StickFactory
                     continue;
                 }
 
-                final int filMeanThickness = (int) Math.rint(
-                        fil.getMeanThickness(orientation));
+                final int filMeanThickness = (int) Math.rint(fil.getMeanThickness(orientation));
 
                 // Determine the section(s) on this side of filament
                 Set<LinkedSection> sideSections = getSideSections(fil, reverse);
@@ -516,8 +503,7 @@ public class StickFactory
                 int count = 0;
 
                 for (LinkedSection sideSection : sideSections) {
-                    Run sideRun = reverse ? sideSection.getFirstRun()
-                            : sideSection.getLastRun();
+                    Run sideRun = reverse ? sideSection.getFirstRun() : sideSection.getLastRun();
                     List<LinkedSection> neighbors = getNeighbors(sideSection, reverse);
 
                     for (Iterator<LinkedSection> it = neighbors.iterator(); it.hasNext();) {
@@ -529,7 +515,7 @@ public class StickFactory
                             final int thickness = neighbor.getRunCount();
 
                             if (((thickness + filMeanThickness) > params.maxStickThickness)
-                                || ((predicate != null) && !predicate.check(neighbor))) {
+                                        || ((predicate != null) && !predicate.check(neighbor))) {
                                 it.remove();
                             } else {
                                 int length = neighbor.getLength(orientation);
@@ -537,11 +523,10 @@ public class StickFactory
                                 total += (thickness * length);
 
                                 Integer contrib = contribs.get(neighbor);
-                                int common = sideRun.getCommonLength(
-                                        reverse ? neighbor.getLastRun() : neighbor.getFirstRun());
-                                contribs.put(
-                                        neighbor,
-                                        (contrib != null) ? (contrib + common) : common);
+                                int common = sideRun.getCommonLength(reverse ? neighbor.getLastRun()
+                                        : neighbor.getFirstRun());
+                                contribs.put(neighbor, (contrib != null) ? (contrib + common)
+                                             : common);
                             }
                         }
                     }
@@ -582,22 +567,18 @@ public class StickFactory
                     finished.put(reverse, Boolean.TRUE); // We can't go any further on this side
                 }
             }
-        } while (grown
-                 && (Math.rint(fil.getMeanThickness(orientation)) < params.maxStickThickness));
+        } while (grown && (Math.rint(fil.getMeanThickness(orientation)) < params.maxStickThickness));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch for StickFactory?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch for StickFactory?");
     }
 
     //------------//
@@ -605,7 +586,6 @@ public class StickFactory
     //------------//
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public final int maxStickThickness;
 
@@ -613,7 +593,6 @@ public class StickFactory
 
         public final double minSideRatio;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Parameters (int maxStickThickness,
                            int minCoreSectionLength,
                            double minSideRatio)

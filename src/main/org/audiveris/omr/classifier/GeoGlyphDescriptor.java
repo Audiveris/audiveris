@@ -32,7 +32,6 @@ import org.audiveris.omr.moments.GeometricMoments;
 public class GeoGlyphDescriptor
         extends GlyphDescriptor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Number of geometric moments used. */
     public static final int MOMENT_COUNT = 10;
@@ -40,7 +39,6 @@ public class GeoGlyphDescriptor
     /** Use the 10 first geometric moments + aspect. */
     private static final int LENGTH = MOMENT_COUNT + 1;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code GeoGlyphDescriptor} object.
      */
@@ -49,7 +47,6 @@ public class GeoGlyphDescriptor
         super("geo");
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public String[] getFeatureLabels ()
     {
@@ -82,18 +79,16 @@ public class GeoGlyphDescriptor
         return LENGTH;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // LabelsHolder //
     //--------------//
     /**
      * Descriptive strings for glyph characteristics.
-     *
+     * <p>
      * NOTA: Keep in sync method {@link #getFeatures}
      */
     private static class LabelsHolder
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         /** Index -> Label */
         public static final String[] labels = new String[LENGTH];
@@ -109,7 +104,6 @@ public class GeoGlyphDescriptor
             /* 10 */ labels[i++] = "aspect";
         }
 
-        //~ Constructors ---------------------------------------------------------------------------
         private LabelsHolder ()
         {
         }

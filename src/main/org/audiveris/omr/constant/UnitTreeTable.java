@@ -57,19 +57,16 @@ import javax.swing.tree.TreePath;
 public class UnitTreeTable
         extends JTreeTable
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(UnitTreeTable.class);
 
     /** Alternate color for zebra appearance */
     private static final Color zebraColor = new Color(248, 248, 255);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final TableCellRenderer valueRenderer = new ValueRenderer();
 
     private final TableCellRenderer pixelRenderer = new PixelRenderer();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a User Interface JTreeTable dedicated to the handling of
      * unit constants.
@@ -99,7 +96,6 @@ public class UnitTreeTable
         preExpandPackages();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getCellEditor //
     //---------------//
@@ -330,14 +326,12 @@ public class UnitTreeTable
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // PixelRenderer //
     //---------------//
     private static class PixelRenderer
             extends DefaultTableCellRenderer
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Component getTableCellRendererComponent (JTable table,
@@ -362,7 +356,6 @@ public class UnitTreeTable
     private static class ValueRenderer
             extends DefaultTableCellRenderer
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Component getTableCellRendererComponent (JTable table,

@@ -53,38 +53,27 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ClefInter
         extends AbstractPitchedInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ClefInter.class);
 
     /** A dummy default clef to be used when no current clef is defined. */
-    private static final ClefInter defaultClef = new ClefInter(
-            null,
-            Shape.G_CLEF,
-            1,
-            null,
-            +2.0,
-            ClefKind.TREBLE);
+    private static final ClefInter defaultClef = new ClefInter(null, Shape.G_CLEF, 1, null, +2.0,
+                                                               ClefKind.TREBLE);
 
-    //~ Enumerations -------------------------------------------------------------------------------
     public static enum ClefKind
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         TREBLE(Shape.G_CLEF, 2),
         BASS(Shape.F_CLEF, -2),
         ALTO(Shape.C_CLEF, 0),
         TENOR(Shape.C_CLEF, -2),
         PERCUSSION(Shape.PERCUSSION_CLEF, 0);
 
-        //~ Instance fields ------------------------------------------------------------------------
         /** Symbol shape class. (regardless of ottava mark if any) */
         public final Shape shape;
 
         /** Pitch of reference line. */
         public final int pitch;
 
-        //~ Constructors ---------------------------------------------------------------------------
         ClefKind (Shape shape,
                   int pitch)
         {
@@ -93,12 +82,10 @@ public class ClefInter
         }
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Kind of the clef. */
     @XmlAttribute
     private ClefKind kind;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a <b>ghost</b> ClefInter object.
      *
@@ -140,7 +127,6 @@ public class ClefInter
         super(null, null, null, null, null, null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//

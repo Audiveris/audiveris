@@ -43,7 +43,6 @@ import java.util.List;
  */
 public abstract class Inters
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /**
      * Comparator to put members first and ensembles last.
@@ -306,7 +305,8 @@ public abstract class Inters
     /**
      * For comparing inter instances by decreasing mean grade.
      */
-    public static final Comparator<Collection<Inter>> byReverseMeanGrade = new Comparator<Collection<Inter>>()
+    public static final Comparator<Collection<Inter>> byReverseMeanGrade
+            = new Comparator<Collection<Inter>>()
     {
         @Override
         public int compare (Collection<Inter> c1,
@@ -319,7 +319,8 @@ public abstract class Inters
     /**
      * For comparing inter instances by decreasing mean contextual grade.
      */
-    public static final Comparator<Collection<Inter>> byReverseMeanContextualGrade = new Comparator<Collection<Inter>>()
+    public static final Comparator<Collection<Inter>> byReverseMeanContextualGrade
+            = new Comparator<Collection<Inter>>()
     {
         @Override
         public int compare (Collection<Inter> c1,
@@ -329,7 +330,6 @@ public abstract class Inters
         }
     };
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getBounds //
     //-----------//
@@ -624,24 +624,20 @@ public abstract class Inters
         return found;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------------//
     // ClassPredicate //
     //----------------//
     public static class ClassPredicate
             implements Predicate<Inter>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Class classe;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ClassPredicate (Class classe)
         {
             this.classe = classe;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean check (Inter inter)
         {
@@ -655,17 +651,14 @@ public abstract class Inters
     public static class ClassesPredicate
             implements Predicate<Inter>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Class[] classes;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ClassesPredicate (Class[] classes)
         {
             this.classes = classes;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean check (Inter inter)
         {

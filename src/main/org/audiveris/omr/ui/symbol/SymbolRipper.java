@@ -72,7 +72,6 @@ import javax.swing.event.ChangeListener;
  */
 public class SymbolRipper
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolRipper.class);
 
@@ -81,7 +80,6 @@ public class SymbolRipper
         UILookAndFeel.setUI(null);
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related frame */
     private final JFrame frame;
 
@@ -176,7 +174,6 @@ public class SymbolRipper
     // y symbol
     private LDoubleField hSym = new LDoubleField(false, "hSym", "h symbol", f);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolRipper object.
      */
@@ -193,9 +190,8 @@ public class SymbolRipper
         SpinnerUtil.setRightAlignment(fontBase);
         SpinnerUtil.fixIntegerList(fontBase);
 
-        fontName.setModel(
-                new SpinnerListModel(
-                        GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
+        fontName.setModel(new SpinnerListModel(GraphicsEnvironment.getLocalGraphicsEnvironment()
+                .getAvailableFontFamilyNames()));
 
         // Initial values
         ///fontName.getSpinner().setValue("MusicalSymbols");
@@ -234,7 +230,6 @@ public class SymbolRipper
         frame.repaint();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getFrame //
     //----------//
@@ -266,9 +261,7 @@ public class SymbolRipper
     //------------//
     private BufferedImage buildImage ()
     {
-        BufferedImage img = (BufferedImage) drawing.createImage(
-                width.getValue(),
-                height.getValue());
+        BufferedImage img = (BufferedImage) drawing.createImage(width.getValue(), height.getValue());
 
         Graphics2D g2 = img.createGraphics();
         g2.setBackground(Color.white);
@@ -418,14 +411,12 @@ public class SymbolRipper
         drawing.revalidate();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Drawing //
     //---------//
     private class Drawing
             extends Panel
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void paintComponent (Graphics g)
@@ -449,19 +440,15 @@ public class SymbolRipper
                 FontRenderContext frc = g2.getFontRenderContext();
                 GlyphVector glyphVector = musicFont.createGlyphVector(frc, string);
 
-                Rectangle rect = glyphVector.getPixelBounds(
-                        frc,
-                        xOffset.getValue(),
-                        yOffset.getValue());
+                Rectangle rect = glyphVector.getPixelBounds(frc, xOffset.getValue(), yOffset
+                                                            .getValue());
                 g.setColor(Color.RED);
                 g2.draw(rect);
 
                 // Debug
                 TextLayout layout = new TextLayout(string, musicFont, frc);
-                logger.debug(
-                        "getAdvance(): {} getVisibleAdvance(): {}",
-                        layout.getAdvance(),
-                        layout.getVisibleAdvance());
+                logger.debug("getAdvance(): {} getVisibleAdvance(): {}", layout.getAdvance(), layout
+                             .getVisibleAdvance());
             }
         }
     }

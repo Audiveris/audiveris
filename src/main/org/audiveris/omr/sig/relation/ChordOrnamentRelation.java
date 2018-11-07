@@ -37,11 +37,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordOrnamentRelation
         extends AbstractConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
@@ -103,33 +101,26 @@ public class ChordOrnamentRelation
         return getYGapMaximum(manual);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio ornamentTargetCoeff = new Constant.Ratio(
-                0.5,
-                "Supporting coeff for (target) ornament");
+        private final Constant.Ratio ornamentTargetCoeff = new Constant.Ratio(0.5,
+                                                                              "Supporting coeff for (target) ornament");
 
-        private final Scale.Fraction xGapMax = new Scale.Fraction(
-                0.75,
-                "Maximum horizontal gap between ornament center & chord");
+        private final Scale.Fraction xGapMax = new Scale.Fraction(0.75,
+                                                                  "Maximum horizontal gap between ornament center & chord");
 
-        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(
-                1.2,
-                "Maximum manual horizontal gap between ornament center & chord");
+        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(1.2,
+                                                                        "Maximum manual horizontal gap between ornament center & chord");
 
-        private final Scale.Fraction yGapMax = new Scale.Fraction(
-                2.0,
-                "Maximum vertical gap between ornament center & chord");
+        private final Scale.Fraction yGapMax = new Scale.Fraction(2.0,
+                                                                  "Maximum vertical gap between ornament center & chord");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
-                3.0,
-                "Maximum manual vertical gap between ornament center & chord");
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(3.0,
+                                                                        "Maximum manual vertical gap between ornament center & chord");
     }
 }

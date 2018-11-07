@@ -37,7 +37,6 @@ import javax.swing.text.DefaultFormatterFactory;
 public class LHexaSpinner
         extends LIntegerSpinner
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create an editable labeled hexa spinner with provided
@@ -53,14 +52,12 @@ public class LHexaSpinner
         spinner.setEditor(new HexaEditor(spinner));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // HexaEditor //
     //------------//
     private static class HexaEditor
             extends JSpinner.NumberEditor
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         HexaEditor (JSpinner spinner)
         {
@@ -71,7 +68,6 @@ public class LHexaSpinner
             ftf.setFormatterFactory(new HexaFormatterFactory());
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void stateChanged (ChangeEvent e)
         {
@@ -86,7 +82,6 @@ public class LHexaSpinner
     private static class HexaFormatter
             extends DefaultFormatter
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Object stringToValue (String string)
@@ -101,8 +96,8 @@ public class LHexaSpinner
                 } else if (value instanceof Long) {
                     return Long.valueOf(string, 16);
                 } else {
-                    throw new IllegalArgumentException(
-                            "Illegal Number class for HexaFormatter " + value.getClass());
+                    throw new IllegalArgumentException("Illegal Number class for HexaFormatter "
+                                                               + value.getClass());
                 }
             } catch (NumberFormatException ex) {
                 throw new ParseException(string, 0);
@@ -127,7 +122,6 @@ public class LHexaSpinner
     private static class HexaFormatterFactory
             extends DefaultFormatterFactory
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public HexaFormatterFactory ()
         {

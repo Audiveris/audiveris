@@ -34,12 +34,10 @@ import java.awt.geom.Rectangle2D;
 public class TextSymbol
         extends ShapeSymbol
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The text string to use */
     private final String str;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an TextSymbol
      *
@@ -67,7 +65,6 @@ public class TextSymbol
         this.str = str;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//

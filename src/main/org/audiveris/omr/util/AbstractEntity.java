@@ -41,12 +41,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class AbstractEntity
         implements Entity
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractEntity.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractEntity.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -63,7 +60,6 @@ public abstract class AbstractEntity
     /** (Debug) flag this as VIP. */
     protected boolean vip;
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // dumpOf //
     //--------//

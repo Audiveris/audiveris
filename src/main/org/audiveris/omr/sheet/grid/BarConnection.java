@@ -38,7 +38,6 @@ import java.awt.geom.Line2D;
 public class BarConnection
         extends BarAlignment
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Physical portion of the connection line, excluding portions within staves. */
     private Area area;
@@ -46,7 +45,6 @@ public class BarConnection
     /** Rather vertical median line. */
     private Line2D median;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarConnection object.
      *
@@ -58,15 +56,10 @@ public class BarConnection
                           double gapImpact,
                           double whiteImpact)
     {
-        super(
-                align.topPeak,
-                align.bottomPeak,
-                align.slope,
-                align.dWidth,
-                new Impacts((BarAlignment.Impacts) align.getImpacts(), gapImpact, whiteImpact));
+        super(align.topPeak, align.bottomPeak, align.slope, align.dWidth, new Impacts(
+              (BarAlignment.Impacts) align.getImpacts(), gapImpact, whiteImpact));
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // equals //
     //--------//
@@ -123,20 +116,17 @@ public class BarConnection
         return super.hashCode();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
             extends BasicImpacts
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{"align", "dWidth", "gap", "white"};
 
         private static final double[] WEIGHTS = new double[]{2, 1, 2, 2};
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double align,
                         double dWidth,
                         double gap,

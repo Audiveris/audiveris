@@ -71,14 +71,11 @@ public abstract class AbstractChordInter
         extends AbstractInter
         implements InterEnsemble
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractChordInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractChordInter.class);
 
     private static final List<AbstractBeamInter> NO_BEAM = Collections.emptyList();
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Transient data
     //---------------
@@ -110,7 +107,6 @@ public abstract class AbstractChordInter
     /** Voice this chord belongs to. */
     protected Voice voice;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AbstractChordInter} object.
      *
@@ -128,7 +124,6 @@ public abstract class AbstractChordInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // getClosestChord //
     //-----------------//
@@ -1129,11 +1124,8 @@ public abstract class AbstractChordInter
                 BeamGroup group = getBeamGroup();
 
                 if (group != null) {
-                    logger.debug(
-                            "{} extending voice#{} to group#{}",
-                            this,
-                            voice.getId(),
-                            group.getId());
+                    logger.debug("{} extending voice#{} to group#{}", this, voice.getId(), group
+                                 .getId());
 
                     group.setVoice(voice);
                 }
@@ -1146,11 +1138,8 @@ public abstract class AbstractChordInter
 
                     // Check the tied chords belong to the same measure
                     if (this.measure == chord.measure) {
-                        logger.debug(
-                                "{} extending voice#{} to tied chord#{}",
-                                this,
-                                voice.getId(),
-                                chord.getId());
+                        logger.debug("{} extending voice#{} to tied chord#{}", this, voice.getId(),
+                                     chord.getId());
 
                         chord.setVoice(voice);
                     } else {
@@ -1160,9 +1149,8 @@ public abstract class AbstractChordInter
                 }
             }
         } else if (this.voice != voice) {
-            logger.warn(
-                    "{} Attempt to reassign voice from " + this.voice.getId() + " to " + voice.getId(),
-                    this);
+            logger.warn("{} Attempt to reassign voice from " + this.voice.getId() + " to " + voice
+                    .getId(), this);
         } else if (!isWholeRest()) {
             if (slot != null) {
                 voice.startChord(slot, this);

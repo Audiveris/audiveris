@@ -38,12 +38,10 @@ import java.util.List;
 public class LineModel
         implements Model
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Underlying line. */
     private final BasicLine line;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LineModel object.
      *
@@ -54,7 +52,6 @@ public class LineModel
         line = new BasicLine(points);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public int above ()
     {
@@ -117,9 +114,8 @@ public class LineModel
         Line2D l = line.toDouble();
         double length = l.getP1().distance(l.getP2());
 
-        return new Point2D.Double(
-                (dir * (l.getX2() - l.getX1())) / length,
-                (dir * (l.getY2() - l.getY1())) / length);
+        return new Point2D.Double((dir * (l.getX2() - l.getX1())) / length, (dir * (l.getY2() - l
+                                  .getY1())) / length);
     }
 
     @Override

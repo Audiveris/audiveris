@@ -43,16 +43,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class TimeNumberInter
         extends AbstractNumberInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Top or bottom. */
     @XmlAttribute
     protected VerticalSide side;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TimeNumberInter object.
      *
@@ -83,7 +80,6 @@ public class TimeNumberInter
         super((Glyph) null, null, 0);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -112,8 +108,9 @@ public class TimeNumberInter
         double pitch = staff.pitchPositionOf(centroid);
         double absPitch = Math.abs(pitch);
 
-        if ((absPitch < constants.minAbsolutePitch.getValue())
-            || (absPitch > constants.maxAbsolutePitch.getValue())) {
+        if ((absPitch < constants.minAbsolutePitch.getValue()) || (absPitch
+                                                                           > constants.maxAbsolutePitch
+                        .getValue())) {
             return null;
         }
 
@@ -153,23 +150,17 @@ public class TimeNumberInter
         return super.internals() + " " + shape;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Double minAbsolutePitch = new Constant.Double(
-                "pitch",
-                1.0,
-                "Minimum absolute pitch value for a time signature number");
+        private final Constant.Double minAbsolutePitch = new Constant.Double("pitch", 1.0,
+                                                                             "Minimum absolute pitch value for a time signature number");
 
-        private final Constant.Double maxAbsolutePitch = new Constant.Double(
-                "pitch",
-                3.0,
-                "Maximum absolute pitch value for a time signature number");
+        private final Constant.Double maxAbsolutePitch = new Constant.Double("pitch", 3.0,
+                                                                             "Maximum absolute pitch value for a time signature number");
     }
 }

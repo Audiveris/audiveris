@@ -30,7 +30,6 @@ package org.audiveris.omr.util;
  */
 public interface Concurrency
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report whether the entity can be used concurrently

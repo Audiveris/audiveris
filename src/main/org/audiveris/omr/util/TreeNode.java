@@ -39,11 +39,9 @@ import java.util.List;
  */
 public abstract class TreeNode
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TreeNode.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Children : the list of nodes just below in the tree
      */
@@ -55,7 +53,6 @@ public abstract class TreeNode
     @Navigable(false)
     protected TreeNode parent;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a node in the tree, given its parent.
      *
@@ -70,7 +67,6 @@ public abstract class TreeNode
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addChild //
     //----------//

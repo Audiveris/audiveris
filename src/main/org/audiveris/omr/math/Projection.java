@@ -28,7 +28,6 @@ package org.audiveris.omr.math;
  */
 public interface Projection
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report a simplistic derivative value at 'pos' point
@@ -83,7 +82,6 @@ public interface Projection
     void increment (int pos,
                     int inc);
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Integer //
     //---------//
@@ -93,11 +91,9 @@ public interface Projection
     public static class Integer
             extends Abstract
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final int[] data;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Projection.Integer object.
          *
@@ -111,7 +107,6 @@ public interface Projection
             data = new int[getLength()];
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public final int getValue (int pos)
         {
@@ -141,11 +136,9 @@ public interface Projection
     public static class Short
             extends Abstract
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final short[] data;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Projection.Short object.
          *
@@ -159,7 +152,6 @@ public interface Projection
             data = new short[getLength()];
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public final int getValue (int pos)
         {
@@ -186,7 +178,6 @@ public interface Projection
     public abstract class Abstract
             implements Projection
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** First point on projection axis. */
         protected final int start;
@@ -194,7 +185,6 @@ public interface Projection
         /** Last point on projection axis. */
         protected final int stop;
 
-        //~ Constructors ---------------------------------------------------------------------------
         protected Abstract (int start,
                             int stop)
         {
@@ -202,7 +192,6 @@ public interface Projection
             this.stop = stop;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public final int getDerivative (int pos)
         {

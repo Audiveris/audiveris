@@ -36,11 +36,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class FermataBarRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -68,17 +66,14 @@ public class FermataBarRelation
         return constants.fermataSupportCoeff.getValue();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio fermataSupportCoeff = new Constant.Ratio(
-                5,
-                "Supporting coeff for (source) fermata");
+        private final Constant.Ratio fermataSupportCoeff = new Constant.Ratio(5,
+                                                                              "Supporting coeff for (source) fermata");
     }
 }

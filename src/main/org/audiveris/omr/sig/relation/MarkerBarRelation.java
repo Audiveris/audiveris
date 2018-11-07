@@ -36,11 +36,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class MarkerBarRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -68,17 +66,14 @@ public class MarkerBarRelation
         return constants.markerSupportCoeff.getValue();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio markerSupportCoeff = new Constant.Ratio(
-                3,
-                "Supporting coeff for (source) marker");
+        private final Constant.Ratio markerSupportCoeff = new Constant.Ratio(3,
+                                                                             "Supporting coeff for (source) marker");
     }
 }

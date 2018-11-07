@@ -214,7 +214,6 @@ import javax.xml.bind.JAXBException;
  */
 public class PartwiseBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -244,13 +243,12 @@ public class PartwiseBuilder
             constants.pageHorizontalMargin.getValue());
 
     /** Default page vertical margin. */
-    private static final BigDecimal pageVerticalMargin = new BigDecimal(
-            constants.pageVerticalMargin.getValue());
+    private static final BigDecimal pageVerticalMargin = new BigDecimal(constants.pageVerticalMargin
+            .getValue());
 
     /** Should be 6, but is 12 to cope with slurs not closed for lack of time slot. */
     private static final int MAX_SLUR_NUMBER = 12;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The ScorePartwise instance to be populated. */
     private final ScorePartwise scorePartwise = new ScorePartwise();
 
@@ -275,7 +273,6 @@ public class PartwiseBuilder
     /** Factory for ProxyMusic entities. */
     private final ObjectFactory factory = new ObjectFactory();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new PartwiseBuilder object, on a related score instance.
      *
@@ -284,7 +281,8 @@ public class PartwiseBuilder
      * @throws ExecutionException   if a checked exception was thrown
      */
     private PartwiseBuilder (Score score)
-            throws InterruptedException, ExecutionException
+            throws InterruptedException,
+                   ExecutionException
     {
         // Make sure the JAXB context is ready
         loading.get();
@@ -292,7 +290,6 @@ public class PartwiseBuilder
         this.score = score;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // build //
     //-------//
@@ -305,7 +302,8 @@ public class PartwiseBuilder
      * @throws ExecutionException   if a checked exception was thrown
      */
     public static ScorePartwise build (Score score)
-            throws InterruptedException, ExecutionException
+            throws InterruptedException,
+                   ExecutionException
     {
         Objects.requireNonNull(score, "Trying to export a null score");
 
@@ -348,10 +346,10 @@ public class PartwiseBuilder
     private static boolean areEqual (Clef left,
                                      Clef right)
     {
-        return Objects.equals(left.getNumber(), right.getNumber())
-               && Objects.equals(left.getSign(), right.getSign())
-               && Objects.equals(left.getLine(), right.getLine())
-               && Objects.equals(left.getClefOctaveChange(), right.getClefOctaveChange());
+        return Objects.equals(left.getNumber(), right.getNumber()) && Objects.equals(left.getSign(),
+                                                                                     right.getSign())
+               && Objects.equals(left.getLine(), right.getLine()) && Objects.equals(left
+                .getClefOctaveChange(), right.getClefOctaveChange());
     }
 
     //---------//
@@ -373,9 +371,8 @@ public class PartwiseBuilder
         }
 
         // Type
-        pmSlur.setType(
-                continuation ? StartStopContinue.CONTINUE
-                        : ((side == LEFT) ? StartStopContinue.START : StartStopContinue.STOP));
+        pmSlur.setType(continuation ? StartStopContinue.CONTINUE : ((side == LEFT)
+                ? StartStopContinue.START : StartStopContinue.STOP));
 
         // Placement
         if (side == LEFT) {
@@ -492,8 +489,8 @@ public class PartwiseBuilder
 
         PartName partName = factory.createPartName();
         pmScorePart.setPartName(partName);
-        partName.setValue(
-                (logicalPart.getName() != null) ? logicalPart.getName() : logicalPart.getDefaultName());
+        partName.setValue((logicalPart.getName() != null) ? logicalPart.getName() : logicalPart
+                .getDefaultName());
 
         // Score instrument
         Integer midiProgram = logicalPart.getMidiProgram();
@@ -871,8 +868,8 @@ public class PartwiseBuilder
             Arpeggiate pmArpeggiate = factory.createArpeggiate();
 
             // relative-x
-            pmArpeggiate.setRelativeX(
-                    toTenths(arpeggiate.getCenter().x - current.note.getCenterLeft().x));
+            pmArpeggiate.setRelativeX(toTenths(arpeggiate.getCenter().x - current.note
+                    .getCenterLeft().x));
 
             // number ???
             // TODO
@@ -900,10 +897,10 @@ public class PartwiseBuilder
             Class<?> classe = element.getDeclaredType();
 
             Method method = classe.getMethod("setPlacement", AboveBelow.class);
-            method.invoke(
-                    element.getValue(),
-                    (articulation.getCenter().y < current.note.getCenter().y) ? AboveBelow.ABOVE
-                    : AboveBelow.BELOW);
+            method.invoke(element.getValue(), (articulation.getCenter().y
+                                                       < current.note.getCenter().y)
+                          ? AboveBelow.ABOVE
+                          : AboveBelow.BELOW);
 
             // Default-Y
             method = classe.getMethod("setDefaultY", BigDecimal.class);
@@ -940,11 +937,10 @@ public class PartwiseBuilder
             final MeasureStack stack = current.measure.getStack();
             final PartBarline.Style style = partBarline.getStyle();
             final List<FermataInter> fermatas = partBarline.getFermatas(); // Top down list
-            final EndingInter ending = partBarline.getEnding(
-                    (location == RightLeftMiddle.RIGHT) ? RIGHT : LEFT);
+            final EndingInter ending = partBarline.getEnding((location == RightLeftMiddle.RIGHT)
+                    ? RIGHT : LEFT);
             final String endingValue = (ending != null) ? ending.getValue() : null;
-            String endingNumber = (ending != null) ? ending.getExportedNumber()
-                    : null;
+            String endingNumber = (ending != null) ? ending.getExportedNumber() : null;
 
             if (endingNumber == null) {
                 endingNumber = "99"; // Dummy integer value to mean: unknown
@@ -957,23 +953,23 @@ public class PartwiseBuilder
             // Specific barline on left side:
             needed |= (partBarline == current.measure.getLeftPartBarline());
             // On left side, with stuff (left repeat, left ending):
-            needed |= ((location == RightLeftMiddle.LEFT)
-                       && (stack.isRepeat(LEFT) || (ending != null)));
+            needed |= ((location == RightLeftMiddle.LEFT) && (stack.isRepeat(LEFT) || (ending
+                                                                                               != null)));
             // Specific barline on middle location:
             needed |= (location == RightLeftMiddle.MIDDLE);
             // On right side, but with stuff (right repeat, right ending, fermata) or non regular:
-            needed |= ((location == RightLeftMiddle.RIGHT)
-                       && (stack.isRepeat(RIGHT) || (ending != null) || !fermatas.isEmpty()
-                           || (style != PartBarline.Style.REGULAR)));
+            needed |= ((location == RightLeftMiddle.RIGHT) && (stack.isRepeat(RIGHT) || (ending
+                                                                                                 != null)
+                                                               || !fermatas.isEmpty() || (style
+                                                                                                  != PartBarline.Style.REGULAR)));
 
             if (needed) {
                 try {
                     logger.debug("Visiting {} on {}", partBarline, location);
 
                     final Barline pmBarline = factory.createBarline();
-                    pmBarline.setLocation(
-                            (location == RightLeftMiddle.RIGHT) ? RightLeftMiddle.RIGHT
-                                    : RightLeftMiddle.LEFT);
+                    pmBarline.setLocation((location == RightLeftMiddle.RIGHT)
+                            ? RightLeftMiddle.RIGHT : RightLeftMiddle.LEFT);
 
                     BarStyleColor barStyleColor = factory.createBarStyleColor();
                     barStyleColor.setValue(barStyleOf(style, location));
@@ -1037,8 +1033,8 @@ public class PartwiseBuilder
                             }
 
                             // Pick up last inverted fermata if any.
-                            for (ListIterator<FermataInter> it = fermatas.listIterator(
-                                    fermatas.size()); it.hasPrevious();) {
+                            for (ListIterator<FermataInter> it = fermatas.listIterator(fermatas
+                                    .size()); it.hasPrevious();) {
                                 FermataInter f = it.previous();
 
                                 if (f.getShape() == Shape.FERMATA_BELOW) {
@@ -1086,9 +1082,8 @@ public class PartwiseBuilder
                 Part part = current.measure.getPart();
                 Measure topMeasure = current.measure.getStack().getFirstMeasure();
                 PartBarline topPartBarline = getBarlineOnLeft(topMeasure);
-                StaffBarlineInter topBarline = topPartBarline.getStaffBarline(
-                        part,
-                        part.getFirstStaff());
+                StaffBarlineInter topBarline = topPartBarline.getStaffBarline(part, part
+                                                                              .getFirstStaff());
 
                 for (Inter marker : topBarline.getRelatedInters(MarkerBarRelation.class)) {
                     processMarker((MarkerInter) marker);
@@ -1149,8 +1144,8 @@ public class PartwiseBuilder
             insertStaffId(direction, staff);
 
             // Placement
-            direction.setPlacement(
-                    (location.y < current.note.getCenter().y) ? AboveBelow.ABOVE : AboveBelow.BELOW);
+            direction.setPlacement((location.y < current.note.getCenter().y) ? AboveBelow.ABOVE
+                    : AboveBelow.BELOW);
 
             // default-y
             pmWords.setDefaultY(yOf(location, staff));
@@ -1360,8 +1355,7 @@ public class PartwiseBuilder
             pmFermata.setDefaultY(yOf(dot, current.note.getStaff()));
 
             // Type
-            pmFermata.setType(
-                    (fermata.getShape() == Shape.FERMATA) ? UprightInverted.UPRIGHT
+            pmFermata.setType((fermata.getShape() == Shape.FERMATA) ? UprightInverted.UPRIGHT
                     : UprightInverted.INVERTED);
 
             // Everything is now OK
@@ -1660,14 +1654,12 @@ public class PartwiseBuilder
             // Divisions?
             if (isPageFirstMeasure) {
                 try {
-                    getAttributes()
-                            .setDivisions(
-                                    new BigDecimal(current.page.simpleDurationOf(QUARTER_DURATION)));
+                    getAttributes().setDivisions(new BigDecimal(current.page.simpleDurationOf(
+                            QUARTER_DURATION)));
                 } catch (Exception ex) {
                     if (current.page.getDurationDivisor() == null) {
-                        logger.warn(
-                                "Not able to infer division value for part {}",
-                                current.logicalPart.getPid());
+                        logger.warn("Not able to infer division value for part {}",
+                                    current.logicalPart.getPid());
                     } else {
                         logger.warn("Error on divisions", ex);
                     }
@@ -1746,8 +1738,7 @@ public class PartwiseBuilder
                     for (Slot slot : stack.getSlots()) {
                         Voice.SlotVoice info = voice.getSlotInfo(slot);
 
-                        if ((info != null)
-                            && // Skip free slots
+                        if ((info != null) && // Skip free slots
                                 (info.status == Voice.Status.BEGIN)) {
                             AbstractChordInter chord = info.chord;
                             clefIters.push(slot.getXOffset(), chord.getTopStaff());
@@ -1951,17 +1942,17 @@ public class PartwiseBuilder
             // Default-x (use left side of the note wrt measure)
             if (!current.measure.isDummy()) {
                 int noteLeft = note.getCenterLeft().x;
-                current.pmNote.setDefaultX(
-                        toTenths(noteLeft - current.measure.getAbscissa(LEFT, staff)));
+                current.pmNote.setDefaultX(toTenths(noteLeft - current.measure.getAbscissa(LEFT,
+                                                                                           staff)));
             }
 
             // Tuplet factor?
             if (chord.getTupletFactor() != null) {
                 TimeModification timeModification = factory.createTimeModification();
-                timeModification.setActualNotes(
-                        new BigInteger("" + chord.getTupletFactor().actualDen));
-                timeModification.setNormalNotes(
-                        new BigInteger("" + chord.getTupletFactor().actualNum));
+                timeModification.setActualNotes(new BigInteger(""
+                                                                       + chord.getTupletFactor().actualDen));
+                timeModification.setNormalNotes(new BigInteger(""
+                                                                       + chord.getTupletFactor().actualNum));
 
                 TupletInter tuplet = chord.getTuplet();
                 Rational chordDur = chord.getDurationSansDotOrTuplet();
@@ -2129,10 +2120,8 @@ public class PartwiseBuilder
             // Placement?
             Class<?> classe = element.getDeclaredType();
             Method method = classe.getMethod("setPlacement", AboveBelow.class);
-            method.invoke(
-                    element.getValue(),
-                    (ornament.getCenter().y < current.note.getCenter().y) ? AboveBelow.ABOVE
-                    : AboveBelow.BELOW);
+            method.invoke(element.getValue(), (ornament.getCenter().y < current.note.getCenter().y)
+                          ? AboveBelow.ABOVE : AboveBelow.BELOW);
             // Everything is OK
             // Include in ornaments
             getOrnaments().getTrillMarkOrTurnOrDelayedTurn().add(element);
@@ -2171,7 +2160,8 @@ public class PartwiseBuilder
         scorePartwise.setPartList(partList);
 
         // Allocate & initialize a ScorePart instance for each logical part
-        Map<LogicalPart, ScorePartwise.Part> partMap = new LinkedHashMap<LogicalPart, ScorePartwise.Part>();
+        Map<LogicalPart, ScorePartwise.Part> partMap
+                = new LinkedHashMap<LogicalPart, ScorePartwise.Part>();
 
         for (LogicalPart p : score.getLogicalParts()) {
             ScorePartwise.Part pmPart = createScorePart(p);
@@ -2229,8 +2219,8 @@ public class PartwiseBuilder
             pmPedal.setDefaultY(yOf(refPoint, staff));
 
             // Placement
-            direction.setPlacement(
-                    (refPoint.y < current.note.getCenter().y) ? AboveBelow.ABOVE : AboveBelow.BELOW);
+            direction.setPlacement((refPoint.y < current.note.getCenter().y) ? AboveBelow.ABOVE
+                    : AboveBelow.BELOW);
 
             // Everything is OK
             directionType.setPedal(pmPedal);
@@ -2277,9 +2267,8 @@ public class PartwiseBuilder
                 scorePartwise.setIdentification(identification);
 
                 // [Encoding]/Software
-                encoding.getEncodingDateOrEncoderOrSoftware().add(
-                        factory.createEncodingSoftware(
-                                WellKnowns.TOOL_NAME + " " + WellKnowns.TOOL_REF));
+                encoding.getEncodingDateOrEncoderOrSoftware().add(factory.createEncodingSoftware(
+                        WellKnowns.TOOL_NAME + " " + WellKnowns.TOOL_REF));
 
                 // [Encoding]/EncodingDate
                 // Let the Marshalling class handle it
@@ -2291,8 +2280,8 @@ public class PartwiseBuilder
                     supports.setElement("print");
                     supports.setType(YesNo.YES);
                     supports.setValue("yes");
-                    encoding.getEncodingDateOrEncoderOrSoftware().add(
-                            factory.createEncodingSupports(supports));
+                    encoding.getEncodingDateOrEncoderOrSoftware().add(factory
+                            .createEncodingSupports(supports));
                 }
 
                 identification.setEncoding(encoding);
@@ -2311,9 +2300,9 @@ public class PartwiseBuilder
                     Scaling scaling = factory.createScaling();
                     defaults.setScaling(scaling);
                     // Assuming 300 DPI
-                    scaling.setMillimeters(
-                            new BigDecimal(
-                                    String.format("%.4f", (current.scale.getInterline() * 25.4 * 4) / 300)));
+                    scaling.setMillimeters(new BigDecimal(String.format("%.4f", (current.scale
+                                                                        .getInterline() * 25.4 * 4)
+                                                                                        / 300)));
                     scaling.setTenths(new BigDecimal(40));
 
                     // [Defaults]/PageLayout (using first page)
@@ -2335,8 +2324,8 @@ public class PartwiseBuilder
                 Font lyricFont = org.audiveris.omr.ui.symbol.TextFont.baseTextFont;
                 LyricFont pmLyricFont = factory.createLyricFont();
                 pmLyricFont.setFontFamily(lyricFont.getName());
-                pmLyricFont.setFontSize(
-                        "" + org.audiveris.omr.ui.symbol.TextFont.baseTextFont.getSize());
+                pmLyricFont.setFontSize("" + org.audiveris.omr.ui.symbol.TextFont.baseTextFont
+                        .getSize());
 
                 if (lyricFont.isItalic()) {
                     pmLyricFont.setFontStyle(FontStyle.ITALIC);
@@ -2692,15 +2681,13 @@ public class PartwiseBuilder
 
             // Placement (for start only)
             if (tuplet.getChords().get(0) == current.note.getChord()) {
-                pmTuplet.setPlacement(
-                        (tuplet.getCenter().y <= current.note.getCenter().y) ? AboveBelow.ABOVE
-                        : AboveBelow.BELOW);
+                pmTuplet.setPlacement((tuplet.getCenter().y <= current.note.getCenter().y)
+                        ? AboveBelow.ABOVE : AboveBelow.BELOW);
             }
 
             // Type
-            pmTuplet.setType(
-                    (tuplet.getChords().get(0) == current.note.getChord()) ? StartStop.START
-                    : StartStop.STOP);
+            pmTuplet.setType((tuplet.getChords().get(0) == current.note.getChord())
+                    ? StartStop.START : StartStop.STOP);
 
             // Number
             Integer num = tupletNumbers.get(tuplet);
@@ -2752,19 +2739,17 @@ public class PartwiseBuilder
             if (side == LEFT) {
                 Point2D top = wedge.getLine1().getP1();
                 Point2D bot = wedge.getLine2().getP1();
-                refPoint = new Point2D.Double(
-                        (top.getX() + bot.getX()) / 2.0,
-                        (top.getY() + bot.getY()) / 2.0);
+                refPoint = new Point2D.Double((top.getX() + bot.getX()) / 2.0, (top.getY() + bot
+                                              .getY()) / 2.0);
 
                 // Type
                 Shape shape = wedge.getShape();
-                pmWedge.setType(
-                        (shape == Shape.CRESCENDO) ? WedgeType.CRESCENDO : WedgeType.DIMINUENDO);
+                pmWedge.setType((shape == Shape.CRESCENDO) ? WedgeType.CRESCENDO
+                        : WedgeType.DIMINUENDO);
 
                 // Placement
-                direction.setPlacement(
-                        (refPoint.getY() < current.note.getCenter().y) ? AboveBelow.ABOVE
-                        : AboveBelow.BELOW);
+                direction.setPlacement((refPoint.getY() < current.note.getCenter().y)
+                        ? AboveBelow.ABOVE : AboveBelow.BELOW);
 
                 // default-y
                 pmWedge.setDefaultY(yOf(refPoint, staff));
@@ -2773,9 +2758,8 @@ public class PartwiseBuilder
 
                 Point2D top = wedge.getLine1().getP2();
                 Point2D bot = wedge.getLine2().getP2();
-                refPoint = new Point2D.Double(
-                        (top.getX() + bot.getX()) / 2.0,
-                        (top.getY() + bot.getY()) / 2.0);
+                refPoint = new Point2D.Double((top.getX() + bot.getX()) / 2.0, (top.getY() + bot
+                                              .getY()) / 2.0);
             }
 
             // default-x using note left side (No offset for the time being)
@@ -2855,28 +2839,21 @@ public class PartwiseBuilder
         return toTenths(staffTopY - point.getY());
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Integer pageHorizontalMargin = new Constant.Integer(
-                "tenths",
-                80,
-                "Page horizontal margin");
+        private final Constant.Integer pageHorizontalMargin = new Constant.Integer("tenths", 80,
+                                                                                   "Page horizontal margin");
 
-        private final Constant.Integer pageVerticalMargin = new Constant.Integer(
-                "tenths",
-                80,
-                "Page vertical margin");
+        private final Constant.Integer pageVerticalMargin = new Constant.Integer("tenths", 80,
+                                                                                 "Page vertical margin");
 
-        private final Constant.Boolean avoidTupletBrackets = new Constant.Boolean(
-                false,
-                "Should we avoid brackets for all tuplets");
+        private final Constant.Boolean avoidTupletBrackets = new Constant.Boolean(false,
+                                                                                  "Should we avoid brackets for all tuplets");
     }
 
     //---------------//
@@ -2890,7 +2867,6 @@ public class PartwiseBuilder
      */
     private class ClefIterators
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Containing measure. */
         private final Measure measure;
@@ -2901,7 +2877,6 @@ public class PartwiseBuilder
         /** Per staff, iterator on Clefs sorted by abscissa. */
         private final Map<Staff, ListIterator<ClefInter>> iters;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ClefIterators (Measure measure)
         {
             this.measure = measure;
@@ -2931,7 +2906,6 @@ public class PartwiseBuilder
             }
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Push as far as possible the relevant clefs iterators, according to the
          * current abscissa offset.
@@ -2956,7 +2930,7 @@ public class PartwiseBuilder
                             final ClefInter clef = it.next();
 
                             if (measure.isDummy() /// || measure.isTemporary()
-                                || (stack.getXOffset(clef.getCenter(), theStaff) <= xOffset)) {
+                                        || (stack.getXOffset(clef.getCenter(), theStaff) <= xOffset)) {
                                 // Consume this clef
                                 processClef(clef);
                             } else {
@@ -2983,7 +2957,6 @@ public class PartwiseBuilder
     /** Keep references of all current entities. */
     private static class Current
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // Score dependent
         Work pmWork;
@@ -3019,7 +2992,6 @@ public class PartwiseBuilder
 
         Notations pmNotations;
 
-        //~ Methods --------------------------------------------------------------------------------
         // Cleanup at end of measure
         void endMeasure ()
         {
@@ -3055,7 +3027,6 @@ public class PartwiseBuilder
     /** Composite flag to help drive processing of any entity. */
     private static class IsFirst
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** We are writing the first part of the score */
         boolean part;
@@ -3069,7 +3040,6 @@ public class PartwiseBuilder
         /** We are writing the first measure in current system (in current logicalPart) */
         boolean measure;
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public java.lang.String toString ()
         {
@@ -3103,7 +3073,6 @@ public class PartwiseBuilder
      */
     private class MeasurePrint
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Measure measure;
 
@@ -3112,7 +3081,6 @@ public class PartwiseBuilder
         /** Needed to remove the element if not actually used. */
         private boolean used = false;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public MeasurePrint (Measure measure)
         {
             this.measure = measure;
@@ -3123,7 +3091,6 @@ public class PartwiseBuilder
             current.pmMeasure.getNoteOrBackupOrForward().add(pmPrint);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public void process ()
         {
             populatePrint();
@@ -3160,22 +3127,22 @@ public class PartwiseBuilder
                 // SystemMargins
                 SystemMargins systemMargins = factory.createSystemMargins();
                 systemLayout.setSystemMargins(systemMargins);
-                systemMargins.setLeftMargin(
-                        toTenths(current.system.getLeft()).subtract(pageHorizontalMargin));
-                systemMargins.setRightMargin(
-                        toTenths(
-                                current.page.getDimension().width - current.system.getLeft()
-                                - current.system.getWidth()).subtract(pageHorizontalMargin));
+                systemMargins.setLeftMargin(toTenths(current.system.getLeft()).subtract(
+                        pageHorizontalMargin));
+                systemMargins.setRightMargin(toTenths(current.page.getDimension().width
+                                                              - current.system.getLeft()
+                                                              - current.system
+                                .getWidth()).subtract(pageHorizontalMargin));
 
                 if (isFirst.system) {
                     // TopSystemDistance
-                    systemLayout.setTopSystemDistance(
-                            toTenths(current.system.getTop()).subtract(pageVerticalMargin));
+                    systemLayout.setTopSystemDistance(toTenths(current.system.getTop()).subtract(
+                            pageVerticalMargin));
                 } else {
                     // SystemDistance
                     SystemInfo prevSystem = current.system.getPrecedingInPage();
-                    systemLayout.setSystemDistance(
-                            toTenths(current.system.getTop() - prevSystem.getBottom()));
+                    systemLayout.setSystemDistance(toTenths(current.system.getTop() - prevSystem
+                            .getBottom()));
                 }
 
                 getPrint().setSystemLayout(systemLayout);
@@ -3189,22 +3156,21 @@ public class PartwiseBuilder
                     if (!isFirst.part || (staff.getIndexInPart() > 0)) {
                         try {
                             StaffLayout staffLayout = factory.createStaffLayout();
-                            staffLayout.setNumber(
-                                    new BigInteger("" + (1 + staff.getIndexInPart())));
+                            staffLayout.setNumber(new BigInteger("" + (1 + staff.getIndexInPart())));
 
                             int staffIndexInSystem = system.getStaves().indexOf(staff);
 
                             if (staffIndexInSystem > 0) {
                                 Staff staffAbove = system.getStaves().get(staffIndexInSystem - 1);
-                                staffLayout.setStaffDistance(
-                                        toTenths(staff.getLeftY(TOP) - staffAbove.getLeftY(BOTTOM)));
+                                staffLayout.setStaffDistance(toTenths(staff.getLeftY(TOP)
+                                                                              - staffAbove.getLeftY(
+                                                BOTTOM)));
                                 getPrint().getStaffLayout().add(staffLayout);
                             }
                         } catch (Exception ex) {
-                            logger.warn(
-                                    "Error exporting staff layout system#" + current.system.getId()
-                                    + " part#" + current.logicalPart.getId() + " staff#" + staff.getId(),
-                                    ex);
+                            logger.warn("Error exporting staff layout system#" + current.system
+                                    .getId() + " part#" + current.logicalPart.getId() + " staff#"
+                                                + staff.getId(), ex);
                         }
                     }
                 }

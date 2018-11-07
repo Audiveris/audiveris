@@ -33,24 +33,19 @@ import java.util.Set;
  */
 public interface OCR
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Standard NO_OCR message: {@value}. */
     static String NO_OCR = "No OCR is available!";
 
-    //~ Enumerations -------------------------------------------------------------------------------
     /** Handling of image layout. */
     enum LayoutMode
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /** Automatic discovery of multi block layout */
         MULTI_BLOCK,
         /** No layout processing, a single block is assumed */
         SINGLE_BLOCK;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //
     /**
      * Report the set of supported language codes
@@ -94,14 +89,12 @@ public interface OCR
                               LayoutMode layoutMode,
                               String label);
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     /**
      * Exception used to signal that no OCR is actually available.
      */
     static class UnavailableOcrException
             extends RuntimeException
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public UnavailableOcrException (String msg)
         {

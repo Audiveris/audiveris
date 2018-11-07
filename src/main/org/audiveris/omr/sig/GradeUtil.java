@@ -33,11 +33,9 @@ import java.util.Objects;
  */
 public class GradeUtil
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GradeUtil.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // clamp //
     //-------//

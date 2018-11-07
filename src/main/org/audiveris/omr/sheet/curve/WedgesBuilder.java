@@ -55,13 +55,11 @@ import java.util.List;
  */
 public class WedgesBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(WedgesBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
     protected final Sheet sheet;
@@ -72,7 +70,6 @@ public class WedgesBuilder
     /** Scale-dependent parameters. */
     private final Parameters params;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new WedgesBuilder object.
      *
@@ -85,7 +82,6 @@ public class WedgesBuilder
         params = new Parameters(sheet.getScale());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // buildWedges //
     //-------------//
@@ -221,9 +217,8 @@ public class WedgesBuilder
         staff.getSystem().getSig().addVertex(inter);
 
         // Build the underlying glyph as the compound of the two segments glyphs
-        inter.setGlyph(
-                sheet.getGlyphIndex().registerOriginal(
-                        GlyphFactory.buildGlyph(Arrays.asList(s1.getGlyph(), s2.getGlyph()))));
+        inter.setGlyph(sheet.getGlyphIndex().registerOriginal(GlyphFactory.buildGlyph(Arrays.asList(
+                s1.getGlyph(), s2.getGlyph()))));
 
         return inter;
     }
@@ -235,46 +230,35 @@ public class WedgesBuilder
                                boolean reverse)
     {
         Point end = segment.getEnd(reverse);
-        Rectangle rect = new Rectangle(
-                reverse ? end.x : (end.x - params.closedMaxDx + 1),
-                end.y,
-                params.closedMaxDx,
-                0);
+        Rectangle rect = new Rectangle(reverse ? end.x : (end.x - params.closedMaxDx + 1), end.y,
+                                       params.closedMaxDx, 0);
         rect.grow(0, (1 + params.closedMaxDy) / 2);
         segment.addAttachment(reverse ? "<" : ">", rect);
 
         return rect;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction closedMaxDx = new Scale.Fraction(
-                0.2,
-                "Maximum abscissa gap between segments ends on closed side");
+        private final Scale.Fraction closedMaxDx = new Scale.Fraction(0.2,
+                                                                      "Maximum abscissa gap between segments ends on closed side");
 
-        private final Scale.Fraction closedMaxDy = new Scale.Fraction(
-                0.5,
-                "Maximum ordinate gap between segments ends on closed side");
+        private final Scale.Fraction closedMaxDy = new Scale.Fraction(0.5,
+                                                                      "Maximum ordinate gap between segments ends on closed side");
 
-        private final Scale.Fraction openMinDyLow = new Scale.Fraction(
-                0.5,
-                "Low minimum ordinate gap between segments ends on open side");
+        private final Scale.Fraction openMinDyLow = new Scale.Fraction(0.5,
+                                                                       "Low minimum ordinate gap between segments ends on open side");
 
-        private final Scale.Fraction openMinDyHigh = new Scale.Fraction(
-                1.5,
-                "High minimum ordinate gap between segments ends on open side");
+        private final Scale.Fraction openMinDyHigh = new Scale.Fraction(1.5,
+                                                                        "High minimum ordinate gap between segments ends on open side");
 
-        private final Constant.Double openMaxBias = new Constant.Double(
-                "degrees",
-                20,
-                "Maximum vertical bias (in degrees) between segments ends on open side");
+        private final Constant.Double openMaxBias = new Constant.Double("degrees", 20,
+                                                                        "Maximum vertical bias (in degrees) between segments ends on open side");
     }
 
     //------------//
@@ -285,7 +269,6 @@ public class WedgesBuilder
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int closedMaxDx;
 
@@ -297,7 +280,6 @@ public class WedgesBuilder
 
         final double openMaxBias;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
             closedMaxDx = scale.toPixels(constants.closedMaxDx);

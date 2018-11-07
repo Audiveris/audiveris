@@ -65,7 +65,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * On the diagram shown, slots are indicated by vertical blue lines.</p>
  * <p>
  * The slot embraces all the staves of the system.
- *
+ * <p>
  * <div style="float: right;">
  * <img src="doc-files/Slot.png" alt="diagram">
  * </div>
@@ -77,12 +77,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class Slot
         implements Comparable<Slot>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Slot.class);
+    private static final Logger logger = LoggerFactory.getLogger(Slot.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -114,7 +111,6 @@ public class Slot
     /** Chords incoming into this slot, sorted by ordinate. */
     private List<AbstractChordInter> incomings;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Slot object.
      *
@@ -145,7 +141,6 @@ public class Slot
         this.id = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // afterReload //
     //-------------//
@@ -464,9 +459,8 @@ public class Slot
                 voice.updateSlotTable();
             }
         } else if (!this.timeOffset.equals(timeOffset)) {
-            logger.warn(
-                    "Reassigning timeOffset from " + this.timeOffset + " to " + timeOffset + " in "
-                    + this);
+            logger.warn("Reassigning timeOffset from " + this.timeOffset + " to " + timeOffset
+                                + " in " + this);
 
             failed = true;
         }
@@ -553,10 +547,12 @@ public class Slot
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("slot#").append(getId()).append(" start=")
-                .append(String.format("%5s", getTimeOffset())).append(" [");
+        sb.append("slot#").append(getId()).append(" start=").append(String.format("%5s",
+                                                                                  getTimeOffset()))
+                .append(" [");
 
-        SortedMap<Integer, AbstractChordInter> voiceChords = new TreeMap<Integer, AbstractChordInter>();
+        SortedMap<Integer, AbstractChordInter> voiceChords
+                = new TreeMap<Integer, AbstractChordInter>();
 
         for (AbstractChordInter chord : getChords()) {
             voiceChords.put(chord.getVoice().getId(), chord);
@@ -684,10 +680,10 @@ public class Slot
         // Try to map some free ending voices to some rookies
         if ((partFreeEndings != null) && !partFreeEndings.isEmpty()) {
             final Scale scale = stack.getSystem().getSheet().getScale();
-            final InjectionSolver solver = new InjectionSolver(
-                    partRookies.size(),
-                    partFreeEndings.size() + partRookies.size(),
-                    new MyDistance(partRookies, partFreeEndings, scale));
+            final InjectionSolver solver = new InjectionSolver(partRookies.size(), partFreeEndings
+                                                               .size() + partRookies.size(),
+                                                               new MyDistance(partRookies,
+                                                                              partFreeEndings, scale));
             final int[] links = solver.solve();
 
             for (int i = 0; i < links.length; i++) {
@@ -726,7 +722,8 @@ public class Slot
      */
     private Map<Part, List<AbstractChordInter>> buildPartMap (List<AbstractChordInter> stackChords)
     {
-        Map<Part, List<AbstractChordInter>> map = new LinkedHashMap<Part, List<AbstractChordInter>>();
+        Map<Part, List<AbstractChordInter>> map
+                = new LinkedHashMap<Part, List<AbstractChordInter>>();
 
         for (AbstractChordInter ch : stackChords) {
             Part part = ch.getPart();
@@ -763,7 +760,6 @@ public class Slot
         xOffset = (int) Math.rint(stack.getXOffset(ref));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //------------//
     // MyDistance //
@@ -775,7 +771,6 @@ public class Slot
     private static final class MyDistance
             implements InjectionSolver.Distance
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final int NOT_A_REST = 5;
 
@@ -787,14 +782,12 @@ public class Slot
 
         private static final int INCOMPATIBLE_VOICES = 10000; // Forbidden
 
-        //~ Instance fields ------------------------------------------------------------------------
         private final List<AbstractChordInter> news;
 
         private final List<AbstractChordInter> olds;
 
         private final Scale scale;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public MyDistance (List<AbstractChordInter> news,
                            List<AbstractChordInter> olds,
                            Scale scale)
@@ -804,7 +797,6 @@ public class Slot
             this.scale = scale;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Distance between newChord (index 'in') and oldChord (index 'ip').
          *
@@ -825,9 +817,8 @@ public class Slot
             AbstractChordInter oldChord = olds.get(ip);
 
             // Different assigned voices?
-            if ((newChord.getVoice() != null)
-                && (oldChord.getVoice() != null)
-                && (newChord.getVoice() != oldChord.getVoice())) {
+            if ((newChord.getVoice() != null) && (oldChord.getVoice() != null) && (newChord
+                    .getVoice() != oldChord.getVoice())) {
                 return INCOMPATIBLE_VOICES;
             }
 
@@ -855,7 +846,8 @@ public class Slot
             }
 
             // Pitch difference
-            int dy = Math.abs(newChord.getHeadLocation().y - oldChord.getHeadLocation().y) / scale.getInterline();
+            int dy = Math.abs(newChord.getHeadLocation().y - oldChord.getHeadLocation().y) / scale
+                    .getInterline();
 
             // Stem direction difference
             int dStem = Math.abs(newChord.getStemDir() - oldChord.getStemDir());

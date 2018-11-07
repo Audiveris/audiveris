@@ -55,11 +55,9 @@ import java.util.List;
  */
 public class CheckSuite<C>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CheckSuite.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Name of this suite. */
     protected final String name;
 
@@ -78,7 +76,6 @@ public class CheckSuite<C>
     /** Total checks weight. */
     private double totalWeight = 0.0d;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a suite of checks with standard threshold values.
      *
@@ -108,7 +105,6 @@ public class CheckSuite<C>
         this.goodThreshold = goodThreshold;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // add //
     //-----//
@@ -172,14 +168,9 @@ public class CheckSuite<C>
         int index = 0;
 
         for (Check<C> check : checks) {
-            sb.append(
-                    String.format(
-                            "%4.1f      %-19s  %5b  % 6.2f    % 6.2f%n",
-                            weights.get(index++),
-                            check.getName(),
-                            check.isCovariant(),
-                            check.getLow(),
-                            check.getHigh()));
+            sb.append(String.format("%4.1f      %-19s  %5b  % 6.2f    % 6.2f%n", weights
+                                    .get(index++), check.getName(), check.isCovariant(), check
+                                    .getLow(), check.getHigh()));
         }
 
         logger.info(sb.toString());

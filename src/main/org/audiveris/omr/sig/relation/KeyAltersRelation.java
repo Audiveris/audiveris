@@ -36,11 +36,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class KeyAltersRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code KeyAltersRelation} object.
      */
@@ -48,7 +46,6 @@ public class KeyAltersRelation
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -85,21 +82,17 @@ public class KeyAltersRelation
         return constants.targetSupportCoeff.getValue();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio sourceSupportCoeff = new Constant.Ratio(
-                5,
-                "Value for (source) alter coeff in support formula");
+        private final Constant.Ratio sourceSupportCoeff = new Constant.Ratio(5,
+                                                                             "Value for (source) alter coeff in support formula");
 
-        private final Constant.Ratio targetSupportCoeff = new Constant.Ratio(
-                5,
-                "Value for (target) alter coeff in support formula");
+        private final Constant.Ratio targetSupportCoeff = new Constant.Ratio(5,
+                                                                             "Value for (target) alter coeff in support formula");
     }
 }

@@ -31,7 +31,6 @@ import java.util.List;
  */
 public class TargetPage
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Page width */
     public final double width;
@@ -42,7 +41,6 @@ public class TargetPage
     /** Sequence of systems */
     public final List<TargetSystem> systems = new ArrayList<TargetSystem>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TargetPage object.
      *
@@ -56,7 +54,6 @@ public class TargetPage
         this.height = height;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // toString //
     //----------//

@@ -88,8 +88,9 @@ public enum TextRole
      */
     public boolean isCreator ()
     {
-        return (this == CreatorArranger) || (this == CreatorComposer)
-               || ((this == CreatorLyricist) || (this == Creator));
+        return (this == CreatorArranger) || (this == CreatorComposer) || ((this == CreatorLyricist)
+                                                                                  || (this
+                                                                                              == Creator));
     }
 
     //-----------//
@@ -182,8 +183,8 @@ public enum TextRole
 
         logger.debug(
                 "{} firstSystem={} lastSystem={} systemPosition={}"
-                + " partPosition={} closeToStaff={} leftOfStaves={}"
-                + " pageCentered={} rightAligned={} shortSentence={}" + " highText={10}",
+                        + " partPosition={} closeToStaff={} leftOfStaves={}"
+                        + " pageCentered={} rightAligned={} shortSentence={}" + " highText={10}",
                 box,
                 firstSystem,
                 lastSystem,
@@ -239,13 +240,13 @@ public enum TextRole
 
             if (leftOfStaves) {
                 return PartName;
-            } else if (lyricsAllowed
-                       && (switches.getValue(Switch.lyrics)
-                           || switches.getValue(Switch.lyricsAboveStaff))
-                       && ((partPosition == StaffPosition.BELOW_STAVES)
-                           || ((partPosition == StaffPosition.ABOVE_STAVES)
-                               && switches.getValue(Switch.lyricsAboveStaff)))
-                       && !isMainlyItalic) {
+            } else if (lyricsAllowed && (switches.getValue(Switch.lyrics) || switches.getValue(
+                    Switch.lyricsAboveStaff)) && ((partPosition == StaffPosition.BELOW_STAVES)
+                                                          || ((partPosition
+                                                                       == StaffPosition.ABOVE_STAVES)
+                                                              && switches.getValue(
+                            Switch.lyricsAboveStaff)))
+                               && !isMainlyItalic) {
                 return Lyrics;
             } else if (!tinySentence) {
                 return Direction;
@@ -266,11 +267,9 @@ public enum TextRole
             }
 
             if (part.getStaves().size() == 1) {
-                if (lyricsAllowed
-                    && (switches.getValue(Switch.lyrics)
-                        || switches.getValue(Switch.lyricsAboveStaff))
-                    && (partPosition == StaffPosition.BELOW_STAVES)
-                    && !isMainlyItalic) {
+                if (lyricsAllowed && (switches.getValue(Switch.lyrics) || switches.getValue(
+                        Switch.lyricsAboveStaff)) && (partPosition == StaffPosition.BELOW_STAVES)
+                            && !isMainlyItalic) {
                     return Lyrics;
                 }
             }
@@ -287,28 +286,22 @@ public enum TextRole
             extends ConstantSet
     {
 
-        private final Scale.Fraction maxRightDx = new Scale.Fraction(
-                2,
-                "Maximum horizontal distance on the right end of the staff");
+        private final Scale.Fraction maxRightDx = new Scale.Fraction(2,
+                                                                     "Maximum horizontal distance on the right end of the staff");
 
-        private final Scale.Fraction maxCenterDx = new Scale.Fraction(
-                30,
-                "Maximum horizontal distance around center of page");
+        private final Scale.Fraction maxCenterDx = new Scale.Fraction(30,
+                                                                      "Maximum horizontal distance around center of page");
 
-        private final Scale.Fraction maxShortLength = new Scale.Fraction(
-                35,
-                "Maximum length for a short sentence (no lyrics)");
+        private final Scale.Fraction maxShortLength = new Scale.Fraction(35,
+                                                                         "Maximum length for a short sentence (no lyrics)");
 
-        private final Scale.Fraction maxTinyLength = new Scale.Fraction(
-                2,
-                "Maximum length for a tiny sentence (no lyrics)");
+        private final Scale.Fraction maxTinyLength = new Scale.Fraction(2,
+                                                                        "Maximum length for a tiny sentence (no lyrics)");
 
-        private final Scale.Fraction maxStaffDy = new Scale.Fraction(
-                7,
-                "Maximum distance above staff for a direction");
+        private final Scale.Fraction maxStaffDy = new Scale.Fraction(7,
+                                                                     "Maximum distance above staff for a direction");
 
-        private final Scale.Fraction minTitleHeight = new Scale.Fraction(
-                3,
-                "Minimum height for a title text");
+        private final Scale.Fraction minTitleHeight = new Scale.Fraction(3,
+                                                                         "Minimum height for a title text");
     }
 }

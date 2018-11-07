@@ -36,11 +36,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class FermataChordRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -77,21 +75,17 @@ public class FermataChordRelation
         return constants.chordSupportCoeff.getValue();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio fermataSupportCoeff = new Constant.Ratio(
-                5,
-                "Supporting coeff for (source) fermata");
+        private final Constant.Ratio fermataSupportCoeff = new Constant.Ratio(5,
+                                                                              "Supporting coeff for (source) fermata");
 
-        private final Constant.Ratio chordSupportCoeff = new Constant.Ratio(
-                2,
-                "Supporting coeff for (target) chord");
+        private final Constant.Ratio chordSupportCoeff = new Constant.Ratio(2,
+                                                                            "Supporting coeff for (target) chord");
     }
 }

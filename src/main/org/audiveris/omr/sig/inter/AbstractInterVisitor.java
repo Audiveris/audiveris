@@ -32,7 +32,6 @@ package org.audiveris.omr.sig.inter;
 public abstract class AbstractInterVisitor
         implements InterVisitor
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     @Override
     public void visit (AbstractBeamInter inter)

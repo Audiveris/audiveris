@@ -55,7 +55,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BasicSymbol
         implements SymbolIcon
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     protected static final Logger logger = LoggerFactory.getLogger(BasicSymbol.class);
 
@@ -81,17 +80,16 @@ public class BasicSymbol
             0); // m12
 
     /** A transformation to turn 1 quadrant clockwise. */
-    protected static final AffineTransform quadrantRotateOne = AffineTransform.getQuadrantRotateInstance(
-            1);
+    protected static final AffineTransform quadrantRotateOne = AffineTransform
+            .getQuadrantRotateInstance(1);
 
     /** A transformation to turn 2 quadrants clockwise. */
-    protected static final AffineTransform quadrantRotateTwo = AffineTransform.getQuadrantRotateInstance(
-            2);
+    protected static final AffineTransform quadrantRotateTwo = AffineTransform
+            .getQuadrantRotateInstance(2);
 
     /** A transformation for really small icon display. */
     protected static final AffineTransform tiny = AffineTransform.getScaleInstance(0.5, 0.5);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** To flag an icon symbol. */
     protected final boolean isIcon;
 
@@ -110,7 +108,6 @@ public class BasicSymbol
     /** Offset of centroid WRT area center, specified in ratio of width and height. */
     protected Point2D centroidOffset;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicSymbol object.
      *
@@ -140,7 +137,6 @@ public class BasicSymbol
         this.codes = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildImage //
     //------------//
@@ -172,9 +168,9 @@ public class BasicSymbol
             computeCentroidOffset();
         }
 
-        return new Point(
-                (int) Math.rint(box.getCenterX() + (box.getWidth() * centroidOffset.getX())),
-                (int) Math.rint(box.getCenterY() + (box.getHeight() * centroidOffset.getY())));
+        return new Point((int) Math
+                .rint(box.getCenterX() + (box.getWidth() * centroidOffset.getX())), (int) Math.rint(
+                         box.getCenterY() + (box.getHeight() * centroidOffset.getY())));
     }
 
     //--------------//
@@ -474,9 +470,8 @@ public class BasicSymbol
         xBar /= weight;
         yBar /= weight;
 
-        centroidOffset = new Point2D.Double(
-                (xBar / image.getWidth()) - 0.5,
-                (yBar / image.getHeight()) - 0.5);
+        centroidOffset = new Point2D.Double((xBar / image.getWidth()) - 0.5, (yBar / image
+                                            .getHeight()) - 0.5);
     }
 
     //--------------//
@@ -529,7 +524,6 @@ public class BasicSymbol
         return values;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
@@ -538,7 +532,6 @@ public class BasicSymbol
      */
     protected class Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Specific offset, if any, from area center. */
         Point offset;

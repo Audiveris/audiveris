@@ -96,14 +96,11 @@ import javax.xml.bind.annotation.XmlValue;
 public class RunTable
         implements Cloneable, PixelSource, Oriented
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            RunTable.class);
+    private static final Logger logger = LoggerFactory.getLogger(RunTable.class);
 
     private static volatile JAXBContext jaxbContext;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     /** Orientation, the same for this table and all contained runs. */
@@ -130,7 +127,6 @@ public class RunTable
     /** Cached total weight. */
     private Integer weight;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new RunTable object.
      *
@@ -162,7 +158,6 @@ public class RunTable
         this.sequences = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // addRun //
     //--------//
@@ -378,11 +373,8 @@ public class RunTable
         cumulate(collector, new Point(left, top));
 
         // Then compute the geometric moments with this collector
-        return new GeometricMoments(
-                collector.getXValues(),
-                collector.getYValues(),
-                collector.getSize(),
-                interline);
+        return new GeometricMoments(collector.getXValues(), collector.getYValues(), collector
+                                    .getSize(), interline);
     }
 
     //----------//
@@ -1026,8 +1018,7 @@ public class RunTable
         }
 
         if (that.orientation != orientation) {
-            throw new IllegalArgumentException(
-                    "Cannot include a RunTable of different orientation");
+            throw new IllegalArgumentException("Cannot include a RunTable of different orientation");
         }
 
         if (that.width != width) {
@@ -1283,9 +1274,8 @@ public class RunTable
 
         if (orientation == HORIZONTAL) {
             final int minSeq = (clip != null) ? Math.max(clip.y - offset.y, 0) : 0;
-            final int maxSeq = (clip != null)
-                    ? (Math.min(((clip.y + clip.height) - offset.y), height) - 1)
-                    : (height - 1);
+            final int maxSeq = (clip != null) ? (Math.min(((clip.y + clip.height) - offset.y),
+                                                          height) - 1) : (height - 1);
 
             for (int iSeq = minSeq; iSeq <= maxSeq; iSeq++) {
                 for (Itr it = new Itr(iSeq); it.hasNext();) {
@@ -1295,9 +1285,8 @@ public class RunTable
             }
         } else {
             final int minSeq = (clip != null) ? Math.max(clip.x - offset.x, 0) : 0;
-            final int maxSeq = (clip != null)
-                    ? (Math.min((clip.x + clip.width) - offset.x, width) - 1) : (width
-                                                                                 - 1);
+            final int maxSeq = (clip != null) ? (Math.min((clip.x + clip.width) - offset.x, width)
+                                                         - 1) : (width - 1);
 
             for (int iSeq = minSeq; iSeq <= maxSeq; iSeq++) {
                 for (Itr it = new Itr(iSeq); it.hasNext();) {
@@ -1659,7 +1648,6 @@ public class RunTable
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // RunSequence //
     //-------------//
@@ -1670,12 +1658,10 @@ public class RunTable
     @XmlRootElement(name = "runs")
     static class RunSequence
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlValue
         private int[] rle;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public RunSequence (int[] rle)
         {
             this.rle = rle;
@@ -1685,7 +1671,6 @@ public class RunTable
         {
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean equals (Object obj)
         {
@@ -1747,7 +1732,6 @@ public class RunTable
     private class Itr
             implements Iterator<Run>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** The index of sequence being iterated upon. */
         private final int index;
@@ -1765,7 +1749,6 @@ public class RunTable
          */
         private final Run run = new Run(-1, -1);
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Itr (int index)
         {
             this.index = index;
@@ -1788,7 +1771,6 @@ public class RunTable
             }
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Returns true only if there is still a foreground run to return.
          *

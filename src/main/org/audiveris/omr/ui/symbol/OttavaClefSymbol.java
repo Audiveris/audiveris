@@ -37,12 +37,10 @@ import java.awt.geom.Rectangle2D;
 public class OttavaClefSymbol
         extends ShapeSymbol
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     // True for alta, false for bassa
     private final boolean isAlta;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new OttavaClefSymbol object.
      *
@@ -60,7 +58,6 @@ public class OttavaClefSymbol
         this.isAlta = isAlta;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -102,14 +99,12 @@ public class OttavaClefSymbol
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
     private class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final TextLayout ottavaLayout;
 
@@ -117,7 +112,6 @@ public class OttavaClefSymbol
 
         final Rectangle2D clefRect;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public MyParams (MusicFont font)
         {
             ottavaLayout = Symbols.SYMBOL_OTTAVA.layout(font);
@@ -126,9 +120,8 @@ public class OttavaClefSymbol
             layout = font.layout(codes);
             clefRect = layout.getBounds();
 
-            rect = new Rectangle(
-                    (int) Math.ceil(clefRect.getWidth()),
-                    (int) Math.ceil(ottavaRect.getHeight() + clefRect.getHeight()));
+            rect = new Rectangle((int) Math.ceil(clefRect.getWidth()), (int) Math.ceil(ottavaRect
+                                 .getHeight() + clefRect.getHeight()));
         }
     }
 }

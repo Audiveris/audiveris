@@ -65,7 +65,7 @@ import javax.swing.event.ChangeListener;
  * Class {@code SheetAssembly} is a UI assembly dedicated to the display of various
  * views around the same sheet.
  * All views share the same zoom and the same position within their containing {@link JScrollPane}.
- *
+ * <p>
  * It gathers: <ul>
  * <li>a {@link Zoom} with its dedicated graphical {@link LogSlider}</li>
  * <li>a mouse adapter {@link Rubber}</li>
@@ -80,11 +80,9 @@ import javax.swing.event.ChangeListener;
 public class SheetAssembly
         implements ChangeListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SheetAssembly.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Link with sheet stub. */
     @Navigable(false)
@@ -117,7 +115,6 @@ public class SheetAssembly
     /** Sheet size. */
     private Dimension modelSize;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new {@code SheetAssembly} instance dedicated to one sheet stub.
      *
@@ -140,7 +137,6 @@ public class SheetAssembly
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addBoard //
     //----------//
@@ -514,10 +510,8 @@ public class SheetAssembly
     public void stateChanged (ChangeEvent e)
     {
         ViewTab currentTab = getCurrentViewTab();
-        logger.debug(
-                "SheetAssembly stateChanged previousTab:{} currentTab:{}",
-                previousTab,
-                currentTab);
+        logger.debug("SheetAssembly stateChanged previousTab:{} currentTab:{}", previousTab,
+                     currentTab);
 
         if (currentTab != previousTab) {
             if (previousTab != null) {
@@ -595,7 +589,6 @@ public class SheetAssembly
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // ScrollValues //
     //--------------//
@@ -604,20 +597,17 @@ public class SheetAssembly
      */
     private static class ScrollValues
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final DefaultBoundedRangeModel hori; // Model for horizontal scrollbar
 
         final DefaultBoundedRangeModel vert; // Model for vertical scrollbar
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ScrollValues (ScrollView scrollView)
         {
             hori = copy(scrollView.getComponent().getHorizontalScrollBar().getModel());
             vert = copy(scrollView.getComponent().getVerticalScrollBar().getModel());
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public void applyTo (JScrollPane scrollPane)
         {
             apply(hori, scrollPane.getHorizontalScrollBar().getModel());
@@ -633,21 +623,14 @@ public class SheetAssembly
         private void apply (BoundedRangeModel src,
                             BoundedRangeModel tgt)
         {
-            tgt.setRangeProperties(
-                    src.getValue(),
-                    src.getExtent(),
-                    src.getMinimum(),
-                    src.getMaximum(),
-                    false);
+            tgt.setRangeProperties(src.getValue(), src.getExtent(), src.getMinimum(), src
+                                   .getMaximum(), false);
         }
 
         private DefaultBoundedRangeModel copy (BoundedRangeModel m)
         {
-            return new DefaultBoundedRangeModel(
-                    m.getValue(),
-                    m.getExtent(),
-                    m.getMinimum(),
-                    m.getMaximum());
+            return new DefaultBoundedRangeModel(m.getValue(), m.getExtent(), m.getMinimum(), m
+                                                .getMaximum());
         }
     }
 
@@ -660,13 +643,12 @@ public class SheetAssembly
     private static class ViewsPane
             extends ClosableTabbedPane
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public boolean tabAboutToClose (int tabIndex)
         {
-            return OMR.gui.displayConfirmation(
-                    getTitleAt(tabIndex) + " tab is about to close." + "\nDo you confirm?");
+            return OMR.gui.displayConfirmation(getTitleAt(tabIndex) + " tab is about to close."
+                                                       + "\nDo you confirm?");
         }
     }
 
@@ -679,7 +661,6 @@ public class SheetAssembly
      */
     private class ViewTab
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         String title; // Title used for the tab
 
@@ -687,7 +668,6 @@ public class SheetAssembly
 
         ScrollView scrollView; // Component in the JTabbedPane
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ViewTab (String title,
                         BoardsPane boardsPane,
                         ScrollView scrollView)
@@ -701,11 +681,8 @@ public class SheetAssembly
             rubberPanel.setZoom(zoom);
             rubberPanel.setRubber(rubber);
 
-            logger.debug(
-                    "Creating ViewTab {} modelSize:{} stub.hasSheet(): {}",
-                    title,
-                    modelSize,
-                    stub.hasSheet());
+            logger.debug("Creating ViewTab {} modelSize:{} stub.hasSheet(): {}", title, modelSize,
+                         stub.hasSheet());
 
             // Set the model size?
             if (modelSize == null) {
@@ -726,7 +703,6 @@ public class SheetAssembly
             zoom.fireStateChanged();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //------------//
         // deselected //
         //------------//
@@ -777,11 +753,8 @@ public class SheetAssembly
          */
         public void selected ()
         {
-            logger.debug(
-                    "SheetAssembly: {} viewTab.   selected for {} dim:{}",
-                    stub.getId(),
-                    this,
-                    scrollView.getView().getPreferredSize());
+            logger.debug("SheetAssembly: {} viewTab.   selected for {} dim:{}", stub.getId(), this,
+                         scrollView.getView().getPreferredSize());
 
             // Link rubber with proper view
             RubberPanel rubberPanel = scrollView.getView();
@@ -804,8 +777,8 @@ public class SheetAssembly
                 Rectangle location = (locationEvent != null) ? locationEvent.getData() : null;
 
                 if (location != null) {
-                    locationService.publish(
-                            new LocationEvent(this, locationEvent.hint, null, location));
+                    locationService.publish(new LocationEvent(this, locationEvent.hint, null,
+                                                              location));
                 }
             }
 

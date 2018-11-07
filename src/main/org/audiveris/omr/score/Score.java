@@ -53,17 +53,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "score")
 public class Score
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Score.class);
+    private static final Logger logger = LoggerFactory.getLogger(Score.class);
 
     /** Number of lines in a staff */
     public static final int LINE_NB = 5;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -101,7 +98,6 @@ public class Score
     /** The specified sound volume, if any. */
     private Integer volume;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a Score.
      */
@@ -110,7 +106,6 @@ public class Score
         tempoParam.setParent(Tempo.defaultTempo);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // getDefaultVolume //
     //------------------//
@@ -649,24 +644,18 @@ public class Score
         return null;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Integer defaultTempo = new Constant.Integer(
-                "QuartersPerMn",
-                120,
-                "Default tempo, stated in number of quarters per minute");
+        private final Constant.Integer defaultTempo = new Constant.Integer("QuartersPerMn", 120,
+                                                                           "Default tempo, stated in number of quarters per minute");
 
-        private final Constant.Integer defaultVolume = new Constant.Integer(
-                "Volume",
-                78,
-                "Default Volume in 0..127 range");
+        private final Constant.Integer defaultVolume = new Constant.Integer("Volume", 78,
+                                                                            "Default Volume in 0..127 range");
     }
 
     //----------//
@@ -674,7 +663,6 @@ public class Score
     //----------//
     private static class PageLink
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlAttribute(name = "sheet-number")
         public final int sheetNumber;
@@ -682,7 +670,6 @@ public class Score
         @XmlAttribute(name = "sheet-page-id")
         public final int sheetPageId;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public PageLink (int sheetNumber,
                          int sheetPageId)
         {
@@ -696,7 +683,6 @@ public class Score
             this.sheetPageId = 0;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -715,7 +701,6 @@ public class Score
     private class PartsParam
             extends Param<List<PartData>>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public List<PartData> getSpecific ()
@@ -727,8 +712,8 @@ public class Score
 
                 for (LogicalPart logicalPart : list) {
                     // Initial setting for part midi program
-                    int prog = (logicalPart.getMidiProgram() != null)
-                            ? logicalPart.getMidiProgram() : logicalPart.getDefaultProgram();
+                    int prog = (logicalPart.getMidiProgram() != null) ? logicalPart.getMidiProgram()
+                            : logicalPart.getDefaultProgram();
 
                     data.add(new PartData(logicalPart.getName(), prog));
                 }

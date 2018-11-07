@@ -93,13 +93,11 @@ import java.util.Set;
 public class LinesRetriever
         implements ItemRenderer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(LinesRetriever.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** related sheet */
     @Navigable(false)
@@ -147,7 +145,6 @@ public class LinesRetriever
     /** Binary buffer. */
     private ByteProcessor binaryBuffer;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Retrieve the frames of all staff lines.
      *
@@ -165,7 +162,6 @@ public class LinesRetriever
         params = new Parameters(scale);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // buildHorizontalLag //
     //--------------------//
@@ -379,12 +375,12 @@ public class LinesRetriever
                 for (Filament filament : allFils) {
                     Point2D p = filament.getStartPoint();
                     double der = filament.getSlopeAt(p.getX(), HORIZONTAL);
-                    g.draw(
-                            new Line2D.Double(p.getX(), p.getY(), p.getX() - dx, p.getY() - (der * dx)));
+                    g.draw(new Line2D.Double(p.getX(), p.getY(), p.getX() - dx, p.getY()
+                                                                                        - (der * dx)));
                     p = filament.getStopPoint();
                     der = filament.getSlopeAt(p.getX(), HORIZONTAL);
-                    g.draw(
-                            new Line2D.Double(p.getX(), p.getY(), p.getX() + dx, p.getY() + (der * dx)));
+                    g.draw(new Line2D.Double(p.getX(), p.getY(), p.getX() + dx, p.getY()
+                                                                                        + (der * dx)));
                 }
             }
         }
@@ -426,11 +422,10 @@ public class LinesRetriever
             watch.start("retrieveFilaments");
 
             // Create initial filaments
-            FilamentFactory<StaffFilament> factory = new FilamentFactory<StaffFilament>(
-                    scale,
-                    sheet.getFilamentIndex(),
-                    Orientation.HORIZONTAL,
-                    StaffFilament.class);
+            FilamentFactory<StaffFilament> factory = new FilamentFactory<StaffFilament>(scale, sheet
+                                                                                        .getFilamentIndex(),
+                                                                                        Orientation.HORIZONTAL,
+                                                                                        StaffFilament.class);
             factory.dump("LinesRetriever factory");
             filaments = factory.retrieveFilaments(hLag.getEntities());
 
@@ -447,11 +442,8 @@ public class LinesRetriever
             slopedFilaments = purgeSlopedFilaments();
 
             // Retrieve regular patterns of filaments and pack them into clusters
-            clustersRetriever = new ClustersRetriever(
-                    sheet,
-                    filaments,
-                    scale.getInterlineScale(),
-                    Colors.COMB);
+            clustersRetriever = new ClustersRetriever(sheet, filaments, scale.getInterlineScale(),
+                                                      Colors.COMB);
             watch.start("clustersRetriever");
 
             Integer smallInterline = scale.getSmallInterline();
@@ -462,11 +454,9 @@ public class LinesRetriever
                 secondFilaments = discardedFilaments;
                 Collections.sort(secondFilaments, Entities.byId);
                 logger.info("Searching clusters with smallInterline: {}", smallInterline);
-                smallClustersRetriever = new ClustersRetriever(
-                        sheet,
-                        secondFilaments,
-                        scale.getSmallInterlineScale(),
-                        Colors.COMB_MINOR);
+                smallClustersRetriever = new ClustersRetriever(sheet, secondFilaments, scale
+                                                               .getSmallInterlineScale(),
+                                                               Colors.COMB_MINOR);
                 watch.start("smallClustersRetriever");
                 discardedFilaments = smallClustersRetriever.buildInfo(false);
             }
@@ -508,9 +498,8 @@ public class LinesRetriever
 
         if (smallClustersRetriever != null) {
             allClusters.addAll(smallClustersRetriever.getClusters());
-            smallInterline = Math.min(
-                    clustersRetriever.getInterline(),
-                    smallClustersRetriever.getInterline());
+            smallInterline = Math.min(clustersRetriever.getInterline(), smallClustersRetriever
+                                      .getInterline());
         }
 
         Collections.sort(allClusters, clustersRetriever.byLayout);
@@ -621,17 +610,13 @@ public class LinesRetriever
         }
 
         // Check resulting thickness
-        double rThickness = Compounds.getThicknessAt(
-                xMid,
-                HORIZONTAL,
-                scale,
-                (SectionCompound) fil,
-                lineFilament);
+        double rThickness = Compounds.getThicknessAt(xMid, HORIZONTAL, scale, (SectionCompound) fil,
+                                                     lineFilament);
 
         if (rThickness > maxThickness) {
             if (logger.isDebugEnabled() || isVip) {
-                logger.info(
-                        String.format("%sRes thickness:%.1f vs %d", vips, rThickness, maxThickness));
+                logger.info(String.format("%sRes thickness:%.1f vs %d", vips, rThickness,
+                                          maxThickness));
             }
 
             return false;
@@ -695,8 +680,8 @@ public class LinesRetriever
         }
 
         // Check max extension from theoretical line
-        int ext = (int) Math.rint(
-                Math.max(Math.abs(yFil - box.y), Math.abs((box.y + eThickness) - yFil)));
+        int ext = (int) Math.rint(Math.max(Math.abs(yFil - box.y), Math.abs((box.y + eThickness)
+                                                                                    - yFil)));
 
         if (ext > maxExt) {
             if (logger.isDebugEnabled() || isVip) {
@@ -707,17 +692,13 @@ public class LinesRetriever
         }
 
         // Check resulting thickness
-        double rThickness = Compounds.getThicknessAt(
-                xMid,
-                HORIZONTAL,
-                scale,
-                (Section) section,
-                filament);
+        double rThickness = Compounds.getThicknessAt(xMid, HORIZONTAL, scale, (Section) section,
+                                                     filament);
 
         if (rThickness > maxThickness) {
             if (logger.isDebugEnabled() || isVip) {
-                logger.info(
-                        String.format("%sRes thickness:%.1f vs %d", vips, rThickness, maxThickness));
+                logger.info(String.format("%sRes thickness:%.1f vs %d", vips, rThickness,
+                                          maxThickness));
             }
 
             return false;
@@ -1060,9 +1041,9 @@ public class LinesRetriever
                     }
 
                     // Restore extrema points (keep abscissae, but recompute ordinates)
-                    fil.setEndingPoints(
-                            new Point2D.Double(startPoint.getX(), fil.yAt(startPoint.getX())),
-                            new Point2D.Double(stopPoint.getX(), fil.yAt(stopPoint.getX())));
+                    fil.setEndingPoints(new Point2D.Double(startPoint.getX(), fil.yAt(startPoint
+                                                           .getX())), new Point2D.Double(stopPoint
+                                        .getX(), fil.yAt(stopPoint.getX())));
                 }
             }
         }
@@ -1092,12 +1073,13 @@ public class LinesRetriever
 
                 for (Section source : fil.getMembers()) {
                     for (VerticalSide side : VerticalSide.values()) {
-                        final Run predRun = (side == TOP) ? source.getFirstRun() : source.getLastRun();
+                        final Run predRun = (side == TOP) ? source.getFirstRun() : source
+                                .getLastRun();
                         final int predStart = predRun.getStart();
                         final int predStop = predRun.getStop();
 
-                        final int nextPos = (side == TOP) ? (source.getFirstPos() - 1)
-                                : (source.getLastPos() + 1);
+                        final int nextPos = (side == TOP) ? (source.getFirstPos() - 1) : (source
+                                .getLastPos() + 1);
 
                         for (Section target : tally.getSubList(nextPos)) {
                             final Run succRun = target.getFirstRun();
@@ -1115,11 +1097,8 @@ public class LinesRetriever
 
                 if (!toAdd.isEmpty()) {
                     if (logger.isDebugEnabled()) {
-                        logger.info(
-                                "Staff#{} line#{} {}",
-                                staff.getId(),
-                                lineId,
-                                Sections.toString(toAdd));
+                        logger.info("Staff#{} line#{} {}", staff.getId(), lineId, Sections.toString(
+                                    toAdd));
                     }
 
                     // Include sticker sections, while perserving line ending points
@@ -1172,11 +1151,8 @@ public class LinesRetriever
 
             if (rot > params.maxFilamentRotation) {
                 if (fil.isVip()) {
-                    logger.info(
-                            "VIP curved {} rotation:{} (vs {} radians)",
-                            fil,
-                            String.format("%.3f", rot),
-                            params.maxFilamentRotation);
+                    logger.info("VIP curved {} rotation:{} (vs {} radians)", fil, String.format(
+                                "%.3f", rot), params.maxFilamentRotation);
                 }
 
                 toRemove.add(fil);
@@ -1191,7 +1167,7 @@ public class LinesRetriever
         if (filaments.size() < 5) {
             sheet.getStub().decideOnRemoval(
                     sheet.getId() + LINE_SEPARATOR + "Too few staff filaments: " + filaments.size()
-                    + LINE_SEPARATOR + "This sheet does not seem to contain staff lines.",
+                            + LINE_SEPARATOR + "This sheet does not seem to contain staff lines.",
                     false);
         }
     }
@@ -1213,10 +1189,8 @@ public class LinesRetriever
     private List<StaffFilament> purgeSlopedFilaments ()
     {
         final double sheetSlope = sheet.getSkew().getSlope();
-        final double minShortSlope = (sheetSlope > 0) ? (-params.maxSlopeDiff / 2)
-                : sheetSlope;
-        final double maxShortSlope = (sheetSlope > 0) ? sheetSlope
-                : (params.maxSlopeDiff / 2);
+        final double minShortSlope = (sheetSlope > 0) ? (-params.maxSlopeDiff / 2) : sheetSlope;
+        final double maxShortSlope = (sheetSlope > 0) ? sheetSlope : (params.maxSlopeDiff / 2);
         final List<StaffFilament> toRemove = new ArrayList<StaffFilament>();
 
         for (StaffFilament fil : filaments) {
@@ -1239,10 +1213,8 @@ public class LinesRetriever
                 }
 
                 if (fil.isVip()) {
-                    logger.info(
-                            "VIP discarded {} for delta slope {}",
-                            fil,
-                            String.format("%.3f > %.3f", slopeDiff, params.maxSlopeDiff));
+                    logger.info("VIP discarded {} for delta slope {}", fil, String.format(
+                                "%.3f > %.3f", slopeDiff, params.maxSlopeDiff));
                 }
 
                 toRemove.add(fil);
@@ -1308,11 +1280,8 @@ public class LinesRetriever
 
         if (missing) {
             // Use a staff pattern to compute missing ordinates
-            StaffPattern pattern = new StaffPattern(
-                    staff.getLineCount(),
-                    params.patternWidth,
-                    scale.getFore(),
-                    scale.getInterline());
+            StaffPattern pattern = new StaffPattern(staff.getLineCount(), params.patternWidth, scale
+                                                    .getFore(), scale.getInterline());
 
             // Find the most probable upper left ordinate
             final double uly;
@@ -1392,110 +1361,84 @@ public class LinesRetriever
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio topRatioForSlope = new Constant.Ratio(
-                0.1,
-                "Percentage of top filaments used to retrieve global slope");
+        private final Constant.Ratio topRatioForSlope = new Constant.Ratio(0.1,
+                                                                           "Percentage of top filaments used to retrieve global slope");
 
-        private final Constant.Double maxFilamentRotation = new Constant.Double(
-                "radians",
-                0.1,
-                "Maximum central rotation for filaments");
+        private final Constant.Double maxFilamentRotation = new Constant.Double("radians", 0.1,
+                                                                                "Maximum central rotation for filaments");
 
-        private final Constant.Double maxSlopeDiff = new Constant.Double(
-                "radians",
-                0.025,
-                "Maximum delta slope between filament and sheet");
+        private final Constant.Double maxSlopeDiff = new Constant.Double("radians", 0.025,
+                                                                         "Maximum delta slope between filament and sheet");
 
-        private final Constant.Double minSlope = new Constant.Double(
-                "tangent",
-                0.0002,
-                "Minimum absolute slope value to be worth noting");
+        private final Constant.Double minSlope = new Constant.Double("tangent", 0.0002,
+                                                                     "Minimum absolute slope value to be worth noting");
 
         // Constants specified WRT *maximum* line thickness (scale.getmaxFore())
         // ----------------------------------------------
-        private final Constant.Ratio stickerThickness = new Constant.Ratio(
-                1.0,
-                "Ratio of sticker thickness vs staff line MAXIMUM thickness");
+        private final Constant.Ratio stickerThickness = new Constant.Ratio(1.0,
+                                                                           "Ratio of sticker thickness vs staff line MAXIMUM thickness");
 
         // Constants specified WRT mean line thickness
         // -------------------------------------------
         //
-        private final Scale.LineFraction maxStickerGap = new Scale.LineFraction(
-                0.25,
-                "Maximum vertical gap between sticker and closest line side");
+        private final Scale.LineFraction maxStickerGap = new Scale.LineFraction(0.25,
+                                                                                "Maximum vertical gap between sticker and closest line side");
 
-        private final Scale.LineFraction maxStickerExtension = new Scale.LineFraction(
-                1.2,
-                "Maximum vertical sticker extension from line");
+        private final Scale.LineFraction maxStickerExtension = new Scale.LineFraction(1.2,
+                                                                                      "Maximum vertical sticker extension from line");
 
-        private final Scale.AreaFraction maxThinStickerWeight = new Scale.AreaFraction(
-                0.06,
-                "Maximum weight for a thin sticker (w/o impact on line geometry)");
+        private final Scale.AreaFraction maxThinStickerWeight = new Scale.AreaFraction(0.06,
+                                                                                       "Maximum weight for a thin sticker (w/o impact on line geometry)");
 
         // Constants specified WRT mean interline
         // --------------------------------------
-        private final Scale.Fraction minRunLength = new Scale.Fraction(
-                1.0,
-                "Minimum length for a horizontal run to be considered");
+        private final Scale.Fraction minRunLength = new Scale.Fraction(1.0,
+                                                                       "Minimum length for a horizontal run to be considered");
 
-        private final Scale.Fraction maxEndingDx = new Scale.Fraction(
-                1.0,
-                "Maximum abscissa delta between line end and staff end");
+        private final Scale.Fraction maxEndingDx = new Scale.Fraction(1.0,
+                                                                      "Maximum abscissa delta between line end and staff end");
 
-        private final Scale.Fraction patternWidth = new Scale.Fraction(
-                1.0,
-                "Width of probe for staff pattern");
+        private final Scale.Fraction patternWidth = new Scale.Fraction(1.0,
+                                                                       "Width of probe for staff pattern");
 
-        private final Scale.Fraction patternJitter = new Scale.Fraction(
-                0.25,
-                "Maximum ordinate jitter for staff pattern");
+        private final Scale.Fraction patternJitter = new Scale.Fraction(0.25,
+                                                                        "Maximum ordinate jitter for staff pattern");
 
-        private final Scale.Fraction minRadius = new Scale.Fraction(
-                12,
-                "Minimum acceptable radius of polished curvature");
+        private final Scale.Fraction minRadius = new Scale.Fraction(12,
+                                                                    "Minimum acceptable radius of polished curvature");
 
-        private final Scale.Fraction minLengthForSlopeCheck = new Scale.Fraction(
-                4.0,
-                "Minimum filament length for strict slope check");
+        private final Scale.Fraction minLengthForSlopeCheck = new Scale.Fraction(4.0,
+                                                                                 "Minimum filament length for strict slope check");
 
-        private final Scale.Fraction maxStickerConnectionLength = new Scale.Fraction(
-                0.05,
-                "Maximum connected pixels for a line sticker");
+        private final Scale.Fraction maxStickerConnectionLength = new Scale.Fraction(0.05,
+                                                                                     "Maximum connected pixels for a line sticker");
 
         // Constants for display
         // ---------------------
-        Constant.Boolean displayRuns = new Constant.Boolean(
-                false,
-                "Should we display all images on runs?");
+        Constant.Boolean displayRuns = new Constant.Boolean(false,
+                                                            "Should we display all images on runs?");
 
-        private final Constant.Boolean showHorizontalLines = new Constant.Boolean(
-                true,
-                "Should we show the horizontal grid lines?");
+        private final Constant.Boolean showHorizontalLines = new Constant.Boolean(true,
+                                                                                  "Should we show the horizontal grid lines?");
 
-        private final Scale.Fraction tangentLg = new Scale.Fraction(
-                1,
-                "Typical length to show tangents at ending points");
+        private final Scale.Fraction tangentLg = new Scale.Fraction(1,
+                                                                    "Typical length to show tangents at ending points");
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch?");
 
-        private final Constant.Boolean showTangents = new Constant.Boolean(
-                false,
-                "Should we show filament ending tangents?");
+        private final Constant.Boolean showTangents = new Constant.Boolean(false,
+                                                                           "Should we show filament ending tangents?");
 
-        private final Constant.Boolean showCombs = new Constant.Boolean(
-                false,
-                "Should we show staff lines combs?");
+        private final Constant.Boolean showCombs = new Constant.Boolean(false,
+                                                                        "Should we show staff lines combs?");
     }
 
     //------------//
@@ -1507,7 +1450,6 @@ public class LinesRetriever
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Minimum run length for horizontal lag */
         final int minRunLength;
@@ -1552,7 +1494,6 @@ public class LinesRetriever
 
         final int maxStickerConnectionLength;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
          *
@@ -1561,8 +1502,8 @@ public class LinesRetriever
         public Parameters (Scale scale)
         {
             // Special parameters
-            maxStickerThickness = (int) Math.rint(
-                    scale.getMaxFore() * constants.stickerThickness.getValue());
+            maxStickerThickness = (int) Math.rint(scale.getMaxFore() * constants.stickerThickness
+                    .getValue());
 
             // Others
             minRunLength = scale.toPixels(constants.minRunLength);
@@ -1577,8 +1518,8 @@ public class LinesRetriever
             minRadius = scale.toPixels(constants.minRadius);
             minLengthForSlopeCheck = scale.toPixels(constants.minLengthForSlopeCheck);
             maxStickerConnectionLength = scale.toPixels(constants.maxStickerConnectionLength);
-            maxStickerExtension = (int) Math.ceil(
-                    scale.toPixelsDouble(constants.maxStickerExtension));
+            maxStickerExtension = (int) Math.ceil(scale
+                    .toPixelsDouble(constants.maxStickerExtension));
             minSlope = constants.minSlope.getValue();
 
             if (logger.isDebugEnabled()) {

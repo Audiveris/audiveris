@@ -64,11 +64,9 @@ import javax.swing.event.DocumentListener;
  */
 public class Options
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Options.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The interface window. */
     private final JFrame frame;
 
@@ -207,7 +205,6 @@ public class Options
         }
     };
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Options object.
      */
@@ -301,7 +298,6 @@ public class Options
         });
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getComponent //
     //--------------//

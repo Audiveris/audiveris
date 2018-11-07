@@ -32,7 +32,6 @@ import java.awt.geom.Line2D;
  */
 public abstract class GeoUtil
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     //----------//
     // centerOf //

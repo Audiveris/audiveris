@@ -69,7 +69,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public interface Section
         extends Entity, Oriented
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** A section comparator, using section id. */
     public static final Comparator<Section> idComparator = new Comparator<Section>()
@@ -180,7 +179,6 @@ public interface Section
         }
     };
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Predicate to check whether the given absolute point is located
      * inside the section.

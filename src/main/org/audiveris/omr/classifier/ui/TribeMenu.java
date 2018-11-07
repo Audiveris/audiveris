@@ -53,11 +53,9 @@ import javax.swing.JMenuItem;
 public class TribeMenu
         extends SeparableMenu
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleMenu.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Selected glyph. */
     private final Glyph glyph;
 
@@ -67,7 +65,6 @@ public class TribeMenu
     /** Related sample sheet, if any. */
     private SampleSheet sampleSheet;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TribeMenu} object.
      *
@@ -86,7 +83,6 @@ public class TribeMenu
         populateMenu();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // addGood //
     //---------//
@@ -180,14 +176,12 @@ public class TribeMenu
         sampleSheet.getTribe(best);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // SelectMenu //
     //------------//
     private class SelectMenu
             extends JMenu
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public SelectMenu ()
         {
@@ -196,7 +190,6 @@ public class TribeMenu
             populate();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         private void populate ()
         {
             ShapeSet.addAllShapes(

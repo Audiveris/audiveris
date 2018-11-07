@@ -46,14 +46,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class AbstractConnection
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractConnection.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractConnection.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Horizontal gap at connection (specified in interline fraction).
      * Positive value for an 'out' distance (true gap).
@@ -71,7 +68,6 @@ public abstract class AbstractConnection
     @XmlJavaTypeAdapter(Jaxb.Double3Adapter.class)
     protected Double dy;
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the horizontal gap (positive or negative) in interline fraction
      *
@@ -185,31 +181,26 @@ public abstract class AbstractConnection
         StringBuilder sb = new StringBuilder(super.internals());
 
         if ((dx != null) && (dy != null)) {
-            sb.append("@(").append(String.format("%.2f", dx)).append(",")
-                    .append(String.format("%.2f", dy)).append(")");
+            sb.append("@(").append(String.format("%.2f", dx)).append(",").append(String.format(
+                    "%.2f", dy)).append(")");
         }
 
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // InImpacts //
     //-----------//
     public static class InImpacts
             extends SupportImpacts
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{"xInGap", "yGap"};
 
         // Default weights
-        private static final double[] WEIGHTS = new double[]{
-            constants.xInWeight.getValue(),
-            constants.yWeight.getValue()
-        };
+        private static final double[] WEIGHTS = new double[]{constants.xInWeight.getValue(),
+                                                             constants.yWeight.getValue()};
 
-        //~ Constructors ---------------------------------------------------------------------------
         public InImpacts (double xInGap,
                           double yGap,
                           double[] weights)
@@ -226,17 +217,13 @@ public abstract class AbstractConnection
     public static class OutImpacts
             extends SupportImpacts
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{"xOutGap", "yGap"};
 
         // Defaults weights
-        private static final double[] WEIGHTS = new double[]{
-            constants.xOutWeight.getValue(),
-            constants.yWeight.getValue()
-        };
+        private static final double[] WEIGHTS = new double[]{constants.xOutWeight.getValue(),
+                                                             constants.yWeight.getValue()};
 
-        //~ Constructors ---------------------------------------------------------------------------
         public OutImpacts (double xOutGap,
                            double yGap,
                            double[] weights)
@@ -253,18 +240,14 @@ public abstract class AbstractConnection
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio xInWeight = new Constant.Ratio(
-                1,
-                "Relative impact weight for xInGap");
+        private final Constant.Ratio xInWeight = new Constant.Ratio(1,
+                                                                    "Relative impact weight for xInGap");
 
-        private final Constant.Ratio xOutWeight = new Constant.Ratio(
-                2,
-                "Relative impact weight for xOutGap");
+        private final Constant.Ratio xOutWeight = new Constant.Ratio(2,
+                                                                     "Relative impact weight for xOutGap");
 
-        private final Constant.Ratio yWeight = new Constant.Ratio(
-                1,
-                "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(1,
+                                                                  "Relative impact weight for yGap");
     }
 }

@@ -58,10 +58,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class HeadChordInter
         extends AbstractChordInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            HeadChordInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(HeadChordInter.class);
 
     /**
      * Compare two heads (assumed to be) of the same chord, ordered by increasing
@@ -93,7 +91,6 @@ public class HeadChordInter
         }
     };
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadChordInter} object.
      *
@@ -111,7 +108,6 @@ public class HeadChordInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -489,9 +485,9 @@ public class HeadChordInter
                 tailLocation = new Point(stemBox.x + (stemBox.width / 2), stemBox.y);
             } else {
                 // Stem is down
-                tailLocation = new Point(
-                        stemBox.x + (stemBox.width / 2),
-                        ((stemBox.y + stemBox.height) - 1));
+                tailLocation = new Point(stemBox.x + (stemBox.width / 2), ((stemBox.y
+                                                                                    + stemBox.height)
+                                                                           - 1));
             }
 
             headLocation = new Point(tailLocation.x, leading.getCenter().y);

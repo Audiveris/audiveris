@@ -78,20 +78,17 @@ import java.util.List;
  */
 public class SheetScanner
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SheetScanner.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
     /** Buffer used by OCR. */
     private ByteProcessor buffer;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TextPageScanner} object.
      *
@@ -102,7 +99,6 @@ public class SheetScanner
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getBuffer //
     //-----------//
@@ -139,13 +135,9 @@ public class SheetScanner
             final String language = textParam.getValue();
             logger.debug("scanSheet lan:{} on {}", language, sheet);
 
-            return OcrUtil.scan(
-                    image,
-                    constants.whiteMarginAdded.getValue(),
-                    OCR.LayoutMode.MULTI_BLOCK,
-                    language,
-                    sheet.getScale().getInterline(),
-                    sheet.getId());
+            return OcrUtil.scan(image, constants.whiteMarginAdded.getValue(),
+                                OCR.LayoutMode.MULTI_BLOCK, language, sheet.getScale()
+                                        .getInterline(), sheet.getId());
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -192,39 +184,30 @@ public class SheetScanner
         return img;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch?");
 
-        private final Constant.Boolean displayTexts = new Constant.Boolean(
-                false,
-                "Should we display the texts image?");
+        private final Constant.Boolean displayTexts = new Constant.Boolean(false,
+                                                                           "Should we display the texts image?");
 
-        private final Constant.Boolean keepTextsBuffer = new Constant.Boolean(
-                false,
-                "Should we store texts buffer on disk?");
+        private final Constant.Boolean keepTextsBuffer = new Constant.Boolean(false,
+                                                                              "Should we store texts buffer on disk?");
 
-        private final Scale.Fraction staffHorizontalMargin = new Scale.Fraction(
-                0.25,
-                "Horizontal margin around staff core area");
+        private final Scale.Fraction staffHorizontalMargin = new Scale.Fraction(0.25,
+                                                                                "Horizontal margin around staff core area");
 
-        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
-                0.25,
-                "Vertical margin around staff core area");
+        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(0.25,
+                                                                              "Vertical margin around staff core area");
 
-        private final Constant.Integer whiteMarginAdded = new Constant.Integer(
-                "pixels",
-                10,
-                "Margin of white pixels added around sheet image");
+        private final Constant.Integer whiteMarginAdded = new Constant.Integer("pixels", 10,
+                                                                               "Margin of white pixels added around sheet image");
     }
 
     //--------------//
@@ -236,12 +219,10 @@ public class SheetScanner
     private static class TextsCleaner
             extends PageCleaner
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Scale-dependent parameters. */
         private final Parameters params;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new {@code TextsCleaner} object.
          *
@@ -257,7 +238,6 @@ public class SheetScanner
             params = new Parameters(sheet.getScale());
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //-------------//
         // eraseInters //
         //-------------//
@@ -333,8 +313,7 @@ public class SheetScanner
             // Thicken the ledgerline 1 pixel above & 1 pixel below
             final Stroke oldStroke = g.getStroke();
             final Glyph glyph = ledger.getGlyph();
-            float thickness = (float) ledger.getGlyph()
-                    .getMeanThickness(Orientation.HORIZONTAL);
+            float thickness = (float) ledger.getGlyph().getMeanThickness(Orientation.HORIZONTAL);
             thickness += 2;
             g.setStroke(new BasicStroke(thickness, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
             glyph.renderLine(g);
@@ -370,19 +349,16 @@ public class SheetScanner
             }
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         //------------//
         // Parameters //
         //------------//
         private static class Parameters
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             final int hMargin;
 
             final int vMargin;
 
-            //~ Constructors -----------------------------------------------------------------------
             public Parameters (Scale scale)
             {
                 hMargin = scale.toPixels(constants.staffHorizontalMargin);

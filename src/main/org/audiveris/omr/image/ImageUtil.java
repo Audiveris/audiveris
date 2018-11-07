@@ -48,11 +48,9 @@ import javax.media.jai.JAI;
  */
 public abstract class ImageUtil
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ImageUtil.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // invert //
     //--------//
@@ -138,12 +136,8 @@ public abstract class ImageUtil
     {
         int type = img.getType();
         ColorModel colorModel = img.getColorModel();
-        logger.info(
-                "{} type:({}={}) cm:({})",
-                (title != null) ? title : "",
-                type,
-                typeOf(type),
-                colorModel);
+        logger.info("{} type:({}={}) cm:({})", (title != null) ? title : "", type, typeOf(type),
+                    colorModel);
     }
 
     //-----------//

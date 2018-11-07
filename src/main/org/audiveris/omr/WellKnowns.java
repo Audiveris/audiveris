@@ -52,7 +52,6 @@ import javax.swing.filechooser.FileSystemView;
  */
 public abstract class WellKnowns
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     //----------//
     // IDENTITY //
@@ -99,8 +98,7 @@ public abstract class WellKnowns
     public static final String OS_ARCH = System.getProperty("os.arch");
 
     /** Are we using Windows on 64 bit architecture?. */
-    public static final boolean WINDOWS_64 = WINDOWS
-                                             && (System.getenv("ProgramFiles(x86)") != null);
+    public static final boolean WINDOWS_64 = WINDOWS && (System.getenv("ProgramFiles(x86)") != null);
 
     /** File character encoding. */
     public static final String FILE_ENCODING = getFileEncoding();
@@ -131,9 +129,8 @@ public abstract class WellKnowns
     public static final boolean RUNNING_FROM_JAR = runningFromJar();
 
     /** The uri where read-only resources are stored. */
-    public static final URI RES_URI = RUNNING_FROM_JAR
-            ? toURI(WellKnowns.class.getClassLoader().getResource("res"))
-            : Paths.get("res").toUri();
+    public static final URI RES_URI = RUNNING_FROM_JAR ? toURI(WellKnowns.class.getClassLoader()
+            .getResource("res")) : Paths.get("res").toUri();
 
     //-------------// read-write area
     // USER CONFIG // Configuration files the user can edit on his own
@@ -201,23 +198,18 @@ public abstract class WellKnowns
         disableMediaLib();
     }
 
-    //~ Enumerations -------------------------------------------------------------------------------
     private static enum FolderKind
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         DATA,
         CONFIG,
         LOG;
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private WellKnowns ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // ensureLoaded //
     //--------------//

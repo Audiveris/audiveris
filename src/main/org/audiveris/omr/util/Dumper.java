@@ -47,15 +47,15 @@ import java.util.Map;
  * There are several kinds of print outs available through subclassing. Each of them export two
  * public methods: {@code dump()} which prints the result on default output stream, and
  * {@code dumpOf()} which simply returns the generated dump string.
- *
+ * <p>
  * <ul> <li> <b>Column</b> a dump with one line per field </li>
- *
+ * <p>
  * <li> <b>Row</b> a dump with all information on one row </li>
- *
+ * <p>
  * <li> <b>Html</b> an Html stream with fields arranged in tables </li>
- *
+ * <p>
  * </ul>
- *
+ * <p>
  * Here are some examples of use:
  * <pre>
  * // Using the predefined static helper methods
@@ -75,12 +75,10 @@ import java.util.Map;
  */
 public class Dumper
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Maximum number of collection items printed */
     private static final int MAX_COLLECTION_INDEX = 9;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** To filter classes and fields */
     protected final Relevance relevance;
 
@@ -104,7 +102,6 @@ public class Dumper
      */
     protected Class<?> classe;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Dumper.
      *
@@ -127,7 +124,6 @@ public class Dumper
         classe = object.getClass();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // print //
     //-------//
@@ -323,7 +319,6 @@ public class Dumper
         } while (relevance.isClassRelevant(classe));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Column //
     //--------//
@@ -335,18 +330,15 @@ public class Dumper
     public static class Column
             extends Dumper
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String MEMBER_GAP = "   ";
 
         private static final String INDENT_GAP = ".  ";
 
-        //~ Instance fields ------------------------------------------------------------------------
         private final String title;
 
         private final StringBuilder prefix;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Column (Relevance relevance,
                        Object object,
                        String title,
@@ -369,7 +361,6 @@ public class Dumper
             }
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void printClassProlog ()
         {
@@ -403,7 +394,6 @@ public class Dumper
     public static class Html
             extends Dumper
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public Html (Relevance relevance,
                      Object object)
@@ -411,13 +401,12 @@ public class Dumper
             super(relevance, object, true);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
             // Style
-            sb.append("<style> td {").append(" font-family: Lucida Console, Verdana, sans-serif;").append(
-                    " font-size: 9px;").append(" font-style: normal;").append("} </style>");
+            sb.append("<style> td {").append(" font-family: Lucida Console, Verdana, sans-serif;")
+                    .append(" font-size: 9px;").append(" font-style: normal;").append("} </style>");
 
             // Table begin
             sb.append("<table border=0 cellpadding=3>");
@@ -468,7 +457,6 @@ public class Dumper
     public static class Row
             extends Dumper
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public Row (Relevance relevance,
                     Object object)
@@ -476,7 +464,6 @@ public class Dumper
             super(relevance, object, false);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void printClassEpilog ()
         {

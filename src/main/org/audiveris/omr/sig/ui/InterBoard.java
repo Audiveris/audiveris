@@ -64,13 +64,11 @@ import javax.swing.SwingConstants;
 public class InterBoard
         extends EntityBoard<Inter>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(InterBoard.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -97,10 +95,9 @@ public class InterBoard
     //    private final LIntegerField timeDen;
     //
     /** ComboBox for text role. */
-    private final LComboBox<TextRole> roleCombo = new LComboBox<TextRole>(
-            "Role",
-            "Role of the Sentence",
-            TextRole.values());
+    private final LComboBox<TextRole> roleCombo = new LComboBox<TextRole>("Role",
+                                                                          "Role of the Sentence",
+                                                                          TextRole.values());
 
     /** Input/Output : textual content. */
     private final LTextField textField = new LTextField(true, "Text", "Content of textual item");
@@ -111,7 +108,6 @@ public class InterBoard
     /** To avoid unwanted events. */
     private boolean selfUpdatingText;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new InterBoard object, pre-selected by default.
      *
@@ -135,9 +131,8 @@ public class InterBoard
         this.sheet = sheet;
 
         // Force a constant height for the shapeIcon field, despite variation in size of the icon
-        Dimension dim = new Dimension(
-                constants.shapeIconWidth.getValue(),
-                constants.shapeIconHeight.getValue());
+        Dimension dim = new Dimension(constants.shapeIconWidth.getValue(), constants.shapeIconHeight
+                                      .getValue());
         shapeIcon.setPreferredSize(dim);
         shapeIcon.setMaximumSize(dim);
         shapeIcon.setMinimumSize(dim);
@@ -154,7 +149,6 @@ public class InterBoard
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------------//
     // dumpActionPerformed //
     //---------------------//
@@ -309,28 +303,23 @@ public class InterBoard
         builder.add(details, cst.xyw(1, r, 11));
 
         // Needed to process user input when RETURN/ENTER is pressed
-        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-                KeyStroke.getKeyStroke("ENTER"),
-                "TextAction");
+        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke
+                .getKeyStroke("ENTER"), "TextAction");
         getComponent().getActionMap().put("TextAction", paramAction);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final PixelCount shapeIconHeight = new PixelCount(
-                70,
-                "Exact pixel height for the shape icon field");
+        private final PixelCount shapeIconHeight = new PixelCount(70,
+                                                                  "Exact pixel height for the shape icon field");
 
-        private final PixelCount shapeIconWidth = new PixelCount(
-                50,
-                "Exact pixel width for the shape icon field");
+        private final PixelCount shapeIconWidth = new PixelCount(50,
+                                                                 "Exact pixel width for the shape icon field");
     }
 
     //----------------//
@@ -339,7 +328,6 @@ public class InterBoard
     private class DeassignAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public DeassignAction ()
         {
@@ -347,7 +335,6 @@ public class InterBoard
             this.putValue(Action.SHORT_DESCRIPTION, "Deassign inter");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -365,7 +352,6 @@ public class InterBoard
     private class ParamAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Method run whenever user presses Return/Enter in one of the parameter fields
@@ -402,10 +388,7 @@ public class InterBoard
                     final TextRole newRole = roleCombo.getSelectedItem();
 
                     if (newRole != sentence.getRole()) {
-                        logger.debug(
-                                "Sentence=\"{}\" Role={}",
-                                textField.getText().trim(),
-                                newRole);
+                        logger.debug("Sentence=\"{}\" Role={}", textField.getText().trim(), newRole);
 
                         if (newRole == TextRole.Lyrics) {
                             logger.info("You cannot change role to lyrics");

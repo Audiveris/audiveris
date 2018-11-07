@@ -39,7 +39,6 @@ import javax.swing.SpinnerModel;
  */
 public abstract class SpinnerUtil
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     //----------------//
     // fixIntegerList //

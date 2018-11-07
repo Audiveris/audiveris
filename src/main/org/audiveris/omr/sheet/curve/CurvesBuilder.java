@@ -72,12 +72,10 @@ import java.util.Set;
 public abstract class CurvesBuilder
         implements ItemRenderer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            CurvesBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(CurvesBuilder.class);
 
     /** To sort Extension instances by decreasing grade. */
     private static final Comparator<Extension> byReverseGrade = new Comparator<Extension>()
@@ -90,7 +88,6 @@ public abstract class CurvesBuilder
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
     protected final Sheet sheet;
@@ -122,7 +119,6 @@ public abstract class CurvesBuilder
     // Debug, to be removed ASAP.
     protected int maxClumpSize = 0;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SequencesBuilder object.
      *
@@ -139,7 +135,6 @@ public abstract class CurvesBuilder
         params = new Parameters(sheet.getScale());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Try to append one arc to an existing curve and thus create a new curve.
      *
@@ -183,12 +178,8 @@ public abstract class CurvesBuilder
     protected Curve createCurve (Arc seedArc,
                                  Model model)
     {
-        return createInstance(
-                seedArc.getJunction(true),
-                seedArc.getJunction(false),
-                seedArc.getPoints(),
-                model,
-                Arrays.asList(seedArc));
+        return createInstance(seedArc.getJunction(true), seedArc.getJunction(false), seedArc
+                              .getPoints(), model, Arrays.asList(seedArc));
     }
 
     //-------------//
@@ -403,12 +394,7 @@ public abstract class CurvesBuilder
         Set<Arc> parts = new LinkedHashSet<Arc>(left.getParts());
         parts.addAll(right.getParts());
 
-        return createInstance(
-                left.getJunction(true),
-                right.getJunction(false),
-                points,
-                null,
-                parts);
+        return createInstance(left.getJunction(true), right.getJunction(false), points, null, parts);
     }
 
     //---------------//
@@ -456,14 +442,14 @@ public abstract class CurvesBuilder
 
         double dl1 = params.gapBoxDeltaIn;
         Point2D dlVect = new Point2D.Double(-dl1 * uv.getY(), dl1 * uv.getX());
-        path = new GeoPath(
-                new Line2D.Double(PointUtil.addition(ce, dlVect), PointUtil.subtraction(ce, dlVect)));
+        path = new GeoPath(new Line2D.Double(PointUtil.addition(ce, dlVect), PointUtil.subtraction(
+                                             ce, dlVect)));
 
         double dl2 = params.gapBoxDeltaOut;
         dlVect = new Point2D.Double(-dl2 * uv.getY(), dl2 * uv.getX());
-        path.append(
-                new Line2D.Double(PointUtil.subtraction(ce2, dlVect), PointUtil.addition(ce2, dlVect)),
-                true);
+        path.append(new Line2D.Double(PointUtil.subtraction(ce2, dlVect), PointUtil.addition(ce2,
+                                                                                             dlVect)),
+                    true);
         //        }
         path.closePath();
 
@@ -1030,51 +1016,39 @@ public abstract class CurvesBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction gapMaxLength = new Scale.Fraction(
-                0.25,
-                "Maximum acceptable length for true gap");
+        private final Scale.Fraction gapMaxLength = new Scale.Fraction(0.25,
+                                                                       "Maximum acceptable length for true gap");
 
-        private final Scale.Fraction gapBoxLength = new Scale.Fraction(
-                1.0,
-                "Length used for gap lookup box");
+        private final Scale.Fraction gapBoxLength = new Scale.Fraction(1.0,
+                                                                       "Length used for gap lookup box");
 
-        private final Scale.Fraction gapBoxDeltaIn = new Scale.Fraction(
-                0.2,
-                "Delta for gap box on slur side");
+        private final Scale.Fraction gapBoxDeltaIn = new Scale.Fraction(0.2,
+                                                                        "Delta for gap box on slur side");
 
-        private final Scale.Fraction gapBoxDeltaOut = new Scale.Fraction(
-                0.3,
-                "Delta for gap box on extension side");
+        private final Scale.Fraction gapBoxDeltaOut = new Scale.Fraction(0.3,
+                                                                         "Delta for gap box on extension side");
 
-        private final Scale.Fraction lineBoxLength = new Scale.Fraction(
-                1.8,
-                "Length for box across staff line");
+        private final Scale.Fraction lineBoxLength = new Scale.Fraction(1.8,
+                                                                        "Length for box across staff line");
 
-        private final Scale.Fraction lineBoxIn = new Scale.Fraction(
-                0.2,
-                "Overlap for line box on slur side");
+        private final Scale.Fraction lineBoxIn = new Scale.Fraction(0.2,
+                                                                    "Overlap for line box on slur side");
 
-        private final Scale.Fraction lineBoxDeltaIn = new Scale.Fraction(
-                0.2,
-                "Delta for line box on slur side");
+        private final Scale.Fraction lineBoxDeltaIn = new Scale.Fraction(0.2,
+                                                                         "Delta for line box on slur side");
 
-        private final Scale.Fraction lineBoxDeltaOut = new Scale.Fraction(
-                0.3,
-                "Delta for line box on extension side");
+        private final Scale.Fraction lineBoxDeltaOut = new Scale.Fraction(0.3,
+                                                                          "Delta for line box on extension side");
 
-        private final Constant.Integer maxExtensionRookies = new Constant.Integer(
-                "extensions",
-                50,
-                "Maximum rookies when extending a curve");
+        private final Constant.Integer maxExtensionRookies = new Constant.Integer("extensions", 50,
+                                                                                  "Maximum rookies when extending a curve");
     }
 
     //------------//
@@ -1085,7 +1059,6 @@ public abstract class CurvesBuilder
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final double gapMaxLength;
 
@@ -1105,7 +1078,6 @@ public abstract class CurvesBuilder
 
         final int maxExtensionRookies;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
          *
@@ -1138,7 +1110,6 @@ public abstract class CurvesBuilder
      */
     private class Extension
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Curve as defined so far. */
         Curve curve;
@@ -1149,7 +1120,6 @@ public abstract class CurvesBuilder
         /** Curve quality. */
         private Double grade;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Extension (Curve curve,
                           Set<Arc> browsed)
         {
@@ -1157,7 +1127,6 @@ public abstract class CurvesBuilder
             this.browsed = new LinkedHashSet<Arc>(browsed); // Copy is needed
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public double getGrade ()
         {
             if (grade == null) {

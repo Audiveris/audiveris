@@ -37,14 +37,12 @@ import org.slf4j.LoggerFactory;
 public class ImgGlyphDescriptor
         extends GlyphDescriptor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ImgGlyphDescriptor.class);
 
     /** Empty labels array. */
     private static final String[] NO_LABELS = new String[0];
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ImgGlyphDescriptor} object.
      */
@@ -53,7 +51,6 @@ public class ImgGlyphDescriptor
         super(ScaledBuffer.HEIGHT + "x" + ScaledBuffer.WIDTH);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public String[] getFeatureLabels ()
     {

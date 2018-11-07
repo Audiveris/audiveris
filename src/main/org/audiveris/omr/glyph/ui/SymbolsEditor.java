@@ -99,13 +99,11 @@ import javax.swing.SwingUtilities;
 public class SymbolsEditor
         implements PropertyChangeListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolsEditor.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -121,7 +119,6 @@ public class SymbolsEditor
     /** View parameters. */
     private final ViewParameters viewParams = ViewParameters.getInstance();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the DATA_TAB view in the sheet assembly tabs, dedicated to the display and
      * handling of glyphs and inters.
@@ -182,18 +179,12 @@ public class SymbolsEditor
             boards.add(new SectionBoard(vLag, constants.selectVerticalSectionBoard.isSet()));
         }
 
-        boards.add(
-                new SymbolGlyphBoard(glyphsController, constants.selectGlyphBoard.isSet(), true));
+        boards.add(new SymbolGlyphBoard(glyphsController, constants.selectGlyphBoard.isSet(), true));
         boards.add(new InterBoard(sheet, constants.selectInterBoard.isSet()));
         boards.add(shapeBoard = new ShapeBoard(sheet, this, constants.selectShapeBoard.isSet()));
-        boards.add(
-                new EvaluationBoard(
-                        true,
-                        sheet,
-                        BasicClassifier.getInstance(),
-                        sheet.getGlyphIndex().getEntityService(),
-                        interController,
-                        constants.selectBasicClassifierBoard.isSet()));
+        boards.add(new EvaluationBoard(true, sheet, BasicClassifier.getInstance(), sheet
+                                       .getGlyphIndex().getEntityService(), interController,
+                                       constants.selectBasicClassifierBoard.isSet()));
 
         //        boards.add(
         //                new EvaluationBoard(
@@ -212,7 +203,6 @@ public class SymbolsEditor
         assembly.lockViewTab(SheetTab.DATA_TAB);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getShapeBoard //
     //---------------//
@@ -341,50 +331,39 @@ public class SymbolsEditor
         view.repaint();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final PixelCount measureMargin = new PixelCount(
-                10,
-                "Number of pixels as margin when highlighting a measure");
+        private final PixelCount measureMargin = new PixelCount(10,
+                                                                "Number of pixels as margin when highlighting a measure");
 
-        private final Constant.Boolean selectPixelBoard = new Constant.Boolean(
-                false,
-                "Should we select Pixel board by default?");
+        private final Constant.Boolean selectPixelBoard = new Constant.Boolean(false,
+                                                                               "Should we select Pixel board by default?");
 
-        private final Constant.Boolean selectHorizontalSectionBoard = new Constant.Boolean(
-                false,
-                "Should we select Horizontal Section board by default?");
+        private final Constant.Boolean selectHorizontalSectionBoard = new Constant.Boolean(false,
+                                                                                           "Should we select Horizontal Section board by default?");
 
-        private final Constant.Boolean selectVerticalSectionBoard = new Constant.Boolean(
-                false,
-                "Should we select Vertical Section board by default?");
+        private final Constant.Boolean selectVerticalSectionBoard = new Constant.Boolean(false,
+                                                                                         "Should we select Vertical Section board by default?");
 
-        private final Constant.Boolean selectGlyphBoard = new Constant.Boolean(
-                false,
-                "Should we select Glyph board by default?");
+        private final Constant.Boolean selectGlyphBoard = new Constant.Boolean(false,
+                                                                               "Should we select Glyph board by default?");
 
-        private final Constant.Boolean selectInterBoard = new Constant.Boolean(
-                true,
-                "Should we select Inter board by default?");
+        private final Constant.Boolean selectInterBoard = new Constant.Boolean(true,
+                                                                               "Should we select Inter board by default?");
 
-        private final Constant.Boolean selectShapeBoard = new Constant.Boolean(
-                true,
-                "Should we select Shape board by default?");
+        private final Constant.Boolean selectShapeBoard = new Constant.Boolean(true,
+                                                                               "Should we select Shape board by default?");
 
-        private final Constant.Boolean selectBasicClassifierBoard = new Constant.Boolean(
-                true,
-                "Should we select Basic Classifier board by default?");
+        private final Constant.Boolean selectBasicClassifierBoard = new Constant.Boolean(true,
+                                                                                         "Should we select Basic Classifier board by default?");
 
-        private final Constant.Boolean selectDeepClassifierBoard = new Constant.Boolean(
-                false,
-                "Should we select Deep Classifier board by default?");
+        private final Constant.Boolean selectDeepClassifierBoard = new Constant.Boolean(false,
+                                                                                        "Should we select Deep Classifier board by default?");
     }
 
     //--------//
@@ -393,7 +372,6 @@ public class SymbolsEditor
     private final class MyView
             extends NestView
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Currently highlighted slot, if any. */
         private Slot highlightedSlot;
@@ -401,15 +379,10 @@ public class SymbolsEditor
         /** Current vector. */
         private RelationVector vector;
 
-        //~ Constructors ---------------------------------------------------------------------------
         private MyView (GlyphIndex glyphIndex)
         {
-            super(
-                    glyphIndex.getEntityService(),
-                    Arrays.asList(
-                            sheet.getLagManager().getLag(Lags.HLAG),
-                            sheet.getLagManager().getLag(Lags.VLAG)),
-                    sheet);
+            super(glyphIndex.getEntityService(), Arrays.asList(sheet.getLagManager().getLag(
+                  Lags.HLAG), sheet.getLagManager().getLag(Lags.VLAG)), sheet);
             setName("SymbolsEditor-MyView");
 
             // Subscribe to all lags for SectionSet events
@@ -420,7 +393,6 @@ public class SymbolsEditor
             sheet.getInterIndex().getEntityService().subscribeStrongly(EntityListEvent.class, this);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //--------------//
         // contextAdded //
         //--------------//
@@ -598,7 +570,8 @@ public class SymbolsEditor
 
             if (viewParams.isInputPainting()) {
                 // Sections
-                final boolean drawBorders = viewParams.getSelectionMode() == SelectionMode.MODE_SECTION;
+                final boolean drawBorders = viewParams.getSelectionMode()
+                                                    == SelectionMode.MODE_SECTION;
                 final Stroke oldStroke = (drawBorders) ? UIUtil.setAbsoluteStroke(g, 1f) : null;
 
                 for (Lag lag : lags) {

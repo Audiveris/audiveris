@@ -61,20 +61,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class TupletInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TupletInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     // Factor lazily computed
     private DurationFactor durationFactor;
 
     /** Base duration. Lazily computed. */
     private Rational baseDuration;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TupletInter} object.
      *
@@ -96,7 +93,6 @@ public class TupletInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -134,9 +130,7 @@ public class TupletInter
     @Override
     public boolean checkAbnormal ()
     {
-        SortedSet<AbstractChordInter> embraced = TupletsBuilder.getEmbracedChords(
-                this,
-                getChords());
+        SortedSet<AbstractChordInter> embraced = TupletsBuilder.getEmbracedChords(this, getChords());
         setAbnormal(embraced == null);
 
         return isAbnormal();
@@ -164,9 +158,8 @@ public class TupletInter
     {
         Rectangle luBox = glyph.getBounds();
         Scale scale = system.getSheet().getScale();
-        luBox.grow(
-                scale.toPixels(constants.maxTupletChordDx),
-                scale.toPixels(constants.maxTupletChordDy));
+        luBox.grow(scale.toPixels(constants.maxTupletChordDx), scale.toPixels(
+                   constants.maxTupletChordDy));
 
         List<Inter> nearby = Inters.intersectedInters(systemChords, GeoOrder.BY_ABSCISSA, luBox);
 
@@ -349,21 +342,17 @@ public class TupletInter
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction maxTupletChordDx = new Scale.Fraction(
-                3,
-                "Maximum abscissa gap between tuplet and closest chord");
+        private final Scale.Fraction maxTupletChordDx = new Scale.Fraction(3,
+                                                                           "Maximum abscissa gap between tuplet and closest chord");
 
-        private final Scale.Fraction maxTupletChordDy = new Scale.Fraction(
-                2.5,
-                "Maximum ordinate gap between tuplet and closest chord");
+        private final Scale.Fraction maxTupletChordDy = new Scale.Fraction(2.5,
+                                                                           "Maximum ordinate gap between tuplet and closest chord");
     }
 }

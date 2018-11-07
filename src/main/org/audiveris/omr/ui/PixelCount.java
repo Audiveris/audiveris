@@ -29,7 +29,6 @@ import org.audiveris.omr.constant.Constant;
 public class PixelCount
         extends Constant.Integer
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Specific constructor, where 'unit' and 'name' are assigned later.

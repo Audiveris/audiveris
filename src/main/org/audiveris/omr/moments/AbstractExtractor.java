@@ -33,7 +33,6 @@ import java.awt.geom.Point2D;
 public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
         implements MomentsExtractor<D>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Input abscissae. */
     protected int[] xx;
@@ -53,7 +52,6 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
     /** The target descriptor. */
     protected D descriptor;
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // extract //
     //---------//
@@ -64,18 +62,17 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
     {
         // Check arguments
         if ((xx == null) || (yy == null)) {
-            throw new IllegalArgumentException(
-                    getClass().getSimpleName() + " cannot process a null array");
+            throw new IllegalArgumentException(getClass().getSimpleName()
+                                                       + " cannot process a null array");
         }
 
         if ((mass <= 0) || (mass > xx.length) || (mass > yy.length)) {
-            throw new IllegalArgumentException(
-                    getClass().getSimpleName() + " on inconsistent input");
+            throw new IllegalArgumentException(getClass().getSimpleName() + " on inconsistent input");
         }
 
         if (descriptor == null) {
-            throw new IllegalArgumentException(
-                    getClass().getSimpleName() + " has no target descriptor");
+            throw new IllegalArgumentException(getClass().getSimpleName()
+                                                       + " has no target descriptor");
         }
 
         this.xx = xx;

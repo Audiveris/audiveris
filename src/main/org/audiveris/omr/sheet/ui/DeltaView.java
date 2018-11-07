@@ -54,18 +54,15 @@ public class DeltaView
         extends ScrollView
         implements PropertyChangeListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(DeltaView.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying sheet. */
     private final Sheet sheet;
 
     /** View parameters. */
     private final ViewParameters viewParams = ViewParameters.getInstance();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new {@code DeltaView} instance, dedicated to a sheet.
      *
@@ -83,14 +80,12 @@ public class DeltaView
         view.setLocationService(sheet.getLocationService());
 
         // Listen to all painting parameters
-        ViewParameters.getInstance().addPropertyChangeListener(
-                new WeakPropertyChangeListener(this));
+        ViewParameters.getInstance().addPropertyChangeListener(new WeakPropertyChangeListener(this));
 
         // Insert view
         setView(view);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // propertyChange //
     //----------------//
@@ -100,37 +95,30 @@ public class DeltaView
         view.repaint();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyView //
     //--------//
     private class MyView
             extends RubberPanel
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public MyView ()
         {
             setModelSize(new Dimension(sheet.getWidth(), sheet.getHeight()));
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //--------//
         // render //
         //--------//
         @Override
         public void render (Graphics2D g)
         {
-            BufferedImage img = new BufferedImage(
-                    sheet.getWidth(),
-                    sheet.getHeight(),
-                    BufferedImage.TYPE_INT_ARGB);
+            BufferedImage img = new BufferedImage(sheet.getWidth(), sheet.getHeight(),
+                                                  BufferedImage.TYPE_INT_ARGB);
             Graphics2D gbi = img.createGraphics();
 
             // Anti-aliasing OFF
-            gbi.setRenderingHint(
-                    RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
+            gbi.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             Rectangle clip = g.getClipBounds();
 

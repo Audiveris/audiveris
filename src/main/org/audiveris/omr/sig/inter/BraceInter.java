@@ -43,11 +43,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BraceInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BraceInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BraceInter object.
      *
@@ -68,7 +66,6 @@ public class BraceInter
         super(null, null, null, null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -93,8 +90,9 @@ public class BraceInter
 
                 try {
                     final Staff staff1 = system.getClosestStaff(new Point(xRight, box.y));
-                    final Staff staff2 = system.getClosestStaff(
-                            new Point(xRight, (box.y + box.height) - 1));
+                    final Staff staff2 = system.getClosestStaff(new Point(xRight, (box.y
+                                                                                           + box.height)
+                                                                                  - 1));
                     final int y1 = staff1.getFirstLine().yAt(xRight);
                     final int y2 = staff2.getLastLine().yAt(xRight);
                     bounds = new Rectangle(box.x, y1, box.width, y2 - y1 + 1);

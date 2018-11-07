@@ -108,11 +108,9 @@ import java.util.TreeMap;
  */
 public class InterFactory
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterFactory.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -144,7 +142,6 @@ public class InterFactory
     /** Processing switches. */
     private final ProcessingSwitches switches;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new InterFactory object.
      *
@@ -170,7 +167,6 @@ public class InterFactory
         switches = system.getSheet().getStub().getProcessingSwitches();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // create //
     //--------//
@@ -453,13 +449,8 @@ public class InterFactory
         case STACCATO:
         case STACCATISSIMO:
         case STRONG_ACCENT:
-            return switches.getValue(Switch.articulations)
-                    ? ArticulationInter.createValidAdded(
-                            glyph,
-                            shape,
-                            grade,
-                            system,
-                            systemHeadChords) : null;
+            return switches.getValue(Switch.articulations) ? ArticulationInter.createValidAdded(
+                    glyph, shape, grade, system, systemHeadChords) : null;
 
         // Markers
         case CODA:
@@ -538,7 +529,8 @@ public class InterFactory
         case PLUCK_I:
         case PLUCK_M:
         case PLUCK_A:
-            return switches.getValue(Switch.pluckings) ? new PluckingInter(glyph, shape, grade) : null;
+            return switches.getValue(Switch.pluckings) ? new PluckingInter(glyph, shape, grade)
+                    : null;
 
         // Romans
         case ROMAN_I:
@@ -757,8 +749,8 @@ public class InterFactory
         case STACCATO:
         case STACCATISSIMO:
         case STRONG_ACCENT:
-            return switches.getValue(Switch.articulations)
-                    ? new ArticulationInter(null, shape, GRADE) : null; // No visit
+            return switches.getValue(Switch.articulations) ? new ArticulationInter(null, shape,
+                                                                                   GRADE) : null; // No visit
 
         // Markers
         case CODA:
@@ -834,7 +826,8 @@ public class InterFactory
         case PLUCK_I:
         case PLUCK_M:
         case PLUCK_A:
-            return switches.getValue(Switch.pluckings) ? new PluckingInter(null, shape, GRADE) : null; // No visit
+            return switches.getValue(Switch.pluckings) ? new PluckingInter(null, shape, GRADE)
+                    : null; // No visit
 
         // Romans
         case ROMAN_I:
@@ -891,9 +884,7 @@ public class InterFactory
                                 DynamicsInter d2)
             {
                 // Sort by decreasing length
-                return Integer.compare(
-                        d2.getSymbolString().length(),
-                        d1.getSymbolString().length());
+                return Integer.compare(d2.getSymbolString().length(), d1.getSymbolString().length());
             }
         });
 
@@ -973,7 +964,7 @@ public class InterFactory
                     public boolean check (Inter inter)
                     {
                         return inter.getBounds().intersects(columnBox)
-                               && !(inter instanceof InterEnsemble);
+                                       && !(inter instanceof InterEnsemble);
                     }
                 });
 

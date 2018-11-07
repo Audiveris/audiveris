@@ -44,12 +44,10 @@ import java.util.Map;
 public class BasicAttachmentHolder
         implements AttachmentHolder
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Map for attachments */
     protected Map<String, java.awt.Shape> attachments = new HashMap<String, java.awt.Shape>();
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // addAttachment //
     //---------------//

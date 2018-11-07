@@ -36,12 +36,10 @@ import java.awt.geom.Rectangle2D;
 public abstract class KeySymbol
         extends ShapeSymbol
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The key to represent, -7..-1 for flats, 1..7 for sharps */
     protected final int key;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new KeySymbol object.
      *
@@ -59,7 +57,6 @@ public abstract class KeySymbol
         this.key = key;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getParams //
     //-----------//
@@ -81,11 +78,9 @@ public abstract class KeySymbol
 
         for (int k = 1; k <= (key * sign); k++) {
             int pitch = KeyInter.getItemPitch(k * sign, null);
-            Rectangle r = new Rectangle(
-                    (int) Math.rint((k - 1) * p.itemDx),
-                    (int) Math.rint(pitch * p.stepDy),
-                    p.itemRect.width,
-                    p.itemRect.height);
+            Rectangle r = new Rectangle((int) Math.rint((k - 1) * p.itemDx), (int) Math.rint(pitch
+                                                                                                     * p.stepDy),
+                                        p.itemRect.width, p.itemRect.height);
 
             if (p.rect == null) {
                 p.rect = r;
@@ -118,24 +113,18 @@ public abstract class KeySymbol
 
         for (int k = 1; k <= (key * sign); k++) {
             int pitch = KeyInter.getItemPitch(k * sign, null);
-            MusicFont.paint(
-                    g,
-                    p.layout,
-                    new Point(
-                            loc.x + (int) Math.rint((k - 1) * p.itemDx),
-                            loc.y + (int) Math.rint(pitch * p.stepDy)),
-                    MIDDLE_LEFT);
+            MusicFont.paint(g, p.layout, new Point(loc.x + (int) Math.rint((k - 1) * p.itemDx),
+                                                   loc.y + (int) Math.rint(pitch * p.stepDy)),
+                            MIDDLE_LEFT);
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         double stepDy; // Dy from one step to the other
 

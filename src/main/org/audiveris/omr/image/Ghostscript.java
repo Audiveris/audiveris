@@ -43,7 +43,6 @@ import java.util.regex.Pattern;
  */
 public class Ghostscript
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -52,7 +51,6 @@ public class Ghostscript
     /** Path to exec. */
     private static volatile String path;
 
-    //~ Methods ------------------------------------------------------------------------------------
     //
     //---------//
     // getPath //
@@ -93,10 +91,9 @@ public class Ghostscript
     private static List<String> getRegistryOutputs ()
     {
         /** Radices used in registry search (32, 64 or Wow). */
-        final String[] radices = new String[]{
-            "HKLM\\SOFTWARE\\GPL Ghostscript", // Pure 32/32 or 64/64
-            "HKLM\\SOFTWARE\\Wow6432Node\\GPL Ghostscript" // Wow (64/32)
-        };
+        final String[] radices = new String[]{"HKLM\\SOFTWARE\\GPL Ghostscript", // Pure 32/32 or 64/64
+                                              "HKLM\\SOFTWARE\\Wow6432Node\\GPL Ghostscript" // Wow (64/32)
+    };
 
         List<String> outputs = new ArrayList<String>();
 
@@ -115,7 +112,7 @@ public class Ghostscript
     /**
      * Retrieve the path to suitable ghostscript executable on Windows
      * environments.
-     *
+     * <p>
      * This is implemented on registry informations, using CLI "reg" command:
      * reg query "HKLM\SOFTWARE\GPL Ghostscript" /s
      *
@@ -130,12 +127,12 @@ public class Ghostscript
 
         /** Regex for registry key line. */
         final Pattern keyPattern = Pattern.compile(
-                "^HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\(Wow6432Node\\\\)?GPL Ghostscript\\\\"
-                + group(VERSION, "\\d+\\.\\d+") + "$");
+                "^HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\(Wow6432Node\\\\)?GPL Ghostscript\\\\" + group(
+                        VERSION, "\\d+\\.\\d+") + "$");
 
         /** Regex for registry value line. */
-        final Pattern valPattern = Pattern.compile(
-                "^\\s+GS_DLL\\s+REG_SZ\\s+" + group(PATH, ".+") + "$");
+        final Pattern valPattern = Pattern.compile("^\\s+GS_DLL\\s+REG_SZ\\s+" + group(PATH, ".+")
+                                                           + "$");
 
         /** Regex for dll name. */
         final Pattern dllPattern = Pattern.compile("gsdll" + group(ARCH, "\\d+") + "\\.dll$");
@@ -160,8 +157,8 @@ public class Ghostscript
 
                 Double version = Double.valueOf(versionStr);
 
-                if ((version >= constants.minVersion.getValue())
-                    && (version <= constants.maxVersion.getValue())) {
+                if ((version >= constants.minVersion.getValue()) && (version <= constants.maxVersion
+                        .getValue())) {
                     // We have an acceptable version
                     if ((bestVersion == null) || (bestVersion < version)) {
                         bestVersion = version;
@@ -209,23 +206,17 @@ public class Ghostscript
         return null; // Abnormal exit
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Double minVersion = new Constant.Double(
-                "version",
-                9.06,
-                "Minimum Ghostscript acceptable version");
+        private final Constant.Double minVersion = new Constant.Double("version", 9.06,
+                                                                       "Minimum Ghostscript acceptable version");
 
-        private final Constant.Double maxVersion = new Constant.Double(
-                "version",
-                9999,
-                "Maximum Ghostscript acceptable version");
+        private final Constant.Double maxVersion = new Constant.Double("version", 9999,
+                                                                       "Maximum Ghostscript acceptable version");
     }
 }

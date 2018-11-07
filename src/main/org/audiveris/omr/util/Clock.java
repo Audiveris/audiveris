@@ -35,16 +35,14 @@ import java.util.Locale;
  */
 public abstract class Clock
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To have a reference time */
     private static long startTime = System.currentTimeMillis();
 
     /** General date formatting */
-    private static final DateFormat dateFormatter = DateFormat.getDateTimeInstance(
-            DateFormat.FULL,
-            DateFormat.FULL,
-            Locale.US);
+    private static final DateFormat dateFormatter = DateFormat.getDateTimeInstance(DateFormat.FULL,
+                                                                                   DateFormat.FULL,
+                                                                                   Locale.US);
 
     /** General time formatting. Locale to be used, could be: //Locale.US;
      * //Locale.FRANCE; */
@@ -60,13 +58,11 @@ public abstract class Clock
         timeFormatter.applyPattern("000,000.00");
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     /** To prevent instantiation. */
     private Clock ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getDate //
     //---------//
@@ -76,7 +72,7 @@ public abstract class Clock
      *
      * @return A standardized date + time string
      */
-    public synchronized static String getDate ()
+    public static synchronized String getDate ()
     {
         return dateFormatter.format(new Date());
     }

@@ -37,7 +37,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class PedalInter
         extends AbstractDirectionInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code PedalInter} object.
@@ -61,7 +60,6 @@ public class PedalInter
         super(null, null, null, 0);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

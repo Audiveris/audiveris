@@ -36,7 +36,6 @@ import javax.swing.JComboBox;
 public class LComboBox<E>
         extends LField<JComboBox<E>>
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create an editable labeled combo with provided
@@ -53,7 +52,6 @@ public class LComboBox<E>
         super(label, tip, new JComboBox<E>(items));
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // addActionListener //
     //-------------------//

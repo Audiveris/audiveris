@@ -64,7 +64,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 public class SampleSheet
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleSheet.class);
 
@@ -80,11 +79,8 @@ public class SampleSheet
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
-    //~ Enumerations -------------------------------------------------------------------------------
     public enum ImageStatus
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /** There is no recorded image for this sheet. */
         NO_IMAGE,
         /** Sheet image is available on disk. */
@@ -93,7 +89,6 @@ public class SampleSheet
         LOADED;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Full descriptor. */
     private final Descriptor descriptor;
 
@@ -107,8 +102,8 @@ public class SampleSheet
     private boolean imageSaved = true;
 
     /** Samples gathered by shape. */
-    private final EnumMap<Shape, ArrayList<Sample>> shapeMap = new EnumMap<Shape, ArrayList<Sample>>(
-            Shape.class);
+    private final EnumMap<Shape, ArrayList<Sample>> shapeMap
+            = new EnumMap<Shape, ArrayList<Sample>>(Shape.class);
 
     /** Has this sheet been modified?. */
     private boolean modified;
@@ -119,7 +114,6 @@ public class SampleSheet
     /** Tribe being created by user. */
     private Tribe currentTribe;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleSheet} object.
      *
@@ -153,7 +147,6 @@ public class SampleSheet
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Delete from disk the samples, tribes and image if any of a defunct sheet.
      *
@@ -570,7 +563,6 @@ public class SampleSheet
         return jaxbContext;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // SampleList //
     //------------//
@@ -581,7 +573,6 @@ public class SampleSheet
     @XmlRootElement(name = "samples")
     private static class SampleList
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // Persistent data
         //----------------
@@ -592,7 +583,6 @@ public class SampleSheet
         @XmlElement(name = "sample")
         private final ArrayList<Sample> samples = new ArrayList<Sample>();
 
-        //~ Constructors ---------------------------------------------------------------------------
         public SampleList (SampleSheet sampleSheet)
         {
             name = sampleSheet.getDescriptor().getName();

@@ -37,13 +37,11 @@ import javax.xml.bind.annotation.XmlElement;
 public abstract class AbstractStemConnection
         extends AbstractConnection
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Logical extension point. */
     @XmlElement(name = "extension-point")
     protected Point2D extensionPoint;
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getStemPortion //
     //----------------//
@@ -97,8 +95,8 @@ public abstract class AbstractStemConnection
         StringBuilder sb = new StringBuilder(super.internals());
 
         if (extensionPoint != null) {
-            sb.append(
-                    String.format(" [x:%.0f,y:%.0f]", extensionPoint.getX(), extensionPoint.getY()));
+            sb.append(String
+                    .format(" [x:%.0f,y:%.0f]", extensionPoint.getX(), extensionPoint.getY()));
         }
 
         return sb.toString();

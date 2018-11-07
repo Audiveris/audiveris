@@ -54,7 +54,6 @@ import java.util.TreeMap;
 public class LineCluster
         implements Vip
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(LineCluster.class);
 
@@ -70,7 +69,6 @@ public class LineCluster
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Id for debug. */
     private final String id;
 
@@ -95,7 +93,6 @@ public class LineCluster
     /** For debugging. */
     private boolean vip = false;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LineCluster object.
      *
@@ -125,7 +122,6 @@ public class LineCluster
         include(seed, 0);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // destroy //
     //---------//
@@ -291,8 +287,8 @@ public class LineCluster
         // Try to fill holes by extrapolation
         for (int pos : holes) {
             final StaffFilament line = lines.get(pos);
-            final Point2D end = (x <= line.getStartPoint().getX()) ? line.getStartPoint()
-                    : line.getStopPoint();
+            final Point2D end = (x <= line.getStartPoint().getX()) ? line.getStartPoint() : line
+                    .getStopPoint();
             final double endX = end.getX();
             Double y = null;
 
@@ -300,9 +296,8 @@ public class LineCluster
             for (int dir : new int[]{-1, 1}) {
                 final StaffFilament otherLine = lines.get(pos + dir);
 
-                if ((otherLine != null)
-                    && otherLine.isWithinRange(x)
-                    && otherLine.isWithinRange(endX)) {
+                if ((otherLine != null) && otherLine.isWithinRange(x) && otherLine.isWithinRange(
+                        endX)) {
                     y = otherLine.yAt(x) + (line.yAt(endX) - otherLine.yAt(endX));
 
                     break;
@@ -418,12 +413,10 @@ public class LineCluster
 
                     if (overlap > 0) {
                         // Check resulting thickness
-                        double thickness = Compounds.getThicknessAt(
-                                Math.max(filBox.x, sctBox.x) + (overlap / 2),
-                                Orientation.HORIZONTAL,
-                                scale,
-                                filament,
-                                line);
+                        double thickness = Compounds.getThicknessAt(Math.max(filBox.x, sctBox.x)
+                                                                            + (overlap / 2),
+                                                                    Orientation.HORIZONTAL, scale,
+                                                                    filament, line);
 
                         if (thickness > scale.getMaxFore()) {
                             if (filament.isVip() || logger.isDebugEnabled()) {
@@ -516,8 +509,8 @@ public class LineCluster
 
         for (Entry<Integer, StaffFilament> entry : lines.entrySet()) {
             final StaffFilament fil = entry.getValue();
-            sb.append(" ").append("fil#").append(fil.getId()).append("@").append(
-                    fil.getClusterPos());
+            sb.append(" ").append("fil#").append(fil.getId()).append("@")
+                    .append(fil.getClusterPos());
         }
 
         sb.append("}");

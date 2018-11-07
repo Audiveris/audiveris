@@ -74,7 +74,6 @@ import javax.swing.JTextField;
 public abstract class Board
         implements EventSubscriber<UserEvent>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Board.class);
 
@@ -116,7 +115,6 @@ public abstract class Board
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The board instance name. */
     private final String name;
 
@@ -144,7 +142,6 @@ public abstract class Board
     /** Board is selected?. */
     private boolean selected;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a board from a pre-defined descriptor (name + position).
      *
@@ -164,15 +161,8 @@ public abstract class Board
                   boolean useVip,
                   boolean useDump)
     {
-        this(
-                desc.name,
-                desc.position,
-                selectionService,
-                eventsRead,
-                selected,
-                useCount,
-                useVip,
-                useDump);
+        this(desc.name, desc.position, selectionService, eventsRead, selected, useCount, useVip,
+             useDump);
     }
 
     /**
@@ -207,7 +197,6 @@ public abstract class Board
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // emptyFields //
     //-------------//
@@ -442,16 +431,13 @@ public abstract class Board
         body.setNoInsets();
 
         CellConstraints cst = new CellConstraints();
-        FormLayout layout = new FormLayout(
-                "pref",
-                "pref," + Panel.getFieldInterline() + ",pref");
+        FormLayout layout = new FormLayout("pref", "pref," + Panel.getFieldInterline() + ",pref");
         PanelBuilder builder = new PanelBuilder(layout, component);
 
         builder.add(header, cst.xy(1, 1));
         builder.add(body, cst.xy(1, 3));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Desc //
     //------//
@@ -460,7 +446,6 @@ public abstract class Board
      */
     public static class Desc
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Default name for this board. */
         public final String name;
@@ -468,7 +453,6 @@ public abstract class Board
         /** Preferred position within its containing BoardsPane. */
         public final int position;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Desc (String name,
                      int position)
         {
@@ -487,7 +471,6 @@ public abstract class Board
     private static class Header
             extends Panel
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** The board title. */
         private final String title;
@@ -501,7 +484,6 @@ public abstract class Board
         /** Dump button, if any. */
         private final JButton dump;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Header (String title,
                        boolean withCount,
                        boolean withVip,
@@ -517,7 +499,6 @@ public abstract class Board
             defineLayout();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         private void defineLayout ()
         {
             CellConstraints cst = new CellConstraints();
@@ -527,8 +508,8 @@ public abstract class Board
             // count label
             sb.append(",").append(Panel.getFieldInterval()).append(",15dlu");
             // vip label+box
-            sb.append(",").append(Panel.getFieldInterval()).append(",12dlu,").append(
-                    Panel.getLabelInterval()).append(",10dlu");
+            sb.append(",").append(Panel.getFieldInterval()).append(",12dlu,").append(Panel
+                    .getLabelInterval()).append(",10dlu");
             // dump button
             sb.append(",").append(Panel.getFieldInterval()).append(",35dlu");
 

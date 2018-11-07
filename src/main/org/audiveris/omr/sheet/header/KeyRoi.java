@@ -51,11 +51,9 @@ import java.util.List;
 public class KeyRoi
         extends ArrayList<KeySlice>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(KeyRoi.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying staff. */
     private final Staff staff;
 
@@ -71,7 +69,6 @@ public class KeyRoi
     /** Maximum abscissa distance to theoretical slice. */
     private final int maxSliceDist;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code KeyRoi} object.
      *
@@ -94,7 +91,6 @@ public class KeyRoi
         this.maxSliceDist = maxSliceDist;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // attachmentKey //
     //---------------//
@@ -257,10 +253,8 @@ public class KeyRoi
                                          boolean cropNeighbors)
     {
         Rectangle sRect = slice.getRect();
-        BufferedImage sImage = new BufferedImage(
-                sRect.width,
-                sRect.height,
-                BufferedImage.TYPE_BYTE_GRAY);
+        BufferedImage sImage = new BufferedImage(sRect.width, sRect.height,
+                                                 BufferedImage.TYPE_BYTE_GRAY);
         ByteProcessor sBuffer = new ByteProcessor(sImage);
         sBuffer.copyBits(source, -sRect.x, -sRect.y, Blitter.COPY);
 
@@ -284,9 +278,8 @@ public class KeyRoi
                                 g.setColor(Color.white);
                             }
 
-                            final Point offset = new Point(
-                                    glyph.getLeft() - sRect.x,
-                                    glyph.getTop() - sRect.y);
+                            final Point offset = new Point(glyph.getLeft() - sRect.x, glyph.getTop()
+                                                                                              - sRect.y);
                             logger.debug("Erasing glyph#{} from {}", glyph.getId(), slice);
                             glyph.getRunTable().render(g, offset);
                         }

@@ -47,11 +47,9 @@ import java.util.Map;
  */
 public class TimeSignatureFixer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TimeSignatureFixer.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TimeSignatureFixer object.
      */
@@ -59,7 +57,6 @@ public class TimeSignatureFixer
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -109,9 +106,7 @@ public class TimeSignatureFixer
                 }
             } else {
                 // Whole page without explicit time signature
-                checkTimeSigs(
-                        firstSystem.getFirstStack(),
-                        page.getLastSystem().getLastStack());
+                checkTimeSigs(firstSystem.getFirstStack(), page.getLastSystem().getLastStack());
             }
         } catch (Exception ex) {
             logger.warn("TimeSignatureFixer. Error processing " + page, ex);
@@ -144,10 +139,8 @@ public class TimeSignatureFixer
     private void checkTimeSigs (MeasureStack startStack,
                                 MeasureStack stopStack)
     {
-        logger.debug(
-                "checkTimeSigs on measure stacks {}..{}",
-                startStack.getPageId(),
-                stopStack.getPageId());
+        logger.debug("checkTimeSigs on measure stacks {}..{}", startStack.getPageId(), stopStack
+                     .getPageId());
 
         // Retrieve the best possible time signature(s)
         final Map<TimeRational, Integer> sigMap = retrieveBestSigs(startStack, stopStack);
@@ -165,11 +158,8 @@ public class TimeSignatureFixer
                 return Integer.compare(sigMap.get(t2), sigMap.get(t1));
             }
         });
-        logger.debug(
-                "Best inferred time sigs in [M#{},M#{}]: {}",
-                startStack.getIdValue(),
-                stopStack.getIdValue(),
-                sigs);
+        logger.debug("Best inferred time sigs in [M#{},M#{}]: {}", startStack.getIdValue(),
+                     stopStack.getIdValue(), sigs);
 
         if (!sigs.isEmpty()) {
             TimeRational bestRational = sigs.get(0);
@@ -184,8 +174,7 @@ public class TimeSignatureFixer
             // Loop on every staff in the vertical startStack
             for (Measure measure : startStack.getMeasures()) {
                 for (Staff staff : measure.getPart().getStaves()) {
-                    int staffIndexInPart = measure.getPart().getStaves().indexOf(
-                            staff);
+                    int staffIndexInPart = measure.getPart().getStaves().indexOf(staff);
                     AbstractTimeInter time = measure.getTimeSignature(staffIndexInPart);
 
                     if (time != null) {
@@ -193,13 +182,9 @@ public class TimeSignatureFixer
                             TimeRational timeRational = time.getTimeRational();
 
                             if ((timeRational == null) || !timeRational.equals(bestRational)) {
-                                logger.info(
-                                        "Measure#{} {}T{} {}->{}",
-                                        measure.getStack().getPageId(),
-                                        staff.getId(),
-                                        staff.getId(),
-                                        timeRational,
-                                        bestRational);
+                                logger.info("Measure#{} {}T{} {}->{}", measure.getStack()
+                                            .getPageId(), staff.getId(), staff.getId(), timeRational,
+                                            bestRational);
                                 time.modify(null, bestRational);
                             }
                         } catch (Exception ex) {

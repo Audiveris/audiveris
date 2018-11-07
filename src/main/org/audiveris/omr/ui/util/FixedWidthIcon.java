@@ -33,14 +33,11 @@ import javax.swing.Icon;
 public class FixedWidthIcon
         implements Icon
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final int width = 35; // TODO: use an application constant
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final Icon icon;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code FixedIcon} object.
      *
@@ -52,7 +49,6 @@ public class FixedWidthIcon
         this.icon = icon;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public int getIconHeight ()
     {

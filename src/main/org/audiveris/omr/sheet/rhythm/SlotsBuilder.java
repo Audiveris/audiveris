@@ -88,13 +88,11 @@ import java.util.Set;
 @NotThreadSafe
 public class SlotsBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SlotsBuilder.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
     //-----//
     // Rel //
     //-----//
@@ -103,8 +101,6 @@ public class SlotsBuilder
      */
     protected static enum Rel
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /**
          * Strongly before.
          * Stem-located before in the same beam group.
@@ -132,17 +128,14 @@ public class SlotsBuilder
          * No important difference, use other separation criteria.
          */
         CLOSE("?");
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final String mnemo;
 
-        //~ Constructors ---------------------------------------------------------------------------
         Rel (String mnemo)
         {
             this.mnemo = mnemo;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -150,7 +143,6 @@ public class SlotsBuilder
         }
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated measure stack. */
     private final MeasureStack stack;
 
@@ -161,8 +153,8 @@ public class SlotsBuilder
     private final Parameters params;
 
     /** Inter-chord relationships for the current measure stack. */
-    private SimpleDirectedGraph<AbstractChordInter, Edge> graph = new SimpleDirectedGraph<AbstractChordInter, Edge>(
-            Edge.class);
+    private SimpleDirectedGraph<AbstractChordInter, Edge> graph
+            = new SimpleDirectedGraph<AbstractChordInter, Edge>(Edge.class);
 
     /** Current earliest term for each staff in stack. */
     private final Map<Staff, Rational> stackTerms = new LinkedHashMap<Staff, Rational>();
@@ -203,7 +195,6 @@ public class SlotsBuilder
         }
     };
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SlotsBuilder} object for a measure stack.
      *
@@ -219,7 +210,6 @@ public class SlotsBuilder
         params = new Parameters(stack.getSystem().getSheet().getScale());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -335,8 +325,8 @@ public class SlotsBuilder
     private void buildRelationships ()
     {
         // Sort measure standard chords by abscissa
-        List<AbstractChordInter> stdChords = new ArrayList<AbstractChordInter>(
-                stack.getStandardChords());
+        List<AbstractChordInter> stdChords = new ArrayList<AbstractChordInter>(stack
+                .getStandardChords());
         Collections.sort(stdChords, Inters.byAbscissa);
 
         // Populate graph with chords
@@ -374,8 +364,8 @@ public class SlotsBuilder
 
         // The 'actives' collection gathers the chords that are not terminated at the
         // time slot being considered. Initially, it contains just the whole chords.
-        List<AbstractChordInter> actives = new ArrayList<AbstractChordInter>(
-                stack.getWholeRestChords());
+        List<AbstractChordInter> actives = new ArrayList<AbstractChordInter>(stack
+                .getWholeRestChords());
         Collections.sort(actives, Inters.byAbscissa);
 
         // Create voices for whole rest chords
@@ -975,8 +965,7 @@ public class SlotsBuilder
      */
     private void inspectMirrors ()
     {
-        final List<HeadChordInter> headChords = new ArrayList<HeadChordInter>(
-                stack.getHeadChords());
+        final List<HeadChordInter> headChords = new ArrayList<HeadChordInter>(stack.getHeadChords());
 
         for (int i = 0; i < headChords.size(); i++) {
             HeadChordInter ch1 = headChords.get(i);
@@ -1014,8 +1003,7 @@ public class SlotsBuilder
     {
         final SIGraph sig = stack.getSystem().getSig();
 
-        final List<HeadChordInter> headChords = new ArrayList<HeadChordInter>(
-                stack.getHeadChords());
+        final List<HeadChordInter> headChords = new ArrayList<HeadChordInter>(stack.getHeadChords());
 
         for (int i = 0; i < headChords.size(); i++) {
             HeadChordInter ch1 = headChords.get(i);
@@ -1168,7 +1156,6 @@ public class SlotsBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Edge //
     //------//
@@ -1177,11 +1164,9 @@ public class SlotsBuilder
      */
     protected static class Edge
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         Rel rel; // Relationship carried by the concrete edge
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Edge (Rel rel)
         {
             this.rel = rel;
@@ -1194,23 +1179,19 @@ public class SlotsBuilder
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction maxSlotDx = new Scale.Fraction(
-                1.05,
-                "Maximum horizontal delta between a slot and a chord");
+        private final Scale.Fraction maxSlotDx = new Scale.Fraction(1.05,
+                                                                    "Maximum horizontal delta between a slot and a chord");
 
-        private final Scale.Fraction minInterSlotDx = new Scale.Fraction(
-                0.5,
-                "Minimum horizontal delta between two slots");
+        private final Scale.Fraction minInterSlotDx = new Scale.Fraction(0.5,
+                                                                         "Minimum horizontal delta between two slots");
 
         private final Scale.Fraction maxAdjacencyXGap = new Scale.Fraction(
                 0.3, //0.65,
                 "Maximum horizontal gap between adjacent chords bounds");
 
-        private final Scale.Fraction maxVerticalOverlap = new Scale.Fraction(
-                0.25,
-                "Maximum vertical overlap tolerated");
+        private final Scale.Fraction maxVerticalOverlap = new Scale.Fraction(0.25,
+                                                                             "Maximum vertical overlap tolerated");
     }
 
     //-----------//
@@ -1221,27 +1202,20 @@ public class SlotsBuilder
      */
     private static class ChordPair
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final AbstractChordInter one;
 
         final AbstractChordInter two;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ChordPair (AbstractChordInter one,
                           AbstractChordInter two)
         {
             this.one = one;
             this.two = two;
-            logger.debug(
-                    "Adjacent {}@{} & {}@{}",
-                    one,
-                    one.getHeadLocation(),
-                    two,
-                    two.getHeadLocation());
+            logger.debug("Adjacent {}@{} & {}@{}", one, one.getHeadLocation(), two, two
+                         .getHeadLocation());
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -1254,7 +1228,6 @@ public class SlotsBuilder
     //------------//
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final int maxSlotDx;
 
@@ -1264,7 +1237,6 @@ public class SlotsBuilder
 
         private final int maxVerticalOverlap;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
             maxSlotDx = scale.toPixels(constants.maxSlotDx);

@@ -88,31 +88,24 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "scale")
 public class Scale
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Scale.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
     public static enum Item
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         line("Line thickness"),
         interline("Interline"),
         smallInterline("Small interline"),
         beam("Beam thickness"),
         stem("Stem thickness");
 
-        //~ Instance fields ------------------------------------------------------------------------
         private final String description;
 
-        //~ Constructors ---------------------------------------------------------------------------
         Item (String description)
         {
             this.description = description;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public String getDescription ()
         {
             return description;
@@ -121,15 +114,12 @@ public class Scale
 
     public enum Size
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /** Standard staff. */
         LARGE,
         /** Small staff. */
         SMALL;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Interline scale. */
     @XmlElement(name = "interline")
     private InterlineScale interlineScale;
@@ -158,7 +148,6 @@ public class Scale
     @XmlElement(name = "small-staff")
     private Scale smallScale;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a scale entity, meant for a whole sheet.
      *
@@ -182,7 +171,6 @@ public class Scale
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------------//
     // getBeamMeanDistance //
     //---------------------//
@@ -906,7 +894,6 @@ public class Scale
         return interlineScale.main * val;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // AreaFraction //
     //--------------//
@@ -917,7 +904,6 @@ public class Scale
     public static class AreaFraction
             extends Constant.Double
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later.
@@ -951,7 +937,6 @@ public class Scale
     @XmlAccessorType(XmlAccessType.NONE)
     public static class BeamScale
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Most frequent beam thickness. */
         @XmlAttribute(name = "main-thickness")
@@ -971,7 +956,6 @@ public class Scale
         @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
         private Double distanceSigma;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new {@code BeamScale} object.
          *
@@ -994,7 +978,6 @@ public class Scale
             this.extra = null;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Report the average distance (center to center) between beams of the same group.
          *
@@ -1078,7 +1061,6 @@ public class Scale
     @XmlAccessorType(XmlAccessType.NONE)
     public static class BlackHeadScale
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlAttribute(name = "mean-width")
         @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
@@ -1096,7 +1078,6 @@ public class Scale
         @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
         final double heightStd;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new {@code BlackHeadScale} object.
          *
@@ -1127,7 +1108,6 @@ public class Scale
             this.heightStd = 0;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * @return the heightMean
          */
@@ -1186,7 +1166,6 @@ public class Scale
     public static class Fraction
             extends Constant.Double
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         public static final Fraction ZERO = new Fraction(0, "zero");
 
@@ -1194,7 +1173,6 @@ public class Scale
             ZERO.setUnitAndName(Scale.class.getName(), "ZERO");
         }
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later.
          *
@@ -1224,7 +1202,6 @@ public class Scale
     public static class InterlineScale
             extends Range
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public InterlineScale (Range range)
         {
@@ -1244,7 +1221,6 @@ public class Scale
             this(0, 0, 0);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Compute the interline fraction that corresponds to the given number of pixels.
          *
@@ -1331,7 +1307,6 @@ public class Scale
     public static class LineFraction
             extends Constant.Double
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later.
@@ -1362,7 +1337,6 @@ public class Scale
     public static class LineScale
             extends Range
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public LineScale (Range range)
         {
@@ -1382,7 +1356,6 @@ public class Scale
             this(0, 0, 0);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Compute the number of pixels that corresponds to the fraction of line
          * thickness provided, according to the scale.
@@ -1420,7 +1393,6 @@ public class Scale
     @XmlAccessorType(XmlAccessType.NONE)
     public static class MusicFontScale
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Font name. */
         @XmlAttribute(name = "name")
@@ -1430,7 +1402,6 @@ public class Scale
         @XmlAttribute(name = "point-size")
         final int pointSize;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new {@code MusicFontScale} object.
          *
@@ -1451,7 +1422,6 @@ public class Scale
             this.pointSize = 0;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * @return the name
          */
@@ -1494,7 +1464,6 @@ public class Scale
     @XmlAccessorType(XmlAccessType.NONE)
     public static class StemScale
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Most frequent stem thickness. */
         @XmlAttribute(name = "main-thickness")
@@ -1504,7 +1473,6 @@ public class Scale
         @XmlAttribute(name = "max-thickness")
         private final int max;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new {@code StemScale} object.
          *
@@ -1527,7 +1495,6 @@ public class Scale
             this.max = 0;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Report the most frequent stem thickness
          *

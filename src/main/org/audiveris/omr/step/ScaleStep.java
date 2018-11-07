@@ -44,13 +44,11 @@ import org.slf4j.LoggerFactory;
 public class ScaleStep
         extends AbstractStep
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ScaleStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ScaleStep object.
      */
@@ -58,7 +56,6 @@ public class ScaleStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
@@ -68,10 +65,8 @@ public class ScaleStep
     {
         if (constants.displayDelta.isSet()) {
             // Display delta view
-            sheet.getStub().getAssembly().addViewTab(
-                    SheetTab.DELTA_TAB,
-                    new DeltaView(sheet),
-                    new BoardsPane(new PixelBoard(sheet)));
+            sheet.getStub().getAssembly().addViewTab(SheetTab.DELTA_TAB, new DeltaView(sheet),
+                                                     new BoardsPane(new PixelBoard(sheet)));
         }
     }
 
@@ -98,17 +93,14 @@ public class ScaleStep
         return SheetTab.BINARY_TAB;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean displayDelta = new Constant.Boolean(
-                false,
-                "Should we display the Delta view?");
+        private final Constant.Boolean displayDelta = new Constant.Boolean(false,
+                                                                           "Should we display the Delta view?");
     }
 }

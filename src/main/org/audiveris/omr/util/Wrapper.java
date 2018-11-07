@@ -30,17 +30,20 @@ package org.audiveris.omr.util;
  */
 public class Wrapper<T>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The wrapped value */
     public T value;
 
+    /**
+     * Creates a new {@code Wrapper} object.
+     *
+     * @param value DOCUMENT ME!
+     */
     public Wrapper (T value)
     {
         this.value = value;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // toString //
     //----------//

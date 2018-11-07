@@ -65,7 +65,6 @@ import javax.swing.border.Border;
  */
 public abstract class UIUtil
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(UIUtil.class);
 
@@ -84,7 +83,6 @@ public abstract class UIUtil
         }
     };
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // complementaryColor //
     //--------------------//
@@ -240,8 +238,8 @@ public abstract class UIUtil
                 final FileDialog fd = new FileDialog((Frame) parentFrame);
 
                 if (startFile != null) {
-                    fd.setDirectory(
-                            startFile.isDirectory() ? startFile.getPath() : startFile.getParent());
+                    fd.setDirectory(startFile.isDirectory() ? startFile.getPath() : startFile
+                            .getParent());
                 }
 
                 fd.setMode(save ? FileDialog.SAVE : FileDialog.LOAD);
@@ -427,13 +425,8 @@ public abstract class UIUtil
         AffineTransform AT = g2.getTransform();
         double ratio = AT.getScaleX();
         Stroke oldStroke = g2.getStroke();
-        Stroke stroke = new BasicStroke(
-                width / (float) ratio,
-                BasicStroke.CAP_SQUARE,
-                BasicStroke.JOIN_MITER,
-                10.0f,
-                new float[]{3.0f},
-                0.0f);
+        Stroke stroke = new BasicStroke(width / (float) ratio, BasicStroke.CAP_SQUARE,
+                                        BasicStroke.JOIN_MITER, 10.0f, new float[]{3.0f}, 0.0f);
         g2.setStroke(stroke);
 
         return oldStroke;

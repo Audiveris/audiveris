@@ -135,7 +135,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #openBookFile}</li>
  * <li>{@link #openSheetFolder}</li>
  * </ul></dd>
- *
+ * <p>
  * <dt>SheetStubs</dt>
  * <dd><ul>
  * <li>{@link #createStubs}</li>
@@ -151,14 +151,14 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #ids}</li>
  * <li>{@link #swapAllSheets}</li>
  * </ul></dd>
- *
+ * <p>
  * <dt>Parameters</dt>
  * <dd><ul>
  * <li>{@link #getBinarizationFilter}</li>
  * <li>{@link #getOcrLanguages}</li>
  * <li>{@link #getProcessingSwitches}</li>
  * </ul></dd>
- *
+ * <p>
  * <dt>Transcription</dt>
  * <dd><ul>
  * <li>{@link #reset}</li>
@@ -170,7 +170,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getScore}</li>
  * <li>{@link #getScores}</li>
  * </ul></dd>
- *
+ * <p>
  * <dt>Samples</dt>
  * <dd><ul>
  * <li>{@link #getSampleRepository}</li>
@@ -180,7 +180,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #sample}</li>
  * <li>{@link #annotate}</li>
  * </ul></dd>
- *
+ * <p>
  * <dt>Artifacts</dt>
  * <dd><ul>
  * <li>{@link #getBrowserFrame}</li>
@@ -206,20 +206,17 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "book")
 public class Book
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** File name for book internals in book file system: {@value}. */
     public static final String BOOK_INTERNALS = "book.xml";
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Book.class);
+    private static final Logger logger = LoggerFactory.getLogger(Book.class);
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -306,7 +303,6 @@ public class Book
     /** Book-level sample repository. */
     private SampleRepository repository;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a Book with a path to an input images file.
      *
@@ -348,7 +344,6 @@ public class Book
         subBooks = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // annotate //
     //----------//
@@ -364,8 +359,8 @@ public class Book
 
         try {
             final Path bookFolder = BookManager.getDefaultBookFolder(this);
-            final Path path = bookFolder.resolve(
-                    getRadix() + Annotations.BOOK_ANNOTATIONS_EXTENSION);
+            final Path path = bookFolder
+                    .resolve(getRadix() + Annotations.BOOK_ANNOTATIONS_EXTENSION);
             root = ZipFileSystem.create(path);
 
             for (SheetStub stub : getValidStubs()) {
@@ -678,9 +673,8 @@ public class Book
                             controller.addAssembly(stub.getAssembly(), null);
                         } else if (stub != focusStub) {
                             if (stub.getNumber() < focusStub.getNumber()) {
-                                controller.addAssembly(
-                                        stub.getAssembly(),
-                                        controller.getLastIndex());
+                                controller
+                                        .addAssembly(stub.getAssembly(), controller.getLastIndex());
                             } else {
                                 controller.addAssembly(stub.getAssembly(), null);
                             }
@@ -723,9 +717,8 @@ public class Book
         transcribe();
 
         // path/to/scores/Book
-        final Path bookPathSansExt = BookManager.getActualPath(
-                getExportPathSansExt(),
-                BookManager.getDefaultExportPathSansExt(this));
+        final Path bookPathSansExt = BookManager.getActualPath(getExportPathSansExt(), BookManager
+                                                               .getDefaultExportPathSansExt(this));
         final boolean compressed = BookManager.useCompression();
         final String ext = compressed ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION;
         final boolean sig = BookManager.useSignature();
@@ -746,8 +739,9 @@ public class Book
         } else {
             // Export the book as one or several movement files
             for (Score score : scores) {
-                final String scoreName = (!multiMovements) ? bookName
-                        : (bookName + OMR.MOVEMENT_EXTENSION + score.getId());
+                final String scoreName = (!multiMovements) ? bookName : (bookName
+                                                                                 + OMR.MOVEMENT_EXTENSION
+                                                                         + score.getId());
                 final Path scorePath = bookPathSansExt.resolveSibling(scoreName + ext);
 
                 try {
@@ -1287,9 +1281,8 @@ public class Book
     public void print ()
     {
         // Path to print file
-        final Path pdfPath = BookManager.getActualPath(
-                getPrintPath(),
-                BookManager.getDefaultPrintPath(this));
+        final Path pdfPath = BookManager.getActualPath(getPrintPath(), BookManager
+                                                       .getDefaultPrintPath(this));
 
         try {
             new BookPdfOutput(Book.this, pdfPath.toFile()).write(null);
@@ -1330,19 +1323,15 @@ public class Book
 
             // Launch the steps on each sheet
             long startTime = System.currentTimeMillis();
-            logger.info(
-                    "Book reaching {}{} on sheets:{}",
-                    target,
-                    force ? " force" : "",
-                    ids(concernedStubs));
+            logger.info("Book reaching {}{} on sheets:{}", target, force ? " force" : "", ids(
+                        concernedStubs));
 
             try {
                 boolean someFailure = false;
                 StepMonitoring.notifyStart();
 
-                if (isMultiSheet()
-                    && constants.processAllStubsInParallel.isSet()
-                    && (OmrExecutors.defaultParallelism.getValue() == true)) {
+                if (isMultiSheet() && constants.processAllStubsInParallel.isSet()
+                            && (OmrExecutors.defaultParallelism.getValue() == true)) {
                     // Process all stubs in parallel
                     List<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>();
 
@@ -1667,8 +1656,8 @@ public class Book
             checkRadixChange(bookPath);
             logger.debug("Storing book...");
 
-            if ((this.bookPath == null)
-                || this.bookPath.toAbsolutePath().equals(bookPath.toAbsolutePath())) {
+            if ((this.bookPath == null) || this.bookPath.toAbsolutePath().equals(bookPath
+                    .toAbsolutePath())) {
                 if (this.bookPath == null) {
                     root = ZipFileSystem.create(bookPath);
                     diskWritten = true;
@@ -1871,7 +1860,8 @@ public class Book
                     final PageRef firstPageRef = currentStub.getFirstPageRef();
 
                     if (!firstPageRef.isMovementStart()) {
-                        final SheetStub prevStub = (stubNumber > 1) ? stubs.get(stubNumber - 2) : null;
+                        final SheetStub prevStub = (stubNumber > 1) ? stubs.get(stubNumber - 2)
+                                : null;
 
                         if (prevStub != null) {
                             final PageRef prevPageRef = prevStub.getLastPageRef();
@@ -2033,9 +2023,8 @@ public class Book
     private void checkRadixChange (Path bookPath)
     {
         // Are we changing the target name WRT the default name?
-        final String newRadix = FileUtil.avoidExtensions(
-                bookPath.getFileName(),
-                OMR.BOOK_EXTENSION).toString();
+        final String newRadix = FileUtil.avoidExtensions(bookPath.getFileName(), OMR.BOOK_EXTENSION)
+                .toString();
 
         if (!newRadix.equals(radix)) {
             // Update book radix
@@ -2282,10 +2271,9 @@ public class Book
                         logger.warn(msg);
 
                         // Prompt user for resetting project sheets?
-                        if ((OMR.gui == null)
-                            || OMR.gui.displayConfirmation(
-                                        msg + "\nConfirm reset to binary?",
-                                        "Non compatible book version")) {
+                        if ((OMR.gui == null) || OMR.gui.displayConfirmation(msg
+                                                                                     + "\nConfirm reset to binary?",
+                                                                             "Non compatible book version")) {
                             resetToBinary();
                             logger.info("Book {} reset to binary.", radix);
                             version = WellKnowns.TOOL_REF;
@@ -2387,30 +2375,24 @@ public class Book
         return impacted;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch for book loading?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch for book loading?");
 
-        private final Constant.Boolean processAllStubsInParallel = new Constant.Boolean(
-                false,
-                "Should we process all stubs of a book in parallel? (beware of many stubs)");
+        private final Constant.Boolean processAllStubsInParallel = new Constant.Boolean(false,
+                                                                                        "Should we process all stubs of a book in parallel? (beware of many stubs)");
 
-        private final Constant.Boolean checkBookVersion = new Constant.Boolean(
-                true,
-                "Should we check version of loaded book files?");
+        private final Constant.Boolean checkBookVersion = new Constant.Boolean(true,
+                                                                               "Should we check version of loaded book files?");
 
-        private final Constant.Boolean resetOldBooks = new Constant.Boolean(
-                true,
-                "Should we reset to binary the too old book files?");
+        private final Constant.Boolean resetOldBooks = new Constant.Boolean(true,
+                                                                            "Should we reset to binary the too old book files?");
     }
 
     //------------------//
@@ -2419,7 +2401,6 @@ public class Book
     private static final class OcrBookLanguages
             extends Param<String>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public boolean setSpecific (String specific)
@@ -2431,14 +2412,12 @@ public class Book
             return super.setSpecific(specific);
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         /**
          * JAXB adapter to mimic XmlValue.
          */
         public static class Adapter
                 extends XmlAdapter<String, OcrBookLanguages>
         {
-            //~ Methods ----------------------------------------------------------------------------
 
             @Override
             public String marshal (OcrBookLanguages val)

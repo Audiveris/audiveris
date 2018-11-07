@@ -49,15 +49,12 @@ import java.util.Objects;
 public class StaffPeak
         implements Comparable<StaffPeak>
 {
-    //~ Enumerations -------------------------------------------------------------------------------
 
     /**
      * All attributes flags that can be assigned to a StaffPeak instance.
      */
     public static enum Attribute
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /** This is a thin peak */
         THIN,
         /** This is a thick peak */
@@ -88,7 +85,6 @@ public class StaffPeak
         BRACE_BOTTOM;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing staff. */
     protected final Staff staff;
 
@@ -128,7 +124,6 @@ public class StaffPeak
     /** Containing column, if any. */
     private BarColumn column;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StaffPeak} object.
      *
@@ -154,7 +149,6 @@ public class StaffPeak
         this.impacts = impacts;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // compareTo //
     //-----------//
@@ -458,9 +452,8 @@ public class StaffPeak
     //--------//
     public void render (Graphics2D g)
     {
-        g.setColor(
-                isBrace() ? Colors.STAFF_PEAK_BRACE
-                        : (isBracket() ? Colors.STAFF_PEAK_BRACKET : Colors.STAFF_PEAK));
+        g.setColor(isBrace() ? Colors.STAFF_PEAK_BRACE : (isBracket() ? Colors.STAFF_PEAK_BRACKET
+                : Colors.STAFF_PEAK));
         g.fillRect(start, top, stop - start + 1, bottom - top + 1);
     }
 

@@ -30,7 +30,6 @@ package org.audiveris.omr.util;
 public class WrappedInteger
         extends Wrapper<Integer>
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new WrappedInteger object.

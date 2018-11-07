@@ -62,7 +62,6 @@ import java.util.Set;
 public class SegmentsBuilder
         extends CurvesBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -70,14 +69,12 @@ public class SegmentsBuilder
 
     private static final Color SEGMENT = Color.CYAN;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Scale-dependent parameters. */
     private final Parameters params;
 
     /** All segments retrieved in sheet. */
     private final List<SegmentInter> segments;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SegmentsBuilder object.
      *
@@ -90,7 +87,6 @@ public class SegmentsBuilder
         segments = curves.getSegments();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // buildSegments //
     //---------------//
@@ -346,39 +342,30 @@ public class SegmentsBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction arcMinSeedLength = new Scale.Fraction(
-                1.25,
-                "Minimum arc length for starting a wedge build");
+        private final Scale.Fraction arcMinSeedLength = new Scale.Fraction(1.25,
+                                                                           "Minimum arc length for starting a wedge build");
 
-        private final Constant.Double maxWedgeAngle = new Constant.Double(
-                "degree",
-                20.0,
-                "Maximum angle (in degrees) for a wedge branch with x-axis");
+        private final Constant.Double maxWedgeAngle = new Constant.Double("degree", 20.0,
+                                                                          "Maximum angle (in degrees) for a wedge branch with x-axis");
 
-        private final Scale.Fraction maxExtDistance = new Scale.Fraction(
-                0.35,
-                "Maximum line distance for extension arc");
+        private final Scale.Fraction maxExtDistance = new Scale.Fraction(0.35,
+                                                                         "Maximum line distance for extension arc");
 
-        private final Scale.Fraction maxSegmentDistance = new Scale.Fraction(
-                0.3,
-                "Maximum line distance for final segment");
+        private final Scale.Fraction maxSegmentDistance = new Scale.Fraction(0.3,
+                                                                             "Maximum line distance for final segment");
 
-        private final Scale.Fraction minProjection = new Scale.Fraction(
-                -1.0,
-                "Minimum projection on curve for arc extension");
+        private final Scale.Fraction minProjection = new Scale.Fraction(-1.0,
+                                                                        "Minimum projection on curve for arc extension");
 
-        private final Scale.Fraction maxRunDistance = new Scale.Fraction(
-                0.2,
-                "Maximum distance from any run end to curve points");
+        private final Scale.Fraction maxRunDistance = new Scale.Fraction(0.2,
+                                                                         "Maximum distance from any run end to curve points");
     }
 
     //------------//
@@ -389,7 +376,6 @@ public class SegmentsBuilder
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int arcMinSeedLength;
 
@@ -403,7 +389,6 @@ public class SegmentsBuilder
 
         final double maxRunDistance;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
             arcMinSeedLength = scale.toPixels(constants.arcMinSeedLength);

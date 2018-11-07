@@ -89,11 +89,11 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Any instance of this class is registered on the related Sheet location service, so that each time
  * a location event is received, the corresponding pixel gray value of the INITIAL sources is
  * published.
- *
+ * <p>
  * <p>
  * TODO: When an alpha channel is involved, perform the alpha multiplication if the components are
  * not yet premultiplied.
- *
+ * <p>
  * <h1>Overview of transforms:<br>
  * <img src="../image/doc-files/transforms.png" alt="Image Transforms UML">
  * </h1>
@@ -106,20 +106,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Picture
         implements EventSubscriber<LocationEvent>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(Picture.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
     /**
      * The set of handled sources.
      */
     public static enum SourceKey
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /** The initial gray-level source. */
         INITIAL,
         /** The binarized (black &amp; white) source. */
@@ -137,13 +133,10 @@ public class Picture
      */
     public static enum TableKey
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         BINARY,
         HEAD_SPOTS;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -165,7 +158,8 @@ public class Picture
     //---------------
     //
     /** Map of all handled sources. */
-    private final ConcurrentSkipListMap<SourceKey, WeakReference<ByteProcessor>> sources = new ConcurrentSkipListMap<SourceKey, WeakReference<ByteProcessor>>();
+    private final ConcurrentSkipListMap<SourceKey, WeakReference<ByteProcessor>> sources
+            = new ConcurrentSkipListMap<SourceKey, WeakReference<ByteProcessor>>();
 
     /** Related sheet. */
     @Navigable(false)
@@ -180,7 +174,6 @@ public class Picture
     /** The initial (gray-level) image, if any. */
     private BufferedImage initialImage;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Build a picture instance from a binary table.
      *
@@ -242,7 +235,6 @@ public class Picture
         logger.debug("Picture unmarshalled by JAXB");
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // buildNoStaffTable //
     //-------------------//
@@ -863,8 +855,8 @@ public class Picture
             // RGB + alpha
             return ImageUtil.maxRgbaToGray(img);
         } else {
-            throw new ImageFormatException(
-                    "Unsupported sample model numBands=" + numBands + " hasAlpha=" + hasAlpha);
+            throw new ImageFormatException("Unsupported sample model numBands=" + numBands
+                                                   + " hasAlpha=" + hasAlpha);
         }
     }
 
@@ -974,31 +966,23 @@ public class Picture
         return null;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch(es)?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch(es)?");
 
-        private final Constant.Boolean disposeOfInitialSource = new Constant.Boolean(
-                true,
-                "Should we dispose of initial source once binarized?");
+        private final Constant.Boolean disposeOfInitialSource = new Constant.Boolean(true,
+                                                                                     "Should we dispose of initial source once binarized?");
 
-        private final Constant.Integer gaussianRadius = new Constant.Integer(
-                "pixels",
-                1,
-                "Radius of Gaussian filtering kernel (1 for 3x3, 2 for 5x5, etc)");
+        private final Constant.Integer gaussianRadius = new Constant.Integer("pixels", 1,
+                                                                             "Radius of Gaussian filtering kernel (1 for 3x3, 2 for 5x5, etc)");
 
-        private final Constant.Integer medianRadius = new Constant.Integer(
-                "pixels",
-                1,
-                "Radius of Median filtering kernel (1 for 3x3, 2 for 5x5)");
+        private final Constant.Integer medianRadius = new Constant.Integer("pixels", 1,
+                                                                           "Radius of Median filtering kernel (1 for 3x3, 2 for 5x5)");
     }
 }

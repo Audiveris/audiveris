@@ -45,11 +45,9 @@ import java.util.SortedSet;
 public class RunPartCheck
         extends RunClass
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RunPartCheck.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code RunPartCheck} object.
      *
@@ -62,7 +60,6 @@ public class RunPartCheck
         super(book, sheetIds);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void process ()
     {

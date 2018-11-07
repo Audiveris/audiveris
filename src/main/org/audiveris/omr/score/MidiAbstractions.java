@@ -33,7 +33,6 @@ import java.util.Arrays;
  */
 public abstract class MidiAbstractions
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MidiAbstractions.class);
 
@@ -300,7 +299,6 @@ public abstract class MidiAbstractions
         "Gunshot"
     };
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Not meant to be instantiated.
      */
@@ -308,7 +306,6 @@ public abstract class MidiAbstractions
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getProgramName //
     //----------------//

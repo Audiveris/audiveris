@@ -34,7 +34,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class StemAlignmentRelation
         extends Support
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     //----------------//
     // isSingleSource //

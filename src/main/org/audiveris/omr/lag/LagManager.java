@@ -51,14 +51,11 @@ import java.util.TreeMap;
  */
 public class LagManager
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            LagManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(LagManager.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -72,7 +69,6 @@ public class LagManager
     /** (Debug)Predefined IDs for VIP sections. */
     private final EnumMap<Orientation, List<Integer>> vipMap;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code LagManager} object.
      *
@@ -85,7 +81,6 @@ public class LagManager
         vipMap = getVipSections();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // buildHorizontalLag //
     //--------------------//
@@ -132,9 +127,8 @@ public class LagManager
 
         final Lag vLag = new BasicLag(Lags.VLAG, VERTICAL);
         final int maxVerticalRunShift = scale.toPixels(constants.maxVerticalRunShift);
-        SectionFactory factory = new SectionFactory(
-                vLag,
-                new JunctionShiftPolicy(maxVerticalRunShift));
+        SectionFactory factory = new SectionFactory(vLag, new JunctionShiftPolicy(
+                                                    maxVerticalRunShift));
         factory.createSections(vertTable, null, true);
         setLag(Lags.VLAG, vLag);
         setVipSections(VERTICAL);
@@ -159,9 +153,9 @@ public class LagManager
             return null;
         }
 
-        final int minVerticalRunLength = 1
-                                         + (int) Math.rint(
-                        sheet.getScale().getMaxFore() * constants.ledgerThickness.getValue());
+        final int minVerticalRunLength = 1 + (int) Math.rint(sheet.getScale().getMaxFore()
+                                                                     * constants.ledgerThickness
+                        .getValue());
 
         // Remove runs whose height is larger than line thickness
         RunTable shortVertTable = sourceTable.copy().purge(
@@ -322,8 +316,7 @@ public class LagManager
                 Orientation.class);
 
         for (Orientation orientation : Orientation.values()) {
-            String vipStr = orientation.isVertical()
-                    ? constants.verticalVipSections.getValue()
+            String vipStr = orientation.isVertical() ? constants.verticalVipSections.getValue()
                     : constants.horizontalVipSections.getValue();
             List<Integer> ids = IntUtil.parseInts(vipStr);
 
@@ -360,34 +353,28 @@ public class LagManager
         buildVerticalLag(vertTable);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction maxVerticalRunShift = new Scale.Fraction(
-                0.05,
-                "Max shift between two runs of vertical sections");
+        private final Scale.Fraction maxVerticalRunShift = new Scale.Fraction(0.05,
+                                                                              "Max shift between two runs of vertical sections");
 
         // Constants specified WRT *maximum* line thickness (scale.getmaxFore())
         // ----------------------------------------------
         // Should be 1.0, unless ledgers are thicker than staff lines
-        private final Constant.Ratio ledgerThickness = new Constant.Ratio(
-                1.2,
-                "Ratio of ledger thickness vs staff line MAXIMUM thickness");
+        private final Constant.Ratio ledgerThickness = new Constant.Ratio(1.2,
+                                                                          "Ratio of ledger thickness vs staff line MAXIMUM thickness");
 
         // Constants for debugging
         // -----------------------
-        private final Constant.String horizontalVipSections = new Constant.String(
-                "",
-                "(Debug) Comma-separated values of VIP horizontal sections IDs");
+        private final Constant.String horizontalVipSections = new Constant.String("",
+                                                                                  "(Debug) Comma-separated values of VIP horizontal sections IDs");
 
-        private final Constant.String verticalVipSections = new Constant.String(
-                "",
-                "(Debug) Comma-separated values of VIP vertical sections IDs");
+        private final Constant.String verticalVipSections = new Constant.String("",
+                                                                                "(Debug) Comma-separated values of VIP vertical sections IDs");
     }
 }

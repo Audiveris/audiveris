@@ -40,13 +40,10 @@ import javax.xml.stream.XMLStreamWriter;
 public class IndentingXMLStreamWriter
         implements XMLStreamWriter
 {
-    //~ Enumerations -------------------------------------------------------------------------------
 
     /** What we have written in current element. */
     protected static enum Seen
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /** Neither data/text nor sub-element. */
         NOTHING,
         /** A (sub-) element. */
@@ -55,7 +52,6 @@ public class IndentingXMLStreamWriter
         DATA;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The actual writer, to which any real work is delegated. */
     protected final XMLStreamWriter writer;
 
@@ -71,7 +67,6 @@ public class IndentingXMLStreamWriter
     /** Current stack depth. */
     protected int depth = 0;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code IndentingXmlStreamWriter} object with default indent step of
      * 2 spaces.
@@ -96,7 +91,6 @@ public class IndentingXMLStreamWriter
         this.indentStep = indentStep;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void close ()
             throws XMLStreamException

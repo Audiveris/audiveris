@@ -41,11 +41,9 @@ import java.util.List;
  */
 public class RunTableFactory
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RunTableFactory.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The desired orientation. */
     private final Orientation orientation;
@@ -53,7 +51,6 @@ public class RunTableFactory
     /** The filter, if any, to be applied on run candidates. */
     private final Filter filter;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an RunsTableFactory, with its specified orientation and no filtering.
      *
@@ -80,7 +77,6 @@ public class RunTableFactory
         this.filter = filter;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //
     // ------------//
     // createTable //
@@ -117,13 +113,12 @@ public class RunTableFactory
         RunsRetriever retriever = new RunsRetriever(
                 orientation,
                 orientation.isVertical() ? new VerticalAdapter(source, table, roi.getLocation())
-                        : new HorizontalAdapter(source, table, roi.getLocation()));
+                : new HorizontalAdapter(source, table, roi.getLocation()));
         retriever.retrieveRuns(roi);
 
         return table;
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
     //--------//
     // Filter //
     //--------//
@@ -132,7 +127,6 @@ public class RunTableFactory
      */
     public static interface Filter
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Perform the filter on the provided run candidate.
@@ -147,7 +141,6 @@ public class RunTableFactory
                        int length);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // LengthFilter //
     //--------------//
@@ -157,11 +150,9 @@ public class RunTableFactory
     public static class LengthFilter
             implements Filter
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final int minLength;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a length-based filter.
          *
@@ -172,7 +163,6 @@ public class RunTableFactory
             this.minLength = minLength;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean check (int x,
                               int y,
@@ -188,7 +178,6 @@ public class RunTableFactory
     private abstract class MyAdapter
             implements RunsRetriever.Adapter
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** The source to read runs of pixels from. */
         protected final ByteProcessor source;
@@ -199,7 +188,6 @@ public class RunTableFactory
         /** Table offset, if any, WRT source. */
         protected Point tableOffset;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public MyAdapter (ByteProcessor source,
                           RunTable table,
                           Point tableOffset)
@@ -209,7 +197,6 @@ public class RunTableFactory
             this.tableOffset = tableOffset;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         // --------//
         // foreRun //
         // --------//
@@ -270,7 +257,6 @@ public class RunTableFactory
     private class HorizontalAdapter
             extends MyAdapter
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public HorizontalAdapter (ByteProcessor source,
                                   RunTable table,
@@ -279,7 +265,6 @@ public class RunTableFactory
             super(source, table, tableOffset);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void endPosition (int pos,
                                  List<Run> runs)
@@ -312,7 +297,6 @@ public class RunTableFactory
     private class VerticalAdapter
             extends MyAdapter
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public VerticalAdapter (ByteProcessor source,
                                 RunTable table,
@@ -321,7 +305,6 @@ public class RunTableFactory
             super(source, table, tableOffset);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void endPosition (int pos,
                                  List<Run> runs)

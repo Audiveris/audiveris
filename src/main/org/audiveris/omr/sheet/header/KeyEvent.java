@@ -29,7 +29,6 @@ package org.audiveris.omr.sheet.header;
 @Deprecated
 public abstract class KeyEvent
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Left abscissa. */
     protected int min;
@@ -37,7 +36,6 @@ public abstract class KeyEvent
     /** Right abscissa. */
     protected int max;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new KeyEvent object.
      *
@@ -51,13 +49,11 @@ public abstract class KeyEvent
         this.max = max;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public int getWidth ()
     {
         return max - min + 1;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Space //
     //-------//
@@ -69,7 +65,6 @@ public abstract class KeyEvent
     public static class Space
             extends KeyEvent
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public Space (int start,
                       int stop)
@@ -77,7 +72,6 @@ public abstract class KeyEvent
             super(start, stop);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

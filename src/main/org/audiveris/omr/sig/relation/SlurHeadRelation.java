@@ -52,14 +52,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class SlurHeadRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SlurHeadRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(SlurHeadRelation.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -74,7 +71,6 @@ public class SlurHeadRelation
     /** Euclidean distance from slur end to chord middle vertical. */
     private double euclidean;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SlurNoteRelation} object.
      *
@@ -92,7 +88,6 @@ public class SlurHeadRelation
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -207,17 +202,14 @@ public class SlurHeadRelation
         return constants.slurSupportCoeff.getValue();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio slurSupportCoeff = new Constant.Ratio(
-                5,
-                "Value for (source) slur coeff in support formula");
+        private final Constant.Ratio slurSupportCoeff = new Constant.Ratio(5,
+                                                                           "Value for (source) slur coeff in support formula");
     }
 }

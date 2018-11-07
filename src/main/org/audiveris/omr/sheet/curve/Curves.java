@@ -57,7 +57,6 @@ import java.util.Set;
  */
 public class Curves
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -65,7 +64,6 @@ public class Curves
 
     private static final List<Point> breakPoints = getBreakPoints();
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -85,7 +83,6 @@ public class Curves
     /** Builder for slurs (also used to evaluate arcs). */
     private SlursBuilder slursBuilder;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Curves object.
      *
@@ -103,14 +100,11 @@ public class Curves
         // Display skeleton buffer?
         if ((OMR.gui != null) && constants.displayCurves.isSet()) {
             view = new Curves.MyView(img);
-            sheet.getStub().getAssembly().addViewTab(
-                    "Curves",
-                    new ScrollImageView(sheet, view),
-                    new BoardsPane(new PixelBoard(sheet)));
+            sheet.getStub().getAssembly().addViewTab("Curves", new ScrollImageView(sheet, view),
+                                                     new BoardsPane(new PixelBoard(sheet)));
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // buildCurves //
     //-------------//
@@ -267,26 +261,21 @@ public class Curves
         return points;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean displayCurves = new Constant.Boolean(
-                false,
-                "Should we display the view on curves?");
+        private final Constant.Boolean displayCurves = new Constant.Boolean(false,
+                                                                            "Should we display the view on curves?");
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch?");
 
-        private final Constant.String breakPointCoordinates = new Constant.String(
-                "",
-                "(Debug) Comma-separated coordinates of curve break points if any");
+        private final Constant.String breakPointCoordinates = new Constant.String("",
+                                                                                  "(Debug) Comma-separated coordinates of curve break points if any");
     }
 
     //--------//
@@ -298,14 +287,12 @@ public class Curves
     private class MyView
             extends ImageView
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public MyView (BufferedImage image)
         {
             super(image);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void renderItems (Graphics2D g)
         {

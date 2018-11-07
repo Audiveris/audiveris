@@ -126,13 +126,11 @@ import javax.swing.KeyStroke;
  */
 public class InterController
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(InterController.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying sheet. */
     private final Sheet sheet;
 
@@ -142,7 +140,6 @@ public class InterController
     /** User pane. Lazily assigned */
     private SymbolsEditor editor;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code IntersController} object.
      *
@@ -153,7 +150,6 @@ public class InterController
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // addInters //
     //-----------//
@@ -420,16 +416,14 @@ public class InterController
 
                         if (headChord != null) {
                             List<HeadChordInter> stemChords = stem.getChords();
-                            HeadChordInter stemChord = (!stemChords.isEmpty())
-                                    ? stemChords.get(0) : null;
+                            HeadChordInter stemChord = (!stemChords.isEmpty()) ? stemChords.get(0)
+                                    : null;
 
                             if ((stemChords.isEmpty() && (headChord.getStem() != null))
-                                || (!stemChords.isEmpty() && !stemChords.contains(headChord))) {
+                                        || (!stemChords.isEmpty() && !stemChords.contains(headChord))) {
                                 // Extract head from headChord
-                                seq.add(
-                                        new UnlinkTask(
-                                                sig,
-                                                sig.getRelation(headChord, head, Containment.class)));
+                                seq.add(new UnlinkTask(sig, sig.getRelation(headChord, head,
+                                                                            Containment.class)));
 
                                 if (headChord.getNotes().size() <= 1) {
                                     // Remove headChord getting empty
@@ -439,18 +433,10 @@ public class InterController
                                 if (stemChord == null) {
                                     // Create a HeadChord on the fly based on stem
                                     stemChord = new HeadChordInter(-1);
-                                    seq.add(
-                                            new AdditionTask(
-                                                    sig,
-                                                    stemChord,
-                                                    stem.getBounds(),
-                                                    Collections.EMPTY_SET));
-                                    seq.add(
-                                            new LinkTask(
-                                                    sig,
-                                                    stemChord,
-                                                    stem,
-                                                    new ChordStemRelation()));
+                                    seq.add(new AdditionTask(sig, stemChord, stem.getBounds(),
+                                                             Collections.EMPTY_SET));
+                                    seq.add(new LinkTask(sig, stemChord, stem,
+                                                         new ChordStemRelation()));
                                 }
 
                                 // Insert head to stem chord
@@ -467,8 +453,8 @@ public class InterController
                         // But is single target (head) for each given side
                         SlurInter slur = (SlurInter) source;
                         HeadInter head = (HeadInter) target;
-                        HorizontalSide side = (head.getCenter().x < slur.getCenter().x)
-                                ? LEFT : RIGHT;
+                        HorizontalSide side = (head.getCenter().x < slur.getCenter().x) ? LEFT
+                                : RIGHT;
                         SlurHeadRelation existingRel = slur.getHeadRelation(side);
 
                         if (existingRel != null) {
@@ -496,16 +482,12 @@ public class InterController
                     seq.add(new LinkTask(sig, source, target, relation));
 
                     // Specific case for dot augmenting mirrored heads
-                    if (relation instanceof AugmentationRelation
-                        && target instanceof HeadInter) {
+                    if (relation instanceof AugmentationRelation && target instanceof HeadInter) {
                         Inter mirror = target.getMirror();
 
                         if (mirror != null) {
-                            logger.debug(
-                                    "LinkTask from {} to mirrored {} and {}",
-                                    source,
-                                    target,
-                                    mirror);
+                            logger.debug("LinkTask from {} to mirrored {} and {}", source, target,
+                                         mirror);
                             seq.add(new LinkTask(sig, source, mirror, relation.duplicate()));
                         }
                     }
@@ -781,12 +763,9 @@ public class InterController
                 // Wrap this rest within a rest chord
                 RestChordInter restChord = new RestChordInter(-1);
                 restChord.setStaff(staff);
-                seq.add(
-                        new AdditionTask(
-                                sig,
-                                restChord,
-                                ghostBounds,
-                                Arrays.asList(new Link(ghost, new Containment(), true))));
+                seq.add(new AdditionTask(sig, restChord, ghostBounds, Arrays.asList(new Link(ghost,
+                                                                                             new Containment(),
+                                                                                             true))));
             } else if (ghost instanceof HeadInter) {
                 // If we link head to a stem, create/update the related head chord
                 boolean stemFound = false;
@@ -800,12 +779,8 @@ public class InterController
                         if (stemChords.isEmpty()) {
                             // Create a chord based on stem
                             headChord = new HeadChordInter(-1);
-                            seq.add(
-                                    new AdditionTask(
-                                            sig,
-                                            headChord,
-                                            stem.getBounds(),
-                                            Collections.EMPTY_SET));
+                            seq.add(new AdditionTask(sig, headChord, stem.getBounds(),
+                                                     Collections.EMPTY_SET));
                             seq.add(new LinkTask(sig, headChord, stem, new ChordStemRelation()));
                         } else {
                             if (stemChords.size() > 1) {
@@ -864,8 +839,7 @@ public class InterController
                     }
 
                     final Point centroid = glyph.getCentroid();
-                    final SystemInfo system = sheet.getSystemManager().getClosestSystem(
-                            centroid);
+                    final SystemInfo system = sheet.getSystemManager().getClosestSystem(centroid);
 
                     if (system == null) {
                         return null;
@@ -875,17 +849,16 @@ public class InterController
 
                     // Retrieve lines relative to glyph origin
                     ByteProcessor buffer = glyph.getBuffer();
-                    List<TextLine> relativeLines = new BlockScanner(sheet).scanBuffer(
-                            buffer,
-                            sheet.getStub().getOcrLanguages().getValue(),
-                            glyph.getId());
+                    List<TextLine> relativeLines = new BlockScanner(sheet).scanBuffer(buffer, sheet
+                                                                                      .getStub()
+                                                                                      .getOcrLanguages()
+                                                                                      .getValue(),
+                                                                                      glyph.getId());
 
                     // Retrieve absolute lines (and the underlying word glyphs)
                     boolean lyrics = shape == Shape.LYRICS;
-                    List<TextLine> lines = new TextBuilder(system, lyrics).retrieveGlyphLines(
-                            buffer,
-                            relativeLines,
-                            glyph.getTopLeft());
+                    List<TextLine> lines = new TextBuilder(system, lyrics)
+                            .retrieveGlyphLines(buffer, relativeLines, glyph.getTopLeft());
 
                     // Generate the sequence of word/line Inter additions
                     for (TextLine line : lines) {
@@ -898,35 +871,24 @@ public class InterController
                         for (TextWord textWord : line.getWords()) {
                             logger.debug("word {}", textWord);
 
-                            WordInter word = lyrics ? new LyricItemInter(textWord)
-                                    : new WordInter(textWord);
+                            WordInter word = lyrics ? new LyricItemInter(textWord) : new WordInter(
+                                    textWord);
 
                             if (sentence != null) {
-                                seq.add(
-                                        new AdditionTask(
-                                                sig,
-                                                word,
-                                                textWord.getBounds(),
-                                                Arrays.asList(
-                                                        new Link(sentence, new Containment(), false))));
+                                seq.add(new AdditionTask(sig, word, textWord.getBounds(), Arrays
+                                                         .asList(new Link(sentence,
+                                                                          new Containment(), false))));
                             } else {
-                                sentence = lyrics ? LyricLineInter.create(line)
-                                        : ((role == TextRole.ChordName)
-                                                ? ChordNameInter.create(line)
-                                                : SentenceInter.create(line));
+                                sentence = lyrics ? LyricLineInter.create(line) : ((role
+                                                                                            == TextRole.ChordName)
+                                                ? ChordNameInter.create(line) : SentenceInter
+                                                .create(line));
                                 staff = sentence.assignStaff(system, line.getLocation());
-                                seq.add(
-                                        new AdditionTask(
-                                                sig,
-                                                word,
-                                                textWord.getBounds(),
-                                                Collections.EMPTY_SET));
-                                seq.add(
-                                        new AdditionTask(
-                                                sig,
-                                                sentence,
-                                                line.getBounds(),
-                                                Arrays.asList(new Link(word, new Containment(), true))));
+                                seq.add(new AdditionTask(sig, word, textWord.getBounds(),
+                                                         Collections.EMPTY_SET));
+                                seq.add(new AdditionTask(sig, sentence, line.getBounds(), Arrays
+                                                         .asList(new Link(word, new Containment(),
+                                                                          true))));
                             }
 
                             word.setStaff(staff);
@@ -992,16 +954,13 @@ public class InterController
         }
 
         // Display closure staff barlines to user
-        sheet.getInterIndex().getEntityService().publish(
-                new EntityListEvent<Inter>(
-                        this,
-                        SelectionHint.ENTITY_INIT,
-                        MouseMovement.PRESSING,
-                        closure));
+        sheet.getInterIndex().getEntityService().publish(new EntityListEvent<Inter>(this,
+                                                                                    SelectionHint.ENTITY_INIT,
+                                                                                    MouseMovement.PRESSING,
+                                                                                    closure));
 
-        if (OMR.gui.displayConfirmation(
-                "Do you confirm whole system-height addition?",
-                "Insertion of " + closure.size() + " barline(s)")) {
+        if (OMR.gui.displayConfirmation("Do you confirm whole system-height addition?",
+                                        "Insertion of " + closure.size() + " barline(s)")) {
             return closure;
         } else {
             return Collections.EMPTY_LIST;
@@ -1032,9 +991,8 @@ public class InterController
             throw new IllegalStateException("No staff for " + center);
         }
 
-        if ((staves.size() == 1)
-            || ghost instanceof BarlineInter
-            || ghost instanceof StaffBarlineInter) {
+        if ((staves.size() == 1) || ghost instanceof BarlineInter
+                    || ghost instanceof StaffBarlineInter) {
             // Staff is uniquely defined
             staff = staves.get(0);
             system = staff.getSystem();
@@ -1152,16 +1110,14 @@ public class InterController
         }
 
         // Display closure staff barlines to user
-        sheet.getInterIndex().getEntityService().publish(
-                new EntityListEvent<Inter>(
-                        this,
-                        SelectionHint.ENTITY_INIT,
-                        MouseMovement.PRESSING,
-                        closure));
+        sheet.getInterIndex().getEntityService().publish(new EntityListEvent<Inter>(this,
+                                                                                    SelectionHint.ENTITY_INIT,
+                                                                                    MouseMovement.PRESSING,
+                                                                                    closure));
 
-        if (OMR.gui.displayConfirmation(
-                "Do you confirm whole system-height removal?",
-                "Removal of " + closure.size() + " barline(s)")) {
+        if (OMR.gui.displayConfirmation("Do you confirm whole system-height removal?", "Removal of "
+                                                                                               + closure
+                                                .size() + " barline(s)")) {
             return closure;
         } else {
             return Collections.EMPTY_LIST;
@@ -1255,26 +1211,21 @@ public class InterController
         return Inters.inters(inters, new Inters.ClassPredicate(StaffBarlineInter.class));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean useStaffLink = new Constant.Boolean(
-                true,
-                "Should we use link for staff selection");
+        private final Constant.Boolean useStaffLink = new Constant.Boolean(true,
+                                                                           "Should we use link for staff selection");
 
-        private final Constant.Boolean useStaffProximity = new Constant.Boolean(
-                true,
-                "Should we use proximity for staff selection");
+        private final Constant.Boolean useStaffProximity = new Constant.Boolean(true,
+                                                                                "Should we use proximity for staff selection");
 
-        private final Constant.Ratio gutterRatio = new Constant.Ratio(
-                0.33,
-                "Vertical margin as ratio of inter-staff gutter");
+        private final Constant.Ratio gutterRatio = new Constant.Ratio(0.33,
+                                                                      "Vertical margin as ratio of inter-staff gutter");
     }
 
     //-------------//
@@ -1282,13 +1233,11 @@ public class InterController
     //-------------//
     private static class LinkedGhost
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Inter ghost;
 
         final Collection<Link> links;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public LinkedGhost (Inter ghost,
                             Collection<Link> links)
         {
@@ -1310,7 +1259,6 @@ public class InterController
      */
     private static class Removal
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Non-ensemble inters to be removed. */
         LinkedHashSet<Inter> inters = new LinkedHashSet<Inter>();
@@ -1321,7 +1269,6 @@ public class InterController
         /** Ensemble inters to be watched for potential removal. */
         LinkedHashSet<InterEnsemble> watched = new LinkedHashSet<InterEnsemble>();
 
-        //~ Methods --------------------------------------------------------------------------------
         public void include (Inter inter)
         {
             if (inter instanceof InterEnsemble) {
@@ -1404,19 +1351,16 @@ public class InterController
     private abstract class CtrlTask
             extends VoidTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         protected UITaskList seq = new UITaskList();
 
         protected final OpKind opKind;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public CtrlTask (OpKind opKind)
         {
             this.opKind = opKind;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Background epilog for any user action sequence.
          *
@@ -1468,7 +1412,6 @@ public class InterController
     private class RemoveAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -1479,10 +1422,9 @@ public class InterController
                 return;
             }
 
-            if ((inters.size() == 1)
-                || OMR.gui.displayConfirmation(
-                            "Do you confirm this multiple deletion?",
-                            "Deletion of " + inters.size() + " inters")) {
+            if ((inters.size() == 1) || OMR.gui.displayConfirmation(
+                    "Do you confirm this multiple deletion?", "Deletion of " + inters.size()
+                                                                      + " inters")) {
                 removeInters(inters);
             }
         }

@@ -43,19 +43,15 @@ import java.awt.geom.Rectangle2D;
 public class TemplateSymbol
         extends BasicSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Affine Transform for small symbol shapes. */
     private static final AffineTransform smallAt = AffineTransform.getScaleInstance(
-            Template.smallRatio,
-            Template.smallRatio);
+            Template.smallRatio, Template.smallRatio);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     protected final Shape shape;
 
     protected final boolean isSmall;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TemplateSymbol object.
      *
@@ -70,7 +66,6 @@ public class TemplateSymbol
         isSmall = shape.isSmall();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // getSymbolBounds //
     //-----------------//
@@ -107,16 +102,12 @@ public class TemplateSymbol
         // For full size symbol, add some margin on each direction of the symbol
         int dx = 2;
         int dy = 2;
-        p.rect = new Rectangle(
-                isSmall ? fullRect.width : (symWidth + dx),
-                isSmall ? interline : (symHeight + dy));
+        p.rect = new Rectangle(isSmall ? fullRect.width : (symWidth + dx), isSmall ? interline
+                               : (symHeight + dy));
 
         // Bounds of symbol within template rectangle
-        p.symbolRect = new Rectangle(
-                (p.rect.width - symWidth) / 2,
-                (p.rect.height - symHeight) / 2,
-                symWidth,
-                symHeight);
+        p.symbolRect = new Rectangle((p.rect.width - symWidth) / 2, (p.rect.height - symHeight) / 2,
+                                     symWidth, symHeight);
 
         return p;
     }
@@ -143,14 +134,12 @@ public class TemplateSymbol
         MusicFont.paint(g, p.layout, loc, AREA_CENTER);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         Rectangle symbolRect; // Bounds for symbol inside template image
     }

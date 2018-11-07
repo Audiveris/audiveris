@@ -59,7 +59,6 @@ import javax.swing.WindowConstants;
  */
 public abstract class AdvancedTopics
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -71,11 +70,8 @@ public abstract class AdvancedTopics
     /** Layout for 3 items. */
     private static final FormLayout layout3 = new FormLayout("12dlu,1dlu,65dlu,2dlu,pref", "pref");
 
-    //~ Enumerations -------------------------------------------------------------------------------
     public static enum Topic
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         SAMPLES(constants.useSamples),
         ANNOTATIONS(constants.useAnnotations),
         PLOTS(constants.usePlots),
@@ -83,18 +79,15 @@ public abstract class AdvancedTopics
         SPECIFIC_ITEMS(constants.useSpecificItems),
         WINDOW_LAYOUT(constants.useWindowLayout),
         DEBUG(constants.useDebug);
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Underlying constant. */
         private final Constant.Boolean constant;
 
-        //~ Constructors ---------------------------------------------------------------------------
         Topic (Constant.Boolean constant)
         {
             this.constant = constant;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public String getDescription ()
         {
             return constant.getDescription();
@@ -111,7 +104,6 @@ public abstract class AdvancedTopics
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getComponent //
     //--------------//
@@ -144,14 +136,13 @@ public abstract class AdvancedTopics
         framePane.add(panel);
 
         // Resources injection
-        ResourceMap resource = Application.getInstance().getContext()
-                .getResourceMap(AdvancedTopics.class);
+        ResourceMap resource = Application.getInstance().getContext().getResourceMap(
+                AdvancedTopics.class);
         resource.injectComponents(frame);
 
         return frame;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // AllTopicsPane //
     //---------------//
@@ -161,7 +152,6 @@ public abstract class AdvancedTopics
     private static final class AllTopicsPane
             extends JPanel
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public AllTopicsPane ()
         {
@@ -185,35 +175,27 @@ public abstract class AdvancedTopics
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean useSamples = new Constant.Boolean(
-                false,
-                "Handling of samples repositories and classifier");
+        private final Constant.Boolean useSamples = new Constant.Boolean(false,
+                                                                         "Handling of samples repositories and classifier");
 
-        private final Constant.Boolean useAnnotations = new Constant.Boolean(
-                false,
-                "Production of image annotation with symbols");
+        private final Constant.Boolean useAnnotations = new Constant.Boolean(false,
+                                                                             "Production of image annotation with symbols");
 
-        private final Constant.Boolean usePlots = new Constant.Boolean(
-                false,
-                "Display of scale / stem / staves plots");
+        private final Constant.Boolean usePlots = new Constant.Boolean(false,
+                                                                       "Display of scale / stem / staves plots");
 
-        private final Constant.Boolean useSpecificViews = new Constant.Boolean(
-                false,
-                "Display of specific sheet views");
+        private final Constant.Boolean useSpecificViews = new Constant.Boolean(false,
+                                                                               "Display of specific sheet views");
 
-        private final Constant.Boolean useSpecificItems = new Constant.Boolean(
-                false,
-                "Specific items shown in sheet view");
+        private final Constant.Boolean useSpecificItems = new Constant.Boolean(false,
+                                                                               "Specific items shown in sheet view");
 
-        private final Constant.Boolean useWindowLayout = new Constant.Boolean(
-                false,
-                "Handling of main window layout");
+        private final Constant.Boolean useWindowLayout = new Constant.Boolean(false,
+                                                                              "Handling of main window layout");
 
-        private final Constant.Boolean useDebug = new Constant.Boolean(
-                false,
-                "Support for debug features");
+        private final Constant.Boolean useDebug = new Constant.Boolean(false,
+                                                                       "Support for debug features");
     }
 
     //-----------//
@@ -226,11 +208,9 @@ public abstract class AdvancedTopics
             extends Panel
             implements ActionListener
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final JComboBox<Step> box; // ComboBox for desired step
 
-        //~ Constructors ---------------------------------------------------------------------------
         public EarlyPane ()
         {
             box = new JComboBox<Step>(Step.values());
@@ -246,7 +226,6 @@ public abstract class AdvancedTopics
             builder.add(new JLabel("Step triggered on image input"), cst.xy(3, r));
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -265,11 +244,9 @@ public abstract class AdvancedTopics
             extends Panel
             implements ActionListener
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final JComboBox<String> box; // ComboBox for registered plugins
 
-        //~ Constructors ---------------------------------------------------------------------------
         public PluginPane ()
         {
             final Collection<String> ids = PluginsManager.getInstance().getPluginIds();
@@ -285,7 +262,6 @@ public abstract class AdvancedTopics
             builder.add(new JLabel("Plugin launched on MusicXML output"), cst.xy(3, r));
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -303,11 +279,9 @@ public abstract class AdvancedTopics
             extends Panel
             implements ActionListener
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Topic topic; // Handled topic
 
-        //~ Constructors ---------------------------------------------------------------------------
         public TopicPane (Topic topic)
         {
             this.topic = topic;
@@ -325,7 +299,6 @@ public abstract class AdvancedTopics
             builder.add(new JLabel(topic.getDescription()), cst.xy(5, r));
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {

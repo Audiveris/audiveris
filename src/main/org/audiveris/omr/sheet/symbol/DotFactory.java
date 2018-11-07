@@ -93,13 +93,11 @@ import java.util.Set;
  */
 public class DotFactory
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(DotFactory.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related inter factory. */
     private final InterFactory interFactory;
 
@@ -113,7 +111,6 @@ public class DotFactory
     /** Dot candidates. Sorted top down, then left to right. */
     private final List<Dot> dots = new ArrayList<Dot>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new DotFactory object.
      *
@@ -129,7 +126,6 @@ public class DotFactory
         scale = system.getSheet().getScale();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // instantDotChecks //
     //------------------//
@@ -249,19 +245,15 @@ public class DotFactory
 
             if (distance >= constants.minDyFromLine.getValue()) {
                 if (glyph.isVip()) {
-                    logger.info(
-                            "VIP glyph#{} dot distance:{} OK",
-                            glyph.getId(),
-                            String.format("%.2f", distance));
+                    logger.info("VIP glyph#{} dot distance:{} OK", glyph.getId(), String.format(
+                                "%.2f", distance));
                 }
 
                 return true;
             } else {
                 if (glyph.isVip()) {
-                    logger.info(
-                            "VIP glyph#{} dot distance:{} too close",
-                            glyph.getId(),
-                            String.format("%.2f", distance));
+                    logger.info("VIP glyph#{} dot distance:{} too close", glyph.getId(), String
+                                .format("%.2f", distance));
                 }
 
                 return false;
@@ -329,9 +321,7 @@ public class DotFactory
                             }
 
                             for (Relation rel : dRels) {
-                                RepeatDotInter dot = (RepeatDotInter) sig.getOppositeInter(
-                                        bar,
-                                        rel);
+                                RepeatDotInter dot = (RepeatDotInter) sig.getOppositeInter(bar, rel);
                                 repeatDots.add(dot);
                                 logger.debug("Repeat dot for {}", dot);
                             }
@@ -340,13 +330,13 @@ public class DotFactory
                             Shape shape = staffBarline.getShape();
 
                             if (side == LEFT) {
-                                if ((shape == Shape.LEFT_REPEAT_SIGN)
-                                    || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
+                                if ((shape == Shape.LEFT_REPEAT_SIGN) || (shape
+                                                                                  == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
                                     virtualDotCount += 2;
                                 }
                             } else {
-                                if ((shape == Shape.RIGHT_REPEAT_SIGN)
-                                    || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
+                                if ((shape == Shape.RIGHT_REPEAT_SIGN) || (shape
+                                                                                   == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
                                     virtualDotCount += 2;
                                 }
                             }
@@ -480,10 +470,8 @@ public class DotFactory
         final Rectangle luBox = new Rectangle(dotPt);
         luBox.grow(maxDx, maxDy);
 
-        final List<Inter> bars = Inters.intersectedInters(
-                interFactory.getSystemBars(),
-                GeoOrder.BY_ABSCISSA,
-                luBox);
+        final List<Inter> bars = Inters.intersectedInters(interFactory.getSystemBars(),
+                                                          GeoOrder.BY_ABSCISSA, luBox);
 
         if (bars.isEmpty()) {
             return;
@@ -499,11 +487,9 @@ public class DotFactory
             Point barCenter = bar.getCenter();
 
             // Select proper bar reference point (left or right side and proper vertical side)
-            double barY = barCenter.y
-                          + ((box.height / 8d) * Integer.signum(dotPt.y - barCenter.y));
-            double barX = LineUtil.xAtY(bar.getMedian(), barY)
-                          + ((bar.getWidth() / 2) * Integer.signum(
-                    dotPt.x - barCenter.x));
+            double barY = barCenter.y + ((box.height / 8d) * Integer.signum(dotPt.y - barCenter.y));
+            double barX = LineUtil.xAtY(bar.getMedian(), barY) + ((bar.getWidth() / 2) * Integer
+                    .signum(dotPt.x - barCenter.x));
 
             double xGap = Math.abs(barX - dotPt.x);
             double yGap = Math.abs(barY - dotPt.y);
@@ -561,20 +547,18 @@ public class DotFactory
         Glyph glyph = dot.getGlyph();
 
         if (glyph != null) {
-            ArticulationInter.createValidAdded(
-                    glyph,
-                    Shape.STACCATO,
-                    Grades.intrinsicRatio * dot.getGrade(),
-                    system,
-                    interFactory.getSystemHeadChords());
-//        } else {
-//            ArticulationInter.createValidAdded(
-//                    dot.getAnnotationId(),
-//                    dot.getBounds(),
-//                    dot.getOmrShape(),
-//                    Grades.intrinsicRatio * dot.getGrade(),
-//                    system,
-//                    interFactory.getSystemHeadChords());
+            ArticulationInter.createValidAdded(glyph, Shape.STACCATO, Grades.intrinsicRatio * dot
+                                               .getGrade(), system, interFactory
+                                                       .getSystemHeadChords());
+
+            //        } else {
+            //            ArticulationInter.createValidAdded(
+            //                    dot.getAnnotationId(),
+            //                    dot.getBounds(),
+            //                    dot.getOmrShape(),
+            //                    Grades.intrinsicRatio * dot.getGrade(),
+            //                    system,
+            //                    interFactory.getSystemHeadChords());
         }
     }
 
@@ -669,10 +653,10 @@ public class DotFactory
 
                 if (halfBox.intersects(dotBox)) {
                     final Point dotCenter = GeoUtil.centerOf(dotBox);
-                    double xGap = Math.abs(
-                            dotCenter.x - (halfBox.x + (halfBox.width / 2)));
-                    double yTarget = (arc.getShape() == Shape.FERMATA_ARC_BELOW)
-                            ? (halfBox.y + (halfBox.height * 0.25))
+                    double xGap = Math.abs(dotCenter.x - (halfBox.x + (halfBox.width / 2)));
+                    double yTarget = (arc.getShape() == Shape.FERMATA_ARC_BELOW) ? (halfBox.y
+                                                                                            + (halfBox.height
+                                                                                               * 0.25))
                             : (halfBox.y + (halfBox.height * 0.75));
                     double yGap = Math.abs(dotCenter.y - yTarget);
                     DotFermataRelation rel = new DotFermataRelation();
@@ -717,9 +701,7 @@ public class DotFactory
         AugmentationDotInter aug = new AugmentationDotInter(glyph, grade);
 
         List<Link> links = new ArrayList<Link>();
-        Link headLink = aug.lookupHeadLink(
-                interFactory.getSystemHeadChords(),
-                system);
+        Link headLink = aug.lookupHeadLink(interFactory.getSystemHeadChords(), system);
 
         if (headLink != null) {
             links.add(headLink);
@@ -739,11 +721,9 @@ public class DotFactory
                     Inter mirror = link.partner.getMirror();
 
                     if (mirror != null) {
-                        logger.debug(
-                                "Edge from {} to mirrored {} and {}",
-                                aug,
-                                link.partner,
-                                mirror);
+                        logger
+                                .debug("Edge from {} to mirrored {} and {}", aug, link.partner,
+                                       mirror);
                         sig.addEdge(aug, mirror, link.relation.duplicate());
                     }
                 }
@@ -766,18 +746,15 @@ public class DotFactory
         checkStackRepeats();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction minDyFromLine = new Scale.Fraction(
-                0.3,
-                "Minimum vertical distance between dot center and staff line/ledger");
+        private final Scale.Fraction minDyFromLine = new Scale.Fraction(0.3,
+                                                                        "Minimum vertical distance between dot center and staff line/ledger");
     }
 
     //-----//
@@ -788,7 +765,6 @@ public class DotFactory
      */
     private abstract static class Dot
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         /**
          * Very specific sorting of dots.
@@ -820,7 +796,6 @@ public class DotFactory
             }
         };
 
-        //~ Methods --------------------------------------------------------------------------------
         public abstract int getAnnotationId ();
 
         public abstract Rectangle getBounds ();
@@ -843,13 +818,11 @@ public class DotFactory
     private static class GlyphDot
             extends Dot
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Glyph glyph; // Underlying glyph
 
         private final Evaluation eval; // Evaluation result
 
-        //~ Constructors ---------------------------------------------------------------------------
         public GlyphDot (Evaluation eval,
                          Glyph glyph)
         {
@@ -857,7 +830,6 @@ public class DotFactory
             this.glyph = glyph;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int getAnnotationId ()
         {

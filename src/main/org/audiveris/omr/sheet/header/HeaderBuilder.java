@@ -73,13 +73,11 @@ import java.util.ArrayList;
  */
 public class HeaderBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(HeaderBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -99,7 +97,6 @@ public class HeaderBuilder
     /** Manager for column of time signatures. */
     private final TimeBuilder.HeaderColumn timeColumn;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new HeaderBuilder object.
      *
@@ -116,7 +113,6 @@ public class HeaderBuilder
         timeColumn = new TimeBuilder.HeaderColumn(system);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // plot //
     //------//
@@ -129,10 +125,10 @@ public class HeaderBuilder
     {
         final Sheet sheet = system.getSheet();
         final String frameTitle = sheet.getId() + " header staff#" + staff.getId();
-        final ChartPlotter plotter = new ChartPlotter(
-                frameTitle,
-                "Abscissae - staff interline:" + staff.getSpecificInterline(),
-                "Counts");
+        final ChartPlotter plotter = new ChartPlotter(frameTitle, "Abscissae - staff interline:"
+                                                                          + staff
+                                                              .getSpecificInterline(),
+                                                      "Counts");
 
         // Draw time sig portion
         String timeString = timeColumn.addPlot(plotter, staff);
@@ -344,17 +340,14 @@ public class HeaderBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction maxHeaderWidth = new Scale.Fraction(
-                15.0,
-                "Maximum header width (from measure start to end of key-sig or time-sig)");
+        private final Scale.Fraction maxHeaderWidth = new Scale.Fraction(15.0,
+                                                                         "Maximum header width (from measure start to end of key-sig or time-sig)");
     }
 }

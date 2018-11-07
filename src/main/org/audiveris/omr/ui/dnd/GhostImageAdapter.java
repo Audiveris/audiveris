@@ -33,7 +33,6 @@ import java.awt.image.BufferedImage;
 public class GhostImageAdapter<A>
         extends GhostDropAdapter<A>
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create a new GhostImageAdapter object

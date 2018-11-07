@@ -85,7 +85,6 @@ import javax.swing.text.JTextComponent;
 public class GuiActions
         extends AbstractBean
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -113,7 +112,6 @@ public class GuiActions
     /** Should the boards window be displayed. */
     public static final String BOARDS_WINDOW_DISPLAYED = "boardsWindowDisplayed";
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -171,11 +169,10 @@ public class GuiActions
     {
         // Select local samples repository
         final String ext = SampleRepository.SAMPLES_FILE_NAME;
-        final Path repoPath = UIUtil.pathChooser(
-                false,
-                OMR.gui.getFrame(),
-                BookManager.getBaseFolder(),
-                new OmrFileFilter(ext, new String[]{ext}));
+        final Path repoPath = UIUtil.pathChooser(false, OMR.gui.getFrame(), BookManager
+                                                 .getBaseFolder(), new OmrFileFilter(ext,
+                                                                                     new String[]{
+                                                                                         ext}));
 
         if (repoPath != null) {
             CursorController.launchWithDelayedMessage(
@@ -525,23 +522,19 @@ public class GuiActions
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // AboutAction //
     //-------------//
     /**
      * Class {@code AboutAction} opens an 'About' dialog with some
      * information about the application.
-     *
+     * <p>
      */
     public static class AboutAction
     {
-        //~ Enumerations ---------------------------------------------------------------------------
 
         private static enum Topic
         {
-            //~ Enumeration constant initializers --------------------------------------------------
-
             /** Longer application description */
             description(new JTextField()),
             /** Current version */
@@ -568,24 +561,20 @@ public class GuiActions
             os(new JTextField()),
             /** Arch */
             osArch(new JTextField());
-            //~ Instance fields --------------------------------------------------------------------
 
             public final JTextComponent comp;
 
-            //~ Constructors -----------------------------------------------------------------------
             Topic (JTextComponent comp)
             {
                 this.comp = comp;
             }
         }
 
-        //~ Instance fields ------------------------------------------------------------------------
         // Dialog
         private JDialog aboutBox = null;
 
         private HyperlinkListener linkListener = new LinkListener();
 
-        //~ Methods --------------------------------------------------------------------------------
         public void actionPerformed (ActionEvent e)
         {
             if (aboutBox == null) {
@@ -604,9 +593,8 @@ public class GuiActions
             }
 
             // Layout
-            final FormLayout layout = new FormLayout(
-                    "right:pref, 5dlu, pref, 200dlu",
-                    rows.toString());
+            final FormLayout layout = new FormLayout("right:pref, 5dlu, pref, 200dlu", rows
+                                                     .toString());
             final PanelBuilder builder = new PanelBuilder(layout);
             final CellConstraints cst = new CellConstraints();
 
@@ -666,32 +654,28 @@ public class GuiActions
 
             Topic.javaVendor.comp.setText(System.getProperty("java.vendor"));
             Topic.javaVersion.comp.setText(System.getProperty("java.version"));
-            Topic.javaRuntime.comp.setText(
-                    System.getProperty("java.runtime.name") + " (build "
-                    + System.getProperty("java.runtime.version") + ")");
-            Topic.javaVm.comp.setText(
-                    System.getProperty("java.vm.name") + " (build "
-                    + System.getProperty("java.vm.version") + ", " + System.getProperty("java.vm.info")
-                    + ")");
-            Topic.os.comp.setText(
-                    System.getProperty("os.name") + " " + System.getProperty("os.version"));
+            Topic.javaRuntime.comp.setText(System.getProperty("java.runtime.name") + " (build "
+                                                   + System.getProperty("java.runtime.version")
+                                                   + ")");
+            Topic.javaVm.comp.setText(System.getProperty("java.vm.name") + " (build " + System
+                    .getProperty("java.vm.version") + ", " + System.getProperty("java.vm.info")
+                                              + ")");
+            Topic.os.comp.setText(System.getProperty("os.name") + " " + System.getProperty(
+                    "os.version"));
             Topic.osArch.comp.setText(System.getProperty("os.arch"));
 
             return dialog;
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         //------------//
         // ImagePanel //
         //------------//
         private static class ImagePanel
                 extends JPanel
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             private Image img;
 
-            //~ Constructors -----------------------------------------------------------------------
             public ImagePanel (Image img)
             {
                 this.img = img;
@@ -710,7 +694,6 @@ public class GuiActions
                 this(new ImageIcon(uri.toURL()).getImage());
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void paintComponent (Graphics g)
             {
@@ -721,7 +704,6 @@ public class GuiActions
         private static class LinkListener
                 implements HyperlinkListener
         {
-            //~ Methods ----------------------------------------------------------------------------
 
             @Override
             public void hyperlinkUpdate (HyperlinkEvent event)
@@ -748,32 +730,24 @@ public class GuiActions
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.String webSiteUrl = new Constant.String(
-                "http://www.audiveris.org",
-                "URL of Audiveris home page");
+        private final Constant.String webSiteUrl = new Constant.String("http://www.audiveris.org",
+                                                                       "URL of Audiveris home page");
 
         private final Constant.String wikiUrl = new Constant.String(
-                "https://github.com/Audiveris/audiveris/wiki",
-                "URL of Audiveris wiki");
+                "https://github.com/Audiveris/audiveris/wiki", "URL of Audiveris wiki");
 
-        private final Constant.String manualUrl = new Constant.String(
-                //"docs/manual/handbook.html",
-                "https://bacchushlg.gitbooks.io/audiveris-5-1/content/",
-                "URL of Audiveris manual");
+        private final Constant.String manualUrl = new Constant.String( //"docs/manual/handbook.html",
+                "https://bacchushlg.gitbooks.io/audiveris-5-1/content/", "URL of Audiveris manual");
 
-        private final Constant.Boolean boardsWindowDisplayed = new Constant.Boolean(
-                true,
-                "Should the boards window be displayed");
+        private final Constant.Boolean boardsWindowDisplayed = new Constant.Boolean(true,
+                                                                                    "Should the boards window be displayed");
 
-        private final Constant.Boolean logWindowDisplayed = new Constant.Boolean(
-                true,
-                "Should the log window be displayed");
+        private final Constant.Boolean logWindowDisplayed = new Constant.Boolean(true,
+                                                                                 "Should the log window be displayed");
 
-        private final Constant.Boolean errorsWindowDisplayed = new Constant.Boolean(
-                false,
-                "Should the errors window be displayed");
+        private final Constant.Boolean errorsWindowDisplayed = new Constant.Boolean(false,
+                                                                                    "Should the errors window be displayed");
     }
 
     //-------------//
@@ -782,11 +756,9 @@ public class GuiActions
     private static class OptionsTask
             extends Task<Options, Void>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Timer timer = new Timer();
 
-        //~ Constructors ---------------------------------------------------------------------------
         public OptionsTask ()
         {
             super(OmrGui.getApplication());
@@ -803,7 +775,6 @@ public class GuiActions
                     CursorController.delay);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Options doInBackground ()
                 throws Exception

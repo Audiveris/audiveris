@@ -45,7 +45,6 @@ import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.selection.AnchoredTemplateEvent;
 import org.audiveris.omr.ui.selection.SelectionService;
-
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 
@@ -65,20 +64,17 @@ import java.util.SortedMap;
  */
 public class DistancesBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(DistancesBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
     /** Table of distances to fore. */
     private DistanceTable table;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code DistancesBuilder} object.
      *
@@ -89,7 +85,6 @@ public class DistancesBuilder
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // buildDistances //
     //----------------//
@@ -105,9 +100,8 @@ public class DistancesBuilder
 
         // Display distances image in a template view?
         if ((OMR.gui != null) && constants.displayTemplates.isSet()) {
-            SelectionService templateService = new SelectionService(
-                    "templateService",
-                    new Class[]{AnchoredTemplateEvent.class});
+            SelectionService templateService = new SelectionService("templateService", new Class[]{
+                AnchoredTemplateEvent.class});
             BufferedImage img = table.getImage(sheet.getScale().getInterline() / 2);
             TemplateBoard templateBoard = new TemplateBoard(sheet, table, templateService);
             sheet.getStub().getAssembly().addViewTab(
@@ -183,17 +177,14 @@ public class DistancesBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean displayTemplates = new Constant.Boolean(
-                false,
-                "Should we display the templates tab?");
+        private final Constant.Boolean displayTemplates = new Constant.Boolean(false,
+                                                                               "Should we display the templates tab?");
     }
 }

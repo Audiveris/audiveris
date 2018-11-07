@@ -53,13 +53,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class WedgeInter
         extends AbstractDirectionInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(WedgeInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Top line. */
     @XmlElement
     private Line2D l1;
@@ -68,7 +66,6 @@ public class WedgeInter
     @XmlElement
     private Line2D l2;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new WedgeInter object.
      *
@@ -117,7 +114,6 @@ public class WedgeInter
         this.l2 = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -223,22 +219,18 @@ public class WedgeInter
         return super.internals() + " " + shape;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
             extends BasicImpacts
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
-        private static final String[] NAMES = new String[]{
-            "s1", "s2", "closedDy", "openDy", "openBias"
-        };
+        private static final String[] NAMES = new String[]{"s1", "s2", "closedDy", "openDy",
+                                                           "openBias"};
 
         private static final double[] WEIGHTS = new double[]{1, 1, 1, 1, 1};
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double s1,
                         double s2,
                         double closedDy,
@@ -260,10 +252,8 @@ public class WedgeInter
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction stackAbscissaMargin = new Scale.Fraction(
-                1.0,
-                "Margin beyond stack abscissa limits");
+        private final Scale.Fraction stackAbscissaMargin = new Scale.Fraction(1.0,
+                                                                              "Margin beyond stack abscissa limits");
     }
 }

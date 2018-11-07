@@ -31,7 +31,6 @@ package org.audiveris.omr.moments;
  */
 public interface OrthogonalMoments<D extends OrthogonalMoments<D>>
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report the distance to another descriptor instance.

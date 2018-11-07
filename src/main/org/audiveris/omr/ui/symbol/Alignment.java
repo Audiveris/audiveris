@@ -32,7 +32,6 @@ import java.awt.geom.Rectangle2D;
  */
 public class Alignment
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Pre-defined alignment on top left of symbol */
     public static final Alignment TOP_LEFT = new Alignment(Vertical.TOP, Horizontal.LEFT);
@@ -56,19 +55,16 @@ public class Alignment
     public static final Alignment BASELINE_LEFT = new Alignment(Vertical.BASELINE, Horizontal.LEFT);
 
     /** Pre-defined alignment on baseline center of symbol */
-    public static final Alignment BASELINE_CENTER = new Alignment(
-            Vertical.BASELINE,
-            Horizontal.CENTER);
+    public static final Alignment BASELINE_CENTER = new Alignment(Vertical.BASELINE,
+                                                                  Horizontal.CENTER);
 
     /** Pre-defined alignment on baseline right of symbol */
-    public static final Alignment BASELINE_RIGHT = new Alignment(
-            Vertical.BASELINE,
-            Horizontal.RIGHT);
+    public static final Alignment BASELINE_RIGHT
+            = new Alignment(Vertical.BASELINE, Horizontal.RIGHT);
 
     /** Pre-defined alignment on baseline origin of symbol (for text) */
-    public static final Alignment BASELINE_XORIGIN = new Alignment(
-            Vertical.BASELINE,
-            Horizontal.XORIGIN);
+    public static final Alignment BASELINE_XORIGIN = new Alignment(Vertical.BASELINE,
+                                                                   Horizontal.XORIGIN);
 
     /** Pre-defined alignment on bottom left of symbol */
     public static final Alignment BOTTOM_LEFT = new Alignment(Vertical.BOTTOM, Horizontal.LEFT);
@@ -79,21 +75,17 @@ public class Alignment
     /** Pre-defined alignment on bottom right of symbol */
     public static final Alignment BOTTOM_RIGHT = new Alignment(Vertical.BOTTOM, Horizontal.RIGHT);
 
-    //~ Enumerations -------------------------------------------------------------------------------
     //----------//
     // Vertical //
     //----------//
     /** The reference y line for this symbol */
     public static enum Vertical
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         TOP,
         MIDDLE,
         BOTTOM,
         BASELINE;
 
-        //~ Methods --------------------------------------------------------------------------------
         //-----------//
         // dyToPoint //
         //-----------//
@@ -123,8 +115,7 @@ public class Alignment
                 if (that == BASELINE) {
                     return 0;
                 } else {
-                    return rect.getY()
-                           + (((that.ordinal() - TOP.ordinal()) * rect.getHeight()) / 2);
+                    return rect.getY() + (((that.ordinal() - TOP.ordinal()) * rect.getHeight()) / 2);
                 }
             } else if (that == BASELINE) {
                 return -rect.getY() + (((TOP.ordinal() - this.ordinal()) * rect.getHeight()) / 2);
@@ -156,14 +147,11 @@ public class Alignment
     /** The reference x line for this symbol */
     public static enum Horizontal
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         LEFT,
         CENTER,
         RIGHT,
         XORIGIN;
 
-        //~ Methods --------------------------------------------------------------------------------
         //-----------//
         // dxToPoint //
         //-----------//
@@ -193,8 +181,7 @@ public class Alignment
                 if (that == XORIGIN) {
                     return 0;
                 } else {
-                    return rect.getX()
-                           + (((that.ordinal() - LEFT.ordinal()) * rect.getWidth()) / 2);
+                    return rect.getX() + (((that.ordinal() - LEFT.ordinal()) * rect.getWidth()) / 2);
                 }
             } else if (that == XORIGIN) {
                 return -rect.getX() + (((LEFT.ordinal() - this.ordinal()) * rect.getWidth()) / 2);
@@ -220,14 +207,12 @@ public class Alignment
         }
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The vertical alignment */
     public final Vertical vertical;
 
     /** The horizontal alignment */
     public final Horizontal horizontal;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an Alignment instance
      *
@@ -245,7 +230,6 @@ public class Alignment
         this.horizontal = horizontal;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // equals //
     //--------//
@@ -288,9 +272,8 @@ public class Alignment
     public Point toPoint (Alignment that,
                           Rectangle rect)
     {
-        return new Point(
-                horizontal.dxToPoint(that.horizontal, rect),
-                vertical.dyToPoint(that.vertical, rect));
+        return new Point(horizontal.dxToPoint(that.horizontal, rect), vertical.dyToPoint(
+                         that.vertical, rect));
     }
 
     //---------//
@@ -307,9 +290,8 @@ public class Alignment
     public Point2D toPoint (Alignment that,
                             Rectangle2D rect)
     {
-        return new Point2D.Double(
-                horizontal.dxToPoint(that.horizontal, rect),
-                vertical.dyToPoint(that.vertical, rect));
+        return new Point2D.Double(horizontal.dxToPoint(that.horizontal, rect), vertical.dyToPoint(
+                                  that.vertical, rect));
     }
 
     //----------//

@@ -48,16 +48,13 @@ import javax.swing.JMenuItem;
 public class GlyphListMenu
         extends LocationDependentMenu
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphListMenu.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final GlyphListener glyphListener = new GlyphListener();
 
     private final Sheet sheet;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code GlyphMenu} object.
      *
@@ -69,7 +66,6 @@ public class GlyphListMenu
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void updateUserLocation (Rectangle rect)
     {
@@ -101,7 +97,6 @@ public class GlyphListMenu
         super.updateUserLocation(rect);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // GlyphListener //
     //---------------//
@@ -111,7 +106,6 @@ public class GlyphListMenu
     private class GlyphListener
             extends AbstractMouseListener
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void mouseEntered (MouseEvent e)
@@ -119,12 +113,10 @@ public class GlyphListMenu
             ShapeMenu shapeMenu = (ShapeMenu) e.getSource();
             Glyph glyph = shapeMenu.getGlyph();
 
-            sheet.getGlyphIndex().getEntityService().publish(
-                    new EntityListEvent<Glyph>(
-                            this,
-                            SelectionHint.ENTITY_INIT,
-                            MouseMovement.PRESSING,
-                            glyph));
+            sheet.getGlyphIndex().getEntityService().publish(new EntityListEvent<Glyph>(this,
+                                                                                        SelectionHint.ENTITY_INIT,
+                                                                                        MouseMovement.PRESSING,
+                                                                                        glyph));
         }
     }
 }

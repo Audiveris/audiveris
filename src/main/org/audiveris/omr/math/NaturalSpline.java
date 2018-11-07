@@ -63,16 +63,13 @@ import java.util.Objects;
 public class NaturalSpline
         extends GeoPath
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(NaturalSpline.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private Point2D first; // Cached for faster access. Really useful???
 
     private Point2D last; // Cached for faster access. Really useful???
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new NaturalSpline object from a sequence of connected shapes.
      *
@@ -85,7 +82,6 @@ public class NaturalSpline
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // interpolate //
     //-------------//
@@ -138,8 +134,7 @@ public class NaturalSpline
         final int n = xx.length - 1;
 
         if (n < 1) {
-            throw new IllegalArgumentException(
-                    "NaturalSpline interpolation needs at least 2 points");
+            throw new IllegalArgumentException("NaturalSpline interpolation needs at least 2 points");
         }
 
         if (n == 1) {
@@ -151,14 +146,14 @@ public class NaturalSpline
             //            double u = 1 - t;
             //            double cpx = (xx[1] - (u * u * xx[0]) - (t * t * xx[2])) / 2 * t * u;
             //            double cpy = (yy[1] - (u * u * yy[0]) - (t * t * yy[2])) / 2 * t * u;
-            return new NaturalSpline(
-                    new QuadCurve2D.Double(
-                            xx[0],
-                            yy[0],
-                            (2 * xx[1]) - ((xx[0] + xx[2]) / 2),
-                            (2 * yy[1]) - ((yy[0] + yy[2]) / 2),
-                            xx[2],
-                            yy[2]));
+            return new NaturalSpline(new QuadCurve2D.Double(xx[0], yy[0], (2 * xx[1]) - ((xx[0]
+                                                                                                  + xx[2])
+                                                                                         / 2), (2
+                                                                                                        * yy[1])
+                                                                                               - ((yy[0]
+                                                                                                   + yy[2])
+                                                                                                  / 2),
+                                                            xx[2], yy[2]));
         } else {
             // Use a sequence of cubics
             double[] dx = getCubicDerivatives(xx);
@@ -167,15 +162,13 @@ public class NaturalSpline
 
             for (int i = 0; i < n; i++) {
                 // Build each segment curve
-                curves[i] = new CubicCurve2D.Double(
-                        xx[i],
-                        yy[i],
-                        xx[i] + (dx[i] / 3),
-                        yy[i] + (dy[i] / 3),
-                        xx[i + 1] - (dx[i + 1] / 3),
-                        yy[i + 1] - (dy[i + 1] / 3),
-                        xx[i + 1],
-                        yy[i + 1]);
+                curves[i] = new CubicCurve2D.Double(xx[i], yy[i], xx[i] + (dx[i] / 3), yy[i]
+                                                                                               + (dy[i]
+                                                                                                  / 3),
+                                                    xx[i + 1] - (dx[i + 1] / 3), yy[i + 1] - (dy[i
+                                                                                                         + 1]
+                                                                                              / 3),
+                                                    xx[i + 1], yy[i + 1]);
             }
 
             return new NaturalSpline(curves);
@@ -304,8 +297,11 @@ public class NaturalSpline
             double cpx1 = coords[0];
             double cpx2 = coords[2];
 
-            return ((-3 * p1.x * u * u) + (3 * cpx1 * ((u * u) - (2 * u * t)))
-                    + (3 * cpx2 * ((2 * t * u) - (t * t))) + (3 * p2.x * t * t)) / deltaY;
+            return ((-3 * p1.x * u * u) + (3 * cpx1 * ((u * u) - (2 * u * t))) + (3 * cpx2 * ((2 * t
+                                                                                                       * u)
+                                                                                              - (t
+                                                                                                         * t)))
+                    + (3 * p2.x * t * t)) / deltaY;
         }
 
         default:
@@ -357,8 +353,11 @@ public class NaturalSpline
             double cpy1 = buffer[1];
             double cpy2 = buffer[3];
 
-            return ((-3 * p1.y * u * u) + (3 * cpy1 * ((u * u) - (2 * u * t)))
-                    + (3 * cpy2 * ((2 * t * u) - (t * t))) + (3 * p2.y * t * t)) / deltaX;
+            return ((-3 * p1.y * u * u) + (3 * cpy1 * ((u * u) - (2 * u * t))) + (3 * cpy2 * ((2 * t
+                                                                                                       * u)
+                                                                                              - (t
+                                                                                                         * t)))
+                    + (3 * p2.y * t * t)) / deltaX;
         }
 
         default:

@@ -158,6 +158,7 @@ public enum OmrShape
     noteheadXHalf("X notehead half"),
     noteheadXWhole("X notehead whole"),
     augmentationDot("Augmentation dot"),
+
     //
     // 4.15 Stems
     //
@@ -170,6 +171,7 @@ public enum OmrShape
     tremolo3("Combining tremolo 3"),
     tremolo4("Combining tremolo 4"),
     tremolo5("Combining tremolo 5"),
+
     //
     // 4.17 Flags
     //
@@ -191,6 +193,7 @@ public enum OmrShape
     flag256thDown("Combining flag 6 (256th) below"),
     flag512thDown("Combining flag 7 (512th) below"),
     flag1024thDown("Combining flag 8 (1024th) below"),
+
     //
     // 4.18 Standard accidentals
     //
@@ -209,6 +212,7 @@ public enum OmrShape
     keyFlat("Flat in key signature"),
     keyNatural("Natural in key signature"),
     keySharp("Sharp in key signature"),
+
     //
     // 4.39 Articulations
     //
@@ -224,6 +228,7 @@ public enum OmrShape
     articMarcatoBelow("Marcato below"),
     articTenutoStaccatoAbove("Louré (tenuto-staccato) above"),
     articTenutoStaccatoBelow("Louré (tenuto-staccato) below"),
+
     //
     // 4.40 Holds and pauses
     //
@@ -231,6 +236,7 @@ public enum OmrShape
     fermataBelow("Fermata below staff"),
     breathMarkComma("Breath mark (comma)"),
     caesura("Caesura"),
+
     //
     // 4.41 Rests
     //

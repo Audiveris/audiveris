@@ -57,14 +57,11 @@ import java.util.List;
  */
 public class PartConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PartConnection.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private List<ResultEntry> resultEntries;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PartConnection} object.
      *
@@ -75,7 +72,6 @@ public class PartConnection
         resultEntries = connect(sequences);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // dumpResults //
     //-------------//
@@ -199,18 +195,13 @@ public class PartConnection
                     biEntry.candidates.add(sequence.get(biIndex));
 
                     // Process parts above bi
-                    dispatch(
-                            sequence.subList(0, biIndex),
-                            resultEntries.subList(0, resultEntries.indexOf(biEntry)),
-                            -1);
+                    dispatch(sequence.subList(0, biIndex), resultEntries.subList(0, resultEntries
+                                                                                 .indexOf(biEntry)),
+                             -1);
 
                     // Process parts below bi
-                    dispatch(
-                            sequence.subList(biIndex + 1, sequence.size()),
-                            resultEntries.subList(
-                                    resultEntries.indexOf(biEntry) + 1,
-                                    resultEntries.size()),
-                            +1);
+                    dispatch(sequence.subList(biIndex + 1, sequence.size()), resultEntries.subList(
+                             resultEntries.indexOf(biEntry) + 1, resultEntries.size()), +1);
                 } else {
                     dispatch(sequence, resultEntries, -1);
                 }
@@ -294,7 +285,6 @@ public class PartConnection
         }
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
     //-----------//
     // Candidate //
     //-----------//
@@ -310,7 +300,6 @@ public class PartConnection
      */
     public static interface Candidate
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /** Report the abbreviation, if any, that relates to this part
          *
@@ -337,13 +326,11 @@ public class PartConnection
         void setId (int id);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ResultEntry //
     //-------------//
     public static class ResultEntry
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Resulting logical part. */
         LogicalPart result;

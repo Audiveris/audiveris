@@ -42,7 +42,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class FermataArcInter
         extends AbstractInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code FermataArcInter} object.
@@ -65,7 +64,6 @@ public class FermataArcInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -94,8 +92,8 @@ public class FermataArcInter
     {
         // Look for proper staff
         final Point center = glyph.getCenter();
-        final Staff staff = (shape == Shape.FERMATA_ARC) ? system.getStaffAtOrBelow(center)
-                : system.getStaffAtOrAbove(center);
+        final Staff staff = (shape == Shape.FERMATA_ARC) ? system.getStaffAtOrBelow(center) : system
+                .getStaffAtOrAbove(center);
 
         if (staff == null) {
             return null;

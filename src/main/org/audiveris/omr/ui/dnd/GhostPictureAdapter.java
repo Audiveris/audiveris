@@ -38,7 +38,6 @@ import javax.imageio.ImageIO;
 public class GhostPictureAdapter<A>
         extends GhostDropAdapter<A>
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create a new GhostPictureAdapter object
@@ -54,8 +53,8 @@ public class GhostPictureAdapter<A>
         super(glassPane, action);
 
         try {
-            image = ImageIO.read(
-                    new BufferedInputStream(GhostPictureAdapter.class.getResourceAsStream(picture)));
+            image = ImageIO.read(new BufferedInputStream(GhostPictureAdapter.class
+                    .getResourceAsStream(picture)));
         } catch (MalformedURLException mue) {
             throw new IllegalStateException("Invalid picture URL.");
         } catch (IOException ioe) {

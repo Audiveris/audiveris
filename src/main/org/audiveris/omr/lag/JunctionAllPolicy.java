@@ -32,12 +32,10 @@ import org.audiveris.omr.run.Run;
 public class JunctionAllPolicy
         implements JunctionPolicy
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** singleton. */
     public static final JunctionAllPolicy INSTANCE = new JunctionAllPolicy();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates an instance of this policy.
      */
@@ -45,7 +43,6 @@ public class JunctionAllPolicy
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // consistentRun //
     //---------------//

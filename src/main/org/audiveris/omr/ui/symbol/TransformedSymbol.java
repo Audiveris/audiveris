@@ -36,7 +36,6 @@ import java.awt.geom.Rectangle2D;
 public class TransformedSymbol
         extends ShapeSymbol
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The baseShape shape */
     protected final Shape baseShape;
@@ -47,7 +46,6 @@ public class TransformedSymbol
     /** Proper transformation */
     private final AffineTransform at;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TransformedSymbol object.
      *
@@ -67,7 +65,6 @@ public class TransformedSymbol
         this.at = at;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//

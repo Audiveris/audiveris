@@ -70,7 +70,6 @@ import java.util.TreeMap;
 public class Skeleton
         implements ItemRenderer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -156,7 +155,6 @@ public class Skeleton
 
     private static final Color ARC_LAMBDA = Color.LIGHT_GRAY;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -182,7 +180,6 @@ public class Skeleton
     /** Map of erased (seed) glyphs. */
     private Map<SystemInfo, List<Glyph>> erasedSeeds;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Skeleton object.
      *
@@ -193,7 +190,6 @@ public class Skeleton
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // buildSkeleton //
     //---------------//
@@ -242,14 +238,9 @@ public class Skeleton
                         Shape.BEAM_HOOK_SMALL));
 
         // Crossable inters
-        crossables = cleaner.eraseShapes(
-                Arrays.asList(
-                        Shape.THICK_BARLINE,
-                        Shape.THIN_BARLINE,
-                        Shape.THIN_CONNECTOR,
-                        Shape.THICK_CONNECTOR,
-                        Shape.LEDGER,
-                        Shape.STEM));
+        crossables = cleaner.eraseShapes(Arrays.asList(Shape.THICK_BARLINE, Shape.THIN_BARLINE,
+                                                       Shape.THIN_CONNECTOR, Shape.THICK_CONNECTOR,
+                                                       Shape.LEDGER, Shape.STEM));
 
         // Erase vertical seeds (?)
         ///erasedSeeds = eraser.eraseGlyphs(Arrays.asList(Shape.VERTICAL_SEED));
@@ -469,34 +460,27 @@ public class Skeleton
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean keepSkeleton = new Constant.Boolean(
-                false,
-                "Should we store skeleton images on disk?");
+        private final Constant.Boolean keepSkeleton = new Constant.Boolean(false,
+                                                                           "Should we store skeleton images on disk?");
 
-        private final Constant.Boolean useHeader = new Constant.Boolean(
-                true,
-                "Should we erase the header at staff start");
+        private final Constant.Boolean useHeader = new Constant.Boolean(true,
+                                                                        "Should we erase the header at staff start");
 
-        private final Scale.Fraction systemVerticalMargin = new Scale.Fraction(
-                2.0,
-                "Margin erased above & below system header area");
+        private final Scale.Fraction systemVerticalMargin = new Scale.Fraction(2.0,
+                                                                               "Margin erased above & below system header area");
 
-        private final Scale.Fraction maxDxFromStaff = new Scale.Fraction(
-                1,
-                "Maximum horizontal gap from any staff");
+        private final Scale.Fraction maxDxFromStaff = new Scale.Fraction(1,
+                                                                         "Maximum horizontal gap from any staff");
 
-        private final Scale.Fraction maxDyFromStaff = new Scale.Fraction(
-                10,
-                "Maximum vertical gap from any staff");
+        private final Scale.Fraction maxDyFromStaff = new Scale.Fraction(10,
+                                                                         "Maximum vertical gap from any staff");
     }
 
     //---------------//
@@ -514,7 +498,6 @@ public class Skeleton
     private static class CurvesCleaner
             extends PageCleaner
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Creates a new CurvesEraser object.
@@ -530,7 +513,6 @@ public class Skeleton
             super(buffer, g, sheet);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //---------------------//
         // eraseDistantRegions //
         //---------------------//

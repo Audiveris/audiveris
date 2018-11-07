@@ -54,7 +54,6 @@ import java.util.Set;
 public class MeasuresStep
         extends AbstractSystemStep<Void>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MeasuresStep.class);
 
@@ -66,7 +65,6 @@ public class MeasuresStep
         impactingClasses.add(StaffBarlineInter.class);
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MeasuresStep} object.
      */
@@ -74,7 +72,6 @@ public class MeasuresStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -117,8 +114,8 @@ public class MeasuresStep
             MeasureStack stack = system.getStackAt(centerLeft);
             final boolean isAddition = isAddition(seq);
 
-            if ((!isAddition && (opKind != UITask.OpKind.UNDO))
-                || (isAddition && (opKind == UITask.OpKind.UNDO))) {
+            if ((!isAddition && (opKind != UITask.OpKind.UNDO)) || (isAddition && (opKind
+                                                                                           == UITask.OpKind.UNDO))) {
                 // Remove barlines
                 MeasureStack rightStack = stack.getNextSibling();
 

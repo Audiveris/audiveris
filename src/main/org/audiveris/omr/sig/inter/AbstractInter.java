@@ -91,12 +91,9 @@ public abstract class AbstractInter
         extends AbstractEntity
         implements Inter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -171,7 +168,6 @@ public abstract class AbstractInter
     /** Potential attachments, lazily allocated. */
     private AttachmentHolder attachments;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractInter object, with detailed impacts information.
      *
@@ -222,7 +218,6 @@ public abstract class AbstractInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -326,12 +321,9 @@ public abstract class AbstractInter
         StringBuilder sb = new StringBuilder();
 
         sb.append(
-                String.format(
-                        "%s@%s%s%s%n",
-                        getClass().getSimpleName(),
-                        Integer.toHexString(this.hashCode()),
-                        (sig != null) ? (" System#" + sig.getSystem().getId()) : "",
-                        removed ? " REMOVED" : ""));
+                String.format("%s@%s%s%s%n", getClass().getSimpleName(), Integer.toHexString(this
+                              .hashCode()), (sig != null) ? (" System#" + sig.getSystem().getId())
+                                      : "", removed ? " REMOVED" : ""));
         sb.append(String.format("   %s%n", this));
 
         if (!getDetails().isEmpty()) {
@@ -840,9 +832,8 @@ public abstract class AbstractInter
             }
 
             for (Inter thisMember : members) {
-                if (thisMember.overlaps(that)
-                    && that.overlaps(thisMember)
-                    && sig.noSupport(thisMember, that)) {
+                if (thisMember.overlaps(that) && that.overlaps(thisMember) && sig.noSupport(
+                        thisMember, that)) {
                     return true;
                 }
             }
@@ -1226,7 +1217,6 @@ public abstract class AbstractInter
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
@@ -1236,7 +1226,6 @@ public abstract class AbstractInter
     public static class Adapter
             extends XmlAdapter<AbstractInter, Inter>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public AbstractInter marshal (Inter inter)

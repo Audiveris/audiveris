@@ -86,15 +86,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "measure")
 public class Measure
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Measure.class);
+    private static final Logger logger = LoggerFactory.getLogger(Measure.class);
 
     /** Offset in voice ID, according to its initial staff. */
     private static int ID_STAFF_OFFSET = 4;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -182,7 +179,6 @@ public class Measure
     @Navigable(false)
     private MeasureStack stack;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Measure} object.
      *
@@ -201,7 +197,6 @@ public class Measure
         this.part = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // addBeamGroup //
     //--------------//
@@ -365,11 +360,10 @@ public class Measure
             final SIGraph sig = part.getSystem().getSig();
 
             // Clefs, keys, timeSigs to fill measure
-            List<Inter> measureInters = filter(
-                    sig.inters(
-                            new Class[]{
-                                ClefInter.class, KeyInter.class, AbstractTimeInter.class, TupletInter.class
-                            }));
+            List<Inter> measureInters = filter(sig.inters(new Class[]{ClefInter.class,
+                                                                      KeyInter.class,
+                                                                      AbstractTimeInter.class,
+                                                                      TupletInter.class}));
 
             for (Inter inter : measureInters) {
                 addInter(inter);
@@ -689,7 +683,8 @@ public class Measure
     //---------------//
     public Set<HeadChordInter> getHeadChords ()
     {
-        return (headChords != null) ? Collections.unmodifiableSet(headChords) : Collections.EMPTY_SET;
+        return (headChords != null) ? Collections.unmodifiableSet(headChords)
+                : Collections.EMPTY_SET;
     }
 
     //--------------------//
@@ -996,7 +991,8 @@ public class Measure
     //---------------//
     public Set<RestChordInter> getRestChords ()
     {
-        return (restChords != null) ? Collections.unmodifiableSet(restChords) : Collections.EMPTY_SET;
+        return (restChords != null) ? Collections.unmodifiableSet(restChords)
+                : Collections.EMPTY_SET;
     }
 
     //---------------------//
@@ -1988,7 +1984,6 @@ public class Measure
         return restChords;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // KeyEntry //
     //----------//
@@ -1998,13 +1993,11 @@ public class Measure
     private static class KeyEntry
             implements Comparable<KeyEntry>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final int staffIndexInPart; // Staff index in part
 
         private final KeyInter key; // The key
 
-        //~ Constructors ---------------------------------------------------------------------------
         public KeyEntry (Integer staffIndex,
                          KeyInter key)
         {
@@ -2019,7 +2012,6 @@ public class Measure
             key = null;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int compareTo (KeyEntry that)
         {

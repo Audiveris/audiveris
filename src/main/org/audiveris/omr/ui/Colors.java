@@ -31,7 +31,6 @@ import java.awt.Color;
  */
 public class Colors
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Global alpha transparency (0..255). */
     private static final int alpha = 180;
@@ -166,7 +165,6 @@ public class Colors
     /** Warping points. */
     public static final Color WARP_POINT = Color.RED;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Not meant to be instantiated.
      * . */

@@ -33,7 +33,6 @@ import java.awt.image.WritableRaster;
  */
 public interface MomentsExtractor<D extends OrthogonalMoments<D>>
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Extract information from provided foreground points and save the results into

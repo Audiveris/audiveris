@@ -29,9 +29,7 @@ import java.util.Comparator;
  * @author Hervé Bitteur
  */
 public class PixelDistance
-
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To sort by increasing value, regardless of (x,y). */
     public static final Comparator<PixelDistance> byValue = new Comparator<PixelDistance>()
@@ -44,7 +42,6 @@ public class PixelDistance
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Location abscissa. */
     public final int x;
 
@@ -54,7 +51,6 @@ public class PixelDistance
     /** Distance. */
     public final double d;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new PixelDistance object.
      *
@@ -71,7 +67,6 @@ public class PixelDistance
         this.d = d;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // toString //
     //----------//

@@ -146,14 +146,11 @@ import java.util.TreeSet;
 public class BarsRetriever
         implements ItemRenderer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            BarsRetriever.class);
+    private static final Logger logger = LoggerFactory.getLogger(BarsRetriever.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Related sheet. */
     @Navigable(false)
@@ -176,7 +173,8 @@ public class BarsRetriever
     private final PeakGraph peakGraph;
 
     /** Columns of barlines, organized by system. */
-    private final SortedMap<SystemInfo, List<BarColumn>> columnMap = new TreeMap<SystemInfo, List<BarColumn>>();
+    private final SortedMap<SystemInfo, List<BarColumn>> columnMap
+            = new TreeMap<SystemInfo, List<BarColumn>>();
 
     /** Constructor for brace compound. */
     private final CompoundConstructor braceConstructor;
@@ -193,7 +191,6 @@ public class BarsRetriever
     /** All sections suitable for a brace. */
     private List<Section> allBraceSections;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Retrieve the bar lines of all staves.
      *
@@ -208,9 +205,8 @@ public class BarsRetriever
         params = new Parameters(scale);
 
         // Specific constructors
-        braceConstructor = new CurvedFilament.Constructor(
-                scale.getInterline(),
-                params.braceSegmentLength);
+        braceConstructor = new CurvedFilament.Constructor(scale.getInterline(),
+                                                          params.braceSegmentLength);
         serifConstructor = new StraightFilament.Constructor(scale.getInterline());
 
         // Companions
@@ -220,7 +216,6 @@ public class BarsRetriever
         peakGraph = new PeakGraph(sheet, projectors);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -355,11 +350,8 @@ public class BarsRetriever
                     continue;
                 }
 
-                Rectangle peakBox = new Rectangle(
-                        peak.getStart(),
-                        peak.getTop(),
-                        peak.getWidth(),
-                        peak.getBottom() - peak.getTop());
+                Rectangle peakBox = new Rectangle(peak.getStart(), peak.getTop(), peak.getWidth(),
+                                                  peak.getBottom() - peak.getTop());
 
                 if (clip.intersects(peakBox)) {
                     double xMid = (peak.getStart() + peak.getStop()) / 2d;
@@ -433,9 +425,8 @@ public class BarsRetriever
         }
 
         // Now we have several filaments and a few sections around
-        Filament compound = (Filament) CompoundFactory.buildCompoundFromParts(
-                filaments,
-                braceConstructor);
+        Filament compound = (Filament) CompoundFactory.buildCompoundFromParts(filaments,
+                                                                              braceConstructor);
 
         // Expand compound as much as possible
         boolean expanding;
@@ -520,9 +511,7 @@ public class BarsRetriever
                         }
 
                         if (!otherPeak.isSet(BRACE_MIDDLE) && !otherPeak.isSet(BRACE_BOTTOM)) {
-                            logger.warn(
-                                    "Staff#{} expected brace middle/bottom",
-                                    otherStaff.getId());
+                            logger.warn("Staff#{} expected brace middle/bottom", otherStaff.getId());
 
                             break;
                         }
@@ -561,8 +550,8 @@ public class BarsRetriever
      */
     private void buildColumns ()
     {
-        ConnectivityInspector<StaffPeak, BarAlignment> inspector = new ConnectivityInspector<StaffPeak, BarAlignment>(
-                peakGraph);
+        ConnectivityInspector<StaffPeak, BarAlignment> inspector
+                = new ConnectivityInspector<StaffPeak, BarAlignment>(peakGraph);
         List<Set<StaffPeak>> sets = inspector.connectedSets();
         logger.debug("sets: {}", sets.size());
 
@@ -651,9 +640,7 @@ public class BarsRetriever
                                          Rectangle roi)
     {
         // Retrieve all glyphs out of connected sections
-        List<SectionCompound> compounds = CompoundFactory.buildCompounds(
-                sections,
-                serifConstructor);
+        List<SectionCompound> compounds = CompoundFactory.buildCompounds(sections, serifConstructor);
 
         for (SectionCompound compound : compounds) {
             filamentIndex.register((Filament) compound);
@@ -672,10 +659,8 @@ public class BarsRetriever
                 public int compare (SectionCompound g1,
                                     SectionCompound g2)
                 {
-                    double d1 = PointUtil.length(
-                            GeoUtil.vectorOf(g1.getCentroid(), vertex));
-                    double d2 = PointUtil.length(
-                            GeoUtil.vectorOf(g2.getCentroid(), vertex));
+                    double d1 = PointUtil.length(GeoUtil.vectorOf(g1.getCentroid(), vertex));
+                    double d2 = PointUtil.length(GeoUtil.vectorOf(g2.getCentroid(), vertex));
 
                     return Double.compare(d1, d2);
                 }
@@ -737,14 +722,15 @@ public class BarsRetriever
                     BarConnectorInter connector = null;
 
                     if (topPeak.isBracket()) {
-                        sig.addVertex(
-                                new BracketConnectorInter(connection, connection.getImpacts()));
+                        sig
+                                .addVertex(new BracketConnectorInter(connection, connection
+                                                                     .getImpacts()));
                     } else {
-                        sig.addVertex(
-                                connector = new BarConnectorInter(
-                                        connection,
-                                        topPeak.isSet(THICK) ? Shape.THICK_CONNECTOR : Shape.THIN_CONNECTOR,
-                                        connection.getImpacts()));
+                        sig.addVertex(connector = new BarConnectorInter(connection, topPeak.isSet(
+                                                                        THICK)
+                                                                                ? Shape.THICK_CONNECTOR
+                                                                                : Shape.THIN_CONNECTOR,
+                                                                        connection.getImpacts()));
                     }
 
                     // Also, connected bars support each other
@@ -936,31 +922,20 @@ public class BarsRetriever
                     }
 
                     double x = (peak.getStart() + peak.getStop()) / 2d;
-                    Line2D median = new Line2D.Double(
-                            x,
-                            peak.getTop(),
-                            x,
-                            peak.getBottom());
+                    Line2D median = new Line2D.Double(x, peak.getTop(), x, peak.getBottom());
 
-                    final Glyph glyph = sheet.getGlyphIndex().registerOriginal(
-                            peak.getFilament().toGlyph(null));
+                    final Glyph glyph = sheet.getGlyphIndex().registerOriginal(peak.getFilament()
+                            .toGlyph(null));
                     final AbstractVerticalInter inter;
 
                     if (peak.isBracket()) {
                         BracketKind kind = getBracketKind(peak);
-                        inter = new BracketInter(
-                                glyph,
-                                peak.getImpacts(),
-                                median,
-                                peak.getWidth(),
-                                kind);
+                        inter = new BracketInter(glyph, peak.getImpacts(), median, peak.getWidth(),
+                                                 kind);
                     } else {
-                        inter = new BarlineInter(
-                                glyph,
-                                peak.isSet(THICK) ? Shape.THICK_BARLINE : Shape.THIN_BARLINE,
-                                peak.getImpacts(),
-                                median,
-                                (double) peak.getWidth());
+                        inter = new BarlineInter(glyph, peak.isSet(THICK) ? Shape.THICK_BARLINE
+                                                 : Shape.THIN_BARLINE, peak.getImpacts(), median,
+                                                 (double) peak.getWidth());
 
                         for (HorizontalSide side : HorizontalSide.values()) {
                             if (peak.isStaffEnd(side)) {
@@ -1057,10 +1032,8 @@ public class BarsRetriever
                 }
 
                 // Brace itself
-                createPart(
-                        system,
-                        sheetStaves.get(braced.getFirstStaffId() - 1),
-                        sheetStaves.get(braced.getLastStaffId() - 1));
+                createPart(system, sheetStaves.get(braced.getFirstStaffId() - 1), sheetStaves.get(
+                           braced.getLastStaffId() - 1));
                 nextId = braced.getLastStaffId() + 1;
             }
 
@@ -1148,18 +1121,16 @@ public class BarsRetriever
                 // Look for brace portion on left of first peak
                 final StaffPeak firstPeak = peaks.get(0);
                 int maxRight = firstPeak.getStart() - 1 - params.braceBarNeutralGap;
-                int minLeft = Math.max(
-                        0,
-                        maxRight - (params.maxBracePeakWidth + params.maxBraceBarGap));
+                int minLeft = Math.max(0, maxRight - (params.maxBracePeakWidth
+                                                              + params.maxBraceBarGap));
                 StaffPeak bracePeak = lookForBracePeak(staff, minLeft, maxRight);
 
                 if ((bracePeak == null) && (iStart >= 1)) {
                     // First peak could itself be a brace portion (mistaken for a bar)
                     final StaffPeak secondPeak = peaks.get(1);
                     maxRight = secondPeak.getStart() - 1 - params.braceBarNeutralGap;
-                    minLeft = Math.max(
-                            0,
-                            maxRight - (params.maxBracePeakWidth + params.maxBraceBarGap));
+                    minLeft = Math.max(0, maxRight - (params.maxBracePeakWidth
+                                                              + params.maxBraceBarGap));
                     bracePeak = lookForBracePeak(staff, minLeft, maxRight);
 
                     if (bracePeak != null) {
@@ -1225,8 +1196,10 @@ public class BarsRetriever
                         // Check for serif shape
                         Filament serif;
 
-                        if ((ext <= params.maxBracketExtension)
-                            && (null != (serif = getSerif(staff, peak, rightPeak, side)))) {
+                        if ((ext <= params.maxBracketExtension) && (null != (serif = getSerif(staff,
+                                                                                              peak,
+                                                                                              rightPeak,
+                                                                                              side)))) {
                             logger.debug("Staff#{} {} bracket end", staff.getId(), side);
 
                             peak.setBracketEnd(side, serif);
@@ -1318,8 +1291,8 @@ public class BarsRetriever
 
                 if (column.isFull()) {
                     if (startColumn != null) {
-                        double gap = (column.getXDsk() - (column.getWidth() / 2))
-                                     - (startColumn.getXDsk() + (startColumn.getWidth() / 2));
+                        double gap = (column.getXDsk() - (column.getWidth() / 2)) - (startColumn
+                                .getXDsk() + (startColumn.getWidth() / 2));
                         int maxGap = (i == 1) ? params.maxBraceBarGap : params.maxDoubleBarGap;
 
                         if (gap > maxGap) {
@@ -1630,13 +1603,10 @@ public class BarsRetriever
 
         // Define lookup region for serif
         final Filament barFilament = peak.getFilament();
-        final int yBox = (side == TOP) ? (peak.getTop() - halfLine - params.serifRoiHeight)
-                : (peak.getBottom() + halfLine);
-        final Rectangle roi = new Rectangle(
-                peak.getStop() + 1,
-                yBox,
-                params.serifRoiWidth,
-                params.serifRoiHeight);
+        final int yBox = (side == TOP) ? (peak.getTop() - halfLine - params.serifRoiHeight) : (peak
+                .getBottom() + halfLine);
+        final Rectangle roi = new Rectangle(peak.getStop() + 1, yBox, params.serifRoiWidth,
+                                            params.serifRoiHeight);
         barFilament.addAttachment(((side == TOP) ? "t" : "b") + "Serif", roi);
 
         // Look for intersected sections
@@ -1661,14 +1631,8 @@ public class BarsRetriever
         serif.computeLine();
 
         double slope = serif.getSlope();
-        logger.debug(
-                "Staff#{} {} {} serif#{} weight:{} slope:{}",
-                staff.getId(),
-                peak,
-                side,
-                serif.getId(),
-                serif.getWeight(),
-                slope);
+        logger.debug("Staff#{} {} {} serif#{} weight:{} slope:{}", staff.getId(), peak, side, serif
+                     .getId(), serif.getWeight(), slope);
 
         if (serif.getWeight() < params.serifMinWeight) {
             logger.info(
@@ -1800,8 +1764,8 @@ public class BarsRetriever
     private boolean isConnected (StaffPeak peak,
                                  VerticalSide side)
     {
-        Set<BarAlignment> edges = (side == TOP) ? peakGraph.incomingEdgesOf(peak)
-                : peakGraph.outgoingEdgesOf(peak);
+        Set<BarAlignment> edges = (side == TOP) ? peakGraph.incomingEdgesOf(peak) : peakGraph
+                .outgoingEdgesOf(peak);
 
         for (BarAlignment edge : edges) {
             if (edge instanceof BarConnection) {
@@ -1861,8 +1825,8 @@ public class BarsRetriever
         final Staff lastStaff = staffManager.getStaff(lastId - 1);
 
         return !isPartConnected(firstStaff, TOP) // Not connected above
-               && isPartConnected(firstStaff, BOTTOM) // Internally connected
-               && !isPartConnected(lastStaff, BOTTOM); // Not connected below
+                       && isPartConnected(firstStaff, BOTTOM) // Internally connected
+                       && !isPartConnected(lastStaff, BOTTOM); // Not connected below
     }
 
     //------------------//
@@ -1889,10 +1853,8 @@ public class BarsRetriever
             allBraceSections = getSectionsByWidth(params.maxBraceThickness);
         }
 
-        Filament filament = filamentBuilder.buildFilament(
-                bracePeak,
-                params.braceLookupExtension,
-                allBraceSections);
+        Filament filament = filamentBuilder.buildFilament(bracePeak, params.braceLookupExtension,
+                                                          allBraceSections);
         bracePeak.setFilament(filament);
 
         // A few tests on glyph
@@ -1905,11 +1867,8 @@ public class BarsRetriever
         }
 
         double curvature = filament.getMeanCurvature(); // curvature radius value
-        logger.debug(
-                "Staff#{} curvature:{} vs {}",
-                staff.getId(),
-                curvature,
-                params.maxBraceCurvature);
+        logger.debug("Staff#{} curvature:{} vs {}", staff.getId(), curvature,
+                     params.maxBraceCurvature);
 
         if (curvature >= params.maxBraceCurvature) {
             return null;
@@ -2056,21 +2015,16 @@ public class BarsRetriever
                 }
 
                 // Look for a rather thick first peak
-                if (!p1.isStaffEnd(LEFT)
-                    && !p1.isStaffEnd(RIGHT)
-                    && !(p1.isBrace())
-                    && !p1.isBracket()
-                    && (p1.getWidth() >= params.minPeak1WidthForCClef)) {
+                if (!p1.isStaffEnd(LEFT) && !p1.isStaffEnd(RIGHT) && !(p1.isBrace()) && !p1
+                        .isBracket() && (p1.getWidth() >= params.minPeak1WidthForCClef)) {
                     // Check gap is larger than multi-bar gap but smaller than measure
                     int gap = p1.getStart() - measureStart;
 
                     // Gap is not relevant for first measure, thanks to !peak.isStaffEnd() test
                     int minGap = (measureStart == staffStart) ? 0 : params.maxDoubleBarGap;
 
-                    if ((gap > minGap)
-                        && (gap < params.minMeasureWidth)
-                        && !isConnected(p1, TOP)
-                        && !isConnected(p1, BOTTOM)) {
+                    if ((gap > minGap) && (gap < params.minMeasureWidth) && !isConnected(p1, TOP)
+                                && !isConnected(p1, BOTTOM)) {
                         if (logger.isDebugEnabled() || p1.isVip()) {
                             logger.info("VIP perhaps a C-Clef peak1 at {}", p1);
                         } else {
@@ -2082,10 +2036,9 @@ public class BarsRetriever
                             final StaffPeak p2 = peaks.get(i + 1);
                             int gap2 = p2.getStart() - p1.getStop() - 1;
 
-                            if ((p2.getWidth() <= params.maxPeak2WidthForCClef)
-                                && (gap2 <= params.maxDoubleBarGap)
-                                && !isConnected(p2, TOP)
-                                && !isConnected(p2, BOTTOM)) {
+                            if ((p2.getWidth() <= params.maxPeak2WidthForCClef) && (gap2
+                                                                                            <= params.maxDoubleBarGap)
+                                && !isConnected(p2, TOP) && !isConnected(p2, BOTTOM)) {
                                 boolean cancelled = false;
                                 tails.clear();
 
@@ -2110,10 +2063,8 @@ public class BarsRetriever
                                                 break;
                                             } else {
                                                 if (logger.isDebugEnabled() || tp.isVip()) {
-                                                    logger.info(
-                                                            "VIP perhaps tail of C-Clef {}",
-                                                            staff.getId(),
-                                                            tp);
+                                                    logger.info("VIP perhaps tail of C-Clef {}",
+                                                                staff.getId(), tp);
                                                 }
 
                                                 tails.add(tp);
@@ -2177,8 +2128,7 @@ public class BarsRetriever
             }
 
             for (VerticalSide side : VerticalSide.values()) {
-                final Staff staff = (side == TOP) ? system.getFirstStaff()
-                        : system.getLastStaff();
+                final Staff staff = (side == TOP) ? system.getFirstStaff() : system.getLastStaff();
                 final StaffProjector projector = projectorOf(staff);
                 final List<StaffPeak> peaks = projector.getPeaks();
                 final int iStart = projector.getStartPeakIndex();
@@ -2490,133 +2440,102 @@ public class BarsRetriever
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch?");
 
-        private final Constant.Boolean showVerticalLines = new Constant.Boolean(
-                false,
-                "Should we show the vertical grid lines?");
+        private final Constant.Boolean showVerticalLines = new Constant.Boolean(false,
+                                                                                "Should we show the vertical grid lines?");
 
-        private final Constant.Integer largeSystemStaffCount = new Constant.Integer(
-                "staves",
-                4,
-                "Minimum number of staves for a system to be large");
+        private final Constant.Integer largeSystemStaffCount = new Constant.Integer("staves", 4,
+                                                                                    "Minimum number of staves for a system to be large");
 
-        private final Scale.Fraction minThinThickDelta = new Scale.Fraction(
-                0.2,
-                "Minimum difference between THIN/THICK width values");
+        private final Scale.Fraction minThinThickDelta = new Scale.Fraction(0.2,
+                                                                            "Minimum difference between THIN/THICK width values");
 
-        private final Scale.Fraction maxBarExtension = new Scale.Fraction(
-                1.0,
-                "Maximum extension for a barline above or below staff line");
+        private final Scale.Fraction maxBarExtension = new Scale.Fraction(1.0,
+                                                                          "Maximum extension for a barline above or below staff line");
 
-        private final Scale.Fraction maxLinesLeftToStartBar = new Scale.Fraction(
-                0.15,
-                "Maximum dx between left end of staff lines and start bar");
+        private final Scale.Fraction maxLinesLeftToStartBar = new Scale.Fraction(0.15,
+                                                                                 "Maximum dx between left end of staff lines and start bar");
 
-        private final Scale.Fraction maxDoubleBarGap = new Scale.Fraction(
-                0.75,
-                "Max horizontal gap between two members of a double bar");
+        private final Scale.Fraction maxDoubleBarGap = new Scale.Fraction(0.75,
+                                                                          "Max horizontal gap between two members of a double bar");
 
-        private final Scale.Fraction minMeasureWidth = new Scale.Fraction(
-                2.0,
-                "Minimum width for a measure");
+        private final Scale.Fraction minMeasureWidth = new Scale.Fraction(2.0,
+                                                                          "Minimum width for a measure");
 
-        private final Scale.Fraction maxColumnDx = new Scale.Fraction(
-                0.75,
-                "Maximum abscissa shift within a column");
+        private final Scale.Fraction maxColumnDx = new Scale.Fraction(0.75,
+                                                                      "Maximum abscissa shift within a column");
 
         // For C-clefs -----------------------------------------------------------------------------
         //
-        private final Scale.Fraction minPeak1WidthForCClef = new Scale.Fraction(
-                0.3,
-                "Minimum width for first peak of C-Clef");
+        private final Scale.Fraction minPeak1WidthForCClef = new Scale.Fraction(0.3,
+                                                                                "Minimum width for first peak of C-Clef");
 
-        private final Scale.Fraction maxPeak2WidthForCClef = new Scale.Fraction(
-                0.3,
-                "Maximum width for second peak of C-Clef");
+        private final Scale.Fraction maxPeak2WidthForCClef = new Scale.Fraction(0.3,
+                                                                                "Maximum width for second peak of C-Clef");
 
-        private final Scale.Fraction cClefTail = new Scale.Fraction(
-                2.0,
-                "Typical width for tail of C-Clef, from second peak to right end");
+        private final Scale.Fraction cClefTail = new Scale.Fraction(2.0,
+                                                                    "Typical width for tail of C-Clef, from second peak to right end");
 
         // For braces ------------------------------------------------------------------------------
         //
-        private final Scale.Fraction braceLeftMargin = new Scale.Fraction(
-                0.5,
-                "Margin on left side of brace peak to retrieve full glyph");
+        private final Scale.Fraction braceLeftMargin = new Scale.Fraction(0.5,
+                                                                          "Margin on left side of brace peak to retrieve full glyph");
 
-        private final Scale.Fraction braceSegmentLength = new Scale.Fraction(
-                1.0,
-                "Typical distance between brace points");
+        private final Scale.Fraction braceSegmentLength = new Scale.Fraction(1.0,
+                                                                             "Typical distance between brace points");
 
-        private final Scale.Fraction minBracePortionHeight = new Scale.Fraction(
-                3.0,
-                "Minimum height for a brace portion");
+        private final Scale.Fraction minBracePortionHeight = new Scale.Fraction(3.0,
+                                                                                "Minimum height for a brace portion");
 
-        private final Scale.Fraction maxBraceThickness = new Scale.Fraction(
-                1.0,
-                "Maximum thickness of a brace (for sections)");
+        private final Scale.Fraction maxBraceThickness = new Scale.Fraction(1.0,
+                                                                            "Maximum thickness of a brace (for sections)");
 
-        private final Scale.Fraction maxBracePeakWidth = new Scale.Fraction(
-                3.0,
-                "Maximum width of a brace peak");
+        private final Scale.Fraction maxBracePeakWidth = new Scale.Fraction(3.0,
+                                                                            "Maximum width of a brace peak");
 
-        private final Scale.Fraction maxBraceBarGap = new Scale.Fraction(
-                2.0,
-                "Max horizontal gap between a brace peak and next bar");
+        private final Scale.Fraction maxBraceBarGap = new Scale.Fraction(2.0,
+                                                                         "Max horizontal gap between a brace peak and next bar");
 
-        private final Scale.Fraction braceBarNeutralGap = new Scale.Fraction(
-                0.1,
-                "Horizontal neutral area between a brace and next bar");
+        private final Scale.Fraction braceBarNeutralGap = new Scale.Fraction(0.1,
+                                                                             "Horizontal neutral area between a brace and next bar");
 
-        private final Scale.Fraction braceLookupExtension = new Scale.Fraction(
-                0.5,
-                "Lookup height for brace end above or below staff line");
+        private final Scale.Fraction braceLookupExtension = new Scale.Fraction(0.5,
+                                                                               "Lookup height for brace end above or below staff line");
 
-        private final Scale.Fraction maxBraceCurvature = new Scale.Fraction(
-                20,
-                "Maximum mean curvature radius for a brace");
+        private final Scale.Fraction maxBraceCurvature = new Scale.Fraction(20,
+                                                                            "Maximum mean curvature radius for a brace");
 
         // For brackets ----------------------------------------------------------------------------
         //
-        private final Scale.Fraction minBracketWidth = new Scale.Fraction(
-                0.25,
-                "Minimum width for a bracket peak");
+        private final Scale.Fraction minBracketWidth = new Scale.Fraction(0.25,
+                                                                          "Minimum width for a bracket peak");
 
-        private final Scale.Fraction maxBracketExtension = new Scale.Fraction(
-                1.25,
-                "Maximum extension for bracket trunk end above or below staff line");
+        private final Scale.Fraction maxBracketExtension = new Scale.Fraction(1.25,
+                                                                              "Maximum extension for bracket trunk end above or below staff line");
 
-        private final Scale.Fraction serifSegmentLength = new Scale.Fraction(
-                1.0,
-                "Typical distance between bracket serif points");
+        private final Scale.Fraction serifSegmentLength = new Scale.Fraction(1.0,
+                                                                             "Typical distance between bracket serif points");
 
-        private final Scale.Fraction serifRoiWidth = new Scale.Fraction(
-                2.0,
-                "Width of lookup ROI for bracket serif");
+        private final Scale.Fraction serifRoiWidth = new Scale.Fraction(2.0,
+                                                                        "Width of lookup ROI for bracket serif");
 
-        private final Scale.Fraction serifRoiHeight = new Scale.Fraction(
-                2.0,
-                "Height of lookup ROI for bracket serif");
+        private final Scale.Fraction serifRoiHeight = new Scale.Fraction(2.0,
+                                                                         "Height of lookup ROI for bracket serif");
 
-        private final Scale.Fraction serifThickness = new Scale.Fraction(
-                0.3,
-                "Typical thickness of bracket serif");
+        private final Scale.Fraction serifThickness = new Scale.Fraction(0.3,
+                                                                         "Typical thickness of bracket serif");
 
-        private final Scale.AreaFraction serifMinWeight = new Scale.AreaFraction(
-                0.2,
-                "Minimum weight for bracket serif");
+        private final Scale.AreaFraction serifMinWeight = new Scale.AreaFraction(0.2,
+                                                                                 "Minimum weight for bracket serif");
     }
 
     //------------//
@@ -2624,7 +2543,6 @@ public class BarsRetriever
     //------------//
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int largeSystemStaffCount;
 
@@ -2678,7 +2596,6 @@ public class BarsRetriever
 
         final int maxColumnDx;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
          *

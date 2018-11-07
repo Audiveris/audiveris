@@ -44,14 +44,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AdaptiveDescriptor
         extends FilterDescriptor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            AdaptiveDescriptor.class);
+    private static final Logger logger = LoggerFactory.getLogger(AdaptiveDescriptor.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Coefficient for mean. */
     @XmlAttribute(name = "mean-coeff")
@@ -61,7 +58,6 @@ public class AdaptiveDescriptor
     @XmlAttribute(name = "std-dev-coeff")
     public final double stdDevCoeff;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AdaptiveDescriptor object.
      *
@@ -82,7 +78,6 @@ public class AdaptiveDescriptor
         stdDevCoeff = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // defaultIsSpecific //
     //-------------------//
@@ -120,9 +115,8 @@ public class AdaptiveDescriptor
     //----------------//
     public static AdaptiveDescriptor getSourceValue ()
     {
-        return new AdaptiveDescriptor(
-                constants.meanCoeff.getSourceValue(),
-                constants.stdDevCoeff.getSourceValue());
+        return new AdaptiveDescriptor(constants.meanCoeff.getSourceValue(), constants.stdDevCoeff
+                                      .getSourceValue());
     }
 
     //---------------------//
@@ -159,12 +153,10 @@ public class AdaptiveDescriptor
     public int hashCode ()
     {
         int hash = 5;
-        hash = (97 * hash)
-               + (int) (Double.doubleToLongBits(this.meanCoeff)
-                        ^ (Double.doubleToLongBits(this.meanCoeff) >>> 32));
-        hash = (97 * hash)
-               + (int) (Double.doubleToLongBits(this.stdDevCoeff)
-                        ^ (Double.doubleToLongBits(this.stdDevCoeff) >>> 32));
+        hash = (97 * hash) + (int) (Double.doubleToLongBits(this.meanCoeff) ^ (Double
+                .doubleToLongBits(this.meanCoeff) >>> 32));
+        hash = (97 * hash) + (int) (Double.doubleToLongBits(this.stdDevCoeff) ^ (Double
+                .doubleToLongBits(this.stdDevCoeff) >>> 32));
 
         return hash;
     }
@@ -196,8 +188,8 @@ public class AdaptiveDescriptor
             AdaptiveDescriptor that = (AdaptiveDescriptor) obj;
             final double epsilon = 0.00001;
 
-            return (Math.abs(this.meanCoeff - that.meanCoeff) < epsilon)
-                   && (Math.abs(this.stdDevCoeff - that.stdDevCoeff) < epsilon);
+            return (Math.abs(this.meanCoeff - that.meanCoeff) < epsilon) && (Math.abs(
+                    this.stdDevCoeff - that.stdDevCoeff) < epsilon);
         }
 
         return false;
@@ -216,21 +208,17 @@ public class AdaptiveDescriptor
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio meanCoeff = new Constant.Ratio(
-                0.7,
-                "Threshold formula coefficient for mean pixel value");
+        private final Constant.Ratio meanCoeff = new Constant.Ratio(0.7,
+                                                                    "Threshold formula coefficient for mean pixel value");
 
-        private final Constant.Ratio stdDevCoeff = new Constant.Ratio(
-                0.9,
-                "Threshold formula coefficient for pixel standard deviation");
+        private final Constant.Ratio stdDevCoeff = new Constant.Ratio(0.9,
+                                                                      "Threshold formula coefficient for pixel standard deviation");
     }
 }

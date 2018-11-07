@@ -41,16 +41,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class GlobalDescriptor
         extends FilterDescriptor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The threshold value for the whole pixel source. */
     @XmlAttribute(name = "threshold")
     public final int threshold;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new GlobalDescriptor object.
      *
@@ -67,7 +64,6 @@ public class GlobalDescriptor
         threshold = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // defaultIsSpecific //
     //-------------------//
@@ -174,18 +170,14 @@ public class GlobalDescriptor
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Integer defaultThreshold = new Constant.Integer(
-                "GrayLevel",
-                140,
-                "Default threshold value (in 0..255)");
+        private final Constant.Integer defaultThreshold = new Constant.Integer("GrayLevel", 140,
+                                                                               "Default threshold value (in 0..255)");
     }
 }

@@ -37,7 +37,6 @@ import java.util.List;
  */
 public class Entities
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To compare Entity instances according to their id. */
     public static final Comparator<Entity> byId = new Comparator<Entity>()
@@ -50,7 +49,6 @@ public class Entities
         }
     };
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // containedEntities //
     //-------------------//

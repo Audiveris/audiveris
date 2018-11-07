@@ -74,7 +74,6 @@ import java.util.Set;
  */
 public class ChordsBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ChordsBuilder.class);
 
@@ -92,7 +91,6 @@ public class ChordsBuilder
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -100,7 +98,6 @@ public class ChordsBuilder
     /** System SIG. */
     private final SIGraph sig;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ChordsBuilder} object.
      *
@@ -112,7 +109,6 @@ public class ChordsBuilder
         sig = system.getSig();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // buildHeadChords //
     //-----------------//
@@ -219,7 +215,8 @@ public class ChordsBuilder
 
             // No beam-stuck stem found, use global quality...
             double leftGrade = stems.get(0).getGrade() * ((HeadStemRelation) rels.get(0)).getGrade();
-            double rightGrade = stems.get(1).getGrade() * ((HeadStemRelation) rels.get(1)).getGrade();
+            double rightGrade = stems.get(1).getGrade() * ((HeadStemRelation) rels.get(1))
+                    .getGrade();
             final int idx = (leftGrade < rightGrade) ? 0 : 1;
 
             return HorizontalSide.values()[idx];
@@ -260,8 +257,8 @@ public class ChordsBuilder
         }
 
         // Look for connected stems
-        List<Relation> rels = new ArrayList<Relation>(
-                sig.getRelations(head, HeadStemRelation.class));
+        List<Relation> rels
+                = new ArrayList<Relation>(sig.getRelations(head, HeadStemRelation.class));
 
         if (rels.size() == 2) {
             // A head with 2 stems needs to be logically duplicated

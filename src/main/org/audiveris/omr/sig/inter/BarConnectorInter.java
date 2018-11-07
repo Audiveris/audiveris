@@ -38,11 +38,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BarConnectorInter
         extends AbstractVerticalInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private final BarConnection connection;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BarConnectorInter} object.
      *
@@ -67,7 +65,6 @@ public class BarConnectorInter
         this.connection = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

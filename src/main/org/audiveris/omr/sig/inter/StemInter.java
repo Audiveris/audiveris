@@ -71,14 +71,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class StemInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StemInter.class);
 
     /** Anchor vertical margin, relative to head height. */
     private static final double ANCHOR_MARGIN_RATIO = 0.67;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -91,7 +89,6 @@ public class StemInter
     @XmlElement
     private Point2D bottom;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StemInter object.
      *
@@ -131,7 +128,6 @@ public class StemInter
         super(null, null, null, null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -237,8 +233,8 @@ public class StemInter
     {
         Scale scale = sig.getSystem().getSheet().getScale();
         final Line2D stemLine = computeExtendedLine();
-        final List<Relation> links = new ArrayList<Relation>(
-                sig.getRelations(this, AbstractStemConnection.class));
+        final List<Relation> links = new ArrayList<Relation>(sig.getRelations(this,
+                                                                              AbstractStemConnection.class));
         sig.sortBySource(links);
 
         for (Relation rel : links) {
@@ -354,11 +350,9 @@ public class StemInter
         final ByteProcessor buffer = glyph.getRunTable().getBuffer();
 
         // ROI definition (WRT stem buffer coordinates)
-        final Rectangle roi = new Rectangle(
-                0,
-                yTop - glyph.getTop(),
-                glyph.getWidth(),
-                yBottom - yTop + 1);
+        final Rectangle roi = new Rectangle(0, yTop - glyph.getTop(), glyph.getWidth(), yBottom
+                                                                                                - yTop
+                                                                                        + 1);
 
         // Create sub-glyph
         final Point stemOffset = new Point();
@@ -518,8 +512,8 @@ public class StemInter
             Shape headShape = sig.getOppositeInter(this, rel).getShape();
 
             // First head tested is enough.
-            return (headShape == Shape.NOTEHEAD_BLACK_SMALL)
-                   || (headShape == Shape.NOTEHEAD_VOID_SMALL);
+            return (headShape == Shape.NOTEHEAD_BLACK_SMALL) || (headShape
+                                                                         == Shape.NOTEHEAD_VOID_SMALL);
         }
 
         return false;
@@ -615,9 +609,8 @@ public class StemInter
         }
 
         if (bottom == null) {
-            bottom = new Point2D.Double(
-                    bounds.x + (0.5 * bounds.width),
-                    (bounds.y + bounds.height) - 1);
+            bottom = new Point2D.Double(bounds.x + (0.5 * bounds.width), (bounds.y + bounds.height)
+                                                                                 - 1);
         }
     }
 

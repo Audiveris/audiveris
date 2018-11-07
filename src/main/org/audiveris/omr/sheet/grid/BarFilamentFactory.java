@@ -57,20 +57,17 @@ import java.util.List;
  */
 public class BarFilamentFactory
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BarFilamentFactory.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related scale. */
     private final Scale scale;
 
     /** Scale-dependent constants. */
     private final Parameters params;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BarFilamentFactory} object.
      *
@@ -82,7 +79,6 @@ public class BarFilamentFactory
         params = new Parameters(scale);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // buildBarFilament //
     //------------------//
@@ -216,26 +212,21 @@ public class BarFilamentFactory
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch?");
 
-        private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(
-                0.5,
-                "Minimum length for a section to be considered as core");
+        private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(0.5,
+                                                                               "Minimum length for a section to be considered as core");
 
-        private final Scale.Fraction segmentLength = new Scale.Fraction(
-                1,
-                "Typical length between filament curve intermediate points");
+        private final Scale.Fraction segmentLength = new Scale.Fraction(1,
+                                                                        "Typical length between filament curve intermediate points");
     }
 
     //------------//
@@ -246,13 +237,11 @@ public class BarFilamentFactory
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public int minCoreSectionLength;
 
         public int segmentLength;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
             minCoreSectionLength = scale.toPixels(constants.minCoreSectionLength);

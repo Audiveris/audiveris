@@ -88,7 +88,6 @@ public enum Shape
     //
     DOT_set("Dot set"),
     HW_REST_set("Half & Whole Rest set"),
-
     //
     // Bars --------------------------------------------------------------------
     //
@@ -186,7 +185,6 @@ public enum Shape
     //
     SMALL_FLAG("Flag for grace note"),
     SMALL_FLAG_SLASH("Flag for slashed grace note"),
-
     //
     // StemLessHeads -----------------------------------------------------------
     //
@@ -293,7 +291,6 @@ public enum Shape
      */
     TEXT("Sequence of letters & spaces"),
     CHARACTER("Any letter"),
-
     //
     // Shapes from shape sets --------------------------------------------------
     //
@@ -305,7 +302,6 @@ public enum Shape
     //
     WHOLE_REST("Rest for whole measure", HW_REST_set),
     HALF_REST("Rest for a 1/2", HW_REST_set),
-
     //
     // Noteheads ---------------------------------------------------------------
     //
@@ -319,7 +315,6 @@ public enum Shape
     //
     WHOLE_NOTE("Hollow node head for wholes"),
     WHOLE_NOTE_SMALL("Small hollow node head for grace or cue wholes"),
-
     //
     // Beams and slurs ---------------------------------------------------------
     //
@@ -362,6 +357,7 @@ public enum Shape
     RIGHT_REPEAT_SIGN("Repeat dots + Thin / Thick bar line"),
     BACK_TO_BACK_REPEAT_SIGN("Repeat dots + Thin / Thick / Thin + REPEAT_DOTS"),
     ENDING("Alternate ending"),
+
     //
     // Wedges ------------------------------------------------------------------
     //
@@ -389,13 +385,11 @@ public enum Shape
     //
     GRACE_NOTE_SLASH("Grace Note with a Slash"),
     GRACE_NOTE("Grace Note with no slash"),
-
     //
     // Full fermatas -----------------------------------------------------------
     //
     FERMATA("Fermata with dot"),
     FERMATA_BELOW("Fermata below with dot"),
-
     //
     // Other stuff -------------------------------------------------------------
     //
@@ -559,7 +553,7 @@ public enum Shape
     public boolean isPersistent ()
     {
         return ShapeSet.Clefs.contains(this) || ShapeSet.Times.contains(this)
-               || ShapeSet.Accidentals.contains(this);
+                       || ShapeSet.Accidentals.contains(this);
     }
 
     //--------//

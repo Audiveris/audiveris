@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 public class MorphoProcessor
         implements MorphoConstants
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MorphoProcessor.class);
 
@@ -46,7 +45,6 @@ public class MorphoProcessor
 
     public static final int BINF = -256;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private StructureElement se; //, down_se, up_se;
 
     private StructureElement minus_se; //, down_se, up_se;
@@ -69,7 +67,6 @@ public class MorphoProcessor
 
     int height;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of MorphoProcessor.
      *
@@ -90,7 +87,6 @@ public class MorphoProcessor
         pg_minus = minus_se.getVect();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // close //
     //-------//

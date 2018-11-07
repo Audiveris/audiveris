@@ -78,13 +78,11 @@ import java.util.List;
 public class StaffManager
         implements ItemRenderer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StaffManager.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The related sheet. */
     @Navigable(false)
@@ -93,7 +91,6 @@ public class StaffManager
     /** The sequence of staves, ordered by layout position. */
     private final List<Staff> staves = new ArrayList<Staff>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StaffManager object.
      *
@@ -108,7 +105,6 @@ public class StaffManager
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // getClosestStaff //
     //-----------------//
@@ -256,15 +252,15 @@ public class StaffManager
         final int sheetHeight = sheet.getHeight();
 
         final List<Staff> aboves = vertNeighbors(staff, TOP);
-        final PathIterator north = aboves.isEmpty()
-                ? new GeoPath(new Line2D.Double(0, 0, sheetWidth, 0)).getPathIterator(
-                        null) : getGlobalLine(aboves, BOTTOM);
+        final PathIterator north = aboves.isEmpty() ? new GeoPath(
+                new Line2D.Double(0, 0, sheetWidth, 0)).getPathIterator(null)
+                : getGlobalLine(aboves, BOTTOM);
 
         final List<Staff> belows = vertNeighbors(staff, BOTTOM);
-        final PathIterator south = belows.isEmpty()
-                ? new GeoPath(
-                        new Line2D.Double(0, sheetHeight, sheetWidth, sheetHeight)).getPathIterator(null)
-                : getGlobalLine(belows, TOP);
+        final PathIterator south = belows.isEmpty() ? new GeoPath(new Line2D.Double(0, sheetHeight,
+                                                                                    sheetWidth,
+                                                                                    sheetHeight))
+                .getPathIterator(null) : getGlobalLine(belows, TOP);
 
         // Define sheet-wide area
         GeoPath wholePath = new GeoPath();
@@ -355,9 +351,9 @@ public class StaffManager
         globalLine.lineTo(sheet.getWidth(), rightSpline.getLastPoint().getY());
 
         final int verticalMargin = sheet.getScale().toPixels(constants.verticalAreaMargin);
-        AffineTransform at = AffineTransform.getTranslateInstance(
-                0,
-                ((side == TOP) ? (-verticalMargin) : verticalMargin));
+        AffineTransform at = AffineTransform.getTranslateInstance(0, ((side == TOP)
+                                                                  ? (-verticalMargin)
+                                                                  : verticalMargin));
 
         return globalLine.getPathIterator(at);
     }
@@ -638,7 +634,6 @@ public class StaffManager
         return neighbors;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //-----------//
     // Constants //
@@ -646,14 +641,11 @@ public class StaffManager
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean showStaffLines = new Constant.Boolean(
-                true,
-                "Should we show the staff lines on all views?");
+        private final Constant.Boolean showStaffLines = new Constant.Boolean(true,
+                                                                             "Should we show the staff lines on all views?");
 
-        private final Scale.Fraction verticalAreaMargin = new Scale.Fraction(
-                1.0,
-                "Vertical margin on staff areas");
+        private final Scale.Fraction verticalAreaMargin = new Scale.Fraction(1.0,
+                                                                             "Vertical margin on staff areas");
     }
 }

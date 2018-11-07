@@ -91,7 +91,6 @@ import javax.xml.bind.JAXBException;
 public abstract class AbstractClassifier<M extends Object>
         implements Classifier
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -110,13 +109,9 @@ public abstract class AbstractClassifier<M extends Object>
     public static final String STDS_XML_ENTRY_NAME = "stds.xml";
 
     /** A special evaluation array, used to report NOISE. */
-    private static final Evaluation[] noiseEvaluations = {
-        new Evaluation(
-        Shape.NOISE,
-        Evaluation.ALGORITHM)
-    };
+    private static final Evaluation[] noiseEvaluations = {new Evaluation(Shape.NOISE,
+                                                                         Evaluation.ALGORITHM)};
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Features means and standard deviations. */
     protected Norms norms;
 
@@ -126,7 +121,6 @@ public abstract class AbstractClassifier<M extends Object>
     /** The glyph checker for additional specific checks. */
     protected ShapeChecker glyphChecker = ShapeChecker.getInstance();
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // evaluate //
     //----------//
@@ -300,7 +294,7 @@ public abstract class AbstractClassifier<M extends Object>
 
                     if (!isCompatible(model, norms)) {
                         final String msg = "Obsolete classifier user data in " + path
-                                           + ", trying default data";
+                                                   + ", trying default data";
                         logger.warn(msg);
                     } else {
                         // Tell user we are not using the default
@@ -348,7 +342,7 @@ public abstract class AbstractClassifier<M extends Object>
 
             if (!isCompatible(model, norms)) {
                 final String msg = "Obsolete classifier default data in " + uri
-                                   + ", please retrain from scratch";
+                                           + ", please retrain from scratch";
                 logger.warn(msg);
             } else {
                 logger.info("Classifier data loaded from default uri {}", uri);
@@ -479,8 +473,8 @@ public abstract class AbstractClassifier<M extends Object>
     {
         {
             Path means = root.resolve(MEANS_ENTRY_NAME);
-            DataOutputStream dos = new DataOutputStream(
-                    new BufferedOutputStream(Files.newOutputStream(means, CREATE)));
+            DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(Files
+                    .newOutputStream(means, CREATE)));
             Nd4j.write(norms.means, dos);
             dos.flush();
             dos.close();
@@ -488,8 +482,8 @@ public abstract class AbstractClassifier<M extends Object>
 
         {
             Path stds = root.resolve(STDS_ENTRY_NAME);
-            DataOutputStream dos = new DataOutputStream(
-                    new BufferedOutputStream(Files.newOutputStream(stds, CREATE)));
+            DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(Files
+                    .newOutputStream(stds, CREATE)));
             Nd4j.write(norms.stds, dos);
             dos.flush();
             dos.close();
@@ -541,7 +535,6 @@ public abstract class AbstractClassifier<M extends Object>
         return bests.toArray(new Evaluation[bests.size()]);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Norms //
     //-------//
@@ -550,7 +543,6 @@ public abstract class AbstractClassifier<M extends Object>
      */
     protected static class Norms
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Features means. */
         final INDArray means;
@@ -558,7 +550,6 @@ public abstract class AbstractClassifier<M extends Object>
         /** Features standard deviations. */
         final INDArray stds;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Norms (INDArray means,
                       INDArray stds)
         {
@@ -573,14 +564,11 @@ public abstract class AbstractClassifier<M extends Object>
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch?");
 
-        private final Scale.AreaFraction minWeight = new Scale.AreaFraction(
-                0.04,
-                "Minimum normalized weight to be considered not a noise");
+        private final Scale.AreaFraction minWeight = new Scale.AreaFraction(0.04,
+                                                                            "Minimum normalized weight to be considered not a noise");
     }
 }

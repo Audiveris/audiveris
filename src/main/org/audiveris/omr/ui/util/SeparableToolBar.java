@@ -37,18 +37,15 @@ import javax.swing.JToolBar;
 public class SeparableToolBar
         extends JToolBar
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     /**
      * Dimension of the separator.
      */
-    private static final Dimension gap = new Dimension(
-            constants.separatorWidth.getValue(),
-            constants.separatorWidth.getValue());
+    private static final Dimension gap = new Dimension(constants.separatorWidth.getValue(),
+                                                       constants.separatorWidth.getValue());
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SeparableToolBar object.
      */
@@ -89,7 +86,6 @@ public class SeparableToolBar
         super(name, orientation);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // addSeparator //
     //--------------//
@@ -123,18 +119,14 @@ public class SeparableToolBar
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Integer separatorWidth = new Constant.Integer(
-                "Pixels",
-                15,
-                "Width of separator");
+        private final Constant.Integer separatorWidth = new Constant.Integer("Pixels", 15,
+                                                                             "Width of separator");
     }
 }

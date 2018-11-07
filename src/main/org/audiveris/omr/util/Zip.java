@@ -49,16 +49,13 @@ import java.util.zip.ZipOutputStream;
  */
 public abstract class Zip
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Zip.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     private Zip ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // createInputStream //
     //-------------------//
@@ -194,7 +191,8 @@ public abstract class Zip
     // isEmpty //
     //---------//
     public static boolean isEmpty (File file)
-            throws FileNotFoundException, IOException
+            throws FileNotFoundException,
+                   IOException
     {
         String path = file.getCanonicalPath();
         ZipFile zf = new ZipFile(path);

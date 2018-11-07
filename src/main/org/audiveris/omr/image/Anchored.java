@@ -31,13 +31,10 @@ import java.awt.Rectangle;
  */
 public interface Anchored
 {
-    //~ Enumerations -------------------------------------------------------------------------------
 
     /** Specifies a reference relative location. */
     public enum Anchor
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /**
          * Area Center.
          */
@@ -74,7 +71,6 @@ public interface Anchored
          * X at symbol right stem, Y at low stem ordinate.
          */
         BOTTOM_RIGHT_STEM;
-        //~ Methods --------------------------------------------------------------------------------
 
         public String abbreviation ()
         {
@@ -111,7 +107,6 @@ public interface Anchored
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Assign a relative offset for an anchor type.
      *

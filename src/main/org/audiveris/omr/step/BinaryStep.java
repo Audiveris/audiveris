@@ -49,13 +49,11 @@ import org.slf4j.LoggerFactory;
 public class BinaryStep
         extends AbstractStep
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BinaryStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BinaryStep object.
      */
@@ -63,7 +61,6 @@ public class BinaryStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
@@ -146,17 +143,14 @@ public class BinaryStep
         return false;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch?");
     }
 }

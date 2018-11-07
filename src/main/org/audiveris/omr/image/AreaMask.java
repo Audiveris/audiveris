@@ -35,14 +35,12 @@ import java.awt.geom.Area;
  */
 public class AreaMask
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Mask area. */
     private final Area area;
 
     private final Rectangle rect;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AreaMask object.
      *
@@ -54,7 +52,6 @@ public class AreaMask
         rect = area.getBounds();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // apply //
     //-------//
@@ -99,13 +96,11 @@ public class AreaMask
         return apply(new ForeCounter(filter, fore));
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
     public static interface Adapter
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Method called on each mask relevant point.
@@ -117,14 +112,12 @@ public class AreaMask
                              int y);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ForeCounter //
     //-------------//
     private static class ForeCounter
             implements Adapter
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final ByteProcessor filter;
 
@@ -134,7 +127,6 @@ public class AreaMask
 
         private final Wrapper<Integer> fore;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ForeCounter (ByteProcessor filter,
                             Wrapper<Integer> fore)
         {
@@ -144,16 +136,12 @@ public class AreaMask
             filterHeight = filter.getHeight();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void process (int x,
                              int y)
         {
-            if ((x >= 0)
-                && (x < filterWidth)
-                && (y >= 0)
-                && (y < filterHeight)
-                && (filter.get(x, y) == 0)) {
+            if ((x >= 0) && (x < filterWidth) && (y >= 0) && (y < filterHeight) && (filter.get(x, y)
+                                                                                            == 0)) {
                 fore.value++;
             }
         }

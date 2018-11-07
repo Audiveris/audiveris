@@ -23,10 +23,8 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-
 import static org.audiveris.omr.glyph.ShapeSet.FlagsUp;
 import static org.audiveris.omr.glyph.ShapeSet.SmallFlags;
-
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.sheet.Scale;
@@ -55,17 +53,14 @@ import java.util.List;
 public abstract class AbstractFlagInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractFlagInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Value of this flag (compound?) in terms of individual flags.
      * (Lazily evaluated)
      */
     protected Integer value;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AbstractFlagInter} object.
      */
@@ -87,7 +82,6 @@ public abstract class AbstractFlagInter
         super(glyph, null, shape, grade);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // createValidAdded //
     //------------------//
@@ -255,20 +249,16 @@ public abstract class AbstractFlagInter
         final int footHeight = (int) Math.rint(flagBox.height / 2.5);
 
         // We need a flag ref point to compute x and y distances to stem
-        final Point refPt = new Point(
-                flagBox.x,
-                isFlagUp ? ((flagBox.y + flagBox.height) - footHeight) : (flagBox.y + footHeight));
-        final int y = isFlagUp ? ((flagBox.y + flagBox.height) - footHeight
-                                  - maxStemFlagGapY) : (flagBox.y + maxStemFlagGapY);
-        final int midFootY = isFlagUp ? (refPt.y + (footHeight / 2))
-                : (refPt.y - (footHeight / 2));
+        final Point refPt = new Point(flagBox.x, isFlagUp ? ((flagBox.y + flagBox.height)
+                                                                     - footHeight)
+                                      : (flagBox.y + footHeight));
+        final int y = isFlagUp ? ((flagBox.y + flagBox.height) - footHeight - maxStemFlagGapY)
+                : (flagBox.y + maxStemFlagGapY);
+        final int midFootY = isFlagUp ? (refPt.y + (footHeight / 2)) : (refPt.y - (footHeight / 2));
 
         //TODO: -1 is used to cope with stem margin when erased (To be improved)
-        final Rectangle luBox = new Rectangle(
-                (flagBox.x - 1) - stemWidth,
-                y,
-                2 * stemWidth,
-                footHeight);
+        final Rectangle luBox = new Rectangle((flagBox.x - 1) - stemWidth, y, 2 * stemWidth,
+                                              footHeight);
 
         if (glyph != null) {
             glyph.addAttachment("fs", luBox);
@@ -302,11 +292,10 @@ public abstract class AbstractFlagInter
             fRel.setInOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
 
             if (fRel.getGrade() >= fRel.getMinGrade()) {
-                fRel.setExtensionPoint(
-                        LineUtil.intersectionAtY(
-                                start,
-                                stop,
-                                isFlagUp ? ((flagBox.y + flagBox.height) - 1) : flagBox.y));
+                fRel.setExtensionPoint(LineUtil.intersectionAtY(start, stop, isFlagUp ? ((flagBox.y
+                                                                                                  + flagBox.height)
+                                                                                         - 1)
+                                                                : flagBox.y));
 
                 // Check consistency between flag direction and vertical position on stem
                 // As well as stem direction as indicated by heads on stem

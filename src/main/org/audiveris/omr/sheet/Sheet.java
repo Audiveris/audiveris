@@ -123,7 +123,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getInterIndex}</li>
  * <li>{@link #getPersistentIdGenerator}</li>
  * </ul></dd>
- *
+ * <p>
  * <dt>Pages, Systems and Staves</dt>
  * <dd><ul>
  * <li>{@link #addPage}</li>
@@ -134,14 +134,14 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getSystems}</li>
  * <li>{@link #dumpSystemInfos}</li>
  * </ul></dd>
- *
+ * <p>
  * <dt>Samples</dt>
  * <dd><ul>
  * <li>{@link #annotate()}</li>
  * <li>{@link #annotate(java.nio.file.Path)}</li>
  * <li>{@link #sample}</li>
  * </ul></dd>
- *
+ * <p>
  * <dt>Artifacts</dt>
  * <dd><ul>
  * <li>{@link #setImage}</li>
@@ -159,7 +159,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #setSheetDelta}</li>
  * <li>{@link #getSheetDelta}</li>
  * </ul></dd>
- *
+ * <p>
  * <dt>UI</dt>
  * <dd><ul>
  * <li>{@link #getSymbolsEditor}</li>
@@ -195,23 +195,19 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "sheet")
 public class Sheet
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** The radix used for folder of this sheet internals. */
     public static final String INTERNALS_RADIX = "sheet#";
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Sheet.class);
+    private static final Logger logger = LoggerFactory.getLogger(Sheet.class);
 
     /** Events that can be published on sheet location service. */
-    private static final Class<?>[] allowedEvents = new Class<?>[]{
-        LocationEvent.class, PixelEvent.class
-    };
+    private static final Class<?>[] allowedEvents = new Class<?>[]{LocationEvent.class,
+                                                                   PixelEvent.class};
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -289,7 +285,6 @@ public class Sheet
     /** Delta measurements. */
     private SheetDiff sheetDelta;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BasicSheet} object with a binary table.
      *
@@ -348,7 +343,6 @@ public class Sheet
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // getSheetFileName //
     //------------------//
@@ -467,8 +461,7 @@ public class Sheet
             new AnnotationsBuilder(this, annPath).processSheet();
 
             // Sheet image
-            Path imgPath = sheetFolder.resolve(
-                    getId() + Annotations.SHEET_IMAGE_EXTENSION);
+            Path imgPath = sheetFolder.resolve(getId() + Annotations.SHEET_IMAGE_EXTENSION);
             RunTable runTable = picture.getTable(Picture.TableKey.BINARY);
             BufferedImage img = runTable.getBufferedImage();
             os = Files.newOutputStream(imgPath, CREATE);
@@ -517,10 +510,8 @@ public class Sheet
 
                 // Display sheet binary
                 PictureView pictureView = new PictureView(this);
-                assembly.addViewTab(
-                        tab,
-                        pictureView,
-                        new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
+                assembly.addViewTab(tab, pictureView, new BoardsPane(new PixelBoard(this),
+                                                                     new BinarizationBoard(this)));
             } else {
                 assembly.selectViewTab(tab);
             }
@@ -539,10 +530,8 @@ public class Sheet
 
         // Display sheet picture
         PictureView pictureView = new PictureView(this);
-        stub.getAssembly().addViewTab(
-                SheetTab.PICTURE_TAB,
-                pictureView,
-                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
+        stub.getAssembly().addViewTab(SheetTab.PICTURE_TAB, pictureView, new BoardsPane(
+                                      new PixelBoard(this), new BinarizationBoard(this)));
     }
 
     //----------------//
@@ -633,9 +622,8 @@ public class Sheet
 
             final String ext = FileUtil.getExtension(path);
             final String sheetName = FileUtil.getNameSansExtension(path.getFileName());
-            final boolean compressed = (ext.equals(OMR.COMPRESSED_SCORE_EXTENSION)) ? true
-                    : ((ext.equals(OMR.SCORE_EXTENSION)) ? false
-                    : BookManager.useCompression());
+            final boolean compressed = (ext.equals(OMR.COMPRESSED_SCORE_EXTENSION)) ? true : ((ext
+                    .equals(OMR.SCORE_EXTENSION)) ? false : BookManager.useCompression());
             final boolean useSig = BookManager.useSignature();
 
             int modifs = 0; // Count of modifications
@@ -940,8 +928,8 @@ public class Sheet
 
             done(Step.LOAD);
         } catch (ImageFormatException ex) {
-            String msg = "Unsupported image format in file " + stub.getBook().getInputPath()
-                         + "\n" + ex.getMessage();
+            String msg = "Unsupported image format in file " + stub.getBook().getInputPath() + "\n"
+                                 + ex.getMessage();
 
             if (OMR.gui != null) {
                 OMR.gui.displayWarning(msg);
@@ -1167,12 +1155,8 @@ public class Sheet
                 if ((shape != null) && (staff != null) && (glyph != null)) {
                     Double pitch = (inter instanceof AbstractPitchedInter)
                             ? ((AbstractPitchedInter) inter).getPitch() : null;
-                    repository.addSample(
-                            inter.getShape(),
-                            glyph,
-                            staff.getSpecificInterline(),
-                            sampleSheet,
-                            pitch);
+                    repository.addSample(inter.getShape(), glyph, staff.getSpecificInterline(),
+                                         sampleSheet, pitch);
                 }
             }
         }
@@ -1499,18 +1483,15 @@ public class Sheet
         getGlyphIndex().setEntities(glyphs);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // GlyphList // For glyphIndex (un)marshalling
     //-----------//
     private static class GlyphList
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlElement(name = "glyph")
         public ArrayList<Glyph> glyphs;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public GlyphList ()
         {
         }
@@ -1527,7 +1508,6 @@ public class Sheet
     private static class GlyphListAdapter
             extends XmlAdapter<GlyphList, ArrayList<Glyph>>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public GlyphList marshal (ArrayList<Glyph> glyphs)

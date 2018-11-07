@@ -40,17 +40,19 @@ import java.io.IOException;
  */
 public abstract class PoorManAlgebra
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PoorManAlgebra.class);
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
+    private static String format (double val)
+    {
+        return String.format("%.2f", val);
+    }
+
     //----------//
     // INDArray //
     //----------//
     public static interface INDArray
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * in place addition of two NDArrays
@@ -124,19 +126,16 @@ public abstract class PoorManAlgebra
         INDArray subiRowVector (INDArray rowVector);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // DataSet //
     //---------//
     public static class DataSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final INDArray features;
 
         private final INDArray labels;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public DataSet (INDArray features,
                         INDArray labels,
                         INDArray featuresMask, // Unused
@@ -147,7 +146,6 @@ public abstract class PoorManAlgebra
             this.labels = labels;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public INDArray getFeatures ()
         {
             return features;
@@ -164,11 +162,9 @@ public abstract class PoorManAlgebra
     //------//
     public static class Nd4j
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         public static final double EPS_THRESHOLD = 1e-5;
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Create an INDArray based on the given data layout
          *
@@ -233,11 +229,9 @@ public abstract class PoorManAlgebra
     private static class Matrix
             implements INDArray
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final double[][] data;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Matrix (double[][] data)
         {
             final int rowNb = data.length;
@@ -253,7 +247,6 @@ public abstract class PoorManAlgebra
             }
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public INDArray addi (INDArray other)
         {
@@ -399,17 +392,14 @@ public abstract class PoorManAlgebra
     private static class Scalar
             implements INDArray
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private double data;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Scalar (double data)
         {
             this.data = data;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public INDArray addi (INDArray other)
         {
@@ -467,7 +457,6 @@ public abstract class PoorManAlgebra
         @Override
         public String toString ()
         {
-
             final StringBuilder sb = new StringBuilder("{");
 
             sb.append(format(data));
@@ -478,19 +467,12 @@ public abstract class PoorManAlgebra
         }
     }
 
-    private static String format (double val)
-    {
-        return String.format("%.2f", val);
-    }
-
     private static class Vector
             implements INDArray
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final double[] data;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Vector (double[] data)
         {
             this.data = new double[data.length];
@@ -503,7 +485,6 @@ public abstract class PoorManAlgebra
             data = null;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public INDArray addi (INDArray other)
         {

@@ -78,24 +78,21 @@ import java.util.List;
  */
 public class PageRhythm
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PageRhythm.class);
 
     /** Adjustable rhythm classes. (FRAT: Flag, RestChord, AugmentationDot, Tuplet) */
-    private static final Class<?>[] FRAT_CLASSES = new Class<?>[]{
-        FlagInter.class, RestChordInter.class,
-        AugmentationDotInter.class, TupletInter.class
-    };
+    private static final Class<?>[] FRAT_CLASSES = new Class<?>[]{FlagInter.class,
+                                                                  RestChordInter.class,
+                                                                  AugmentationDotInter.class,
+                                                                  TupletInter.class};
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The page being processed.. */
     private final Page page;
 
     /** Sequence of time-sig ranges found in page. */
     private final List<Range> ranges = new ArrayList<Range>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PageRhythm} object.
      *
@@ -106,7 +103,6 @@ public class PageRhythm
         this.page = page;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -231,14 +227,10 @@ public class PageRhythm
                     logger.debug("Starting {}", range);
 
                     // Adjust time signature? (TODO: today we don't adjust anything in fact)
-                    if ((range.duration != null)
-                        && ((range.ts == null)
-                            || !range.ts.getTimeRational().getValue().equals(range.duration))) {
-                        logger.info(
-                                "{}{} should update to {}-based time sig?",
-                                stack.getSystem().getLogPrefix(),
-                                range,
-                                range.duration);
+                    if ((range.duration != null) && ((range.ts == null) || !range.ts
+                            .getTimeRational().getValue().equals(range.duration))) {
+                        logger.info("{}{} should update to {}-based time sig?", stack.getSystem()
+                                    .getLogPrefix(), range, range.duration);
                     }
                 }
 
@@ -388,7 +380,6 @@ public class PageRhythm
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Range //
     //-------//
@@ -398,7 +389,6 @@ public class PageRhythm
      */
     private static class Range
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int startId; // Id of first stack
 
@@ -408,7 +398,6 @@ public class PageRhythm
 
         Rational duration; // Inferred measure duration for the range
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Range (int startId,
                       AbstractTimeInter ts)
         {
@@ -416,7 +405,6 @@ public class PageRhythm
             this.ts = ts;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

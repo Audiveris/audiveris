@@ -53,13 +53,11 @@ import java.util.Collection;
  */
 public class GridBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(GridBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -70,7 +68,6 @@ public class GridBuilder
     /** Companion in charge of bar lines. */
     public final BarsRetriever barsRetriever;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Retrieve the frames of all staff lines.
      *
@@ -89,7 +86,6 @@ public class GridBuilder
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // buildInfo //
     //-----------//
@@ -114,9 +110,8 @@ public class GridBuilder
                 sheet.getStub().getAssembly().addBoard(SheetTab.DATA_TAB, new InterBoard(sheet));
 
                 // Filament board
-                sheet.getStub().getAssembly().addBoard(
-                        SheetTab.DATA_TAB,
-                        new FilamentBoard(sheet.getFilamentIndex().getEntityService(), true));
+                sheet.getStub().getAssembly().addBoard(SheetTab.DATA_TAB, new FilamentBoard(sheet
+                                                       .getFilamentIndex().getEntityService(), true));
             }
 
             // Retrieve the horizontal staff lines filaments with long sections
@@ -210,25 +205,20 @@ public class GridBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch?");
 
-        private final Constant.Boolean buildDewarpedTarget = new Constant.Boolean(
-                false,
-                "Should we build a dewarped target?");
+        private final Constant.Boolean buildDewarpedTarget = new Constant.Boolean(false,
+                                                                                  "Should we build a dewarped target?");
 
-        private final Constant.Boolean showGrid = new Constant.Boolean(
-                false,
-                "Should we show the details of grid?");
+        private final Constant.Boolean showGrid = new Constant.Boolean(false,
+                                                                       "Should we show the details of grid?");
     }
 }

@@ -48,10 +48,8 @@ import java.util.Map;
 public abstract class AbstractNoteInter
         extends AbstractPitchedInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractNoteInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractNoteInter.class);
 
     /** The quarter duration value. */
     public static final Rational QUARTER_DURATION = new Rational(1, 4);
@@ -59,12 +57,9 @@ public abstract class AbstractNoteInter
     /** All shape-based intrinsic durations. */
     private static final Map<Shape, Rational> shapeDurations = buildShapeDurations();
 
-    //~ Enumerations -------------------------------------------------------------------------------
     /** Names of the various note steps. */
     public static enum Step
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /** La */
         A,
         /** Si */
@@ -81,7 +76,6 @@ public abstract class AbstractNoteInter
         G;
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractNoteInter object.
      *
@@ -129,7 +123,6 @@ public abstract class AbstractNoteInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getChord //
     //----------//

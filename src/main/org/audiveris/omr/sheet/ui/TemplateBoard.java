@@ -35,6 +35,7 @@ import org.audiveris.omr.image.DistanceTable;
 import org.audiveris.omr.image.PixelDistance;
 import org.audiveris.omr.image.Template;
 import org.audiveris.omr.image.TemplateFactory;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.field.LDoubleField;
@@ -43,6 +44,7 @@ import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.Panel;
 
 import org.slf4j.Logger;
@@ -58,8 +60,6 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerListModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.audiveris.omr.sheet.Scale;
-import org.audiveris.omr.ui.symbol.MusicFont;
 
 /**
  * Class {@code TemplateBoard} allows to select a template (shape, anchor) and present
@@ -72,14 +72,12 @@ public class TemplateBoard
         implements ChangeListener // For all spinners
 
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TemplateBoard.class);
 
     /** Events this entity is interested in */
     private static final Class<?>[] eventsRead = new Class<?>[]{LocationEvent.class};
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -99,15 +97,12 @@ public class TemplateBoard
     private final JTextField evalField = new JTextField(6);
 
     /** Output: key point value. */
-    private final LDoubleField keyPointField = new LDoubleField(
-            "Tpl",
-            "Template key point value",
-            "%.1f");
+    private final LDoubleField keyPointField = new LDoubleField("Tpl", "Template key point value",
+                                                                "%.1f");
 
     /** Template reference point. */
     private Point refPoint;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TemplateBoard} object.
      *
@@ -125,16 +120,16 @@ public class TemplateBoard
         this.templateService = templateService;
 
         // Shape spinner
-        shapeSpinner = new JSpinner(
-                new SpinnerListModel(new ArrayList<Shape>(ShapeSet.getTemplateNotes(sheet))));
+        shapeSpinner = new JSpinner(new SpinnerListModel(new ArrayList<Shape>(ShapeSet
+                .getTemplateNotes(sheet))));
         shapeSpinner.addChangeListener(this);
         shapeSpinner.setName("shapeSpinner");
         shapeSpinner.setToolTipText("Selection of template shape");
 
         // Anchor spinner (with only relevant anchor values for templates)
-        anchorSpinner = new JSpinner(
-                new SpinnerListModel(
-                        Arrays.asList(Anchor.LEFT_STEM, Anchor.RIGHT_STEM, Anchor.MIDDLE_LEFT)));
+        anchorSpinner = new JSpinner(new SpinnerListModel(Arrays.asList(Anchor.LEFT_STEM,
+                                                                        Anchor.RIGHT_STEM,
+                                                                        Anchor.MIDDLE_LEFT)));
         anchorSpinner.addChangeListener(this);
         anchorSpinner.setName("anchorSpinner");
         anchorSpinner.setToolTipText("Selection of template anchor");
@@ -147,7 +142,6 @@ public class TemplateBoard
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // onEvent //
     //---------//
@@ -181,14 +175,13 @@ public class TemplateBoard
 
         if (areCompatible(shape, anchor)) {
             Scale scale = sheet.getScale();
-            Template template = TemplateFactory.getInstance()
-                    .getCatalog(MusicFont.getHeadPointSize(scale, scale.getInterline()))
-                    .getTemplate(shape);
+            Template template = TemplateFactory.getInstance().getCatalog(MusicFont.getHeadPointSize(
+                    scale, scale.getInterline())).getTemplate(shape);
             at = new AnchoredTemplate(anchor, template);
         }
 
-        templateService.publish(
-                new AnchoredTemplateEvent(this, SelectionHint.ENTITY_INIT, null, at));
+        templateService
+                .publish(new AnchoredTemplateEvent(this, SelectionHint.ENTITY_INIT, null, at));
         tryEvaluate(refPoint, at);
     }
 

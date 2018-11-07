@@ -36,17 +36,14 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class FilterDescriptor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            FilterDescriptor.class);
+    private static final Logger logger = LoggerFactory.getLogger(FilterDescriptor.class);
 
     /** Default param. */
     public static final Param<FilterDescriptor> defaultFilter = new Default();
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // equals //
     //--------//
@@ -131,18 +128,15 @@ public abstract class FilterDescriptor
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Enum<FilterKind> defaultKind = new Constant.Enum<FilterKind>(
-                FilterKind.class,
-                FilterKind.ADAPTIVE,
+                FilterKind.class, FilterKind.ADAPTIVE,
                 "Default kind of PixelFilter (GLOBAL or ADAPTIVE)");
     }
 
@@ -152,7 +146,6 @@ public abstract class FilterDescriptor
     private static class Default
             extends Param<FilterDescriptor>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public FilterDescriptor getSourceValue ()

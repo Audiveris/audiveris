@@ -43,11 +43,9 @@ import java.util.Set;
 public class SigAttic
         extends Multigraph<Inter, Relation>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SigAttic.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SigAttic} object.
      */
@@ -56,7 +54,6 @@ public class SigAttic
         super(Relation.class);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // restore //
     //---------//

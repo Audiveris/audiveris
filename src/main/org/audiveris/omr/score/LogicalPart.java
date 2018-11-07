@@ -47,14 +47,11 @@ import javax.xml.bind.annotation.XmlAttribute;
 @XmlAccessorType(XmlAccessType.NONE)
 public class LogicalPart
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            LogicalPart.class);
+    private static final Logger logger = LoggerFactory.getLogger(LogicalPart.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -82,7 +79,6 @@ public class LogicalPart
     @XmlAttribute(name = "midi-program")
     private Integer midiProgram;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of ScorePart
      *
@@ -103,7 +99,6 @@ public class LogicalPart
         staffCount = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // equals //
     //--------//
@@ -124,9 +119,9 @@ public class LogicalPart
             return false;
         }
 
-        return Objects.deepEquals(midiProgram, that.midiProgram)
-               && Objects.deepEquals(name, that.name)
-               && Objects.deepEquals(abbreviation, that.abbreviation);
+        return Objects.deepEquals(midiProgram, that.midiProgram) && Objects.deepEquals(name,
+                                                                                       that.name)
+                       && Objects.deepEquals(abbreviation, that.abbreviation);
     }
 
     //-------//
@@ -356,42 +351,31 @@ public class LogicalPart
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // Default Part names
-        private final Constant.String defaultSingleStaffPartName = new Constant.String(
-                "Voice",
-                "Default name for a part with one staff");
+        private final Constant.String defaultSingleStaffPartName = new Constant.String("Voice",
+                                                                                       "Default name for a part with one staff");
 
-        private final Constant.String defaultDoubleStaffPartName = new Constant.String(
-                "Piano",
-                "Default name for a part with two staves");
+        private final Constant.String defaultDoubleStaffPartName = new Constant.String("Piano",
+                                                                                       "Default name for a part with two staves");
 
-        private final Constant.String defaultPartName = new Constant.String(
-                "NoName",
-                "Default name for a part with more than two staves");
+        private final Constant.String defaultPartName = new Constant.String("NoName",
+                                                                            "Default name for a part with more than two staves");
 
         // Default Midi program numbers
         private final Constant.Integer defaultSingleStaffPartProgram = new Constant.Integer(
-                "MidiProgram",
-                54,
-                "Default program number for a part with one staff");
+                "MidiProgram", 54, "Default program number for a part with one staff");
 
         private final Constant.Integer defaultDoubleStaffPartProgram = new Constant.Integer(
-                "MidiProgram",
-                1,
-                "Default program number for a part with two staves");
+                "MidiProgram", 1, "Default program number for a part with two staves");
 
-        private final Constant.Integer defaultPartProgram = new Constant.Integer(
-                "MidiProgram",
-                1,
-                "Default program number for a part with more than two staves");
+        private final Constant.Integer defaultPartProgram = new Constant.Integer("MidiProgram", 1,
+                                                                                 "Default program number for a part with more than two staves");
     }
 }

@@ -38,7 +38,6 @@ import java.awt.image.WritableRaster;
 public class BasicARTExtractor
         extends AbstractExtractor<ARTMoments>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -55,7 +54,6 @@ public class BasicARTExtractor
         initLUT();
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicARTExtractor object and process the provided foreground points.
      */
@@ -63,7 +61,6 @@ public class BasicARTExtractor
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void reconstruct (WritableRaster raster)
     {
@@ -175,17 +172,14 @@ public class BasicARTExtractor
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch?");
     }
 }

@@ -36,7 +36,6 @@ import java.awt.Stroke;
 public class CrescendoSymbol
         extends ShapeSymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new CrescendoSymbol object.
@@ -50,7 +49,6 @@ public class CrescendoSymbol
         super(isIcon, shape, false);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -70,10 +68,8 @@ public class CrescendoSymbol
 
         double interline = font.getStaffInterline();
         p.rect = new Rectangle((int) Math.ceil(5 * interline), (int) Math.ceil(1.5 * interline));
-        p.stroke = new BasicStroke(
-                Math.max(1f, (float) interline / 7f),
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND);
+        p.stroke = new BasicStroke(Math.max(1f, (float) interline / 7f), BasicStroke.CAP_ROUND,
+                                   BasicStroke.JOIN_ROUND);
 
         return p;
     }
@@ -97,14 +93,12 @@ public class CrescendoSymbol
         g.setStroke(oldStroke);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         Stroke stroke;
     }

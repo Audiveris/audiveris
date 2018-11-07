@@ -67,7 +67,6 @@ import java.util.Map;
 public class MusicFont
         extends OmrFont
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -93,20 +92,16 @@ public class MusicFont
     public static final int DEFAULT_INTERLINE = 16;
 
     /** The music font used for default interline. */
-    public static final MusicFont baseMusicFont = getPointFont(
-            getPointSize(DEFAULT_INTERLINE),
-            DEFAULT_INTERLINE);
+    public static final MusicFont baseMusicFont = getPointFont(getPointSize(DEFAULT_INTERLINE),
+                                                               DEFAULT_INTERLINE);
 
     /** The music font used just for icons (half-size). */
-    public static final MusicFont iconMusicFont = getPointFont(
-            getPointSize(DEFAULT_INTERLINE) / 2,
-            DEFAULT_INTERLINE / 2);
+    public static final MusicFont iconMusicFont = getPointFont(getPointSize(DEFAULT_INTERLINE) / 2,
+                                                               DEFAULT_INTERLINE / 2);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Interline value of the staves where this font is used. */
     private final int staffInterline;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new MusicFont object.
      *
@@ -120,7 +115,6 @@ public class MusicFont
         this.staffInterline = staffInterline;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildImage //
     //------------//
@@ -207,8 +201,9 @@ public class MusicFont
         final double w2 = layout2.getBounds().getWidth();
 
         final double dw = w2 - w1;
-        final int v = (Math.abs(dw) < 0.01) ? v1
-                : (int) Math.rint(v1 + ((v2 - v1) * ((width - w1) / (w2 - w1))));
+        final int v = (Math.abs(dw) < 0.01) ? v1 : (int) Math.rint(v1 + ((v2 - v1) * ((width - w1)
+                                                                                              / (w2
+                                                                                                         - w1))));
 
         // Verification
         final MusicFont font = new MusicFont(v, 0);
@@ -265,8 +260,8 @@ public class MusicFont
     {
         final Scale.MusicFontScale musicFontScale = scale.getMusicFontScale();
         final Scale smallScale = scale.getSmallScale();
-        final boolean isSmallStaff = (smallScale != null)
-                                     && (smallScale.getInterline() == staffInterline);
+        final boolean isSmallStaff = (smallScale != null) && (smallScale.getInterline()
+                                                                      == staffInterline);
 
         if (musicFontScale != null) {
             if (isSmallStaff) {
@@ -462,9 +457,8 @@ public class MusicFont
 
         // Compute proper affine transformation
         Rectangle2D rect = layout.getBounds();
-        AffineTransform fat = AffineTransform.getScaleInstance(
-                dimension.width / rect.getWidth(),
-                dimension.height / rect.getHeight());
+        AffineTransform fat = AffineTransform.getScaleInstance(dimension.width / rect.getWidth(),
+                                                               dimension.height / rect.getHeight());
 
         return layout(str, fat);
     }
@@ -512,18 +506,15 @@ public class MusicFont
         return staffInterline;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio headRatio = new Constant.Ratio(
-                1.1,
-                "Ratio applied on font size for better head rendering");
+        private final Constant.Ratio headRatio = new Constant.Ratio(1.1,
+                                                                    "Ratio applied on font size for better head rendering");
     }
 
     //---------//
@@ -531,13 +522,11 @@ public class MusicFont
     //---------//
     private static class Scaling
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public int pointSize;
 
         public int staffInterline;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Scaling (int pointSize,
                         int staffInterline)
         {
@@ -545,7 +534,6 @@ public class MusicFont
             this.staffInterline = staffInterline;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean equals (Object obj)
         {
@@ -556,7 +544,7 @@ public class MusicFont
             Scaling that = (Scaling) obj;
 
             return (this.pointSize == that.pointSize)
-                   && (this.staffInterline == that.staffInterline);
+                           && (this.staffInterline == that.staffInterline);
         }
 
         @Override

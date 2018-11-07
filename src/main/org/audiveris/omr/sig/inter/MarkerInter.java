@@ -42,7 +42,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class MarkerInter
         extends AbstractInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code MarkerInter} object.
@@ -65,7 +64,6 @@ public class MarkerInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

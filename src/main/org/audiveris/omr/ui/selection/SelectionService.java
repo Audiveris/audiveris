@@ -41,20 +41,17 @@ import java.util.List;
 public class SelectionService
         extends ThreadSafeEventService
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SelectionService.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Name of this service. */
     private final String name;
 
     /** Allowed events. */
     private final Class[] eventsAllowed;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SelectionService object.
      *
@@ -71,7 +68,6 @@ public class SelectionService
         setDefaultCacheSizePerClassOrTopic(1);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // dumpSubscribers //
     //-----------------//
@@ -84,11 +80,9 @@ public class SelectionService
 
             if (!subscribers.isEmpty()) {
                 UserEvent last = (UserEvent) getLastEvent(eventClass);
-                logger.info(
-                        "   {}: {}{}",
-                        eventClass.getSimpleName(),
-                        subscribers.size(),
-                        (last != null) ? (" " + last) : "");
+                logger.info("   {}: {}{}", eventClass.getSimpleName(), subscribers.size(), (last
+                                                                                                    != null)
+                                    ? (" " + last) : "");
 
                 for (Object obj : subscribers) {
                     String size = "";
@@ -171,12 +165,8 @@ public class SelectionService
                                       EventSubscriber es)
     {
         if (isAllowed(classe)) {
-            logger.debug(
-                    "{}: subscription on {} by {}@{}",
-                    this,
-                    classe.getSimpleName(),
-                    es,
-                    Integer.toHexString(es.hashCode()));
+            logger.debug("{}: subscription on {} by {}@{}", this, classe.getSimpleName(), es,
+                         Integer.toHexString(es.hashCode()));
 
             return super.subscribeStrongly(classe, es);
         } else {
@@ -218,13 +208,8 @@ public class SelectionService
                                 EventSubscriber eh)
     {
         boolean res = super.unsubscribe(classe, eh);
-        logger.debug(
-                "{}: unsubscription on {} by {}@{} res:{}",
-                this,
-                classe.getSimpleName(),
-                eh,
-                Integer.toHexString(eh.hashCode()),
-                res);
+        logger.debug("{}: unsubscription on {} by {}@{} res:{}", this, classe.getSimpleName(), eh,
+                     Integer.toHexString(eh.hashCode()), res);
 
         return res;
     }
@@ -251,17 +236,14 @@ public class SelectionService
         return false;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean checkPublishedEvents = new Constant.Boolean(
-                true,
-                "(debug) Should we check published events?");
+        private final Constant.Boolean checkPublishedEvents = new Constant.Boolean(true,
+                                                                                   "(debug) Should we check published events?");
     }
 }

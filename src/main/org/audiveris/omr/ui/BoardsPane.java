@@ -53,7 +53,7 @@ import javax.swing.SwingConstants;
  * Class {@code BoardsPane} defines a view on a set of user {@link
  * Board} instances, where data related to current point, run, section,
  * glyph, etc can be displayed in dedicated boards.
- *
+ * <p>
  * <p>
  * There is one BoardsPane instance for each view of the same sheet,
  * each with its own collection of board instances.
@@ -62,11 +62,9 @@ import javax.swing.SwingConstants;
  */
 public class BoardsPane
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BoardsPane.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The concrete UI component */
     private final Panel component;
 
@@ -79,7 +77,6 @@ public class BoardsPane
     /** Mouse listener */
     private final MouseAdapter mouseAdapter = new MyMouseAdapter();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a BoardsPane, with initial boards.
      *
@@ -115,7 +112,6 @@ public class BoardsPane
         this(Arrays.asList(boards));
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addBoard //
     //----------//
@@ -345,7 +341,6 @@ public class BoardsPane
         return null;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------------//
     // MyMouseAdapter //
     //----------------//
@@ -356,7 +351,6 @@ public class BoardsPane
             extends MouseAdapter
             implements ItemListener
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         //------------------//
         // itemStateChanged //
@@ -398,8 +392,8 @@ public class BoardsPane
                 for (Board board : boards) {
                     JMenuItem item = new JCheckBoxMenuItem(board.getName(), board.isSelected());
                     item.addItemListener(this);
-                    item.setToolTipText(
-                            board.isSelected() ? "Deselect this board?" : "Select this board?");
+                    item.setToolTipText(board.isSelected() ? "Deselect this board?"
+                            : "Select this board?");
                     popup.add(item);
                 }
 

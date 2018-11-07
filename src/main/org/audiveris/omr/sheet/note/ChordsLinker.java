@@ -53,13 +53,11 @@ import java.util.List;
  */
 public class ChordsLinker
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ChordsLinker.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -68,7 +66,6 @@ public class ChordsLinker
     @Navigable(false)
     private final SIGraph sig;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ChordsLinker} object.
      *
@@ -80,7 +77,6 @@ public class ChordsLinker
         sig = system.getSig();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // checkBeamChords //
     //-----------------//
@@ -121,9 +117,7 @@ public class ChordsLinker
                         logger.info("{} Overlapping {} {} vs {}", beam, ratio, prevChord, chord);
 
                         StemInter prevStem = prevChord.getStem();
-                        BeamStemRelation prevRel = (BeamStemRelation) sig.getEdge(
-                                beam,
-                                prevStem);
+                        BeamStemRelation prevRel = (BeamStemRelation) sig.getEdge(beam, prevStem);
 
                         StemInter stem = chord.getStem();
                         BeamStemRelation rel = (BeamStemRelation) sig.getEdge(beam, stem);
@@ -169,17 +163,14 @@ public class ChordsLinker
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio maxAbscissaOverlapRatio = new Constant.Ratio(
-                0.25,
-                "Maximum abscissa relative overlap ratio between chords of a beam");
+        private final Constant.Ratio maxAbscissaOverlapRatio = new Constant.Ratio(0.25,
+                                                                                  "Maximum abscissa relative overlap ratio between chords of a beam");
     }
 }

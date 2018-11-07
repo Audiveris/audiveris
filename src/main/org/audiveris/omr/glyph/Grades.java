@@ -33,7 +33,6 @@ import org.audiveris.omr.constant.ConstantSet;
  */
 public abstract class Grades
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -80,73 +79,57 @@ public abstract class Grades
     /** Minimum grade for a validation (during training phase). */
     public static final double validationMinGrade = constants.validationMinGrade.getValue();
 
-    //~ Constructors -------------------------------------------------------------------------------
     private Grades ()
     {
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio intrinsicRatio = new Constant.Ratio(
-                0.8,
-                "Reduction ratio applied on any intrinsic grade");
+        private final Constant.Ratio intrinsicRatio = new Constant.Ratio(0.8,
+                                                                         "Reduction ratio applied on any intrinsic grade");
 
         //
         // Minimum values (please keep them sorted by decreasing value)
         //
-        private final Evaluation.Grade validationMinGrade = new Evaluation.Grade(
-                0.80,
-                "Minimum grade for a validation");
+        private final Evaluation.Grade validationMinGrade = new Evaluation.Grade(0.80,
+                                                                                 "Minimum grade for a validation");
 
-        private final Constant.Ratio minContextualGrade = new Constant.Ratio(
-                0.5,
-                "Default minimum interpretation contextual grade");
+        private final Constant.Ratio minContextualGrade = new Constant.Ratio(0.5,
+                                                                             "Default minimum interpretation contextual grade");
 
-        private final Constant.Ratio goodBarConnectorGrade = new Constant.Ratio(
-                0.65,
-                "Good interpretation grade for a bar connector");
+        private final Constant.Ratio goodBarConnectorGrade = new Constant.Ratio(0.65,
+                                                                                "Good interpretation grade for a bar connector");
 
-        private final Constant.Ratio goodInterGrade = new Constant.Ratio(
-                0.5,
-                "Default good interpretation grade");
+        private final Constant.Ratio goodInterGrade = new Constant.Ratio(0.5,
+                                                                         "Default good interpretation grade");
 
-        private final Constant.Ratio goodRelationGrade = new Constant.Ratio(
-                0.5,
-                "Default good relation grade");
+        private final Constant.Ratio goodRelationGrade = new Constant.Ratio(0.5,
+                                                                            "Default good relation grade");
 
-        private final Evaluation.Grade symbolMinGrade = new Evaluation.Grade(
-                0.15,
-                "Minimum grade for a symbol");
+        private final Evaluation.Grade symbolMinGrade = new Evaluation.Grade(0.15,
+                                                                             "Minimum grade for a symbol");
 
-        private final Constant.Ratio minInterGrade = new Constant.Ratio(
-                0.1,
-                "Default minimum interpretation grade");
+        private final Constant.Ratio minInterGrade = new Constant.Ratio(0.1,
+                                                                        "Default minimum interpretation grade");
 
-        private final Evaluation.Grade keyAlterMinGrade1 = new Evaluation.Grade(
-                0.10,
-                "Minimum grade for a key item symbol, phase 1 (component)");
+        private final Evaluation.Grade keyAlterMinGrade1 = new Evaluation.Grade(0.10,
+                                                                                "Minimum grade for a key item symbol, phase 1 (component)");
 
-        private final Evaluation.Grade timeMinGrade = new Evaluation.Grade(
-                0.10,
-                "Minimum grade for a time sig");
+        private final Evaluation.Grade timeMinGrade = new Evaluation.Grade(0.10,
+                                                                           "Minimum grade for a time sig");
 
-        private final Evaluation.Grade clefMinGrade = new Evaluation.Grade(
-                0.03,
-                "Minimum grade for a clef");
+        private final Evaluation.Grade clefMinGrade = new Evaluation.Grade(0.03,
+                                                                           "Minimum grade for a clef");
 
-        private final Evaluation.Grade keySigMinGrade = new Evaluation.Grade(
-                0.01,
-                "Minimum grade for a key signature");
+        private final Evaluation.Grade keySigMinGrade = new Evaluation.Grade(0.01,
+                                                                             "Minimum grade for a key signature");
 
-        private final Evaluation.Grade keyAlterMinGrade2 = new Evaluation.Grade(
-                0.01,
-                "Minimum grade for a key item symbol, phase 2 (staff slice)");
+        private final Evaluation.Grade keyAlterMinGrade2 = new Evaluation.Grade(0.01,
+                                                                                "Minimum grade for a key item symbol, phase 2 (staff slice)");
     }
 }

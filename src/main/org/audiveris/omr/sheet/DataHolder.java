@@ -52,12 +52,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "holder")
 public class DataHolder<T>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            DataHolder.class);
+    private static final Logger logger = LoggerFactory.getLogger(DataHolder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing sheet. */
     protected Sheet sheet;
 
@@ -71,7 +68,6 @@ public class DataHolder<T>
     @XmlAttribute(name = "path")
     private final String pathString;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code DataHolder} object.
      */
@@ -98,7 +94,6 @@ public class DataHolder<T>
         this.pathString = pathString;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Return the handled data.
      *
@@ -117,8 +112,8 @@ public class DataHolder<T>
                     Unmarshaller um = jaxbContext.createUnmarshaller();
 
                     // Open book file system
-                    Path dataFile = book.openSheetFolder(sheet.getStub().getNumber())
-                            .resolve(pathString);
+                    Path dataFile = book.openSheetFolder(sheet.getStub().getNumber()).resolve(
+                            pathString);
                     logger.debug("path: {}", dataFile);
 
                     InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ);

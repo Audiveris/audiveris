@@ -41,15 +41,12 @@ import java.util.Objects;
  */
 public class PageReduction
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PageReduction.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related page. */
     private final Page page;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new PageReduction object.
      *
@@ -60,7 +57,6 @@ public class PageReduction
         this.page = page;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // reduce //
     //--------//
@@ -134,7 +130,6 @@ public class PageReduction
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // PartCandidate //
     //---------------//
@@ -144,17 +139,14 @@ public class PageReduction
     private static class PartCandidate
             implements Candidate
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Part systemPart;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public PartCandidate (Part part)
         {
             this.systemPart = part;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String getAbbreviation ()
         {

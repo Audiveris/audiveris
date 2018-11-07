@@ -39,12 +39,10 @@ import java.util.List;
 public class CircleModel
         implements Model
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Underlying circle. */
     private final Circle circle;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new CircleModel object.
      *
@@ -79,7 +77,6 @@ public class CircleModel
         this.circle = circle;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Factory method to try to create a valuable circle model.
      *

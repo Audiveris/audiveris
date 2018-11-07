@@ -31,7 +31,6 @@ import javax.swing.tree.TreePath;
 public abstract class AbstractTreeTableModel
         implements TreeTableModel
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * DOCUMENT ME!
@@ -43,7 +42,6 @@ public abstract class AbstractTreeTableModel
      */
     protected Object root;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractTreeTableModel object.
      *
@@ -54,7 +52,6 @@ public abstract class AbstractTreeTableModel
         this.root = root;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------------//
     // addTreeModelListener //
     //----------------------//

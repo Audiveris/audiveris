@@ -30,17 +30,15 @@ import org.audiveris.omr.check.Failure;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.NearLine;
-import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.dynamic.StickFactory;
 import org.audiveris.omr.glyph.dynamic.StraightFilament;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.run.Orientation;
-
 import static org.audiveris.omr.run.Orientation.*;
-
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
@@ -76,7 +74,6 @@ import java.util.List;
  */
 public class VerticalsBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -106,7 +103,6 @@ public class VerticalsBuilder
     /** Seed is not straight enough. */
     private static final Failure NON_STRAIGHT = new Failure("Stem-NonStraight");
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The system to process. */
     private final SystemInfo system;
 
@@ -122,7 +118,6 @@ public class VerticalsBuilder
     /** Suite of checks for a vertical seed. */
     private final SeedCheckSuite suite = new SeedCheckSuite();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new VerticalsBuilder object.
      *
@@ -138,7 +133,6 @@ public class VerticalsBuilder
         pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // addCheckBoard //
     //---------------//
@@ -147,9 +141,10 @@ public class VerticalsBuilder
      */
     public void addCheckBoard ()
     {
-        sheet.getStub().getAssembly().addBoard(
-                SheetTab.DATA_TAB,
-                new VertCheckBoard(sheet, sheet.getGlyphIndex().getEntityService(), eventClasses));
+        sheet.getStub().getAssembly().addBoard(SheetTab.DATA_TAB, new VertCheckBoard(sheet, sheet
+                                                                                     .getGlyphIndex()
+                                                                                     .getEntityService(),
+                                                                                     eventClasses));
     }
 
     //----------------//
@@ -307,7 +302,6 @@ public class VerticalsBuilder
         return factory.retrieveSticks(vSections, hSections);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // BlackCheck //
     //------------//
@@ -317,20 +311,13 @@ public class VerticalsBuilder
     private class BlackCheck
             extends Check<StickContext>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         protected BlackCheck ()
         {
-            super(
-                    "Black",
-                    "Check that black part of stick is long enough",
-                    constants.blackLow,
-                    constants.blackHigh,
-                    true,
-                    TOO_SHORT);
+            super("Black", "Check that black part of stick is long enough", constants.blackLow,
+                  constants.blackHigh, true, TOO_SHORT);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         // Retrieve the length data
         @Override
         protected double getValue (StickContext context)
@@ -350,20 +337,13 @@ public class VerticalsBuilder
     private class CleanCheck
             extends Check<StickContext>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         protected CleanCheck ()
         {
-            super(
-                    "Clean",
-                    "Check total clean length",
-                    constants.cleanLow,
-                    constants.cleanHigh,
-                    true,
-                    TOO_HIGH_ADJACENCY);
+            super("Clean", "Check total clean length", constants.cleanLow, constants.cleanHigh, true,
+                  TOO_HIGH_ADJACENCY);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected double getValue (StickContext context)
         {
@@ -377,9 +357,8 @@ public class VerticalsBuilder
                 // Sanity check
                 double invSlope = LineUtil.getInvertedSlope(start, stop);
 
-                if (Double.isNaN(invSlope)
-                    || Double.isInfinite(invSlope)
-                    || (Math.abs(invSlope) > 0.5)) {
+                if (Double.isNaN(invSlope) || Double.isInfinite(invSlope) || (Math.abs(invSlope)
+                                                                                      > 0.5)) {
                     if (stick.isVip()) {
                         logger.info("VIP too far from vertical {}", stick);
                     }
@@ -389,12 +368,14 @@ public class VerticalsBuilder
             }
 
             // Theoretical stem vertical lines on left and right sides
-            final Line2D leftLine = new Line2D.Double(
-                    new Point2D.Double(start.getX() - halfWidth, start.getY()),
-                    new Point2D.Double(stop.getX() - halfWidth, stop.getY()));
-            final Line2D rightLine = new Line2D.Double(
-                    new Point2D.Double(start.getX() + halfWidth, start.getY()),
-                    new Point2D.Double(stop.getX() + halfWidth, stop.getY()));
+            final Line2D leftLine = new Line2D.Double(new Point2D.Double(start.getX() - halfWidth,
+                                                                         start.getY()),
+                                                      new Point2D.Double(stop.getX() - halfWidth,
+                                                                         stop.getY()));
+            final Line2D rightLine = new Line2D.Double(new Point2D.Double(start.getX() + halfWidth,
+                                                                          start.getY()),
+                                                       new Point2D.Double(stop.getX() + halfWidth,
+                                                                          stop.getY()));
             final Rectangle stickBox = stick.getBounds();
 
             // Inspect each horizontal row of the stick
@@ -481,15 +462,8 @@ public class VerticalsBuilder
             }
 
             if (stick.isVip()) {
-                logger.info(
-                        "#{} gap:{} white:{} both:{} left:{} right:{} clean:{}",
-                        stick.getId(),
-                        largestGap,
-                        whiteCount,
-                        bothCount,
-                        leftCount,
-                        rightCount,
-                        cleanCount);
+                logger.info("#{} gap:{} white:{} both:{} left:{} right:{} clean:{}", stick.getId(),
+                            largestGap, whiteCount, bothCount, leftCount, rightCount, cleanCount);
             }
 
             // Side effect: update context data
@@ -507,61 +481,45 @@ public class VerticalsBuilder
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio minSideRatio = new Constant.Ratio(
-                0.4,
-                "Minimum ratio of filament length to be actually enlarged");
+        private final Constant.Ratio minSideRatio = new Constant.Ratio(0.4,
+                                                                       "Minimum ratio of filament length to be actually enlarged");
 
-        private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(
-                1.5,
-                "Minimum length for core sections");
+        private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(1.5,
+                                                                               "Minimum length for core sections");
 
-        private final Scale.Fraction beltMarginDx = new Scale.Fraction(
-                0.15,
-                "Horizontal belt margin checked around stem");
+        private final Scale.Fraction beltMarginDx = new Scale.Fraction(0.15,
+                                                                       "Horizontal belt margin checked around stem");
 
-        private final Check.Grade minCheckResult = new Check.Grade(
-                0.2,
-                "Minimum result for suite of check");
+        private final Check.Grade minCheckResult = new Check.Grade(0.2,
+                                                                   "Minimum result for suite of check");
 
-        private final Check.Grade goodCheckResult = new Check.Grade(
-                0.5,
-                "Good result for suite of check");
+        private final Check.Grade goodCheckResult = new Check.Grade(0.5,
+                                                                    "Good result for suite of check");
 
-        private final Scale.Fraction blackHigh = new Scale.Fraction(
-                2.5,
-                "High minimum length for a stem");
+        private final Scale.Fraction blackHigh = new Scale.Fraction(2.5,
+                                                                    "High minimum length for a stem");
 
-        private final Scale.Fraction blackLow = new Scale.Fraction(
-                1.25,
-                "Low minimum length for a stem");
+        private final Scale.Fraction blackLow = new Scale.Fraction(1.25,
+                                                                   "Low minimum length for a stem");
 
-        private final Scale.Fraction cleanHigh = new Scale.Fraction(
-                2.0,
-                "High minimum clean length for a stem");
+        private final Scale.Fraction cleanHigh = new Scale.Fraction(2.0,
+                                                                    "High minimum clean length for a stem");
 
-        private final Scale.Fraction cleanLow = new Scale.Fraction(
-                0.5,
-                "Low minimum clean length for a stem");
+        private final Scale.Fraction cleanLow = new Scale.Fraction(0.5,
+                                                                   "Low minimum clean length for a stem");
 
-        private final Scale.Fraction gapHigh = new Scale.Fraction(
-                0.3,
-                "Maximum vertical gap between stem segments");
+        private final Scale.Fraction gapHigh = new Scale.Fraction(0.3,
+                                                                  "Maximum vertical gap between stem segments");
 
-        private final Constant.Double slopeHigh = new Constant.Double(
-                "tangent",
-                0.06,
-                "Maximum difference with global slope");
+        private final Constant.Double slopeHigh = new Constant.Double("tangent", 0.06,
+                                                                      "Maximum difference with global slope");
 
-        private final Scale.Fraction straightHigh = new Scale.Fraction(
-                0.2,
-                "High maximum distance to average stem line");
+        private final Scale.Fraction straightHigh = new Scale.Fraction(0.2,
+                                                                       "High maximum distance to average stem line");
 
-        private final Constant.Double maxCoTangentForCheck = new Constant.Double(
-                "cotangent",
-                0.1,
-                "Maximum cotangent for visual check");
+        private final Constant.Double maxCoTangentForCheck = new Constant.Double("cotangent", 0.1,
+                                                                                 "Maximum cotangent for visual check");
     }
 
     //----------//
@@ -573,20 +531,13 @@ public class VerticalsBuilder
     private class GapCheck
             extends Check<StickContext>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         protected GapCheck ()
         {
-            super(
-                    "Gap",
-                    "Check size of largest hole in stick",
-                    Scale.Fraction.ZERO,
-                    constants.gapHigh,
-                    false,
-                    TOO_HOLLOW);
+            super("Gap", "Check size of largest hole in stick", Scale.Fraction.ZERO,
+                  constants.gapHigh, false, TOO_HOLLOW);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         // Retrieve the length data
         @Override
         protected double getValue (StickContext context)
@@ -604,17 +555,13 @@ public class VerticalsBuilder
     private class SeedCheckSuite
             extends CheckSuite<StickContext>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Create a new instance
          */
         public SeedCheckSuite ()
         {
-            super(
-                    "Seed",
-                    constants.minCheckResult.getValue(),
-                    constants.goodCheckResult.getValue());
+            super("Seed", constants.minCheckResult.getValue(), constants.goodCheckResult.getValue());
 
             add(1, new SlopeCheck());
             add(1, new StraightCheck());
@@ -627,7 +574,6 @@ public class VerticalsBuilder
             }
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void dumpSpecific (StringBuilder sb)
         {
@@ -645,20 +591,13 @@ public class VerticalsBuilder
     private class SlopeCheck
             extends Check<StickContext>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         protected SlopeCheck ()
         {
-            super(
-                    "Slope",
-                    "Check that stick is vertical, according to global slope",
-                    Constant.Double.ZERO,
-                    constants.slopeHigh,
-                    false,
-                    NON_VERTICAL);
+            super("Slope", "Check that stick is vertical, according to global slope",
+                  Constant.Double.ZERO, constants.slopeHigh, false, NON_VERTICAL);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         // Retrieve the difference between stick slope and global slope
         @Override
         protected double getValue (StickContext context)
@@ -679,7 +618,6 @@ public class VerticalsBuilder
     //--------------//
     private static class StickContext
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** The stick being checked. */
         NearLine stick;
@@ -693,13 +631,11 @@ public class VerticalsBuilder
         /** Total length of white portions of stem. */
         int white;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public StickContext (NearLine stick)
         {
             this.stick = stick;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -716,20 +652,13 @@ public class VerticalsBuilder
     private class StraightCheck
             extends Check<StickContext>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         protected StraightCheck ()
         {
-            super(
-                    "Straight",
-                    "Check that stick is straight",
-                    Scale.Fraction.ZERO,
-                    constants.straightHigh,
-                    false,
-                    NON_STRAIGHT);
+            super("Straight", "Check that stick is straight", Scale.Fraction.ZERO,
+                  constants.straightHigh, false, NON_STRAIGHT);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected double getValue (StickContext context)
         {
@@ -749,11 +678,9 @@ public class VerticalsBuilder
     private static class VertCheckBoard
             extends CheckBoard<StickContext>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Sheet sheet;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public VertCheckBoard (Sheet sheet,
                                SelectionService eventService,
                                Class[] eventList)
@@ -762,7 +689,6 @@ public class VerticalsBuilder
             this.sheet = sheet;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void onEvent (UserEvent event)
         {
@@ -778,14 +704,14 @@ public class VerticalsBuilder
 
                     if (glyph != null) {
                         // Make sure this is a rather vertical stick
-                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.getValue()) {
+                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck
+                                .getValue()) {
                             // Apply the check suite
                             SystemManager systemManager = sheet.getSystemManager();
 
                             for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
-                                applySuite(
-                                        new VerticalsBuilder(system).getSuite(),
-                                        new StickContext(glyph));
+                                applySuite(new VerticalsBuilder(system).getSuite(),
+                                           new StickContext(glyph));
 
                                 return;
                             }

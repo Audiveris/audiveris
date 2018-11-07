@@ -75,11 +75,9 @@ public class SIGraph
         extends DefaultListenableGraph<Inter, Relation>
         implements DirectedGraph<Inter, Relation>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SIGraph.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Dedicated system. */
     @Navigable(false)
     private SystemInfo system;
@@ -87,7 +85,6 @@ public class SIGraph
     /** Content for differed populating after unmarshalling. */
     private SigValue sigValue;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SIGraph object at system level.
      *
@@ -120,7 +117,6 @@ public class SIGraph
         super(new DirectedMultigraph(Relation.class), true /* reuseEvents */);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // addVertex //
     //-----------//
@@ -183,8 +179,8 @@ public class SIGraph
     public double computeContextualGrade (Inter inter)
     {
         final List<Support> supports = getSupports(inter);
-        final double cg = supports.isEmpty() ? inter.getGrade()
-                : computeContextualGrade(inter, supports);
+        final double cg = supports.isEmpty() ? inter.getGrade() : computeContextualGrade(inter,
+                                                                                         supports);
         inter.setContextualGrade(cg);
 
         return cg;
@@ -1035,9 +1031,8 @@ public class SIGraph
                 Relation rel = it.next();
 
                 if (containsEdge(rel)) {
-                    final double cp = Math.max(
-                            getEdgeSource(rel).getBestGrade(),
-                            getEdgeTarget(rel).getBestGrade());
+                    final double cp = Math.max(getEdgeSource(rel).getBestGrade(), getEdgeTarget(rel)
+                                               .getBestGrade());
 
                     if (bestCP < cp) {
                         bestCP = cp;
@@ -1057,10 +1052,8 @@ public class SIGraph
                 final Inter weaker = (scp < tcp) ? source : target;
 
                 if (weaker.isVip()) {
-                    logger.info(
-                            "VIP conflict {} deleting weaker {}",
-                            bestRel.toLongString(this),
-                            weaker);
+                    logger.info("VIP conflict {} deleting weaker {}", bestRel.toLongString(this),
+                                weaker);
                 }
 
                 // Which inters were involved in some support relation with this weaker inter?
@@ -1290,7 +1283,6 @@ public class SIGraph
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // Sequence //
     //----------//
@@ -1306,20 +1298,17 @@ public class SIGraph
      */
     private static class Sequence
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // The sequence of interpretations statuses
         // This line is parallel to the list of inters considered
         int[] line;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Sequence (int n)
         {
             line = new int[n];
             Arrays.fill(line, 0);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public Sequence copy ()
         {
             Sequence newSeq = new Sequence(line.length);
@@ -1335,17 +1324,14 @@ public class SIGraph
     private static class ShapePredicate
             implements Predicate<Inter>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Shape shape;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ShapePredicate (Shape shape)
         {
             this.shape = shape;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean check (Inter inter)
         {
@@ -1359,17 +1345,14 @@ public class SIGraph
     private static class ShapesPredicate
             implements Predicate<Inter>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Collection<Shape> shapes;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ShapesPredicate (Collection<Shape> shapes)
         {
             this.shapes = shapes;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean check (Inter inter)
         {
@@ -1383,13 +1366,11 @@ public class SIGraph
     private static class StaffClassPredicate
             implements Predicate<Inter>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Staff staff;
 
         private final Class classe;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public StaffClassPredicate (Staff staff,
                                     Class classe)
         {
@@ -1397,12 +1378,11 @@ public class SIGraph
             this.classe = classe;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean check (Inter inter)
         {
-            return !inter.isRemoved() && (inter.getStaff() == staff)
-                   && ((classe == null) || classe.isInstance(inter));
+            return !inter.isRemoved() && (inter.getStaff() == staff) && ((classe == null) || classe
+                    .isInstance(inter));
         }
     }
 }

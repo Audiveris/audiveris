@@ -22,6 +22,7 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Grades;
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -42,7 +43,6 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omr.glyph.Shape;
 
 /**
  * Class {@code SentenceInter} represents a full sentence of words.
@@ -59,10 +59,8 @@ public class SentenceInter
         extends AbstractInter
         implements InterEnsemble
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SentenceInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(SentenceInter.class);
 
     /** For ordering sentences by their de-skewed ordinate. */
     public static final Comparator<SentenceInter> byOrdinate = new Comparator<SentenceInter>()
@@ -73,13 +71,11 @@ public class SentenceInter
         {
             final Skew skew = s1.getSig().getSystem().getSkew();
 
-            return Double.compare(
-                    skew.deskewed(s1.getLocation()).getY(),
-                    skew.deskewed(s2.getLocation()).getY());
+            return Double.compare(skew.deskewed(s1.getLocation()).getY(), skew.deskewed(s2
+                                  .getLocation()).getY());
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -93,7 +89,6 @@ public class SentenceInter
     @XmlAttribute
     protected TextRole role;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SentenceInter} object.
      *
@@ -136,7 +131,6 @@ public class SentenceInter
         this.role = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -194,11 +188,10 @@ public class SentenceInter
      */
     public static SentenceInter create (TextLine line)
     {
-        SentenceInter sentence = new SentenceInter(
-                line.getBounds(),
-                line.getConfidence() * Grades.intrinsicRatio,
-                line.getMeanFont(),
-                line.getRole());
+        SentenceInter sentence = new SentenceInter(line.getBounds(), line.getConfidence()
+                                                                             * Grades.intrinsicRatio,
+                                                   line
+                                                           .getMeanFont(), line.getRole());
 
         return sentence;
     }

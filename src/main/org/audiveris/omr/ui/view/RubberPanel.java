@@ -26,9 +26,7 @@ import org.audiveris.omr.ui.PixelCount;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
-
 import static org.audiveris.omr.ui.selection.SelectionHint.*;
-
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.util.ClassUtil;
@@ -75,13 +73,11 @@ public class RubberPanel
         extends JPanel
         implements ChangeListener, MouseMonitor, EventSubscriber<UserEvent>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(RubberPanel.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Current display zoom, if any. */
     protected Zoom zoom;
 
@@ -94,7 +90,6 @@ public class RubberPanel
     /** Location Service if any (for Location event). */
     protected SelectionService locationService;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a bare RubberPanel, assuming zoom and rubber will be assigned later.
      */
@@ -120,7 +115,6 @@ public class RubberPanel
         logger.debug("new RubberPanel zoom={} rubber={}", zoom, rubber);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // contextAdded //
     //--------------//
@@ -170,9 +164,8 @@ public class RubberPanel
     public Point getPanelCenter ()
     {
         Rectangle vr = getVisibleRect();
-        Point pt = new Point(
-                zoom.unscaled(vr.x + (vr.width / 2)),
-                zoom.unscaled(vr.y + (vr.height / 2)));
+        Point pt = new Point(zoom.unscaled(vr.x + (vr.width / 2)), zoom.unscaled(vr.y + (vr.height
+                                                                                                 / 2)));
 
         logger.debug("getPanelCenter={}", pt);
 
@@ -441,7 +434,7 @@ public class RubberPanel
     //-------------------//
     /**
      * Update the display, so that the location rectangle gets visible.
-     *
+     * <p>
      * <b>NOTA</b>: Subclasses that override this method should call this
      * super implementation or the display will not be updated by default.
      *
@@ -469,17 +462,14 @@ public class RubberPanel
             // Check whether the rectangle is fully visible,
             // if not, scroll so as to make (most of) it visible
             Rectangle scaledRect = zoom.scaled(rect);
-            Point center = new Point(
-                    scaledRect.x + (scaledRect.width / 2),
-                    scaledRect.y + (scaledRect.height / 2));
+            Point center = new Point(scaledRect.x + (scaledRect.width / 2), scaledRect.y
+                                                                                    + (scaledRect.height
+                                                                                       / 2));
 
             if (centered) {
                 Rectangle vr = getVisibleRect();
-                scaledRect = new Rectangle(
-                        center.x - (vr.width / 2),
-                        center.y - (vr.height / 2),
-                        vr.width,
-                        vr.height);
+                scaledRect = new Rectangle(center.x - (vr.width / 2), center.y - (vr.height / 2),
+                                           vr.width, vr.height);
             } else {
                 int margin = constants.focusMargin.getValue();
 
@@ -706,14 +696,12 @@ public class RubberPanel
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final PixelCount focusMargin = new PixelCount(20, "Margin visible around a focus");
     }

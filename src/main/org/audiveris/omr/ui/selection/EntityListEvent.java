@@ -21,9 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.ui.selection;
 
-import java.util.ArrayList;
 import org.audiveris.omr.util.Entity;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -42,12 +42,10 @@ import java.util.List;
 public class EntityListEvent<E extends Entity>
         extends UserEvent
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The selected entity list, which may be empty but not null. */
     private final List<E> entities;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code EntityListEvent} object.
      *
@@ -92,7 +90,6 @@ public class EntityListEvent<E extends Entity>
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//

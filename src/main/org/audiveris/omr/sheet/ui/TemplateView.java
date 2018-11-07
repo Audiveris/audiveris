@@ -70,17 +70,14 @@ import java.awt.image.BufferedImage;
 public class TemplateView
         extends ImageView
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TemplateView.class);
 
     private static final AlphaComposite templateComposite = AlphaComposite.getInstance(
-            AlphaComposite.SRC_OVER,
-            0.25f);
+            AlphaComposite.SRC_OVER, 0.25f);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final Sheet sheet;
 
     private final DistanceTable table;
@@ -91,7 +88,6 @@ public class TemplateView
     /** Template reference point. */
     private Point refPoint;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TemplateView} object.
      *
@@ -113,7 +109,6 @@ public class TemplateView
         templateService.subscribeStrongly(AnchoredTemplateEvent.class, this);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // contextSelected //
     //-----------------//
@@ -237,17 +232,14 @@ public class TemplateView
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio minZoomRatio = new Constant.Ratio(
-                4.0,
-                "Minimum zoom ratio to show template key points");
+        private final Constant.Ratio minZoomRatio = new Constant.Ratio(4.0,
+                                                                       "Minimum zoom ratio to show template key points");
     }
 }

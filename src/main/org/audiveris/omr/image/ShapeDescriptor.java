@@ -66,18 +66,14 @@ import java.util.Set;
  */
 public class ShapeDescriptor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ShapeDescriptor.class);
 
     /** All shapes with hole(s). */
-    private static final EnumSet shapesWithHoles = EnumSet.of(
-            NOTEHEAD_VOID,
-            NOTEHEAD_VOID_SMALL,
-            WHOLE_NOTE,
-            WHOLE_NOTE_SMALL);
+    private static final EnumSet shapesWithHoles = EnumSet.of(NOTEHEAD_VOID, NOTEHEAD_VOID_SMALL,
+                                                              WHOLE_NOTE, WHOLE_NOTE_SMALL);
 
     /** Color for foreground pixels. */
     private static final int FORE = Color.BLACK.getRGB();
@@ -91,7 +87,6 @@ public class ShapeDescriptor
     /** Color for irrelevant pixels. */
     private static final int IRRELEVANT = new Color(0, 0, 0, 0).getRGB(); // Fully transparent
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final Shape shape;
 
     private final int pointSize;
@@ -104,7 +99,6 @@ public class ShapeDescriptor
     /** Symbol height. */
     private int height = -1;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ShapeDescriptor object.
      *
@@ -120,7 +114,6 @@ public class ShapeDescriptor
         template = createTemplate(shape, pointSize);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // main //
     //------//
@@ -567,14 +560,8 @@ public class ShapeDescriptor
         final List<PixelDistance> keyPoints = getKeyPoints(img, distances);
 
         // Generate the template instance
-        Template template = new Template(
-                shape,
-                pointSize,
-                symbol,
-                width,
-                height,
-                keyPoints,
-                symbolBounds);
+        Template template = new Template(shape, pointSize, symbol, width, height, keyPoints,
+                                         symbolBounds);
 
         // Add specific anchor points, if any
         addAnchors(template, img);
@@ -876,25 +863,20 @@ public class ShapeDescriptor
         return new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean keepTemplates = new Constant.Boolean(
-                false,
-                "Should we keep the templates images?");
+        private final Constant.Boolean keepTemplates = new Constant.Boolean(false,
+                                                                            "Should we keep the templates images?");
 
-        private final Constant.Ratio stemDx = new Constant.Ratio(
-                0.05,
-                "(Ratio) abscissa of stem anchor WRT symbol width");
+        private final Constant.Ratio stemDx = new Constant.Ratio(0.05,
+                                                                 "(Ratio) abscissa of stem anchor WRT symbol width");
 
-        private final Constant.Ratio stemDy = new Constant.Ratio(
-                0.25,
-                "(Ratio) ordinate of stem anchor WRT symbol height");
+        private final Constant.Ratio stemDy = new Constant.Ratio(0.25,
+                                                                 "(Ratio) ordinate of stem anchor WRT symbol height");
     }
 }

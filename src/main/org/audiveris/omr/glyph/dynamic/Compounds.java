@@ -40,7 +40,6 @@ import java.util.TreeSet;
  */
 public abstract class Compounds
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * No meant to be instantiated.
@@ -49,7 +48,6 @@ public abstract class Compounds
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // byReverseLength //
     //-----------------//
@@ -148,8 +146,8 @@ public abstract class Compounds
         // Analyze range of Y values
         int minVal = Integer.MAX_VALUE;
         int maxVal = Integer.MIN_VALUE;
-        int[] vals = (orientation == Orientation.HORIZONTAL) ? collector.getYValues()
-                : collector.getXValues();
+        int[] vals = (orientation == Orientation.HORIZONTAL) ? collector.getYValues() : collector
+                .getXValues();
 
         for (int i = 0, iBreak = collector.getSize(); i < iBreak; i++) {
             int val = vals[i];

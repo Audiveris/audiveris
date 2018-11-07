@@ -32,12 +32,10 @@ import java.util.Locale;
 public class BasicLegendreMoments
         implements LegendreMoments
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Resulting moments. */
     protected double[][] moments = new double[ORDER + 1][ORDER + 1];
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicLegendreMoments object.
      */
@@ -45,7 +43,6 @@ public class BasicLegendreMoments
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // distanceTo //
     //------------//
@@ -102,8 +99,7 @@ public class BasicLegendreMoments
                         sb.append(" ");
                     }
 
-                    sb.append(
-                            String.format(Locale.US, "%04.0f", 1000 * getMoment(m, n)));
+                    sb.append(String.format(Locale.US, "%04.0f", 1000 * getMoment(m, n)));
                 }
             }
         }

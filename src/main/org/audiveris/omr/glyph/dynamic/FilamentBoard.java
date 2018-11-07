@@ -33,7 +33,6 @@ import org.audiveris.omr.ui.selection.EntityService;
 public class FilamentBoard
         extends EntityBoard<Filament>
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code FilamentBoard} object.

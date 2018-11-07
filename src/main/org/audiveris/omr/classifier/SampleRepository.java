@@ -96,12 +96,10 @@ import javax.swing.event.ChangeListener;
  */
 public class SampleRepository
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SampleRepository.class);
+    private static final Logger logger = LoggerFactory.getLogger(SampleRepository.class);
 
     /** Should we support tribes?. */
     public static final boolean USE_TRIBES = constants.useTribes.isSet();
@@ -130,7 +128,6 @@ public class SampleRepository
      */
     private static final Pattern SAMPLES_PATTERN = Pattern.compile("(.*-)?(samples\\.zip)");
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Sheets, mapped by their unique name. */
     private final Map<String, SampleSheet> nameMap = new TreeMap<String, SampleSheet>();
 
@@ -164,7 +161,6 @@ public class SampleRepository
     /** To handle save on close. */
     private Application.ExitListener exitListener;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * (Private) constructor.
      * <p>
@@ -198,7 +194,6 @@ public class SampleRepository
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // addListener //
     //-------------//
@@ -374,21 +369,14 @@ public class SampleRepository
 
                 if ((s.getInterline() == interline) && s.getRunTable().equals(runTable)) {
                     if (s.getShape() != sample.getShape()) {
-                        logger.warn(
-                                "Conflicting shapes between {}/{} and {}/{}",
-                                getSheetName(sample),
-                                sample,
-                                getSheetName(s),
-                                s);
+                        logger.warn("Conflicting shapes between {}/{} and {}/{}", getSheetName(
+                                    sample), sample, getSheetName(s), s);
                         conflictings.add(sample);
                         conflictings.add(s);
                     } else {
-                        logger.debug(
-                                "Same runtable for {}/{} & {}/{}",
-                                getSheetName(sample),
-                                sample,
-                                getSheetName(s),
-                                s);
+                        logger
+                                .debug("Same runtable for {}/{} & {}/{}", getSheetName(sample),
+                                       sample, getSheetName(s), s);
                         redundants.add(s);
                         deleted[j] = true;
                     }
@@ -491,10 +479,8 @@ public class SampleRepository
             }
         }
 
-        return findSampleSheet(
-                sheet.getId(),
-                longSheetName,
-                sheet.getPicture().getTable(Picture.TableKey.BINARY));
+        return findSampleSheet(sheet.getId(), longSheetName, sheet.getPicture().getTable(
+                               Picture.TableKey.BINARY));
     }
 
     //-----------------//
@@ -1183,10 +1169,9 @@ public class SampleRepository
 
                 samplesRoot.getFileSystem().close();
             } else {
-                logger.info(
-                        "No {} in folder {}",
-                        samplesFile.getFileName(),
-                        samplesFile.getParent());
+                logger
+                        .info("No {} in folder {}", samplesFile.getFileName(), samplesFile
+                              .getParent());
             }
 
             loaded = true;
@@ -1620,10 +1605,8 @@ public class SampleRepository
                         SampleSheet sampleSheet = null;
 
                         if (desc == null) {
-                            logger.warn(
-                                    "Samples entry {} not declared in {} is ignored.",
-                                    folder,
-                                    SheetContainer.CONTAINER_ENTRY_NAME);
+                            logger.warn("Samples entry {} not declared in {} is ignored.", folder,
+                                        SheetContainer.CONTAINER_ENTRY_NAME);
                         } else {
                             boolean isSymbol = isSymbols(desc.getName());
 
@@ -1708,7 +1691,6 @@ public class SampleRepository
         }
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
     //--------------//
     // LoadListener //
     //-------------//
@@ -1718,7 +1700,6 @@ public class SampleRepository
      */
     public static interface LoadListener
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Called whenever a new sample sheet has been loaded.
@@ -1735,7 +1716,6 @@ public class SampleRepository
         void totalSheets (int total);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // AdditionEvent //
     //---------------//
@@ -1745,11 +1725,9 @@ public class SampleRepository
     public static class AdditionEvent
             extends ChangeEvent
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public final Sample sample; // The added sample
 
-        //~ Constructors ---------------------------------------------------------------------------
         public AdditionEvent (Sample sample,
                               SampleRepository repo)
         {
@@ -1767,11 +1745,9 @@ public class SampleRepository
     public static class RemovalEvent
             extends ChangeEvent
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public final Sample sample; // The removed sample
 
-        //~ Constructors ---------------------------------------------------------------------------
         public RemovalEvent (Sample sample,
                              SampleRepository repo)
         {
@@ -1789,11 +1765,9 @@ public class SampleRepository
     public static class SheetRemovalEvent
             extends ChangeEvent
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public final Descriptor descriptor; // Descriptor of the removed sheet
 
-        //~ Constructors ---------------------------------------------------------------------------
         public SheetRemovalEvent (Descriptor descriptor,
                                   SampleRepository repo)
         {
@@ -1808,15 +1782,12 @@ public class SampleRepository
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch?");
 
-        private final Constant.Boolean useTribes = new Constant.Boolean(
-                false,
-                "Should we support tribes?");
+        private final Constant.Boolean useTribes = new Constant.Boolean(false,
+                                                                        "Should we support tribes?");
     }
 
     //------------------------//
@@ -1828,22 +1799,20 @@ public class SampleRepository
     private class RepositoryExitListener
             implements Application.ExitListener
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public RepositoryExitListener ()
         {
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean canExit (EventObject eo)
         {
             // Check whether the repository has been saved (or user has declined)
             if (isModified()) {
                 SingleFrameApplication appli = (SingleFrameApplication) Application.getInstance();
-                int answer = JOptionPane.showConfirmDialog(
-                        appli.getMainFrame(),
-                        "Save " + SampleRepository.this + "?");
+                int answer = JOptionPane.showConfirmDialog(appli.getMainFrame(), "Save "
+                                                                                         + SampleRepository.this
+                                                                                 + "?");
 
                 if (answer == JOptionPane.YES_OPTION) {
                     storeRepository();

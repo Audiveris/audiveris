@@ -44,23 +44,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AlterHeadRelation
         extends AbstractConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AlterHeadRelation.class);
 
-    private static final double[] IN_WEIGHTS = new double[]{
-        constants.xInWeight.getValue(),
-        constants.yWeight.getValue()
-    };
+    private static final double[] IN_WEIGHTS = new double[]{constants.xInWeight.getValue(),
+                                                            constants.yWeight.getValue()};
 
-    private static final double[] OUT_WEIGHTS = new double[]{
-        constants.xOutWeight.getValue(),
-        constants.yWeight.getValue()
-    };
+    private static final double[] OUT_WEIGHTS = new double[]{constants.xOutWeight.getValue(),
+                                                             constants.yWeight.getValue()};
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -176,53 +170,41 @@ public class AlterHeadRelation
         return getYGapMaximum(manual);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio AccidentalCoeff = new Constant.Ratio(
-                3,
-                "Supporting coeff for (source) accidental");
+        private final Constant.Ratio AccidentalCoeff = new Constant.Ratio(3,
+                                                                          "Supporting coeff for (source) accidental");
 
-        private final Scale.Fraction yGapMax = new Scale.Fraction(
-                0.45,
-                "Maximum vertical gap between accid & note head");
+        private final Scale.Fraction yGapMax = new Scale.Fraction(0.45,
+                                                                  "Maximum vertical gap between accid & note head");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
-                0.6,
-                "Maximum vertical gap between manual accid & note head");
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(0.6,
+                                                                        "Maximum vertical gap between manual accid & note head");
 
-        private final Scale.Fraction xInGapMax = new Scale.Fraction(
-                0.2,
-                "Maximum horizontal overlap between accid & note head");
+        private final Scale.Fraction xInGapMax = new Scale.Fraction(0.2,
+                                                                    "Maximum horizontal overlap between accid & note head");
 
-        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(
-                0.3,
-                "Maximum horizontal overlap between manual accid & note head");
+        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(0.3,
+                                                                          "Maximum horizontal overlap between manual accid & note head");
 
-        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
-                2.0,
-                "Maximum horizontal gap between accid & note head");
+        private final Scale.Fraction xOutGapMax = new Scale.Fraction(2.0,
+                                                                     "Maximum horizontal gap between accid & note head");
 
-        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
-                3.0,
-                "Maximum horizontal gap between manual accid & note head");
+        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(3.0,
+                                                                           "Maximum horizontal gap between manual accid & note head");
 
-        private final Constant.Ratio xInWeight = new Constant.Ratio(
-                1,
-                "Relative impact weight for xInGap");
+        private final Constant.Ratio xInWeight = new Constant.Ratio(1,
+                                                                    "Relative impact weight for xInGap");
 
-        private final Constant.Ratio xOutWeight = new Constant.Ratio(
-                1,
-                "Relative impact weight for xOutGap");
+        private final Constant.Ratio xOutWeight = new Constant.Ratio(1,
+                                                                     "Relative impact weight for xOutGap");
 
-        private final Constant.Ratio yWeight = new Constant.Ratio(
-                4,
-                "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(4,
+                                                                  "Relative impact weight for yGap");
     }
 }

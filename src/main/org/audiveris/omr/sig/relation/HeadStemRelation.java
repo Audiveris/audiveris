@@ -57,19 +57,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class HeadStemRelation
         extends AbstractStemConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            HeadStemRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(HeadStemRelation.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Which side of head is used?. */
     @XmlAttribute(name = "head-side")
     private HorizontalSide headSide;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadStemRelation} object.
      */
@@ -77,7 +73,6 @@ public class HeadStemRelation
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -187,8 +182,8 @@ public class HeadStemRelation
      */
     public boolean isInvading ()
     {
-        return (dy <= constants.maxInvadingDy.getValue())
-               && (dx <= constants.maxInvadingDx.getValue());
+        return (dy <= constants.maxInvadingDy.getValue()) && (dx <= constants.maxInvadingDx
+                .getValue());
     }
 
     //----------------//
@@ -292,57 +287,44 @@ public class HeadStemRelation
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio headSupportCoeff = new Constant.Ratio(
-                1,
-                "Value for (source) head coeff in support formula");
+        private final Constant.Ratio headSupportCoeff = new Constant.Ratio(1,
+                                                                           "Value for (source) head coeff in support formula");
 
-        private final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
-                1,
-                "Value for (target) stem coeff in support formula");
+        private final Constant.Ratio stemSupportCoeff = new Constant.Ratio(1,
+                                                                           "Value for (target) stem coeff in support formula");
 
-        private final Scale.Fraction xInGapMax = new Scale.Fraction(
-                0.3,
-                "Maximum horizontal overlap between stem & head");
+        private final Scale.Fraction xInGapMax = new Scale.Fraction(0.3,
+                                                                    "Maximum horizontal overlap between stem & head");
 
-        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(
-                0.45,
-                "Maximum manual horizontal overlap between stem & head");
+        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(0.45,
+                                                                          "Maximum manual horizontal overlap between stem & head");
 
-        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
-                0.275,
-                "Maximum horizontal gap between stem & head");
+        private final Scale.Fraction xOutGapMax = new Scale.Fraction(0.275,
+                                                                     "Maximum horizontal gap between stem & head");
 
-        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
-                0.35,
-                "Maximum manual horizontal gap between stem & head");
+        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(0.35,
+                                                                           "Maximum manual horizontal gap between stem & head");
 
-        private final Scale.Fraction yGapMax = new Scale.Fraction(
-                0.8,
-                "Maximum vertical gap between stem & head");
+        private final Scale.Fraction yGapMax = new Scale.Fraction(0.8,
+                                                                  "Maximum vertical gap between stem & head");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
-                1.2,
-                "Maximum manual vertical gap between stem & head");
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(1.2,
+                                                                        "Maximum manual vertical gap between stem & head");
 
-        private final Constant.Ratio anchorHeightRatio = new Constant.Ratio(
-                0.25,
-                "Vertical margin for stem anchor portion (as ratio of head height)");
+        private final Constant.Ratio anchorHeightRatio = new Constant.Ratio(0.25,
+                                                                            "Vertical margin for stem anchor portion (as ratio of head height)");
 
-        private final Scale.Fraction maxInvadingDx = new Scale.Fraction(
-                0.05,
-                "Maximum invading horizontal gap between stem & head");
+        private final Scale.Fraction maxInvadingDx = new Scale.Fraction(0.05,
+                                                                        "Maximum invading horizontal gap between stem & head");
 
-        private final Scale.Fraction maxInvadingDy = new Scale.Fraction(
-                0.0,
-                "Maximum invading vertical gap between stem & head");
+        private final Scale.Fraction maxInvadingDy = new Scale.Fraction(0.0,
+                                                                        "Maximum invading vertical gap between stem & head");
     }
 }

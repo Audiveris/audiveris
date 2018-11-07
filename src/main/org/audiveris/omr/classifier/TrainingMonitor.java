@@ -30,7 +30,6 @@ package org.audiveris.omr.classifier;
 public interface TrainingMonitor //        extends IterationListener
 
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     public void epochStarted (int epoch);
 

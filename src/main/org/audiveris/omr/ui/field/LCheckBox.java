@@ -34,7 +34,6 @@ import javax.swing.JCheckBox;
 public class LCheckBox
         extends LField<JCheckBox>
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new LCheckBox object.
@@ -48,7 +47,6 @@ public class LCheckBox
         super(label, tip, new JCheckBox());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // addActionListener //
     //-------------------//

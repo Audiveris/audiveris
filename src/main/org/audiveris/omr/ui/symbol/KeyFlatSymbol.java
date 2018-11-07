@@ -29,7 +29,6 @@ import org.audiveris.omr.glyph.Shape;
 public class KeyFlatSymbol
         extends KeySymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new KeyFlatSymbol object.
@@ -45,7 +44,6 @@ public class KeyFlatSymbol
         super(key, isIcon, shape, 98);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//

@@ -54,7 +54,6 @@ import java.util.TreeSet;
 public class SectionCompound
         extends AbstractWeightedEntity
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * Sections that compose this compound.
@@ -72,7 +71,6 @@ public class SectionCompound
     /** Cached bounds. */
     protected Rectangle bounds;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new {@code SectionCompound} object.
      */
@@ -89,7 +87,6 @@ public class SectionCompound
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // addSection //
     //------------//
@@ -450,9 +447,8 @@ public class SectionCompound
         final ByteProcessor buffer = toBuffer();
 
         // Allocate and populate properly oriented run table
-        final RunTableFactory factory = new RunTableFactory(
-                (buffer.getWidth() > buffer.getHeight()) ? HORIZONTAL : VERTICAL,
-                null);
+        final RunTableFactory factory = new RunTableFactory((buffer.getWidth() > buffer.getHeight())
+                ? HORIZONTAL : VERTICAL, null);
         final RunTable runTable = factory.createTable(buffer);
 
         // Allocate glyph with proper offset
@@ -526,24 +522,20 @@ public class SectionCompound
         bounds = null;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // Constructor //
     //-------------//
     public static final class Constructor
             implements CompoundFactory.CompoundConstructor
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final int interline;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Constructor (int interline)
         {
             this.interline = interline;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public SectionCompound newInstance ()
         {

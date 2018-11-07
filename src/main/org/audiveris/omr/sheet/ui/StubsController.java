@@ -91,12 +91,10 @@ import javax.swing.event.ChangeListener;
 public class StubsController
         implements ChangeListener, PropertyChangeListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            StubsController.class);
+    private static final Logger logger = LoggerFactory.getLogger(StubsController.class);
 
     /** Events that can be published on sheet service. */
     private static final Class<?>[] eventsWritten = new Class<?>[]{StubEvent.class};
@@ -104,7 +102,6 @@ public class StubsController
     /** The single instance of this class. */
     private static volatile StubsController INSTANCE;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The concrete tabbed pane, one tab per sheet stub. */
     private final JTabbedPane stubsPane;
 
@@ -114,7 +111,6 @@ public class StubsController
     /** The global event service which publishes the currently selected sheet stub. */
     private final SelectionService stubService = new SelectionService("stubService", eventsWritten);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the {@code StubsController} singleton.
      */
@@ -129,14 +125,13 @@ public class StubsController
         stubsPane.addChangeListener(this);
 
         // Listener on invalid sheets display
-        ViewParameters.getInstance()
-                .addPropertyChangeListener(ViewParameters.INVALID_SHEET_DISPLAY, this);
+        ViewParameters.getInstance().addPropertyChangeListener(ViewParameters.INVALID_SHEET_DISPLAY,
+                                                               this);
 
         // Key binding
         bindKeys();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // addAssembly //
     //-------------//
@@ -972,31 +967,23 @@ public class StubsController
     private void insertAssembly (SheetStub stub,
                                  int index)
     {
-        stubsPane.insertTab(
-                defineTitleFor(stub, null),
-                null,
-                stub.getAssembly().getComponent(),
-                stub.getBook().getInputPath().toString(),
-                index);
+        stubsPane.insertTab(defineTitleFor(stub, null), null, stub.getAssembly().getComponent(),
+                            stub.getBook().getInputPath().toString(), index);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Enum<Step> earlyStep = new Constant.Enum<Step>(
-                Step.class,
-                Step.BINARY,
-                "Early step triggered when an empty stub tab is selected ");
+        private final Constant.Enum<Step> earlyStep = new Constant.Enum<Step>(Step.class,
+                                                                              Step.BINARY,
+                                                                              "Early step triggered when an empty stub tab is selected ");
 
-        private final Constant.Ratio initialZoomRatio = new Constant.Ratio(
-                0.5,
-                "Initial zoom ratio for displayed sheet pictures");
+        private final Constant.Ratio initialZoomRatio = new Constant.Ratio(0.5,
+                                                                           "Initial zoom ratio for displayed sheet pictures");
     }
 
     //---------------//
@@ -1005,7 +992,6 @@ public class StubsController
     private class CtrlEndAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -1024,7 +1010,6 @@ public class StubsController
     private class CtrlHomeAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -1041,7 +1026,6 @@ public class StubsController
     private class PageDownAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -1060,7 +1044,6 @@ public class StubsController
     private class PageUpAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)

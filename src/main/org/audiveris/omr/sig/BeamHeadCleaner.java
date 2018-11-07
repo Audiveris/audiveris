@@ -38,15 +38,12 @@ import java.util.Set;
  */
 public class BeamHeadCleaner
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BeamHeadCleaner.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related system. */
     private final SystemInfo system;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BeamHeadCleaner} object.
      *
@@ -57,7 +54,6 @@ public class BeamHeadCleaner
         this.system = system;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//

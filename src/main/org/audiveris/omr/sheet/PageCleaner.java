@@ -87,13 +87,11 @@ import java.util.List;
 public abstract class PageCleaner
         extends AbstractInterVisitor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(PageCleaner.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Sheet buffer. */
     protected final ByteProcessor buffer;
 
@@ -118,7 +116,6 @@ public abstract class PageCleaner
     /** Slightly thicker stroke for lines. (endings, wedges, slurs) */
     private final Stroke lineStroke;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PageCleaner} object.
      *
@@ -167,7 +164,6 @@ public abstract class PageCleaner
         g.setColor(Color.WHITE);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void visit (AbstractBeamInter inter)
     {
@@ -238,8 +234,7 @@ public abstract class PageCleaner
     {
         ShapeSymbol symbol = Symbols.getSymbol(head.getShape());
         Glyph glyph = head.getGlyph();
-        Point center = (glyph != null) ? glyph.getCenter() : GeoUtil.centerOf(
-                head.getBounds());
+        Point center = (glyph != null) ? glyph.getCenter() : GeoUtil.centerOf(head.getBounds());
         MusicFont font = head.getStaff().isSmall() ? smallHeadMusicFont : headMusicFont;
         symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
     }
@@ -254,8 +249,7 @@ public abstract class PageCleaner
     {
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
         Glyph glyph = inter.getGlyph();
-        Point center = (glyph != null) ? glyph.getCenter() : GeoUtil.centerOf(
-                inter.getBounds());
+        Point center = (glyph != null) ? glyph.getCenter() : GeoUtil.centerOf(inter.getBounds());
         boolean isSmall = (inter.getStaff() != null) && inter.getStaff().isSmall();
         MusicFont font = isSmall ? smallMusicFont : musicFont;
         symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
@@ -459,25 +453,20 @@ public abstract class PageCleaner
         return (int) Math.rint(pointSize * constants.dilationRatio.getValue());
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio dilationRatio = new Constant.Ratio(
-                1.1,
-                "Size augmentation to use with eraser music font");
+        private final Constant.Ratio dilationRatio = new Constant.Ratio(1.1,
+                                                                        "Size augmentation to use with eraser music font");
 
-        private final Scale.Fraction symbolSize = new Scale.Fraction(
-                1.1,
-                "Symbols size to use with eraser music font");
+        private final Scale.Fraction symbolSize = new Scale.Fraction(1.1,
+                                                                     "Symbols size to use with eraser music font");
 
-        private final Scale.Fraction lineMargin = new Scale.Fraction(
-                0.1,
-                "Thickness of white lines drawn on items borders");
+        private final Scale.Fraction lineMargin = new Scale.Fraction(0.1,
+                                                                     "Thickness of white lines drawn on items borders");
     }
 }

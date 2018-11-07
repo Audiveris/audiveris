@@ -32,13 +32,11 @@ import java.util.List;
  */
 public class SectionTally<S extends Section>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private final List<S> list;
 
     private final int[] starts;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Build a tally on a sorted list of sections
      *
@@ -72,7 +70,6 @@ public class SectionTally<S extends Section>
         starts[starts.length - 1] = list.size(); // End mark
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // getSubList //
     //------------//

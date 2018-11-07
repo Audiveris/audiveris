@@ -34,7 +34,6 @@ import java.awt.Stroke;
 public class DecrescendoSymbol
         extends CrescendoSymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new DecrescendoSymbol object.
@@ -48,7 +47,6 @@ public class DecrescendoSymbol
         super(isIcon, shape);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//

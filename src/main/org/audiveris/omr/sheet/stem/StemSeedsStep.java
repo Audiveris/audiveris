@@ -41,11 +41,9 @@ import org.slf4j.LoggerFactory;
 public class StemSeedsStep
         extends AbstractSystemStep<Void>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StemSeedsStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StemSeedsStep object.
      */
@@ -53,7 +51,6 @@ public class StemSeedsStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//

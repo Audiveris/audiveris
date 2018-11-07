@@ -54,11 +54,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class OrnamentInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(OrnamentInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new OrnamentInter object.
      *
@@ -81,7 +79,6 @@ public class OrnamentInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -228,10 +225,8 @@ public class OrnamentInter
         final Rectangle luBox = new Rectangle(ornamentCenter);
         luBox.grow(maxDx, maxDy);
 
-        final List<Inter> chords = Inters.intersectedInters(
-                systemHeadChords,
-                GeoOrder.BY_ABSCISSA,
-                luBox);
+        final List<Inter> chords = Inters.intersectedInters(systemHeadChords, GeoOrder.BY_ABSCISSA,
+                                                            luBox);
 
         if (chords.isEmpty()) {
             return null;
@@ -252,8 +247,7 @@ public class OrnamentInter
             Point center = chord.getCenter();
 
             // Select proper chord reference point (top or bottom)
-            int yRef = (ornamentCenter.y > center.y)
-                    ? (chordBox.y + chordBox.height) : chordBox.y;
+            int yRef = (ornamentCenter.y > center.y) ? (chordBox.y + chordBox.height) : chordBox.y;
             double xGap = Math.abs(center.x - ornamentCenter.x);
             double yGap = Math.abs(yRef - ornamentCenter.y);
             ChordOrnamentRelation rel = new ChordOrnamentRelation();

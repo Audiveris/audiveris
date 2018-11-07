@@ -38,14 +38,11 @@ import org.slf4j.LoggerFactory;
 public class ConstantBasedParam<E, C extends Constant>
         extends Param<E>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ConstantBasedParam.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final C cst;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ConstantBasedParam} object.
      *
@@ -56,7 +53,6 @@ public class ConstantBasedParam<E, C extends Constant>
         this.cst = constant;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public E getSourceValue ()
     {
@@ -92,9 +88,8 @@ public class ConstantBasedParam<E, C extends Constant>
             if (specific == null) {
                 if (!cst.isSourceValue()) {
                     cst.resetToSource();
-                    logger.info(
-                            "Default " + cst.getDescription() + " reset to {}",
-                            cst.getSourceValue());
+                    logger.info("Default " + cst.getDescription() + " reset to {}", cst
+                                .getSourceValue());
                 }
             } else {
                 cst.setValue(specific);

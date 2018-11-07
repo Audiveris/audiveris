@@ -66,13 +66,11 @@ import java.util.TreeMap;
  */
 public class LedgersFilter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(LedgersFilter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Related sheet. */
     private final Sheet sheet;
@@ -80,7 +78,6 @@ public class LedgersFilter
     // Debug
     final List<Integer> vipSections;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LedgersFilter object.
      *
@@ -98,7 +95,6 @@ public class LedgersFilter
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -115,8 +111,7 @@ public class LedgersFilter
     public Map<SystemInfo, List<Section>> process ()
     {
         final Scale scale = sheet.getScale();
-        final int minDistanceFromStaff = scale.toPixels(
-                constants.minDistanceFromStaff);
+        final int minDistanceFromStaff = scale.toPixels(constants.minDistanceFromStaff);
         final StaffManager staffManager = sheet.getStaffManager();
 
         // Filter to keep only the runs which stand outside of staves cores.
@@ -150,9 +145,8 @@ public class LedgersFilter
             new LagController(sheet, lag, SheetTab.LEDGER_TAB).refresh();
 
             // Filament board
-            sheet.getStub().getAssembly().addBoard(
-                    SheetTab.LEDGER_TAB,
-                    new FilamentBoard(sheet.getFilamentIndex().getEntityService(), true));
+            sheet.getStub().getAssembly().addBoard(SheetTab.LEDGER_TAB, new FilamentBoard(sheet
+                                                   .getFilamentIndex().getEntityService(), true));
         }
 
         return dispatchLedgerSections(lag.getEntities());
@@ -207,25 +201,20 @@ public class LedgersFilter
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean displayLedgers = new Constant.Boolean(
-                false,
-                "Should we display the view on ledgers?");
+        private final Constant.Boolean displayLedgers = new Constant.Boolean(false,
+                                                                             "Should we display the view on ledgers?");
 
-        private final Scale.Fraction minDistanceFromStaff = new Scale.Fraction(
-                0.25,
-                "Minimum vertical distance from nearest staff");
+        private final Scale.Fraction minDistanceFromStaff = new Scale.Fraction(0.25,
+                                                                               "Minimum vertical distance from nearest staff");
 
-        private final Constant.String ledgerVipSections = new Constant.String(
-                "",
-                "(Debug) Comma-separated values of VIP ledger sections IDs");
+        private final Constant.String ledgerVipSections = new Constant.String("",
+                                                                              "(Debug) Comma-separated values of VIP ledger sections IDs");
     }
 }

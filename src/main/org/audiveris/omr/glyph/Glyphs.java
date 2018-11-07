@@ -50,7 +50,6 @@ import java.util.Set;
  */
 public abstract class Glyphs
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Glyphs.class);
 
@@ -189,13 +188,11 @@ public abstract class Glyphs
         }
     };
 
-    //~ Constructors -------------------------------------------------------------------------------
     // Class is not meant to be instantiated.
     private Glyphs ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildLinks //
     //------------//

@@ -32,7 +32,6 @@ import java.util.List;
  */
 public class FilamentComb
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Column index where sample was taken. */
     private final int col;
@@ -46,7 +45,6 @@ public class FilamentComb
     /** To save processing. */
     private boolean processed = false;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new FilamentComb object.
      *
@@ -60,7 +58,6 @@ public class FilamentComb
         ys = new ArrayList<Double>();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // append //
     //--------//

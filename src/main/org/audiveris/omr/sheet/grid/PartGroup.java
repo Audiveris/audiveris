@@ -35,7 +35,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 @XmlAccessorType(XmlAccessType.NONE)
 public class PartGroup
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To compare groups by their first staff ID. */
     public static final Comparator<PartGroup> byFirstId = new Comparator<PartGroup>()
@@ -48,17 +47,13 @@ public class PartGroup
         }
     };
 
-    //~ Enumerations -------------------------------------------------------------------------------
     public static enum Symbol
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         bracket,
         brace,
         square;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -91,7 +86,6 @@ public class PartGroup
     @XmlAttribute
     private String abbreviation;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Build a {@code PartGroup} object.
      *
@@ -124,7 +118,6 @@ public class PartGroup
         this.firstStaffId = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * @return the abbreviation
      */

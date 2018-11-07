@@ -32,7 +32,6 @@ import java.util.List;
  */
 public class StopWatch
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Name for this watch instance */
     private final String name;
@@ -46,7 +45,6 @@ public class StopWatch
     /** Current sum of tasks times */
     private long total;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StopWatch object.
      *
@@ -57,7 +55,6 @@ public class StopWatch
         this.name = name;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // print //
     //-------//
@@ -83,12 +80,9 @@ public class StopWatch
 
         for (Task t : tasks) {
             if (t != task) {
-                out.println(
-                        String.format(
-                                format,
-                                t.elapsed,
-                                (total != 0) ? ((100 * t.elapsed) / total) : 100,
-                                t.label));
+                out.println(String.format(format, t.elapsed, (total != 0) ? ((100 * t.elapsed)
+                                                                                     / total) : 100,
+                                          t.label));
             }
         }
 
@@ -142,13 +136,11 @@ public class StopWatch
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Task //
     //------//
     private static class Task
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Label for this task */
         private final String label;
@@ -159,7 +151,6 @@ public class StopWatch
         /** Elapsed time */
         private long elapsed;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Task (String label)
         {
             this.label = label;

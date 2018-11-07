@@ -37,7 +37,6 @@ import javax.swing.SwingConstants;
  */
 public class LField<C extends JComponent>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The label. */
     private final JLabel label;
@@ -45,7 +44,6 @@ public class LField<C extends JComponent>
     /** The field. */
     private final C field;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LField object.
      *
@@ -66,7 +64,6 @@ public class LField<C extends JComponent>
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getField //
     //----------//

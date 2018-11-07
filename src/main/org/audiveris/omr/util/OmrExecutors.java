@@ -49,7 +49,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class OmrExecutors
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(OmrExecutors.class);
 
@@ -63,10 +62,8 @@ public class OmrExecutors
 
     static {
         if (constants.printEnvironment.isSet()) {
-            logger.info(
-                    "Environment. CPU count: {}, Use of parallelism: {}",
-                    cpuCount,
-                    defaultParallelism.getValue());
+            logger.info("Environment. CPU count: {}, Use of parallelism: {}", cpuCount,
+                        defaultParallelism.getValue());
         }
     }
 
@@ -83,7 +80,6 @@ public class OmrExecutors
     /** To prevent parallel creation of pools when closing. */
     private static volatile boolean creationAllowed = true;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Not meant to be instantiated.
      */
@@ -91,7 +87,6 @@ public class OmrExecutors
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------------//
     // getCachedLowExecutor //
     //----------------------//
@@ -187,18 +182,15 @@ public class OmrExecutors
         return result;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Pool //
     //------//
     private abstract static class Pool
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** The underlying pool of threads. */
         protected ExecutorService pool;
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Name the pool.
          */
@@ -289,20 +281,16 @@ public class OmrExecutors
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printEnvironment = new Constant.Boolean(
-                false,
-                "Should we print out current environment?");
+        private final Constant.Boolean printEnvironment = new Constant.Boolean(false,
+                                                                               "Should we print out current environment?");
 
         private final Constant.Boolean useParallelism = new Constant.Boolean(
                 false, //true, // Disabled for the time being
                 "Should we use parallelism when we have several processors?");
 
-        private final Constant.Integer graceDelay = new Constant.Integer(
-                "seconds",
-                60,
-                "Time to wait for terminating tasks");
+        private final Constant.Integer graceDelay = new Constant.Integer("seconds", 60,
+                                                                         "Time to wait for terminating tasks");
     }
 
     //------------//
@@ -312,7 +300,6 @@ public class OmrExecutors
     private static class CachedLows
             extends Pool
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String getName ()
@@ -333,7 +320,6 @@ public class OmrExecutors
     private static class Default
             extends Param<Boolean>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Boolean getSpecific ()
@@ -377,7 +363,6 @@ public class OmrExecutors
     private static class Factory
             implements ThreadFactory
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final ThreadGroup group;
 
@@ -389,7 +374,6 @@ public class OmrExecutors
 
         private final AtomicInteger threadNumber = new AtomicInteger(0);
 
-        //~ Constructors ---------------------------------------------------------------------------
         Factory (String threadPrefix,
                  int threadPriority,
                  long stackSize)
@@ -401,7 +385,6 @@ public class OmrExecutors
             this.stackSize = stackSize;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public Thread newThread (Runnable r)
         {
@@ -431,7 +414,6 @@ public class OmrExecutors
     private static class Highs
             extends Pool
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String getName ()
@@ -442,9 +424,8 @@ public class OmrExecutors
         @Override
         protected ExecutorService createPool ()
         {
-            return Executors.newFixedThreadPool(
-                    defaultParallelism.getValue() ? (cpuCount + 1) : 1,
-                    new Factory(getName(), Thread.NORM_PRIORITY, 0));
+            return Executors.newFixedThreadPool(defaultParallelism.getValue() ? (cpuCount + 1) : 1,
+                                                new Factory(getName(), Thread.NORM_PRIORITY, 0));
         }
     }
 
@@ -455,7 +436,6 @@ public class OmrExecutors
     private static class Lows
             extends Pool
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String getName ()
@@ -466,9 +446,8 @@ public class OmrExecutors
         @Override
         protected ExecutorService createPool ()
         {
-            return Executors.newFixedThreadPool(
-                    defaultParallelism.getValue() ? (cpuCount + 1) : 1,
-                    new Factory(getName(), Thread.MIN_PRIORITY, 0));
+            return Executors.newFixedThreadPool(defaultParallelism.getValue() ? (cpuCount + 1) : 1,
+                                                new Factory(getName(), Thread.MIN_PRIORITY, 0));
         }
     }
 }

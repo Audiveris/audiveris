@@ -29,10 +29,8 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.SlurInter;
-
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
-
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
@@ -66,12 +64,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 public class Page
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Page.class);
+    private static final Logger logger = LoggerFactory.getLogger(Page.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -121,7 +116,6 @@ public class Page
     /** Greatest duration divisor (in this page). */
     private Integer durationDivisor;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Page object.
      *
@@ -147,7 +141,6 @@ public class Page
         id = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------------//
     // computeMeasureCount //
     //---------------------//
@@ -195,8 +188,7 @@ public class Page
                     Part precPart = part.getPrecedingInPage();
 
                     if (precPart != null) {
-                        List<SlurInter> precOrphans = precPart.getSlurs(
-                                SlurInter.isEndingOrphan);
+                        List<SlurInter> precOrphans = precPart.getSlurs(SlurInter.isEndingOrphan);
 
                         // Links: Slur -> prevSlur
                         Map<SlurInter, SlurInter> links = part.getCrossSlurLinks(precPart);
@@ -706,17 +698,14 @@ public class Page
                 for (MeasureStack stack : system.getStacks()) {
                     for (AbstractChordInter chord : stack.getStandardChords()) {
                         try {
-                            final Rational duration = chord.isWholeRest()
-                                    ? stack.getExpectedDuration()
-                                    : chord.getDuration();
+                            final Rational duration = chord.isWholeRest() ? stack
+                                    .getExpectedDuration() : chord.getDuration();
 
                             if (duration != null) {
                                 durations.add(duration);
                             }
                         } catch (Exception ex) {
-                            logger.warn(
-                                    getClass().getSimpleName() + " Error visiting " + chord,
-                                    ex);
+                            logger.warn(getClass().getSimpleName() + " Error visiting " + chord, ex);
                         }
                     }
                 }

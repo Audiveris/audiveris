@@ -35,12 +35,10 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 public class FilterParam
         extends Param<FilterDescriptor>
 {
-    //~ Inner Classes ------------------------------------------------------------------------------
 
     public static class Adapter
             extends XmlAdapter<Adapter.Value, FilterParam>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Value marshal (FilterParam fp)
@@ -76,10 +74,8 @@ public class FilterParam
             return fp;
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         protected static class Value
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             @XmlElementRefs({
                 @XmlElementRef(type = GlobalDescriptor.class)

@@ -23,10 +23,15 @@ package org.audiveris.omr.score;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
+/**
+ * DOCUMENT ME!
+ *
+ * @author TBD
+ * @version TBD
+ */
 public class PartData
 {
 
-    //~ Instance fields ------------------------------------------------------------------------
     /** Name of the part */
     @XmlAttribute
     public final String name;
@@ -35,7 +40,12 @@ public class PartData
     @XmlAttribute
     public final int program;
 
-    //~ Constructors ---------------------------------------------------------------------------
+    /**
+     * Creates a new {@code PartData} object.
+     *
+     * @param name    DOCUMENT ME!
+     * @param program DOCUMENT ME!
+     */
     public PartData (String name,
                      int program)
     {
@@ -49,11 +59,9 @@ public class PartData
         program = 0;
     }
 
-    //~ Methods --------------------------------------------------------------------------------
     @Override
     public String toString ()
     {
         return "{name:" + name + " program:" + program + "}";
     }
-
 }

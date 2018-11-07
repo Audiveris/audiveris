@@ -28,14 +28,12 @@ package org.audiveris.omr.check;
  */
 public class Failure
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * A readable comment about the failure.
      */
     public final String comment;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new Failure object.
      *
@@ -46,7 +44,6 @@ public class Failure
         this.comment = comment;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // toString //
     //----------//

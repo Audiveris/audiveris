@@ -44,11 +44,9 @@ import java.util.Map;
 public class LedgersStep
         extends AbstractSystemStep<LedgersStep.Context>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(LedgersStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LedgersStep object.
      */
@@ -56,7 +54,6 @@ public class LedgersStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
@@ -99,17 +96,14 @@ public class LedgersStep
         return new Context(new LedgersFilter(sheet).process());
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Context //
     //---------//
     protected static class Context
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public final Map<SystemInfo, List<Section>> sectionMap;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Context (Map<SystemInfo, List<Section>> sectionMap)
         {
             this.sectionMap = sectionMap;

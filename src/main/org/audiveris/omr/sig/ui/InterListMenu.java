@@ -59,16 +59,13 @@ import javax.swing.JMenuItem;
 public class InterListMenu
         extends LocationDependentMenu
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterListMenu.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final Sheet sheet;
 
     private final InterListener interListener = new InterListener();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code InterListMenu} object.
      *
@@ -80,7 +77,6 @@ public class InterListMenu
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // updateUserLocation //
     //--------------------//
@@ -98,8 +94,8 @@ public class InterListMenu
     private void insertDeletionItem (final SystemInfo system,
                                      final List<Inter> sysInters)
     {
-        JMenuItem item = new JMenuItem(
-                "Delete " + sysInters.size() + " inters for System #" + system.getId() + ":");
+        JMenuItem item = new JMenuItem("Delete " + sysInters.size() + " inters for System #"
+                                               + system.getId() + ":");
 
         // To delete all listed inters when item is clicked upon
         item.addActionListener(
@@ -108,8 +104,8 @@ public class InterListMenu
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                if (OMR.gui.displayConfirmation(
-                        "Do you confirm the removal of " + sysInters.size() + " inter(s)?")) {
+                if (OMR.gui.displayConfirmation("Do you confirm the removal of " + sysInters.size()
+                                                        + " inter(s)?")) {
                     sheet.getInterController().removeInters(sysInters);
                 }
             }
@@ -123,11 +119,8 @@ public class InterListMenu
             public void mouseEntered (MouseEvent e)
             {
                 system.getSheet().getInterIndex().getEntityService().publish(
-                        new EntityListEvent<Inter>(
-                                this,
-                                SelectionHint.ENTITY_INIT,
-                                MouseMovement.PRESSING,
-                                sysInters));
+                        new EntityListEvent<Inter>(this, SelectionHint.ENTITY_INIT,
+                                                   MouseMovement.PRESSING, sysInters));
             }
         });
         this.add(item);
@@ -203,7 +196,6 @@ public class InterListMenu
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // InterListener //
     //---------------//
@@ -213,7 +205,6 @@ public class InterListMenu
     private static class InterListener
             extends AbstractMouseListener
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void mouseEntered (MouseEvent e)

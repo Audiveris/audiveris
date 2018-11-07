@@ -65,12 +65,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class BasicIndex<E extends Entity>
         implements EntityIndex<E>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            BasicIndex.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicIndex.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -78,7 +75,8 @@ public class BasicIndex<E extends Entity>
     /** Collection of all entities registered in this index, sorted on ID. */
     @XmlElement(name = "entities")
     @XmlJavaTypeAdapter(Adapter.class)
-    protected final ConcurrentSkipListMap<Integer, E> entities = new ConcurrentSkipListMap<Integer, E>();
+    protected final ConcurrentSkipListMap<Integer, E> entities
+            = new ConcurrentSkipListMap<Integer, E>();
 
     // Transient data
     //---------------
@@ -95,7 +93,6 @@ public class BasicIndex<E extends Entity>
     /** (debug) for easy inspection via browser. */
     private Collection<E> values;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BasicIndex} object.
      *
@@ -115,7 +112,6 @@ public class BasicIndex<E extends Entity>
         values = entities.values(); // Useful for debugging only
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------------//
     // getContainedEntities //
     //----------------------//
@@ -402,14 +398,12 @@ public class BasicIndex<E extends Entity>
         values = entities.values();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------//
     // InterfaceAdapter //
     //------------------//
     public static class InterfaceAdapter<E extends AbstractEntity>
             extends XmlAdapter<BasicIndex<E>, EntityIndex<E>>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public BasicIndex<E> marshal (EntityIndex<E> itf)
@@ -438,7 +432,6 @@ public class BasicIndex<E extends Entity>
     private static class Adapter<E extends AbstractEntity>
             extends XmlAdapter<IndexValue<E>, ConcurrentSkipListMap<Integer, E>>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public IndexValue<E> marshal (ConcurrentSkipListMap<Integer, E> map)
@@ -488,7 +481,6 @@ public class BasicIndex<E extends Entity>
      */
     private static class IndexValue<E extends AbstractEntity>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlElementRefs({
             @XmlElementRef(type = Glyph.class)

@@ -53,13 +53,11 @@ public class StaffFilament
         extends CurvedFilament
         implements LineInfo
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StaffFilament.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Combs where this filament appears. map (column index -> comb) */
     private SortedMap<Integer, FilamentComb> combs;
@@ -70,7 +68,6 @@ public class StaffFilament
     /** Relative position in cluster. (relevant only if cluster is not null) */
     private int clusterPos;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LineFilament object.
      * Nota: this constructor is needed for FilamentFactory which calls this
@@ -83,7 +80,6 @@ public class StaffFilament
         super(interline, InterlineScale.toPixels(interline, constants.segmentLength));
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //
     //---------//
     // addComb //
@@ -372,26 +368,21 @@ public class StaffFilament
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction segmentLength = new Scale.Fraction(
-                4.0,
-                "Typical length between filament curve intermediate points");
+        private final Scale.Fraction segmentLength = new Scale.Fraction(4.0,
+                                                                        "Typical length between filament curve intermediate points");
 
-        private final Scale.Fraction virtualSegmentLength = new Scale.Fraction(
-                5.0,
-                "Typical length used for virtual intermediate points");
+        private final Scale.Fraction virtualSegmentLength = new Scale.Fraction(5.0,
+                                                                               "Typical length used for virtual intermediate points");
 
-        private final Scale.Fraction maxHoleLength = new Scale.Fraction(
-                6.0,
-                "Maximum length for holes without intermediate points");
+        private final Scale.Fraction maxHoleLength = new Scale.Fraction(6.0,
+                                                                        "Maximum length for holes without intermediate points");
     }
 
     //--------//
@@ -402,7 +393,6 @@ public class StaffFilament
      */
     private static class Filler
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int x; // Preferred abscissa for point insertion
 
@@ -412,7 +402,6 @@ public class StaffFilament
 
         final int margin; // Margin on abscissa to lookup refs
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Filler (int x,
                        int pos,
                        List<StaffFilament> fils,
@@ -424,7 +413,6 @@ public class StaffFilament
             this.margin = margin;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //---------------//
         // findInsertion //
         //---------------//
@@ -456,9 +444,8 @@ public class StaffFilament
             // Interpolate
             double ratio = (double) (pos - one.pos) / (two.pos - one.pos);
 
-            return new VirtualPoint(
-                    ((1 - ratio) * one.point.getX()) + (ratio * two.point.getX()),
-                    ((1 - ratio) * one.point.getY()) + (ratio * two.point.getY()));
+            return new VirtualPoint(((1 - ratio) * one.point.getX()) + (ratio * two.point.getX()),
+                                    ((1 - ratio) * one.point.getY()) + (ratio * two.point.getY()));
         }
 
         /**
@@ -483,17 +470,14 @@ public class StaffFilament
             return null;
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         /** Convey a point together with its relative cluster position.. */
         private static class Neighbor
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             final int pos;
 
             final Point2D point;
 
-            //~ Constructors -----------------------------------------------------------------------
             public Neighbor (int pos,
                              Point2D point)
             {
@@ -512,7 +496,6 @@ public class StaffFilament
     private static class VirtualPoint
             extends Point2D.Double
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public VirtualPoint (double x,
                              double y)

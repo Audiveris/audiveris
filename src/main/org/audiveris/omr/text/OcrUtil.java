@@ -37,18 +37,15 @@ import java.util.List;
  */
 public abstract class OcrUtil
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** The related OCR. */
     private static final OCR ocr = TesseractOCR.getInstance();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private OcrUtil ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // getOcr //
     //--------//
@@ -91,10 +88,8 @@ public abstract class OcrUtil
         final BufferedImage bi;
 
         if (margin > 0) {
-            bi = new BufferedImage(
-                    width + (2 * margin),
-                    height + (2 * margin),
-                    BufferedImage.TYPE_BYTE_GRAY);
+            bi = new BufferedImage(width + (2 * margin), height + (2 * margin),
+                                   BufferedImage.TYPE_BYTE_GRAY);
 
             // Background filled with white
             Graphics g = bi.createGraphics();

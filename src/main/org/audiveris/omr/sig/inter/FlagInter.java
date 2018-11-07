@@ -41,7 +41,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class FlagInter
         extends AbstractFlagInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new FlagInter object.
@@ -64,7 +63,6 @@ public class FlagInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

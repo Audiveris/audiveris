@@ -59,7 +59,6 @@ import javax.xml.bind.JAXBException;
  */
 public class ActionManager
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ActionManager.class);
 
@@ -69,7 +68,6 @@ public class ActionManager
     /** Singleton. */
     private static volatile ActionManager INSTANCE;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The map of all menus, so that we can directly provide some. */
     private final Map<String, JMenu> menuMap = new HashMap<String, JMenu>();
@@ -80,7 +78,6 @@ public class ActionManager
     /** The menu bar for all actions. */
     private final JMenuBar menuBar = new JMenuBar();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Meant to be instantiated at most once.
      */
@@ -88,7 +85,6 @@ public class ActionManager
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -201,10 +197,9 @@ public class ActionManager
     public void loadAllDescriptors ()
     {
         // Load classes first for system actions, then for user actions if any
-        URI[] uris = new URI[]{
-            UriUtil.toURI(WellKnowns.RES_URI, "system-actions.xml"),
-            WellKnowns.CONFIG_FOLDER.resolve("user-actions.xml").toUri().normalize()
-        };
+        URI[] uris = new URI[]{UriUtil.toURI(WellKnowns.RES_URI, "system-actions.xml"),
+                               WellKnowns.CONFIG_FOLDER.resolve("user-actions.xml").toUri()
+                               .normalize()};
 
         for (int i = 0; i < uris.length; i++) {
             URI uri = uris[i];
@@ -253,8 +248,8 @@ public class ActionManager
             }
 
             // Proper menu decoration
-            ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(
-                    Actions.class);
+            ResourceMap resource = OmrGui.getApplication().getContext()
+                    .getResourceMap(Actions.class);
             menu.setText(domain); // As default
             menu.setName(domain);
 

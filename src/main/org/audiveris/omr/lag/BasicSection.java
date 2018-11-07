@@ -71,12 +71,9 @@ public class BasicSection
         extends AbstractEntity
         implements Section
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            BasicSection.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicSection.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Position of first run */
     @XmlAttribute(name = "first-pos")
     protected int firstPos;
@@ -110,7 +107,6 @@ public class BasicSection
     /** Approximating oriented line for this section */
     protected Line orientedLine;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicSection.
      *
@@ -140,7 +136,6 @@ public class BasicSection
         orientedLine = ds.getOrientedLine();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // allocateTable //
     //---------------//
@@ -670,9 +665,7 @@ public class BasicSection
         cumulate(barycenter, absRoi);
 
         if (barycenter.getWeight() != 0) {
-            return new Point(
-                    (int) Math.rint(barycenter.getX()),
-                    (int) Math.rint(barycenter.getY()));
+            return new Point((int) Math.rint(barycenter.getX()), (int) Math.rint(barycenter.getY()));
         } else {
             return null;
         }
@@ -770,8 +763,8 @@ public class BasicSection
 
         for (Run run : runs) {
             final int start = run.getStart();
-            final Rectangle runBox = (orientation == HORIZONTAL)
-                    ? new Rectangle(start, pos, run.getLength(), 1)
+            final Rectangle runBox = (orientation == HORIZONTAL) ? new Rectangle(start, pos, run
+                                                                                 .getLength(), 1)
                     : new Rectangle(pos, start, 1, run.getLength());
 
             if (shape.intersects(runBox)) {
@@ -912,8 +905,8 @@ public class BasicSection
 
         for (Run run : runs) {
             final int start = run.getStart();
-            final Rectangle r1 = (orientation == HORIZONTAL)
-                    ? new Rectangle(start, pos, run.getLength(), 1)
+            final Rectangle r1 = (orientation == HORIZONTAL) ? new Rectangle(start, pos, run
+                                                                             .getLength(), 1)
                     : new Rectangle(pos, start, 1, run.getLength());
 
             if (thatFatBox.intersects(r1)) {
@@ -923,8 +916,8 @@ public class BasicSection
                 for (Run thatRun : that.getRuns()) {
                     final int thatStart = thatRun.getStart();
                     final int thatLength = thatRun.getLength();
-                    final Rectangle r2 = (that.getOrientation() == HORIZONTAL)
-                            ? new Rectangle(thatStart, thatPos, thatLength, 1)
+                    final Rectangle r2 = (that.getOrientation() == HORIZONTAL) ? new Rectangle(
+                            thatStart, thatPos, thatLength, 1)
                             : new Rectangle(thatPos, thatStart, 1, thatLength);
 
                     if (GeoUtil.touch(r1, r2)) {
@@ -1002,7 +995,6 @@ public class BasicSection
         return orientation.isVertical() ? "V" : "H";
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
@@ -1012,7 +1004,6 @@ public class BasicSection
     public static class Adapter
             extends XmlAdapter<BasicSection, Section>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public BasicSection marshal (Section s)

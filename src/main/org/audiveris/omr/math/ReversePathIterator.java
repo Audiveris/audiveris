@@ -75,7 +75,6 @@ import java.awt.geom.PathIterator;
 public class ReversePathIterator
         implements PathIterator
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The winding rule. */
     private final int windingRule;
@@ -92,7 +91,6 @@ public class ReversePathIterator
     /** The index into the segment types during iteration. */
     private int segmentIndex = 0;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an inverted path iterator from a standard one, keeping the winding rule.
      *
@@ -134,8 +132,7 @@ public class ReversePathIterator
 
             if (first) {
                 if (segType != SEG_MOVETO) {
-                    throw new IllegalPathStateException(
-                            "missing initial moveto in path definition");
+                    throw new IllegalPathStateException("missing initial moveto in path definition");
                 }
 
                 first = false;
@@ -230,7 +227,6 @@ public class ReversePathIterator
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Returns the coordinates and type of the current path segment in
      * the iteration.
@@ -335,7 +331,7 @@ public class ReversePathIterator
      * winding rule.
      *
      * @param shape shape for which a reverse transformed path iterator is needed
-     * @param at the affine transform
+     * @param at    the affine transform
      * @return reverse transformed path iterator
      */
     public static PathIterator getReversePathIterator (Shape shape,
@@ -350,7 +346,7 @@ public class ReversePathIterator
      *
      * @param shape    shape for which a reverse transformed flattened path
      *                 iterator is needed
-     * @param at the affine transform
+     * @param at       the affine transform
      * @param flatness flatness epsilon
      * @return reverse transformed flattened path iterator
      */
@@ -395,7 +391,7 @@ public class ReversePathIterator
      *
      * @param shape       shape for which a reverse transformed path iterator is
      *                    needed
-     * @param at the affine transform
+     * @param at          the affine transform
      * @param windingRule winding rule of newly created iterator
      * @return reverse transformed path iterator
      */
@@ -411,7 +407,7 @@ public class ReversePathIterator
      *
      * @param shape       shape for which a reverse transformed flattened path
      *                    iterator is needed
-     * @param at the affine transform
+     * @param at          the affine transform
      * @param flatness    flatness epsilon
      * @param windingRule winding rule of newly created iterator
      * @return reverse transformed flattened path iterator

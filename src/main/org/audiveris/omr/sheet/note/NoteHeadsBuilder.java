@@ -107,29 +107,20 @@ import java.util.Set;
  */
 public class NoteHeadsBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            NoteHeadsBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(NoteHeadsBuilder.class);
 
     /** Shapes of note head competitors. */
     private static final Set<Shape> COMPETING_SHAPES = EnumSet.copyOf(
-            Arrays.asList(
-                    Shape.THICK_BARLINE,
-                    Shape.THIN_BARLINE,
-                    Shape.THICK_CONNECTOR,
-                    Shape.THIN_CONNECTOR,
-                    Shape.BEAM,
-                    Shape.BEAM_HOOK,
-                    Shape.BEAM_SMALL,
-                    Shape.BEAM_HOOK_SMALL));
+            Arrays.asList(Shape.THICK_BARLINE, Shape.THIN_BARLINE, Shape.THICK_CONNECTOR,
+                          Shape.THIN_CONNECTOR, Shape.BEAM, Shape.BEAM_HOOK, Shape.BEAM_SMALL,
+                          Shape.BEAM_HOOK_SMALL));
 
     /** Specific value for no offsets. */
     private static final int[] NO_OFFSETS = new int[]{0};
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -190,7 +181,6 @@ public class NoteHeadsBuilder
 
     private final Perf rangePerf = new Perf();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code NoteHeadsBuilder} object.
      *
@@ -227,7 +217,6 @@ public class NoteHeadsBuilder
         minTemplateWidth = computeMinTemplateWidth();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildHeads //
     //------------//
@@ -455,10 +444,8 @@ public class NoteHeadsBuilder
      */
     private List<Inter> getCompetitorsSlice (Area area)
     {
-        List<Inter> rawComps = Inters.intersectedInters(
-                systemCompetitors,
-                GeoOrder.BY_ORDINATE,
-                area);
+        List<Inter> rawComps = Inters.intersectedInters(systemCompetitors, GeoOrder.BY_ORDINATE,
+                                                        area);
 
         // Keep only the "really good" competitors
         List<Inter> kept = new ArrayList<Inter>();
@@ -553,9 +540,8 @@ public class NoteHeadsBuilder
             @Override
             public boolean check (Inter inter)
             {
-                return inter.isFrozen()
-                       && (inter instanceof BarlineInter
-                           || inter instanceof BarConnectorInter);
+                return inter.isFrozen() && (inter instanceof BarlineInter
+                                                    || inter instanceof BarConnectorInter);
             }
         });
 
@@ -818,7 +804,6 @@ public class NoteHeadsBuilder
         return removed.size();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // LineAdapter //
     //-------------//
@@ -828,13 +813,11 @@ public class NoteHeadsBuilder
      */
     private abstract static class LineAdapter
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Staff staff;
 
         private final String prefix;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public LineAdapter (Staff staff,
                             String prefix)
         {
@@ -842,7 +825,6 @@ public class NoteHeadsBuilder
             this.prefix = prefix;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Report the competitors lookup area, according to limits above
          * and below, defined as ordinate shifts relative to the reference line.
@@ -883,55 +865,42 @@ public class NoteHeadsBuilder
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch?");
 
-        private final Constant.Boolean printParameters = new Constant.Boolean(
-                false,
-                "Should we print out the class parameters?");
+        private final Constant.Boolean printParameters = new Constant.Boolean(false,
+                                                                              "Should we print out the class parameters?");
 
-        private final Constant.Boolean allowAttachments = new Constant.Boolean(
-                false,
-                "Should we allow staff attachments for created areas?");
+        private final Constant.Boolean allowAttachments = new Constant.Boolean(false,
+                                                                               "Should we allow staff attachments for created areas?");
 
-        private final Scale.Fraction maxTemplateDx = new Scale.Fraction(
-                0.375,
-                "Maximum dx between similar template instances");
+        private final Scale.Fraction maxTemplateDx = new Scale.Fraction(0.375,
+                                                                        "Maximum dx between similar template instances");
 
-        private final Scale.Fraction maxOpenDy = new Scale.Fraction(
-                0.25,
-                "Extension allowed in y for open lines");
+        private final Scale.Fraction maxOpenDy = new Scale.Fraction(0.25,
+                                                                    "Extension allowed in y for open lines");
 
-        private final Constant.Ratio gradeMargin = new Constant.Ratio(
-                0.1,
-                "Grade margin to boost seed-based competitors");
+        private final Constant.Ratio gradeMargin = new Constant.Ratio(0.1,
+                                                                      "Grade margin to boost seed-based competitors");
 
-        private final Constant.Ratio pitchMargin = new Constant.Ratio(
-                0.75,
-                "Vertical margin for intercepting stem seed around a target pitch");
+        private final Constant.Ratio pitchMargin = new Constant.Ratio(0.75,
+                                                                      "Vertical margin for intercepting stem seed around a target pitch");
 
-        private final Constant.Ratio wholeBoost = new Constant.Ratio(
-                0.4,
-                "How much do we boost whole notes (always isolated)");
+        private final Constant.Ratio wholeBoost = new Constant.Ratio(0.4,
+                                                                     "How much do we boost whole notes (always isolated)");
 
-        private final Scale.Fraction minBeamWidth = new Scale.Fraction(
-                2.5,
-                "Minimum good beam width to exclude heads");
+        private final Scale.Fraction minBeamWidth = new Scale.Fraction(2.5,
+                                                                       "Minimum good beam width to exclude heads");
 
-        private final Scale.Fraction barHorizontalMargin = new Scale.Fraction(
-                0.1,
-                "Horizontal margin around frozen barline or connector");
+        private final Scale.Fraction barHorizontalMargin = new Scale.Fraction(0.1,
+                                                                              "Horizontal margin around frozen barline or connector");
 
-        private final Scale.Fraction barVerticalMargin = new Scale.Fraction(
-                2.0,
-                "Vertical margin around frozen barline or connector");
+        private final Scale.Fraction barVerticalMargin = new Scale.Fraction(2.0,
+                                                                            "Vertical margin around frozen barline or connector");
 
-        private final Constant.Ratio minHoleWhiteRatio = new Constant.Ratio(
-                0.2,
-                "Minimum ratio of hole white pixel to reassign Black to Void");
+        private final Constant.Ratio minHoleWhiteRatio = new Constant.Ratio(0.2,
+                                                                            "Minimum ratio of hole white pixel to reassign Black to Void");
     }
 
     //-----------//
@@ -942,13 +911,11 @@ public class NoteHeadsBuilder
      */
     private static class Aggregate
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         Point point;
 
         List<HeadInter> matches = new ArrayList<HeadInter>();
 
-        //~ Methods --------------------------------------------------------------------------------
         public void add (HeadInter inter)
         {
             if (point == null) {
@@ -993,7 +960,6 @@ public class NoteHeadsBuilder
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final double maxDistanceLow;
 
@@ -1011,7 +977,6 @@ public class NoteHeadsBuilder
 
         final int vBarMargin;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
          *
@@ -1041,7 +1006,6 @@ public class NoteHeadsBuilder
     private class LedgerAdapter
             extends LineAdapter
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Glyph ledger;
 
@@ -1049,7 +1013,6 @@ public class NoteHeadsBuilder
 
         private final Point2D right;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public LedgerAdapter (Staff staff,
                               String prefix,
                               Glyph ledger)
@@ -1060,7 +1023,6 @@ public class NoteHeadsBuilder
             right = ledger.getStopPoint(Orientation.HORIZONTAL);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public Area getArea (double above,
                              double below)
@@ -1105,7 +1067,6 @@ public class NoteHeadsBuilder
      */
     private static class Perf
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         int bars;
 
@@ -1115,16 +1076,11 @@ public class NoteHeadsBuilder
 
         int abandons;
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
-            return String.format(
-                    "%7d bars, %7d overlaps, %7d evals, %7d abandons",
-                    bars,
-                    overlaps,
-                    evals,
-                    abandons);
+            return String.format("%7d bars, %7d overlaps, %7d evals, %7d abandons", bars, overlaps,
+                                 evals, abandons);
         }
     }
 
@@ -1136,7 +1092,6 @@ public class NoteHeadsBuilder
      */
     private class Scanner
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final int interline;
 
@@ -1165,7 +1120,6 @@ public class NoteHeadsBuilder
         /** Offsets tried around a given ordinate. */
         private final int[] yOffsets;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create a Scanner.
          *
@@ -1229,7 +1183,6 @@ public class NoteHeadsBuilder
             competitors = getCompetitorsSlice(competitorsArea);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public List<HeadInter> lookup ()
         {
             return useSeeds ? lookupSeeds() : lookupRange();
@@ -1452,10 +1405,9 @@ public class NoteHeadsBuilder
                     //TODO: refine using width of template?
                     if (Math.abs(pitch) > 5) {
                         for (LedgerAdapter ledger : ledgers) {
-                            if ((x >= ledger.getLeftAbscissa())
-                                && (x <= ledger.getRightAbscissa())) {
-                                return (int) Math.rint(
-                                        (line.yAt((double) x) + ledger.yAt((double) x)) / 2);
+                            if ((x >= ledger.getLeftAbscissa()) && (x <= ledger.getRightAbscissa())) {
+                                return (int) Math.rint((line.yAt((double) x) + ledger
+                                        .yAt((double) x)) / 2);
                             }
                         }
                     }
@@ -1496,9 +1448,8 @@ public class NoteHeadsBuilder
         private List<HeadInter> lookupRange ()
         {
             // Abscissa range for scan
-            final int scanLeft = Math.max(
-                    line.getLeftAbscissa(),
-                    (int) line.getStaff().getHeaderStop());
+            final int scanLeft = Math.max(line.getLeftAbscissa(), (int) line.getStaff()
+                                          .getHeaderStop());
             final int scanRight = line.getRightAbscissa() - minTemplateWidth;
 
             if (scanRight < scanLeft) {
@@ -1548,12 +1499,8 @@ public class NoteHeadsBuilder
                             }
                         }
 
-                        HeadInter inter = createInter(
-                                bestLoc,
-                                MIDDLE_LEFT,
-                                shape,
-                                line.getStaff(),
-                                pitch);
+                        HeadInter inter = createInter(bestLoc, MIDDLE_LEFT, shape, line.getStaff(),
+                                                      pitch);
 
                         if (inter != null) {
                             inters.add(inter);
@@ -1649,12 +1596,8 @@ public class NoteHeadsBuilder
                                 }
                             }
 
-                            HeadInter inter = createInter(
-                                    bestLoc,
-                                    anchor,
-                                    shape,
-                                    line.getStaff(),
-                                    pitch);
+                            HeadInter inter = createInter(bestLoc, anchor, shape, line.getStaff(),
+                                                          pitch);
 
                             if (inter != null) {
                                 Glyph glyph = inter.retrieveGlyph(image);
@@ -1682,11 +1625,9 @@ public class NoteHeadsBuilder
     private class StaffLineAdapter
             extends LineAdapter
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final LineInfo line;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public StaffLineAdapter (Staff staff,
                                  LineInfo line)
         {
@@ -1694,7 +1635,6 @@ public class NoteHeadsBuilder
             this.line = line;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public Area getArea (double above,
                              double below)

@@ -46,11 +46,9 @@ import java.util.TreeMap;
 public class BeamsStep
         extends AbstractSystemStep<BeamsStep.Context>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BeamsStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BeamsStep object.
      */
@@ -58,7 +56,6 @@ public class BeamsStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -88,8 +85,8 @@ public class BeamsStep
         if (distances.getCardinality() > 0) {
             logger.info("BeamDistance{{}}", distances);
 
-            sheet.getScale()
-                    .setBeamDistance(distances.getMeanValue(), distances.getStandardDeviation());
+            sheet.getScale().setBeamDistance(distances.getMeanValue(), distances
+                                             .getStandardDeviation());
         }
 
         // Dispose of BEAM_SPOT glyphs, a glyph may be split into several beams
@@ -128,13 +125,11 @@ public class BeamsStep
         return new Context(distanceMap, spotLag);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Context //
     //---------//
     protected static class Context
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Beam group vertical distances, per system. */
         public final Map<SystemInfo, Population> distancemap;
@@ -142,7 +137,6 @@ public class BeamsStep
         /** Lag of spot sections. */
         public final Lag spotLag;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Context (Map<SystemInfo, Population> distanceMap,
                         Lag spotLag)
         {

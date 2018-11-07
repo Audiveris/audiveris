@@ -30,7 +30,6 @@ package org.audiveris.omr.sig.inter;
  */
 public interface InterVisitor
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     void visit (AbstractBeamInter inter); // BeamHook, Beam, SmallBeam
 

@@ -41,28 +41,25 @@ import java.util.concurrent.atomic.AtomicReference;
  * The class {@code Constant} is not meant to be used directly (it is abstract), but rather through
  * any of its subclasses:
  * <ul>
- * <li> {@link Constant.Angle} </li>
- * <li> {@link Constant.Boolean} </li>
- * <li> {@link Constant.Color} </li>
- * <li> {@link Constant.Double} </li>
- * <li> {@link Constant.Integer} </li>
- * <li> {@link Constant.Ratio} </li>
- * <li> {@link Constant.String} </li>
+ * <li>{@link Constant.Angle}</li>
+ * <li>{@link Constant.Boolean}</li>
+ * <li>{@link Constant.Color}</li>
+ * <li>{@link Constant.Double}</li>
+ * <li>{@link Constant.Integer}</li>
+ * <li>{@link Constant.Ratio}</li>
+ * <li>{@link Constant.String}</li>
  * <li>and others...</li>
  * </ul>
  *
  * @author Hervé Bitteur
- *
  * @param <E> specific constant type
  */
 @ThreadSafe
 public abstract class Constant<E>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Constant.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Data assigned at construction time
     //-----------------------------------
@@ -88,14 +85,12 @@ public abstract class Constant<E>
     /** Current data. */
     private AtomicReference<Tuple> tuple = new AtomicReference<Tuple>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a constant instance, while providing a default value,
      * in case the external property is not yet defined.
      *
      * @param quantityUnit Unit used as base for measure, if relevant
-     * @param sourceString Source value, expressed by a string literal which
-     *                     cannot be null
+     * @param sourceString Source value, expressed by a string literal which cannot be null
      * @param description  A quick description of the purpose of this constant
      */
     protected Constant (java.lang.String quantityUnit,
@@ -116,7 +111,6 @@ public abstract class Constant<E>
         //            description);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getDescription //
     //----------------//
@@ -208,6 +202,19 @@ public abstract class Constant<E>
         return getTuple().currentString;
     }
 
+    //----------------//
+    // setStringValue //
+    //----------------//
+    /**
+     * Modify the current value of the constant.
+     *
+     * @param string the new value, as a string to be checked
+     */
+    public void setStringValue (java.lang.String string)
+    {
+        setValue(decode(string));
+    }
+
     //----------//
     // getValue //
     //----------//
@@ -219,6 +226,19 @@ public abstract class Constant<E>
     public E getValue ()
     {
         return (E) getCachedValue();
+    }
+
+    //----------//
+    // setValue //
+    //----------//
+    /**
+     * Assign a new value to the constant.
+     *
+     * @param value new value
+     */
+    public void setValue (E value)
+    {
+        setTuple(value.toString(), value);
     }
 
     //---------------//
@@ -244,32 +264,6 @@ public abstract class Constant<E>
     public void resetToSource ()
     {
         setTuple(sourceString, decode(sourceString));
-    }
-
-    //----------------//
-    // setStringValue //
-    //----------------//
-    /**
-     * Modify the current value of the constant.
-     *
-     * @param string the new value, as a string to be checked
-     */
-    public void setStringValue (java.lang.String string)
-    {
-        setValue(decode(string));
-    }
-
-    //----------//
-    // setValue //
-    //----------//
-    /**
-     * Assign a new value to the constant.
-     *
-     * @param value new value
-     */
-    public void setValue (E value)
-    {
-        setTuple(value.toString(), value);
     }
 
     //------------------//
@@ -402,33 +396,6 @@ public abstract class Constant<E>
         }
     }
 
-    //----------------//
-    // getValueOrigin //
-    //----------------//
-    /**
-     * Convenient method, reporting the origin of the current value for
-     * this constant, either SRC or USR.
-     *
-     * @return a mnemonic for the value origin
-     */
-    java.lang.String getValueOrigin ()
-    {
-        ConstantManager mgr = ConstantManager.getInstance();
-        java.lang.String cur = getStringValue();
-        java.lang.String usr = mgr.getConstantUserValue(qualifiedName);
-        java.lang.String src = sourceString;
-
-        if (cur.equals(src)) {
-            return "SRC";
-        }
-
-        if (cur.equals(usr)) {
-            return "USR";
-        }
-
-        return "???";
-    }
-
     //------------------//
     // checkInitialized //
     //------------------//
@@ -470,7 +437,33 @@ public abstract class Constant<E>
         return tuple.get();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //----------------//
+    // getValueOrigin //
+    //----------------//
+    /**
+     * Convenient method, reporting the origin of the current value for
+     * this constant, either SRC or USR.
+     *
+     * @return a mnemonic for the value origin
+     */
+    java.lang.String getValueOrigin ()
+    {
+        ConstantManager mgr = ConstantManager.getInstance();
+        java.lang.String cur = getStringValue();
+        java.lang.String usr = mgr.getConstantUserValue(qualifiedName);
+        java.lang.String src = sourceString;
+
+        if (cur.equals(src)) {
+            return "SRC";
+        }
+
+        if (cur.equals(usr)) {
+            return "USR";
+        }
+
+        return "???";
+    }
+
     //-------//
     // Angle //
     //-------//
@@ -480,7 +473,6 @@ public abstract class Constant<E>
     public static class Angle
             extends Constant.Double
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
@@ -504,7 +496,6 @@ public abstract class Constant<E>
     public static class Boolean
             extends Constant<java.lang.Boolean>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
@@ -518,7 +509,6 @@ public abstract class Constant<E>
             super(null, java.lang.Boolean.toString(defaultValue), description);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Convenient method to access this boolean value
          *
@@ -547,7 +537,6 @@ public abstract class Constant<E>
     public static class Color
             extends Constant<java.awt.Color>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Normal constructor, with a String type for default value
@@ -566,7 +555,6 @@ public abstract class Constant<E>
             setUnitAndName(unit, name);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //-------------//
         // decodeColor //
         //-------------//
@@ -609,7 +597,6 @@ public abstract class Constant<E>
     public static class Double
             extends Constant<java.lang.Double>
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         public static final Double ZERO = new Double("none", 0, "Zero");
 
@@ -626,7 +613,6 @@ public abstract class Constant<E>
             TWO.setUnitAndName(Constant.class.getName(), "doubleTwo");
         }
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Double (java.lang.String quantityUnit,
                        double defaultValue,
                        java.lang.String description)
@@ -634,7 +620,6 @@ public abstract class Constant<E>
             super(quantityUnit, java.lang.Double.toString(defaultValue), description);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected java.lang.Double decode (java.lang.String str)
         {
@@ -648,11 +633,9 @@ public abstract class Constant<E>
     public static class Enum<E extends java.lang.Enum<E>>
             extends Constant<java.lang.Enum<E>>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Class classe;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Enum (Class classe,
                      E defaultValue,
                      java.lang.String description)
@@ -661,7 +644,6 @@ public abstract class Constant<E>
             this.classe = classe;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public E getSourceValue ()
         {
@@ -690,7 +672,6 @@ public abstract class Constant<E>
     public static class Integer
             extends Constant<java.lang.Integer>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
@@ -706,7 +687,6 @@ public abstract class Constant<E>
             super(quantityUnit, java.lang.Integer.toString(defaultValue), description);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected java.lang.Integer decode (java.lang.String str)
         {
@@ -723,7 +703,6 @@ public abstract class Constant<E>
     public static class Ratio
             extends Constant.Double
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         public static final Ratio ZERO = new Ratio(0, "zero");
 
@@ -731,7 +710,6 @@ public abstract class Constant<E>
             ZERO.setUnitAndName(Constant.class.getName(), "ratioZero");
         }
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
@@ -754,7 +732,6 @@ public abstract class Constant<E>
     public static class String
             extends Constant<java.lang.String>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Normal constructor, with a string type for default value
@@ -785,7 +762,6 @@ public abstract class Constant<E>
             super(null, defaultValue, description);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected java.lang.String decode (java.lang.String str)
         {
@@ -801,13 +777,11 @@ public abstract class Constant<E>
      */
     private static class Tuple
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final java.lang.String currentString;
 
         final Object cachedValue;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Tuple (java.lang.String currentString,
                       Object cachedValue)
         {
@@ -818,11 +792,11 @@ public abstract class Constant<E>
             this.cachedValue = cachedValue;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public java.lang.String toString ()
         {
             return currentString;
         }
     }
+
 }

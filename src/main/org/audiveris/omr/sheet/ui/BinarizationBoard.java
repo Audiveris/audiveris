@@ -55,7 +55,6 @@ import java.awt.Rectangle;
 public class BinarizationBoard
         extends Board
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BinarizationBoard.class);
 
@@ -65,7 +64,6 @@ public class BinarizationBoard
     /** Format used for every double field. */
     private static final String format = "%.2f";
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The related sheet. */
     private final Sheet sheet;
@@ -74,16 +72,12 @@ public class BinarizationBoard
     private final LDoubleField mean = new LDoubleField(false, "Mean", "Mean value", format);
 
     /** Standard deviation in neighborhood. */
-    private final LDoubleField stdDev = new LDoubleField(
-            false,
-            "StdDev",
-            "Standard deviation value",
-            format);
+    private final LDoubleField stdDev
+            = new LDoubleField(false, "StdDev", "Standard deviation value", format);
 
     /** Computed threshold. */
     private final LDoubleField threshold = new LDoubleField(false, "Thres.", "Threshold", format);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BinarizationBoard object.
      *
@@ -91,21 +85,14 @@ public class BinarizationBoard
      */
     public BinarizationBoard (Sheet sheet)
     {
-        super(
-                Board.BINARIZATION,
-                sheet.getLocationService(),
-                eventClasses,
-                false,
-                false,
-                false,
-                false);
+        super(Board.BINARIZATION, sheet.getLocationService(), eventClasses, false, false, false,
+              false);
 
         this.sheet = sheet;
 
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //
     //---------//
     // onEvent //
@@ -150,10 +137,8 @@ public class BinarizationBoard
                 PixelFilter filter = desc.getFilter(source);
 
                 if (filter == null) {
-                    filter = new RandomFilter(
-                            source,
-                            AdaptiveDescriptor.getDefaultMeanCoeff(),
-                            AdaptiveDescriptor.getDefaultStdDevCoeff());
+                    filter = new RandomFilter(source, AdaptiveDescriptor.getDefaultMeanCoeff(),
+                                              AdaptiveDescriptor.getDefaultStdDevCoeff());
                 }
 
                 PixelFilter.Context context = filter.getContext(rect.x, rect.y);

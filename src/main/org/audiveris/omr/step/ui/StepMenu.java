@@ -52,16 +52,13 @@ import javax.swing.event.MenuEvent;
  */
 public class StepMenu
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StepMenu.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The concrete UI menu. */
     private final JMenu menu;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Generates the menu to be inserted in the application pull-down menus.
      *
@@ -82,7 +79,6 @@ public class StepMenu
         menu.addMenuListener(new MyMenuListener());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getMenu //
     //---------//
@@ -112,7 +108,6 @@ public class StepMenu
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // StepAction //
     //------------//
@@ -122,12 +117,10 @@ public class StepMenu
     private static class StepAction
             extends AbstractAction
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // The related step
         final Step step;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public StepAction (Step step)
         {
             super(step.toString());
@@ -135,7 +128,6 @@ public class StepMenu
             putValue(SHORT_DESCRIPTION, step.getDescription());
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -153,7 +145,7 @@ public class StepMenu
                             int answer = JOptionPane.showConfirmDialog(
                                     OMR.gui.getFrame(),
                                     "About to re-perform step " + step + " from scratch."
-                                    + "\nDo you confirm?",
+                                            + "\nDo you confirm?",
                                     "Redo confirmation",
                                     JOptionPane.YES_NO_OPTION,
                                     JOptionPane.WARNING_MESSAGE);
@@ -198,14 +190,12 @@ public class StepMenu
     private static class StepItem
             extends JCheckBoxMenuItem
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public StepItem (Step step)
         {
             super(new StepAction(step));
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public void displayState (SheetStub stub,
                                   boolean isIdle)
         {
@@ -238,7 +228,6 @@ public class StepMenu
     private class MyMenuListener
             extends AbstractMenuListener
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void menuSelected (MenuEvent e)

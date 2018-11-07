@@ -64,7 +64,6 @@ public class FermataInter
         extends AbstractInter
         implements InterEnsemble
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -80,7 +79,6 @@ public class FermataInter
         }
     };
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code FermataInter} object.
      *
@@ -100,7 +98,6 @@ public class FermataInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -140,8 +137,7 @@ public class FermataInter
         sig.computeContextualGrade(dot);
 
         final double grade = 0.5 * (arc.getContextualGrade() + dot.getContextualGrade());
-        final Shape shape = (arcShape == Shape.FERMATA_ARC) ? Shape.FERMATA
-                : Shape.FERMATA_BELOW;
+        final Shape shape = (arcShape == Shape.FERMATA_ARC) ? Shape.FERMATA : Shape.FERMATA_BELOW;
         final FermataInter fermata = new FermataInter(shape, grade);
         fermata.setStaff(staff);
         sig.addVertex(fermata);
@@ -296,8 +292,8 @@ public class FermataInter
 
             // If chord is mirrored, select the closest vertically
             if (chord.getMirror() != null) {
-                double dyMirror = Math.sqrt(
-                        GeoUtil.ptDistanceSq(chord.getMirror().getBounds(), center.x, center.y));
+                double dyMirror = Math.sqrt(GeoUtil.ptDistanceSq(chord.getMirror().getBounds(),
+                                                                 center.x, center.y));
 
                 if (dyMirror < dyChord) {
                     dyChord = dyMirror;
@@ -312,8 +308,8 @@ public class FermataInter
 
             if (dyChord > maxDy) {
                 // Check vertical distance between fermata and staff
-                final Staff chordStaff = (shape == Shape.FERMATA) ? chord.getTopStaff()
-                        : chord.getBottomStaff();
+                final Staff chordStaff = (shape == Shape.FERMATA) ? chord.getTopStaff() : chord
+                        .getBottomStaff();
                 final int dyStaff = chordStaff.distanceTo(center);
 
                 if (dyStaff > maxDy) {
@@ -355,17 +351,14 @@ public class FermataInter
         return super.internals() + " " + shape;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction maxFermataDy = new Scale.Fraction(
-                2.5,
-                "Maximum vertical distance between fermata center and related chord/staff/barline");
+        private final Scale.Fraction maxFermataDy = new Scale.Fraction(2.5,
+                                                                       "Maximum vertical distance between fermata center and related chord/staff/barline");
     }
 }

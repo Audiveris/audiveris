@@ -53,11 +53,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ArticulationInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ArticulationInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ArticulationInter object.
      *
@@ -79,7 +77,6 @@ public class ArticulationInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -228,8 +225,7 @@ public class ArticulationInter
 
         final SystemInfo system = systemHeadChords.get(0).getSig().getSystem();
         final Scale scale = system.getSheet().getScale();
-        final int maxDx = scale.toPixels(
-                ChordArticulationRelation.getXOutGapMaximum(manual));
+        final int maxDx = scale.toPixels(ChordArticulationRelation.getXOutGapMaximum(manual));
         final int maxDy = scale.toPixels(ChordArticulationRelation.getYGapMaximum(manual));
         final int minDy = scale.toPixels(ChordArticulationRelation.getYGapMinimum(manual));
         final Rectangle articBox = getBounds();
@@ -237,10 +233,8 @@ public class ArticulationInter
         final Rectangle luBox = new Rectangle(arcticCenter);
         luBox.grow(maxDx, maxDy);
 
-        final List<Inter> chords = Inters.intersectedInters(
-                systemHeadChords,
-                GeoOrder.BY_ABSCISSA,
-                luBox);
+        final List<Inter> chords = Inters.intersectedInters(systemHeadChords, GeoOrder.BY_ABSCISSA,
+                                                            luBox);
 
         if (chords.isEmpty()) {
             return null;
@@ -263,8 +257,8 @@ public class ArticulationInter
             // Select proper chord reference point (top or bottom)
             int yRef = (arcticCenter.y > center.y) ? (chordBox.y + chordBox.height) : chordBox.y;
             double absXGap = Math.abs(center.x - arcticCenter.x);
-            double yGap = (arcticCenter.y > center.y) ? (arcticCenter.y - yRef)
-                    : (yRef - arcticCenter.y);
+            double yGap = (arcticCenter.y > center.y) ? (arcticCenter.y - yRef) : (yRef
+                                                                                           - arcticCenter.y);
 
             if (yGap < minDy) {
                 continue;

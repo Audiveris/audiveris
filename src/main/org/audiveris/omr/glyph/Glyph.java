@@ -81,12 +81,9 @@ public class Glyph
         extends AbstractWeightedEntity
         implements NearLine
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Glyph.class);
+    private static final Logger logger = LoggerFactory.getLogger(Glyph.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -131,7 +128,6 @@ public class Glyph
     /** Absolute slope of the line WRT abscissa axis. */
     protected Double slope;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BasicGlyph} object.
      *
@@ -161,7 +157,6 @@ public class Glyph
         this.runTable = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // contains //
     //----------//
@@ -183,12 +178,8 @@ public class Glyph
         StringBuilder sb = new StringBuilder();
 
         // Admin
-        sb.append(
-                String.format(
-                        "%s#%s @%s%n",
-                        getClass().getSimpleName(),
-                        id,
-                        Integer.toHexString(hashCode())));
+        sb.append(String.format("%s#%s @%s%n", getClass().getSimpleName(), id, Integer.toHexString(
+                                hashCode())));
 
         if (isVip()) {
             sb.append(String.format("   vip%n"));
@@ -591,12 +582,8 @@ public class Glyph
 
             if (line != null) {
                 ///g.draw(line);
-                g.draw(
-                        new Line2D.Double(
-                                line.getX1(),
-                                line.getY1() + 0.5,
-                                line.getX2() + 1,
-                                line.getY2() + 0.5));
+                g.draw(new Line2D.Double(line.getX1(), line.getY1() + 0.5, line.getX2() + 1, line
+                                         .getY2() + 0.5));
             }
         }
     }

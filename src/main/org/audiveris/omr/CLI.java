@@ -72,11 +72,9 @@ import java.util.concurrent.Callable;
  */
 public class CLI
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CLI.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Name of the program. */
     private final String toolName;
 
@@ -89,7 +87,6 @@ public class CLI
     /** CLI parser. */
     private final CmdLineParser parser = new CmdLineParser(params);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new CLI object.
      *
@@ -100,7 +97,6 @@ public class CLI
         this.toolName = toolName;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getCliTasks //
     //-------------//
@@ -308,7 +304,7 @@ public class CLI
         if (params.transcribe) {
             if ((params.step != null) && (params.step != Step.last())) {
                 String msg = "'-transcribe' option not compatible with '-step " + params.step
-                             + "' option";
+                                     + "' option";
                 throw new CmdLineException(parser, msg);
             }
 
@@ -316,7 +312,6 @@ public class CLI
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // CliTask //
     //---------//
@@ -326,7 +321,6 @@ public class CLI
     public abstract static class CliTask
             implements Callable<Void>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Source file path. */
         public final Path path;
@@ -334,7 +328,6 @@ public class CLI
         /** Radix. */
         private final String radix;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public CliTask (Path path)
         {
             this.path = path;
@@ -344,7 +337,6 @@ public class CLI
             radix = (alias != null) ? alias : nameSansExt;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public Void call ()
                 throws Exception
@@ -400,7 +392,6 @@ public class CLI
     public static class ClassOptionHandler
             extends OptionHandler<Properties>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public ClassOptionHandler (CmdLineParser parser,
                                    OptionDef option,
@@ -409,7 +400,6 @@ public class CLI
             super(parser, option, setter);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String getDefaultMetaVariable ()
         {
@@ -449,7 +439,6 @@ public class CLI
     public static class IntArrayOptionHandler
             extends OptionHandler<Integer>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public IntArrayOptionHandler (CmdLineParser parser,
                                       OptionDef option,
@@ -458,7 +447,6 @@ public class CLI
             super(parser, option, setter);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String getDefaultMetaVariable ()
         {
@@ -511,7 +499,6 @@ public class CLI
      */
     public static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Should symbols annotations be produced?. */
         @Option(name = "-annotate", usage = "(advanced) Annotate book symbols")
@@ -534,7 +521,8 @@ public class CLI
         boolean helpMode;
 
         /** The map of application options. */
-        @Option(name = "-option", usage = "Define an application constant", handler = PropertyOptionHandler.class)
+        @Option(name = "-option", usage = "Define an application constant", handler
+                = PropertyOptionHandler.class)
         Properties options;
 
         /** Output directory. */
@@ -546,7 +534,8 @@ public class CLI
         boolean print;
 
         /** Ability to run a class on each valid sheet. */
-        @Option(name = "-run", usage = "(advanced) Run provided class on valid sheets", handler = ClassOptionHandler.class)
+        @Option(name = "-run", usage = "(advanced) Run provided class on valid sheets", handler
+                = ClassOptionHandler.class)
         Class runClass;
 
         /** Should samples be produced?. */
@@ -558,7 +547,8 @@ public class CLI
         boolean save;
 
         /** The set of sheet IDs to load. */
-        @Option(name = "-sheets", usage = "Select specific sheets numbers and ranges (like 2-5)", handler = IntArrayOptionHandler.class)
+        @Option(name = "-sheets", usage = "Select specific sheets numbers and ranges (like 2-5)", handler
+                = IntArrayOptionHandler.class)
         private ArrayList<Integer> sheets;
 
         /** Specific step. */
@@ -575,12 +565,10 @@ public class CLI
         /** Final arguments. */
         List<Path> arguments = new ArrayList<Path>();
 
-        //~ Constructors ---------------------------------------------------------------------------
         private Parameters ()
         {
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //-------------//
         // getSheetIds //
         //-------------//
@@ -609,7 +597,6 @@ public class CLI
     public static class PropertyOptionHandler
             extends OptionHandler<Properties>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public PropertyOptionHandler (CmdLineParser parser,
                                       OptionDef option,
@@ -618,12 +605,10 @@ public class CLI
             super(parser, option, setter);
 
             if (setter.asFieldSetter() == null) {
-                throw new IllegalArgumentException(
-                        "PropertyOptionHandler can only work with fields");
+                throw new IllegalArgumentException("PropertyOptionHandler can only work with fields");
             }
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String getDefaultMetaVariable ()
         {
@@ -663,14 +648,12 @@ public class CLI
     private class BookTask
             extends ProcessingTask
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public BookTask (Path path)
         {
             super(path);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -693,14 +676,12 @@ public class CLI
     private class InputTask
             extends ProcessingTask
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public InputTask (Path path)
         {
             super(path);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -723,14 +704,12 @@ public class CLI
     private abstract class ProcessingTask
             extends CliTask
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public ProcessingTask (Path path)
         {
             super(path);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void processBook (Book book)
         {
@@ -783,8 +762,8 @@ public class CLI
                 // Specific class to run?
                 if (params.runClass != null) {
                     try {
-                        Constructor cons = params.runClass.getConstructor(
-                                new Class[]{Book.class, SortedSet.class});
+                        Constructor cons = params.runClass.getConstructor(new Class[]{Book.class,
+                                                                                      SortedSet.class});
                         RunClass instance = (RunClass) cons.newInstance(book, sheetIds);
                         instance.process();
                     } catch (Throwable ex) {
@@ -853,14 +832,12 @@ public class CLI
     private static class SamplesTask
             extends CliTask
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public SamplesTask (Path path)
         {
             super(path);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

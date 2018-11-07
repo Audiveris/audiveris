@@ -49,7 +49,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class EndingInter
         extends AbstractInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Mandatory left leg. */
     @XmlElement(name = "left-leg")
@@ -65,7 +64,6 @@ public class EndingInter
 
     private final SegmentInter segment;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new EndingInter object.
      *
@@ -101,7 +99,6 @@ public class EndingInter
         this.rightLeg = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -233,23 +230,18 @@ public class EndingInter
         return null;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
             extends BasicImpacts
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
-        private static final String[] NAMES = new String[]{
-            "straight", "slope", "length", "leftBar",
-            "rightBar"
-        };
+        private static final String[] NAMES = new String[]{"straight", "slope", "length", "leftBar",
+                                                           "rightBar"};
 
         private static final double[] WEIGHTS = new double[]{1, 1, 1, 1, 1};
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double straight,
                         double slope,
                         double length,

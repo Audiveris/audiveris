@@ -52,7 +52,6 @@ import java.util.Map;
  */
 public abstract class Voices
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Voices.class);
 
@@ -126,7 +125,6 @@ public abstract class Voices
         }
     };
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // refinePage //
     //------------//
@@ -205,15 +203,14 @@ public abstract class Voices
 
                     final List<SlurInter> orphans = part.getSlurs(SlurInter.isBeginningOrphan);
 
-                    final Part precedingPart = prevSystem.getPartById(
-                            logicalPart.getId());
+                    final Part precedingPart = prevSystem.getPartById(logicalPart.getId());
 
                     if (precedingPart != null) {
                         final List<SlurInter> precOrphans = precedingPart.getSlurs(
                                 SlurInter.isEndingOrphan);
 
-                        final Map<SlurInter, SlurInter> links = part.getCrossSlurLinks(
-                                precedingPart); // Links: Slur -> prevSlur
+                        final Map<SlurInter, SlurInter> links = part
+                                .getCrossSlurLinks(precedingPart); // Links: Slur -> prevSlur
 
                         // Apply the links possibilities
                         for (Map.Entry<SlurInter, SlurInter> entry : links.entrySet()) {
@@ -373,13 +370,11 @@ public abstract class Voices
         return null;
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
     //-------------//
     // SlurAdapter //
     //-------------//
     private static interface SlurAdapter
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Report the slur connected to the left of the provided one.

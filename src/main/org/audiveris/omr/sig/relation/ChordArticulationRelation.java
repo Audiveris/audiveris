@@ -44,19 +44,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordArticulationRelation
         extends AbstractConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            ChordArticulationRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChordArticulationRelation.class);
 
-    private static final double[] WEIGHTS = new double[]{
-        constants.xWeight.getValue(),
-        constants.yWeight.getValue()
-    };
+    private static final double[] WEIGHTS = new double[]{constants.xWeight.getValue(),
+                                                         constants.yWeight.getValue()};
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -161,49 +156,38 @@ public class ChordArticulationRelation
         return getYGapMaximum(manual);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio articulationSupportCoeff = new Constant.Ratio(
-                3,
-                "Supporting coeff for (target) articulation");
+        private final Constant.Ratio articulationSupportCoeff = new Constant.Ratio(3,
+                                                                                   "Supporting coeff for (target) articulation");
 
-        private final Scale.Fraction xGapMax = new Scale.Fraction(
-                0.75,
-                "Maximum horizontal gap between articulation center & chord");
+        private final Scale.Fraction xGapMax = new Scale.Fraction(0.75,
+                                                                  "Maximum horizontal gap between articulation center & chord");
 
-        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(
-                1.0,
-                "Maximum manual horizontal gap between articulation center & chord");
+        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(1.0,
+                                                                        "Maximum manual horizontal gap between articulation center & chord");
 
-        private final Scale.Fraction yGapMax = new Scale.Fraction(
-                2.0,
-                "Maximum vertical gap between articulation center & chord");
+        private final Scale.Fraction yGapMax = new Scale.Fraction(2.0,
+                                                                  "Maximum vertical gap between articulation center & chord");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
-                3.0,
-                "Maximum manual vertical gap between articulation center & chord");
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(3.0,
+                                                                        "Maximum manual vertical gap between articulation center & chord");
 
-        private final Scale.Fraction yGapMin = new Scale.Fraction(
-                0.1,
-                "Minimum vertical gap between articulation center & chord");
+        private final Scale.Fraction yGapMin = new Scale.Fraction(0.1,
+                                                                  "Minimum vertical gap between articulation center & chord");
 
-        private final Scale.Fraction yGapMinManual = new Scale.Fraction(
-                0.05,
-                "Minimum manual vertical gap between articulation center & chord");
+        private final Scale.Fraction yGapMinManual = new Scale.Fraction(0.05,
+                                                                        "Minimum manual vertical gap between articulation center & chord");
 
-        private final Constant.Ratio xWeight = new Constant.Ratio(
-                3,
-                "Relative impact weight for xGap (in or out)");
+        private final Constant.Ratio xWeight = new Constant.Ratio(3,
+                                                                  "Relative impact weight for xGap (in or out)");
 
-        private final Constant.Ratio yWeight = new Constant.Ratio(
-                1,
-                "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(1,
+                                                                  "Relative impact weight for yGap");
     }
 }

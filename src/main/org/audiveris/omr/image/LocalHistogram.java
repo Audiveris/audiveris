@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 public class LocalHistogram
         implements MorphoConstants
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(LocalHistogram.class);
 
@@ -40,7 +39,6 @@ public class LocalHistogram
 
     private static final int MIN = 0;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //  private int[] hist=new int[256];
     private int[] counts = new int[256];
 
@@ -50,7 +48,6 @@ public class LocalHistogram
 
     private int binCount = 0;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LocalHistogram object.
      *
@@ -98,7 +95,6 @@ public class LocalHistogram
         init(index, width, height, pixels, pg, type);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public void add (LocalHistogram bh)
     {
         int u = Math.min(min, bh.min);

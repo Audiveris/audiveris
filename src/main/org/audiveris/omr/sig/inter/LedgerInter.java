@@ -36,12 +36,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class LedgerInter
         extends AbstractInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * Index of virtual line relative to staff.
      * Above staff if index is negative (-1, -2, etc)
-     *
+     * <p>
      * -2 -
      * -1 -
      * ---------------------------------
@@ -51,12 +50,11 @@ public class LedgerInter
      * ---------------------------------
      * +1 -
      * +2 -
-     *
+     * <p>
      * Below staff if index is positive (+1, +2, etc)
      */
     private Integer index;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LedgerInter object.
      *
@@ -89,7 +87,6 @@ public class LedgerInter
         super(null, null, null, null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

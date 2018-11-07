@@ -41,15 +41,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordTupletRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Assigned tuplet support coefficient. */
     private final double tupletCoeff;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TupletChordRelation} object.
      *
@@ -68,7 +65,6 @@ public class ChordTupletRelation
         this.tupletCoeff = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -136,21 +132,17 @@ public class ChordTupletRelation
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio tupletThreeSupportCoeff = new Constant.Ratio(
-                2 * 0.33,
-                "Supporting coeff for tuplet 3");
+        private final Constant.Ratio tupletThreeSupportCoeff = new Constant.Ratio(2 * 0.33,
+                                                                                  "Supporting coeff for tuplet 3");
 
-        private final Constant.Ratio tupletSixSupportCoeff = new Constant.Ratio(
-                2 * 0.17,
-                "Supporting coeff for tuplet 6");
+        private final Constant.Ratio tupletSixSupportCoeff = new Constant.Ratio(2 * 0.17,
+                                                                                "Supporting coeff for tuplet 6");
     }
 }

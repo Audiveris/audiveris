@@ -28,7 +28,6 @@ package org.audiveris.omr.util;
  */
 public interface Predicate<E>
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Run a check on the provided entity, and return the result

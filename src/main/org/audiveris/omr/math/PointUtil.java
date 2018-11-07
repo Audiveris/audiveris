@@ -35,7 +35,6 @@ import java.util.Comparator;
  */
 public abstract class PointUtil
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To compare points on abscissa. */
     public static final Comparator<Point> byAbscissa = new Comparator<Point>()
@@ -59,7 +58,6 @@ public abstract class PointUtil
         }
     };
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addition //
     //----------//
@@ -143,9 +141,10 @@ public abstract class PointUtil
     {
         double seg = p1.distance(p2);
 
-        return new Point2D.Double(
-                p2.getX() + ((dist * (p2.getX() - p1.getX())) / seg),
-                p2.getY() + ((dist * (p2.getY() - p1.getY())) / seg));
+        return new Point2D.Double(p2.getX() + ((dist * (p2.getX() - p1.getX())) / seg), p2.getY()
+                                                                                                + ((dist
+                                                                                                    * (p2
+                                          .getY() - p1.getY())) / seg));
     }
 
     //--------//
@@ -189,9 +188,8 @@ public abstract class PointUtil
      */
     public static Point2D middle (Line2D line)
     {
-        return new Point2D.Double(
-                (line.getX1() + line.getX2()) / 2.0,
-                (line.getY1() + line.getY2()) / 2.0);
+        return new Point2D.Double((line.getX1() + line.getX2()) / 2.0, (line.getY1() + line.getY2())
+                                                                               / 2.0);
     }
 
     //---------//

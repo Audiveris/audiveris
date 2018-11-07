@@ -34,7 +34,6 @@ import java.util.StringTokenizer;
 public class StructureElement
         implements MorphoConstants
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StructureElement.class);
 
@@ -43,7 +42,6 @@ public class StructureElement
     /** Epsilon value meant for equality testing: {@value}. */
     private static final double EPSILON = 1E-5;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private int[] mask;
 
     private int width = 1;
@@ -62,7 +60,6 @@ public class StructureElement
 
     public boolean offsetmodified = false;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StructureElement object.
      *
@@ -184,7 +181,6 @@ public class StructureElement
         vect = calcVect(mask, width);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public int[] Delta (int[] offset)
     {
         int[] astrel = this.T(offset);

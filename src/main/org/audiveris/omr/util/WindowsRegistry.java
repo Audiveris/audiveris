@@ -42,11 +42,9 @@ import java.util.List;
  */
 public class WindowsRegistry
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(WindowsRegistry.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // query //
     //-------//

@@ -103,12 +103,10 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class Staff
         implements AttachmentHolder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Staff.class);
+    private static final Logger logger = LoggerFactory.getLogger(Staff.class);
 
     /** To sort by staff id. */
     public static final Comparator<Staff> byId = new Comparator<Staff>()
@@ -132,7 +130,6 @@ public class Staff
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -190,14 +187,15 @@ public class Staff
     //---------------
     //
     /** Ledgers nearby, organized in a map. */
-    private final TreeMap<Integer, List<LedgerInter>> ledgerMap = new TreeMap<Integer, List<LedgerInter>>();
+    private final TreeMap<Integer, List<LedgerInter>> ledgerMap
+            = new TreeMap<Integer, List<LedgerInter>>();
 
     /** To flag a dummy staff. */
     private boolean dummy;
 
     /** Side barlines, if any. */
-    private final Map<HorizontalSide, BarlineInter> sideBars = new EnumMap<HorizontalSide, BarlineInter>(
-            HorizontalSide.class);
+    private final Map<HorizontalSide, BarlineInter> sideBars
+            = new EnumMap<HorizontalSide, BarlineInter>(HorizontalSide.class);
 
     /**
      * Area around the staff.
@@ -232,7 +230,6 @@ public class Staff
     /** Potential attachments. */
     private final AttachmentHolder attachments = new BasicAttachmentHolder();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create info about a staff, with its contained staff lines.
      *
@@ -273,57 +270,6 @@ public class Staff
     {
         this.id = id;
         this.lines = null;
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //-------------------//
-    // getCompetingClefs //
-    //-------------------//
-    /**
-     * Report the competing clef candidates active at provided abscissa.
-     *
-     * @param x provided abscissa
-     * @return the collection of competing clefs
-     */
-    public List<ClefInter> getCompetingClefs (int x)
-    {
-        // Look for clef on left side in staff (together with its competing clefs)
-        SIGraph sig = getSystem().getSig();
-        List<Inter> staffClefs = sig.inters(this, ClefInter.class);
-        Collections.sort(staffClefs, Inters.byAbscissa);
-
-        Inter lastClef = null;
-
-        for (Inter inter : staffClefs) {
-            int xClef = inter.getBounds().x;
-
-            if (xClef < x) {
-                lastClef = inter;
-            }
-        }
-
-        if (lastClef == null) {
-            return Collections.emptyList();
-        }
-
-        // Pick up this clef together with all competing clefs
-        Set<Relation> excs = sig.getExclusions(lastClef);
-        List<ClefInter> clefs = new ArrayList<ClefInter>();
-        clefs.add((ClefInter) lastClef);
-
-        for (Relation rel : excs) {
-            Inter inter = Graphs.getOppositeVertex(sig, rel, lastClef);
-
-            if (inter instanceof ClefInter) {
-                ClefInter clef = (ClefInter) inter;
-
-                if ((clef.getStaff() == this) && !clefs.contains(clef)) {
-                    clefs.add(clef);
-                }
-            }
-        }
-
-        return clefs;
     }
 
     //----------------------//
@@ -698,20 +644,16 @@ public class Staff
         Rectangle2D searchBox;
 
         if (rawPitch < 0) {
-            searchBox = new Rectangle2D.Double(
-                    point.getX(),
-                    point.getY(),
-                    0,
-                    top - point.getY() + 1);
+            searchBox
+                    = new Rectangle2D.Double(point.getX(), point.getY(), 0, top - point.getY() + 1);
         } else {
             searchBox = new Rectangle2D.Double(point.getX(), bottom, 0, point.getY() - bottom + 1);
         }
 
-        searchBox.setRect(
-                searchBox.getX() - specificInterline,
-                searchBox.getY() - specificInterline,
-                searchBox.getWidth() + (2 * specificInterline),
-                searchBox.getHeight() + (2 * specificInterline));
+        searchBox
+                .setRect(searchBox.getX() - specificInterline, searchBox.getY() - specificInterline,
+                         searchBox.getWidth() + (2 * specificInterline), searchBox.getHeight() + (2
+                                                                                                          * specificInterline));
 
         // Browse all staff ledgers
         Set<IndexedLedger> foundLedgers = new LinkedHashSet<IndexedLedger>();
@@ -763,6 +705,56 @@ public class Staff
         }
 
         return lines.get(idx);
+    }
+
+    //-------------------//
+    // getCompetingClefs //
+    //-------------------//
+    /**
+     * Report the competing clef candidates active at provided abscissa.
+     *
+     * @param x provided abscissa
+     * @return the collection of competing clefs
+     */
+    public List<ClefInter> getCompetingClefs (int x)
+    {
+        // Look for clef on left side in staff (together with its competing clefs)
+        SIGraph sig = getSystem().getSig();
+        List<Inter> staffClefs = sig.inters(this, ClefInter.class);
+        Collections.sort(staffClefs, Inters.byAbscissa);
+
+        Inter lastClef = null;
+
+        for (Inter inter : staffClefs) {
+            int xClef = inter.getBounds().x;
+
+            if (xClef < x) {
+                lastClef = inter;
+            }
+        }
+
+        if (lastClef == null) {
+            return Collections.emptyList();
+        }
+
+        // Pick up this clef together with all competing clefs
+        Set<Relation> excs = sig.getExclusions(lastClef);
+        List<ClefInter> clefs = new ArrayList<ClefInter>();
+        clefs.add((ClefInter) lastClef);
+
+        for (Relation rel : excs) {
+            Inter inter = Graphs.getOppositeVertex(sig, rel, lastClef);
+
+            if (inter instanceof ClefInter) {
+                ClefInter clef = (ClefInter) inter;
+
+                if ((clef.getStaff() == this) && !clefs.contains(clef)) {
+                    clefs.add(clef);
+                }
+            }
+        }
+
+        return clefs;
     }
 
     //----------------//
@@ -1397,8 +1389,8 @@ public class Staff
     public boolean removeBarline (BarlineInter barline)
     {
         // Purge sideBars if needed
-        for (Iterator<Entry<HorizontalSide, BarlineInter>> it = sideBars.entrySet().iterator();
-                it.hasNext();) {
+        for (Iterator<Entry<HorizontalSide, BarlineInter>> it = sideBars.entrySet().iterator(); it
+                .hasNext();) {
             Entry<HorizontalSide, BarlineInter> entry = it.next();
 
             if (entry.getValue() == barline) {
@@ -1830,14 +1822,12 @@ public class Staff
         logger.debug("Staff#{} sideBars:{}", id, sideBars);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
     public static class Adapter
             extends XmlAdapter<Integer, Staff>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Integer marshal (Staff staff)
@@ -1863,7 +1853,6 @@ public class Staff
      */
     public static class IndexedLedger
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** The ledger. */
         public final LedgerInter ledger;
@@ -1871,7 +1860,6 @@ public class Staff
         /** Staff-based line index. (-1, -2, ... above, +1, +2, ... below) */
         public final int index;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public IndexedLedger (LedgerInter ledger,
                               int index)
         {
@@ -1890,12 +1878,11 @@ public class Staff
     public static class StaffHolder
             extends Staff
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         /** Predefined place holders. */
-        private static ConcurrentHashMap<Integer, StaffHolder> holders = new ConcurrentHashMap<Integer, StaffHolder>();
+        private static ConcurrentHashMap<Integer, StaffHolder> holders
+                = new ConcurrentHashMap<Integer, StaffHolder>();
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create a place holder
          *
@@ -1906,7 +1893,6 @@ public class Staff
             super(id);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Check provided inter, to replace staff holder with proper staff instance.
          *
@@ -1955,15 +1941,12 @@ public class Staff
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean showDefiningPoints = new Constant.Boolean(
-                false,
-                "Should we show defining points?");
+        private final Constant.Boolean showDefiningPoints = new Constant.Boolean(false,
+                                                                                 "Should we show defining points?");
 
-        private final Scale.Fraction definingPointSize = new Scale.Fraction(
-                0.05,
-                "Display width of a defining point");
+        private final Scale.Fraction definingPointSize = new Scale.Fraction(0.05,
+                                                                            "Display width of a defining point");
     }
 
     //--------------//
@@ -1975,7 +1958,6 @@ public class Staff
      */
     private static class LedgersEntry
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlAttribute
         private final int index;
@@ -1985,7 +1967,6 @@ public class Staff
         @XmlValue
         private final List<LedgerInter> ledgers;
 
-        //~ Constructors ---------------------------------------------------------------------------
         // Needed for JAXB
         public LedgersEntry ()
         {

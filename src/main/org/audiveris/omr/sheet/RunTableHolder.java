@@ -47,12 +47,9 @@ import javax.xml.bind.annotation.XmlAttribute;
 @XmlAccessorType(value = XmlAccessType.NONE)
 public class RunTableHolder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            RunTableHolder.class);
+    private static final Logger logger = LoggerFactory.getLogger(RunTableHolder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Direct access to data, if any. */
     private RunTable data;
 
@@ -63,7 +60,6 @@ public class RunTableHolder
     /** To avoid useless marshalling to disk. */
     private boolean modified = false;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code RunTableHolder} object.
      *
@@ -80,7 +76,6 @@ public class RunTableHolder
         pathString = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//
@@ -101,8 +96,8 @@ public class RunTableHolder
                     Unmarshaller um = jaxbContext.createUnmarshaller();
 
                     // Open book file system
-                    Path dataFile = stub.getBook().openSheetFolder(stub.getNumber())
-                            .resolve(pathString);
+                    Path dataFile = stub.getBook().openSheetFolder(stub.getNumber()).resolve(
+                            pathString);
                     logger.debug("path: {}", dataFile);
 
                     InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ);

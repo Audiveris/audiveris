@@ -69,13 +69,11 @@ import java.util.List;
  */
 public class StemScaler
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StemScaler.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Related sheet. */
     private final Sheet sheet;
@@ -86,7 +84,6 @@ public class StemScaler
     /** Most frequent length of horizontal foreground runs found, if any. */
     private Range peak;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StemScaler object.
      *
@@ -97,7 +94,6 @@ public class StemScaler
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // displayChart //
     //--------------//
@@ -156,13 +152,14 @@ public class StemScaler
     private StemScale computeStem ()
     {
         final int area = histoKeeper.function.getArea();
-        histoKeeper.peakFinder.setQuorum(
-                new Quorum((int) Math.rint(area * constants.minValueRatio.getValue())));
+        histoKeeper.peakFinder.setQuorum(new Quorum((int) Math.rint(area * constants.minValueRatio
+                .getValue())));
 
-        final List<Range> stemPeaks = histoKeeper.peakFinder.findPeaks(
-                1,
-                (int) Math.rint(area * constants.minDerivativeRatio.getValue()),
-                constants.minGainRatio.getValue());
+        final List<Range> stemPeaks = histoKeeper.peakFinder.findPeaks(1, (int) Math.rint(area
+                                                                                                  * constants.minDerivativeRatio
+                                                                               .getValue()),
+                                                                       constants.minGainRatio
+                                                                               .getValue());
 
         if (!stemPeaks.isEmpty()) {
             peak = stemPeaks.get(0);
@@ -194,12 +191,8 @@ public class StemScaler
         ByteProcessor buf = picture.getSource(Picture.SourceKey.NO_STAFF);
         BufferedImage img = buf.getBufferedImage();
         StemsCleaner eraser = new StemsCleaner(buf, img.createGraphics(), sheet);
-        eraser.eraseShapes(
-                Arrays.asList(
-                        Shape.THICK_BARLINE,
-                        Shape.THICK_CONNECTOR,
-                        Shape.THIN_BARLINE,
-                        Shape.THIN_CONNECTOR));
+        eraser.eraseShapes(Arrays.asList(Shape.THICK_BARLINE, Shape.THICK_CONNECTOR,
+                                         Shape.THIN_BARLINE, Shape.THIN_CONNECTOR));
         buf = new ByteProcessor(img);
         buf.threshold(127); // Binarize
 
@@ -211,46 +204,36 @@ public class StemScaler
         return buf;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print the StopWatch on stem computation?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print the StopWatch on stem computation?");
 
-        private final Constant.Boolean keepStemImage = new Constant.Boolean(
-                false,
-                "Should we store stem images on disk?");
+        private final Constant.Boolean keepStemImage = new Constant.Boolean(false,
+                                                                            "Should we store stem images on disk?");
 
-        private final Constant.Boolean useHeader = new Constant.Boolean(
-                true,
-                "Should we erase the header at system start");
+        private final Constant.Boolean useHeader = new Constant.Boolean(true,
+                                                                        "Should we erase the header at system start");
 
-        private final Scale.Fraction systemVerticalMargin = new Scale.Fraction(
-                2.0,
-                "Margin erased above & below system header area");
+        private final Scale.Fraction systemVerticalMargin = new Scale.Fraction(2.0,
+                                                                               "Margin erased above & below system header area");
 
-        private final Constant.Ratio minValueRatio = new Constant.Ratio(
-                0.1,
-                "Absolute ratio of total pixels for peak acceptance");
+        private final Constant.Ratio minValueRatio = new Constant.Ratio(0.1,
+                                                                        "Absolute ratio of total pixels for peak acceptance");
 
-        private final Constant.Ratio minDerivativeRatio = new Constant.Ratio(
-                0.05,
-                "Absolute ratio of total pixels for strong derivative");
+        private final Constant.Ratio minDerivativeRatio = new Constant.Ratio(0.05,
+                                                                             "Absolute ratio of total pixels for strong derivative");
 
-        private final Constant.Ratio minGainRatio = new Constant.Ratio(
-                0.1,
-                "Minimum ratio of peak runs for stem peak extension");
+        private final Constant.Ratio minGainRatio = new Constant.Ratio(0.1,
+                                                                       "Minimum ratio of peak runs for stem peak extension");
 
-        private final Constant.Ratio stemAsForeRatio = new Constant.Ratio(
-                1.0,
-                "Default stem thickness defined as ratio of foreground peak");
+        private final Constant.Ratio stemAsForeRatio = new Constant.Ratio(1.0,
+                                                                          "Default stem thickness defined as ratio of foreground peak");
     }
 
     //-------------//
@@ -261,13 +244,11 @@ public class StemScaler
      */
     private class HistoKeeper
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final IntegerFunction function;
 
         private final HiLoPeakFinder peakFinder;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create an instance of histoKeeper.
          *
@@ -281,7 +262,6 @@ public class StemScaler
             peakFinder = new HiLoPeakFinder("stem", function);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //-----------//
         // writePlot //
         //-----------//
@@ -320,7 +300,6 @@ public class StemScaler
     private static class StemsCleaner
             extends PageCleaner
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public StemsCleaner (ByteProcessor buffer,
                              Graphics2D g,
@@ -329,7 +308,6 @@ public class StemScaler
             super(buffer, g, sheet);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //-------------//
         // eraseShapes //
         //-------------//

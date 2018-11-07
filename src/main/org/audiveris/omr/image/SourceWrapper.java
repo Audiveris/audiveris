@@ -31,12 +31,10 @@ import ij.process.ByteProcessor;
 public class SourceWrapper
         implements PixelSource
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Underlying pixel source. */
     protected final ByteProcessor source;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SourceWrapper object.
      *
@@ -47,7 +45,6 @@ public class SourceWrapper
         this.source = source;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // get //
     //-----//

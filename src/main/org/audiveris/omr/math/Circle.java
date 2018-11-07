@@ -53,14 +53,12 @@ import java.util.List;
  */
 public class Circle
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Circle.class);
 
     /** Size for matrices used to compute the circle. */
     private static final int DIM = 4;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Center. */
     private Point2D.Double center;
 
@@ -85,7 +83,6 @@ public class Circle
     /** Bézier curve for circle arc. */
     private CubicCurve2D curve;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of Circle, defined by a sequence of points.
      *
@@ -130,7 +127,6 @@ public class Circle
         computeAngles(first, middle, last);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // ccw //
     //-----//
@@ -310,8 +306,10 @@ public class Circle
         CubicCurve2D c = getCurve();
 
         return new Point2D.Double(
-                (c.getX1() + (3 * c.getCtrlX1()) + (3 * c.getCtrlX2()) + c.getX2()) / 8,
-                (c.getY1() + (3 * c.getCtrlY1()) + (3 * c.getCtrlY2()) + c.getY2()) / 8);
+                (c.getX1() + (3 * c.getCtrlX1()) + (3 * c.getCtrlX2()) + c.getX2()) / 8, (c.getY1()
+                                                                                                  + (3
+                                                                                                     * c
+                        .getCtrlY1()) + (3 * c.getCtrlY2()) + c.getY2()) / 8);
     }
 
     //-----------//
@@ -378,8 +376,8 @@ public class Circle
         sb.append(String.format(" radius=%.1f", radius));
 
         if ((firstAngle != null) && (lastAngle != null)) {
-            sb.append(
-                    String.format(" degrees=(%.0f,%.0f)", toDegrees(firstAngle), toDegrees(lastAngle)));
+            sb.append(String.format(" degrees=(%.0f,%.0f)", toDegrees(firstAngle), toDegrees(
+                                    lastAngle)));
         }
 
         sb.append("}");
@@ -503,8 +501,8 @@ public class Circle
     private void computeCurve ()
     {
         // Make sure we do have an arc defined, rather than a full circle
-        if (((lastAngle == null) || (lastAngle.isNaN()))
-            || ((firstAngle == null) || (firstAngle.isNaN()))) {
+        if (((lastAngle == null) || (lastAngle.isNaN())) || ((firstAngle == null) || (firstAngle
+                .isNaN()))) {
             return;
         }
 
@@ -583,25 +581,11 @@ public class Circle
 
         // Bezier curve (make sure the curve goes from left to right)
         if (M0.get(0, 0) <= M3.get(0, 0)) {
-            curve = new CubicCurve2D.Double(
-                    M0.get(0, 0),
-                    M0.get(1, 0),
-                    M1.get(0, 0),
-                    M1.get(1, 0),
-                    M2.get(0, 0),
-                    M2.get(1, 0),
-                    M3.get(0, 0),
-                    M3.get(1, 0));
+            curve = new CubicCurve2D.Double(M0.get(0, 0), M0.get(1, 0), M1.get(0, 0), M1.get(1, 0),
+                                            M2.get(0, 0), M2.get(1, 0), M3.get(0, 0), M3.get(1, 0));
         } else {
-            curve = new CubicCurve2D.Double(
-                    M3.get(0, 0),
-                    M3.get(1, 0),
-                    M2.get(0, 0),
-                    M2.get(1, 0),
-                    M1.get(0, 0),
-                    M1.get(1, 0),
-                    M0.get(0, 0),
-                    M0.get(1, 0));
+            curve = new CubicCurve2D.Double(M3.get(0, 0), M3.get(1, 0), M2.get(0, 0), M2.get(1, 0),
+                                            M1.get(0, 0), M1.get(1, 0), M0.get(0, 0), M0.get(1, 0));
         }
     }
 

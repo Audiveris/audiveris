@@ -56,15 +56,12 @@ import java.util.TreeSet;
  */
 public class TupletsBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TupletsBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated measure stack. */
     private final MeasureStack stack;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TupletsBuilder} object.
      *
@@ -75,7 +72,6 @@ public class TupletsBuilder
         this.stack = stack;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // getEmbracedChords //
     //-------------------//
@@ -93,9 +89,8 @@ public class TupletsBuilder
 
         // We consider each candidate in turn, with its duration
         // in order to determine the duration base of the tuplet
-        TupletCollector collector = new TupletCollector(
-                tuplet,
-                new TreeSet<AbstractChordInter>(Inters.byFullAbscissa));
+        TupletCollector collector = new TupletCollector(tuplet, new TreeSet<AbstractChordInter>(
+                                                        Inters.byFullAbscissa));
 
         final Staff targetStaff = getTargetStaff(candidates);
 
@@ -286,25 +281,21 @@ public class TupletsBuilder
         return chords;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ByEuclidian //
     //-------------//
     private static class ByEuclidian
             implements Comparator<AbstractChordInter>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** The location of the tuplet sign */
         private final Point signPoint;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ByEuclidian (Point signPoint)
         {
             this.signPoint = signPoint;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /** Compare their euclidian distance from the signPoint reference */
         @Override
         public int compare (AbstractChordInter c1,
@@ -331,13 +322,10 @@ public class TupletsBuilder
      */
     private static class TupletCollector
     {
-        //~ Enumerations ---------------------------------------------------------------------------
 
         /** Describe the current status of the tuplet collector */
         public enum Status
         {
-            //~ Enumeration constant initializers --------------------------------------------------
-
             TOO_SHORT,
             OK,
             TOO_LONG,
@@ -345,7 +333,6 @@ public class TupletsBuilder
             OUTSIDE;
         }
 
-        //~ Instance fields ------------------------------------------------------------------------
         /** Underlying sign. */
         private final TupletInter tuplet;
 
@@ -367,7 +354,6 @@ public class TupletsBuilder
         /** Current status. */
         private Status status;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public TupletCollector (TupletInter tuplet,
                                 SortedSet<AbstractChordInter> chords)
         {
@@ -376,7 +362,6 @@ public class TupletsBuilder
             this.chords = chords;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public void dump ()
         {
             StringBuilder sb = new StringBuilder();
@@ -406,8 +391,8 @@ public class TupletsBuilder
         public String getStatusMessage ()
         {
             StringBuilder sb = new StringBuilder();
-            sb.append(status).append(" sequence in ").append(tuplet.getShape()).append(": ")
-                    .append(total);
+            sb.append(status).append(" sequence in ").append(tuplet.getShape()).append(": ").append(
+                    total);
 
             if (expectedTotal != Rational.MAX_VALUE) {
                 sb.append(" vs ").append(expectedTotal);
@@ -504,8 +489,8 @@ public class TupletsBuilder
         {
             int signX = tuplet.getCenter().x;
 
-            return (signX >= chords.first().getTailLocation().x)
-                   && (signX <= chords.last().getTailLocation().x);
+            return (signX >= chords.first().getTailLocation().x) && (signX <= chords.last()
+                    .getTailLocation().x);
         }
     }
 }

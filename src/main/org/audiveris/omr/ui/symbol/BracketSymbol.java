@@ -39,7 +39,6 @@ import java.awt.geom.Rectangle2D;
 public class BracketSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     // The upper serif
     private static final BasicSymbol upperSymbol = Symbols.SYMBOL_BRACKET_UPPER_SERIF;
@@ -47,7 +46,6 @@ public class BracketSymbol
     // The lower serif
     private static final BasicSymbol lowerSymbol = Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a BracketSymbol (which is made of upper and lower parts)
      *
@@ -58,7 +56,6 @@ public class BracketSymbol
         super(isIcon, Shape.BRACKET, false);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -84,9 +81,8 @@ public class BracketSymbol
         Rectangle2D upperRect = p.upperLayout.getBounds();
         Rectangle2D trunkRect = p.layout.getBounds();
         Rectangle2D lowerRect = p.lowerLayout.getBounds();
-        p.rect = new Rectangle(
-                (int) Math.ceil(upperRect.getWidth()),
-                (int) Math.floor(upperRect.getHeight() + trunkRect.getHeight() + lowerRect.getHeight()));
+        p.rect = new Rectangle((int) Math.ceil(upperRect.getWidth()), (int) Math.floor(upperRect
+                               .getHeight() + trunkRect.getHeight() + lowerRect.getHeight()));
 
         return p;
     }
@@ -109,14 +105,12 @@ public class BracketSymbol
         MusicFont.paint(g, p.lowerLayout, loc, BOTTOM_LEFT);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         TextLayout upperLayout;
 

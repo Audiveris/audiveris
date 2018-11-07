@@ -59,11 +59,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AugmentationDotInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AugmentationDotInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AugmentationDotInter} object.
      *
@@ -83,7 +81,6 @@ public class AugmentationDotInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -269,8 +266,8 @@ public class AugmentationDotInter
         final Rectangle luBox = getDotsLuBox(dotCenter, system);
 
         // Relevant dots?
-        final List<Inter> firsts = dotStack.filter(
-                Inters.intersectedInters(systemDots, GeoOrder.NONE, luBox));
+        final List<Inter> firsts = dotStack.filter(Inters.intersectedInters(systemDots,
+                                                                            GeoOrder.NONE, luBox));
 
         // Remove the augmentation dot, if any, that corresponds to the glyph at hand
         for (Inter first : firsts) {
@@ -329,8 +326,9 @@ public class AugmentationDotInter
         // Look for heads reachable from this dot. Heads are processed via their chord.
         final Rectangle luBox = getNotesLuBox(dotCenter, system);
 
-        final List<Inter> chords = dotStack.filter(
-                Inters.intersectedInters(systemHeadChords, GeoOrder.BY_ABSCISSA, luBox));
+        final List<Inter> chords = dotStack.filter(Inters.intersectedInters(systemHeadChords,
+                                                                            GeoOrder.BY_ABSCISSA,
+                                                                            luBox));
         final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum(manual));
 
         for (Inter ic : chords) {
@@ -345,8 +343,8 @@ public class AugmentationDotInter
                 HeadInter head = (HeadInter) ih;
 
                 // Check head is within reach and not yet augmented
-                if (GeoUtil.yEmbraces(luBox, head.getCenter().y)
-                    && (head.getFirstAugmentationDot() == null)) {
+                if (GeoUtil.yEmbraces(luBox, head.getCenter().y) && (head.getFirstAugmentationDot()
+                                                                             == null)) {
                     Point refPt = head.getCenterRight();
                     double xGap = dotCenter.x - refPt.x;
 
@@ -428,8 +426,9 @@ public class AugmentationDotInter
         final Rectangle luBox = getNotesLuBox(dotCenter, system);
 
         // Relevant rests?
-        final List<Inter> rests = dotStack.filter(
-                Inters.intersectedInters(systemRests, GeoOrder.BY_ABSCISSA, luBox));
+        final List<Inter> rests = dotStack.filter(Inters.intersectedInters(systemRests,
+                                                                           GeoOrder.BY_ABSCISSA,
+                                                                           luBox));
         final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum(manual));
 
         for (Inter inter : rests) {

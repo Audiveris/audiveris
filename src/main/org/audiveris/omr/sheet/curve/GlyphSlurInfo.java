@@ -47,7 +47,6 @@ import java.util.List;
 public class GlyphSlurInfo
         extends SlurInfo
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     private GlyphSlurInfo (Glyph glyph,
                            List<Point> keyPoints)
@@ -56,7 +55,6 @@ public class GlyphSlurInfo
         this.glyph = glyph;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Create proper GlyphSlurInfo for a slur defined by its glyph.
      * The bezier curve is directly computed from the glyph.
@@ -127,7 +125,6 @@ public class GlyphSlurInfo
         return CubicUtil.getMidPoint(curve);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------//
     // KeyPointsBuilder //
     //------------------//
@@ -139,13 +136,11 @@ public class GlyphSlurInfo
      */
     private static class KeyPointsBuilder
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Glyph glyph;
 
         private final RunTable rt;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new {@code KeyPointsBuilder} object.
          *
@@ -157,7 +152,6 @@ public class GlyphSlurInfo
             rt = glyph.getRunTable();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public List<Point> retrieveKeyPoints ()
         {
             if (rt.getOrientation() != Orientation.VERTICAL) {

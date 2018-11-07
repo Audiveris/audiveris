@@ -50,7 +50,6 @@ import javax.swing.ImageIcon;
 public class ViewParameters
         extends AbstractBean
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ViewParameters.class);
 
@@ -104,26 +103,21 @@ public class ViewParameters
     /** Should the inters be painted with grade-based translucency in input view. */
     public static final String TRANSLUCENT_PAINTING = "translucentPainting";
 
-    //~ Enumerations -------------------------------------------------------------------------------
     /**
      * Enum {@code PaintingLayer} defines layers to be painted.
      */
     public static enum PaintingLayer
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /** Input: image or glyphs. */
         INPUT,
         /** Union of input and output. */
         INPUT_OUTPUT,
         /** Output: score entities. */
         OUTPUT;
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Icon assigned to layer. */
         private Icon icon;
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Lazily building of layer icon.
          *
@@ -149,17 +143,13 @@ public class ViewParameters
      */
     public static enum SelectionMode
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         MODE_GLYPH,
         MODE_INTER,
         MODE_SECTION;
 
-        //~ Instance fields ------------------------------------------------------------------------
         /** Icon assigned to mode. */
         private Icon icon;
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Lazily building of mode icon.
          *
@@ -168,8 +158,8 @@ public class ViewParameters
         public Icon getIcon ()
         {
             if (icon == null) {
-                ResourceMap resource = Application.getInstance().getContext()
-                        .getResourceMap(ViewParameters.class);
+                ResourceMap resource = Application.getInstance().getContext().getResourceMap(
+                        ViewParameters.class);
                 String key = getClass().getSimpleName() + "." + this + ".icon";
                 String resourceName = resource.getString(key);
                 icon = new ImageIcon(ViewParameters.class.getResource(resourceName));
@@ -179,7 +169,6 @@ public class ViewParameters
         }
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Action for switching layers. (Must be lazily computed) */
     private ApplicationAction layerAction;
 
@@ -204,7 +193,6 @@ public class ViewParameters
     /** Staff peak painting is chosen to be not persistent. */
     private boolean staffPeakPainting = false;
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -564,9 +552,8 @@ public class ViewParameters
 
         // Update toolbar/menu icon for this dedicated action
         if (selectionAction == null) {
-            selectionAction = ActionManager.getInstance().getActionInstance(
-                    this,
-                    "switchSelections");
+            selectionAction = ActionManager.getInstance()
+                    .getActionInstance(this, "switchSelections");
         }
 
         Icon icon = mode.getIcon();
@@ -759,64 +746,50 @@ public class ViewParameters
     {
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
     //--------//
     // Holder //
     //--------//
     private static interface Holder
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         public static final ViewParameters INSTANCE = new ViewParameters();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean annotationPainting = new Constant.Boolean(
-                true,
-                "Should the annotations be painted");
+        private final Constant.Boolean annotationPainting = new Constant.Boolean(true,
+                                                                                 "Should the annotations be painted");
 
-        private final Constant.Boolean slotPainting = new Constant.Boolean(
-                true,
-                "Should the slots be painted");
+        private final Constant.Boolean slotPainting = new Constant.Boolean(true,
+                                                                           "Should the slots be painted");
 
-        private final Constant.Boolean markPainting = new Constant.Boolean(
-                true,
-                "Should the marks be painted");
+        private final Constant.Boolean markPainting = new Constant.Boolean(true,
+                                                                           "Should the marks be painted");
 
-        private final Constant.Boolean invalidSheetDisplay = new Constant.Boolean(
-                true,
-                "Should the invalid sheets be displayed");
+        private final Constant.Boolean invalidSheetDisplay = new Constant.Boolean(true,
+                                                                                  "Should the invalid sheets be displayed");
 
-        private final Constant.Boolean letterBoxPainting = new Constant.Boolean(
-                true,
-                "Should the letter boxes be painted");
+        private final Constant.Boolean letterBoxPainting = new Constant.Boolean(true,
+                                                                                "Should the letter boxes be painted");
 
-        private final Constant.Boolean linePainting = new Constant.Boolean(
-                false,
-                "Should the stick lines be painted");
+        private final Constant.Boolean linePainting = new Constant.Boolean(false,
+                                                                           "Should the stick lines be painted");
 
-        private final Constant.Boolean attachmentPainting = new Constant.Boolean(
-                false,
-                "Should the staff & glyph attachments be painted");
+        private final Constant.Boolean attachmentPainting = new Constant.Boolean(false,
+                                                                                 "Should the staff & glyph attachments be painted");
 
-        private final Constant.Boolean translationPainting = new Constant.Boolean(
-                true,
-                "Should the glyph translations links be painted");
+        private final Constant.Boolean translationPainting = new Constant.Boolean(true,
+                                                                                  "Should the glyph translations links be painted");
 
-        private final Constant.Boolean sentencePainting = new Constant.Boolean(
-                true,
-                "Should the sentence words links be painted");
+        private final Constant.Boolean sentencePainting = new Constant.Boolean(true,
+                                                                               "Should the sentence words links be painted");
 
-        private final Constant.Boolean translucentPainting = new Constant.Boolean(
-                true,
-                "Should the inters be painted with grade-based translucency");
+        private final Constant.Boolean translucentPainting = new Constant.Boolean(true,
+                                                                                  "Should the inters be painted with grade-based translucency");
     }
 }

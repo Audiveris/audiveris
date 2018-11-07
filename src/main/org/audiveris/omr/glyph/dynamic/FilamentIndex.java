@@ -50,23 +50,19 @@ import javax.swing.SwingUtilities;
 public class FilamentIndex
         extends BasicIndex<Filament>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(FilamentIndex.class);
 
     /** Events that can be published on filament service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]{
-        EntityListEvent.class, IdEvent.class
-    };
+    private static final Class<?>[] eventsAllowed = new Class<?>[]{EntityListEvent.class,
+                                                                   IdEvent.class};
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code FilamentIndex} object.
      *
@@ -116,7 +112,6 @@ public class FilamentIndex
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getName //
     //---------//
@@ -154,29 +149,24 @@ public class FilamentIndex
                 @Override
                 public void run ()
                 {
-                    entityService.publish(
-                            new EntityListEvent<Filament>(
-                                    this,
-                                    SelectionHint.ENTITY_INIT,
-                                    MouseMovement.PRESSING,
-                                    filament));
+                    entityService.publish(new EntityListEvent<Filament>(this,
+                                                                        SelectionHint.ENTITY_INIT,
+                                                                        MouseMovement.PRESSING,
+                                                                        filament));
                 }
             });
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.String vipFilaments = new Constant.String(
-                "",
-                "(Debug) Comma-separated values of VIP filaments IDs");
+        private final Constant.String vipFilaments = new Constant.String("",
+                                                                         "(Debug) Comma-separated values of VIP filaments IDs");
     }
 
     //-----------------//
@@ -185,7 +175,6 @@ public class FilamentIndex
     private static class FilamentService
             extends EntityService<Filament>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public FilamentService (FilamentIndex index,
                                 Sheet sheet)

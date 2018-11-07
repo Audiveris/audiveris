@@ -96,13 +96,11 @@ public class MainGui
         extends OmrGui
         implements EventSubscriber<StubEvent>, PropertyChangeListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(MainGui.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Official name of the application. */
     private String appName;
@@ -137,7 +135,6 @@ public class MainGui
     /** Map of class resources. */
     private ResourceMap resources;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MainGui} instance, to handle any user display and interaction.
      */
@@ -145,7 +142,6 @@ public class MainGui
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //
     //----------//
     // clearLog //
@@ -172,11 +168,8 @@ public class MainGui
     public boolean displayConfirmation (String message,
                                         String title)
     {
-        int answer = JOptionPane.showConfirmDialog(
-                frame,
-                message,
-                title + " - " + appName,
-                JOptionPane.YES_NO_OPTION);
+        int answer = JOptionPane.showConfirmDialog(frame, message, title + " - " + appName,
+                                                   JOptionPane.YES_NO_OPTION);
 
         return answer == JOptionPane.YES_OPTION;
     }
@@ -198,11 +191,8 @@ public class MainGui
     @Override
     public void displayError (String message)
     {
-        JOptionPane.showMessageDialog(
-                frame,
-                message,
-                "Error - " + appName,
-                JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(frame, message, "Error - " + appName,
+                                      JOptionPane.ERROR_MESSAGE);
     }
 
     //----------------//
@@ -222,11 +212,8 @@ public class MainGui
     @Override
     public int displayModelessConfirm (String message)
     {
-        return ModelessOptionPane.showModelessConfirmDialog(
-                frame,
-                message,
-                "Confirm - " + appName,
-                JOptionPane.YES_NO_OPTION);
+        return ModelessOptionPane.showModelessConfirmDialog(frame, message, "Confirm - " + appName,
+                                                            JOptionPane.YES_NO_OPTION);
     }
 
     //----------------//
@@ -245,11 +232,8 @@ public class MainGui
     public void displayWarning (String message,
                                 String title)
     {
-        JOptionPane.showMessageDialog(
-                frame,
-                message,
-                title + " - " + appName,
-                JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(frame, message, title + " - " + appName,
+                                      JOptionPane.WARNING_MESSAGE);
     }
 
     //----------//
@@ -722,11 +706,10 @@ public class MainGui
      */
     private boolean needBottomPane ()
     {
-        return GuiActions.getInstance().isLogWindowDisplayed()
-               || GuiActions.getInstance().isErrorsWindowDisplayed();
+        return GuiActions.getInstance().isLogWindowDisplayed() || GuiActions.getInstance()
+                .isErrorsWindowDisplayed();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //------------------//
     // BoardsScrollPane //
@@ -738,7 +721,6 @@ public class MainGui
     private static class BoardsScrollPane
             extends JScrollPane
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         public void setBoards (JComponent boards)
         {
@@ -753,11 +735,9 @@ public class MainGui
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
-                true,
-                "Should we preload costly packages in the background?");
+        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(true,
+                                                                                    "Should we preload costly packages in the background?");
     }
 
     //-----------------//
@@ -769,13 +749,11 @@ public class MainGui
     private static class GuiExitListener
             implements ExitListener
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public GuiExitListener ()
         {
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean canExit (EventObject eo)
         {

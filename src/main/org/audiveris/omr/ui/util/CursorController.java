@@ -44,7 +44,6 @@ import javax.swing.SwingWorker;
  */
 public class CursorController
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CursorController.class);
 
@@ -54,12 +53,10 @@ public class CursorController
 
     public static final int delay = 500; // in milliseconds
 
-    //~ Constructors -------------------------------------------------------------------------------
     private CursorController ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public static ActionListener createListener (final Component component,
                                                  final ActionListener mainActionListener)
     {

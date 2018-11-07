@@ -35,6 +35,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.nio.file.Paths;
+
 import javax.swing.ImageIcon;
 
 /**
@@ -47,7 +48,6 @@ import javax.swing.ImageIcon;
 public class MacApplication
         implements InvocationHandler
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MacApplication.class);
 
@@ -62,7 +62,6 @@ public class MacApplication
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Invocation handler for
      * <code>
@@ -113,6 +112,7 @@ public class MacApplication
             Book book = OMR.engine.loadInput(Paths.get(filename));
             book.createStubs(null);
             book.createStubsTabs(null); // Tabs are now accessible
+
             break;
 
         default:
@@ -141,7 +141,8 @@ public class MacApplication
             Object app = appClass.newInstance();
 
             //Enable the about menu item and the preferences menu item
-            for (String methodName : new String[]{"setEnabledAboutMenu", "setEnabledPreferencesMenu"}) {
+            for (String methodName
+                    : new String[]{"setEnabledAboutMenu", "setEnabledPreferencesMenu"}) {
                 Method method = appClass.getMethod(methodName, boolean.class);
                 method.invoke(app, true);
             }
@@ -152,10 +153,9 @@ public class MacApplication
             //Using the current class loader,
             //generate, load, and instantiate a class implementing listenerClass,
             //providing an instance of this class as a callback for any method invocation
-            Object listenerProxy = Proxy.newProxyInstance(
-                    MacApplication.class.getClassLoader(),
-                    new Class<?>[]{listenerClass},
-                    new MacApplication());
+            Object listenerProxy = Proxy.newProxyInstance(MacApplication.class.getClassLoader(),
+                                                          new Class<?>[]{listenerClass},
+                                                          new MacApplication());
 
             //Add the generated class as a hook
             Method addListener = appClass.getMethod("addApplicationListener", listenerClass);

@@ -47,7 +47,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class {@code BrokenLine} handles the broken line defined by a sequence of points
  * which can be modified at any time.
- *
+ * <p>
  * <p>
  * This class make use of several distance parameters, presented here from smaller to larger:
  * <dl>
@@ -78,20 +78,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "broken-line")
 public class BrokenLine
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            BrokenLine.class);
+    private static final Logger logger = LoggerFactory.getLogger(BrokenLine.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The ordered sequence of points */
     @XmlElement(name = "point")
     private final List<Point> points = new ArrayList<Point>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BrokenLine object with an initially empty sequence of points.
      */
@@ -119,7 +115,6 @@ public class BrokenLine
         resetPoints(points);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------------//
     // getDraggingDistance //
     //---------------------//
@@ -437,28 +432,20 @@ public class BrokenLine
         return "{BrokenLine " + getSequenceString() + "}";
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Integer colinearDistance = new Constant.Integer(
-                "Pixels",
-                2,
-                "Maximum distance from a point to a segment to be colinear");
+        private final Constant.Integer colinearDistance = new Constant.Integer("Pixels", 2,
+                                                                               "Maximum distance from a point to a segment to be colinear");
 
-        private final Constant.Integer stickyDistance = new Constant.Integer(
-                "Pixels",
-                5,
-                "Maximum distance from a point or segment to get stuck to it");
+        private final Constant.Integer stickyDistance = new Constant.Integer("Pixels", 5,
+                                                                             "Maximum distance from a point or segment to get stuck to it");
 
-        private final Constant.Integer draggingDistance = new Constant.Integer(
-                "Pixels",
-                25,
-                "Maximum distance from a point to drag it");
+        private final Constant.Integer draggingDistance = new Constant.Integer("Pixels", 25,
+                                                                               "Maximum distance from a point to drag it");
     }
 }

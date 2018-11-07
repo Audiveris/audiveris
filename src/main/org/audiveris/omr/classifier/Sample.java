@@ -46,10 +46,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class Sample
         extends Glyph
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Sample.class);
+    private static final Logger logger = LoggerFactory.getLogger(Sample.class);
 
     /** For comparing Sample instances by shape. */
     public static final Comparator<Sample> byShape = new Comparator<Sample>()
@@ -95,7 +93,6 @@ public class Sample
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -119,7 +116,6 @@ public class Sample
     /** True for artificial (font-based) sample. */
     private boolean symbol;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ShapeSample} object.
      *
@@ -159,14 +155,8 @@ public class Sample
                    Shape shape,
                    Double pitch)
     {
-        this(
-                glyph.getLeft(),
-                glyph.getTop(),
-                glyph.getRunTable(),
-                interline,
-                glyph.getId(),
-                shape,
-                pitch);
+        this(glyph.getLeft(), glyph.getTop(), glyph.getRunTable(), interline, glyph.getId(), shape,
+             pitch);
     }
 
     /**
@@ -177,7 +167,6 @@ public class Sample
         this(0, 0, null, 0, 0, null, null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // getRecordableShape //
     //--------------------//

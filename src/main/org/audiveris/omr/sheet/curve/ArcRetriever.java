@@ -78,20 +78,16 @@ import java.util.List;
  */
 public class ArcRetriever
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ArcRetriever.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
     /**
      * Status for current move along arc.
      */
     private static enum Status
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /** One more point on arc. */
         CONTINUE,
         /** Arrived at a new junction point. */
@@ -100,7 +96,6 @@ public class ArcRetriever
         END;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -130,7 +125,6 @@ public class ArcRetriever
     /** Are we in a long run part?. */
     boolean longRunPart;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates an ArcRetriever object
      *
@@ -146,7 +140,6 @@ public class ArcRetriever
         params = new Parameters(sheet.getScale());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // scanImage //
     //-----------//
@@ -333,8 +326,8 @@ public class ArcRetriever
             minDy = min(minDy, dist);
         }
 
-        return (maxDist < params.minStaffLineDistance)
-               && ((maxDy - minDy) < params.minStaffLineDistance);
+        return (maxDist < params.minStaffLineDistance) && ((maxDy - minDy)
+                                                                   < params.minStaffLineDistance);
     }
 
     //------//
@@ -613,48 +606,36 @@ public class ArcRetriever
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Double maxAlpha = new Constant.Double(
-                "degree",
-                4.0,
-                "Maximum angle (in degrees) for 3 points colinearity");
+        private final Constant.Double maxAlpha = new Constant.Double("degree", 4.0,
+                                                                     "Maximum angle (in degrees) for 3 points colinearity");
 
-        private final Scale.Fraction arcMinQuorum = new Scale.Fraction(
-                1.75,
-                "Minimum arc length for quorum");
+        private final Scale.Fraction arcMinQuorum = new Scale.Fraction(1.75,
+                                                                       "Minimum arc length for quorum");
 
-        private final Scale.Fraction maxLineDistance = new Scale.Fraction(
-                0.1,
-                "Maximum distance from straight line");
+        private final Scale.Fraction maxLineDistance = new Scale.Fraction(0.1,
+                                                                          "Maximum distance from straight line");
 
-        private final Scale.Fraction minStaffArcLength = new Scale.Fraction(
-                0.5,
-                "Minimum length for a staff arc");
+        private final Scale.Fraction minStaffArcLength = new Scale.Fraction(0.5,
+                                                                            "Minimum length for a staff arc");
 
-        private final Scale.Fraction maxStaffArcLength = new Scale.Fraction(
-                5.0,
-                "Maximum length for a staff arc");
+        private final Scale.Fraction maxStaffArcLength = new Scale.Fraction(5.0,
+                                                                            "Maximum length for a staff arc");
 
-        private final Scale.Fraction minStaffLineDistance = new Scale.Fraction(
-                0.15,
-                "Minimum distance from staff line");
+        private final Scale.Fraction minStaffLineDistance = new Scale.Fraction(0.15,
+                                                                               "Minimum distance from staff line");
 
-        private final Constant.Double minSlope = new Constant.Double(
-                "(co)tangent",
-                0.03,
-                "Minimum (inverted) slope, to detect vertical and horizontal lines");
+        private final Constant.Double minSlope = new Constant.Double("(co)tangent", 0.03,
+                                                                     "Minimum (inverted) slope, to detect vertical and horizontal lines");
 
-        private final Scale.Fraction maxRunLength = new Scale.Fraction(
-                0.6,
-                "Maximum length for a vertical run");
+        private final Scale.Fraction maxRunLength = new Scale.Fraction(0.6,
+                                                                       "Maximum length for a vertical run");
     }
 
     //------------//
@@ -665,7 +646,6 @@ public class ArcRetriever
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int arcMinQuorum;
 
@@ -683,7 +663,6 @@ public class ArcRetriever
 
         final int maxRunLength;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
          *

@@ -62,18 +62,15 @@ public class PictureView
         extends ScrollView
         implements PropertyChangeListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PictureView.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Link with sheet. */
     private final Sheet sheet;
 
     /** Pop-up page menu. */
     private final SheetPopupMenu pageMenu;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new {@code PictureView} instance, dedicated to a sheet.
      *
@@ -91,8 +88,7 @@ public class PictureView
         view.setLocationService(sheet.getLocationService());
 
         // Listen to all view parameters
-        ViewParameters.getInstance().addPropertyChangeListener(
-                new WeakPropertyChangeListener(this));
+        ViewParameters.getInstance().addPropertyChangeListener(new WeakPropertyChangeListener(this));
 
         // Insert view
         setView(view);
@@ -101,7 +97,6 @@ public class PictureView
         pageMenu.addMenu(new ExtractionMenu(sheet));
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // propertyChange //
     //----------------//
@@ -111,14 +106,12 @@ public class PictureView
         view.repaint();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyView //
     //--------//
     private class MyView
             extends RubberPanel
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         //-----------------//
         // contextSelected //

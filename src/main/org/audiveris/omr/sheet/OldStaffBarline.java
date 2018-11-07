@@ -44,7 +44,6 @@ import javax.xml.bind.annotation.XmlValue;
 @XmlAccessorType(XmlAccessType.NONE)
 public class OldStaffBarline
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Abscissa-ordered sequence of physical barlines. */
     @XmlList

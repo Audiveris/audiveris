@@ -50,11 +50,9 @@ import javax.swing.JOptionPane;
 public class ModelessOptionPane
         extends JOptionPane
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ModelessOptionPane.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // showConfirmDialog //
     //-------------------//
@@ -85,8 +83,7 @@ public class ModelessOptionPane
         final JOptionPane pane = new JOptionPane(message, QUESTION_MESSAGE, optionType);
         Window window = getWindowForComponent(parentComponent);
 
-        final JDialog dialog = (window instanceof Frame)
-                ? new JDialog((Frame) window, title)
+        final JDialog dialog = (window instanceof Frame) ? new JDialog((Frame) window, title)
                 : new JDialog((Dialog) window, title);
 
         WindowAdapter adapter = new WindowAdapter()
@@ -137,11 +134,9 @@ public class ModelessOptionPane
                 // Let the defaultCloseOperation handle the closing
                 // if the user closed the window without selecting a button
                 // (newValue = null in that case).  Otherwise, close the dialog.
-                if (dialog.isVisible()
-                    && (event.getSource() == pane)
-                    && (event.getPropertyName().equals(VALUE_PROPERTY))
-                    && (event.getNewValue() != null)
-                    && (event.getNewValue() != JOptionPane.UNINITIALIZED_VALUE)) {
+                if (dialog.isVisible() && (event.getSource() == pane) && (event.getPropertyName()
+                        .equals(VALUE_PROPERTY)) && (event.getNewValue() != null) && (event
+                        .getNewValue() != JOptionPane.UNINITIALIZED_VALUE)) {
                     JOptionPane pane = (JOptionPane) event.getSource();
 
                     dialog.setVisible(false);

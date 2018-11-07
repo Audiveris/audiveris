@@ -67,14 +67,11 @@ import java.util.Set;
  */
 public class SymbolsBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SymbolsBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(SymbolsBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -99,7 +96,6 @@ public class SymbolsBuilder
     /** Scale-dependent global constants. */
     private final Parameters params;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolsBuilder object.
      *
@@ -117,7 +113,6 @@ public class SymbolsBuilder
         params = new Parameters(sheet.getScale());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // buildSymbols //
     //--------------//
@@ -197,12 +192,8 @@ public class SymbolsBuilder
         }
 
         // TODO: checks should be run only AFTER both classifiers have been run
-        Evaluation[] evals = classifier.evaluate(
-                glyph,
-                system,
-                2,
-                Grades.symbolMinGrade,
-                EnumSet.of(Classifier.Condition.CHECKED));
+        Evaluation[] evals = classifier.evaluate(glyph, system, 2, Grades.symbolMinGrade, EnumSet
+                                                 .of(Classifier.Condition.CHECKED));
 
         //        Evaluation[] evals2 = classifier2.evaluate(
         //                glyph,
@@ -316,8 +307,8 @@ public class SymbolsBuilder
     private void processClusters (SimpleGraph<Glyph, GlyphLink> systemGraph)
     {
         // Retrieve all the clusters of glyphs (sets of connected glyphs)
-        final ConnectivityInspector<Glyph, GlyphLink> inspector = new ConnectivityInspector<Glyph, GlyphLink>(
-                systemGraph);
+        final ConnectivityInspector<Glyph, GlyphLink> inspector
+                = new ConnectivityInspector<Glyph, GlyphLink>(systemGraph);
         final List<Set<Glyph>> sets = inspector.connectedSets();
         logger.debug("symbols sets: {}", sets.size());
 
@@ -366,56 +357,43 @@ public class SymbolsBuilder
         for (Inter inter : smallChords) {
             // Define a fine box on the right side of the small chord
             Rectangle box = inter.getBounds();
-            Rectangle fineBox = new Rectangle(
-                    box.x + box.width,
-                    box.y,
-                    params.smallChordMargin,
-                    box.height);
+            Rectangle fineBox = new Rectangle(box.x + box.width, box.y, params.smallChordMargin,
+                                              box.height);
             fineBoxes.add(fineBox);
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch?");
 
-        private final Constant.Integer maxPartCount = new Constant.Integer(
-                "Glyphs",
-                7,
-                "Maximum number of parts considered for a symbol");
+        private final Constant.Integer maxPartCount = new Constant.Integer("Glyphs", 7,
+                                                                           "Maximum number of parts considered for a symbol");
 
         private final Scale.Fraction maxGap = new Scale.Fraction(
                 0.5, // 0.75 vs 0.5 is a bit too small for fermata - dot distance
                 "Maximum distance between two compound parts");
 
-        private final Scale.AreaFraction minWeight = new Scale.AreaFraction(
-                0.03,
-                "Minimum weight for glyph consideration");
+        private final Scale.AreaFraction minWeight = new Scale.AreaFraction(0.03,
+                                                                            "Minimum weight for glyph consideration");
 
-        private final Scale.AreaFraction minFineWeight = new Scale.AreaFraction(
-                0.006,
-                "Minimum weight for glyph consideration in a fine area");
+        private final Scale.AreaFraction minFineWeight = new Scale.AreaFraction(0.006,
+                                                                                "Minimum weight for glyph consideration in a fine area");
 
-        private final Scale.Fraction smallChordMargin = new Scale.Fraction(
-                1,
-                "Margin on right side of small chords to extend fine boxes");
+        private final Scale.Fraction smallChordMargin = new Scale.Fraction(1,
+                                                                           "Margin on right side of small chords to extend fine boxes");
 
-        private final Scale.Fraction maxSymbolWidth = new Scale.Fraction(
-                4.0,
-                "Maximum width for a symbol");
+        private final Scale.Fraction maxSymbolWidth = new Scale.Fraction(4.0,
+                                                                         "Maximum width for a symbol");
 
-        private final Scale.Fraction maxSymbolHeight = new Scale.Fraction(
-                10.0,
-                "Maximum height for a symbol (when found within staff abscissa range)");
+        private final Scale.Fraction maxSymbolHeight = new Scale.Fraction(10.0,
+                                                                          "Maximum height for a symbol (when found within staff abscissa range)");
     }
 
     //------------//
@@ -426,7 +404,6 @@ public class SymbolsBuilder
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final double maxGap;
 
@@ -440,7 +417,6 @@ public class SymbolsBuilder
 
         final int minFineWeight;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
             maxGap = scale.toPixelsDouble(constants.maxGap);
@@ -462,17 +438,14 @@ public class SymbolsBuilder
     private class SymbolAdapter
             extends GlyphCluster.AbstractAdapter
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale scale = sheet.getScale();
 
-        //~ Constructors ---------------------------------------------------------------------------
         public SymbolAdapter (SimpleGraph<Glyph, GlyphLink> graph)
         {
             super(graph);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void evaluateGlyph (Glyph glyph,
                                    Set<Glyph> parts)

@@ -45,7 +45,6 @@ public abstract class StubDependent
         extends AbstractBean
         implements EventSubscriber<StubEvent>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StubDependent.class);
 
@@ -76,7 +75,6 @@ public abstract class StubDependent
     /** Name of property linked to redoable. */
     public static final String REDOABLE = "redoable";
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Indicates whether the current sheet stub can be transcribed. */
     protected boolean stubTranscribable = false;
 
@@ -104,7 +102,6 @@ public abstract class StubDependent
     /** Indicates whether we can redo user action. */
     protected boolean redoable = false;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StubDependent} object.
      */
@@ -114,7 +111,6 @@ public abstract class StubDependent
         StubsController.getInstance().subscribe(this);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // isBookIdle //
     //------------//

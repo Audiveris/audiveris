@@ -46,11 +46,9 @@ import java.util.concurrent.Callable;
 public abstract class AbstractSystemStep<C>
         extends AbstractStep
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractSystemStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractSystemStep object.
      */
@@ -58,7 +56,6 @@ public abstract class AbstractSystemStep<C>
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //
     //-------------//
     // clearErrors //
@@ -191,10 +188,7 @@ public abstract class AbstractSystemStep<C>
                                 LogUtil.start(sheet.getStub());
                             }
 
-                            logger.debug(
-                                    "{} doSystem #{}",
-                                    AbstractSystemStep.this,
-                                    system.getId());
+                            logger.debug("{} doSystem #{}", AbstractSystemStep.this, system.getId());
 
                             doSystem(system, context);
                         } catch (Exception ex) {

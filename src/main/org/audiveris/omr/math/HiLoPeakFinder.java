@@ -49,11 +49,9 @@ import java.util.TreeMap;
  */
 public class HiLoPeakFinder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(HiLoPeakFinder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Entity title. */
     public final String name;
 
@@ -95,7 +93,6 @@ public class HiLoPeakFinder
         }
     };
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HiLoPeakFinder} object on (sub-)domain of provided function.
      *
@@ -140,7 +137,6 @@ public class HiLoPeakFinder
         xMax = function.getXMax();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // findPeaks //
     //-----------//
@@ -601,10 +597,8 @@ public class HiLoPeakFinder
                 // Strong positive derivatives
                 if (loPeak != null) {
                     // End HiLo because a new Hi is starting
-                    Range hilo = new Range(
-                            hiPeak.min,
-                            function.argMax(hiPeak.min, loPeak.max),
-                            loPeak.max);
+                    Range hilo = new Range(hiPeak.min, function.argMax(hiPeak.min, loPeak.max),
+                                           loPeak.max);
                     logger.debug("built {}", hilo);
                     hilos.add(hilo);
                     loPeak = hiPeak = null;
@@ -626,10 +620,8 @@ public class HiLoPeakFinder
                 }
             } else if (loPeak != null) {
                 // End HiLo because of weak derivatives
-                Range hilo = new Range(
-                        hiPeak.min,
-                        function.argMax(hiPeak.min, loPeak.max),
-                        loPeak.max);
+                Range hilo = new Range(hiPeak.min, function.argMax(hiPeak.min, loPeak.max),
+                                       loPeak.max);
                 logger.debug("built {}", hilo);
                 hilos.add(hilo);
                 loPeak = hiPeak = null;
@@ -644,7 +636,6 @@ public class HiLoPeakFinder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Quorum //
     //--------//
@@ -653,7 +644,6 @@ public class HiLoPeakFinder
      */
     public static class Quorum
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public final int minTop;
 
@@ -661,7 +651,6 @@ public class HiLoPeakFinder
 
         public final Integer xMax;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Quorum (int minTop,
                        Integer xMin,
                        Integer xMax)
@@ -685,7 +674,6 @@ public class HiLoPeakFinder
      */
     private static class DerPeak
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** x at beginning of range. */
         public final int min;
@@ -696,7 +684,6 @@ public class HiLoPeakFinder
         /** True when peak cannot be extended anymore. */
         private boolean finished;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public DerPeak (int min,
                         int max)
         {
@@ -704,7 +691,6 @@ public class HiLoPeakFinder
             this.max = max;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

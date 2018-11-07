@@ -48,13 +48,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class FlagStemRelation
         extends AbstractStemConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(FlagStemRelation.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -182,45 +180,35 @@ public class FlagStemRelation
         return getYGapMaximum(manual);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio flagSupportCoeff = new Constant.Ratio(
-                3,
-                "Value for source (flag) coeff in support formula");
+        private final Constant.Ratio flagSupportCoeff = new Constant.Ratio(3,
+                                                                           "Value for source (flag) coeff in support formula");
 
-        private final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
-                3,
-                "Value for target (stem) coeff in support formula");
+        private final Constant.Ratio stemSupportCoeff = new Constant.Ratio(3,
+                                                                           "Value for target (stem) coeff in support formula");
 
-        private final Scale.Fraction xInGapMax = new Scale.Fraction(
-                0.3,
-                "Maximum horizontal overlap between stem & flag");
+        private final Scale.Fraction xInGapMax = new Scale.Fraction(0.3,
+                                                                    "Maximum horizontal overlap between stem & flag");
 
-        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(
-                0.45,
-                "Maximum manual horizontal overlap between stem & flag");
+        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(0.45,
+                                                                          "Maximum manual horizontal overlap between stem & flag");
 
-        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
-                0.3,
-                "Maximum horizontal gap between stem & flag");
+        private final Scale.Fraction xOutGapMax = new Scale.Fraction(0.3,
+                                                                     "Maximum horizontal gap between stem & flag");
 
-        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
-                0.45,
-                "Maximum manual horizontal gap between stem & flag");
+        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(0.45,
+                                                                           "Maximum manual horizontal gap between stem & flag");
 
-        private final Scale.Fraction yGapMax = new Scale.Fraction(
-                0.5,
-                "Maximum vertical gap between stem & flag");
+        private final Scale.Fraction yGapMax = new Scale.Fraction(0.5,
+                                                                  "Maximum vertical gap between stem & flag");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
-                0.75,
-                "Maximum manual vertical gap between stem & flag");
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(0.75,
+                                                                        "Maximum manual vertical gap between stem & flag");
     }
 }

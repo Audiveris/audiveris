@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
  */
 public class Clustering
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Clustering.class);
 
@@ -29,7 +28,6 @@ public class Clustering
 
     private static final int MAX_ITER = 10;
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Compute the mixture coefficients using Expectation-Maximization algorithm.
      *
@@ -104,10 +102,8 @@ public class Clustering
         return pi;
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
     public static interface Law
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * improve law parameters
@@ -127,17 +123,14 @@ public class Clustering
         double proba (double x);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     public static class Gaussian
             implements Law
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private double mean = 0;
 
         private double sigma = 0;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Gaussian object.
          *
@@ -151,7 +144,6 @@ public class Clustering
             this.sigma = sigma;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public double getMean ()
         {
             return mean;

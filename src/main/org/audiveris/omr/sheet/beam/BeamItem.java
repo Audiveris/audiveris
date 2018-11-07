@@ -36,7 +36,6 @@ import java.awt.geom.Point2D;
 public class BeamItem
         implements Vip
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The median line of the beam item. */
     final Line2D median;
@@ -47,7 +46,6 @@ public class BeamItem
     /** VIP flag. */
     private boolean vip;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BeamItem object.
      *
@@ -61,7 +59,6 @@ public class BeamItem
         this.height = height;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getBeltArea //
     //-------------//
@@ -117,12 +114,7 @@ public class BeamItem
     @Override
     public String toString ()
     {
-        return String.format(
-                "{item median:(%.1f,%.1f)-(%.1f,%.1f) height:%.1f}",
-                median.getX1(),
-                median.getY1(),
-                median.getX2(),
-                median.getY2(),
-                height);
+        return String.format("{item median:(%.1f,%.1f)-(%.1f,%.1f) height:%.1f}", median.getX1(),
+                             median.getY1(), median.getX2(), median.getY2(), height);
     }
 }

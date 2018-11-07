@@ -43,7 +43,6 @@ import java.util.List;
  */
 public class Arc
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Arc.class);
 
@@ -69,7 +68,6 @@ public class Arc
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Sequence of arc points so far. */
     protected final List<Point> points = new ArrayList<Point>();
 
@@ -88,7 +86,6 @@ public class Arc
     /** Already assigned to a curve?. */
     private boolean assigned;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an arc with perhaps a firstJunction.
      *
@@ -134,7 +131,6 @@ public class Arc
         this.model = model;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // checkOrientation //
     //------------------//

@@ -60,7 +60,6 @@ public class DynamicsInter
         extends AbstractInter
         implements StringSymbolInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -152,7 +151,6 @@ public class DynamicsInter
         //        sounds.put(Shape.DYNAMICS_SFZ, "sfz");
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new DynamicsInter object.
      *
@@ -174,7 +172,6 @@ public class DynamicsInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -266,9 +263,9 @@ public class DynamicsInter
 
         for (VerticalSide side : VerticalSide.values()) {
             final boolean lookAbove = side == VerticalSide.TOP;
-            AbstractChordInter chord = lookAbove
-                    ? stack.getStandardChordAbove(center, widenedBounds)
-                    : stack.getStandardChordBelow(center, widenedBounds);
+            AbstractChordInter chord = lookAbove ? stack
+                    .getStandardChordAbove(center, widenedBounds) : stack.getStandardChordBelow(
+                    center, widenedBounds);
 
             if ((chord == null) || chord instanceof RestChordInter) {
                 continue;
@@ -355,18 +352,15 @@ public class DynamicsInter
             final DynamicsInter shorter = (DynamicsInter) inter;
             final String shortString = shorter.getSymbolString();
 
-            if ((shorter == this)
-                || (shortString.length() >= cplLength)
-                || !cplString.contains(shortString)) {
+            if ((shorter == this) || (shortString.length() >= cplLength) || !cplString.contains(
+                    shortString)) {
                 continue;
             }
 
             // Measure area of intersection over area of shorter box
             Rectangle shortBox = shorter.getBounds();
             double shortArea = shortBox.width * shortBox.height;
-            int intArea = GeoUtil.xOverlap(shortBox, cplBox) * GeoUtil.yOverlap(
-                    shortBox,
-                    cplBox);
+            int intArea = GeoUtil.xOverlap(shortBox, cplBox) * GeoUtil.yOverlap(shortBox, cplBox);
             double ios = intArea / shortArea;
             logger.debug("ios:{} {} intersects {}", ios, shorter, this);
 
@@ -391,25 +385,20 @@ public class DynamicsInter
         return super.internals() + " " + shape;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction maxDy = new Scale.Fraction(
-                7,
-                "Maximum vertical distance between dynamics center and related chord/staff");
+        private final Scale.Fraction maxDy = new Scale.Fraction(7,
+                                                                "Maximum vertical distance between dynamics center and related chord/staff");
 
-        private final Scale.Fraction maxXGap = new Scale.Fraction(
-                1.0,
-                "Maximum horizontal gap between dynamics and related chord/staff");
+        private final Scale.Fraction maxXGap = new Scale.Fraction(1.0,
+                                                                  "Maximum horizontal gap between dynamics and related chord/staff");
 
-        private final Constant.Ratio iosMinRatio = new Constant.Ratio(
-                0.8,
-                "Minimum area ratio of intersection over shorter dynamics");
+        private final Constant.Ratio iosMinRatio = new Constant.Ratio(0.8,
+                                                                      "Minimum area ratio of intersection over shorter dynamics");
     }
 }

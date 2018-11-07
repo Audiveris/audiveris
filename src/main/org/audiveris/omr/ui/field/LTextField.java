@@ -31,12 +31,10 @@ import javax.swing.JTextField;
 public class LTextField
         extends LField<JTextField>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Default number of characters in the text field : {@value} */
     private static final int FIELD_WIDTH = 6;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LTextField object.
      *
@@ -73,7 +71,6 @@ public class LTextField
         this(false, label, tip);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getText //
     //---------//

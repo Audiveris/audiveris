@@ -49,11 +49,9 @@ public class TimePairInter
         extends AbstractTimeInter
         implements InterEnsemble
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TimePairInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * (Private) constructor.
      *
@@ -74,7 +72,6 @@ public class TimePairInter
         super(null, null, 0);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -250,9 +247,8 @@ public class TimePairInter
             final List<Inter> members = getMembers();
 
             if (members.size() == 2) {
-                timeRational = new TimeRational(
-                        ((TimeNumberInter) members.get(0)).getValue(),
-                        ((TimeNumberInter) members.get(1)).getValue());
+                timeRational = new TimeRational(((TimeNumberInter) members.get(0)).getValue(),
+                                                ((TimeNumberInter) members.get(1)).getValue());
             }
         }
 

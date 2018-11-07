@@ -62,7 +62,6 @@ import javax.imageio.stream.ImageOutputStream;
  */
 public class TesseractOrder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TesseractOrder.class);
 
@@ -80,7 +79,6 @@ public class TesseractOrder
                 new com.github.jaiimageio.impl.plugins.tiff.TIFFImageReaderSpi());
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Serial number for this order. */
     private final int serial;
 
@@ -102,7 +100,6 @@ public class TesseractOrder
     /** The image being processed. */
     private final PIX image;
 
-    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------------//
     // TesseractOrder //
@@ -127,7 +124,8 @@ public class TesseractOrder
                            String lang,
                            int segMode,
                            BufferedImage bufferedImage)
-            throws UnsatisfiedLinkError, IOException
+            throws UnsatisfiedLinkError,
+                   IOException
     {
         this.label = label;
         this.serial = serial;
@@ -146,7 +144,6 @@ public class TesseractOrder
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //
     //---------//
     // process //
@@ -248,11 +245,8 @@ public class TesseractOrder
         IntPointer bottom = new IntPointer(0);
 
         if (it.BoundingBox(level, left, top, right, bottom)) {
-            return new Rectangle(
-                    left.get(),
-                    top.get(),
-                    right.get() - left.get(),
-                    bottom.get() - top.get());
+            return new Rectangle(left.get(), top.get(), right.get() - left.get(), bottom.get() - top
+                                 .get());
         } else {
             return null;
         }
@@ -280,15 +274,8 @@ public class TesseractOrder
 
         String fontName = null;
 
-        BytePointer bp = rit.WordFontAttributes(
-                is_bold,
-                is_italic,
-                is_underlined,
-                is_monospace,
-                is_serif,
-                is_smallcaps,
-                pointSize,
-                font_id);
+        BytePointer bp = rit.WordFontAttributes(is_bold, is_italic, is_underlined, is_monospace,
+                                                is_serif, is_smallcaps, pointSize, font_id);
 
         // don't try to decode fontName from null bytepointer!
         if (bp != null) {
@@ -296,15 +283,9 @@ public class TesseractOrder
         }
 
         if (fontName != null) {
-            return new FontInfo(
-                    is_bold.get(),
-                    is_italic.get(),
-                    is_underlined.get(),
-                    is_monospace.get(),
-                    is_serif.get(),
-                    is_smallcaps.get(),
-                    pointSize.get(),
-                    fontName);
+            return new FontInfo(is_bold.get(), is_italic.get(), is_underlined.get(), is_monospace
+                                .get(), is_serif.get(), is_smallcaps.get(), pointSize.get(),
+                                fontName);
         } else {
             return null;
         }
@@ -354,13 +335,9 @@ public class TesseractOrder
                         continue;
                     }
 
-                    word = new TextWord(
-                            getBoundingBox(it, RIL_WORD),
-                            it.GetUTF8Text(RIL_WORD).getString(UTF8),
-                            getBaseline(it, RIL_WORD),
-                            it.Confidence(RIL_WORD) / 100.0,
-                            fontInfo,
-                            line);
+                    word = new TextWord(getBoundingBox(it, RIL_WORD), it.GetUTF8Text(RIL_WORD)
+                                        .getString(UTF8), getBaseline(it, RIL_WORD), it.Confidence(
+                                        RIL_WORD) / 100.0, fontInfo, line);
                     logger.debug("    {}", word);
                     line.appendWord(word);
 
@@ -376,10 +353,8 @@ public class TesseractOrder
                 }
 
                 // Char/symbol to be processed
-                wordAddChars(
-                        word,
-                        getBoundingBox(it, RIL_SYMBOL),
-                        it.GetUTF8Text(RIL_SYMBOL).getString(UTF8));
+                wordAddChars(word, getBoundingBox(it, RIL_SYMBOL), it.GetUTF8Text(RIL_SYMBOL)
+                             .getString(UTF8));
             } while (it.Next(nextLevel));
 
             // Print raw lines, right out of Tesseract OCR
@@ -485,11 +460,8 @@ public class TesseractOrder
             double meanCharWidth = (double) bounds.width / len;
 
             for (int i = 0; i < len; i++) {
-                Rectangle cb = new Rectangle2D.Double(
-                        bounds.x + (i * meanCharWidth),
-                        bounds.y,
-                        meanCharWidth,
-                        bounds.height).getBounds();
+                Rectangle cb = new Rectangle2D.Double(bounds.x + (i * meanCharWidth), bounds.y,
+                                                      meanCharWidth, bounds.height).getBounds();
                 word.addChar(new TextChar(cb, value.substring(i, i + 1)));
             }
         }

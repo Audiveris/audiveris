@@ -56,16 +56,13 @@ import javax.swing.KeyStroke;
 public class PixelBoard
         extends Board
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PixelBoard.class);
 
     /** Events this board is interested in. */
-    private static final Class<?>[] eventsRead = new Class<?>[]{
-        LocationEvent.class, PixelEvent.class
-    };
+    private static final Class<?>[] eventsRead = new Class<?>[]{LocationEvent.class,
+                                                                PixelEvent.class};
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Abscissa of upper Left point. */
     private final LIntegerField x = new LIntegerField("X", "Abscissa of upper left corner");
 
@@ -81,7 +78,6 @@ public class PixelBoard
     /** Pixel level. */
     protected final LIntegerField level = new LIntegerField(false, "Level", "Pixel level");
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a PixelBoard, pre-selected by default
      *
@@ -104,15 +100,13 @@ public class PixelBoard
         super(Board.PIXEL, sheet.getLocationService(), eventsRead, selected, false, false, false);
 
         // Needed to process user input when RETURN/ENTER is pressed
-        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-                KeyStroke.getKeyStroke("ENTER"),
-                "ParamAction");
+        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke
+                .getKeyStroke("ENTER"), "ParamAction");
         getComponent().getActionMap().put("ParamAction", new ParamAction());
 
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // onEvent //
     //---------//
@@ -223,14 +217,12 @@ public class PixelBoard
         builder.add(height.getField(), cst.xy(11, r));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ParamAction //
     //-------------//
     private class ParamAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         // Method run whenever user presses Return/Enter in one of the parameter fields
         @Override
@@ -238,11 +230,11 @@ public class PixelBoard
         {
             // Publish the new pixel selection rectangle (which can be degenerated to a point)
             getSelectionService().publish(
-                    new LocationEvent(
-                            PixelBoard.this,
-                            SelectionHint.LOCATION_INIT,
-                            MouseMovement.PRESSING,
-                            new Rectangle(x.getValue(), y.getValue(), width.getValue(), height.getValue())));
+                    new LocationEvent(PixelBoard.this, SelectionHint.LOCATION_INIT,
+                                      MouseMovement.PRESSING, new Rectangle(x.getValue(), y
+                                                                            .getValue(), width
+                                                                                    .getValue(),
+                                                                            height.getValue())));
         }
     }
 }

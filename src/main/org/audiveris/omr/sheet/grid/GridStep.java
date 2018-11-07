@@ -47,13 +47,11 @@ import org.slf4j.LoggerFactory;
 public class GridStep
         extends AbstractStep
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(GridStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new GridStep object.
      */
@@ -61,7 +59,6 @@ public class GridStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
@@ -74,10 +71,8 @@ public class GridStep
         if (constants.displayNoStaff.isSet()) {
             sheet.getStub().getAssembly().addViewTab(
                     SheetTab.NO_STAFF_TAB,
-                    new ScrollImageView(
-                            sheet,
-                            new ImageView(
-                                    sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF).getBufferedImage())),
+                    new ScrollImageView(sheet, new ImageView(sheet.getPicture().getSource(
+                                        Picture.SourceKey.NO_STAFF).getBufferedImage())),
                     new BoardsPane(new PixelBoard(sheet)));
         }
     }
@@ -101,17 +96,14 @@ public class GridStep
         ///watch.print();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean displayNoStaff = new Constant.Boolean(
-                false,
-                "Should we display the staff-free image?");
+        private final Constant.Boolean displayNoStaff = new Constant.Boolean(false,
+                                                                             "Should we display the staff-free image?");
     }
 }

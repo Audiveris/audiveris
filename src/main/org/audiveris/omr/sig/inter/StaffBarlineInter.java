@@ -80,17 +80,14 @@ public class StaffBarlineInter
         extends AbstractInter
         implements InterEnsemble
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StaffBarlineInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     // Transient data
     //---------------
     //
     private Style style;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StaffBarlineInter} object from a shape.
      *
@@ -150,7 +147,6 @@ public class StaffBarlineInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -167,8 +163,7 @@ public class StaffBarlineInter
     public void addMember (Inter member)
     {
         if (!(member instanceof BarlineInter)) {
-            throw new IllegalArgumentException(
-                    "Only BarlineInter can be added to StaffBarlineInter");
+            throw new IllegalArgumentException("Only BarlineInter can be added to StaffBarlineInter");
         }
 
         EnsembleHelper.addMember(this, member);
@@ -691,7 +686,7 @@ public class StaffBarlineInter
     public boolean isLeftRepeat ()
     {
         return ((getStyle() == HEAVY_LIGHT) || (getStyle() == LIGHT_HEAVY_LIGHT))
-               && hasDotsOnRight();
+                       && hasDotsOnRight();
     }
 
     //---------------//
@@ -699,8 +694,7 @@ public class StaffBarlineInter
     //---------------//
     public boolean isRightRepeat ()
     {
-        return ((getStyle() == LIGHT_HEAVY) || (getStyle() == LIGHT_HEAVY_LIGHT))
-               && hasDotsOnLeft();
+        return ((getStyle() == LIGHT_HEAVY) || (getStyle() == LIGHT_HEAVY_LIGHT)) && hasDotsOnLeft();
     }
 
     //--------------//
@@ -760,9 +754,9 @@ public class StaffBarlineInter
 
         case 3:
 
-            if ((getLeftBar().getShape() == Shape.THIN_BARLINE)
-                && (getMiddleBar().getShape() == Shape.THICK_BARLINE)
-                && (getRightBar().getShape() == Shape.THIN_BARLINE)) {
+            if ((getLeftBar().getShape() == Shape.THIN_BARLINE) && (getMiddleBar().getShape()
+                                                                            == Shape.THICK_BARLINE)
+                        && (getRightBar().getShape() == Shape.THIN_BARLINE)) {
                 return LIGHT_HEAVY_LIGHT;
             }
 

@@ -87,12 +87,10 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class SlurInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SlurInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(SlurInter.class);
 
     /** To sort slurs vertically within a measure. */
     public static final Comparator<SlurInter> verticalComparator = new Comparator<SlurInter>()
@@ -167,8 +165,8 @@ public class SlurInter
                     // Check slur ends in first measure half (excluding header area)
                     Staff staff = system.getClosestStaff(end);
                     Measure measure = stack.getMeasureAt(staff);
-                    int middle = (staff.getHeaderStop() + measure.getAbscissa(LEFT, staff)
-                                  + measure.getWidth()) / 2;
+                    int middle = (staff.getHeaderStop() + measure.getAbscissa(LEFT, staff) + measure
+                            .getWidth()) / 2;
 
                     if (end.getX() < middle) {
                         return true;
@@ -180,7 +178,6 @@ public class SlurInter
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -215,7 +212,6 @@ public class SlurInter
     /** Physical characteristics. */
     private SlurInfo info;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SlurInter} object.
      *
@@ -257,7 +253,6 @@ public class SlurInter
         info = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -320,12 +315,8 @@ public class SlurInter
 
         // Check that part-based staff indices are the same
         if (prevStaff.getIndexInPart() != thisStaff.getIndexInPart()) {
-            logger.debug(
-                    "{} prevStaff:{} {} staff:{} different part-based staff indices",
-                    prevSlur,
-                    prevStaff.getId(),
-                    this,
-                    thisStaff.getId());
+            logger.debug("{} prevStaff:{} {} staff:{} different part-based staff indices", prevSlur,
+                         prevStaff.getId(), this, thisStaff.getId());
 
             return false;
         }
@@ -406,8 +397,8 @@ public class SlurInter
         HeadInter h1 = getHead(LEFT);
         HeadInter h2 = getHead(RIGHT);
         boolean result = (h1 != null) && (h2 != null) && (h1.getStaff() == h2.getStaff())
-                         && HeadInter.haveSameHeight(h1, h2)
-                         && isSpaceClear(h1, h2, systemHeadChords);
+                                 && HeadInter.haveSameHeight(h1, h2) && isSpaceClear(h1, h2,
+                                                                                     systemHeadChords);
         setTie(result);
 
         if (isVip()) {
@@ -841,8 +832,7 @@ public class SlurInter
         // Retrieve candidate chords
         Map<HorizontalSide, List<Inter>> chords = new EnumMap<HorizontalSide, List<Inter>>(
                 HorizontalSide.class);
-        List<Inter> systemChords = system.getSig().inters(
-                HeadChordInter.class);
+        List<Inter> systemChords = system.getSig().inters(HeadChordInter.class);
 
         for (HorizontalSide side : HorizontalSide.values()) {
             Rectangle box = sideAreas.get(side).getBounds();
@@ -850,11 +840,8 @@ public class SlurInter
         }
 
         // Select the best link pair, if any
-        Map<HorizontalSide, SlurHeadLink> linkPair = slurLinker.lookupLinkPair(
-                this,
-                sideAreas,
-                system,
-                chords);
+        Map<HorizontalSide, SlurHeadLink> linkPair = slurLinker.lookupLinkPair(this, sideAreas,
+                                                                               system, chords);
 
         if (linkPair == null) {
             return Collections.emptySet();
@@ -871,22 +858,18 @@ public class SlurInter
         return links;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
             extends BasicImpacts
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
-        private static final String[] NAMES = new String[]{
-            "dist", "angle", "width", "height", "vert"
-        };
+        private static final String[] NAMES = new String[]{"dist", "angle", "width", "height",
+                                                           "vert"};
 
         private static final double[] WEIGHTS = new double[]{3, 1, 1, 1, 1};
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double dist,
                         double angle,
                         double width,
@@ -908,15 +891,11 @@ public class SlurInter
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction maxDeltaY = new Scale.Fraction(
-                4,
-                "Maximum vertical difference in interlines between connecting slurs");
+        private final Scale.Fraction maxDeltaY = new Scale.Fraction(4,
+                                                                    "Maximum vertical difference in interlines between connecting slurs");
 
-        private final Constant.Integer maxTieDeltaMeasureID = new Constant.Integer(
-                "none",
-                1,
-                "Maximum delta in measure ID when setting a tie");
+        private final Constant.Integer maxTieDeltaMeasureID = new Constant.Integer("none", 1,
+                                                                                   "Maximum delta in measure ID when setting a tie");
     }
 }

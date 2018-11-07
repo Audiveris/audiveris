@@ -37,11 +37,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ClefKeyRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ClefKeyRelation} object.
      */
@@ -49,7 +47,6 @@ public class ClefKeyRelation
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -100,21 +97,17 @@ public class ClefKeyRelation
         return constants.keySupportCoeff.getValue();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio clefSupportCoeff = new Constant.Ratio(
-                5,
-                "Value for (source) clef coeff in support formula");
+        private final Constant.Ratio clefSupportCoeff = new Constant.Ratio(5,
+                                                                           "Value for (source) clef coeff in support formula");
 
-        private final Constant.Ratio keySupportCoeff = new Constant.Ratio(
-                5,
-                "Value for (target) key coeff in support formula");
+        private final Constant.Ratio keySupportCoeff = new Constant.Ratio(5,
+                                                                          "Value for (target) key coeff in support formula");
     }
 }

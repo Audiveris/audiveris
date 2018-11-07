@@ -60,17 +60,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AlterInter
         extends AbstractPitchedInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AlterInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Measured pitch value. */
     private Double measuredPitch;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AlterInter object.
      *
@@ -122,7 +119,6 @@ public class AlterInter
         this.measuredPitch = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // create //
     //--------//
@@ -257,9 +253,8 @@ public class AlterInter
         switch (shape) {
         case FLAT:
         case DOUBLE_FLAT:
-            return new Point(
-                    center.x,
-                    (int) Math.rint(center.y + (getFlatAreaOffset() * getBounds().height)));
+            return new Point(center.x, (int) Math.rint(center.y + (getFlatAreaOffset()
+                                                                           * getBounds().height)));
 
         default:
             return center;
@@ -355,8 +350,9 @@ public class AlterInter
             // Heuristic center WRT glyph box
             Rectangle box = glyph.getBounds();
             Point center = glyph.getCenter();
-            double geoPitch = staff.pitchPositionOf(
-                    new Point2D.Double(center.x, center.y + (getFlatAreaOffset() * box.height)));
+            double geoPitch = staff.pitchPositionOf(new Point2D.Double(center.x, center.y
+                                                                                         + (getFlatAreaOffset()
+                                                                                            * box.height)));
 
             // Average value of both heuristics
             double mix = 0.5 * (massPitch + geoPitch);
@@ -410,8 +406,9 @@ public class AlterInter
         Rectangle accidBox = getBounds();
         Point accidPt = new Point(
                 accidBox.x + accidBox.width,
-                ((shape != Shape.FLAT) && (shape != Shape.DOUBLE_FLAT))
-                        ? (accidBox.y + (accidBox.height / 2))
+                ((shape != Shape.FLAT) && (shape != Shape.DOUBLE_FLAT)) ? (accidBox.y
+                                                                                   + (accidBox.height
+                                                                                      / 2))
                         : (accidBox.y + ((3 * accidBox.height) / 4)));
         Rectangle luBox = new Rectangle(accidPt.x, accidPt.y - yGapMax, xGapMax, 2 * yGapMax);
         List<Inter> notes = Inters.intersectedInters(systemHeads, GeoOrder.BY_ABSCISSA, luBox);
@@ -459,19 +456,16 @@ public class AlterInter
         return Collections.emptySet();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Pitches //
     //---------//
     protected static class Pitches
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public final double pitch;
 
         public final double measuredPitch;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Pitches (double pitch,
                         double measuredPitch)
         {
@@ -486,15 +480,11 @@ public class AlterInter
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Double flatPitchOffset = new Constant.Double(
-                "pitch",
-                0.65,
-                "Pitch offset of flat WRT centroid-based pitch");
+        private final Constant.Double flatPitchOffset = new Constant.Double("pitch", 0.65,
+                                                                            "Pitch offset of flat WRT centroid-based pitch");
 
-        private final Constant.Ratio flatAreaOffset = new Constant.Ratio(
-                0.25,
-                "Center offset of flat WRT area center");
+        private final Constant.Ratio flatAreaOffset = new Constant.Ratio(0.25,
+                                                                         "Center offset of flat WRT area center");
     }
 }

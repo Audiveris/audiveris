@@ -52,7 +52,6 @@ public class Rational
         extends Number
         implements Comparable<Rational>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** The zero rational instance. */
     public static final Rational ZERO = new Rational(0, 1);
@@ -66,7 +65,6 @@ public class Rational
     /** Max rational value. */
     public static final Rational MAX_VALUE = new Rational(Integer.MAX_VALUE, 1);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Final numerator value. */
     @XmlAttribute
     public final int num;
@@ -75,7 +73,6 @@ public class Rational
     @XmlAttribute
     public final int den;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a final Rational instance
      *
@@ -112,7 +109,6 @@ public class Rational
         num = den = 1;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // decode //
     //--------//
@@ -190,8 +186,8 @@ public class Rational
         int b = this.den * that.num;
 
         // Detect overflow, using the fact that den's are always >= 1
-        if ((Integer.signum(b) != Integer.signum(that.num))
-            || (Integer.signum(a) != Integer.signum(this.num))) {
+        if ((Integer.signum(b) != Integer.signum(that.num)) || (Integer.signum(a) != Integer.signum(
+                this.num))) {
             BigInteger bigThisNum = BigInteger.valueOf(this.num);
             BigInteger bigThisDen = BigInteger.valueOf(this.den);
             BigInteger bigThatNum = BigInteger.valueOf(that.num);
@@ -432,14 +428,12 @@ public class Rational
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
     public static class Adapter
             extends XmlAdapter<String, Rational>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String marshal (Rational val)

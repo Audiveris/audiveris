@@ -46,7 +46,6 @@ import java.util.zip.ZipOutputStream;
  */
 public abstract class ZipFileSystem
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     //--------//
     // create //

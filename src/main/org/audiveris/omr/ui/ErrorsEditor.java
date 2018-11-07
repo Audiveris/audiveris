@@ -49,11 +49,9 @@ import javax.swing.event.ListSelectionListener;
  */
 public class ErrorsEditor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ErrorsEditor.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet */
     private final Sheet sheet;
 
@@ -72,7 +70,6 @@ public class ErrorsEditor
     /** Facade model for the JList */
     private final DefaultListModel<Record> model = new DefaultListModel<Record>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of ErrorsEditor (one per sheet / score).
      *
@@ -88,7 +85,6 @@ public class ErrorsEditor
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //    //----------//
     //    // addError //
     //    //----------//
@@ -252,7 +248,6 @@ public class ErrorsEditor
         return scrollPane;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //    //----------------//
     //    // getCurrentStep //
@@ -278,7 +273,6 @@ public class ErrorsEditor
     private class MyListener
             implements ListSelectionListener
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void valueChanged (ListSelectionEvent e)
@@ -338,7 +332,6 @@ public class ErrorsEditor
     private static class Record
             implements Comparable<Record>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Step step;
 
@@ -349,7 +342,6 @@ public class ErrorsEditor
 
         final String text;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Record (Step step,
                        //                       OldSystemNode node,
                        Glyph glyph,
@@ -361,7 +353,6 @@ public class ErrorsEditor
             this.text = text;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int compareTo (Record other)
         {

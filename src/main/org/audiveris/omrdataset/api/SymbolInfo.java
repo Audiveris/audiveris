@@ -44,12 +44,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 public class SymbolInfo
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SymbolInfo.class);
+    private static final Logger logger = LoggerFactory.getLogger(SymbolInfo.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     @XmlAttribute(name = "interline")
     @XmlJavaTypeAdapter(value = Double3Adapter.class, type = double.class)
     private final double interline;
@@ -73,7 +70,6 @@ public class SymbolInfo
     @XmlElement(name = "Symbol")
     private List<SymbolInfo> innerSymbols;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SymbolInfo} object.
      *
@@ -108,7 +104,6 @@ public class SymbolInfo
         bounds = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Add an inner symbol within this one.
      *
@@ -301,7 +296,6 @@ public class SymbolInfo
         this.omrShape = omrShape;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------------//
     // OmrShapeAdapter //
     //-----------------//
@@ -311,7 +305,6 @@ public class SymbolInfo
     public static class OmrShapeAdapter
             extends XmlAdapter<String, OmrShape>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String marshal (OmrShape shape)
@@ -344,7 +337,6 @@ public class SymbolInfo
     private static class Double3Adapter
             extends XmlAdapter<String, Double>
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final DecimalFormat decimal3 = new DecimalFormat();
 
@@ -353,7 +345,6 @@ public class SymbolInfo
             decimal3.setMaximumFractionDigits(3); // For a maximum of 3 decimals
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String marshal (Double d)
                 throws Exception
@@ -379,7 +370,6 @@ public class SymbolInfo
     private static class Rectangle2DAdapter
             extends XmlAdapter<Rectangle2DAdapter.Rectangle2DFacade, Rectangle2D>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Rectangle2DFacade marshal (Rectangle2D rect)
@@ -395,11 +385,9 @@ public class SymbolInfo
             return facade.getRectangle2D();
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         @XmlJavaTypeAdapter(value = Double3Adapter.class, type = double.class)
         private static class Rectangle2DFacade
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             @XmlAttribute(name = "x")
             public double x;
@@ -413,7 +401,6 @@ public class SymbolInfo
             @XmlAttribute(name = "h")
             public double height;
 
-            //~ Constructors -----------------------------------------------------------------------
             public Rectangle2DFacade (Rectangle2D rect)
             {
                 x = rect.getX();
@@ -426,7 +413,6 @@ public class SymbolInfo
             {
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             public Rectangle2D getRectangle2D ()
             {
                 return new Rectangle2D.Double(x, y, width, height);

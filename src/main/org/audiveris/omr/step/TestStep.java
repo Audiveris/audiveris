@@ -48,7 +48,6 @@ import java.util.List;
 public class TestStep
         extends AbstractStep
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code TestStep} object.
@@ -61,7 +60,6 @@ public class TestStep
         //            "Placeholder for specific tests");
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void doit (Sheet aSheet)
             throws StepException
@@ -125,10 +123,8 @@ public class TestStep
     private static PrintWriter getPrintWriter (Path path)
     {
         try {
-            final BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(
-                            new FileOutputStream(path.toFile()),
-                            WellKnowns.FILE_ENCODING));
+            final BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
+                    new FileOutputStream(path.toFile()), WellKnowns.FILE_ENCODING));
 
             return new PrintWriter(bw);
         } catch (Exception ex) {
@@ -159,13 +155,11 @@ public class TestStep
         return formatter.format(now);
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
     //--------//
     // Holder //
     //--------//
     private static interface Holder
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         public static final PrintWriter writer = getPrintWriter(getTestFile());
     }

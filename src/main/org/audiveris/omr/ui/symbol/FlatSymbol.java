@@ -32,7 +32,6 @@ import java.awt.Rectangle;
 public class FlatSymbol
         extends ShapeSymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new FlatSymbol object.
@@ -60,7 +59,6 @@ public class FlatSymbol
         super(isIcon, shape, false, codes);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getRefPoint //
     //-------------//
@@ -70,9 +68,7 @@ public class FlatSymbol
     @Override
     public Point getRefPoint (Rectangle box)
     {
-        return new Point(
-                box.x + (box.width / 2),
-                box.y + (int) Math.rint(box.height * 0.67));
+        return new Point(box.x + (box.width / 2), box.y + (int) Math.rint(box.height * 0.67));
     }
 
     //------------//

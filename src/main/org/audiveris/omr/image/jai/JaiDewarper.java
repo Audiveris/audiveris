@@ -40,12 +40,10 @@ import javax.media.jai.WarpGrid;
  */
 public class JaiDewarper
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The dewarp grid. */
     private Warp dewarpGrid;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new JaiDewarper object.
      */
@@ -53,7 +51,6 @@ public class JaiDewarper
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //
     //----------------//
     // createWarpGrid //
@@ -66,14 +63,7 @@ public class JaiDewarper
                                 int yNumCells,
                                 float[] warpPositions)
     {
-        dewarpGrid = new WarpGrid(
-                xStart,
-                xStep,
-                xNumCells,
-                yStart,
-                yStep,
-                yNumCells,
-                warpPositions);
+        dewarpGrid = new WarpGrid(xStart, xStep, xNumCells, yStart, yStep, yNumCells, warpPositions);
     }
 
     //-------------//

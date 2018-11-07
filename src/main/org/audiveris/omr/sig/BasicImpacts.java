@@ -30,7 +30,6 @@ package org.audiveris.omr.sig;
 public abstract class BasicImpacts
         extends AbstractImpacts
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private final String[] names;
 
@@ -40,7 +39,6 @@ public abstract class BasicImpacts
 
     protected double grade = -1;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicImpacts object.
      *
@@ -60,7 +58,6 @@ public abstract class BasicImpacts
         impacts = new double[names.length];
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public String getDump ()
     {

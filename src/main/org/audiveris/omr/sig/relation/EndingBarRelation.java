@@ -44,16 +44,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class EndingBarRelation
         extends AbstractConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final double[] WEIGHTS = new double[]{
-        constants.xWeight.getValue(),
-        constants.yWeight.getValue()
-    };
+    private static final double[] WEIGHTS = new double[]{constants.xWeight.getValue(),
+                                                         constants.yWeight.getValue()};
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Which side of ending is used?. */
     @XmlAttribute(name = "side")
     private HorizontalSide endingSide;
@@ -61,7 +57,6 @@ public class EndingBarRelation
     /** Horizontal delta (in interline) between bar line and ending side. */
     private final double xDistance;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new EndingBarRelation object.
      *
@@ -83,7 +78,6 @@ public class EndingBarRelation
         this.xDistance = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getXGapMaximum //
     //----------------//
@@ -219,41 +213,32 @@ public class EndingBarRelation
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio endingSupportCoeff = new Constant.Ratio(
-                3,
-                "Supporting coeff for (source) ending");
+        private final Constant.Ratio endingSupportCoeff = new Constant.Ratio(3,
+                                                                             "Supporting coeff for (source) ending");
 
-        private final Scale.Fraction xGapMax = new Scale.Fraction(
-                2.0,
-                "Maximum horizontal gap between ending and barline");
+        private final Scale.Fraction xGapMax = new Scale.Fraction(2.0,
+                                                                  "Maximum horizontal gap between ending and barline");
 
-        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(
-                3.0,
-                "Maximum manual horizontal gap between ending and barline");
+        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(3.0,
+                                                                        "Maximum manual horizontal gap between ending and barline");
 
-        private final Scale.Fraction yGapMax = new Scale.Fraction(
-                10.0,
-                "Maximum vertical gap between bottom of ending leg and top of barline");
+        private final Scale.Fraction yGapMax = new Scale.Fraction(10.0,
+                                                                  "Maximum vertical gap between bottom of ending leg and top of barline");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
-                15.0,
-                "Maximum manual vertical gap between bottom of ending leg and top of barline");
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(15.0,
+                                                                        "Maximum manual vertical gap between bottom of ending leg and top of barline");
 
-        private final Constant.Ratio xWeight = new Constant.Ratio(
-                1,
-                "Relative impact weight for xGap (in or out)");
+        private final Constant.Ratio xWeight = new Constant.Ratio(1,
+                                                                  "Relative impact weight for xGap (in or out)");
 
-        private final Constant.Ratio yWeight = new Constant.Ratio(
-                0,
-                "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(0,
+                                                                  "Relative impact weight for yGap");
     }
 }

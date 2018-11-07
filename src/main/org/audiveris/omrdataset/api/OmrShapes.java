@@ -36,7 +36,6 @@ import java.util.Map;
  */
 public abstract class OmrShapes
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** OmrShapes as a list a strings. */
     public static final List<String> NAMES = getNames();
@@ -60,7 +59,6 @@ public abstract class OmrShapes
     /** Map of predefined combos to num/den integer pairs. */
     public static final Map<OmrShape, NumDen> COMBO_MAP = buildComboMap();
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the list of OmrShape values, to be used by DL4J.
      *
@@ -156,7 +154,6 @@ public abstract class OmrShapes
         return map;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // NumDen //
     //--------//
@@ -165,13 +162,11 @@ public abstract class OmrShapes
      */
     public static class NumDen
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public final int num;
 
         public final int den;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public NumDen (int num,
                        int den)
         {

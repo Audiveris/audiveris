@@ -36,13 +36,11 @@ import java.awt.geom.Rectangle2D;
 public class NumDenSymbol
         extends ShapeSymbol
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private final int[] numCodes;
 
     private final int[] denCodes;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new NumDenSymbol object.
      *
@@ -97,7 +95,6 @@ public class NumDenSymbol
         this.denCodes = denCodes;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -117,9 +114,9 @@ public class NumDenSymbol
 
         Rectangle2D numRect = p.numLayout.getBounds();
         Rectangle2D denRect = p.denLayout.getBounds();
-        p.rect = new Rectangle(
-                (int) Math.rint(Math.max(numRect.getWidth(), denRect.getWidth())),
-                p.dy + (int) Math.rint(Math.max(numRect.getHeight(), denRect.getHeight())));
+        p.rect = new Rectangle((int) Math.rint(Math.max(numRect.getWidth(), denRect.getWidth())),
+                               p.dy + (int) Math.rint(Math.max(numRect.getHeight(), denRect
+                                                               .getHeight())));
 
         return p;
     }
@@ -143,14 +140,12 @@ public class NumDenSymbol
         OmrFont.paint(g, p.denLayout, bot, AREA_CENTER);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int dy;
 
@@ -158,7 +153,6 @@ public class NumDenSymbol
 
         final TextLayout denLayout;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public MyParams (MusicFont font)
         {
             dy = (int) Math.rint(2 * font.getStaffInterline());

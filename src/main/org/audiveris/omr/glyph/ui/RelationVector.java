@@ -46,11 +46,9 @@ import java.util.Set;
  */
 public class RelationVector
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RelationVector.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Underling sheet. */
     private final Sheet sheet;
 
@@ -60,7 +58,6 @@ public class RelationVector
     /** Starting inters, needed to initially create a vector. */
     private final List<Inter> starts;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a useful vector.
      *
@@ -76,7 +73,6 @@ public class RelationVector
         logger.debug("Created {}", this);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // extendTo //
     //----------//

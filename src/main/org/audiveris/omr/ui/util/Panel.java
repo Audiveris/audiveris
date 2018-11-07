@@ -49,7 +49,6 @@ public class Panel
         extends JPanel ///FormDebugPanel
 
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -58,11 +57,9 @@ public class Panel
     /** Default Insets */
     private static Insets DEFAULT_INSETS;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Room for potential specific insets */
     private Insets insets;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Panel object.
      */
@@ -71,7 +68,6 @@ public class Panel
         setBorder(null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Selector to the default button width.
      *
@@ -168,8 +164,8 @@ public class Panel
                 sbc.append(",").append(fieldInterval).append(",");
             }
 
-            sbc.append(labelAlignment).append(labelWidth).append(",").append(labelInterval)
-                    .append(",").append(fieldWidth);
+            sbc.append(labelAlignment).append(labelWidth).append(",").append(labelInterval).append(
+                    ",").append(fieldWidth);
         }
 
         return sbc.toString();
@@ -213,9 +209,8 @@ public class Panel
                                              String labelWidth,
                                              String fieldWidth)
     {
-        return new FormLayout(
-                makeColumns(cols, labelAlignment, labelWidth, fieldWidth),
-                makeRows(rows));
+        return new FormLayout(makeColumns(cols, labelAlignment, labelWidth, fieldWidth), makeRows(
+                              rows));
     }
 
     //-------------------//
@@ -369,40 +364,32 @@ public class Panel
     private Insets getDefaultInsets ()
     {
         if (DEFAULT_INSETS == null) {
-            DEFAULT_INSETS = new Insets(
-                    constants.insetTop.getValue(),
-                    constants.insetLeft.getValue(),
-                    constants.insetBottom.getValue(),
-                    constants.insetRight.getValue());
+            DEFAULT_INSETS = new Insets(constants.insetTop.getValue(), constants.insetLeft
+                                        .getValue(), constants.insetBottom.getValue(),
+                                        constants.insetRight.getValue());
         }
 
         return DEFAULT_INSETS;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.String buttonWidth = new Constant.String(
-                "45dlu",
-                "Width of a standard button");
+        private final Constant.String buttonWidth = new Constant.String("45dlu",
+                                                                        "Width of a standard button");
 
-        private final Constant.String fieldInterline = new Constant.String(
-                "1dlu",
-                "Vertical gap between two lines");
+        private final Constant.String fieldInterline = new Constant.String("1dlu",
+                                                                           "Vertical gap between two lines");
 
-        private final Constant.String fieldInterval = new Constant.String(
-                "3dlu",
-                "Horizontal gap between two fields");
+        private final Constant.String fieldInterval = new Constant.String("3dlu",
+                                                                          "Horizontal gap between two fields");
 
-        private final Constant.String fieldWidth = new Constant.String(
-                "35dlu",
-                "Width of a field value");
+        private final Constant.String fieldWidth = new Constant.String("35dlu",
+                                                                       "Width of a field value");
 
         private final PixelCount insetBottom = new PixelCount(6, "Value of Bottom inset");
 
@@ -412,16 +399,13 @@ public class Panel
 
         private final PixelCount insetTop = new PixelCount(6, "Value of Top inset");
 
-        private final Constant.String labelInterval = new Constant.String(
-                "1dlu",
-                "Horizontal gap between a field label and its field value");
+        private final Constant.String labelInterval = new Constant.String("1dlu",
+                                                                          "Horizontal gap between a field label and its field value");
 
-        private final Constant.String labelWidth = new Constant.String(
-                "25dlu",
-                "Width of the label of a field");
+        private final Constant.String labelWidth = new Constant.String("25dlu",
+                                                                       "Width of the label of a field");
 
-        private final Constant.String panelInterline = new Constant.String(
-                "6dlu",
-                "Vertical gap between two panels");
+        private final Constant.String panelInterline = new Constant.String("6dlu",
+                                                                           "Vertical gap between two panels");
     }
 }

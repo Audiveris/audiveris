@@ -30,19 +30,16 @@ package org.audiveris.omr.math;
  */
 public class Polynomial
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Epsilon value meant for equality testing: {@value}. */
     private static final double EPSILON = 1E-5;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The degree of polynomial */
     protected int degree;
 
     /** Polynomial coefficient vector, from low to high order */
     protected double[] coefficients;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Polynomial object (actually just a monomial).
      * Example new Polynomial(3,2) = 3x^2
@@ -62,7 +59,6 @@ public class Polynomial
         this.degree = degree();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // main //
     //------//
@@ -96,8 +92,7 @@ public class Polynomial
         System.out.println("p'(x)       = " + p.derivative());
         System.out.println("p''(x)      = " + p.derivative().derivative());
         System.out.println("p'''(x)     = " + p.derivative().derivative().derivative());
-        System.out.println(
-                "p''''(x)    = " + p.derivative().derivative().derivative().derivative());
+        System.out.println("p''''(x)    = " + p.derivative().derivative().derivative().derivative());
     }
 
     //--------//

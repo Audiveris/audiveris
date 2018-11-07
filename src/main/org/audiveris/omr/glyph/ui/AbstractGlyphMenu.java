@@ -38,11 +38,9 @@ import java.util.Collection;
  */
 public abstract class AbstractGlyphMenu
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractGlyphMenu.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Concrete menu. */
     protected final SeparableMenu menu = new SeparableMenu();
 
@@ -61,7 +59,6 @@ public abstract class AbstractGlyphMenu
     /** To manage elaboration. */
     protected boolean initDone = false;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractGlyphMenu object.
      *
@@ -76,7 +73,6 @@ public abstract class AbstractGlyphMenu
         menu.setText(text);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getMenu //
     //---------//

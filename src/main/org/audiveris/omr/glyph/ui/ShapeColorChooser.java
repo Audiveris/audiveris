@@ -72,13 +72,11 @@ import javax.swing.event.ChangeListener;
 public class ShapeColorChooser
         implements ChangeListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ShapeColorChooser.class);
 
     private static JFrame frame;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The classic color chooser utility */
     private final JColorChooser colorChooser;
 
@@ -94,7 +92,6 @@ public class ShapeColorChooser
     /** To select shape (within selected range) */
     private final ShapesPane shapes;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of ShapeColorChooser (should be improved to always
      * reuse the same instance. TODO)
@@ -122,7 +119,6 @@ public class ShapeColorChooser
         component.add(colorChooser, BorderLayout.EAST);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // showFrame //
     //-----------//
@@ -164,20 +160,17 @@ public class ShapeColorChooser
         shapes.colorChanged();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Pane //
     //------//
     private abstract class Pane
             extends JPanel
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public JLabel banner = new JLabel("", JLabel.CENTER);
 
         public JPopupMenu menu = new JPopupMenu();
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Pane (String title)
         {
             setLayout(new BorderLayout());
@@ -190,7 +183,6 @@ public class ShapeColorChooser
             add(banner, BorderLayout.CENTER);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public abstract void colorChanged ();
 
         protected abstract void refreshBanner ();
@@ -202,7 +194,6 @@ public class ShapeColorChooser
     private class RangesPane
             extends Pane
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public ShapeSet current;
 
@@ -243,7 +234,6 @@ public class ShapeColorChooser
 
         private JButton pasteButton = new JButton(paste);
 
-        //~ Constructors ---------------------------------------------------------------------------
         public RangesPane ()
         {
             super("Shape Range");
@@ -256,7 +246,6 @@ public class ShapeColorChooser
             buildRangesMenu();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         // When color chooser selection has been made
         @Override
         public void colorChanged ()
@@ -280,18 +269,15 @@ public class ShapeColorChooser
             ShapeSet.addAllShapeSets(menu, selectionListener);
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         private class PasteAction
                 extends AbstractAction
         {
-            //~ Constructors -----------------------------------------------------------------------
 
             public PasteAction ()
             {
                 super("Paste");
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -308,14 +294,12 @@ public class ShapeColorChooser
         private class SelectAction
                 extends AbstractAction
         {
-            //~ Constructors -----------------------------------------------------------------------
 
             public SelectAction ()
             {
                 super("Select");
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -331,7 +315,6 @@ public class ShapeColorChooser
     private class ShapesPane
             extends Pane
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public Shape current;
 
@@ -370,7 +353,6 @@ public class ShapeColorChooser
 
         private boolean isSpecific;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ShapesPane ()
         {
             super("Individual Shape");
@@ -393,7 +375,6 @@ public class ShapeColorChooser
             paste.setEnabled(false);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         // When color chooser selection has been made
         @Override
         public void colorChanged ()
@@ -463,18 +444,15 @@ public class ShapeColorChooser
             }
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         private class CopyAction
                 extends AbstractAction
         {
-            //~ Constructors -----------------------------------------------------------------------
 
             public CopyAction ()
             {
                 super("Copy");
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -485,14 +463,12 @@ public class ShapeColorChooser
         private class CutAction
                 extends AbstractAction
         {
-            //~ Constructors -----------------------------------------------------------------------
 
             public CutAction ()
             {
                 super("Cut");
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -509,14 +485,12 @@ public class ShapeColorChooser
         private class PasteAction
                 extends AbstractAction
         {
-            //~ Constructors -----------------------------------------------------------------------
 
             public PasteAction ()
             {
                 super("Paste");
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -533,14 +507,12 @@ public class ShapeColorChooser
         private class SelectAction
                 extends AbstractAction
         {
-            //~ Constructors -----------------------------------------------------------------------
 
             public SelectAction ()
             {
                 super("Select");
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {

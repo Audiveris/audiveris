@@ -112,7 +112,6 @@ import javax.swing.JPanel;
 public abstract class SigPainter
         extends AbstractInterVisitor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SigPainter.class);
 
@@ -138,7 +137,6 @@ public abstract class SigPainter
         new Color(0, 128, 128, alpha)
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Graphic context. */
     protected final Graphics2D g;
 
@@ -166,7 +164,6 @@ public abstract class SigPainter
     /** Global stroke for ledgers, with no glyph. */
     private final Stroke ledgerStroke;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SigPainter} object.
      *
@@ -196,15 +193,12 @@ public abstract class SigPainter
         }
 
         // Determine lines parameters
-        lineStroke = new BasicStroke(
-                (scale != null) ? scale.getFore() : 2f,
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND);
+        lineStroke = new BasicStroke((scale != null) ? scale.getFore() : 2f, BasicStroke.CAP_ROUND,
+                                     BasicStroke.JOIN_ROUND);
         stemStroke = new BasicStroke(3f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
         ledgerStroke = new BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getVoicePanel //
     //---------------//
@@ -249,10 +243,10 @@ public abstract class SigPainter
             label.setOpaque(true);
             label.setBackground(background);
             label.setForeground(color);
-            int col = (c <= mid) ? c : c + 1;
+
+            int col = (c <= mid) ? c : (c + 1);
             builder.add(label, cst.xy(col, 1));
         }
-
         // Separation between staves
         {
             final Color color = Color.BLACK;
@@ -431,9 +425,8 @@ public abstract class SigPainter
         final Rectangle glyphBox = bracket.getGlyph().getBounds();
         final BracketInter.BracketKind kind = bracket.getKind();
         final double width = bracket.getWidth();
-        final Dimension dim = new Dimension(
-                (int) Math.rint(widthRatio * width),
-                (int) Math.rint(heightRatio * width));
+        final Dimension dim = new Dimension((int) Math.rint(widthRatio * width), (int) Math.rint(
+                                            heightRatio * width));
         final MusicFont font = getMusicFont(false);
 
         Integer top = null;
@@ -449,9 +442,8 @@ public abstract class SigPainter
 
         if ((kind == BracketInter.BracketKind.BOTTOM) || (kind == BracketInter.BracketKind.BOTH)) {
             // Draw lower symbol part
-            final Point left = new Point(
-                    box.x,
-                    (glyphBox.y + glyphBox.height) - (int) Math.rint(barRatio * width));
+            final Point left = new Point(box.x, (glyphBox.y + glyphBox.height) - (int) Math.rint(
+                                         barRatio * width));
             OmrFont.paint(g, font.layout(SYMBOL_BRACKET_LOWER_SERIF, dim), left, TOP_LEFT);
             bottom = left.y;
         }
@@ -602,11 +594,8 @@ public abstract class SigPainter
             final Glyph glyph = ledger.getGlyph();
 
             if (glyph != null) {
-                g.setStroke(
-                        new BasicStroke(
-                                (float) Math.rint(glyph.getMeanThickness(Orientation.HORIZONTAL)),
-                                BasicStroke.CAP_BUTT,
-                                BasicStroke.JOIN_ROUND));
+                g.setStroke(new BasicStroke((float) Math.rint(glyph.getMeanThickness(
+                        Orientation.HORIZONTAL)), BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
                 glyph.renderLine(g);
             } else {
                 g.setStroke(ledgerStroke);

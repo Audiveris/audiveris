@@ -49,7 +49,6 @@ import java.util.List;
 public interface InterEnsemble
         extends Inter
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Add a member to the ensemble.

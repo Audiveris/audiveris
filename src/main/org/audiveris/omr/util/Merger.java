@@ -31,7 +31,6 @@ import java.util.List;
  */
 public abstract class Merger<E>
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     public void mergeAll (List<E> list)
     {

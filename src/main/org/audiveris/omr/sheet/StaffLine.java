@@ -56,12 +56,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class StaffLine
         implements LineInfo
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            StaffLine.class);
+    private static final Logger logger = LoggerFactory.getLogger(StaffLine.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -89,7 +86,6 @@ public class StaffLine
     /** Bounding box. */
     protected Rectangle bounds;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StaffLine} object.
      *
@@ -112,7 +108,6 @@ public class StaffLine
         this.thickness = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getBounds //
     //-----------//
@@ -230,7 +225,6 @@ public class StaffLine
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
@@ -240,7 +234,6 @@ public class StaffLine
     public static class Adapter
             extends XmlAdapter<StaffLine, LineInfo>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public StaffLine marshal (LineInfo lineInfo)

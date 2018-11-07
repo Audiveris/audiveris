@@ -38,7 +38,6 @@ import java.awt.geom.Rectangle2D;
 public class SlantedSymbol
         extends ShapeSymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new SlantedSymbol object, standard size
@@ -66,7 +65,6 @@ public class SlantedSymbol
         super(isIcon, shape, false, codes);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -102,14 +100,10 @@ public class SlantedSymbol
             float dx;
             int c = code - MusicFont.CODE_OFFSET;
 
-            if ((c == 102)
-                || // F
-                    (c == 196)
-                || // FF
-                    (c == 236)
-                || // FFF
-                    (c == 83)
-                || // SF
+            if ((c == 102) || // F
+                    (c == 196) || // FF
+                    (c == 236) || // FFF
+                    (c == 83) || // SF
                     (c == 90)) { // FZ
                 dx = (float) r.getHeight() * 0.215f; // Measured
             } else {
@@ -131,11 +125,8 @@ public class SlantedSymbol
             x += (r.getWidth() - dx);
         }
 
-        p.rect = new Rectangle(
-                (int) Math.floor(rect.getX()),
-                (int) Math.floor(rect.getY()),
-                (int) Math.ceil(rect.getWidth()),
-                (int) Math.ceil(rect.getHeight()));
+        p.rect = new Rectangle((int) Math.floor(rect.getX()), (int) Math.floor(rect.getY()),
+                               (int) Math.ceil(rect.getWidth()), (int) Math.ceil(rect.getHeight()));
 
         return p;
     }
@@ -170,14 +161,12 @@ public class SlantedSymbol
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // layout not used
         // rect for global image
@@ -191,7 +180,6 @@ public class SlantedSymbol
     //-------------//
     protected static class SmartLayout
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // The standard character glyph
         final TextLayout layout;
@@ -199,7 +187,6 @@ public class SlantedSymbol
         // Translation before and after
         final float dx;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public SmartLayout (TextLayout layout,
                             float dx)
         {

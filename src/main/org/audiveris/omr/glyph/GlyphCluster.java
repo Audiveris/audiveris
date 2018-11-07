@@ -52,18 +52,15 @@ import java.util.Set;
  */
 public class GlyphCluster
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphCluster.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Environment adapter. */
     private final Adapter adapter;
 
     /** Group, if any, to be assigned to created glyphs. */
     private final GlyphGroup group;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Cluster object, with an adapter to the environment.
      *
@@ -77,7 +74,6 @@ public class GlyphCluster
         this.group = group;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getSubGraph //
     //-------------//
@@ -192,8 +188,8 @@ public class GlyphCluster
 
         if (!adapter.isTooLight(weight)) {
             // Build compound and get acceptable evaluations for the compound
-            Glyph compound = (parts.size() > 1) ? GlyphFactory.buildGlyph(parts)
-                    : parts.iterator().next();
+            Glyph compound = (parts.size() > 1) ? GlyphFactory.buildGlyph(parts) : parts.iterator()
+                    .next();
             compound.addGroup(group);
 
             // Create all acceptable inters, if any, for the compound
@@ -228,13 +224,11 @@ public class GlyphCluster
         }
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
     public static interface Adapter
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Evaluate a provided glyph and create all acceptable inter instances.
@@ -293,7 +287,6 @@ public class GlyphCluster
         boolean isTooSmall (Rectangle bounds);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------------//
     // AbstractAdapter //
     //-----------------//
@@ -303,7 +296,6 @@ public class GlyphCluster
     public abstract static class AbstractAdapter
             implements Adapter
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Graph of the connected glyphs, with their distance edges if any. */
         protected final SimpleGraph<Glyph, GlyphLink> graph;
@@ -311,7 +303,6 @@ public class GlyphCluster
         // For debug only
         public int trials = 0;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Build an adapter from a set of parts and the maximum gap between parts.
          * The connectivity graph is built internally.
@@ -336,7 +327,6 @@ public class GlyphCluster
             this.graph = graph;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public List<Glyph> getNeighbors (Glyph part)
         {

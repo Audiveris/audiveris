@@ -55,13 +55,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BarlineInter
         extends AbstractVerticalInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Does this bar line define a staff side?. */
     @XmlAttribute(name = "staff-end")
     private HorizontalSide staffEnd;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarlineInter object.
      *
@@ -106,7 +104,6 @@ public class BarlineInter
         super(null, null, null, null, null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -343,10 +340,8 @@ public class BarlineInter
     private void browseGroup (BarlineInter bar,
                               SortedSet<Inter> items)
     {
-        for (Relation rel : sig.getRelations(
-                bar,
-                BarGroupRelation.class,
-                RepeatDotBarRelation.class)) {
+        for (Relation rel : sig
+                .getRelations(bar, BarGroupRelation.class, RepeatDotBarRelation.class)) {
             Inter other = sig.getOppositeInter(bar, rel);
 
             if (!items.contains(other)) {

@@ -35,7 +35,6 @@ import java.util.List;
  */
 public class SigBackup
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Saved data. */
     protected List<Inter> seeds;
@@ -46,7 +45,6 @@ public class SigBackup
     /** The SIG where work is done. */
     protected final SIGraph sig;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SigBackup} object.
      *
@@ -57,7 +55,6 @@ public class SigBackup
         this.sig = sig;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getSeeds //
     //----------//

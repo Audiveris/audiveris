@@ -49,11 +49,9 @@ public class PixelBuffer
         extends Table.UnsignedByte
         implements PixelFilter, PixelSink
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PixelBuffer.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new PixelBuffer object.
      *
@@ -123,7 +121,6 @@ public class PixelBuffer
         ///watch.print();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public ByteProcessor filteredImage ()
     {

@@ -31,7 +31,6 @@ import org.audiveris.omr.sig.BasicImpacts;
 public class SupportImpacts
         extends BasicImpacts
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new RelationImpacts object.
@@ -45,7 +44,6 @@ public class SupportImpacts
         super(names, weights);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // getIntrinsicRatio //
     //-------------------//

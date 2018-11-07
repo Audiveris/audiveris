@@ -51,13 +51,11 @@ import javax.swing.text.StyleConstants;
  */
 public class LogPane
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(LogPane.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The scrolling text area */
     private final JScrollPane component;
 
@@ -68,7 +66,6 @@ public class LogPane
 
     private final SimpleAttributeSet attributes = new SimpleAttributeSet();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the log pane, with a standard mailbox.
      */
@@ -88,7 +85,6 @@ public class LogPane
         component.setViewportView(logArea);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // clearLog //
     //----------//
@@ -134,19 +130,13 @@ public class LogPane
 
                     if (event != null) {
                         // Color
-                        StyleConstants.setForeground(
-                                attributes,
-                                getLevelColor(event.getLevel()));
+                        StyleConstants.setForeground(attributes, getLevelColor(event.getLevel()));
 
                         // Font name
-                        StyleConstants.setFontFamily(
-                                attributes,
-                                constants.fontName.getValue());
+                        StyleConstants.setFontFamily(attributes, constants.fontName.getValue());
 
                         // Font size
-                        StyleConstants.setFontSize(
-                                attributes,
-                                constants.fontSize.getValue());
+                        StyleConstants.setFontSize(attributes, constants.fontSize.getValue());
 
                         try {
                             Map<String, String> mdc = event.getMDCPropertyMap();
@@ -165,10 +155,8 @@ public class LogPane
                                 sb.append("] ");
                             }
 
-                            document.insertString(
-                                    document.getLength(),
-                                    sb + event.getFormattedMessage() + "\n",
-                                    attributes);
+                            document.insertString(document.getLength(), sb + event
+                                                  .getFormattedMessage() + "\n", attributes);
                         } catch (BadLocationException ex) {
                             ex.printStackTrace();
                         }
@@ -194,22 +182,17 @@ public class LogPane
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Integer fontSize = new Constant.Integer(
-                "Points",
-                10,
-                "Font size for log pane");
+        private final Constant.Integer fontSize = new Constant.Integer("Points", 10,
+                                                                       "Font size for log pane");
 
-        private final Constant.String fontName = new Constant.String(
-                "Lucida Console",
-                "Font name for log pane");
+        private final Constant.String fontName = new Constant.String("Lucida Console",
+                                                                     "Font name for log pane");
     }
 }

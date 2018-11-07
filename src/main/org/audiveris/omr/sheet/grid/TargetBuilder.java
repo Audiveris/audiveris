@@ -37,9 +37,7 @@ import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.util.ItemRenderer;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
-
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -71,13 +69,11 @@ import javax.imageio.ImageIO;
 public class TargetBuilder
         implements ItemRenderer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TargetBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet */
     @Navigable(false)
     private final Sheet sheet;
@@ -103,7 +99,6 @@ public class TargetBuilder
     /** Destination points */
     private final List<Point2D> dstPoints = new ArrayList<Point2D>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TargetBuilder object.
      *
@@ -114,7 +109,6 @@ public class TargetBuilder
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // buildInfo //
     //-----------//
@@ -132,10 +126,8 @@ public class TargetBuilder
 
         // Add a view on dewarped image?
         if (OMR.gui != null) {
-            sheet.getStub().getAssembly().addViewTab(
-                    "Dewarped",
-                    new ScrollView(new DewarpedView(dewarpedImage)),
-                    null);
+            sheet.getStub().getAssembly().addViewTab("Dewarped", new ScrollView(new DewarpedView(
+                                                     dewarpedImage)), null);
         }
 
         // Store dewarped image on disk
@@ -173,10 +165,8 @@ public class TargetBuilder
 
         double absDx = scale.toPixelsDouble(constants.systemMarkWidth);
         double absDy = skew.getSlope() * absDx;
-        Stroke systemStroke = new BasicStroke(
-                (float) scale.toPixelsDouble(constants.systemMarkStroke),
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND);
+        Stroke systemStroke = new BasicStroke((float) scale.toPixelsDouble(
+                constants.systemMarkStroke), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
         g.setStroke(systemStroke);
         g.setColor(Colors.SYSTEM_BRACKET);
@@ -235,7 +225,7 @@ public class TargetBuilder
     /**
      * Build a perfect definition of target page, systems, staves and
      * lines.
-     *
+     * <p>
      * We apply a rotation on every top-left corner
      */
     private void buildTarget ()
@@ -264,11 +254,8 @@ public class TargetBuilder
                 dskRight.setLocation(dskRight.getX() + dx, dskRight.getY() + dy);
             }
 
-            TargetSystem targetSystem = new TargetSystem(
-                    system,
-                    dskLeft.getY(),
-                    dskLeft.getX(),
-                    dskRight.getX());
+            TargetSystem targetSystem = new TargetSystem(system, dskLeft.getY(), dskLeft.getX(),
+                                                         dskRight.getX());
             targetPage.systems.add(targetSystem);
 
             // Target staff parameters
@@ -278,9 +265,8 @@ public class TargetBuilder
                 if (prevLine != null) {
                     // Preserve inter-staff vertical gap
                     Point2D prevDskLeft = skew.deskewed(prevLine.info.getEndPoint(LEFT));
-                    dskLeft.setLocation(
-                            dskLeft.getX(),
-                            dskLeft.getY() + (prevLine.y - prevDskLeft.getY()));
+                    dskLeft.setLocation(dskLeft.getX(), dskLeft.getY() + (prevLine.y - prevDskLeft
+                                        .getY()));
                 }
 
                 TargetStaff targetStaff = new TargetStaff(staff, dskLeft.getY(), targetSystem);
@@ -293,10 +279,9 @@ public class TargetBuilder
                     lineIdx++;
 
                     // Enforce perfect staff interline
-                    TargetLine targetLine = new TargetLine(
-                            line,
-                            targetStaff.top + (staff.getSpecificInterline() * lineIdx),
-                            targetStaff);
+                    TargetLine targetLine = new TargetLine(line, targetStaff.top + (staff
+                                                           .getSpecificInterline() * lineIdx),
+                                                           targetStaff);
                     allTargetLines.add(targetLine);
                     targetStaff.lines.add(targetLine);
                     prevLine = targetLine;
@@ -342,7 +327,7 @@ public class TargetBuilder
     /**
      * This key method provides the source point (in original sheet image)
      * that corresponds to a given destination point (in target dewarped image).
-     *
+     * <p>
      * The strategy is to stay consistent with the staff lines nearby which
      * are used as grid references.
      *
@@ -383,9 +368,10 @@ public class TargetBuilder
         Point2D srcSouth = southLine.sourceOf(dstX);
         double yRatio = (dstY - northLine.y) / (southLine.y - northLine.y);
 
-        return new Point2D.Double(
-                ((1 - yRatio) * srcNorth.getX()) + (yRatio * srcSouth.getX()),
-                ((1 - yRatio) * srcNorth.getY()) + (yRatio * srcSouth.getY()));
+        return new Point2D.Double(((1 - yRatio) * srcNorth.getX()) + (yRatio * srcSouth.getX()), ((1
+                                                                                                           - yRatio)
+                                                                                                  * srcNorth
+                                          .getY()) + (yRatio * srcSouth.getY()));
     }
 
     //------------//
@@ -406,34 +392,27 @@ public class TargetBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean showDewarpGrid = new Constant.Boolean(
-                false,
-                "Should we show the dewarp grid?");
+        private final Constant.Boolean showDewarpGrid = new Constant.Boolean(false,
+                                                                             "Should we show the dewarp grid?");
 
-        private final Scale.LineFraction gridPointSize = new Scale.LineFraction(
-                0.2,
-                "Size of displayed grid points");
+        private final Scale.LineFraction gridPointSize = new Scale.LineFraction(0.2,
+                                                                                "Size of displayed grid points");
 
-        private final Scale.Fraction systemMarkWidth = new Scale.Fraction(
-                2.0,
-                "Width of system marks");
+        private final Scale.Fraction systemMarkWidth = new Scale.Fraction(2.0,
+                                                                          "Width of system marks");
 
-        private final Scale.LineFraction systemMarkStroke = new Scale.LineFraction(
-                2.0,
-                "Thickness of system marks");
+        private final Scale.LineFraction systemMarkStroke = new Scale.LineFraction(2.0,
+                                                                                   "Thickness of system marks");
 
-        private final Constant.Boolean storeDewarp = new Constant.Boolean(
-                false,
-                "Should we store the dewarped image on disk?");
+        private final Constant.Boolean storeDewarp = new Constant.Boolean(false,
+                                                                          "Should we store the dewarped image on disk?");
     }
 
     //--------------//
@@ -442,7 +421,6 @@ public class TargetBuilder
     private class DewarpedView
             extends ImageView
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public DewarpedView (RenderedImage image)
         {
@@ -455,7 +433,6 @@ public class TargetBuilder
             setName("DewarpedView");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void renderItems (Graphics2D g)
         {

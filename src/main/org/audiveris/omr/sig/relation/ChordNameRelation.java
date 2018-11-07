@@ -33,7 +33,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordNameRelation
         extends Support
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     //----------------//
     // isSingleSource //

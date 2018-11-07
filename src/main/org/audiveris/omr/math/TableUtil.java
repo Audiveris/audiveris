@@ -36,7 +36,6 @@ import java.awt.image.WritableRaster;
  */
 public abstract class TableUtil
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Print out a table of int values.

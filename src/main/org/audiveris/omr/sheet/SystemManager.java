@@ -75,13 +75,11 @@ import java.util.List;
  */
 public class SystemManager
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SystemManager.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private Sheet sheet;
@@ -89,7 +87,6 @@ public class SystemManager
     /** Sheet retrieved systems. */
     private final List<SystemInfo> systems = new ArrayList<SystemInfo>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SystemManager object.
      *
@@ -108,7 +105,6 @@ public class SystemManager
         this.sheet = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // computeSystemArea //
     //-------------------//
@@ -133,23 +129,21 @@ public class SystemManager
 
         // Vertical abscissae on system left & right
         final SystemInfo leftNeighbor = horizontalNeighbor(system, LEFT);
-        final int left = (leftNeighbor != null)
-                ? ((leftNeighbor.getRight() + system.getLeft()) / 2) : 0;
+        final int left = (leftNeighbor != null) ? ((leftNeighbor.getRight() + system.getLeft()) / 2)
+                : 0;
         system.setAreaEnd(LEFT, left);
 
         final SystemInfo rightNeighbor = horizontalNeighbor(system, RIGHT);
-        final int right = (rightNeighbor != null)
-                ? ((system.getRight() + rightNeighbor.getLeft()) / 2) : sheetWidth;
+        final int right = (rightNeighbor != null) ? ((system.getRight() + rightNeighbor.getLeft())
+                                                             / 2) : sheetWidth;
         system.setAreaEnd(RIGHT, right);
 
-        PathIterator north = aboves.isEmpty()
-                ? new GeoPath(new Line2D.Double(left, 0, right, 0)).getPathIterator(
-                        null) : getGlobalLine(aboves, BOTTOM);
+        PathIterator north = aboves.isEmpty() ? new GeoPath(new Line2D.Double(left, 0, right, 0))
+                .getPathIterator(null) : getGlobalLine(aboves, BOTTOM);
 
-        PathIterator south = belows.isEmpty()
-                ? new GeoPath(
-                        new Line2D.Double(left, sheetHeight, right, sheetHeight)).getPathIterator(null)
-                : getGlobalLine(belows, TOP);
+        PathIterator south = belows.isEmpty() ? new GeoPath(new Line2D.Double(left, sheetHeight,
+                                                                              right, sheetHeight))
+                .getPathIterator(null) : getGlobalLine(belows, TOP);
 
         // Define sheet-wide area
         GeoPath wholePath = new GeoPath();
@@ -273,9 +267,8 @@ public class SystemManager
 
             for (int i = 0; i < found.size(); i++) {
                 SystemInfo syst = found.get(i);
-                int vDist = Math.min(
-                        syst.getFirstStaff().distanceTo(point),
-                        syst.getLastStaff().distanceTo(point));
+                int vDist = Math.min(syst.getFirstStaff().distanceTo(point), syst.getLastStaff()
+                                     .distanceTo(point));
 
                 if (vDist < minDist) {
                     minDist = vDist;
@@ -610,11 +603,8 @@ public class SystemManager
                 }
 
                 // Start a new page
-                sheet.addPage(
-                        page = new Page(
-                                sheet,
-                                1 + sheet.getPages().size(),
-                                (systId == 1) ? null : systId));
+                sheet.addPage(page = new Page(sheet, 1 + sheet.getPages().size(), (systId == 1)
+                                              ? null : systId));
                 page.setMovementStart(true);
                 stub.addPageRef(new PageRef(stub.getNumber(), page.getId(), true, null));
             } else if (page == null) {
@@ -746,17 +736,14 @@ public class SystemManager
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction minShift = new Scale.Fraction(
-                3.0,
-                "Minimum shift to detect a system indentation");
+        private final Scale.Fraction minShift = new Scale.Fraction(3.0,
+                                                                   "Minimum shift to detect a system indentation");
     }
 }

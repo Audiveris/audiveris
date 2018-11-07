@@ -51,7 +51,6 @@ import java.util.List;
  */
 public abstract class FileUtil
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
@@ -59,7 +58,6 @@ public abstract class FileUtil
 
     private static final int BACKUP_MAX = 99;
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // avoidExtensions //
     //-----------------//

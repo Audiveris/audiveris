@@ -102,7 +102,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "stack")
 public class MeasureStack
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MeasureStack.class);
 
@@ -112,21 +111,17 @@ public class MeasureStack
     /** String suffix for a cautionary id: {@value}. */
     public static final String CAUTIONARY_SUFFIX = "C";
 
-    //~ Enumerations -------------------------------------------------------------------------------
     /**
      * All special kinds of measures.
      */
     public enum Special
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         PICKUP,
         FIRST_HALF,
         SECOND_HALF,
         CAUTIONARY;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -195,7 +190,6 @@ public class MeasureStack
     /** Unassigned tuplets within stack. */
     private final Set<TupletInter> stackTuplets = new LinkedHashSet<TupletInter>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MeasureStack} object.
      *
@@ -214,7 +208,6 @@ public class MeasureStack
         this.system = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addInter //
     //----------//
@@ -485,8 +478,8 @@ public class MeasureStack
             }
 
             // Precise abscissa limits
-            if ((measure.getAbscissa(LEFT, staff) <= center.x)
-                && (center.x <= measure.getAbscissa(RIGHT, staff))) {
+            if ((measure.getAbscissa(LEFT, staff) <= center.x) && (center.x <= measure.getAbscissa(
+                    RIGHT, staff))) {
                 kept.add(inter);
             }
         }
@@ -856,7 +849,7 @@ public class MeasureStack
     {
         if (id != null) {
             return ((special == Special.SECOND_HALF) ? SECOND_HALF_PREFIX : "") + id
-                   + (isCautionary() ? CAUTIONARY_SUFFIX : "");
+                           + (isCautionary() ? CAUTIONARY_SUFFIX : "");
         }
 
         // No id defined yet
@@ -943,8 +936,8 @@ public class MeasureStack
         final Page page = system.getPage();
         final int pageMeasureIdOffset = score.getMeasureIdOffset(page);
 
-        return ((special == Special.SECOND_HALF) ? SECOND_HALF_PREFIX : "")
-               + (pageMeasureIdOffset + id);
+        return ((special == Special.SECOND_HALF) ? SECOND_HALF_PREFIX : "") + (pageMeasureIdOffset
+                                                                                       + id);
     }
 
     //----------//
@@ -1362,8 +1355,8 @@ public class MeasureStack
         right = rightStack.right;
 
         if (rightStack.actualDuration != null) {
-            actualDuration = (actualDuration == null) ? rightStack.actualDuration
-                    : actualDuration.plus(rightStack.actualDuration);
+            actualDuration = (actualDuration == null) ? rightStack.actualDuration : actualDuration
+                    .plus(rightStack.actualDuration);
         }
 
         // Merge the repeat info

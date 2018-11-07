@@ -36,11 +36,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class HeadHeadRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -77,17 +75,14 @@ public class HeadHeadRelation
         return constants.headSupportCoeff.getValue();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio headSupportCoeff = new Constant.Ratio(
-                1,
-                "Value for (source or target) head coeff in head-head support formula");
+        private final Constant.Ratio headSupportCoeff = new Constant.Ratio(1,
+                                                                           "Value for (source or target) head coeff in head-head support formula");
     }
 }

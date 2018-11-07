@@ -64,15 +64,12 @@ import javax.xml.stream.XMLStreamException;
 @XmlRootElement(name = "neural-network")
 public class NeuralNetwork
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            NeuralNetwork.class);
+    private static final Logger logger = LoggerFactory.getLogger(NeuralNetwork.class);
 
     /** Un/marshalling context for use with JAXB */
     private static volatile JAXBContext jaxbContext;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Size of input layer. */
     @XmlAttribute(name = "input-size")
@@ -116,7 +113,6 @@ public class NeuralNetwork
     /** To trigger training stop. */
     private transient volatile boolean stopping = false;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a neural network, with specified number of cells in each
      * layer, and default values.
@@ -152,16 +148,16 @@ public class NeuralNetwork
         this.inputLabels = new StringArray(inputLabels);
 
         if (inputLabels.length != inputSize) {
-            throw new IllegalArgumentException(
-                    "Inconsistent input labels size " + inputLabels.length + " vs " + inputSize);
+            throw new IllegalArgumentException("Inconsistent input labels size "
+                                                       + inputLabels.length + " vs " + inputSize);
         }
 
         // Labels for output, if any
         this.outputLabels = new StringArray(outputLabels);
 
         if (outputLabels.length != outputSize) {
-            throw new IllegalArgumentException(
-                    "Inconsistent output labels size " + outputLabels.length + " vs " + outputSize);
+            throw new IllegalArgumentException("Inconsistent output labels size "
+                                                       + outputLabels.length + " vs " + outputSize);
         }
 
         logger.debug("Network created");
@@ -209,7 +205,6 @@ public class NeuralNetwork
         outputLabels = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //
     //--------//
     // backup //
@@ -333,7 +328,9 @@ public class NeuralNetwork
      * @throws IOException        if something goes wrong during IO operations
      */
     public void marshal (OutputStream os)
-            throws JAXBException, XMLStreamException, IOException
+            throws JAXBException,
+                   XMLStreamException,
+                   IOException
     {
         Jaxb.marshal(this, os, getJaxbContext());
         logger.debug("Network marshalled");
@@ -357,10 +354,11 @@ public class NeuralNetwork
         }
 
         // Make sure backup is compatible with this neural network
-        if ((backup.hiddenWeights.length != hiddenSize)
-            || (backup.hiddenWeights[0].length != (inputSize + 1))
-            || (backup.outputWeights.length != outputSize)
-            || (backup.outputWeights[0].length != (hiddenSize + 1))) {
+        if ((backup.hiddenWeights.length != hiddenSize) || (backup.hiddenWeights[0].length
+                                                                    != (inputSize + 1))
+                    || (backup.outputWeights.length != outputSize)
+                    || (backup.outputWeights[0].length
+                                != (hiddenSize + 1))) {
             throw new IllegalArgumentException("Incompatible backup");
         }
 
@@ -392,10 +390,8 @@ public class NeuralNetwork
         if (inputs == null) {
             logger.error("run method. inputs array is null");
         } else if (inputs.length != inputSize) {
-            logger.error(
-                    "run method. input size {} not consistent with network input layer {}",
-                    inputs.length,
-                    inputSize);
+            logger.error("run method. input size {} not consistent with network input layer {}",
+                         inputs.length, inputSize);
         }
 
         // Allocate the hiddens if not provided
@@ -410,10 +406,8 @@ public class NeuralNetwork
         if (outputs == null) {
             outputs = new double[outputSize];
         } else if (outputs.length != outputSize) {
-            logger.error(
-                    "run method. output size {} not consistent with network output layer {}",
-                    outputs.length,
-                    outputSize);
+            logger.error("run method. output size {} not consistent with network output layer {}",
+                         outputs.length, outputSize);
         }
 
         // Then, compute the output values
@@ -542,15 +536,15 @@ public class NeuralNetwork
                 // Update the output weights
                 for (int io = outputSize - 1; io >= 0; io--) {
                     for (int ih = hiddenSize - 1; ih >= 0; ih--) {
-                        double dw = (learningRate * outputGrads[io] * hiddens[ih])
-                                    + (momentum * outputDeltas[io][ih + 1]);
+                        double dw = (learningRate * outputGrads[io] * hiddens[ih]) + (momentum
+                                                                                              * outputDeltas[io][ih
+                                                                                                                 + 1]);
                         outputWeights[io][ih + 1] += dw;
                         outputDeltas[io][ih + 1] = dw;
                     }
 
                     // Bias
-                    double dw = (learningRate * outputGrads[io])
-                                + (momentum * outputDeltas[io][0]);
+                    double dw = (learningRate * outputGrads[io]) + (momentum * outputDeltas[io][0]);
                     outputWeights[io][0] += dw;
                     outputDeltas[io][0] = dw;
                 }
@@ -558,15 +552,15 @@ public class NeuralNetwork
                 // Update the hidden weights
                 for (int ih = hiddenSize - 1; ih >= 0; ih--) {
                     for (int i = inputSize - 1; i >= 0; i--) {
-                        double dw = (learningRate * hiddenGrads[ih] * inputs[ip][i])
-                                    + (momentum * hiddenDeltas[ih][i + 1]);
+                        double dw = (learningRate * hiddenGrads[ih] * inputs[ip][i]) + (momentum
+                                                                                                * hiddenDeltas[ih][i
+                                                                                                                   + 1]);
                         hiddenWeights[ih][i + 1] += dw;
                         hiddenDeltas[ih][i + 1] = dw;
                     }
 
                     // Bias
-                    double dw = (learningRate * hiddenGrads[ih])
-                                + (momentum * hiddenDeltas[ih][0]);
+                    double dw = (learningRate * hiddenGrads[ih]) + (momentum * hiddenDeltas[ih][0]);
                     hiddenWeights[ih][0] += dw;
                     hiddenDeltas[ih][0] = dw;
                 }
@@ -601,12 +595,8 @@ public class NeuralNetwork
         }
 
         final long dur = System.currentTimeMillis() - startTime;
-        logger.info(
-                String.format(
-                        "Duration %,d seconds, %d iterations on %d patterns",
-                        dur / 1000,
-                        epochs,
-                        patterns));
+        logger.info(String.format("Duration %,d seconds, %d iterations on %d patterns", dur / 1000,
+                                  epochs, patterns));
         stopping = false;
     }
 
@@ -796,7 +786,6 @@ public class NeuralNetwork
         return val * (1 - val);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //--------//
     // Backup //
@@ -810,13 +799,11 @@ public class NeuralNetwork
      */
     public static class Backup
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private double[][] hiddenWeights;
 
         private double[][] outputWeights;
 
-        //~ Constructors ---------------------------------------------------------------------------
         // Private constructor
         private Backup (double[][] hiddenWeights,
                         double[][] outputWeights)
@@ -831,12 +818,10 @@ public class NeuralNetwork
     //-------------//
     private static class StringArray
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlValue
         String[] strings;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public StringArray ()
         {
         }

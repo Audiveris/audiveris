@@ -43,11 +43,9 @@ import java.util.List;
  */
 public abstract class EnsembleHelper
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(EnsembleHelper.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // addMember //
     //-----------//
@@ -111,7 +109,7 @@ public abstract class EnsembleHelper
     //----------------//
     /**
      * Convert old containment implementation (based on nesting) to new implementation
- based on explicit Containment in SIG.
+     * based on explicit Containment in SIG.
      *
      * @param ensemble   the containing inter
      * @param oldMembers the (unmarshalled) old list of nested members

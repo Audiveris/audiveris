@@ -37,7 +37,6 @@ import java.util.Objects;
 public class BarAlignment
         implements Comparable<BarAlignment>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Bar peak in the upper staff. */
     protected final StaffPeak topPeak;
@@ -57,7 +56,6 @@ public class BarAlignment
     /** Alignment grade. */
     protected double grade;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarAlignment object.
      *
@@ -82,7 +80,6 @@ public class BarAlignment
         grade = impacts.getGrade();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // bestOf //
     //--------//
@@ -224,26 +221,23 @@ public class BarAlignment
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append(topPeak).append(" ").append(bottomPeak).append(
-                String.format(" slope:%.2f dw:%.0f", slope, dWidth));
+        sb.append(topPeak).append(" ").append(bottomPeak).append(String
+                .format(" slope:%.2f dw:%.0f", slope, dWidth));
 
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
             extends BasicImpacts
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{"align", "dWidth"};
 
         private static final double[] WEIGHTS = new double[]{2, 1};
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double align,
                         double dWidth)
         {
@@ -252,7 +246,6 @@ public class BarAlignment
             setImpact(1, dWidth);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public double getAlignImpact ()
         {
             return impacts[0];

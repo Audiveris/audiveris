@@ -38,12 +38,10 @@ import java.awt.geom.Rectangle2D;
 public class LedgerSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     // The head part
     private static final BasicSymbol head = Symbols.getSymbol(Shape.NOTEHEAD_BLACK);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a LedgerSymbol (with decoration?) standard size
      *
@@ -66,7 +64,6 @@ public class LedgerSymbol
         super(isIcon, Shape.LEDGER, decorated);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -89,9 +86,8 @@ public class LedgerSymbol
 
         // Use a ledger length twice as large as note head
         Rectangle2D hRect = p.layout.getBounds();
-        p.rect = new Rectangle(
-                (int) Math.ceil(2 * hRect.getWidth()),
-                (int) Math.ceil(hRect.getHeight()));
+        p.rect = new Rectangle((int) Math.ceil(2 * hRect.getWidth()), (int) Math.ceil(hRect
+                               .getHeight()));
 
         return p;
     }

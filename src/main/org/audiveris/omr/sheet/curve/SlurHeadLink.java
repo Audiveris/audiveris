@@ -44,7 +44,6 @@ import java.util.Comparator;
 public class SlurHeadLink
         extends Link
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     public static final Comparator<SlurHeadLink> byEuclidean = new Comparator<SlurHeadLink>()
     {
@@ -52,13 +51,11 @@ public class SlurHeadLink
         public int compare (SlurHeadLink o1,
                             SlurHeadLink o2)
         {
-            return Double.compare(
-                    ((SlurHeadRelation) o1.relation).getEuclidean(),
-                    ((SlurHeadRelation) o2.relation).getEuclidean());
+            return Double.compare(((SlurHeadRelation) o1.relation).getEuclidean(),
+                                  ((SlurHeadRelation) o2.relation).getEuclidean());
         }
     };
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SlurHeadLink} object.
      *
@@ -71,7 +68,6 @@ public class SlurHeadLink
         super(head, rel, true);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public static SlurHeadLink create (Point slurEnd,
                                        HorizontalSide slurSide,
                                        AbstractChordInter chord,
@@ -81,11 +77,8 @@ public class SlurHeadLink
 
         // Define middle vertical line of chord box
         Rectangle box = chord.getBounds();
-        Line2D vert = new Line2D.Double(
-                box.x + (box.width / 2),
-                box.y,
-                box.x + (box.width / 2),
-                box.y + box.height);
+        Line2D vert = new Line2D.Double(box.x + (box.width / 2), box.y, box.x + (box.width / 2),
+                                        box.y + box.height);
         rel.setEuclidean(vert.ptSegDist(slurEnd));
 
         return new SlurHeadLink(head, rel);

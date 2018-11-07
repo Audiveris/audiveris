@@ -93,10 +93,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 public class Part
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Part.class);
+    private static final Logger logger = LoggerFactory.getLogger(Part.class);
 
     /** For comparing Part instances according to their id. */
     public static final Comparator<Part> byId = new Comparator<Part>()
@@ -109,7 +107,6 @@ public class Part
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -162,7 +159,6 @@ public class Part
     @Navigable(false)
     private SystemInfo system;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of {@code Part}.
      *
@@ -180,7 +176,6 @@ public class Part
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addLyric //
     //----------//

@@ -29,7 +29,6 @@ package org.audiveris.omr.moments;
 public final class BasicLUT
         implements LUT
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** LUT radius. */
     private final int RADIUS;
@@ -40,7 +39,6 @@ public final class BasicLUT
     /** The table of values for each integer (x,y) location. */
     private final double[][] table;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicLUT object.
      *
@@ -57,7 +55,6 @@ public final class BasicLUT
         table = new double[SIZE][SIZE];
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // assign //
     //--------//

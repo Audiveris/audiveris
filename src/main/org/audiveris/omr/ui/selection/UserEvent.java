@@ -32,11 +32,9 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class UserEvent
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(UserEvent.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The entity which created this event (cannot be null). */
     public final Object source;
 
@@ -46,7 +44,6 @@ public abstract class UserEvent
     /** Precise user mouse action (can be null). */
     public MouseMovement movement;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new UserEvent object.
      *
@@ -67,7 +64,6 @@ public abstract class UserEvent
         this.movement = movement;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//

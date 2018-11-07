@@ -42,7 +42,7 @@ import javax.swing.event.ChangeListener;
  * Class {@code Zoom} encapsulates a zoom ratio, which is typically the ratio between
  * display values (such as the size of the display of an entity) and model values
  * (such as the size of the entity itself).
- *
+ * <p>
  * For example, a Zoom with ratio set to a 2.0 value would double the display of a given entity.
  * <p>
  * Since this class is meant to be used when handling display tasks, it also provides utility
@@ -62,7 +62,6 @@ import javax.swing.event.ChangeListener;
  */
 public class Zoom
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -71,7 +70,6 @@ public class Zoom
     // To assign a unique Id
     private static AtomicInteger globalId = new AtomicInteger(0);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Unique event, created lazily */
     protected ChangeEvent changeEvent = null;
 
@@ -87,7 +85,6 @@ public class Zoom
     // Unique Id (to ease debugging)
     private int id = globalId.incrementAndGet();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a zoom entity, with a default ratio value of 1.
      */
@@ -122,7 +119,6 @@ public class Zoom
         setRatio(ratio);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // addChangeListener //
     //-------------------//
@@ -238,11 +234,8 @@ public class Zoom
      */
     public void scale (Line2D line)
     {
-        line.setLine(
-                scaled(line.getX1()),
-                scaled(line.getY1()),
-                scaled(line.getX2()),
-                scaled(line.getY2()));
+        line.setLine(scaled(line.getX1()), scaled(line.getY1()), scaled(line.getX2()), scaled(line
+                     .getY2()));
     }
 
     //--------//
@@ -362,8 +355,8 @@ public class Zoom
                 public void stateChanged (ChangeEvent e)
                 {
                     // Forward the new zoom ratio
-                    if (constants.continuousSliderReading.getValue()
-                        || !slider.getValueIsAdjusting()) {
+                    if (constants.continuousSliderReading.getValue() || !slider
+                            .getValueIsAdjusting()) {
                         double newRatio = slider.getDoubleValue();
                         logger.debug("Slider firing zoom newRatio={}", newRatio);
 
@@ -481,17 +474,14 @@ public class Zoom
         fireStateChanged();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean continuousSliderReading = new Constant.Boolean(
-                true,
-                "Should we allow continuous reading of the zoom slider");
+        private final Constant.Boolean continuousSliderReading = new Constant.Boolean(true,
+                                                                                      "Should we allow continuous reading of the zoom slider");
     }
 }

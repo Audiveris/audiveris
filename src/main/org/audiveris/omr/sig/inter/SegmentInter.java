@@ -37,11 +37,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class SegmentInter
         extends AbstractInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private final SegmentInfo info;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SegmentInter object.
      *
@@ -64,7 +62,6 @@ public class SegmentInter
         this.info = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -82,20 +79,17 @@ public class SegmentInter
         return info;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
             extends BasicImpacts
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{"dist"};
 
         private static final double[] WEIGHTS = new double[]{1};
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double dist)
         {
             super(NAMES, WEIGHTS);

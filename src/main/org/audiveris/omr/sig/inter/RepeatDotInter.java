@@ -36,7 +36,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RepeatDotInter
         extends AbstractPitchedInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new RepeatDotInter object.
@@ -61,7 +60,6 @@ public class RepeatDotInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

@@ -30,11 +30,9 @@ package org.audiveris.omr.sig.inter;
 public class DeletedInterException
         extends Exception
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     public final Inter inter;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code DeletedInterException} object.
      *

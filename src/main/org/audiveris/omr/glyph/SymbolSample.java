@@ -46,11 +46,9 @@ import java.awt.image.DataBuffer;
 public class SymbolSample
         extends Sample
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolSample.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Build an (artificial) sample out of a symbol icon.
      * This is meant to populate and train on shapes for which we have no real sample yet.
@@ -66,7 +64,6 @@ public class SymbolSample
         super(0, 0, runTable, interline, 0, shape, null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // create //
     //--------//

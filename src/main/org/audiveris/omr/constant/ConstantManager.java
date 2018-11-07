@@ -64,20 +64,20 @@ import java.util.concurrent.ConcurrentHashMap;
  *    11,
  *    "Minimum resolution, expressed as number of pixels per interline");
  * </pre>This declaration must be read as follows:<ul>
- *
+ * <p>
  * <li>{@code minResolution} is the Java object used in the application.
  * It is defined as a Constant.Integer, a subtype of Constant meant to host Integer values</li>
- *
+ * <p>
  * <li>{@code "Pixels"} specifies the unit used. Here we are counting in pixels.</li>
- *
+ * <p>
  * <li>{@code 11} is the constant value. This is the value used by the application, provided it is
  * not overridden in the USER properties file or later via a dedicated GUI tool.</li>
- *
+ * <p>
  * <li><code>"Minimum resolution, expressed as number of pixels per interline" </code> is the
  * constant description, which will be used as a tool tip in the GUI interface in charge of editing
  * these constants.</li></ul>
  * </li>
- *
+ * <p>
  * <li>Then, <b>USER</b> values, contained in a property file named <em><b>"run.properties"</b></em>
  * can assign overriding values to some constants. For example, the {@code minInterline} constant
  * above could be altered by the following line in this user file:
@@ -90,7 +90,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Typically, these USER values represent some modification made by the end user at run-time and
  * thus saved from one run to the other.
  * The file is not meant to be edited manually, but rather through the provided GUI tool.</li>
- *
+ * <p>
  * <li>Then, <b>CLI</b> values, as set on the command line interface, by means of the
  * <em><b>"-option"</b> key=value</em> command. For further details on this command, refer to the
  * {@link org.audiveris.omr.CLI} class documentation.
@@ -100,16 +100,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * true.</li>
  * <li>When running in <i>interactive</i> mode, these CLI-defined constant values <b>are</b> always
  * persisted in the USER file.</li></ul></li>
- *
+ * <p>
  * <li>Finally, <b>UI Options Menu</b> values, as set online through the graphical user interface.
  * These constant values defined at the GUI level are persisted in the USER file.</li> </ol>
- *
+ * <p>
  * <p>
  * The whole set of constant values is stored on disk when the application is closed. Doing so, the
  * disk values are always kept in synch with the program values, <b>provided the application is
  * normally closed rather than killed</b>. It can also be stored programmatically by calling the
  * {@link #storeResource} method.
- *
+ * <p>
  * <p>
  * Only the USER property file is written, the SOURCE values in the source code are not altered.
  * Moreover, if the user has modified a value in such a way that the final value is the same as in
@@ -121,10 +121,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @ThreadSafe
 public class ConstantManager
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            ConstantManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConstantManager.class);
 
     /** User properties file name */
     private static final String USER_FILE_NAME = "run.properties";
@@ -132,23 +130,21 @@ public class ConstantManager
     /** The singleton */
     private static final ConstantManager INSTANCE = new ConstantManager();
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Map of all constants created in the application, regardless whether these
      * constants are enclosed in a ConstantSet or defined as standalone entities.
      */
-    protected final ConcurrentHashMap<String, Constant> constants = new ConcurrentHashMap<String, Constant>();
+    protected final ConcurrentHashMap<String, Constant> constants
+            = new ConcurrentHashMap<String, Constant>();
 
     /** User properties. */
-    private final UserHolder userHolder = new UserHolder(
-            WellKnowns.CONFIG_FOLDER.resolve(USER_FILE_NAME));
+    private final UserHolder userHolder = new UserHolder(WellKnowns.CONFIG_FOLDER.resolve(
+            USER_FILE_NAME));
 
-    //~ Constructors -------------------------------------------------------------------------------
     private ConstantManager ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // addConstant //
     //-------------//
@@ -275,13 +271,11 @@ public class ConstantManager
         return userHolder.getProperty(qName);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------------//
     // AbstractHolder //
     //----------------//
     private class AbstractHolder
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Related file. */
         protected final Path path;
@@ -289,13 +283,11 @@ public class ConstantManager
         /** The handled properties. */
         protected Properties properties;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public AbstractHolder (Path path)
         {
             this.path = path;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public Collection<String> getKeys ()
         {
             Collection<String> strings = new ArrayList<String>();
@@ -363,10 +355,8 @@ public class ConstantManager
                 }
             } catch (FileNotFoundException ignored) {
                 // This is not at all an error
-                logger.debug(
-                        "[{}" + "]" + " No property file {}",
-                        ConstantManager.class.getName(),
-                        path.toAbsolutePath());
+                logger.debug("[{}" + "]" + " No property file {}", ConstantManager.class.getName(),
+                             path.toAbsolutePath());
             } catch (IOException ex) {
                 logger.error("Error loading constants file {}", path.toAbsolutePath(), ex);
             }
@@ -383,7 +373,6 @@ public class ConstantManager
     private class UserHolder
             extends AbstractHolder
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public UserHolder (Path path)
         {
@@ -392,7 +381,6 @@ public class ConstantManager
             load();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Remove from the USER collection the properties that are
          * already in the source with identical value,
@@ -438,9 +426,7 @@ public class ConstantManager
                     out = new FileOutputStream(path.toFile());
                     properties.store(out, " Audiveris user properties file. Do not edit");
                 } catch (FileNotFoundException ex) {
-                    logger.warn(
-                            "Property file {} not found or not writable",
-                            path.toAbsolutePath());
+                    logger.warn("Property file {} not found or not writable", path.toAbsolutePath());
                 } catch (IOException ex) {
                     logger.warn("Error while storing the property file {}", path.toAbsolutePath());
                 } finally {

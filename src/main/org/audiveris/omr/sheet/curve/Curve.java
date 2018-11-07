@@ -57,7 +57,6 @@ public abstract class Curve
         extends Arc
         implements AttachmentHolder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Curve.class);
 
@@ -83,7 +82,6 @@ public abstract class Curve
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Unique id. (within containing sheet) */
     protected final int id;
 
@@ -105,7 +103,6 @@ public abstract class Curve
     /** Bounds of points that compose the curve line. */
     protected Rectangle bounds;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Curve object.
      *
@@ -128,7 +125,6 @@ public abstract class Curve
         this.parts.addAll(parts);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------------//
     // getAbscissaComparator //
     //-----------------------//
@@ -446,17 +442,18 @@ public abstract class Curve
             final Point point = points.get(index); // Point of curve
             final Run run = sheetTable.getRunAt(point.x, point.y); // Containing run
 
-            if (isCloseToCurve(point.x, run.getStart(), maxRunDistance, index)
-                && ((run.getLength() <= 1)
-                    || isCloseToCurve(point.x, run.getStop(), maxRunDistance, index))) {
+            if (isCloseToCurve(point.x, run.getStart(), maxRunDistance, index) && ((run.getLength()
+                                                                                            <= 1)
+                                                                                           || isCloseToCurve(
+                            point.x, run.getStop(), maxRunDistance, index))) {
                 curveTable.addRun(point.x - fatBox.x, run.getStart() - fatBox.y, run.getLength());
             }
         }
 
         // Build glyph (TODO: table a bit too high, should be trimmed?)
         if (curveTable.getSize() > 0) {
-            Glyph curveGlyph = sheet.getGlyphIndex().registerOriginal(
-                    new Glyph(fatBox.x, fatBox.y, curveTable));
+            Glyph curveGlyph = sheet.getGlyphIndex().registerOriginal(new Glyph(fatBox.x, fatBox.y,
+                                                                                curveTable));
             setGlyph(curveGlyph);
             logger.debug("{} -> {}", this, curveGlyph);
 

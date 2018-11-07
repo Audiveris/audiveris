@@ -52,11 +52,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ArpeggiatoInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ArpeggiatoInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ArpeggiatoInter} object.
      *
@@ -76,7 +74,6 @@ public class ArpeggiatoInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -197,10 +194,8 @@ public class ArpeggiatoInter
         luBox.x += luBox.width;
         luBox.width = scale.toPixels(ChordArpeggiatoRelation.getXGapMaximum(manual));
 
-        final List<Inter> chords = Inters.intersectedInters(
-                systemHeadChords,
-                GeoOrder.BY_ABSCISSA,
-                luBox);
+        final List<Inter> chords = Inters.intersectedInters(systemHeadChords, GeoOrder.BY_ABSCISSA,
+                                                            luBox);
 
         int bestOverlap = 0;
         HeadChordInter bestChord = null;

@@ -44,15 +44,12 @@ import java.awt.Rectangle;
 public class RunTableView
         extends RubberPanel
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RunTableView.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying table of runs. */
     private final RunTable table;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code RunTableView} object.
      *
@@ -74,7 +71,6 @@ public class RunTableView
         setBackground(Color.white);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // render //
     //--------//

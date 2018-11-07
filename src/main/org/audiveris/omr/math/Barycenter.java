@@ -28,7 +28,6 @@ import java.awt.geom.Point2D;
  */
 public class Barycenter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * The total weight (such as the number of pixels).
@@ -43,7 +42,6 @@ public class Barycenter
     /** The weighted ordinate */
     private double yy;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Barycenter object.
      */
@@ -51,7 +49,6 @@ public class Barycenter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getWeight //
     //-----------//

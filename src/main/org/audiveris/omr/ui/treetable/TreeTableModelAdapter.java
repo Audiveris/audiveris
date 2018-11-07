@@ -40,13 +40,11 @@ import javax.swing.tree.TreePath;
 public class TreeTableModelAdapter
         extends AbstractTableModel
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     JTree tree;
 
     TreeTableModel treeTableModel;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TreeTableModelAdapter object.
      *
@@ -110,7 +108,6 @@ public class TreeTableModelAdapter
         });
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getColumnClass //
     //----------------//

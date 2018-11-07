@@ -41,11 +41,9 @@ import java.util.Set;
  */
 public class CompoundFactory
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CompoundFactory.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // buildCompound //
     //---------------//
@@ -139,8 +137,8 @@ public class CompoundFactory
         }
 
         // Retrieve all the clusters of sections (sets of touching sections)
-        ConnectivityInspector<Section, Touching> inspector = new ConnectivityInspector<Section, Touching>(
-                graph);
+        ConnectivityInspector<Section, Touching> inspector
+                = new ConnectivityInspector<Section, Touching>(graph);
         List<Set<Section>> sets = inspector.connectedSets();
         logger.debug("sets: {}", sets.size());
 
@@ -153,7 +151,6 @@ public class CompoundFactory
         return compounds;
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
     //---------------------//
     // CompoundConstructor //
     //---------------------//
@@ -162,12 +159,10 @@ public class CompoundFactory
      */
     public interface CompoundConstructor
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         SectionCompound newInstance ();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // Touching //
     //----------//

@@ -75,7 +75,6 @@ import javax.swing.SwingConstants;
 public class EvaluationBoard
         extends Board
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -90,7 +89,6 @@ public class EvaluationBoard
     /** Color for hardly recognized glyphs */
     private static final Color EVAL_SOSO_COLOR = new Color(150, 150, 150);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying glyph classifier. */
     protected final Classifier classifier;
 
@@ -110,7 +108,6 @@ public class EvaluationBoard
     /** True for active buttons, false for passive fields. */
     protected final boolean isActive;
 
-    //~ Constructors -------------------------------------------------------------------------------
     //-----------------//
     // EvaluationBoard //
     //-----------------//
@@ -132,14 +129,8 @@ public class EvaluationBoard
                             InterController interController,
                             boolean selected)
     {
-        super(
-                new Desc(classifier.getName(), 700),
-                glyphService,
-                eventsRead,
-                selected,
-                false,
-                false,
-                false);
+        super(new Desc(classifier.getName(), 700), glyphService, eventsRead, selected, false, false,
+              false);
 
         this.classifier = classifier;
         this.interController = interController;
@@ -151,7 +142,6 @@ public class EvaluationBoard
         useAnnotations = false; //true;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // onEvent //
     //---------//
@@ -205,13 +195,10 @@ public class EvaluationBoard
 
                 for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
                     selector.setEvals(
-                            classifier.evaluate(
-                                    glyph,
-                                    system,
-                                    selector.evalCount(),
-                                    constants.minGrade.getValue(),
-                                    useAnnotations ? EnumSet.of(Classifier.Condition.CHECKED)
-                                            : Classifier.NO_CONDITIONS),
+                            classifier.evaluate(glyph, system, selector.evalCount(),
+                                                constants.minGrade.getValue(), useAnnotations
+                                                ? EnumSet.of(Classifier.Condition.CHECKED)
+                                                : Classifier.NO_CONDITIONS),
                             glyph);
 
                     return;
@@ -238,9 +225,7 @@ public class EvaluationBoard
         String colSpec = Panel.makeColumns(3);
         FormLayout layout = new FormLayout(colSpec, "");
 
-        int visibleButtons = Math.min(
-                constants.visibleButtons.getValue(),
-                selector.buttons.size());
+        int visibleButtons = Math.min(constants.visibleButtons.getValue(), selector.buttons.size());
 
         for (int i = 0; i < visibleButtons; i++) {
             if (i != 0) {
@@ -261,18 +246,15 @@ public class EvaluationBoard
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // Selector //
     //----------//
     protected class Selector
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // A collection of EvalButton's
         final List<EvalButton> buttons = new ArrayList<EvalButton>();
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Selector ()
         {
             for (int i = 0; i < evalCount(); i++) {
@@ -282,7 +264,6 @@ public class EvaluationBoard
             setEvals(null, null);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //-----------//
         // evalCount //
         //-----------//
@@ -365,16 +346,12 @@ public class EvaluationBoard
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Evaluation.Grade minGrade = new Evaluation.Grade(
-                0.0,
-                "Threshold on displayable grade");
+        private final Evaluation.Grade minGrade = new Evaluation.Grade(0.0,
+                                                                       "Threshold on displayable grade");
 
-        private final Constant.Integer visibleButtons = new Constant.Integer(
-                "buttons",
-                5,
-                "Max number of buttons in the shape selector");
+        private final Constant.Integer visibleButtons = new Constant.Integer("buttons", 5,
+                                                                             "Max number of buttons in the shape selector");
     }
 
     //------------//
@@ -383,7 +360,6 @@ public class EvaluationBoard
     private class EvalButton
             implements ActionListener
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // Shape button or text field. Only one of them will be created and used
         final JButton button;
@@ -393,7 +369,6 @@ public class EvaluationBoard
         // The related grade
         JLabel grade = new JLabel("", SwingConstants.RIGHT);
 
-        //~ Constructors ---------------------------------------------------------------------------
         public EvalButton ()
         {
             grade.setToolTipText("Grade of the evaluation");
@@ -413,7 +388,6 @@ public class EvaluationBoard
             }
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         // Triggered by button
         @Override
         public void actionPerformed (ActionEvent e)

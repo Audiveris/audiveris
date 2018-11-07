@@ -38,7 +38,6 @@ import java.util.TreeSet;
  */
 public class StackConfig
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Compare configs by their decreasing size. */
     public static final Comparator<StackConfig> byReverseSize = new Comparator<StackConfig>()
@@ -51,11 +50,9 @@ public class StackConfig
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Rhythm data for this config, always ordered byFullAbscissa. */
     private final TreeSet<Inter> inters = new TreeSet<Inter>(Inters.byFullAbscissa);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code RhythmConfig} object.
      *
@@ -66,7 +63,6 @@ public class StackConfig
         this.inters.addAll(inters);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // add //
     //-----//

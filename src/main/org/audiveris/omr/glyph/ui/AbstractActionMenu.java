@@ -50,7 +50,6 @@ import javax.swing.JMenuItem;
 public abstract class AbstractActionMenu
         extends AbstractGlyphMenu
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Map action -> tag to update according to context */
     private final Map<DynAction, Integer> dynActions = new LinkedHashMap<DynAction, Integer>();
@@ -58,7 +57,6 @@ public abstract class AbstractActionMenu
     /** Map action -> menu level */
     private final Map<DynAction, Integer> levels = new LinkedHashMap<DynAction, Integer>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractActionMenu object.
      *
@@ -71,7 +69,6 @@ public abstract class AbstractActionMenu
         super(sheet, text);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // updateMenu //
     //------------//
@@ -110,8 +107,8 @@ public abstract class AbstractActionMenu
         JMenu prevMenu = getMenu();
 
         for (int level = 0; level <= maxLevel; level++) {
-            SeparableMenu currentMenu = (level == 0) ? getMenu() : new SeparableMenu(
-                    "Continued ...");
+            SeparableMenu currentMenu = (level == 0) ? getMenu()
+                    : new SeparableMenu("Continued ...");
 
             for (Integer tag : tags) {
                 for (Map.Entry<DynAction, Integer> entry : dynActions.entrySet()) {
@@ -154,7 +151,6 @@ public abstract class AbstractActionMenu
         dynActions.put(action, action.tag);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // DynAction //
     //-----------//
@@ -165,18 +161,15 @@ public abstract class AbstractActionMenu
     protected abstract static class DynAction
             extends AbstractAction
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Semantic tag */
         protected final int tag;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public DynAction (int tag)
         {
             this.tag = tag;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Report which item class should be used to the related menu item
          *

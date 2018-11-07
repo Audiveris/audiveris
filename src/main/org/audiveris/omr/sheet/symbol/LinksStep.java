@@ -60,7 +60,6 @@ import java.util.Set;
 public class LinksStep
         extends AbstractSystemStep<Void>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -83,7 +82,6 @@ public class LinksStep
         impactingClasses.addAll(forTexts);
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code LinksStep} object.
      */
@@ -91,7 +89,6 @@ public class LinksStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -159,10 +156,8 @@ public class LinksStep
                             linker.linkOneSentence(sentence);
                         } else if (task instanceof SentenceRoleTask) {
                             SentenceRoleTask roleTask = (SentenceRoleTask) interTask;
-                            linker.unlinkOneSentence(
-                                    sentence,
-                                    (opKind == OpKind.UNDO) ? roleTask.getNewRole()
-                                            : roleTask.getOldRole());
+                            linker.unlinkOneSentence(sentence, (opKind == OpKind.UNDO) ? roleTask
+                                                     .getNewRole() : roleTask.getOldRole());
                             linker.linkOneSentence(sentence);
                         }
                     }
@@ -199,21 +194,17 @@ public class LinksStep
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch?");
 
-        private final Constant.Boolean removeFreeGlyphs = new Constant.Boolean(
-                false,
-                "Should we remove all free glyphs?");
+        private final Constant.Boolean removeFreeGlyphs = new Constant.Boolean(false,
+                                                                               "Should we remove all free glyphs?");
     }
 }

@@ -51,13 +51,11 @@ import java.util.TreeMap;
 public class SymbolsStep
         extends AbstractSystemStep<SymbolsStep.Context>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolsStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolsStep object.
      */
@@ -65,7 +63,6 @@ public class SymbolsStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
@@ -132,16 +129,15 @@ public class SymbolsStep
         return context;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Context //
     //---------//
     protected static class Context
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Map of optional (weak) glyphs per system. */
-        public final Map<SystemInfo, List<Glyph>> optionalsMap = new TreeMap<SystemInfo, List<Glyph>>();
+        public final Map<SystemInfo, List<Glyph>> optionalsMap
+                = new TreeMap<SystemInfo, List<Glyph>>();
     }
 
     //-----------//
@@ -150,10 +146,8 @@ public class SymbolsStep
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch?");
     }
 }

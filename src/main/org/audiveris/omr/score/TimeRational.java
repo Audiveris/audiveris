@@ -49,11 +49,9 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 )
 public class TimeRational
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TimeRational.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The actual numerator. */
     @XmlAttribute
     public final int num;
@@ -62,7 +60,6 @@ public class TimeRational
     @XmlAttribute
     public final int den;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TimeRational object.
      *
@@ -82,7 +79,6 @@ public class TimeRational
         den = num = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // decode //
     //--------//
@@ -182,14 +178,12 @@ public class TimeRational
         return num + "/" + den;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
     public static class Adapter
             extends XmlAdapter<String, TimeRational>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String marshal (TimeRational val)

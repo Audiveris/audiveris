@@ -47,16 +47,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class LyricLineInter
         extends SentenceInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(LyricLineInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The line number. */
     @XmlAttribute
     private int number;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LyricLine object.
      *
@@ -79,7 +76,6 @@ public class LyricLineInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -113,10 +109,9 @@ public class LyricLineInter
      */
     public static LyricLineInter create (TextLine line)
     {
-        LyricLineInter lyricLine = new LyricLineInter(
-                line.getBounds(),
-                line.getConfidence() * Grades.intrinsicRatio,
-                line.getMeanFont());
+        LyricLineInter lyricLine = new LyricLineInter(line.getBounds(), line.getConfidence()
+                                                                                * Grades.intrinsicRatio,
+                                                      line.getMeanFont());
 
         return lyricLine;
     }

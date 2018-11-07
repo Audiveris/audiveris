@@ -80,7 +80,6 @@ import java.util.Set;
 public class SlursBuilder
         extends CurvesBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -92,7 +91,6 @@ public class SlursBuilder
 
     private static final Color SLUR_MODELS = new Color(255, 255, 0, 100);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Scale-dependent parameters. */
     private final Parameters params;
 
@@ -108,7 +106,6 @@ public class SlursBuilder
     /** Current maximum length for arcs to be tried. */
     private Integer maxLength = null;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SlursBuilder object.
      *
@@ -122,7 +119,6 @@ public class SlursBuilder
         params = new Parameters(sheet.getScale());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildSlurs //
     //------------//
@@ -150,7 +146,7 @@ public class SlursBuilder
                 }
             }
 
-            // Handle tie collisions on same chord, although ties are not fully known 
+            // Handle tie collisions on same chord, although ties are not fully known
             // (because alterations & clefs have not been handled yet)
             handleTieCollisions();
 
@@ -201,10 +197,8 @@ public class SlursBuilder
         // Render slurs curves
         g.setColor(SLUR_CURVES);
 
-        Stroke lineStroke = new BasicStroke(
-                (float) sheet.getScale().getFore(),
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND);
+        Stroke lineStroke = new BasicStroke((float) sheet.getScale().getFore(),
+                                            BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
         g.setStroke(lineStroke);
 
         for (SlurInter slur : pageSlurs) {
@@ -382,7 +376,7 @@ public class SlursBuilder
         }
 
         double angleImpact = (params.maxArcAngleHigh - arcAngle) / (params.maxArcAngleHigh
-                                                                    - params.maxArcAngleLow);
+                                                                            - params.maxArcAngleLow);
 
         // Features below are relevant only for full slur evaluations
         if (!bothSides) {
@@ -406,8 +400,9 @@ public class SlursBuilder
             return null;
         }
 
-        double vertImpact = (fromVertical - params.minAngleFromVerticalLow) / (params.minAngleFromVerticalHigh
-                                                                               - params.minAngleFromVerticalLow);
+        double vertImpact = (fromVertical - params.minAngleFromVerticalLow)
+                                    / (params.minAngleFromVerticalHigh
+                                               - params.minAngleFromVerticalLow);
 
         List<Point> points = slur.getPoints();
         Point p0 = points.get(0);
@@ -424,7 +419,7 @@ public class SlursBuilder
         }
 
         double widthImpact = (width - params.minSlurWidthLow) / (params.minSlurWidthHigh
-                                                                 - params.minSlurWidthLow);
+                                                                         - params.minSlurWidthLow);
 
         // Slur high enough (bent enough)
         double height = Line2D.ptLineDist(p0.x, p0.y, p2.x, p2.y, p1.x, p1.y);
@@ -436,14 +431,9 @@ public class SlursBuilder
         }
 
         double heightImpact = (height - params.minSlurHeightLow) / (params.minSlurHeightHigh
-                                                                    - params.minSlurHeightLow);
+                                                                            - params.minSlurHeightLow);
 
-        return new SlurInter.Impacts(
-                distImpact,
-                angleImpact,
-                widthImpact,
-                heightImpact,
-                vertImpact);
+        return new SlurInter.Impacts(distImpact, angleImpact, widthImpact, heightImpact, vertImpact);
     }
 
     //--------------//
@@ -492,8 +482,8 @@ public class SlursBuilder
             final double r1 = rough.getRadius();
             final double r2 = fitted.getRadius();
 
-            if (Double.isInfinite(r1)
-                || ((abs(r1 - r2) / (max(r1, r2))) <= params.similarRadiusRatio)) {
+            if (Double.isInfinite(r1) || ((abs(r1 - r2) / (max(r1, r2)))
+                                                  <= params.similarRadiusRatio)) {
                 circle = fitted;
                 dist = circle.getDistance();
             } else {
@@ -528,14 +518,8 @@ public class SlursBuilder
                                     Model model,
                                     Collection<Arc> parts)
     {
-        SlurInfo slur = new SlurInfo(
-                ++globalId,
-                firstJunction,
-                lastJunction,
-                points,
-                model,
-                parts,
-                params.sideLength);
+        SlurInfo slur = new SlurInfo(++globalId, firstJunction, lastJunction, points, model, parts,
+                                     params.sideLength);
         pageInfos.add(slur);
 
         return slur;
@@ -551,9 +535,8 @@ public class SlursBuilder
         SlurInfo slur = (SlurInfo) seq;
         GradeImpacts impacts = computeImpacts(slur, true);
 
-        if ((impacts != null)
-            && (impacts.getGrade() >= SlurInter.getMinGrade())
-            && (slur.getCurve() != null)) {
+        if ((impacts != null) && (impacts.getGrade() >= SlurInter.getMinGrade()) && (slur.getCurve()
+                                                                                             != null)) {
             slur.retrieveGlyph(sheet, params.maxRunDistance);
 
             if (slur.getGlyph() != null) {
@@ -1071,111 +1054,81 @@ public class SlursBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio similarRadiusRatio = new Constant.Ratio(
-                0.25,
-                "Maximum difference ratio between radius of similar circles");
+        private final Constant.Ratio similarRadiusRatio = new Constant.Ratio(0.25,
+                                                                             "Maximum difference ratio between radius of similar circles");
 
-        private final Constant.Double maxIncidence = new Constant.Double(
-                "degree",
-                15,
-                "Maximum incidence angle (in degrees) for staff tangency");
+        private final Constant.Double maxIncidence = new Constant.Double("degree", 15,
+                                                                         "Maximum incidence angle (in degrees) for staff tangency");
 
-        private final Scale.Fraction arcMinSeedLength = new Scale.Fraction(
-                0.5,
-                "Minimum arc length for starting a slur build");
+        private final Scale.Fraction arcMinSeedLength = new Scale.Fraction(0.5,
+                                                                           "Minimum arc length for starting a slur build");
 
-        private final Scale.Fraction maxStaffLineDy = new Scale.Fraction(
-                0.2,
-                "Vertical distance to closest staff line to detect tangency");
+        private final Scale.Fraction maxStaffLineDy = new Scale.Fraction(0.2,
+                                                                         "Vertical distance to closest staff line to detect tangency");
 
-        private final Scale.Fraction maxSlurDistance = new Scale.Fraction(
-                0.1,
-                "Maximum circle distance for private final slur");
+        private final Scale.Fraction maxSlurDistance = new Scale.Fraction(0.1,
+                                                                          "Maximum circle distance for private final slur");
 
-        private final Scale.Fraction maxExtDistance = new Scale.Fraction(
-                0.45,
-                "Maximum circle distance for extension arc");
+        private final Scale.Fraction maxExtDistance = new Scale.Fraction(0.45,
+                                                                         "Maximum circle distance for extension arc");
 
-        private final Scale.Fraction maxArcsDistance = new Scale.Fraction(
-                0.15,
-                "Maximum circle distance for intermediate arcs");
+        private final Scale.Fraction maxArcsDistance = new Scale.Fraction(0.15,
+                                                                          "Maximum circle distance for intermediate arcs");
 
-        private final Scale.Fraction arcCheckLength = new Scale.Fraction(
-                2,
-                "Length checked for extension arc");
+        private final Scale.Fraction arcCheckLength = new Scale.Fraction(2,
+                                                                         "Length checked for extension arc");
 
-        private final Scale.Fraction tangentLength = new Scale.Fraction(
-                0.5,
-                "Length for checking staff line tangency");
+        private final Scale.Fraction tangentLength = new Scale.Fraction(0.5,
+                                                                        "Length for checking staff line tangency");
 
-        private final Scale.Fraction sideModelLength = new Scale.Fraction(
-                6,
-                "Length for side osculatory model");
+        private final Scale.Fraction sideModelLength = new Scale.Fraction(6,
+                                                                          "Length for side osculatory model");
 
-        private final Scale.Fraction minCircleRadius = new Scale.Fraction(
-                0.4,
-                "Minimum circle radius for a slur");
+        private final Scale.Fraction minCircleRadius = new Scale.Fraction(0.4,
+                                                                          "Minimum circle radius for a slur");
 
-        private final Scale.Fraction minSeedCircleRadius = new Scale.Fraction(
-                0.3,
-                "Minimum circle radius for a slur seed");
+        private final Scale.Fraction minSeedCircleRadius = new Scale.Fraction(0.3,
+                                                                              "Minimum circle radius for a slur seed");
 
-        private final Scale.Fraction minSlurWidthLow = new Scale.Fraction(
-                0.7,
-                "Low minimum width for a slur");
+        private final Scale.Fraction minSlurWidthLow = new Scale.Fraction(0.7,
+                                                                          "Low minimum width for a slur");
 
-        private final Scale.Fraction minSlurWidthHigh = new Scale.Fraction(
-                1.5,
-                "High minimum width for a slur");
+        private final Scale.Fraction minSlurWidthHigh = new Scale.Fraction(1.5,
+                                                                           "High minimum width for a slur");
 
-        private final Scale.Fraction minSlurHeightLow = new Scale.Fraction(
-                0.07,
-                "Low minimum height for a slur");
+        private final Scale.Fraction minSlurHeightLow = new Scale.Fraction(0.07,
+                                                                           "Low minimum height for a slur");
 
-        private final Scale.Fraction minSlurHeightHigh = new Scale.Fraction(
-                1.0,
-                "High minimum height for a slur");
+        private final Scale.Fraction minSlurHeightHigh = new Scale.Fraction(1.0,
+                                                                            "High minimum height for a slur");
 
-        private final Constant.Double maxArcAngleHigh = new Constant.Double(
-                "degree",
-                190.0,
-                "High maximum angle (in degrees) of slur arc");
+        private final Constant.Double maxArcAngleHigh = new Constant.Double("degree", 190.0,
+                                                                            "High maximum angle (in degrees) of slur arc");
 
-        private final Constant.Double maxArcAngleLow = new Constant.Double(
-                "degree",
-                170.0,
-                "Low maximum angle (in degrees) of slur arc");
+        private final Constant.Double maxArcAngleLow = new Constant.Double("degree", 170.0,
+                                                                           "Low maximum angle (in degrees) of slur arc");
 
-        private final Constant.Double minAngleFromVerticalLow = new Constant.Double(
-                "degree",
-                10.0,
-                "Low minimum angle (in degrees) between slur and vertical");
+        private final Constant.Double minAngleFromVerticalLow = new Constant.Double("degree", 10.0,
+                                                                                    "Low minimum angle (in degrees) between slur and vertical");
 
-        private final Constant.Double minAngleFromVerticalHigh = new Constant.Double(
-                "degree",
-                25.0,
-                "High minimum angle (in degrees) between slur and vertical");
+        private final Constant.Double minAngleFromVerticalHigh = new Constant.Double("degree", 25.0,
+                                                                                     "High minimum angle (in degrees) between slur and vertical");
 
-        private final Constant.Ratio quorumRatio = new Constant.Ratio(
-                0.5,
-                "Minimum length expressed as ratio of longest in clump");
+        private final Constant.Ratio quorumRatio = new Constant.Ratio(0.5,
+                                                                      "Minimum length expressed as ratio of longest in clump");
 
-        private final Scale.Fraction minProjection = new Scale.Fraction(
-                -1.0,
-                "Minimum projection on curve for arc extension");
+        private final Scale.Fraction minProjection = new Scale.Fraction(-1.0,
+                                                                        "Minimum projection on curve for arc extension");
 
-        private final Scale.Fraction maxRunDistance = new Scale.Fraction(
-                0.25,
-                "Maximum distance from any run end to curve points");
+        private final Scale.Fraction maxRunDistance = new Scale.Fraction(0.25,
+                                                                         "Maximum distance from any run end to curve points");
     }
 
     //------------//
@@ -1186,7 +1139,6 @@ public class SlursBuilder
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final double similarRadiusRatio;
 
@@ -1234,7 +1186,6 @@ public class SlursBuilder
 
         final double maxRunDistance;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
          *

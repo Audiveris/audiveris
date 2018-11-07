@@ -43,11 +43,9 @@ import java.awt.Rectangle;
  */
 public class KeySlice
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(KeySlice.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing Roi. */
     private final KeyRoi roi;
 
@@ -66,7 +64,6 @@ public class KeySlice
     /** If occupied by non-valid material. */
     private boolean stuffed;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code KeySlice} object.
      *
@@ -80,7 +77,6 @@ public class KeySlice
         this.roi = roi;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public void deleteAlter ()
     {
         if (alter != null) {
@@ -124,11 +120,8 @@ public class KeySlice
     public String getLabel ()
     {
         if (alter != null) {
-            return String.format(
-                    "%s%+1d %-5d",
-                    (alter.getShape() == Shape.FLAT) ? "b" : "#",
-                    alter.getIntegerPitch(),
-                    alter.getId());
+            return String.format("%s%+1d %-5d", (alter.getShape() == Shape.FLAT) ? "b" : "#", alter
+                                 .getIntegerPitch(), alter.getId());
         } else if (stuffed) {
             return "STUFFED  ";
         } else {

@@ -44,11 +44,9 @@ import java.util.List;
  */
 public class IntegerFunction
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(IntegerFunction.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Minimum x value. */
     protected final int xMin;
 
@@ -58,7 +56,6 @@ public class IntegerFunction
     /** Array of y value for each x. */
     private final int[] values;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates an instance of {@code IntegerFunction}.
      *
@@ -73,7 +70,6 @@ public class IntegerFunction
         values = new int[xMax - xMin + 1];
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addValue //
     //----------//

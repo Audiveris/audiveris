@@ -34,7 +34,6 @@ import java.awt.image.WritableRaster;
 public class BasicLegendreExtractor
         extends AbstractExtractor<LegendreMoments>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Legendre polynomials. */
     private static final Polynomial[] P = generatePolynomials();
@@ -66,7 +65,6 @@ public class BasicLegendreExtractor
         ///checkOrthogonal();
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicLegendreExtractor object.
      */
@@ -74,7 +72,6 @@ public class BasicLegendreExtractor
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // reconstruct //
     //-------------//
@@ -210,8 +207,8 @@ public class BasicLegendreExtractor
         Q[1] = new Polynomial(1, 1);
 
         for (int n = 2; n <= ORDER; n++) {
-            Q[n] = Q[1].times(Q[n - 1]).times((2 * n) - 1).minus(Q[n - 2].times(n - 1)).times(
-                    1d / n);
+            Q[n] = Q[1].times(Q[n - 1]).times((2 * n) - 1).minus(Q[n - 2].times(n - 1))
+                    .times(1d / n);
         }
 
         if (false) {

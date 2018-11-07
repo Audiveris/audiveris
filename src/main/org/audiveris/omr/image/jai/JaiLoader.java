@@ -40,11 +40,9 @@ import javax.media.jai.JAI;
  */
 public abstract class JaiLoader
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(JaiLoader.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     //    /** A future which reflects whether JAI has been initialized * */
     //    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor()
     //            .submit(
@@ -63,7 +61,6 @@ public abstract class JaiLoader
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // loadJAI //
     //---------//

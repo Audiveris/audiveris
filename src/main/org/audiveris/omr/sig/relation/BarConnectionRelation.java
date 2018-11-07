@@ -37,11 +37,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BarConnectionRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarConnectionRelation object.
      *
@@ -58,7 +56,6 @@ public class BarConnectionRelation
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -95,17 +92,14 @@ public class BarConnectionRelation
         return constants.barSupportCoeff.getValue();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio barSupportCoeff = new Constant.Ratio(
-                5,
-                "Value for source/target (bar) coeff in support formula");
+        private final Constant.Ratio barSupportCoeff = new Constant.Ratio(5,
+                                                                          "Value for source/target (bar) coeff in support formula");
     }
 }

@@ -84,13 +84,11 @@ import java.util.TreeSet;
 public class PeakGraph
         extends SimpleDirectedGraph<StaffPeak, BarAlignment>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(PeakGraph.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -107,7 +105,6 @@ public class PeakGraph
     /** Specific builder for peak-based filaments. */
     private final BarFilamentBuilder filamentBuilder;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PeakGraph} object.
      *
@@ -127,7 +124,6 @@ public class PeakGraph
         filamentBuilder = new BarFilamentBuilder(sheet);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // buildSystems //
     //--------------//
@@ -240,12 +236,8 @@ public class PeakGraph
         final double alignImpact = 1 - (Math.abs(minSlope) / params.maxAlignmentSlope);
         final double widthImpact = 1 - (Math.abs(dWidth) / params.maxAlignmentDeltaWidth);
 
-        return new BarAlignment(
-                topPeak,
-                botPeak,
-                minSlope,
-                dWidth,
-                new BarAlignment.Impacts(alignImpact, widthImpact));
+        return new BarAlignment(topPeak, botPeak, minSlope, dWidth, new BarAlignment.Impacts(
+                                alignImpact, widthImpact));
     }
 
     //---------------------//
@@ -378,10 +370,9 @@ public class PeakGraph
 
             for (StaffPeak peak : projector.getPeaks()) {
                 // Build filament from proper slice of sections for this peak
-                Filament filament = filamentBuilder.buildFilament(
-                        peak,
-                        params.bracketLookupExtension,
-                        allSections);
+                Filament filament = filamentBuilder.buildFilament(peak,
+                                                                  params.bracketLookupExtension,
+                                                                  allSections);
 
                 if (filament != null) {
                     peak.setFilament(filament);
@@ -413,29 +404,28 @@ public class PeakGraph
      */
     private BarConnection checkConnection (BarAlignment alignment)
     {
-        ByteProcessor pixelFilter = sheet.getPicture().getSource(
-                Picture.SourceKey.BINARY);
+        ByteProcessor pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
         StaffPeak p1 = alignment.topPeak;
         StaffPeak p2 = alignment.bottomPeak;
         final boolean vip = p1.isVip() && p2.isVip();
 
         // Theoretical lines on left and right sides
-        final GeoPath leftLine = new GeoPath(
-                new Line2D.Double(
-                        new Point2D.Double(p1.getStart(), p1.getBottom()),
-                        new Point2D.Double(p2.getStart(), p2.getTop())));
-        final GeoPath rightLine = new GeoPath(
-                new Line2D.Double(
-                        new Point2D.Double(p1.getStop(), p1.getBottom()),
-                        new Point2D.Double(p2.getStop(), p2.getTop())));
+        final GeoPath leftLine = new GeoPath(new Line2D.Double(new Point2D.Double(p1.getStart(), p1
+                                                                                  .getBottom()),
+                                                               new Point2D.Double(p2.getStart(), p2
+                                                                                  .getTop())));
+        final GeoPath rightLine = new GeoPath(new Line2D.Double(new Point2D.Double(p1.getStop(), p1
+                                                                                   .getBottom()),
+                                                                new Point2D.Double(p2.getStop(), p2
+                                                                                   .getTop())));
         final AreaUtil.CoreData data = AreaUtil.verticalCore(pixelFilter, leftLine, rightLine);
 
         if (vip) {
             logger.info("VIP running checkConnection {} and {} {}", p1, p2, data);
         }
 
-        if ((data.gap <= params.maxConnectionGap)
-            && (data.whiteRatio <= params.maxConnectionWhiteRatio)) {
+        if ((data.gap <= params.maxConnectionGap) && (data.whiteRatio
+                                                              <= params.maxConnectionWhiteRatio)) {
             double gapImpact = 1 - (data.gap / (double) params.maxConnectionGap);
             double whiteImpact = 1 - (data.whiteRatio / params.maxConnectionWhiteRatio);
             BarConnection connection = new BarConnection(alignment, gapImpact, whiteImpact);
@@ -584,18 +574,12 @@ public class PeakGraph
         final Staff staff = peak.getStaff();
         final List<Section> allSections = new ArrayList<Section>(peak.getFilament().getMembers());
 
-        StaffPeak p = new StaffPeak(
-                staff,
-                peak.getTop(),
-                peak.getBottom(),
-                (side == LEFT) ? peak.getStart() : (mid + 1),
-                (side == LEFT) ? (mid - 1) : peak.getStop(),
-                peak.getImpacts());
+        StaffPeak p = new StaffPeak(staff, peak.getTop(), peak.getBottom(), (side == LEFT) ? peak
+                                    .getStart() : (mid + 1), (side == LEFT) ? (mid - 1) : peak
+                                                    .getStop(), peak.getImpacts());
 
-        Filament filament = filamentBuilder.buildFilament(
-                p,
-                params.bracketLookupExtension,
-                allSections);
+        Filament filament = filamentBuilder.buildFilament(p, params.bracketLookupExtension,
+                                                          allSections);
 
         if (filament == null) {
             return null;
@@ -849,8 +833,7 @@ public class PeakGraph
 
         if (degree > 0) {
             SortedSet<StaffPeak> others = new TreeSet<StaffPeak>();
-            Set<BarAlignment> edges = (side == TOP) ? incomingEdgesOf(peak) : outgoingEdgesOf(
-                    peak);
+            Set<BarAlignment> edges = (side == TOP) ? incomingEdgesOf(peak) : outgoingEdgesOf(peak);
 
             for (BarAlignment edge : edges) {
                 if (edge instanceof BarConnection) {
@@ -1031,8 +1014,8 @@ public class PeakGraph
                 final int xOffset = p2.getStart() - p2.getStaff().getAbscissa(LEFT);
 
                 if (xOffset > params.maxFirstConnectionXOffset) {
-                    if ((p2 == projectorOf(p2.getStaff()).getLastPeak())
-                        || !areRightConnected(p1.getStaff(), p2.getStaff())) {
+                    if ((p2 == projectorOf(p2.getStaff()).getLastPeak()) || !areRightConnected(p1
+                            .getStaff(), p2.getStaff())) {
                         continue;
                     }
                 }
@@ -1385,66 +1368,51 @@ public class PeakGraph
         return total;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch?");
 
-        private final Constant.Ratio maxAlignmentSlope = new Constant.Ratio(
-                0.06,
-                "Max slope for bar alignment");
+        private final Constant.Ratio maxAlignmentSlope = new Constant.Ratio(0.06,
+                                                                            "Max slope for bar alignment");
 
-        private final Scale.Fraction maxAlignmentDeltaWidth = new Scale.Fraction(
-                0.6,
-                "Max delta width for bar alignment");
+        private final Scale.Fraction maxAlignmentDeltaWidth = new Scale.Fraction(0.6,
+                                                                                 "Max delta width for bar alignment");
 
-        private final Scale.Fraction maxAlignmentBraceDx = new Scale.Fraction(
-                0.75,
-                "Max abscissa shift for brace alignment");
+        private final Scale.Fraction maxAlignmentBraceDx = new Scale.Fraction(0.75,
+                                                                              "Max abscissa shift for brace alignment");
 
-        private final Scale.Fraction maxConnectionGap = new Scale.Fraction(
-                2.0,
-                "Max vertical gap when connecting bar lines");
+        private final Scale.Fraction maxConnectionGap = new Scale.Fraction(2.0,
+                                                                           "Max vertical gap when connecting bar lines");
 
-        private final Constant.Ratio maxConnectionWhiteRatio = new Constant.Ratio(
-                0.35,
-                "Max white ratio when connecting bar lines");
+        private final Constant.Ratio maxConnectionWhiteRatio = new Constant.Ratio(0.35,
+                                                                                  "Max white ratio when connecting bar lines");
 
-        private final Constant.Ratio minConnectionGrade = new Constant.Ratio(
-                0.5,
-                "Minimum grade for a true connection");
+        private final Constant.Ratio minConnectionGrade = new Constant.Ratio(0.5,
+                                                                             "Minimum grade for a true connection");
 
-        private final Scale.Fraction minBarCurvature = new Scale.Fraction(
-                10,
-                "Minimum mean curvature radius for a bar line");
+        private final Scale.Fraction minBarCurvature = new Scale.Fraction(10,
+                                                                          "Minimum mean curvature radius for a bar line");
 
-        private final Constant.Ratio maxWidthRatio = new Constant.Ratio(
-                0.3,
-                "Max width difference ratio between aligned peaks");
+        private final Constant.Ratio maxWidthRatio = new Constant.Ratio(0.3,
+                                                                        "Max width difference ratio between aligned peaks");
 
-        private final Constant.Ratio maxTotalDiffRatio = new Constant.Ratio(
-                0.3,
-                "Max width difference ratio between aligned groups of peaks");
+        private final Constant.Ratio maxTotalDiffRatio = new Constant.Ratio(0.3,
+                                                                            "Max width difference ratio between aligned groups of peaks");
 
-        private final Scale.Fraction bracketLookupExtension = new Scale.Fraction(
-                2.0,
-                "Lookup height for bracket end above or below staff line");
+        private final Scale.Fraction bracketLookupExtension = new Scale.Fraction(2.0,
+                                                                                 "Lookup height for bracket end above or below staff line");
 
-        private final Scale.Fraction maxCloseGap = new Scale.Fraction(
-                0.4,
-                "Max horizontal gap between two close members of a double bar");
+        private final Scale.Fraction maxCloseGap = new Scale.Fraction(0.4,
+                                                                      "Max horizontal gap between two close members of a double bar");
 
-        private final Scale.Fraction maxFirstConnectionXOffset = new Scale.Fraction(
-                2.0,
-                "Max horizontal offset between staff start and first connection");
+        private final Scale.Fraction maxFirstConnectionXOffset = new Scale.Fraction(2.0,
+                                                                                    "Max horizontal offset between staff start and first connection");
     }
 
     //------------//
@@ -1452,7 +1420,6 @@ public class PeakGraph
     //------------//
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final double maxAlignmentSlope;
 
@@ -1478,7 +1445,6 @@ public class PeakGraph
 
         final int maxFirstConnectionXOffset;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
          *

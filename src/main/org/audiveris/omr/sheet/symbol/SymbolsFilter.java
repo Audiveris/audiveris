@@ -28,8 +28,8 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
-import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.GlyphGroup;
+import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.image.ShapeDescriptor;
 import org.audiveris.omr.image.Template;
@@ -82,7 +82,6 @@ import java.util.Set;
  */
 public class SymbolsFilter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -91,11 +90,9 @@ public class SymbolsFilter
     /** Orientation chosen for symbol runs. */
     public static final Orientation SYMBOL_ORIENTATION = Orientation.VERTICAL;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolsFilter object.
      *
@@ -106,7 +103,6 @@ public class SymbolsFilter
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -141,10 +137,10 @@ public class SymbolsFilter
 
         // Display for visual check?
         if (constants.displaySymbols.isSet() && (OMR.gui != null)) {
-            sheet.getStub().getAssembly().addViewTab(
-                    "Symbols",
-                    new ScrollImageView(sheet, new MyView(img, optionalsMap)),
-                    new BoardsPane(new PixelBoard(sheet)));
+            sheet.getStub().getAssembly().addViewTab("Symbols", new ScrollImageView(sheet,
+                                                                                    new MyView(img,
+                                                                                               optionalsMap)),
+                                                     new BoardsPane(new PixelBoard(sheet)));
         }
 
         buildSymbolsGlyphs(buffer);
@@ -201,31 +197,24 @@ public class SymbolsFilter
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean displaySymbols = new Constant.Boolean(
-                false,
-                "Should we display the symbols image?");
+        private final Constant.Boolean displaySymbols = new Constant.Boolean(false,
+                                                                             "Should we display the symbols image?");
 
-        private final Constant.Boolean keepSymbolsBuffer = new Constant.Boolean(
-                false,
-                "Should we store symbols image on disk?");
+        private final Constant.Boolean keepSymbolsBuffer = new Constant.Boolean(false,
+                                                                                "Should we store symbols image on disk?");
 
-        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
-                0.5,
-                "Margin erased above & below staff header area");
+        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(0.5,
+                                                                              "Margin erased above & below staff header area");
 
-        private final Constant.Integer minWordLength = new Constant.Integer(
-                "letter count",
-                4,
-                "Minimum number of chars in a sentence word");
+        private final Constant.Integer minWordLength = new Constant.Integer("letter count", 4,
+                                                                            "Minimum number of chars in a sentence word");
     }
 
     //--------//
@@ -237,12 +226,10 @@ public class SymbolsFilter
     private class MyView
             extends ImageView
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // All optional glyphs. */
         private final Set<Glyph> optionals;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public MyView (BufferedImage image,
                        Map<SystemInfo, List<Glyph>> optionalMap)
         {
@@ -255,7 +242,6 @@ public class SymbolsFilter
             }
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void renderItems (Graphics2D g)
         {
@@ -302,7 +288,6 @@ public class SymbolsFilter
     private static class SymbolsCleaner
             extends PageCleaner
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /**
          * Current system list of weak glyphs.
@@ -310,7 +295,6 @@ public class SymbolsFilter
          */
         private List<Glyph> systemWeaks;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new {@code SymbolsEraser} object.
          *
@@ -325,7 +309,6 @@ public class SymbolsFilter
             super(buffer, g, sheet);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //-------------//
         // eraseInters //
         //-------------//
@@ -485,9 +468,8 @@ public class SymbolsFilter
             // Save the glyph?
             if (systemWeaks != null) {
                 // The glyph may be made of several parts, so it's safer to restart from pixels
-                List<Glyph> glyphs = GlyphFactory.buildGlyphs(glyph.getRunTable(),
-                        glyph.getTopLeft(),
-                        GlyphGroup.SYMBOL);
+                List<Glyph> glyphs = GlyphFactory.buildGlyphs(glyph.getRunTable(), glyph
+                                                              .getTopLeft(), GlyphGroup.SYMBOL);
                 systemWeaks.addAll(glyphs);
             }
         }
@@ -516,9 +498,8 @@ public class SymbolsFilter
             RunTable runTable = factory.createTable(buf);
 
             // Glyphs
-            List<Glyph> glyphs = GlyphFactory.buildGlyphs(runTable,
-                    new Point(0, 0),
-                    GlyphGroup.SYMBOL);
+            List<Glyph> glyphs = GlyphFactory.buildGlyphs(runTable, new Point(0, 0),
+                                                          GlyphGroup.SYMBOL);
 
             systemWeaks.addAll(glyphs);
         }

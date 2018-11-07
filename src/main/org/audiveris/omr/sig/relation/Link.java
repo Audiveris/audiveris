@@ -38,9 +38,7 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class Link
-
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /**
      * For comparing Link instances by decreasing grade.
@@ -58,7 +56,6 @@ public class Link
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The other Inter instance, the one to be linked with. */
     public Inter partner;
 
@@ -68,7 +65,6 @@ public class Link
     /** True for Inter as source and Partner as target, false for the reverse. */
     public final boolean outgoing;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Link} object.
      *
@@ -85,7 +81,6 @@ public class Link
         this.outgoing = outgoing;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // applyTo //
     //---------//

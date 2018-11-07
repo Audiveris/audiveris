@@ -45,11 +45,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class Support
         extends Relation
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Quality of the geometric junction. */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double3Adapter.class)
@@ -58,7 +56,6 @@ public abstract class Support
     /** Details about grade (for debugging). */
     protected GradeImpacts impacts;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicSupport object, with a grade set to 1.
      */
@@ -77,7 +74,6 @@ public abstract class Support
         this.grade = grade;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getSourceRatio //
     //----------------//
@@ -191,17 +187,14 @@ public abstract class Support
         return 0;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio minGrade = new Constant.Ratio(
-                0.1,
-                "Minimum support relation grade");
+        private final Constant.Ratio minGrade = new Constant.Ratio(0.1,
+                                                                   "Minimum support relation grade");
     }
 }

@@ -34,7 +34,6 @@ import javax.swing.JSeparator;
 public class SeparablePopupMenu
         extends JPopupMenu
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new SeparablePopupMenu object.
@@ -54,7 +53,6 @@ public class SeparablePopupMenu
         super(s);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // addSeparator //
     //--------------//

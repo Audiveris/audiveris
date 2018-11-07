@@ -63,12 +63,10 @@ import java.util.TreeMap;
  */
 public class ClustersRetriever
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            ClustersRetriever.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClustersRetriever.class);
 
     /**
      * For comparing Filament instances on their starting point.
@@ -98,7 +96,6 @@ public class ClustersRetriever
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Comparator on cluster ordinate. */
     public Comparator<LineCluster> byOrdinate = new Comparator<LineCluster>()
     {
@@ -186,7 +183,6 @@ public class ClustersRetriever
     /** Collection of clusters */
     private final List<LineCluster> clusters = new ArrayList<LineCluster>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ClustersRetriever object, for a given staff
      * interline.
@@ -214,7 +210,6 @@ public class ClustersRetriever
         params = new Parameters(scale, interlineScale);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // buildInfo //
     //-----------//
@@ -237,11 +232,8 @@ public class ClustersRetriever
         // Retrieve clusters
         retrieveClusters(checkConsistency);
 
-        logger.info(
-                "Retrieved line clusters: {} of size: {} with interline: {}",
-                clusters.size(),
-                popSize,
-                interlineScale);
+        logger.info("Retrieved line clusters: {} of size: {} with interline: {}", clusters.size(),
+                    popSize, interlineScale);
 
         return discardedFilaments;
     }
@@ -395,10 +387,8 @@ public class ClustersRetriever
             // Overlap: measure vertical distances at middle abscissa of common part
             final int xMid = (maxLeft + minRight) / 2;
             final double slope = sheet.getSkew().getSlope();
-            dist = bestMatch(
-                    ordinatesOf(one.getPointsAt(xMid, params.maxExpandDx, slope)),
-                    ordinatesOf(two.getPointsAt(xMid, params.maxExpandDx, slope)),
-                    deltaPos);
+            dist = bestMatch(ordinatesOf(one.getPointsAt(xMid, params.maxExpandDx, slope)),
+                             ordinatesOf(two.getPointsAt(xMid, params.maxExpandDx, slope)), deltaPos);
 
             if (dist <= params.maxMergeDy) {
                 // Check there is no collision on common lines
@@ -499,8 +489,7 @@ public class ClustersRetriever
         StaffFilament twoAnc = (StaffFilament) two.getAncestor();
 
         if (oneAnc != twoAnc) {
-            if (oneAnc.getLength(Orientation.HORIZONTAL) >= twoAnc.getLength(
-                    Orientation.HORIZONTAL)) {
+            if (oneAnc.getLength(Orientation.HORIZONTAL) >= twoAnc.getLength(Orientation.HORIZONTAL)) {
                 ///logger.info("Inclusion " + twoAnc + " into " + oneAnc);
                 oneAnc.include(twoAnc);
                 oneAnc.getCombs().putAll(twoAnc.getCombs());
@@ -651,11 +640,8 @@ public class ClustersRetriever
 
                         if (cluster.includeFilamentByIndex(fil, index)) {
                             if (logger.isDebugEnabled() || fil.isVip() || cluster.isVip()) {
-                                logger.info(
-                                        "VIP aggregated F{} to C{} at index {}",
-                                        fil.getId(),
-                                        cluster.getId(),
-                                        index);
+                                logger.info("VIP aggregated F{} to C{} at index {}", fil.getId(),
+                                            cluster.getId(), index);
 
                                 if (fil.isVip()) {
                                     cluster.setVip(true);
@@ -869,11 +855,8 @@ public class ClustersRetriever
                     if (headBox.intersects(candidateBox)) {
                         // Try a merge
                         if (canMerge(head, candidate, deltaPos)) {
-                            logger.debug(
-                                    "Merging {} with {} delta:{}",
-                                    candidate,
-                                    head,
-                                    deltaPos.value);
+                            logger.debug("Merging {} with {} delta:{}", candidate, head,
+                                         deltaPos.value);
 
                             // Do the merge
                             candidate.mergeWith(head, deltaPos.value);
@@ -1144,58 +1127,45 @@ public class ClustersRetriever
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction samplingDx = new Scale.Fraction(
-                1,
-                "Typical delta X between two vertical samplings");
+        private final Scale.Fraction samplingDx = new Scale.Fraction(1,
+                                                                     "Typical delta X between two vertical samplings");
 
-        private final Scale.Fraction maxExpandDx = new Scale.Fraction(
-                2,
-                "Maximum dx to aggregate a filament to a cluster");
+        private final Scale.Fraction maxExpandDx = new Scale.Fraction(2,
+                                                                      "Maximum dx to aggregate a filament to a cluster");
 
-        private final Scale.Fraction maxExpandDy = new Scale.Fraction(
-                0.175,
-                "Maximum dy to aggregate a filament to a cluster");
+        private final Scale.Fraction maxExpandDy = new Scale.Fraction(0.175,
+                                                                      "Maximum dy to aggregate a filament to a cluster");
 
-        private final Scale.Fraction maxMergeDx = new Scale.Fraction(
-                6,
-                "Maximum dx to merge two clusters");
+        private final Scale.Fraction maxMergeDx = new Scale.Fraction(6,
+                                                                     "Maximum dx to merge two clusters");
 
-        private final Scale.Fraction maxMergeDy = new Scale.Fraction(
-                0.4,
-                "Maximum dy to merge two clusters");
+        private final Scale.Fraction maxMergeDy = new Scale.Fraction(0.4,
+                                                                     "Maximum dy to merge two clusters");
 
-        private final Scale.Fraction maxMergeCenterDy = new Scale.Fraction(
-                1.0,
-                "Maximum center dy to merge two clusters");
+        private final Scale.Fraction maxMergeCenterDy = new Scale.Fraction(1.0,
+                                                                           "Maximum center dy to merge two clusters");
 
-        private final Scale.Fraction clusterYMargin = new Scale.Fraction(
-                2,
-                "Rough margin around cluster ordinate");
+        private final Scale.Fraction clusterYMargin = new Scale.Fraction(2,
+                                                                         "Rough margin around cluster ordinate");
 
-        private final Scale.Fraction combMinMargin = new Scale.Fraction(
-                0.0,
-                "Comb margin below minimum interline (use with caution)");
+        private final Scale.Fraction combMinMargin = new Scale.Fraction(0.0,
+                                                                        "Comb margin below minimum interline (use with caution)");
 
-        private final Scale.Fraction combMaxMargin = new Scale.Fraction(
-                0.0,
-                "Comb margin above maximum interline (use with caution)");
+        private final Scale.Fraction combMaxMargin = new Scale.Fraction(0.0,
+                                                                        "Comb margin above maximum interline (use with caution)");
 
-        private final Constant.Ratio minClusterLengthRatio = new Constant.Ratio(
-                0.2,
-                "Minimum cluster true length (as ratio of median true length)");
+        private final Constant.Ratio minClusterLengthRatio = new Constant.Ratio(0.2,
+                                                                                "Minimum cluster true length (as ratio of median true length)");
 
-        private final Constant.Ratio maxClusterDiffLengthRatio = new Constant.Ratio(
-                0.5,
-                "Maximum ratio of difference in length within raw lines of a cluster");
+        private final Constant.Ratio maxClusterDiffLengthRatio = new Constant.Ratio(0.5,
+                                                                                    "Maximum ratio of difference in length within raw lines of a cluster");
     }
 
     //------//
@@ -1207,7 +1177,6 @@ public class ClustersRetriever
      */
     private static class FilY
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public static final Comparator<FilY> byOrdinate = new Comparator<FilY>()
         {
@@ -1223,7 +1192,6 @@ public class ClustersRetriever
 
         final double y;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public FilY (StaffFilament filament,
                      double y)
         {
@@ -1231,7 +1199,6 @@ public class ClustersRetriever
             this.y = y;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -1248,7 +1215,6 @@ public class ClustersRetriever
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int samplingDx;
 
@@ -1268,7 +1234,6 @@ public class ClustersRetriever
 
         final int combMaxMargin;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
          *

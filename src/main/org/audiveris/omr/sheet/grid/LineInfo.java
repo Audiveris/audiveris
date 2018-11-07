@@ -40,7 +40,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlJavaTypeAdapter(StaffLine.Adapter.class)
 public interface LineInfo
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report the absolute contour rectangle

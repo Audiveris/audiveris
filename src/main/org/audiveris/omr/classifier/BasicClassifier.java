@@ -68,7 +68,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BasicClassifier
         extends AbstractClassifier<NeuralNetwork>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -83,14 +82,12 @@ public class BasicClassifier
     /** Model entry name. */
     public static final String MODEL_ENTRY_NAME = "model.xml";
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying (old) neural network. */
     private NeuralNetwork model;
 
     /** Training listener, if any. */
     private TrainingMonitor listener;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Private constructor, to create a glyph neural network.
      */
@@ -106,7 +103,6 @@ public class BasicClassifier
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -317,9 +313,8 @@ public class BasicClassifier
         if (!Arrays.equals(model.getOutputLabels(), ShapeSet.getPhysicalShapeNames())) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Engine  outputs: {}", Arrays.toString(model.getOutputLabels()));
-                logger.debug(
-                        "Physical shapes: {}",
-                        Arrays.toString(ShapeSet.getPhysicalShapeNames()));
+                logger.debug("Physical shapes: {}", Arrays
+                             .toString(ShapeSet.getPhysicalShapeNames()));
             }
 
             return false;
@@ -481,29 +476,22 @@ public class BasicClassifier
         features.diviRowVector(norms.stds);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch?");
 
-        private final Constant.Ratio amplitude = new Constant.Ratio(
-                0.5,
-                "Initial weight amplitude");
+        private final Constant.Ratio amplitude = new Constant.Ratio(0.5, "Initial weight amplitude");
 
         private final Constant.Ratio learningRate = new Constant.Ratio(0.1, "Learning Rate");
 
-        private final Constant.Integer maxEpochs = new Constant.Integer(
-                "Epochs",
-                500,
-                "Maximum number of epochs in training");
+        private final Constant.Integer maxEpochs = new Constant.Integer("Epochs", 500,
+                                                                        "Maximum number of epochs in training");
 
         private final Constant.Ratio momentum = new Constant.Ratio(0.2, "Training momentum");
     }
@@ -518,12 +506,10 @@ public class BasicClassifier
     @XmlRootElement(name = "vector")
     private static class MyVector
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlElement(name = "value")
         public double[] data;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public MyVector (INDArray features)
         {
             int cols = features.columns();

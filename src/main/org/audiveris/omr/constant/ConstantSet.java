@@ -45,12 +45,9 @@ import java.util.TreeMap;
 @ThreadSafe
 public abstract class ConstantSet
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            ConstantSet.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConstantSet.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Name of the containing unit/class */
     private final String unit;
 
@@ -64,7 +61,6 @@ public abstract class ConstantSet
      */
     private volatile SortedMap<String, Constant> map;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * A new ConstantSet instance is created, and registered at the
      * UnitManager singleton, but its map of internal constants will
@@ -81,7 +77,6 @@ public abstract class ConstantSet
         UnitManager.getInstance().addSet(this);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // dumpOf //
     //--------//
@@ -110,8 +105,8 @@ public abstract class ConstantSet
                             "%-25s %12s %-14s =%5s %-25s\t%s%n",
                             constant.getName(),
                             constant.getClass().getSimpleName(),
-                            (constant.getQuantityUnit() != null) ? ("(" + constant.getQuantityUnit() + ")")
-                            : "",
+                            (constant.getQuantityUnit() != null) ? ("(" + constant.getQuantityUnit()
+                                                                            + ")") : "",
                             origin,
                             constant.getStringValue(),
                             constant.getDescription()));
@@ -265,12 +260,8 @@ public abstract class ConstantSet
                     constant.setUnitAndName(unit, name);
                     tempMap.put(name, constant);
                 } else {
-                    logger.error(
-                            "ConstantSet in unit ''{}'' contains a non"
-                            + " Constant field ''{}'' obj= {}",
-                            unit,
-                            name,
-                            obj);
+                    logger.error("ConstantSet in unit ''{}'' contains a non"
+                                         + " Constant field ''{}'' obj= {}", unit, name, obj);
                 }
             }
 

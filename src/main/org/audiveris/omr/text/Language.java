@@ -59,7 +59,6 @@ import javax.swing.AbstractListModel;
  */
 public class Language
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -72,8 +71,8 @@ public class Language
     public static final String SEP_CHAR = "+";
 
     /** Default language specification (such as deu+eng+fra). */
-    public static final Param<String> ocrDefaultLanguages = new ConstantBasedParam<String, Constant.String>(
-            constants.defaultSpecification);
+    public static final Param<String> ocrDefaultLanguages
+            = new ConstantBasedParam<String, Constant.String>(constants.defaultSpecification);
 
     /** Language used when specification is empty. */
     private static final String NO_SPEC = "eng";
@@ -81,13 +80,11 @@ public class Language
     /** Collection of supported languages, lazily created. */
     private static volatile SupportedLanguages supportedLanguages;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private Language ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------------//
     // getSupportedLanguages //
     //-----------------------//
@@ -100,7 +97,6 @@ public class Language
         return supportedLanguages;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // ListModel //
     //-----------//
@@ -110,7 +106,6 @@ public class Language
     public static class ListModel
             extends AbstractListModel<String>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String getElementAt (int index)
@@ -155,11 +150,9 @@ public class Language
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.String defaultSpecification = new Constant.String(
-                "deu+eng+fra",
-                "OCR language(s)");
+        private final Constant.String defaultSpecification = new Constant.String("deu+eng+fra",
+                                                                                 "OCR language(s)");
     }
 
     //---------------------//
@@ -168,11 +161,9 @@ public class Language
     private static class OcrDefaultLanguages
             extends StringParam
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.String constant = constants.defaultSpecification;
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String getSourceValue ()
         {
@@ -207,9 +198,8 @@ public class Language
             if (!getValue().equals(specific)) {
                 if (specific == null) {
                     constant.resetToSource();
-                    logger.info(
-                            "Default OCR language specification is reset to \"{}\"",
-                            constant.getSourceValue());
+                    logger.info("Default OCR language specification is reset to \"{}\"", constant
+                                .getSourceValue());
                 } else {
                     constant.setStringValue(specific);
                     logger.info("Default OCR language specification is now \"{}\"", specific);
@@ -230,7 +220,6 @@ public class Language
      */
     private static class SupportedLanguages
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Map of language code -> language full name. */
         private final SortedMap<String, String> codes = new TreeMap<String, String>();
@@ -238,7 +227,6 @@ public class Language
         /** Convenient sequence of codes, parallel to sorted map. */
         private final List<String> codesList;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public SupportedLanguages ()
         {
             // Build the map of all possible codes
@@ -273,7 +261,6 @@ public class Language
             codesList = new ArrayList<String>(codes.keySet());
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Report the code out of a list item.
          *

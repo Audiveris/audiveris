@@ -55,7 +55,6 @@ import java.util.Set;
 public class ChordsStep
         extends AbstractSystemStep<Void>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ChordsStep.class);
 
@@ -74,7 +73,6 @@ public class ChordsStep
         impactingClasses.add(HeadStemRelation.class);
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ChordsStep object.
      */
@@ -82,7 +80,6 @@ public class ChordsStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//

@@ -55,20 +55,17 @@ import javax.swing.KeyStroke;
  */
 public class ScrollView
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ScrollView.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Current view inside the scrolled pane. */
     protected RubberPanel view;
 
     /** The concrete UI component. */
     private final JScrollPane component = new JScrollPane();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a bare view pane.
      * Other related entities, such as view, pixel monitor or zoom, can be added later
@@ -99,7 +96,6 @@ public class ScrollView
         setView(view);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // fitHeight //
     //-----------//
@@ -313,25 +309,20 @@ public class ScrollView
         actionMap.put("ShiftRightAction", new ShiftRightAction());
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Integer unitIncrement = new Constant.Integer(
-                "Pixels",
-                20,
-                "Size of mouse wheel increment for ScrollView");
+        private final Constant.Integer unitIncrement = new Constant.Integer("Pixels", 20,
+                                                                            "Size of mouse wheel increment for ScrollView");
     }
 
     private class DownAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -344,7 +335,6 @@ public class ScrollView
     private class LeftAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -357,7 +347,6 @@ public class ScrollView
     private class RightAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -370,7 +359,6 @@ public class ScrollView
     private class ShiftDownAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -383,7 +371,6 @@ public class ScrollView
     private class ShiftLeftAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -396,7 +383,6 @@ public class ScrollView
     private class ShiftRightAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -409,7 +395,6 @@ public class ScrollView
     private class ShiftUpAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -422,7 +407,6 @@ public class ScrollView
     private class UpAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)

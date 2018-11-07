@@ -35,12 +35,10 @@ import org.audiveris.omr.sig.SigBackup;
 public class SystemBackup
         extends SigBackup
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Dedicated system. */
     private final SystemInfo system;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SystemBackup} object.
      *

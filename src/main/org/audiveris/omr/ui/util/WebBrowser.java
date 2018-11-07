@@ -35,7 +35,7 @@ import java.net.URI;
  * Class {@code WebBrowser} gathers functionality to browse a webpage in an external
  * web browser.
  * It uses reflection for compatibility with Java 5 and Mac OS X.
- *
+ * <p>
  * <p>
  * Nota: Since using Desktop.browse() on a file under Windows crashes JVM 6, this feature is
  * currently delegated to an external and free utility named BareBonesBrowserLaunch, written by Dem
@@ -48,25 +48,20 @@ import java.net.URI;
  */
 public class WebBrowser
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(WebBrowser.class);
 
     /** Major browsers. */
-    private static final String[] browsers = {
-        "firefox", "opera", "konqueror", "epiphany",
-        "mozilla", "netscape"
-    };
+    private static final String[] browsers
+            = {"firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape"};
 
     /** Singleton instance, initially null. */
     private static WebBrowser instance;
 
-    //~ Constructors -------------------------------------------------------------------------------
     private WebBrowser ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // getBrowser //
     //------------//

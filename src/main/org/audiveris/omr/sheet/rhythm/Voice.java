@@ -63,22 +63,17 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "voice")
 public class Voice
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Voice.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
     public static enum Status
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /** A chord begins at this slot. */
         BEGIN,
         /** A chord is still active at this slot. */
         CONTINUE;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -132,7 +127,6 @@ public class Voice
     /** Inferred time signature based on this voice content. */
     private TimeRational inferredTimeSig;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Voice object.
      *
@@ -163,7 +157,6 @@ public class Voice
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // afterReload //
     //-------------//
@@ -239,10 +232,8 @@ public class Voice
 
                             // Need a forward before this chord ?
                             if (timeCounter.compareTo(slot.getTimeOffset()) < 0) {
-                                insertForward(
-                                        slot.getTimeOffset().minus(timeCounter),
-                                        Mark.Position.BEFORE,
-                                        chord);
+                                insertForward(slot.getTimeOffset().minus(timeCounter),
+                                              Mark.Position.BEFORE, chord);
                                 timeCounter = slot.getTimeOffset();
                             }
 
@@ -402,8 +393,8 @@ public class Voice
                         AbstractChordInter chord = info.chord;
 
                         // Skip the remaining parts of beam group, including embraced rests
-                        if ((groupLastTime != null)
-                            && (chord.getTimeOffset().compareTo(groupLastTime) <= 0)) {
+                        if ((groupLastTime != null) && (chord.getTimeOffset().compareTo(
+                                groupLastTime) <= 0)) {
                             continue;
                         }
 
@@ -826,8 +817,8 @@ public class Voice
                 SlotVoice info = getSlotInfo(slot);
 
                 if (info == null) {
-                    if ((lastChord != null)
-                        && (lastChord.getEndTime().compareTo(slot.getTimeOffset()) > 0)) {
+                    if ((lastChord != null) && (lastChord.getEndTime().compareTo(slot
+                            .getTimeOffset()) > 0)) {
                         setSlotInfo(slot, new SlotVoice(lastChord, Status.CONTINUE));
                     }
                 } else {
@@ -886,9 +877,8 @@ public class Voice
         int gcd = GCD.gcd(count, timeRational.num);
 
         // Make sure num is a multiple of count
-        timeRational = new TimeRational(
-                (count / gcd) * timeRational.num,
-                (count / gcd) * timeRational.den);
+        timeRational = new TimeRational((count / gcd) * timeRational.num, (count / gcd)
+                                                                                  * timeRational.den);
 
         // No 1 as num
         if (timeRational.num == 1) {
@@ -903,7 +893,6 @@ public class Voice
         return timeRational;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // SlotVoice //
     //-----------//
@@ -914,7 +903,6 @@ public class Voice
     @XmlRootElement(name = "slot-voice")
     public static class SlotVoice
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Related chord. */
         @XmlIDREF
@@ -925,7 +913,6 @@ public class Voice
         @XmlAttribute
         public final Status status;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public SlotVoice (AbstractChordInter chord,
                           Status status)
         {
@@ -940,7 +927,6 @@ public class Voice
             this.status = null;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

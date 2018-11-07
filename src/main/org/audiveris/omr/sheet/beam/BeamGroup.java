@@ -80,14 +80,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class BeamGroup
         implements Vip
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            BeamGroup.class);
+    private static final Logger logger = LoggerFactory.getLogger(BeamGroup.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -120,7 +117,6 @@ public class BeamGroup
     /** Same voice for all chords in this beam group. */
     private Voice voice;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of BeamGroup.
      *
@@ -143,7 +139,6 @@ public class BeamGroup
         this.id = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // includeBeam //
     //-------------//
@@ -288,8 +283,8 @@ public class BeamGroup
     {
         final AbstractChordInter first = getFirstChord();
         final AbstractChordInter last = getLastChord();
-        Rational duration = last.getTimeOffset().minus(first.getTimeOffset()).plus(
-                last.getDuration());
+        Rational duration = last.getTimeOffset().minus(first.getTimeOffset()).plus(last
+                .getDuration());
 
         return duration;
     }
@@ -630,13 +625,12 @@ public class BeamGroup
                 // Skip beam hooks
                 // Skip beams attached to this chord
                 // Skip beams with no abscissa overlap WRT this chord
-                if (!beam.isHook()
-                    && !beam.getChords().contains(chord)
-                    && (GeoUtil.xOverlap(beam.getBounds(), chordBox) > 0)) {
+                if (!beam.isHook() && !beam.getChords().contains(chord) && (GeoUtil.xOverlap(beam
+                        .getBounds(), chordBox) > 0)) {
                     // Check vertical gap
                     int lineY = (int) Math.rint(LineUtil.yAtX(beam.getMedian(), tail.x));
-                    int yOverlap = Math.min(lineY, chordBox.y + chordBox.height)
-                                   - Math.max(lineY, chordBox.y);
+                    int yOverlap = Math.min(lineY, chordBox.y + chordBox.height) - Math.max(lineY,
+                                                                                            chordBox.y);
 
                     if (yOverlap < 0) {
                         questionableBeams.add(beam);
@@ -668,18 +662,13 @@ public class BeamGroup
             });
 
             AbstractBeamInter nearestBeam = questionableBeams.get(0);
-            int lineY = (int) Math.rint(
-                    LineUtil.yAtX(nearestBeam.getMedian(), tail.x));
+            int lineY = (int) Math.rint(LineUtil.yAtX(nearestBeam.getMedian(), tail.x));
             int tailDy = Math.abs(lineY - tail.y);
             double normedDy = scale.pixelsToFrac(tailDy);
 
             if (normedDy > maxChordDy) {
-                logger.debug(
-                        "Vertical gap between {} and {}, {} vs {}",
-                        chord,
-                        nearestBeam,
-                        normedDy,
-                        maxChordDy);
+                logger.debug("Vertical gap between {} and {}, {} vs {}", chord, nearestBeam,
+                             normedDy, maxChordDy);
 
                 // Split the beam group here
                 return chord;
@@ -751,23 +740,18 @@ public class BeamGroup
         new Splitter(alienChord).process();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Integer maxSplitLoops = new Constant.Integer(
-                "loops",
-                10,
-                "Maximum number of loops allowed for splitting beam groups");
+        private final Constant.Integer maxSplitLoops = new Constant.Integer("loops", 10,
+                                                                            "Maximum number of loops allowed for splitting beam groups");
 
-        private final Scale.Fraction maxChordDy = new Scale.Fraction(
-                0.5,
-                "Maximum vertical gap between a chord and a beam");
+        private final Scale.Fraction maxChordDy = new Scale.Fraction(0.5,
+                                                                     "Maximum vertical gap between a chord and a beam");
     }
 
     //----------//
@@ -779,7 +763,6 @@ public class BeamGroup
      */
     private class Splitter
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Chord detected as belonging to a (new) alien group. */
         private final AbstractChordInter alienChord;
@@ -794,7 +777,6 @@ public class BeamGroup
         /** The chord that embraces both (old) group and (new) alien group. */
         private HeadChordInter pivotChord;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create a splitter for this BeamGroup, triggered by alienChord
          *
@@ -805,7 +787,6 @@ public class BeamGroup
             this.alienChord = alienChord;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //---------//
         // process //
         //---------//
@@ -814,7 +795,7 @@ public class BeamGroup
          * <p>
          * Some beams of this group instance are moved to a new separate BeamGroup instance.
          * The two instances are articulated around a pivot chord, common to both groups.
-         *
+         * <p>
          */
         public void process ()
         {
@@ -946,9 +927,8 @@ public class BeamGroup
                         // Start of alien side
                         logger.debug("Alien start");
 
-                        for (AbstractBeamInter ab : pivotBeams.subList(
-                                ib,
-                                pivotChord.getBeams().size())) {
+                        for (AbstractBeamInter ab : pivotBeams.subList(ib, pivotChord.getBeams()
+                                                                       .size())) {
                             if (!alienBeams.contains(ab)) {
                                 ab.switchToGroup(alienGroup);
                             }
@@ -970,8 +950,8 @@ public class BeamGroup
             final StemInter rootStem = chord.getStem();
 
             // Ordinate of head side of stem
-            final int yStart = (int) Math.rint(
-                    ((stemDir > 0) ? rootStem.getTop() : rootStem.getBottom()).getY());
+            final int yStart = (int) Math.rint(((stemDir > 0) ? rootStem.getTop() : rootStem
+                    .getBottom()).getY());
 
             return rootStem.extractSubStem(yStart, yStop);
         }

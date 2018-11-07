@@ -37,10 +37,8 @@ import java.util.EnumMap;
  */
 public abstract class Symbols
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Symbols.class);
+    private static final Logger logger = LoggerFactory.getLogger(Symbols.class);
 
     /** Map of (simple) symbols */
     private static final EnumMap<Shape, ShapeSymbol> sym = new EnumMap<Shape, ShapeSymbol>(
@@ -97,13 +95,11 @@ public abstract class Symbols
         assignDecoratedSymbols();
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     /** This is just a functional class, no instance is needed. */
     private Symbols ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getSymbol //
     //-----------//
@@ -395,13 +391,10 @@ public abstract class Symbols
         map(TUPLET_SIX, 164);
         map(TUPLET_THREE, 163);
         map(TURN, 84);
-        sym.put(
-                TURN_INVERTED,
-                new TransformedSymbol(false, TURN_INVERTED, TURN, ShapeSymbol.verticalFlip));
+        sym.put(TURN_INVERTED, new TransformedSymbol(false, TURN_INVERTED, TURN,
+                                                     ShapeSymbol.verticalFlip));
         sym.put(TURN_SLASH, new TurnSlashSymbol(false));
-        sym.put(
-                TURN_UP,
-                new TransformedSymbol(false, TURN_UP, TURN, ShapeSymbol.quadrantRotateOne));
+        sym.put(TURN_UP, new TransformedSymbol(false, TURN_UP, TURN, ShapeSymbol.quadrantRotateOne));
 
         map(WHOLE_NOTE, 119);
         small(WHOLE_NOTE_SMALL, 119);

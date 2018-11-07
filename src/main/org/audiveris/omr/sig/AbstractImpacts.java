@@ -34,7 +34,6 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 public abstract class AbstractImpacts
         implements GradeImpacts
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code AbstractImpacts} object.
@@ -43,7 +42,6 @@ public abstract class AbstractImpacts
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // getIntrinsicRatio //
     //-------------------//
@@ -95,14 +93,12 @@ public abstract class AbstractImpacts
         return getIntrinsicRatio() * Math.pow(global, 1 / totalWeight);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
     public static class Adapter
             extends XmlAdapter<AbstractImpacts, GradeImpacts>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public AbstractImpacts marshal (GradeImpacts itf)

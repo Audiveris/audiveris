@@ -43,10 +43,10 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class AbstractPitchedInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To order from bottom to top. */
-    public static final Comparator<AbstractPitchedInter> bottomUp = new Comparator<AbstractPitchedInter>()
+    public static final Comparator<AbstractPitchedInter> bottomUp
+            = new Comparator<AbstractPitchedInter>()
     {
         @Override
         public int compare (AbstractPitchedInter p1,
@@ -62,13 +62,11 @@ public abstract class AbstractPitchedInter
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The assigned pitch. */
     @XmlAttribute
     @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
     protected Double pitch;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractPitchedInter object.
      *
@@ -120,7 +118,6 @@ public abstract class AbstractPitchedInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // getIntegerPitch //
     //-----------------//

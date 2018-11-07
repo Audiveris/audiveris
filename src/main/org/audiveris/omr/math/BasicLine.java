@@ -39,11 +39,9 @@ import java.util.Collection;
 public class BasicLine
         implements Line
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BasicLine.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Flag to indicate that data needs to be recomputed. */
     private boolean dirty;
 
@@ -89,7 +87,6 @@ public class BasicLine
     /** Maximum ordinate among all defining points. */
     private double yMax = Double.MIN_VALUE;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a line, with no data.
      * The line is no yet usable, except for including further defining points.
@@ -157,7 +154,6 @@ public class BasicLine
         checkLineParameters();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------------//
     // checkLineParameters //
     //---------------------//
@@ -252,8 +248,10 @@ public class BasicLine
 
         checkLineParameters();
 
-        double distSq = ((a * a * sx2) + (b * b * sy2) + (c * c * n) + (2 * a * b * sxy)
-                         + (2 * a * c * sx) + (2 * b * c * sy)) / n;
+        double distSq = ((a * a * sx2) + (b * b * sy2) + (c * c * n) + (2 * a * b * sxy) + (2 * a
+                                                                                                    * c
+                                                                                            * sx)
+                                 + (2 * b * c * sy)) / n;
 
         if (distSq < 0) {
             distSq = 0;

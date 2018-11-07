@@ -62,7 +62,6 @@ import javax.swing.plaf.basic.BasicButtonUI;
 public class ButtonTabComponent
         extends JPanel
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** The same listener for all TabButton instances in application!. */
     private static final MouseListener buttonMouseListener = new MouseAdapter()
@@ -90,11 +89,9 @@ public class ButtonTabComponent
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The containing JTabbedPane. */
     private final ClosableTabbedPane pane;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ButtonTabComponent} object.
      *
@@ -142,7 +139,6 @@ public class ButtonTabComponent
         ///setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // TabButton //
     //-----------//
@@ -150,7 +146,6 @@ public class ButtonTabComponent
             extends JButton
             implements ActionListener
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public TabButton ()
         {
@@ -178,7 +173,6 @@ public class ButtonTabComponent
             addActionListener(this);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {

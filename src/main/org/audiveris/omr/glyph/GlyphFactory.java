@@ -25,9 +25,7 @@ import ij.process.ByteProcessor;
 
 import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.run.MarkedRun;
-
 import static org.audiveris.omr.run.Orientation.VERTICAL;
-
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
@@ -60,11 +58,9 @@ import java.util.Map.Entry;
  */
 public class GlyphFactory
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphFactory.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Source runs. */
     private final RunTable runTable;
 
@@ -89,7 +85,6 @@ public class GlyphFactory
     /** Most efficient way to use merging information. */
     private int[] lut;
 
-    //~ Constructors -------------------------------------------------------------------------------
     private GlyphFactory (RunTable runTable,
                           Point offset,
                           GlyphGroup group)
@@ -106,7 +101,6 @@ public class GlyphFactory
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildGlyph //
     //------------//
@@ -390,7 +384,6 @@ public class GlyphFactory
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // Sequence //
     //----------//
@@ -400,13 +393,11 @@ public class GlyphFactory
      */
     private static class Sequence
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int iSeq; // Index in runTable
 
         final List<MarkedRun> runs = new ArrayList<MarkedRun>(); // Sequence of glyph marked runs
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Sequence (int iSeq)
         {
             this.iSeq = iSeq;

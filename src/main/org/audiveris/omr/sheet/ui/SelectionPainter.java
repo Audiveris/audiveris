@@ -51,11 +51,9 @@ import java.awt.geom.Line2D;
 public class SelectionPainter
         extends SheetPainter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SelectionPainter} object.
      *
@@ -70,7 +68,6 @@ public class SelectionPainter
         sigPainter = new SelectionSigPainter(g, sheet.getScale());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // drawSupport //
     //-------------//
@@ -88,11 +85,10 @@ public class SelectionPainter
                              boolean potential)
     {
         // Draw support line, using dash and specific color for potential relation
-        final Stroke oldStroke = potential ? UIUtil.setAbsoluteDashedStroke(g, 1f)
-                : UIUtil.setAbsoluteStroke(g, 1f);
-        g.setColor(
-                potential ? Color.PINK
-                        : (NoExclusion.class.isAssignableFrom(supportClass) ? Color.GRAY : Color.GREEN));
+        final Stroke oldStroke = potential ? UIUtil.setAbsoluteDashedStroke(g, 1f) : UIUtil
+                .setAbsoluteStroke(g, 1f);
+        g.setColor(potential ? Color.PINK : (NoExclusion.class.isAssignableFrom(supportClass)
+                ? Color.GRAY : Color.GREEN));
 
         final double r = 2; // Radius
         final Point oneCenter = one.getRelationCenter();
@@ -139,18 +135,15 @@ public class SelectionPainter
         return new SelectionSigPainter(g, sheet.getScale());
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio minZoomForSupportNames = new Constant.Ratio(
-                2.0,
-                "Minimum zoom value to display support names");
+        private final Constant.Ratio minZoomForSupportNames = new Constant.Ratio(2.0,
+                                                                                 "Minimum zoom value to display support names");
     }
 
     //---------------------//
@@ -159,7 +152,6 @@ public class SelectionPainter
     private static class SelectionSigPainter
             extends SigPainter
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public SelectionSigPainter (Graphics g,
                                     Scale scale)
@@ -167,7 +159,6 @@ public class SelectionPainter
             super(g, scale);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void setColor (Inter inter)
         {

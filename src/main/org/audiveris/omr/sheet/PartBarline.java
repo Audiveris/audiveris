@@ -60,11 +60,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "part-barline")
 public class PartBarline
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PartBarline.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
     /**
      * Barline style.
      * Identical to (or subset of) MusicXML BarStyle, to avoid strict dependency on MusicXML with
@@ -72,8 +70,6 @@ public class PartBarline
      */
     public static enum Style
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         REGULAR,
         DOTTED,
         DASHED,
@@ -90,7 +86,6 @@ public class PartBarline
         LIGHT_HEAVY_LIGHT;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** <b>OLD</b> underlying {@link StaffBarlineInter} instances. */
     @Deprecated
     @XmlElement(name = "staff-barline")
@@ -102,7 +97,6 @@ public class PartBarline
     @XmlElement(name = "staff-barlines")
     private final List<StaffBarlineInter> staffBarlines = new ArrayList<StaffBarlineInter>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PartBarline} object.
      */
@@ -110,7 +104,6 @@ public class PartBarline
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // addStaffBarline //
     //-----------------//

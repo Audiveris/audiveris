@@ -78,7 +78,6 @@ import java.util.List;
  */
 public class Source
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Source.class);
 
@@ -86,7 +85,6 @@ public class Source
 
     private static final String SHEET_PREFIX = "sheet-";
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Path to source image file, if any. */
     private String file;
 
@@ -99,7 +97,6 @@ public class Source
     /** Systems processed in each image sheet. */
     private final List<SheetSystems> sheets = new ArrayList<SheetSystems>();
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // decode //
     //--------//
@@ -167,8 +164,8 @@ public class Source
             identification.setMiscellaneous(misc);
         }
 
-        Source.SheetSystems sheetSystems = new Source.SheetSystems(
-                page.getSheet().getStub().getNumber());
+        Source.SheetSystems sheetSystems = new Source.SheetSystems(page.getSheet().getStub()
+                .getNumber());
         sheets.add(sheetSystems);
 
         for (SystemInfo system : page.getSystems()) {
@@ -400,7 +397,6 @@ public class Source
         return intList;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // SheetSystems //
     //--------------//
@@ -409,7 +405,6 @@ public class Source
      */
     public static class SheetSystems
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Sheet number within source file, starting from 1. */
         final int sheetNumber;
@@ -417,13 +412,11 @@ public class Source
         /** Sequence of systems processed, starting from 1. */
         private final List<Integer> systems = new ArrayList<Integer>();
 
-        //~ Constructors ---------------------------------------------------------------------------
         public SheetSystems (int sheetNumber)
         {
             this.sheetNumber = sheetNumber;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * @return the systems
          */

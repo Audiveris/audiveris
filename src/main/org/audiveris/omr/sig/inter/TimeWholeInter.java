@@ -45,7 +45,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class TimeWholeInter
         extends AbstractTimeInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code TimeWholeInter} object.
@@ -73,7 +72,6 @@ public class TimeWholeInter
         super(null, null, 0);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -132,11 +130,8 @@ public class TimeWholeInter
         MusicFont musicFont = MusicFont.getBaseFont(interline);
         Dimension dim = symbol.getDimension(musicFont);
 
-        return new Rectangle(
-                center.x - (dim.width / 2),
-                center.y - (dim.height / 2),
-                dim.width,
-                dim.height);
+        return new Rectangle(center.x - (dim.width / 2), center.y - (dim.height / 2), dim.width,
+                             dim.height);
     }
 
     //-----------//

@@ -32,7 +32,7 @@ import javax.swing.JSlider;
 /**
  * Class {@code LogSlider} is a specific {@link JSlider} which handles double values
  * with a logarithmic scale (while normal JSlider handles only integer values).
- *
+ * <p>
  * <p>
  * As with a basic JSlider, any external entity can be notified of new slider value, by first
  * registering to this LogSlider via the {@link #addChangeListener} method.
@@ -42,7 +42,6 @@ import javax.swing.JSlider;
 public class LogSlider
         extends JSlider
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -51,11 +50,9 @@ public class LogSlider
 
     private static final double doubleUnit = unit; // To speed up
 
-    //~ Instance fields ----------------------------------------------------------------------------
     // Base of log (generally 2 or 10)
     private final double base;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code LogSlider} instance.
      *
@@ -101,10 +98,9 @@ public class LogSlider
         Hashtable<Integer, JLabel> labelTable = new Hashtable<Integer, JLabel>();
 
         for (int i = min; i <= max; i++) {
-            labelTable.put(
-                    Integer.valueOf(i * unit),
-                    new JLabel(
-                            (i < 0) ? ("1/" + (int) expOf(-i * unit)) : ("" + (int) expOf(i * unit))));
+            labelTable.put(Integer.valueOf(i * unit), new JLabel((i < 0) ? ("1/" + (int) expOf(-i
+                                                                                                       * unit))
+                           : ("" + (int) expOf(i * unit))));
         }
 
         setLabelTable(labelTable);
@@ -114,7 +110,6 @@ public class LogSlider
         setSnapToTicks(true);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getDoubleValue //
     //----------------//
@@ -193,18 +188,14 @@ public class LogSlider
         return (int) Math.rint((doubleUnit * Math.log(d)) / Math.log(base));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Integer resolution = new Constant.Integer(
-                "Values",
-                480,
-                "Number of values between two major ticks");
+        private final Constant.Integer resolution = new Constant.Integer("Values", 480,
+                                                                         "Number of values between two major ticks");
     }
 }

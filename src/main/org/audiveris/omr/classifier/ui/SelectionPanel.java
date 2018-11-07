@@ -69,13 +69,11 @@ import javax.swing.event.ChangeListener;
 class SelectionPanel
         implements SampleSource, SampleRepository.LoadListener, ChangeListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SelectionPanel.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Swing component. */
     private final Panel component;
 
@@ -109,7 +107,6 @@ class SelectionPanel
     /** Sample collection for testing. */
     private List<Sample> tests;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SelectionPanel object.
      */
@@ -118,9 +115,8 @@ class SelectionPanel
         component = new Panel();
         component.setNoInsets();
 
-        component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-                KeyStroke.getKeyStroke("ENTER"),
-                "readParams");
+        component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke
+                .getKeyStroke("ENTER"), "readParams");
         component.getActionMap().put("readParams", new ParamAction());
 
         displayParams();
@@ -134,7 +130,6 @@ class SelectionPanel
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------------------//
     // getMinShapeSampleCount //
     //------------------------//
@@ -242,12 +237,7 @@ class SelectionPanel
     {
         progressBar.setForeground(Colors.PROGRESS_BAR);
 
-        FormLayout layout = Panel.makeFormLayout(
-                3,
-                3,
-                "",
-                Trainer.LABEL_WIDTH,
-                Trainer.FIELD_WIDTH);
+        FormLayout layout = Panel.makeFormLayout(3, 3, "", Trainer.LABEL_WIDTH, Trainer.FIELD_WIDTH);
         PanelBuilder builder = new PanelBuilder(layout, component);
         CellConstraints cst = new CellConstraints();
 
@@ -304,24 +294,18 @@ class SelectionPanel
         nbRepoSamples.setText(Integer.toString(total));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Integer maxShapeSampleCount = new Constant.Integer(
-                "samples",
-                100,
-                "Maximum sample count per shape for training");
+        private final Constant.Integer maxShapeSampleCount = new Constant.Integer("samples", 100,
+                                                                                  "Maximum sample count per shape for training");
 
-        private final Constant.Integer minShapeSampleCount = new Constant.Integer(
-                "samples",
-                10,
-                "Minimum sample count per shape for training");
+        private final Constant.Integer minShapeSampleCount = new Constant.Integer("samples", 10,
+                                                                                  "Minimum sample count per shape for training");
     }
 
     //--------------//
@@ -332,10 +316,10 @@ class SelectionPanel
      */
     private static class GradedSample
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         /** For comparing GradedSample instances in reverse grade order. */
-        static final Comparator<GradedSample> reverseGradeComparator = new Comparator<GradedSample>()
+        static final Comparator<GradedSample> reverseGradeComparator
+                = new Comparator<GradedSample>()
         {
             @Override
             public int compare (GradedSample gs1,
@@ -345,12 +329,10 @@ class SelectionPanel
             }
         };
 
-        //~ Instance fields ------------------------------------------------------------------------
         final Sample sample;
 
         final double grade;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public GradedSample (Sample sample,
                              double grade)
         {
@@ -358,7 +340,6 @@ class SelectionPanel
             this.grade = grade;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -372,7 +353,6 @@ class SelectionPanel
     private class ParamAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         // Purpose is just to read and remember the data from the various input fields.
         // Triggered when user presses Enter in one of these fields.
@@ -390,7 +370,6 @@ class SelectionPanel
     private class SelectAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public SelectAction ()
         {
@@ -398,7 +377,6 @@ class SelectionPanel
             putValue(Action.SHORT_DESCRIPTION, "Build samples selection");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -424,7 +402,6 @@ class SelectionPanel
     private class StoreAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public StoreAction ()
         {
@@ -432,7 +409,6 @@ class SelectionPanel
             putValue(Action.SHORT_DESCRIPTION, "Store train/test selections as .csv files");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {

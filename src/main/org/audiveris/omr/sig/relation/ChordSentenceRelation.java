@@ -36,11 +36,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordSentenceRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // getXGapMax //
     //------------//
@@ -67,17 +65,14 @@ public class ChordSentenceRelation
         return true;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction xGapMax = new Scale.Fraction(
-                1.0,
-                "Maximum horizontal gap between chord & sentence");
+        private final Scale.Fraction xGapMax = new Scale.Fraction(1.0,
+                                                                  "Maximum horizontal gap between chord & sentence");
     }
 }

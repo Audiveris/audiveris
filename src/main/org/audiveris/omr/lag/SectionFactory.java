@@ -65,11 +65,9 @@ import java.util.Set;
 @NotThreadSafe
 public class SectionFactory
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SectionFactory.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The lag to populate, if any. */
     private final Lag lag;
 
@@ -82,7 +80,6 @@ public class SectionFactory
     /** Processed sections. true/false */
     private final Set<DynamicSection> processedSections = new LinkedHashSet<DynamicSection>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of SectionFactory with a target lag.
      *
@@ -113,7 +110,6 @@ public class SectionFactory
         lag = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // createSections //
     //----------------//
@@ -221,7 +217,6 @@ public class SectionFactory
         processedSections.add(dynSection);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Build //
     //-------//
@@ -237,7 +232,6 @@ public class SectionFactory
      */
     private class Build
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Counter to set dynamicsection ids when no lag is used. */
         private int localId;
@@ -257,7 +251,6 @@ public class SectionFactory
          */
         private final List<DynamicSection> prevActives = new ArrayList<DynamicSection>();
 
-        //~ Methods --------------------------------------------------------------------------------
         //--------------//
         // buidSections //
         //--------------//
@@ -470,15 +463,11 @@ public class SectionFactory
             case 1: // Continue if consistent
 
                 if (junctionPolicy.consistentRun(overlapRun, dynSection)) {
-                    logger.debug(
-                            "Perhaps extending section {} with run {}",
-                            dynSection,
-                            overlapRun);
+                    logger.debug("Perhaps extending section {} with run {}", dynSection, overlapRun);
                 } else {
-                    logger.debug(
-                            "Incompatible height between {} and run {}",
-                            dynSection,
-                            overlapRun);
+                    logger
+                            .debug("Incompatible height between {} and run {}", dynSection,
+                                   overlapRun);
                     setProcessed(dynSection);
                 }
 

@@ -42,7 +42,6 @@ import java.awt.geom.Rectangle2D;
 public class TextFont
         extends OmrFont
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -52,13 +51,12 @@ public class TextFont
     private static final String fontName = constants.defaultTextFontName.getValue();
 
     /** The base font used for text entities */
-    public static final TextFont baseTextFont = new TextFont(
-            constants.defaultTextFontSize.getValue());
+    public static final TextFont baseTextFont = new TextFont(constants.defaultTextFontSize
+            .getValue());
 
     /** Ratio from a 300 DPI scan to font point-size (72 pt/inch) */
     public static final float TO_POINT = 72f / 300f;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TextFont object.
      *
@@ -82,10 +80,8 @@ public class TextFont
      */
     public TextFont (FontInfo info)
     {
-        this(
-                info.isSerif ? Font.SERIF : (info.isMonospace ? Font.MONOSPACED : Font.SANS_SERIF),
-                (info.isBold ? Font.BOLD : 0) | (info.isItalic ? Font.ITALIC : 0),
-                info.pointsize);
+        this(info.isSerif ? Font.SERIF : (info.isMonospace ? Font.MONOSPACED : Font.SANS_SERIF),
+             (info.isBold ? Font.BOLD : 0) | (info.isItalic ? Font.ITALIC : 0), info.pointsize);
     }
 
     /**
@@ -98,7 +94,6 @@ public class TextFont
         super(fontName, Font.PLAIN, size);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //
     //-----------------//
     // computeFontSize //
@@ -131,22 +126,17 @@ public class TextFont
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.String defaultTextFontName = new Constant.String(
-                "Serif",
-                "Default font name for texts");
+        private final Constant.String defaultTextFontName = new Constant.String("Serif",
+                                                                                "Default font name for texts");
 
-        private final Constant.Integer defaultTextFontSize = new Constant.Integer(
-                "points",
-                10,
-                "Default font point size for texts");
+        private final Constant.Integer defaultTextFontSize = new Constant.Integer("points", 10,
+                                                                                  "Default font point size for texts");
     }
 }

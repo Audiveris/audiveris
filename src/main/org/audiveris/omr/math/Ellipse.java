@@ -46,7 +46,6 @@ import static java.lang.Math.*;
  */
 public class Ellipse
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Ellipse.class);
 
@@ -69,7 +68,6 @@ public class Ellipse
     /** Epsilon value for vertical or horizontal ellipses */
     private static final double EPSILON = 1.0e-15;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Array of coefficients that define ellipse algebraic equation
      */
@@ -109,7 +107,6 @@ public class Ellipse
     /** 1/2 Minor axis */
     protected Double minor;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of Ellipse, defined by a set of points
      *
@@ -130,7 +127,6 @@ public class Ellipse
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getAngle //
     //----------//
@@ -291,27 +287,27 @@ public class Ellipse
          * Let's consider the points where the ellipse is crossed by the
          * vertical line located at abscissa x : We have an equation in y, of
          * degree 2, governed by its discriminent.
-         *
+         * <p>
          * A*x**2 + B*x*y + C*y**2 + D*x + E*y + F = 0 becomes :
-         *
+         * <p>
          * C*y**2 + y*(B*x + E) + (Ax**2 + D*x + F)
-         *
+         * <p>
          * For the vertical tangents, we have a double root, thus with a null
          * discriminent (which gives us the two x values of these tangents)
-         *
+         * <p>
          * (B*x + E)**2 - 4*C*(Ax**2 + D*x + F) = 0
-         *
+         * <p>
          * Rewritten as an x-equation :
-         *
+         * <p>
          * (B**2 -4*A*C)*x**2 + (2*B*E - 4*C*D)*x + E**2 -4*C*F
-         *
+         * <p>
          * By symmetry, the ellipse center is right in the middle, so its
          * abscissa is half of the sum of the two roots (-b/2a) :
-         *
+         * <p>
          * centerX = (2*C*D - B*E) / (B**2 -4*A*C)
-         *
+         * <p>
          * And a similar approach on horizontal tangents would give :
-         *
+         * <p>
          * centerY = (2*A*E - B*D) / (B**2 -4*A*C)
          */
         double den = (B * B) - (4 * A * C);
@@ -459,18 +455,18 @@ public class Ellipse
          * which is equivalent to :
          * S1.A1 + S2.A2 = lambda.C1.A1
          * S2'.A1 + S3.A2 = 0
-         *
+         * <p>
          * So
          * A2 = -S3inv.S2'.A1
          * (S1 - S2.S3inv.S2').A1 = lambda.C1.A1 or
          * C1inv.(S1 - S2.S3inv.S2').A1 = lambda.A1
-         *
+         * <p>
          * Constraint is now
          * A1'.C1.A1 = 1
-         *
+         * <p>
          * w/ Reduced scatter matrix M = C1inv.S1 - S2.S3inv.S2'
          * we now have :
-         *
+         * <p>
          * M.A1 = lambda.A1
          * A1'.C1.A1 = 1
          * A2 = -S3inv.S2'.A1

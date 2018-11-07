@@ -63,25 +63,20 @@ public class EntityBoard<E extends Entity>
         extends Board
         implements ChangeListener, ActionListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(EntityBoard.class);
 
     /** Events this board is interested in. */
     private static final Class<?>[] eventsRead = new Class<?>[]{EntityListEvent.class};
 
-    //~ Enumerations -------------------------------------------------------------------------------
     /** To select precise ID option. */
     public static enum IdOption
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         ID_NONE,
         ID_LABEL,
         ID_SPINNER;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Counter of entities selection. */
     protected JLabel count;
 
@@ -106,7 +101,6 @@ public class EntityBoard<E extends Entity>
     /** To avoid loop, indicate that update() method id being processed. */
     protected boolean selfUpdating = false;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code EntityBoard} object, with all entity fields by default.
      *
@@ -186,7 +180,6 @@ public class EntityBoard<E extends Entity>
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//
@@ -252,12 +245,8 @@ public class EntityBoard<E extends Entity>
             // is received leading to such selfUpdating. Hence the check.
             if (!selfUpdating) {
                 // Notify the new entity id
-                getSelectionService().publish(
-                        new IdEvent(
-                                this,
-                                SelectionHint.ENTITY_INIT,
-                                null,
-                                (Integer) idSpinner.getValue()));
+                getSelectionService().publish(new IdEvent(this, SelectionHint.ENTITY_INIT, null,
+                                                          (Integer) idSpinner.getValue()));
             }
         }
     }

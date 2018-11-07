@@ -42,11 +42,9 @@ import java.util.List;
 public class TextsStep
         extends AbstractSystemStep<TextsStep.Context>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TextsStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a TextsStep instance.
      */
@@ -54,7 +52,6 @@ public class TextsStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -89,19 +86,16 @@ public class TextsStep
         return new Context(scanner.getBuffer(), lines);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Context //
     //---------//
     protected static class Context
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public final ByteProcessor buffer;
 
         public final List<TextLine> textLines;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Context (ByteProcessor buffer,
                         List<TextLine> textLines)
         {

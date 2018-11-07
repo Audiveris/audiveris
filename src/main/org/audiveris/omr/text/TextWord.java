@@ -44,7 +44,6 @@ import java.util.List;
 public class TextWord
         extends TextBasedItem
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TextWord.class);
 
@@ -70,7 +69,6 @@ public class TextWord
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Containing TextLine. */
     @Navigable(false)
@@ -88,7 +86,6 @@ public class TextWord
     /** Precise font size, lazily computed. */
     private Float preciseFontSize;
 
-    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------//
     // TextWord //
@@ -148,7 +145,6 @@ public class TextWord
         this.fontInfo = new FontInfo(fontInfo, (int) Math.rint(size));
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // createManualWord //
     //------------------//
@@ -164,8 +160,8 @@ public class TextWord
                                              String value)
     {
         Rectangle box = glyph.getBounds();
-        int fontSize = (int) Math.rint(
-                TextFont.computeFontSize(value, FontInfo.DEFAULT, box.getSize()));
+        int fontSize = (int) Math.rint(TextFont.computeFontSize(value, FontInfo.DEFAULT, box
+                                                                .getSize()));
         TextWord word = new TextWord(
                 box,
                 value,
@@ -202,13 +198,8 @@ public class TextWord
         FontInfo fontInfo = words[0].getFontInfo();
         TextLine line = words[0].textLine;
 
-        return new TextWord(
-                baselineOf(Arrays.asList(words)),
-                sb.toString(),
-                fontInfo,
-                confidenceOf(Arrays.asList(words)),
-                chars,
-                line);
+        return new TextWord(baselineOf(Arrays.asList(words)), sb.toString(), fontInfo, confidenceOf(
+                            Arrays.asList(words)), chars, line);
     }
 
     //---------//
@@ -241,11 +232,9 @@ public class TextWord
         String sbValue = sb.toString();
 
         if (!getInternalValue().equals(sbValue)) {
-            logger.debug(
-                    "Word at {} updated from ''{}'' to ''{}''",
-                    getBounds(),
-                    getInternalValue(),
-                    sbValue);
+            logger
+                    .debug("Word at {} updated from ''{}'' to ''{}''", getBounds(),
+                           getInternalValue(), sbValue);
             setValue(sbValue);
         }
     }

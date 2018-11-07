@@ -36,7 +36,6 @@ import java.awt.font.TextLayout;
 public class CustomNumDenSymbol
         extends ShapeSymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new CustomNumDenSymbol object, standard size
@@ -56,7 +55,6 @@ public class CustomNumDenSymbol
         super(isIcon, Shape.CUSTOM_TIME, true);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -77,9 +75,8 @@ public class CustomNumDenSymbol
         TextFont textFont = new TextFont((int) Math.rint(font.getSize2D() * 0.62));
         p.nLayout = textFont.layout("N");
         p.dLayout = textFont.layout("D");
-        p.rect = new Rectangle(
-                (int) Math.ceil(p.nLayout.getBounds().getWidth()),
-                (int) Math.ceil(p.nLayout.getBounds().getHeight() * 2.2));
+        p.rect = new Rectangle((int) Math.ceil(p.nLayout.getBounds().getWidth()), (int) Math.ceil(
+                               p.nLayout.getBounds().getHeight() * 2.2));
 
         return p;
     }
@@ -102,14 +99,12 @@ public class CustomNumDenSymbol
         OmrFont.paint(g, p.dLayout, loc, BOTTOM_CENTER);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // layout not used
         // rect for global image

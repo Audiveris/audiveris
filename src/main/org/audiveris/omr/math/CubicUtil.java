@@ -32,7 +32,6 @@ import java.awt.geom.Point2D;
  */
 public abstract class CubicUtil
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Not meant to be instantiated.
@@ -41,7 +40,6 @@ public abstract class CubicUtil
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the point on the curve, located at t = 1-t = 0.5.
      * It splits the curve length equally.
@@ -56,7 +54,9 @@ public abstract class CubicUtil
     public static Point2D getMidPoint (CubicCurve2D c)
     {
         return new Point2D.Double(
-                (c.getX1() + (3 * c.getCtrlX1()) + (3 * c.getCtrlX2()) + c.getX2()) / 8,
-                (c.getY1() + (3 * c.getCtrlY1()) + (3 * c.getCtrlY2()) + c.getY2()) / 8);
+                (c.getX1() + (3 * c.getCtrlX1()) + (3 * c.getCtrlX2()) + c.getX2()) / 8, (c.getY1()
+                                                                                                  + (3
+                                                                                                     * c
+                        .getCtrlY1()) + (3 * c.getCtrlY2()) + c.getY2()) / 8);
     }
 }

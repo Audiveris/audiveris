@@ -28,7 +28,6 @@ package org.audiveris.omr.util;
  */
 public abstract class XmlUtil
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     //----------------------------//
     // stripNonValidXMLCharacters //
@@ -36,14 +35,14 @@ public abstract class XmlUtil
     /**
      * Copied from Mark Mclaren blog:
      * http://cse-mjmcl.cse.bris.ac.uk/blog/2007/02/14/1171465494443.html
-     *
+     * <p>
      * This method ensures that the output String has only valid XML
      * unicode characters as specified by the XML 1.0 standard.
-     *
+     * <p>
      * For reference, please
      * see <a href="http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char">
      * the standard</a>.
-     *
+     * <p>
      * Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] |
      * [#x10000-#x10FFFF]
      * (any Unicode character, excluding the surrogate blocks, FFFE, and FFFF)
@@ -63,11 +62,10 @@ public abstract class XmlUtil
         StringBuilder sb = new StringBuilder();
 
         for (char c : input.toCharArray()) {
-            if ((c == 0x9)
-                || (c == 0xA)
-                || (c == 0xD)
-                || ((c >= 0x20) && (c <= 0xD7FF))
-                || ((c >= 0xE000) && (c <= 0xFFFD))
+            if ((c == 0x9) || (c == 0xA) || (c == 0xD) || ((c >= 0x20) && (c <= 0xD7FF)) || ((c
+                                                                                                      >= 0xE000)
+                                                                                             && (c
+                                                                                                         <= 0xFFFD))
                 || ((c >= 0x10000) && (c <= 0x10FFFF))) {
                 sb.append(c);
             } else if (stripped != null) {

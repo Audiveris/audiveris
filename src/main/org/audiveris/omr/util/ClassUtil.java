@@ -33,11 +33,9 @@ import java.io.File;
  */
 public abstract class ClassUtil
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // getCallingFrame //
     //-----------------//

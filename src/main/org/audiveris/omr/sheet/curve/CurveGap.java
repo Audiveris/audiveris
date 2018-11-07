@@ -40,14 +40,12 @@ import java.awt.geom.Line2D;
  */
 public abstract class CurveGap
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CurveGap.class);
 
     /** Pixels added on both sides of connection line to get some thickness. */
     protected static final int MARGIN = 1;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** End point of curve. */
     protected final Point p1;
 
@@ -60,7 +58,6 @@ public abstract class CurveGap
     /** Gap vector to check empty locations. */
     protected int[] vector;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new CurveGap object.
      *
@@ -74,7 +71,6 @@ public abstract class CurveGap
         this.p2 = p2;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Factory method to create the CurveGap instance with proper orientation.
      *
@@ -171,14 +167,12 @@ public abstract class CurveGap
     protected abstract void populateVector (int x,
                                             int y);
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     /**
      * For rather horizontal gaps.
      */
     public static class Horizontal
             extends CurveGap
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Creates a new CurveGap.Horizontal object.
@@ -194,7 +188,6 @@ public abstract class CurveGap
             area = computeArea();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected final void populateVector (int x,
                                              int y)
@@ -226,7 +219,6 @@ public abstract class CurveGap
     public static class Vertical
             extends CurveGap
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Creates a new CurveGap.Vertical object.
@@ -242,7 +234,6 @@ public abstract class CurveGap
             area = computeArea();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected final void populateVector (int x,
                                              int y)

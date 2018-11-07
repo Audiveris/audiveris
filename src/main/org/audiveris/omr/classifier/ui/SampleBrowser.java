@@ -121,7 +121,6 @@ public class SampleBrowser
         extends SingleFrameApplication
         implements ChangeListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleBrowser.class);
 
@@ -134,7 +133,6 @@ public class SampleBrowser
     /** Events that can be published on the local sample service. */
     private static final Class<?>[] eventsAllowed = new Class<?>[]{EntityListEvent.class};
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Repository of training samples. */
     private final SampleRepository repository;
 
@@ -165,7 +163,6 @@ public class SampleBrowser
     /** Controller for sample handling. */
     private final SampleController sampleController;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of {@code SampleBrowser}.
      *
@@ -201,7 +198,6 @@ public class SampleBrowser
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -579,12 +575,11 @@ public class SampleBrowser
         if (!descs.isEmpty()) {
             int descNb = descs.size();
             String descStr = descNb + " sheet" + ((descNb > 1) ? "s" : "");
-            int answer = JOptionPane.showConfirmDialog(
-                    frame,
-                    "Remove whole material from " + descStr + "?",
-                    "Removal confirmation",
-                    JOptionPane.YES_NO_CANCEL_OPTION,
-                    JOptionPane.WARNING_MESSAGE);
+            int answer = JOptionPane.showConfirmDialog(frame, "Remove whole material from "
+                                                                      + descStr + "?",
+                                                       "Removal confirmation",
+                                                       JOptionPane.YES_NO_CANCEL_OPTION,
+                                                       JOptionPane.WARNING_MESSAGE);
 
             if (answer == JOptionPane.YES_OPTION) {
                 for (Descriptor desc : descs) {
@@ -685,10 +680,8 @@ public class SampleBrowser
 
         if (size > 0) {
             JFrame frame = new JFrame("Sheets " + sheets);
-            ValidationPanel panel = new ValidationPanel(
-                    new Trainer.Task(ShapeClassifier.getInstance()),
-                    new ConstantSource(sheetSelector.getTestSamples()),
-                    false); // false => not TRAIN but Test
+            ValidationPanel panel = new ValidationPanel(new Trainer.Task(ShapeClassifier
+                    .getInstance()), new ConstantSource(sheetSelector.getTestSamples()), false); // false => not TRAIN but Test
             Panel comp = (Panel) panel.getComponent();
             comp.setInsets(5, 5, 5, 5); // TLBR
             frame.add(comp);
@@ -772,12 +765,8 @@ public class SampleBrowser
     //---------------//
     void publishSample (Sample sample)
     {
-        sampleService.publish(
-                new EntityListEvent<Sample>(
-                        this,
-                        SelectionHint.ENTITY_INIT,
-                        MouseMovement.PRESSING,
-                        sample));
+        sampleService.publish(new EntityListEvent<Sample>(this, SelectionHint.ENTITY_INIT,
+                                                          MouseMovement.PRESSING, sample));
     }
 
     //--------------//
@@ -906,25 +895,21 @@ public class SampleBrowser
         // Center
         BoardsPane boardsPane = new BoardsPane();
         boardsPane.addBoard(new SampleBoard(sampleController));
-        boardsPane.addBoard(
-                new SampleEvaluationBoard(sampleController, BasicClassifier.getInstance()));
+        boardsPane.addBoard(new SampleEvaluationBoard(sampleController, BasicClassifier
+                                                      .getInstance()));
 
         //        boardsPane.addBoard(
         //                new SampleEvaluationBoard(sampleController, DeepClassifier.getInstance()));
         //
-        JSplitPane centerPane = new JSplitPane(
-                VERTICAL_SPLIT,
-                sheetSelector,
-                boardsPane.getComponent());
+        JSplitPane centerPane = new JSplitPane(VERTICAL_SPLIT, sheetSelector, boardsPane
+                                               .getComponent());
         centerPane.setBorder(null);
         centerPane.setOneTouchExpandable(true);
         centerPane.setName("centerPane");
 
         // Right
-        JSplitPane rightPane = new JSplitPane(
-                VERTICAL_SPLIT,
-                sampleListing,
-                sampleContext.getComponent());
+        JSplitPane rightPane = new JSplitPane(VERTICAL_SPLIT, sampleListing, sampleContext
+                                              .getComponent());
         rightPane.setBorder(null);
         rightPane.setOneTouchExpandable(true);
         rightPane.setName("rightPane");
@@ -960,7 +945,6 @@ public class SampleBrowser
         return frame;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // TitledPanel //
     //-------------//
@@ -970,7 +954,6 @@ public class SampleBrowser
     static class TitledPanel
             extends Panel
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public TitledPanel (String title)
         {
@@ -990,7 +973,6 @@ public class SampleBrowser
     private class ClosingAdapter
             extends WindowAdapter
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void windowClosing (WindowEvent e)
@@ -1023,7 +1005,6 @@ public class SampleBrowser
             extends TitledPanel
             implements ChangeListener
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // The title base for this selector
         private final String title;
@@ -1045,7 +1026,6 @@ public class SampleBrowser
         // ScrollPane around the list
         protected JScrollPane scrollPane = new JScrollPane(list);
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create a selector.
          *
@@ -1109,7 +1089,6 @@ public class SampleBrowser
             add(buttons, BorderLayout.SOUTH);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public void populateWith (Collection<E> items)
         {
             model.removeAllElements();
@@ -1170,6 +1149,43 @@ public class SampleBrowser
         }
     }
 
+    //-----------------------//
+    // SampleEvaluationBoard //
+    //-----------------------//
+    /**
+     * An evaluation board dedicated to evaluation / reassign of samples.
+     */
+    private static class SampleEvaluationBoard
+            extends EvaluationBoard
+    {
+
+        public SampleEvaluationBoard (SampleController controller,
+                                      Classifier classifier)
+        {
+            super(true, null, classifier, (EntityService<Glyph>) controller.getGlyphService(), null,
+                  true);
+        }
+
+        @Override
+        protected void evaluate (Glyph glyph)
+        {
+            if (glyph instanceof Sample) {
+                final Sample sample = (Sample) glyph;
+                selector.setEvals(
+                        classifier.evaluate(
+                                glyph,
+                                sample.getInterline(),
+                                selector.evalCount(),
+                                0.0, // minGrade
+                                Classifier.NO_CONDITIONS),
+                        glyph);
+            } else {
+                // Blank the output
+                selector.setEvals(null, null);
+            }
+        }
+    }
+
     //---------------//
     // ShapeRenderer //
     //---------------//
@@ -1180,14 +1196,12 @@ public class SampleBrowser
             extends JLabel
             implements ListCellRenderer<Shape>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public ShapeRenderer ()
         {
             setOpaque(true);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Find the image and text corresponding to the provided shape and returns the
          * label, ready to be displayed.
@@ -1215,50 +1229,6 @@ public class SampleBrowser
         }
     }
 
-    //-----------------------//
-    // SampleEvaluationBoard //
-    //-----------------------//
-    /**
-     * An evaluation board dedicated to evaluation / reassign of samples.
-     */
-    private static class SampleEvaluationBoard
-            extends EvaluationBoard
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public SampleEvaluationBoard (SampleController controller,
-                                      Classifier classifier)
-        {
-            super(
-                    true,
-                    null,
-                    classifier,
-                    (EntityService<Glyph>) controller.getGlyphService(),
-                    null,
-                    true);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected void evaluate (Glyph glyph)
-        {
-            if (glyph instanceof Sample) {
-                final Sample sample = (Sample) glyph;
-                selector.setEvals(
-                        classifier.evaluate(
-                                glyph,
-                                sample.getInterline(),
-                                selector.evalCount(),
-                                0.0, // minGrade
-                                Classifier.NO_CONDITIONS),
-                        glyph);
-            } else {
-                // Blank the output
-                selector.setEvals(null, null);
-            }
-        }
-    }
-
     //---------------//
     // ShapeSelector //
     //---------------//
@@ -1269,7 +1239,6 @@ public class SampleBrowser
     private class ShapeSelector
             extends Selector<Shape>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public ShapeSelector ()
         {
@@ -1279,7 +1248,6 @@ public class SampleBrowser
             list.setComponentPopupMenu(new ShapePopup());
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void stateChanged (ChangeEvent e)
         {
@@ -1293,14 +1261,12 @@ public class SampleBrowser
             populateWith(shapeSet);
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         /**
          * Popup on selected Shape instances (within selected SampleSheet instances).
          */
         private class ShapePopup
                 extends JPopupMenu
         {
-            //~ Constructors -----------------------------------------------------------------------
 
             public ShapePopup ()
             {
@@ -1323,7 +1289,6 @@ public class SampleBrowser
     private class SheetSelector
             extends Selector<Descriptor>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public SheetSelector ()
         {
@@ -1332,7 +1297,6 @@ public class SampleBrowser
             list.setComponentPopupMenu(new SheetPopup());
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public List<Sample> getTestSamples ()
         {
             List<Descriptor> descriptors = list.getSelectedValuesList();
@@ -1353,14 +1317,12 @@ public class SampleBrowser
             populateWith(repository.getAllDescriptors());
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         /**
          * Popup on selected SampleSheet instances.
          */
         private class SheetPopup
                 extends JPopupMenu
         {
-            //~ Constructors -----------------------------------------------------------------------
 
             public SheetPopup ()
             {

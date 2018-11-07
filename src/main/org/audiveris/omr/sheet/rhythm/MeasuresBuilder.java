@@ -66,14 +66,11 @@ import java.util.TreeMap;
 @NotThreadSafe
 public class MeasuresBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            MeasuresBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(MeasuresBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -81,7 +78,6 @@ public class MeasuresBuilder
     /** Sequence of groups of barlines per staff. */
     private final Map<Staff, List<Group>> staffMap = new TreeMap<Staff, List<Group>>(Staff.byId);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MeasuresBuilder} object.
      *
@@ -92,7 +88,6 @@ public class MeasuresBuilder
         this.system = system;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // buildMeasures //
     //---------------//
@@ -194,8 +189,8 @@ public class MeasuresBuilder
 
         for (int ig = 0; ig <= igMax; ig++) {
             Group topGroup = (ig < topGroups.size()) ? topGroups.get(ig) : null;
-            Measure measure = ((topGroup != null)
-                               && topGroup.get(0).isStaffEnd(HorizontalSide.LEFT)) ? null
+            Measure measure
+                    = ((topGroup != null) && topGroup.get(0).isStaffEnd(HorizontalSide.LEFT)) ? null
                     : new Measure(part);
 
             if (measure != null) {
@@ -379,7 +374,6 @@ public class MeasuresBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Column //
     //--------//
@@ -390,7 +384,6 @@ public class MeasuresBuilder
     private class Column
             implements Comparable<Column>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** In theory, we should have exactly one group per staff. */
         final Map<Staff, Group> groups = new TreeMap<Staff, Group>(Staff.byId);
@@ -398,7 +391,6 @@ public class MeasuresBuilder
         /** De-skewed column mean abscissa. */
         Double xDsk;
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Populate the cell for provided staff by the provided group.
          *
@@ -533,8 +525,7 @@ public class MeasuresBuilder
                 Group group = groups.get(staff);
 
                 if (group == null) {
-                    double xStaffMiddle = (staff.getAbscissa(LEFT)
-                                           + staff.getAbscissa(RIGHT)) / 2.0;
+                    double xStaffMiddle = (staff.getAbscissa(LEFT) + staff.getAbscissa(RIGHT)) / 2.0;
                     double yStaffMiddle = staff.getFirstLine().yAt(xStaffMiddle);
                     double x = line.xAtY(yStaffMiddle); // Roughly
                     double y1 = staff.getFirstLine().yAt(x);
@@ -575,15 +566,12 @@ public class MeasuresBuilder
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction maxShift = new Scale.Fraction(
-                1.0,
-                "Maximum deskewed abscissa difference within a column");
+        private final Scale.Fraction maxShift = new Scale.Fraction(1.0,
+                                                                   "Maximum deskewed abscissa difference within a column");
 
-        private final Scale.Fraction minStandardWidth = new Scale.Fraction(
-                4.0,
-                "Minimum measure width for not being a courtesy measure");
+        private final Scale.Fraction minStandardWidth = new Scale.Fraction(4.0,
+                                                                           "Minimum measure width for not being a courtesy measure");
     }
 
     //-------//
@@ -596,7 +584,6 @@ public class MeasuresBuilder
             extends ArrayList<BarlineInter>
             implements Comparable<Group>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** (Skewed) group center. */
         final Point2D center;
@@ -604,7 +591,6 @@ public class MeasuresBuilder
         /** De-skewed group center. */
         final Point2D dsk;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Group (List<BarlineInter> barlines,
                       SystemInfo system)
         {
@@ -614,7 +600,6 @@ public class MeasuresBuilder
             dsk = system.getSkew().deskewed(center);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int compareTo (Group that)
         {

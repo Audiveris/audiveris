@@ -41,7 +41,6 @@ public abstract class TextBasedItem
         extends TextItem
         implements Vip
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Baseline. */
     private Line2D baseline;
@@ -52,7 +51,6 @@ public abstract class TextBasedItem
     /** (Debug) flag this object as VIP. */
     private boolean vip;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TextBasedItem object.
      *
@@ -72,7 +70,6 @@ public abstract class TextBasedItem
         this.confidence = confidence;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // baselineOf //
     //------------//
@@ -202,11 +199,8 @@ public abstract class TextBasedItem
 
         // Translate baseline
         if (getBaseline() != null) {
-            baseline.setLine(
-                    baseline.getX1() + dx,
-                    baseline.getY1() + dy,
-                    baseline.getX2() + dx,
-                    baseline.getY2() + dy);
+            baseline.setLine(baseline.getX1() + dx, baseline.getY1() + dy, baseline.getX2() + dx,
+                             baseline.getY2() + dy);
         }
     }
 
@@ -223,13 +217,8 @@ public abstract class TextBasedItem
         }
 
         if (getBaseline() != null) {
-            sb.append(
-                    String.format(
-                            " base[%.0f,%.0f]-[%.0f,%.0f]",
-                            baseline.getX1(),
-                            baseline.getY1(),
-                            baseline.getX2(),
-                            baseline.getY2()));
+            sb.append(String.format(" base[%.0f,%.0f]-[%.0f,%.0f]", baseline.getX1(), baseline
+                                    .getY1(), baseline.getX2(), baseline.getY2()));
         }
 
         return sb.toString();

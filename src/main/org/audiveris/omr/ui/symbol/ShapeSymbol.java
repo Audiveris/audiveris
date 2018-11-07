@@ -34,10 +34,10 @@ import java.io.IOException;
  * Class {@code ShapeSymbol} extends the {@link BasicSymbol} with the handling of a
  * related {@link Shape}.
  * A ShapeSymbol thus adds several features:<ul>
- *
+ * <p>
  * <li>It can be used for Drag &amp; Drop operations, since it implements the {@link Transferable}
  * interface.</li>
- *
+ * <p>
  * <li>It can be used to <b>train</b> the glyph classifier when we don't have enough "real" glyphs
  * available.</li>
  * </ul>
@@ -48,24 +48,20 @@ public class ShapeSymbol
         extends BasicSymbol
         implements Transferable
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** The symbol meta data */
     public static final DataFlavor DATA_FLAVOR = new DataFlavor(SymbolIcon.class, "shape-symbol");
 
     /** Composite used for decoration */
     protected static final AlphaComposite decoComposite = AlphaComposite.getInstance(
-            AlphaComposite.SRC_OVER,
-            0.15f);
+            AlphaComposite.SRC_OVER, 0.15f);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related shape. */
     protected final Shape shape;
 
     /** Is this a decorated symbol. (shape with additional stuff) */
     protected final boolean decorated;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a ShapeSymbol with the provided shape and codes
      *
@@ -97,7 +93,6 @@ public class ShapeSymbol
         this(false, shape, false, codes);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // numberCodes //
     //-------------//
@@ -135,7 +130,8 @@ public class ShapeSymbol
     //-----------------//
     @Override
     public Object getTransferData (DataFlavor flavor)
-            throws UnsupportedFlavorException, IOException
+            throws UnsupportedFlavorException,
+                   IOException
     {
         if (isDataFlavorSupported(flavor)) {
             return this;

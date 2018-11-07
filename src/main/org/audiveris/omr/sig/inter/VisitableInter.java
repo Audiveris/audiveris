@@ -29,7 +29,6 @@ package org.audiveris.omr.sig.inter;
  */
 public interface VisitableInter
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * General entry for any visiting

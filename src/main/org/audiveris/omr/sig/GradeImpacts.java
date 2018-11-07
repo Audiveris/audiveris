@@ -31,7 +31,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlJavaTypeAdapter(AbstractImpacts.Adapter.class)
 public interface GradeImpacts
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report a string about impacts details

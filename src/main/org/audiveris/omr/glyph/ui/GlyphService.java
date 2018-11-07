@@ -49,16 +49,13 @@ import java.util.List;
 public class GlyphService
         extends EntityService<Glyph>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphService.class);
 
     /** Events that can be published on a glyph service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]{
-        IdEvent.class, EntityListEvent.class
-    };
+    private static final Class<?>[] eventsAllowed = new Class<?>[]{IdEvent.class,
+                                                                   EntityListEvent.class};
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code GlyphService} object.
      *
@@ -71,7 +68,6 @@ public class GlyphService
         super(index, locationService, eventsAllowed);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // getMostRelevant //
     //-----------------//
@@ -112,12 +108,8 @@ public class GlyphService
             if (basket.size() > 1) {
                 // Build compound on-the-fly and publish it (no impact on basket)
                 Glyph compound = GlyphFactory.buildGlyph(basket);
-                publish(
-                        new EntityListEvent<Glyph>(
-                                this,
-                                SelectionHint.ENTITY_TRANSIENT,
-                                locationEvent.movement,
-                                compound));
+                publish(new EntityListEvent<Glyph>(this, SelectionHint.ENTITY_TRANSIENT,
+                                                   locationEvent.movement, compound));
             }
         }
     }

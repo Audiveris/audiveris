@@ -84,7 +84,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Class {@code SheetStub} represents a placeholder in a {@link Book} to decouple the
  * Book instance from the actual {@link Sheet} instances and avoid loading all of them
  * in memory.
- *
+ * <p>
  * Methods are organized as follows:
  * <dl>
  * <dt>Administration</dt>
@@ -103,7 +103,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getLock}</li>
  * <li>{@link #storeSheet}</li>
  * </ul></dd>
- *
+ * <p>
  * <dt>Pages</dt>
  * <dd><ul>
  * <li>{@link #addPageRef}</li>
@@ -112,14 +112,14 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getLastPageRef}</li>
  * <li>{@link #getPageRefs}</li>
  * </ul></dd>
- *
+ * <p>
  * <dt>Parameters</dt>
  * <dd><ul>
  * <li>{@link #getBinarizationFilter}</li>
  * <li>{@link #getOcrLanguages}</li>
  * <li>{@link #getProcessingSwitches}</li>
  * </ul></dd>
- *
+ * <p>
  * <dt>Transcription</dt>
  * <dd><ul>
  * <li>{@link #reset}</li>
@@ -133,7 +133,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #invalidate}</li>
  * <li>{@link #isValid}</li>
  * </ul></dd>
- *
+ * <p>
  * <dt>UI</dt>
  * <dd><ul>
  * <li>{@link #getAssembly}</li>
@@ -145,14 +145,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 public class SheetStub
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SheetStub.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetStub.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -212,7 +209,6 @@ public class SheetStub
     /** Related assembly instance, if any. */
     private SheetAssembly assembly;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SheetStub} object.
      *
@@ -235,7 +231,6 @@ public class SheetStub
         this.number = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // addPageRef //
     //------------//
@@ -307,8 +302,8 @@ public class SheetStub
             StubsController.invokeSelect(this);
         }
 
-        if ((OMR.gui == null)
-            || (OMR.gui.displayConfirmation(msg + LINE_SEPARATOR + "OK for discarding this sheet?"))) {
+        if ((OMR.gui == null) || (OMR.gui.displayConfirmation(msg + LINE_SEPARATOR
+                                                                      + "OK for discarding this sheet?"))) {
             invalidate();
 
             if (book.isMultiSheet()) {
@@ -591,12 +586,11 @@ public class SheetStub
                             // Open the book file system
                             try {
                                 book.getLock().lock();
-                                sheetFile = book.openSheetFolder(number).resolve(
-                                        Sheet.getSheetFileName(number));
+                                sheetFile = book.openSheetFolder(number).resolve(Sheet
+                                        .getSheetFileName(number));
 
-                                InputStream is = Files.newInputStream(
-                                        sheetFile,
-                                        StandardOpenOption.READ);
+                                InputStream is = Files.newInputStream(sheetFile,
+                                                                      StandardOpenOption.READ);
                                 sheet = Sheet.unmarshal(is);
 
                                 // Close the stream as well as the book file system
@@ -1147,18 +1141,15 @@ public class SheetStub
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch for sheet loading");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch for sheet loading");
     }
 
     //-------------------//
@@ -1167,7 +1158,6 @@ public class SheetStub
     private static final class OcrSheetLanguages
             extends Param<String>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public boolean setSpecific (String specific)
@@ -1180,14 +1170,12 @@ public class SheetStub
             return super.setSpecific(specific);
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         /**
          * JAXB adapter to mimic XmlValue.
          */
         public static class Adapter
                 extends XmlAdapter<String, OcrSheetLanguages>
         {
-            //~ Methods ----------------------------------------------------------------------------
 
             @Override
             public String marshal (OcrSheetLanguages val)

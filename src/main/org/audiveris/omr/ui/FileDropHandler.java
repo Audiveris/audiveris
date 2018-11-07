@@ -51,11 +51,9 @@ import javax.swing.TransferHandler.TransferSupport;
 public class FileDropHandler
         extends TransferHandler
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(FileDropHandler.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // canImport //
     //-----------//
@@ -129,26 +127,22 @@ public class FileDropHandler
         return true;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // DropBookTask //
     //--------------//
     private static class DropBookTask
             extends VoidTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final File file;
 
         private Book book;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public DropBookTask (File file)
         {
             this.file = file;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws Exception
@@ -182,7 +176,6 @@ public class FileDropHandler
     private static class DropInputTask
             extends VoidTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final File file;
 
@@ -190,7 +183,6 @@ public class FileDropHandler
 
         private Book book;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public DropInputTask (File file,
                               Step dropStep)
         {
@@ -198,7 +190,6 @@ public class FileDropHandler
             this.dropStep = dropStep;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws Exception
@@ -241,17 +232,14 @@ public class FileDropHandler
     private static class DropSamplesTask
             extends VoidTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final File file;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public DropSamplesTask (File file)
         {
             this.file = file;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws Exception

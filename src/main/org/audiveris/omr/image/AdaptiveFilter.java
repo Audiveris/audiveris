@@ -82,13 +82,11 @@ public abstract class AdaptiveFilter
         extends SourceWrapper
         implements PixelFilter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AdaptiveFilter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Default value for (half of) window size. */
     protected final int HALF_WINDOW_SIZE = constants.halfWindowSize.getValue();
@@ -105,7 +103,6 @@ public abstract class AdaptiveFilter
     /** Table for integrals of squared values. */
     protected Tile sqrTile;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an adaptive wrapper on a pixel source.
      *
@@ -123,7 +120,6 @@ public abstract class AdaptiveFilter
         this.STD_DEV_COEFF = stdDevCoeff;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // filteredImage //
     //---------------//
@@ -212,14 +208,12 @@ public abstract class AdaptiveFilter
         return (MEAN_COEFF * mean) + (STD_DEV_COEFF * stdDev);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------------//
     // AdaptiveContext //
     //-----------------//
     public static class AdaptiveContext
             extends Context
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Mean pixel value in the neighborhood. */
         public final double mean;
@@ -227,7 +221,6 @@ public abstract class AdaptiveFilter
         /** Standard deviation of pixel values in the neighborhood. */
         public final double standardDeviation;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public AdaptiveContext (double mean,
                                 double standardDeviation,
                                 double threshold)
@@ -247,7 +240,6 @@ public abstract class AdaptiveFilter
      */
     protected class Tile
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Width of the tile circular buffer. */
         protected final int TILE_WIDTH;
@@ -264,7 +256,6 @@ public abstract class AdaptiveFilter
         /** Circular buffer for integrals. */
         protected final long[][] sums;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create a tile instance.
          *
@@ -287,7 +278,6 @@ public abstract class AdaptiveFilter
             Arrays.fill(sums[TILE_WIDTH - 1], 0);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Make sure that the sliding window is positioned around the
          * provided location, and return mean data.
@@ -387,11 +377,8 @@ public abstract class AdaptiveFilter
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Integer halfWindowSize = new Constant.Integer(
-                "Pixels",
-                18,
-                "Half size of window around a given pixel");
+        private final Constant.Integer halfWindowSize = new Constant.Integer("Pixels", 18,
+                                                                             "Half size of window around a given pixel");
     }
 }

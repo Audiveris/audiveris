@@ -61,10 +61,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "container")
 public class SheetContainer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SheetContainer.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetContainer.class);
 
     /** Name of the specific entry for container. */
     public static final String CONTAINER_ENTRY_NAME = "META-INF/container.xml";
@@ -72,7 +70,6 @@ public class SheetContainer
     /** Regex pattern for unique names. */
     private static final Pattern UNIQUE_PATTERN = Pattern.compile("(.*)(_[0-9][0-9])");
 
-    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     /** Map (RunTable Hash code => list of sheet descriptors). */
@@ -88,7 +85,6 @@ public class SheetContainer
     /** Descriptors to be deleted from disk. */
     private Set<Descriptor> defunctDescriptors = new LinkedHashSet<Descriptor>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SheetContainer} object. Needed for JAXB.
      */
@@ -96,7 +92,6 @@ public class SheetContainer
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // addDescriptor //
     //---------------//
@@ -385,14 +380,12 @@ public class SheetContainer
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
     public static class Adapter
             extends XmlAdapter<ContainerValue, HashMap<Integer, List<Descriptor>>>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public ContainerValue marshal (HashMap<Integer, List<Descriptor>> map)
@@ -429,13 +422,11 @@ public class SheetContainer
     @XmlAccessorType(XmlAccessType.FIELD)
     public static class ContainerValue
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** The collection of sheet descriptors. */
         @XmlElement(name = "sheet")
         private final List<Descriptor> descriptors = new ArrayList<Descriptor>();
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ContainerValue (HashMap<Integer, List<Descriptor>> map)
         {
             for (List<Descriptor> list : map.values()) {
@@ -460,7 +451,6 @@ public class SheetContainer
     public static class Descriptor
             implements Comparable<Descriptor>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Short unique sheet name. */
         @XmlAttribute(name = "name")
@@ -474,7 +464,6 @@ public class SheetContainer
         @XmlElement(name = "alias")
         private final ArrayList<String> aliases = new ArrayList<String>();
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Descriptor (String name,
                            Integer hash)
         {
@@ -495,7 +484,6 @@ public class SheetContainer
         {
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public void addAlias (String alias)
         {
             if ((alias != null) && !isAlias(alias)) {

@@ -36,11 +36,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RepeatDotPairRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -77,17 +75,14 @@ public class RepeatDotPairRelation
         return constants.dotSupportCoeff.getValue();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio dotSupportCoeff = new Constant.Ratio(
-                5,
-                "Value for source/target (dot) coeff in support formula");
+        private final Constant.Ratio dotSupportCoeff = new Constant.Ratio(5,
+                                                                          "Value for source/target (dot) coeff in support formula");
     }
 }

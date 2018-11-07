@@ -32,7 +32,6 @@ import java.util.List;
  */
 public abstract class TextItem
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Item bounds. */
     private Rectangle bounds;
@@ -40,7 +39,6 @@ public abstract class TextItem
     /** Item value. */
     private String value;
 
-    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------//
     // TextItem //
@@ -61,7 +59,6 @@ public abstract class TextItem
         this.value = value;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // boundsOf //
     //----------//
@@ -195,13 +192,8 @@ public abstract class TextItem
         sb.append(" \"").append(getValue()).append("\"");
 
         if (getBounds() != null) {
-            sb.append(
-                    String.format(
-                            " bounds[%d,%d,%d,%d]",
-                            bounds.x,
-                            bounds.y,
-                            bounds.width,
-                            bounds.height));
+            sb.append(String.format(" bounds[%d,%d,%d,%d]", bounds.x, bounds.y, bounds.width,
+                                    bounds.height));
         }
 
         return sb.toString();

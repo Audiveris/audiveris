@@ -40,18 +40,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RepeatDotBarRelation
         extends AbstractConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(RepeatDotBarRelation.class);
 
-    private static final double[] OUT_WEIGHTS = new double[]{
-        constants.xOutWeight.getValue(),
-        constants.yWeight.getValue()
-    };
+    private static final double[] OUT_WEIGHTS = new double[]{constants.xOutWeight.getValue(),
+                                                             constants.yWeight.getValue()};
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
@@ -125,41 +121,32 @@ public class RepeatDotBarRelation
         return getYGapMaximum(manual);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio repeatDotSupportCoeff = new Constant.Ratio(
-                5,
-                "Supporting coeff for (source) repeat dot");
+        private final Constant.Ratio repeatDotSupportCoeff = new Constant.Ratio(5,
+                                                                                "Supporting coeff for (source) repeat dot");
 
-        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
-                1.5,
-                "Maximum horizontal gap between dot center & barline reference point");
+        private final Scale.Fraction xOutGapMax = new Scale.Fraction(1.5,
+                                                                     "Maximum horizontal gap between dot center & barline reference point");
 
-        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
-                2.2,
-                "Maximum manual horizontal gap between dot center & barline reference point");
+        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(2.2,
+                                                                           "Maximum manual horizontal gap between dot center & barline reference point");
 
-        private final Scale.Fraction yGapMax = new Scale.Fraction(
-                0.5,
-                "Maximum vertical gap between dot center & barline reference point");
+        private final Scale.Fraction yGapMax = new Scale.Fraction(0.5,
+                                                                  "Maximum vertical gap between dot center & barline reference point");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
-                0.75,
-                "Maximum manual vertical gap between dot center & barline reference point");
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(0.75,
+                                                                        "Maximum manual vertical gap between dot center & barline reference point");
 
-        private final Constant.Ratio xOutWeight = new Constant.Ratio(
-                3,
-                "Relative impact weight for xOutGap");
+        private final Constant.Ratio xOutWeight = new Constant.Ratio(3,
+                                                                     "Relative impact weight for xOutGap");
 
-        private final Constant.Ratio yWeight = new Constant.Ratio(
-                1,
-                "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(1,
+                                                                  "Relative impact weight for yGap");
     }
 }

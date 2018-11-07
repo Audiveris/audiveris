@@ -35,7 +35,6 @@ import java.util.List;
  */
 public class Corner
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     public static final Corner TOP_LEFT = new Corner(TOP, LEFT);
 
@@ -46,20 +45,15 @@ public class Corner
     public static final Corner BOTTOM_RIGHT = new Corner(BOTTOM, RIGHT);
 
     /** Most popular connection corners are listed first. */
-    public static final List<Corner> values = Arrays.asList(
-            TOP_RIGHT,
-            BOTTOM_LEFT,
-            TOP_LEFT,
-            BOTTOM_RIGHT);
+    public static final List<Corner> values = Arrays.asList(TOP_RIGHT, BOTTOM_LEFT, TOP_LEFT,
+                                                            BOTTOM_RIGHT);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The vertical side. */
     public final VerticalSide vSide;
 
     /** The horizontal side. */
     public final HorizontalSide hSide;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Corner object.
      *
@@ -73,7 +67,6 @@ public class Corner
         this.hSide = hSide;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public int getId ()
     {
         return values.indexOf(this);

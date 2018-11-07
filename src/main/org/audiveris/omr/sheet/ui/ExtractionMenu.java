@@ -42,10 +42,8 @@ import java.nio.file.Path;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
-
 import static javax.swing.Action.NAME;
 import static javax.swing.Action.SHORT_DESCRIPTION;
-
 import javax.swing.JMenuItem;
 
 /**
@@ -57,15 +55,12 @@ import javax.swing.JMenuItem;
 public class ExtractionMenu
         extends LocationDependentMenu
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ExtractionMenu.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying sheet. */
     private final Sheet sheet;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the extraction menu
      *
@@ -80,7 +75,6 @@ public class ExtractionMenu
         add(new JMenuItem(new AreaAction())); // Save just a rectangle of sheet
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // save //
     //------//
@@ -90,11 +84,10 @@ public class ExtractionMenu
         // Let the user select an output file
         final Book book = sheet.getStub().getBook();
         final Path bookFolder = BookManager.getDefaultBookFolder(book);
-        final File file = UIUtil.fileChooser(
-                true,
-                OMR.gui.getFrame(),
-                new File(bookFolder.toFile(), sheet.getId() + "-ext.png"),
-                new OmrFileFilter(".png images", new String[]{".png"}));
+        final File file = UIUtil.fileChooser(true, OMR.gui.getFrame(), new File(bookFolder.toFile(),
+                                                                                sheet.getId()
+                                                                                        + "-ext.png"),
+                                             new OmrFileFilter(".png images", new String[]{".png"}));
 
         if (file == null) {
             return;
@@ -110,7 +103,6 @@ public class ExtractionMenu
         logger.info("Extraction stored as {}", file);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // AreaAction //
     //------------//
@@ -121,19 +113,16 @@ public class ExtractionMenu
             extends AbstractAction
             implements LocationDependent
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Clamped area. */
         private Rectangle area;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public AreaAction ()
         {
             putValue(SHORT_DESCRIPTION, "Save the selected area to disk");
             setEnabled(false); // By default
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -174,7 +163,6 @@ public class ExtractionMenu
     private class WholeAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public WholeAction ()
         {
@@ -182,7 +170,6 @@ public class ExtractionMenu
             putValue(SHORT_DESCRIPTION, "Save the whole sheet to disk");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {

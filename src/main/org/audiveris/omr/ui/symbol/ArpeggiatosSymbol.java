@@ -38,11 +38,9 @@ import java.awt.geom.Rectangle2D;
 public class ArpeggiatosSymbol
         extends ShapeSymbol
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private final int count;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ArpeggiatosSymbol object.
      *
@@ -56,7 +54,6 @@ public class ArpeggiatosSymbol
         this.count = count;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -76,9 +73,9 @@ public class ArpeggiatosSymbol
         p.layout = layout(font);
 
         Rectangle2D r = p.layout.getBounds();
-        p.rect = new Rectangle(
-                (int) Math.ceil(r.getWidth()),
-                count * (int) Math.rint(r.getHeight()));
+        p.rect
+                = new Rectangle((int) Math.ceil(r.getWidth()), count * (int) Math
+                                .rint(r.getHeight()));
 
         return p;
     }

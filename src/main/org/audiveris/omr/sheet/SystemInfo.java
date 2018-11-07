@@ -88,10 +88,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class SystemInfo
         implements Comparable<SystemInfo>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SystemInfo.class);
+    private static final Logger logger = LoggerFactory.getLogger(SystemInfo.class);
 
     /** To sort by system id. */
     public static final Comparator<SystemInfo> byId = new Comparator<SystemInfo>()
@@ -104,7 +102,6 @@ public class SystemInfo
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -188,7 +185,6 @@ public class SystemInfo
     /** Width of the system. */
     private int width = -1;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a SystemInfo entity, to register the provided parameters.
      *
@@ -217,7 +213,6 @@ public class SystemInfo
         this.id = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // addFreeGlyph //
     //--------------//
@@ -748,9 +743,8 @@ public class SystemInfo
 
                 if (otherPos.getLedger() != null) {
                     // Delta pitch from closest reference ledger
-                    double otherDp = Math.abs(
-                            otherPos.getPitchPosition()
-                            - Staff.getLedgerPitchPosition(otherPos.getLedger().index));
+                    double otherDp = Math.abs(otherPos.getPitchPosition() - Staff
+                            .getLedgerPitchPosition(otherPos.getLedger().index));
 
                     if (otherDp < dp) {
                         logger.debug("   otherPos: {}", pos);
@@ -957,9 +951,8 @@ public class SystemInfo
         for (MeasureStack stack : stacks) {
             final Measure measure = stack.getMeasureAt(staff);
 
-            if ((measure != null)
-                && (x >= measure.getAbscissa(LEFT, staff))
-                && (x <= measure.getAbscissa(RIGHT, staff))) {
+            if ((measure != null) && (x >= measure.getAbscissa(LEFT, staff)) && (x <= measure
+                    .getAbscissa(RIGHT, staff))) {
                 return stack;
             }
         }
@@ -1168,7 +1161,8 @@ public class SystemInfo
     public int hashCode ()
     {
         int hash = 7;
-        hash = 67 * hash + this.id;
+        hash = (67 * hash) + this.id;
+
         return hash;
     }
 
@@ -1369,8 +1363,8 @@ public class SystemInfo
 
             top = (int) Math.rint(topLeft.getY());
             width = right - left + 1;
-            deltaY = (int) Math.rint(
-                    lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
+            deltaY = (int) Math.rint(lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft
+                    .getY());
             bottom = (int) Math.rint(botLeft.getY());
         } catch (Exception ex) {
             logger.warn("Error updating coordinates for system#{}", id, ex);
@@ -1467,9 +1461,7 @@ public class SystemInfo
     public boolean xOverlaps (SystemInfo that)
     {
         final int commonLeft = Math.max(this.left, that.left);
-        final int commonRight = Math.min(
-                (this.left + this.width) - 1,
-                (that.left + that.width) - 1);
+        final int commonRight = Math.min((this.left + this.width) - 1, (that.left + that.width) - 1);
 
         return commonRight > commonLeft;
     }

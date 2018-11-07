@@ -57,11 +57,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BeamHookInter
         extends AbstractBeamInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new HookInter object.
      *
@@ -94,7 +92,6 @@ public class BeamHookInter
         super(null, null, null, 0);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -190,10 +187,7 @@ public class BeamHookInter
         final Rectangle luBox = getBounds();
         luBox.grow(xMargin, yMargin);
 
-        final List<Inter> stems = Inters.intersectedInters(
-                systemStems,
-                GeoOrder.BY_ABSCISSA,
-                luBox);
+        final List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
 
         // Find out the best stem candidate, if any
         double bestDist = Double.MAX_VALUE;
@@ -224,14 +218,12 @@ public class BeamHookInter
         return new Link(bestStem, bestRel, true);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.Fraction xMargin = new Scale.Fraction(0.5, "Width of lookup area for stem");
 

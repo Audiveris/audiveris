@@ -63,18 +63,18 @@ import javax.xml.stream.XMLStreamWriter;
  */
 public abstract class Jaxb
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Jaxb.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // marshal //
     //---------//
     public static void marshal (Object object,
                                 Path path,
                                 JAXBContext jaxbContext)
-            throws IOException, JAXBException, XMLStreamException
+            throws IOException,
+                   JAXBException,
+                   XMLStreamException
     {
         OutputStream os = null;
 
@@ -82,8 +82,8 @@ public abstract class Jaxb
             Marshaller m = jaxbContext.createMarshaller();
             os = Files.newOutputStream(path, CREATE);
 
-            XMLStreamWriter writer = new IndentingXMLStreamWriter(
-                    XMLOutputFactory.newInstance().createXMLStreamWriter(os, "UTF-8"));
+            XMLStreamWriter writer = new IndentingXMLStreamWriter(XMLOutputFactory.newInstance()
+                    .createXMLStreamWriter(os, "UTF-8"));
             m.marshal(object, writer);
         } finally {
             if (os != null) {
@@ -99,11 +99,12 @@ public abstract class Jaxb
     public static void marshal (Object object,
                                 OutputStream os,
                                 JAXBContext jaxbContext)
-            throws JAXBException, XMLStreamException
+            throws JAXBException,
+                   XMLStreamException
     {
         Marshaller m = jaxbContext.createMarshaller();
-        XMLStreamWriter writer = new IndentingXMLStreamWriter(
-                XMLOutputFactory.newInstance().createXMLStreamWriter(os, "UTF-8"));
+        XMLStreamWriter writer = new IndentingXMLStreamWriter(XMLOutputFactory.newInstance()
+                .createXMLStreamWriter(os, "UTF-8"));
         m.marshal(object, writer);
     }
 
@@ -112,7 +113,8 @@ public abstract class Jaxb
     //-----------//
     public static Object unmarshal (Path path,
                                     JAXBContext jaxbContext)
-            throws IOException, JAXBException
+            throws IOException,
+                   JAXBException
     {
         InputStream is = null;
 
@@ -128,14 +130,12 @@ public abstract class Jaxb
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------------------//
     // AtomicIntegerAdapter //
     //----------------------//
     public static class AtomicIntegerAdapter
             extends XmlAdapter<Integer, AtomicInteger>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Integer marshal (AtomicInteger atomic)
@@ -161,11 +161,9 @@ public abstract class Jaxb
     public static class BooleanPositiveAdapter
             extends XmlAdapter<String, Boolean>
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String TRUE = Boolean.toString(true);
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String marshal (Boolean b)
                 throws Exception
@@ -195,7 +193,6 @@ public abstract class Jaxb
     public static class CubicAdapter
             extends XmlAdapter<CubicAdapter.CubicFacade, CubicCurve2D>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public CubicFacade marshal (CubicCurve2D curve)
@@ -219,11 +216,9 @@ public abstract class Jaxb
             return facade.getCurve();
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         @XmlRootElement
         private static class CubicFacade
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             @XmlAttribute
             @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
@@ -257,7 +252,6 @@ public abstract class Jaxb
             @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
             public double y2;
 
-            //~ Constructors -----------------------------------------------------------------------
             public CubicFacade ()
             {
             }
@@ -274,7 +268,6 @@ public abstract class Jaxb
                 this.y2 = curve.getY2();
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             public CubicCurve2D getCurve ()
             {
                 return new CubicCurve2D.Double(x1, y1, ctrlx1, ctrly1, ctrlx2, ctrly2, x2, y2);
@@ -288,7 +281,6 @@ public abstract class Jaxb
     public static class DimensionAdapter
             extends XmlAdapter<DimensionAdapter.DimensionFacade, Dimension>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public DimensionFacade marshal (Dimension dim)
@@ -312,10 +304,8 @@ public abstract class Jaxb
             return facade.getDimension();
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         private static class DimensionFacade
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             @XmlAttribute(name = "w")
             public int width;
@@ -323,7 +313,6 @@ public abstract class Jaxb
             @XmlAttribute(name = "h")
             public int height;
 
-            //~ Constructors -----------------------------------------------------------------------
             /**
              * Creates a new instance of DimensionFacade.
              */
@@ -342,7 +331,6 @@ public abstract class Jaxb
                 height = dimension.height;
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             public Dimension getDimension ()
             {
                 return new Dimension(width, height);
@@ -356,7 +344,6 @@ public abstract class Jaxb
     public static class Double1Adapter
             extends XmlAdapter<String, Double>
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final DecimalFormat decimal = new DecimalFormat();
 
@@ -365,7 +352,6 @@ public abstract class Jaxb
             decimal.setMaximumFractionDigits(1); // For a maximum of 1 decimal
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String marshal (Double d)
                 throws Exception
@@ -395,7 +381,6 @@ public abstract class Jaxb
     public static class Double3Adapter
             extends XmlAdapter<String, Double>
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final DecimalFormat decimal = new DecimalFormat();
 
@@ -404,7 +389,6 @@ public abstract class Jaxb
             decimal.setMaximumFractionDigits(3); // For a maximum of 3 decimals
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String marshal (Double d)
                 throws Exception
@@ -434,7 +418,6 @@ public abstract class Jaxb
     public static class Double5Adapter
             extends XmlAdapter<String, Double>
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final DecimalFormat decimal = new DecimalFormat();
 
@@ -443,7 +426,6 @@ public abstract class Jaxb
             decimal.setMaximumFractionDigits(5); // For a maximum of 5 decimals
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String marshal (Double d)
                 throws Exception
@@ -473,7 +455,6 @@ public abstract class Jaxb
     public static class Line2DAdapter
             extends XmlAdapter<Line2DAdapter.Line2DFacade, Line2D>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Line2DFacade marshal (Line2D line)
@@ -497,11 +478,9 @@ public abstract class Jaxb
             return facade.getLine();
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         @XmlRootElement
         private static class Line2DFacade
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             @XmlElement
             public Point2DFacade p1;
@@ -509,7 +488,6 @@ public abstract class Jaxb
             @XmlElement
             public Point2DFacade p2;
 
-            //~ Constructors -----------------------------------------------------------------------
             public Line2DFacade ()
             {
             }
@@ -521,7 +499,6 @@ public abstract class Jaxb
                 p2 = new Point2DFacade(line.getP2());
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             public Line2D getLine ()
             {
                 return new Line2D.Double(p1.x, p1.y, p2.x, p2.y);
@@ -535,7 +512,6 @@ public abstract class Jaxb
     public static class MarshalLogger
             extends Marshaller.Listener
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void afterMarshal (Object source)
@@ -556,7 +532,6 @@ public abstract class Jaxb
     public static class PathAdapter
             extends XmlAdapter<String, Path>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String marshal (Path path)
@@ -586,7 +561,6 @@ public abstract class Jaxb
     public static class Point2DAdapter
             extends XmlAdapter<Point2DFacade, Point2D>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Point2DFacade marshal (Point2D point)
@@ -617,7 +591,6 @@ public abstract class Jaxb
     public static class PointAdapter
             extends XmlAdapter<PointAdapter.PointFacade, Point>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public PointFacade marshal (Point point)
@@ -641,10 +614,8 @@ public abstract class Jaxb
             return facade.getPoint();
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         private static class PointFacade
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             @XmlAttribute
             public int x;
@@ -652,7 +623,6 @@ public abstract class Jaxb
             @XmlAttribute
             public int y;
 
-            //~ Constructors -----------------------------------------------------------------------
             public PointFacade ()
             {
             }
@@ -663,7 +633,6 @@ public abstract class Jaxb
                 this.y = point.y;
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             public Point getPoint ()
             {
                 return new Point(x, y);
@@ -677,7 +646,6 @@ public abstract class Jaxb
     public static class Rectangle2DAdapter
             extends XmlAdapter<Rectangle2DAdapter.Rectangle2DFacade, Rectangle2D>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Rectangle2DFacade marshal (Rectangle2D rect)
@@ -701,10 +669,8 @@ public abstract class Jaxb
             return facade.getRectangle2D();
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         private static class Rectangle2DFacade
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             @XmlAttribute(name = "x")
             @XmlJavaTypeAdapter(type = double.class, value = Double3Adapter.class)
@@ -722,7 +688,6 @@ public abstract class Jaxb
             @XmlJavaTypeAdapter(type = double.class, value = Double3Adapter.class)
             public double height;
 
-            //~ Constructors -----------------------------------------------------------------------
             public Rectangle2DFacade (Rectangle2D rect)
             {
                 x = rect.getX();
@@ -735,7 +700,6 @@ public abstract class Jaxb
             {
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             public Rectangle2D getRectangle2D ()
             {
                 return new Rectangle2D.Double(x, y, width, height);
@@ -749,7 +713,6 @@ public abstract class Jaxb
     public static class RectangleAdapter
             extends XmlAdapter<RectangleAdapter.RectangleFacade, Rectangle>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public RectangleFacade marshal (Rectangle rect)
@@ -773,10 +736,8 @@ public abstract class Jaxb
             return facade.getRectangle();
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         private static class RectangleFacade
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             @XmlAttribute
             public int x;
@@ -790,7 +751,6 @@ public abstract class Jaxb
             @XmlAttribute(name = "h")
             public int height;
 
-            //~ Constructors -----------------------------------------------------------------------
             public RectangleFacade ()
             {
             }
@@ -803,7 +763,6 @@ public abstract class Jaxb
                 height = rect.height;
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             public Rectangle getRectangle ()
             {
                 return new Rectangle(x, y, width, height);
@@ -817,7 +776,6 @@ public abstract class Jaxb
     public static class StringIntegerAdapter
             extends XmlAdapter<String, Integer>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String marshal (Integer i)
@@ -848,7 +806,6 @@ public abstract class Jaxb
     public static class UnmarshalLogger
             extends Unmarshaller.Listener
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void afterUnmarshal (Object target,
@@ -871,7 +828,6 @@ public abstract class Jaxb
     @XmlRootElement
     private static class Point2DFacade
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlAttribute
         @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
@@ -881,7 +837,6 @@ public abstract class Jaxb
         @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
         public double y;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Point2DFacade ()
         {
         }
@@ -892,7 +847,6 @@ public abstract class Jaxb
             this.y = point.getY();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public Point2D getPoint ()
         {
             return new Point2D.Double(x, y);

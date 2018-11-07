@@ -91,13 +91,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class HeadInter
         extends AbstractNoteInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(HeadInter.class);
 
     private static final Constants constants = new Constants();
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
     //----------------
@@ -116,7 +114,6 @@ public class HeadInter
     /** Shape template descriptor. */
     private ShapeDescriptor descriptor;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadInter} object.
      *
@@ -172,7 +169,6 @@ public class HeadInter
         this.anchor = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -489,8 +485,9 @@ public class HeadInter
             int minArea = Math.min(thisArea, thatArea);
             int commonArea = common.width * common.height;
             double areaRatio = (double) commonArea / minArea;
-            boolean res = (common.width > (constants.maxOverlapDxRatio.getValue() * thisBounds.width))
-                          && (areaRatio > constants.maxOverlapAreaRatio.getValue());
+            boolean res = (common.width
+                                   > (constants.maxOverlapDxRatio.getValue() * thisBounds.width))
+                                  && (areaRatio > constants.maxOverlapAreaRatio.getValue());
 
             return res;
 
@@ -557,8 +554,9 @@ public class HeadInter
         RunTable runTable = new RunTableFactory(VERTICAL).createTable(buf);
 
         // Glyph
-        glyph = sheet.getGlyphIndex().registerOriginal(
-                new Glyph(descBox.x + foreBox.x, descBox.y + foreBox.y, runTable));
+        glyph = sheet.getGlyphIndex().registerOriginal(new Glyph(descBox.x + foreBox.x, descBox.y
+                                                                                                + foreBox.y,
+                                                                 runTable));
 
         // Use glyph bounds as inter bounds
         bounds = glyph.getBounds();
@@ -613,11 +611,10 @@ public class HeadInter
         double newWidth = constants.shrinkHoriRatio.getValue() * box.width;
         double newHeight = constants.shrinkVertRatio.getValue() * box.height;
 
-        return new Rectangle2D.Double(
-                box.getCenterX() - (newWidth / 2.0),
-                box.getCenterY() - (newHeight / 2.0),
-                newWidth,
-                newHeight);
+        return new Rectangle2D.Double(box.getCenterX() - (newWidth / 2.0), box.getCenterY()
+                                                                                   - (newHeight
+                                                                                              / 2.0),
+                                      newWidth, newHeight);
     }
 
     //-----------//
@@ -657,10 +654,8 @@ public class HeadInter
             return 0;
 
         default:
-            logger.warn(
-                    "Weird shape {} for accidental {}",
-                    accidental.getShape(),
-                    accidental.getId());
+            logger.warn("Weird shape {} for accidental {}", accidental.getShape(), accidental
+                        .getId());
 
             return 0; // Should not happen
         }
@@ -738,10 +733,8 @@ public class HeadInter
 
             if (head == this) {
                 started = true;
-            } else if (started
-                       && (head.getStep() == getStep())
-                       && (head.getOctave() == getOctave())
-                       && (head.getStaff() == getStaff())) {
+            } else if (started && (head.getStep() == getStep()) && (head.getOctave() == getOctave())
+                               && (head.getStaff() == getStaff())) {
                 AlterInter accid = head.getAccidental();
 
                 if (accid != null) {
@@ -819,8 +812,7 @@ public class HeadInter
         double bestGrade = 0;
 
         for (Corner corner : Corner.values) {
-            Point refPt = PointUtil.rounded(
-                    getStemReferencePoint(corner.stemAnchor(), interline));
+            Point refPt = PointUtil.rounded(getStemReferencePoint(corner.stemAnchor(), interline));
             int xMin = refPt.x - ((corner.hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
             int yMin = refPt.y - ((corner.vSide == TOP) ? maxYGap : 0);
             Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
@@ -860,20 +852,17 @@ public class HeadInter
         return bestLink;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
             extends BasicImpacts
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{"dist"};
 
         private static final double[] WEIGHTS = new double[]{1};
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double dist)
         {
             super(NAMES, WEIGHTS);
@@ -887,22 +876,17 @@ public class HeadInter
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(
-                0.5,
-                "Horizontal shrink ratio to apply when checking note overlap");
+        private final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(0.5,
+                                                                          "Horizontal shrink ratio to apply when checking note overlap");
 
-        private final Constant.Ratio shrinkVertRatio = new Constant.Ratio(
-                0.5,
-                "Vertical shrink ratio to apply when checking note overlap");
+        private final Constant.Ratio shrinkVertRatio = new Constant.Ratio(0.5,
+                                                                          "Vertical shrink ratio to apply when checking note overlap");
 
-        private final Constant.Ratio maxOverlapDxRatio = new Constant.Ratio(
-                0.2,
-                "Maximum acceptable abscissa overlap ratio between notes");
+        private final Constant.Ratio maxOverlapDxRatio = new Constant.Ratio(0.2,
+                                                                            "Maximum acceptable abscissa overlap ratio between notes");
 
-        private final Constant.Ratio maxOverlapAreaRatio = new Constant.Ratio(
-                0.25,
-                "Maximum acceptable box area overlap ratio between notes");
+        private final Constant.Ratio maxOverlapAreaRatio = new Constant.Ratio(0.25,
+                                                                              "Maximum acceptable box area overlap ratio between notes");
     }
 }

@@ -44,7 +44,6 @@ import java.util.Arrays;
 public class LagController
         extends GlyphsController
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The underlying lag. */
     private final Lag lag;
@@ -55,7 +54,6 @@ public class LagController
     /** Related user display if any */
     private MyView view;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code LagController} object.
      *
@@ -72,7 +70,6 @@ public class LagController
         this.tab = tab;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // refresh //
     //---------//
@@ -96,23 +93,17 @@ public class LagController
         // Specific rubber display
         view = new MyView(sheet.getGlyphIndex());
 
-        sheet.getStub().getAssembly().addViewTab(
-                tab,
-                new ScrollView(view),
-                new BoardsPane(
-                        new PixelBoard(sheet),
-                        new SectionBoard(lag, false),
-                        new SymbolGlyphBoard(this, true, true)));
+        sheet.getStub().getAssembly().addViewTab(tab, new ScrollView(view), new BoardsPane(
+                                                 new PixelBoard(sheet), new SectionBoard(lag, false),
+                                                 new SymbolGlyphBoard(this, true, true)));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyView //
     //--------//
     private final class MyView
             extends NestView
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public MyView (GlyphIndex glyphIndex)
         {

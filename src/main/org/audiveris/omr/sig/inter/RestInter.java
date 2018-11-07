@@ -52,13 +52,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RestInter
         extends AbstractNoteInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(RestInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new RestInter object.
      *
@@ -84,7 +82,6 @@ public class RestInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -256,22 +253,18 @@ public class RestInter
         return super.internals() + " " + shape;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Double suspiciousPitchPosition = new Constant.Double(
-                "PitchPosition",
-                2.0,
-                "Maximum absolute pitch position for a rest to avoid additional checks");
+        private final Constant.Double suspiciousPitchPosition = new Constant.Double("PitchPosition",
+                                                                                    2.0,
+                                                                                    "Maximum absolute pitch position for a rest to avoid additional checks");
 
-        private final Scale.Fraction minInterChordDx = new Scale.Fraction(
-                0.5,
-                "Minimum horizontal delta between two chords");
+        private final Scale.Fraction minInterChordDx = new Scale.Fraction(0.5,
+                                                                          "Minimum horizontal delta between two chords");
     }
 }

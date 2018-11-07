@@ -23,7 +23,6 @@ package org.audiveris.omr.sig;
 
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.sig.inter.AlterInter;
@@ -70,6 +69,7 @@ import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.SmallFlagInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
@@ -77,12 +77,10 @@ import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
-import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.BarGroupRelation;
-import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.BeamHeadRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
@@ -97,6 +95,7 @@ import org.audiveris.omr.sig.relation.ChordSyllableRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.ClefKeyRelation;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.DotFermataRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.EndingBarRelation;
@@ -145,12 +144,9 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 public class SigValue
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SigValue.class);
+    private static final Logger logger = LoggerFactory.getLogger(SigValue.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * All CONCRETE inters found in sig, gathered here as true defs. No abstract!
      * For easier review, class names are listed alphabetically.
@@ -216,7 +212,6 @@ public class SigValue
     @XmlElement(name = "relation")
     private final ArrayList<RelationValue> relations = new ArrayList<RelationValue>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * No-arg constructor meant for JAXB.
      */
@@ -224,7 +219,6 @@ public class SigValue
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Method to be called only when SigValue IDREFs have been fully unmarshalled,
      * to populate the target SIG.
@@ -262,7 +256,6 @@ public class SigValue
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
@@ -272,7 +265,6 @@ public class SigValue
     public static class Adapter
             extends XmlAdapter<SigValue, SIGraph>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Generate a SigValue out of the existing SIG.
@@ -293,8 +285,8 @@ public class SigValue
             }
 
             for (Relation edge : sig.edgeSet()) {
-                sigValue.relations.add(
-                        new RelationValue(sig.getEdgeSource(edge), sig.getEdgeTarget(edge), edge));
+                sigValue.relations.add(new RelationValue(sig.getEdgeSource(edge), sig.getEdgeTarget(
+                                                         edge), edge));
             }
 
             return sigValue;
@@ -324,11 +316,9 @@ public class SigValue
      */
     public static class InterSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final LinkedHashSet<AbstractInter> defined = new LinkedHashSet<AbstractInter>();
 
-        //~ Methods --------------------------------------------------------------------------------
         public void addInter (AbstractInter inter)
         {
             defined.add(inter);
@@ -348,7 +338,6 @@ public class SigValue
      */
     private static class RelationValue
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Relation source vertex ID. */
         @XmlAttribute(name = "source")
@@ -404,7 +393,6 @@ public class SigValue
         })
         public Relation relation;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new {@code RelationValue} object.
          *
@@ -428,7 +416,6 @@ public class SigValue
         {
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

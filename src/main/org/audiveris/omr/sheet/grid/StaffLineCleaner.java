@@ -46,13 +46,11 @@ import java.util.List;
  */
 public class StaffLineCleaner
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StaffLineCleaner.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -60,7 +58,6 @@ public class StaffLineCleaner
     /** Horizontal lag. */
     private final Lag hLag;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StaffLineCleaner} object.
      *
@@ -73,7 +70,6 @@ public class StaffLineCleaner
         hLag = sheet.getLagManager().getLag(Lags.HLAG);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -105,17 +101,14 @@ public class StaffLineCleaner
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(false,
+                                                                         "Should we print out the stop watch?");
     }
 }

@@ -52,14 +52,12 @@ public class KeyInter
         extends AbstractInter
         implements InterEnsemble
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(KeyInter.class);
 
     /** Sharp keys note steps. */
-    private static final AbstractNoteInter.Step[] SHARP_STEPS = new AbstractNoteInter.Step[]{
-        F, C, G, D, A, E, B
-    };
+    private static final AbstractNoteInter.Step[] SHARP_STEPS
+            = new AbstractNoteInter.Step[]{F, C, G, D, A, E, B};
 
     /** Sharp pitches per clef kind. */
     public static final Map<ClefKind, int[]> SHARP_PITCHES_MAP = new EnumMap<ClefKind, int[]>(
@@ -73,9 +71,9 @@ public class KeyInter
     }
 
     /** Flat keys note steps. */
-    private static final AbstractNoteInter.Step[] FLAT_STEPS = new AbstractNoteInter.Step[]{
-        B, E, A, D, G, C, F
-    };
+    private static final AbstractNoteInter.Step[] FLAT_STEPS = new AbstractNoteInter.Step[]{B, E, A,
+                                                                                            D, G, C,
+                                                                                            F};
 
     /** Flat pitches per clef kind. */
     public static final Map<ClefKind, int[]> FLAT_PITCHES_MAP = new EnumMap<ClefKind, int[]>(
@@ -88,12 +86,10 @@ public class KeyInter
         FLAT_PITCHES_MAP.put(TENOR, new int[]{-1, -4, 0, -3, 1, -2, 2});
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Numerical value for signature. */
     @XmlAttribute
     private int fifths;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new KeyInter object.
      *
@@ -129,7 +125,6 @@ public class KeyInter
         super(null, null, null, null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -292,8 +287,7 @@ public class KeyInter
                         break;
 
                     default:
-                        throw new IllegalStateException(
-                                "Illegal shape in Key: " + alter.getShape());
+                        throw new IllegalStateException("Illegal shape in Key: " + alter.getShape());
                     }
                 }
 

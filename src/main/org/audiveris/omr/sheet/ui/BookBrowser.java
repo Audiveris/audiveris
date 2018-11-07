@@ -81,7 +81,6 @@ import javax.swing.tree.TreeSelectionModel;
  */
 public class BookBrowser
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -90,7 +89,6 @@ public class BookBrowser
     /** The filter for relevant classes and fields. */
     private static final Relevance filter = new PackageRelevance(Main.class.getPackage());
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Concrete UI component. */
     private final JPanel component;
 
@@ -109,7 +107,6 @@ public class BookBrowser
     /** The enclosing frame. */
     private JFrame frame;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BookBrowser} object.
      *
@@ -162,7 +159,6 @@ public class BookBrowser
         component.add("Center", splitPane);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // close //
     //-------//
@@ -228,18 +224,15 @@ public class BookBrowser
         model.refreshAll();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean hideEmptyDummies = new Constant.Boolean(
-                false,
-                "Should we hide empty dummy containers");
+        private final Constant.Boolean hideEmptyDummies = new Constant.Boolean(false,
+                                                                               "Should we hide empty dummy containers");
     }
 
     //-----------------//
@@ -247,13 +240,11 @@ public class BookBrowser
     //-----------------//
     private static class NamedCollection
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final String name;
 
         private final Collection<?> collection;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public NamedCollection (String name,
                                 Collection<?> collection)
         {
@@ -261,7 +252,6 @@ public class BookBrowser
             this.collection = collection;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -274,13 +264,11 @@ public class BookBrowser
     //-----------//
     private static class NamedData
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final String name;
 
         private final Object data;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public NamedData (String name,
                           Object data)
         {
@@ -288,7 +276,6 @@ public class BookBrowser
             this.data = data;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -303,19 +290,16 @@ public class BookBrowser
     private class Model
             implements TreeModel
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final List<TreeModelListener> listeners = new ArrayList<TreeModelListener>();
 
         private final Book book;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Model (Book book)
         {
             this.book = book;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //----------------------//
         // addTreeModelListener //
         //----------------------//
@@ -589,7 +573,6 @@ public class BookBrowser
     private class SelectionListener
             implements TreeSelectionListener
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void valueChanged (TreeSelectionEvent e)
@@ -634,12 +617,10 @@ public class BookBrowser
                             Sheet sheet = stub.getSheet();
                             sheet.getInterIndex().publish(null);
                             sheet.getGlyphIndex().publish(null);
-                            sheet.getLocationService().publish(
-                                    new LocationEvent(
-                                            this,
-                                            SelectionHint.LOCATION_INIT,
-                                            MouseMovement.PRESSING,
-                                            null));
+                            sheet.getLocationService().publish(new LocationEvent(this,
+                                                                                 SelectionHint.LOCATION_INIT,
+                                                                                 MouseMovement.PRESSING,
+                                                                                 null));
                         }
                     }
 

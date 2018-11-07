@@ -30,7 +30,6 @@ package org.audiveris.omr.step;
 public class StepException
         extends Exception
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Construct an {@code StepException} with no detail message.

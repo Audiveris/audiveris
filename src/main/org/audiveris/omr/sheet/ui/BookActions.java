@@ -100,7 +100,6 @@ import javax.swing.SwingUtilities;
 public class BookActions
         extends StubDependent
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -118,7 +117,6 @@ public class BookActions
     /** Default parameter. */
     public static final Param<Boolean> defaultPrompt = new Default();
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Flag to allow automatic book rebuild on every user edition action. */
     private boolean rebuildAllowed = true;
@@ -129,7 +127,6 @@ public class BookActions
     /** Sub-menu on books history. */
     private final HistoryMenu bookHistoryMenu;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BookActions object.
      */
@@ -140,7 +137,6 @@ public class BookActions
         bookHistoryMenu = new HistoryMenu(mgr.getBookHistory(), LoadBookTask.class);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // checkParameters //
     //-----------------//
@@ -196,9 +192,9 @@ public class BookActions
     public static boolean checkStored (Book book)
     {
         if (book.isModified() && defaultPrompt.getValue()) {
-            int answer = JOptionPane.showConfirmDialog(
-                    OMR.gui.getFrame(),
-                    "Save modified book " + book.getRadix() + "?");
+            int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), "Save modified book "
+                                                                                   + book.getRadix()
+                                                                                   + "?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 Path bookPath;
@@ -399,10 +395,9 @@ public class BookActions
         try {
             final WrappedBoolean apply = new WrappedBoolean(false);
             final SheetParameters sheetParams = new SheetParameters(stub.getSheet());
-            final JOptionPane optionPane = new JOptionPane(
-                    sheetParams.getComponent(),
-                    JOptionPane.QUESTION_MESSAGE,
-                    JOptionPane.OK_CANCEL_OPTION);
+            final JOptionPane optionPane = new JOptionPane(sheetParams.getComponent(),
+                                                           JOptionPane.QUESTION_MESSAGE,
+                                                           JOptionPane.OK_CANCEL_OPTION);
             final String frameTitle = stub.getId() + " parameters";
             final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, true); // Modal flag
             dialog.setContentPane(optionPane);
@@ -416,9 +411,8 @@ public class BookActions
                 {
                     String prop = e.getPropertyName();
 
-                    if (dialog.isVisible()
-                        && (e.getSource() == optionPane)
-                        && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
+                    if (dialog.isVisible() && (e.getSource() == optionPane) && (prop.equals(
+                            JOptionPane.VALUE_PROPERTY))) {
                         Object obj = optionPane.getValue();
                         int value = (Integer) obj;
                         apply.set(value == JOptionPane.OK_OPTION);
@@ -486,13 +480,10 @@ public class BookActions
 
         if (assembly.getPane(tab.label) == null) {
             Sheet sheet = stub.getSheet(); // This may load the sheet...
-            assembly.addViewTab(
-                    tab,
-                    new ScrollImageView(
-                            sheet,
-                            new ImageView(
-                                    sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF).getBufferedImage())),
-                    new BoardsPane(new PixelBoard(sheet)));
+            assembly.addViewTab(tab, new ScrollImageView(sheet, new ImageView(sheet.getPicture()
+                                                         .getSource(Picture.SourceKey.NO_STAFF)
+                                                         .getBufferedImage())), new BoardsPane(
+                                new PixelBoard(sheet)));
         } else {
             assembly.selectViewTab(tab);
         }
@@ -544,12 +535,9 @@ public class BookActions
 
         if (assembly.getPane(tab.label) == null) {
             Sheet sheet = stub.getSheet(); // This may load the sheet...
-            assembly.addViewTab(
-                    tab,
-                    new ScrollImageView(
-                            sheet,
-                            new ImageView(sheet.getPicture().buildStaffLineGlyphsImage())),
-                    new BoardsPane(new PixelBoard(sheet)));
+            assembly.addViewTab(tab, new ScrollImageView(sheet, new ImageView(sheet.getPicture()
+                                                         .buildStaffLineGlyphsImage())),
+                                new BoardsPane(new PixelBoard(sheet)));
         } else {
             assembly.selectViewTab(tab);
         }
@@ -638,12 +626,8 @@ public class BookActions
         final String ext = BookManager.getExportExtension();
         final Path sansExt = BookManager.getDefaultExportPathSansExt(book);
         final Path targetPath = Paths.get(sansExt + ext);
-        final Path bookPath = UIUtil.pathChooser(
-                true,
-                OMR.gui.getFrame(),
-                targetPath,
-                filter(ext),
-                "Choose book export target");
+        final Path bookPath = UIUtil.pathChooser(true, OMR.gui.getFrame(), targetPath, filter(ext),
+                                                 "Choose book export target");
 
         if ((bookPath == null) || !confirmed(bookPath)) {
             return null;
@@ -681,12 +665,8 @@ public class BookActions
         final String ext = compressed ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION;
         final String suffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
         final Path defaultSheetPath = Paths.get(bookSansExt + suffix + ext);
-        final Path sheetPath = UIUtil.pathChooser(
-                true,
-                OMR.gui.getFrame(),
-                defaultSheetPath,
-                filter(ext),
-                "Choose sheet export target");
+        final Path sheetPath = UIUtil.pathChooser(true, OMR.gui.getFrame(), defaultSheetPath,
+                                                  filter(ext), "Choose sheet export target");
 
         if ((sheetPath == null) || !confirmed(sheetPath)) {
             return null;
@@ -725,9 +705,10 @@ public class BookActions
         SheetStub stub = StubsController.getCurrentStub();
 
         if (stub != null) {
-            int answer = JOptionPane.showConfirmDialog(
-                    OMR.gui.getFrame(),
-                    "About to set sheet " + stub.getId() + " as invalid." + "\nDo you confirm?");
+            int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), "About to set sheet "
+                                                                                   + stub.getId()
+                                                                                   + " as invalid."
+                                                                                   + "\nDo you confirm?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 final Sheet sheet = stub.getSheet();
@@ -823,9 +804,8 @@ public class BookActions
                 false,
                 OMR.gui.getFrame(),
                 Paths.get(BookManager.getDefaultImageFolder()),
-                new OmrFileFilter(
-                        "Major image files" + " (" + suffixes + ")",
-                        allSuffixes.split("\\s")));
+                new OmrFileFilter("Major image files" + " (" + suffixes + ")", allSuffixes.split(
+                                  "\\s")));
 
         if (path != null) {
             if (!Files.exists(path)) {
@@ -992,12 +972,10 @@ public class BookActions
         }
 
         // Select target book print path
-        final Path bookPrintPath = UIUtil.pathChooser(
-                true,
-                OMR.gui.getFrame(),
-                BookManager.getDefaultPrintPath(book),
-                new OmrFileFilter(OMR.PRINT_EXTENSION),
-                "Choose book print target");
+        final Path bookPrintPath = UIUtil.pathChooser(true, OMR.gui.getFrame(), BookManager
+                                                      .getDefaultPrintPath(book), new OmrFileFilter(
+                                                      OMR.PRINT_EXTENSION),
+                                                      "Choose book print target");
 
         if ((bookPrintPath == null) || !confirmed(bookPrintPath)) {
             return null;
@@ -1032,12 +1010,8 @@ public class BookActions
         final String suffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
         final Path defaultSheetPath = Paths.get(bookSansExt + suffix + ext);
 
-        final Path sheetPrintPath = UIUtil.pathChooser(
-                true,
-                OMR.gui.getFrame(),
-                defaultSheetPath,
-                filter(ext),
-                "Choose sheet print target");
+        final Path sheetPrintPath = UIUtil.pathChooser(true, OMR.gui.getFrame(), defaultSheetPath,
+                                                       filter(ext), "Choose sheet print target");
 
         if ((sheetPrintPath == null) || !confirmed(sheetPrintPath)) {
             return null;
@@ -1082,10 +1056,11 @@ public class BookActions
         final Book book = StubsController.getCurrentBook();
 
         if (book != null) {
-            int answer = JOptionPane.showConfirmDialog(
-                    OMR.gui.getFrame(),
-                    "About to reset all valid sheets of " + book.getRadix()
-                    + " to their initial state." + "\nDo you confirm?");
+            int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(),
+                                                       "About to reset all valid sheets of " + book
+                                                               .getRadix()
+                                                               + " to their initial state."
+                                                               + "\nDo you confirm?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 book.reset();
@@ -1107,10 +1082,11 @@ public class BookActions
         final Book book = StubsController.getCurrentBook();
 
         if (book != null) {
-            int answer = JOptionPane.showConfirmDialog(
-                    OMR.gui.getFrame(),
-                    "About to reset all valid sheets of " + book.getRadix()
-                    + " to their BINARY state." + "\nDo you confirm?");
+            int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(),
+                                                       "About to reset all valid sheets of " + book
+                                                               .getRadix()
+                                                               + " to their BINARY state."
+                                                               + "\nDo you confirm?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 book.resetToBinary();
@@ -1132,10 +1108,10 @@ public class BookActions
         SheetStub stub = StubsController.getCurrentStub();
 
         if (stub != null) {
-            int answer = JOptionPane.showConfirmDialog(
-                    OMR.gui.getFrame(),
-                    "About to reset sheet " + stub.getId() + " to its initial state."
-                    + "\nDo you confirm?");
+            int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), "About to reset sheet "
+                                                                                   + stub.getId()
+                                                                                   + " to its initial state."
+                                                                           + "\nDo you confirm?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 stub.reset();
@@ -1157,10 +1133,10 @@ public class BookActions
         SheetStub stub = StubsController.getCurrentStub();
 
         if (stub != null) {
-            int answer = JOptionPane.showConfirmDialog(
-                    OMR.gui.getFrame(),
-                    "About to reset sheet " + stub.getId() + " to its BINARY state."
-                    + "\nDo you confirm?");
+            int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), "About to reset sheet "
+                                                                                   + stub.getId()
+                                                                                   + " to its BINARY state."
+                                                                           + "\nDo you confirm?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 stub.resetToBinary();
@@ -1218,9 +1194,8 @@ public class BookActions
 
         final Path bookPath = BookManager.getDefaultSavePath(book);
 
-        if ((book.getBookPath() != null)
-            && (bookPath.toAbsolutePath().equals(book.getBookPath().toAbsolutePath())
-                || confirmed(bookPath))) {
+        if ((book.getBookPath() != null) && (bookPath.toAbsolutePath().equals(book.getBookPath()
+                .toAbsolutePath()) || confirmed(bookPath))) {
             return new StoreBookTask(book, bookPath);
         }
 
@@ -1244,9 +1219,8 @@ public class BookActions
         final Path targetPath = selectBookPath(true, defaultBookPath);
         final Path ownPath = book.getBookPath();
 
-        if ((targetPath != null)
-            && (((ownPath != null) && ownPath.toAbsolutePath().equals(targetPath.toAbsolutePath()))
-                || confirmed(targetPath))) {
+        if ((targetPath != null) && (((ownPath != null) && ownPath.toAbsolutePath().equals(
+                targetPath.toAbsolutePath())) || confirmed(targetPath))) {
             return new StoreBookTask(book, targetPath);
         }
 
@@ -1506,12 +1480,10 @@ public class BookActions
         try {
             final WrappedBoolean apply = new WrappedBoolean(false);
             final ScoreParameters scoreParams = new ScoreParameters(stub);
-            final JOptionPane optionPane = new JOptionPane(
-                    scoreParams.getComponent(),
-                    JOptionPane.QUESTION_MESSAGE,
-                    JOptionPane.OK_CANCEL_OPTION);
-            final String frameTitle = (stub != null)
-                    ? (stub.getBook().getRadix() + " parameters")
+            final JOptionPane optionPane = new JOptionPane(scoreParams.getComponent(),
+                                                           JOptionPane.QUESTION_MESSAGE,
+                                                           JOptionPane.OK_CANCEL_OPTION);
+            final String frameTitle = (stub != null) ? (stub.getBook().getRadix() + " parameters")
                     : "General parameters";
             final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, true); // Modal flag
             dialog.setContentPane(optionPane);
@@ -1525,9 +1497,8 @@ public class BookActions
                 {
                     String prop = e.getPropertyName();
 
-                    if (dialog.isVisible()
-                        && (e.getSource() == optionPane)
-                        && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
+                    if (dialog.isVisible() && (e.getSource() == optionPane) && (prop.equals(
+                            JOptionPane.VALUE_PROPERTY))) {
                         Object obj = optionPane.getValue();
                         int value = (Integer) obj;
                         apply.set(value == JOptionPane.OK_OPTION);
@@ -1595,16 +1566,12 @@ public class BookActions
     private static Path selectBookPath (boolean save,
                                         Path path)
     {
-        Path prjPath = UIUtil.pathChooser(
-                save,
-                OMR.gui.getFrame(),
-                path,
-                filter(OMR.BOOK_EXTENSION));
+        Path prjPath = UIUtil
+                .pathChooser(save, OMR.gui.getFrame(), path, filter(OMR.BOOK_EXTENSION));
 
         return (prjPath == null) ? null : prjPath;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // LoadBookTask //
     //--------------//
@@ -1614,7 +1581,6 @@ public class BookActions
     public static class LoadBookTask
             extends PathTask
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public LoadBookTask (Path path)
         {
@@ -1625,7 +1591,6 @@ public class BookActions
         {
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
@@ -1666,7 +1631,6 @@ public class BookActions
     public static class LoadImageTask
             extends PathTask
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public LoadImageTask (Path path)
         {
@@ -1677,7 +1641,6 @@ public class BookActions
         {
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
@@ -1711,13 +1674,11 @@ public class BookActions
     public static class PrintBookTask
             extends VoidTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Book book;
 
         final Path bookPrintPath;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public PrintBookTask (Book book,
                               Path bookPrintPath)
         {
@@ -1725,7 +1686,6 @@ public class BookActions
             this.bookPrintPath = bookPrintPath;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
@@ -1748,13 +1708,11 @@ public class BookActions
     public static class PrintSheetTask
             extends VoidTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Sheet sheet;
 
         final Path sheetPrintPath;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public PrintSheetTask (Sheet sheet,
                                Path sheetPrintPath)
         {
@@ -1762,7 +1720,6 @@ public class BookActions
             this.sheetPrintPath = sheetPrintPath;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
@@ -1784,17 +1741,14 @@ public class BookActions
     public static class SampleSheetTask
             extends VoidTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Sheet sheet;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public SampleSheetTask (Sheet sheet)
         {
             this.sheet = sheet;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
@@ -1816,11 +1770,9 @@ public class BookActions
     private static class CloseBookTask
             extends VoidTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Book book;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create an asynchronous task to close the book.
          *
@@ -1831,7 +1783,6 @@ public class BookActions
             this.book = book;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
@@ -1853,19 +1804,16 @@ public class BookActions
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean promptParameters = new Constant.Boolean(
-                false,
-                "Should we prompt the user for score parameters?");
+        private final Constant.Boolean promptParameters = new Constant.Boolean(false,
+                                                                               "Should we prompt the user for score parameters?");
 
         private final Constant.String validImageExtensions = new Constant.String(
                 ".bmp .gif .jpg .png .tiff .tif .pdf",
                 "Valid image file extensions, whitespace-separated");
 
-        private final Constant.Boolean closeConfirmation = new Constant.Boolean(
-                true,
-                "Should we ask confirmation for closing an unsaved book?");
+        private final Constant.Boolean closeConfirmation = new Constant.Boolean(true,
+                                                                                "Should we ask confirmation for closing an unsaved book?");
     }
 
     //---------//
@@ -1874,7 +1822,6 @@ public class BookActions
     private static class Default
             extends Param<Boolean>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Boolean getSpecific ()
@@ -1903,9 +1850,8 @@ public class BookActions
         {
             if (!getValue().equals(specific)) {
                 constants.closeConfirmation.setValue(specific);
-                logger.info(
-                        "You will {} be prompted to save book when closing",
-                        specific ? "now" : "no longer");
+                logger.info("You will {} be prompted to save book when closing", specific ? "now"
+                            : "no longer");
 
                 return true;
             } else {
@@ -1920,11 +1866,9 @@ public class BookActions
     private static class ExportBookTask
             extends VoidTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Book book;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create an asynchronous task to export the book.
          *
@@ -1938,7 +1882,6 @@ public class BookActions
             book.setExportPathSansExt(bookPathSansExt);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
@@ -1963,13 +1906,11 @@ public class BookActions
     private static class ExportSheetTask
             extends VoidTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Sheet sheet;
 
         final Path sheetExportPath;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ExportSheetTask (Sheet sheet,
                                 Path sheetExportPath)
         {
@@ -1977,7 +1918,6 @@ public class BookActions
             this.sheetExportPath = sheetExportPath;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
@@ -2003,17 +1943,14 @@ public class BookActions
     private static class RebuildTask
             extends VoidTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Sheet sheet;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public RebuildTask (Sheet sheet)
         {
             this.sheet = sheet;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
@@ -2035,17 +1972,14 @@ public class BookActions
     private static class SampleBookTask
             extends VoidTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Book book;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public SampleBookTask (Book book)
         {
             this.book = book;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
@@ -2067,13 +2001,11 @@ public class BookActions
     private static class StoreBookTask
             extends VoidTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Book book;
 
         final Path bookPath;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create an asynchronous task to store the book.
          *
@@ -2087,7 +2019,6 @@ public class BookActions
             this.bookPath = bookPath;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
@@ -2110,20 +2041,17 @@ public class BookActions
     private static class TranscribeBookTask
             extends VoidTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final SheetStub stub;
 
         private final Book book;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public TranscribeBookTask (SheetStub stub)
         {
             this.stub = stub;
             this.book = stub.getBook();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
@@ -2153,17 +2081,14 @@ public class BookActions
     private static class TranscribeSheetTask
             extends VoidTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Sheet sheet;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public TranscribeSheetTask (Sheet sheet)
         {
             this.sheet = sheet;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException

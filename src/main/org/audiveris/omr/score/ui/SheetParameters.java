@@ -45,12 +45,9 @@ import java.util.List;
  */
 public class SheetParameters
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SheetParameters.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetParameters.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The swing component of this panel. */
     private final ScopedPanel scopedPanel;
 
@@ -61,10 +58,8 @@ public class SheetParameters
     private Scale scale;
 
     /** Map of scaling parameters. */
-    private final EnumMap<Item, ScalingParam> scalings = new EnumMap<Item, ScalingParam>(
-            Item.class);
+    private final EnumMap<Item, ScalingParam> scalings = new EnumMap<Item, ScalingParam>(Item.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SheetParameters} object.
      *
@@ -95,7 +90,6 @@ public class SheetParameters
         initialDisplay();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // commit //
     //--------//
@@ -161,7 +155,6 @@ public class SheetParameters
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ScalingPane //
     //-------------//
@@ -171,11 +164,9 @@ public class SheetParameters
     private static class ScalingPane
             extends IntegerPane
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Scale.Item key;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ScalingPane (Scale.Item key,
                             XactDataPane parent,
                             ScalingParam model)
@@ -184,7 +175,6 @@ public class SheetParameters
             this.key = key;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -229,17 +219,14 @@ public class SheetParameters
     private class ScalingParam
             extends Param<Integer>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public final Item key;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ScalingParam (Item key)
         {
             this.key = key;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public Integer getSourceValue ()
         {

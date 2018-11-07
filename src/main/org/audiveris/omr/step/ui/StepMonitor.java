@@ -43,20 +43,17 @@ import javax.swing.SwingUtilities;
  */
 public class StepMonitor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StepMonitor.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Progress bar for actions performed on sheet. */
     private final JProgressBar bar = new MyJProgressBar();
 
     /** Total active actions. */
     private int actives = 0;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a user monitor on step processing.
      * There is exactly one instance of this class (and no instance when running in batch mode)
@@ -70,7 +67,6 @@ public class StepMonitor
         bar.setForeground(Colors.PROGRESS_BAR);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //
     //--------------//
     // getComponent //
@@ -197,27 +193,21 @@ public class StepMonitor
         });
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Integer divisions = new Constant.Integer(
-                "divisions",
-                1000,
-                "Number of divisions (amount of precision) of step monitor, minimum 10");
+        private final Constant.Integer divisions = new Constant.Integer("divisions", 1000,
+                                                                        "Number of divisions (amount of precision) of step monitor, minimum 10");
 
-        private final Ratio ratio = new Ratio(
-                0.1,
-                "Amount by which to increase step monitor percentage per animation, between 0 and 1");
+        private final Ratio ratio = new Ratio(0.1,
+                                              "Amount by which to increase step monitor percentage per animation, between 0 and 1");
 
-        private final Constant.Boolean useIndeterminate = new Constant.Boolean(
-                true,
-                "Should we use an indeterminate step progress bar?");
+        private final Constant.Boolean useIndeterminate = new Constant.Boolean(true,
+                                                                               "Should we use an indeterminate step progress bar?");
     }
 
     //----------------//
@@ -226,7 +216,6 @@ public class StepMonitor
     private static class MyJProgressBar
             extends JProgressBar
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void paintComponent (Graphics g)

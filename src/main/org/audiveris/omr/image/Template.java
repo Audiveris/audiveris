@@ -74,7 +74,6 @@ import java.util.Map.Entry;
 public class Template
         implements Anchored
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -83,7 +82,6 @@ public class Template
     /** Ratio applied to small symbols (cue / grace). */
     public static final double smallRatio = constants.smallRatio.getValue();
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Template shape. */
     private final Shape shape;
 
@@ -112,7 +110,6 @@ public class Template
      */
     private final Map<Anchor, Point> offsets = new EnumMap<Anchor, Point>(Anchor.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Template object with a provided set of points.
      *
@@ -141,7 +138,6 @@ public class Template
         this.symbolBounds = symbolBounds;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // addAnchor //
     //-----------//
@@ -215,10 +211,8 @@ public class Template
         g.dispose();
 
         // Put everything within a frame with x and y values
-        BufferedImage frm = new BufferedImage(
-                (width + 2) * r,
-                (height + 2) * r,
-                BufferedImage.TYPE_INT_RGB);
+        BufferedImage frm = new BufferedImage((width + 2) * r, (height + 2) * r,
+                                              BufferedImage.TYPE_INT_RGB);
         g = frm.createGraphics();
 
         // Fill frame background
@@ -339,7 +333,8 @@ public class Template
                     // pix.d < 0 for expected hole, expected negative distance to nearest foreground
                     // pix.d == 0 for expected foreground, 0 distance
                     // pix.d > 0 for expected background, expected distance to nearest foreground
-                    double weight = (pix.d == 0) ? foreWeight : ((pix.d > 0) ? backWeight : holeWeight);
+                    double weight = (pix.d == 0) ? foreWeight : ((pix.d > 0) ? backWeight
+                            : holeWeight);
                     double expected = (pix.d == 0) ? 0 : 1;
                     double actual = (actualDist == 0) ? 0 : 1;
                     double dist = Math.abs(actual - expected);
@@ -543,14 +538,6 @@ public class Template
     }
 
     //--------------//
-    // getPointSize //
-    //--------------//
-    public int getPointSize ()
-    {
-        return pointSize;
-    }
-
-    //--------------//
     // getKeyPoints //
     //--------------//
     /**
@@ -574,6 +561,14 @@ public class Template
         }
 
         return offset;
+    }
+
+    //--------------//
+    // getPointSize //
+    //--------------//
+    public int getPointSize ()
+    {
+        return pointSize;
     }
 
     //----------//
@@ -716,8 +711,8 @@ public class Template
         }
 
         for (Entry<Anchor, Point> entry : offsets.entrySet()) {
-            sb.append(" ").append(entry.getKey()).append(":(").append(entry.getValue().x).append(
-                    ",").append(entry.getValue().y).append(")");
+            sb.append(" ").append(entry.getKey()).append(":(").append(entry.getValue().x)
+                    .append(",").append(entry.getValue().y).append(")");
         }
 
         sb.append(" keyPoints:").append(keyPoints.size());
@@ -749,48 +744,35 @@ public class Template
         return new Point(x, y);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio smallRatio = new Constant.Ratio(
-                0.67,
-                "Global ratio applied to small (cue/grace) templates");
+        private final Constant.Ratio smallRatio = new Constant.Ratio(0.67,
+                                                                     "Global ratio applied to small (cue/grace) templates");
 
-        private final Constant.Ratio foreWeight = new Constant.Ratio(
-                1.0,
-                "Weight assigned to template foreground pixels");
+        private final Constant.Ratio foreWeight = new Constant.Ratio(1.0,
+                                                                     "Weight assigned to template foreground pixels");
 
-        private final Constant.Ratio backWeight = new Constant.Ratio(
-                1.0,
-                "Weight assigned to template exterior background pixels");
+        private final Constant.Ratio backWeight = new Constant.Ratio(1.0,
+                                                                     "Weight assigned to template exterior background pixels");
 
-        private final Constant.Ratio holeWeight = new Constant.Ratio(
-                1.0,
-                "Weight assigned to template interior background pixels");
+        private final Constant.Ratio holeWeight = new Constant.Ratio(1.0,
+                                                                     "Weight assigned to template interior background pixels");
 
-        private final Scale.Fraction dilation = new Scale.Fraction(
-                0.15,
-                "Dilation applied on a note head to be erased");
+        private final Scale.Fraction dilation = new Scale.Fraction(0.15,
+                                                                   "Dilation applied on a note head to be erased");
 
-        private final Constant.Double maxDistanceHigh = new Constant.Double(
-                "distance",
-                0.5,
-                "Maximum matching distance");
+        private final Constant.Double maxDistanceHigh = new Constant.Double("distance", 0.5,
+                                                                            "Maximum matching distance");
 
-        private final Constant.Double maxDistanceLow = new Constant.Double(
-                "distance",
-                0.40,
-                "Good matching distance");
+        private final Constant.Double maxDistanceLow = new Constant.Double("distance", 0.40,
+                                                                           "Good matching distance");
 
-        private final Constant.Double reallyBadDistance = new Constant.Double(
-                "distance",
-                1.0,
-                "Really bad matching distance");
+        private final Constant.Double reallyBadDistance = new Constant.Double("distance", 1.0,
+                                                                              "Really bad matching distance");
     }
 }

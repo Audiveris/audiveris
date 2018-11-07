@@ -38,14 +38,12 @@ import javax.swing.SwingConstants;
 public class BooleanPane
         extends XactDataPane<Boolean>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Boolean box. */
     protected final JCheckBox bbox = new JCheckBox();
 
     protected final JLabel label;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BooleanPane} object.
      *
@@ -69,7 +67,6 @@ public class BooleanPane
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public int defineLayout (PanelBuilder builder,
                              CellConstraints cst,

@@ -38,7 +38,6 @@ import java.util.regex.Pattern;
  */
 public class ExportPattern
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final String OPUS = "opus";
 
@@ -46,9 +45,8 @@ public class ExportPattern
 
     private static final String SCORE = "score";
 
-    private static final String scorePat = group(
-            SCORE,
-            escape(OMR.COMPRESSED_SCORE_EXTENSION) + "|" + escape(OMR.SCORE_EXTENSION));
+    private static final String scorePat = group(SCORE, escape(OMR.COMPRESSED_SCORE_EXTENSION) + "|"
+                                                                + escape(OMR.SCORE_EXTENSION));
 
     private static final String MVT = "mvt";
 
@@ -62,7 +60,6 @@ public class ExportPattern
 
     private static volatile Pattern doublePattern;
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getPathSansExt //
     //----------------//
@@ -87,9 +84,8 @@ public class ExportPattern
             String opus = getGroup(doubleMatcher, OPUS);
             String mvt = getGroup(doubleMatcher, MVT);
             String score = getGroup(doubleMatcher, SCORE);
-            pathStr = pathStr.substring(
-                    0,
-                    pathStr.length() - (opus.length() + mvt.length() + score.length()));
+            pathStr = pathStr.substring(0, pathStr.length() - (opus.length() + mvt.length() + score
+                                        .length()));
         } else {
             // Try simple after
             if (simplePattern == null) {

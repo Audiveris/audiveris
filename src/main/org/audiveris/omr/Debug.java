@@ -47,11 +47,9 @@ import java.io.PrintWriter;
 public class Debug
         extends StubDependent
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Debug.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // checkSources //
     //--------------//
@@ -149,8 +147,8 @@ public class Debug
     private static PrintWriter getPrintWriter (OutputStream os)
     {
         try {
-            final BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(os, WellKnowns.FILE_ENCODING));
+            final BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os,
+                                                                                WellKnowns.FILE_ENCODING));
 
             return new PrintWriter(bw);
         } catch (Exception ex) {

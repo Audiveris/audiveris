@@ -40,12 +40,9 @@ import java.util.Objects;
  */
 public class GlyphsModel
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            GlyphsModel.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlyphsModel.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying glyph service. */
     protected final EntityService<? extends Glyph> glyphService;
 
@@ -55,7 +52,6 @@ public class GlyphsModel
     /** Latest shape assigned, if any. */
     protected Shape latestShape;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of GlyphsModel, with its underlying glyph glyphService.
      *
@@ -71,7 +67,6 @@ public class GlyphsModel
         this.glyphService = glyphService;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // assignGlyph //
     //-------------//
@@ -93,71 +88,71 @@ public class GlyphsModel
                               double grade)
     {
         logger.error("HB. Not yet implemented");
-//
-//        final Inter ghost = SymbolFactory.createGhost(shape, grade);
-//        final SystemInfo system = staff.getSystem();
-//        ghost.setStaff(staff);
-//        ghost.setGlyph(glyph);
-//        ghost.setBounds(glyph.getBounds());
-//        system.getSig().addVertex(ghost);
-//        sheet.getStub().setModified(true);
-//
-//        // Edges? this depends on ghost class...
-//        Collection<Link> links = ghost.searchLinks(system, true);
-//
-//        if (links.isEmpty()) {
-//            logger.info("No partners for {}", ghost);
-//        }
-//
-//        sheet.getGlyphIndex().publish(null);
-//        sheet.getInterIndex().publish(ghost);
-//        logger.info("Added {}", ghost);
-//
+
+        //
+        //        final Inter ghost = SymbolFactory.createGhost(shape, grade);
+        //        final SystemInfo system = staff.getSystem();
+        //        ghost.setStaff(staff);
+        //        ghost.setGlyph(glyph);
+        //        ghost.setBounds(glyph.getBounds());
+        //        system.getSig().addVertex(ghost);
+        //        sheet.getStub().setModified(true);
+        //
+        //        // Edges? this depends on ghost class...
+        //        Collection<Link> links = ghost.searchLinks(system, true);
+        //
+        //        if (links.isEmpty()) {
+        //            logger.info("No partners for {}", ghost);
+        //        }
+        //
+        //        sheet.getGlyphIndex().publish(null);
+        //        sheet.getInterIndex().publish(ghost);
+        //        logger.info("Added {}", ghost);
+        //
         //        final Book book = sheet.getStub().getBook();
         //        final SampleRepository repository = book.getSampleRepository();
         //        final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
         //
         //        // TODO: we need staff information (-> interline and pitch)
         //        repository.addSample(shape, glyph, interline, sampleSheet, null);
-
-//
-//                if (glyph == null) {
-//                    return null;
-//                }
-//
-//                if (shape != null) {
-//                    List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(glyph);
-//
-//                    //            if (system != null) {
-//                    //                glyph = system.register(glyph); // System then nest
-//                    //            } else {
-//                    //                // Insert in nest directly, which assigns an id to the glyph
-//                    glyph = nest.register(glyph);
-//
-//                    //            }
-//                    boolean isTransient = glyph.isTransient();
-//                    logger.debug(
-//                            "Assign {}{} to {}",
-//                            isTransient ? "compound " : "",
-//                            glyph.idString(),
-//                            shape);
-//
-//                    // Remember the latest shape assigned
-//                    setLatestShape(shape);
-//                }
-//
-//                // Do the assignment of the shape to the glyph
-//                glyph.setShape(shape);
-//
-//                // Should we persist the assigned glyph?
-//                if ((shape != null)
-//                    && (grade == Evaluation.MANUAL)
-//                    && (OMR.gui != null)
-//                    && ScoreActions.getInstance().isManualPersisted()) {
-//                    // Record the glyph description to disk
-//                    SampleRepository.getInstance().recordOneGlyph(glyph, sheet);
-//                }
-//
+        //
+        //                if (glyph == null) {
+        //                    return null;
+        //                }
+        //
+        //                if (shape != null) {
+        //                    List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(glyph);
+        //
+        //                    //            if (system != null) {
+        //                    //                glyph = system.register(glyph); // System then nest
+        //                    //            } else {
+        //                    //                // Insert in nest directly, which assigns an id to the glyph
+        //                    glyph = nest.register(glyph);
+        //
+        //                    //            }
+        //                    boolean isTransient = glyph.isTransient();
+        //                    logger.debug(
+        //                            "Assign {}{} to {}",
+        //                            isTransient ? "compound " : "",
+        //                            glyph.idString(),
+        //                            shape);
+        //
+        //                    // Remember the latest shape assigned
+        //                    setLatestShape(shape);
+        //                }
+        //
+        //                // Do the assignment of the shape to the glyph
+        //                glyph.setShape(shape);
+        //
+        //                // Should we persist the assigned glyph?
+        //                if ((shape != null)
+        //                    && (grade == Evaluation.MANUAL)
+        //                    && (OMR.gui != null)
+        //                    && ScoreActions.getInstance().isManualPersisted()) {
+        //                    // Record the glyph description to disk
+        //                    SampleRepository.getInstance().recordOneGlyph(glyph, sheet);
+        //                }
+        //
         return glyph;
     }
 

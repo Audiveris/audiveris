@@ -34,12 +34,10 @@ import java.lang.ref.WeakReference;
 public class WeakPropertyChangeListener
         implements PropertyChangeListener
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The concrete listener */
     protected final WeakReference<PropertyChangeListener> weakListener;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new WeakPropertyChangeListener object from a concrete listener
      *
@@ -50,7 +48,6 @@ public class WeakPropertyChangeListener
         weakListener = new WeakReference<PropertyChangeListener>(listener);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // propertyChange //
     //----------------//

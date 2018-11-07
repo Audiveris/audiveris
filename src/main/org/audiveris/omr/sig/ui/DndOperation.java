@@ -54,13 +54,11 @@ import java.util.Arrays;
  */
 public class DndOperation
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(DndOperation.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -78,7 +76,6 @@ public class DndOperation
     /** System currently related. */
     private SystemInfo system;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code DndOperation} object.
      *
@@ -95,7 +92,6 @@ public class DndOperation
         this.ghost = ghost;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // drop //
     //------//
@@ -120,16 +116,13 @@ public class DndOperation
 
         // Bounds
         final int staffInterline = staff.getSpecificInterline();
-        final MusicFont font = (ShapeSet.Heads.contains(ghost.getShape()))
-                ? MusicFont.getHeadFont(sheet.getScale(), staffInterline)
-                : MusicFont.getBaseFont(staffInterline);
+        final MusicFont font = (ShapeSet.Heads.contains(ghost.getShape())) ? MusicFont.getHeadFont(
+                sheet.getScale(), staffInterline) : MusicFont.getBaseFont(staffInterline);
         final ShapeSymbol symbol = Symbols.getSymbol(ghost.getShape());
         final Dimension dim = symbol.getDimension(font);
-        final Rectangle bounds = new Rectangle(
-                center.x - (dim.width / 2),
-                center.y - (dim.height / 2),
-                dim.width,
-                dim.height);
+        final Rectangle bounds = new Rectangle(center.x - (dim.width / 2), center.y - (dim.height
+                                                                                               / 2),
+                                               dim.width, dim.height);
         ghost.setBounds(bounds);
 
         sheet.getInterController().addInters(Arrays.asList(ghost));
@@ -193,8 +186,8 @@ public class DndOperation
                     }
 
                     // Adjust image size WRT new interline
-                    if ((staff == null)
-                        || (staff.getSpecificInterline() != closestStaff.getSpecificInterline())) {
+                    if ((staff == null) || (staff.getSpecificInterline() != closestStaff
+                            .getSpecificInterline())) {
                         updateImage(closestStaff.getSpecificInterline());
                     }
 
@@ -262,7 +255,6 @@ public class DndOperation
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

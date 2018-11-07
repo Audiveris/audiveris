@@ -38,13 +38,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BeamHeadRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BeamHeadRelation.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BeamHeadRelation} object.
      *
@@ -62,7 +60,6 @@ public class BeamHeadRelation
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -90,17 +87,14 @@ public class BeamHeadRelation
         return constants.headSupportCoeff.getValue();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio headSupportCoeff = new Constant.Ratio(
-                0.75,
-                "Supporting coeff for (target) head");
+        private final Constant.Ratio headSupportCoeff = new Constant.Ratio(0.75,
+                                                                           "Supporting coeff for (target) head");
     }
 }

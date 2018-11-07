@@ -40,16 +40,13 @@ import java.awt.geom.Rectangle2D;
 public class BeamSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     // The head+stem part
     private static final BasicSymbol quarter = Symbols.SYMBOL_QUARTER;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     // Number of beams
     protected final int beamCount;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a BeamSymbol.
      *
@@ -80,7 +77,6 @@ public class BeamSymbol
         this.beamCount = beamCount;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -105,9 +101,8 @@ public class BeamSymbol
         p.quarterDx = (int) Math.rint(qRect.getWidth() * 2);
         p.quarterDy = (int) Math.rint(qRect.getWidth() * 0.8);
 
-        p.rect = new Rectangle(
-                (int) Math.ceil(qRect.getWidth() + p.quarterDx),
-                (int) Math.ceil(qRect.getHeight() + p.quarterDy));
+        p.rect = new Rectangle((int) Math.ceil(qRect.getWidth() + p.quarterDx), (int) Math.ceil(
+                               qRect.getHeight() + p.quarterDy));
 
         return p;
     }
@@ -151,14 +146,12 @@ public class BeamSymbol
         g.setComposite(oldComposite);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // layout for just quarter layout
         // rect for global image

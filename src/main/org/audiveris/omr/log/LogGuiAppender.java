@@ -40,7 +40,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 public class LogGuiAppender
         extends AppenderBase<ILoggingEvent>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /**
      * Size of the mail box.
@@ -49,10 +48,9 @@ public class LogGuiAppender
     private static final int LOG_MBX_SIZE = 10000;
 
     /** Temporary mail box for logged messages. */
-    private static final ArrayBlockingQueue<ILoggingEvent> logMbx = new ArrayBlockingQueue<ILoggingEvent>(
-            LOG_MBX_SIZE);
+    private static final ArrayBlockingQueue<ILoggingEvent> logMbx
+            = new ArrayBlockingQueue<ILoggingEvent>(LOG_MBX_SIZE);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getEventCount //
     //---------------//

@@ -50,12 +50,9 @@ import javax.xml.bind.annotation.XmlElement;
 @XmlAccessorType(XmlAccessType.NONE)
 public class SectionSets
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SectionSets.class);
+    private static final Logger logger = LoggerFactory.getLogger(SectionSets.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The collection of sections sets. */
     protected Collection<Collection<Section>> sets;
 
@@ -63,7 +60,6 @@ public class SectionSets
     @XmlElement(name = "sections")
     private Collection<SectionDescSet> descSets;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SectionSets object.
      *
@@ -81,7 +77,6 @@ public class SectionSets
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // createFromGlyphs //
     //------------------//
@@ -143,8 +138,10 @@ public class SectionSets
                 List<Section> sectionSet = new ArrayList<Section>();
 
                 for (SectionDesc sectionId : idSet.sections) {
-                    Lag lag = sheet.getLagManager().getLag(
-                            (sectionId.orientation == Orientation.VERTICAL) ? Lags.VLAG : Lags.HLAG);
+                    Lag lag = sheet.getLagManager().getLag((sectionId.orientation
+                                                                    == Orientation.VERTICAL)
+                                    ? Lags.VLAG
+                                    : Lags.HLAG);
                     Section section = lag.getEntity(sectionId.id);
 
                     if (section == null) {
@@ -202,8 +199,7 @@ public class SectionSets
                 SectionDescSet descSet = new SectionDescSet();
 
                 for (Section section : set) {
-                    descSet.sections.add(
-                            new SectionDesc(section.getId(), section.getOrientation()));
+                    descSet.sections.add(new SectionDesc(section.getId(), section.getOrientation()));
                 }
 
                 descSets.add(descSet);
@@ -211,7 +207,6 @@ public class SectionSets
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // SectionDesc //
     //-------------//
@@ -220,7 +215,6 @@ public class SectionSets
      */
     private static class SectionDesc
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // Annotation to get all ids, space-separated, in one single element:
         //@XmlList
@@ -235,7 +229,6 @@ public class SectionSets
         @XmlAttribute(name = "orientation")
         Orientation orientation;
 
-        //~ Constructors ---------------------------------------------------------------------------
         // For JAXB
         public SectionDesc ()
         {
@@ -248,7 +241,6 @@ public class SectionSets
             this.orientation = orientation;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -271,7 +263,6 @@ public class SectionSets
      */
     private static class SectionDescSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         //        // Annotation to get all ids, space-separated, in one single element:
         //        @XmlList

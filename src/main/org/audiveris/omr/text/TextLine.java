@@ -45,11 +45,9 @@ import java.util.List;
 public class TextLine
         extends TextBasedItem
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TextLine.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Words that compose this line. */
     private final List<TextWord> words = new ArrayList<TextWord>();
@@ -63,7 +61,6 @@ public class TextLine
     /** Temporary processed flag. */
     private boolean processed;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TextLine object from a sequence of words.
      *
@@ -89,7 +86,6 @@ public class TextLine
         super(null, null, null, null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addWords //
     //----------//
@@ -143,9 +139,8 @@ public class TextLine
             public int compare (TextLine line1,
                                 TextLine line2)
             {
-                return Double.compare(
-                        line1.getDskOrigin(skew).getX(),
-                        line2.getDskOrigin(skew).getX());
+                return Double.compare(line1.getDskOrigin(skew).getX(), line2.getDskOrigin(skew)
+                                      .getX());
             }
         };
     }
@@ -164,9 +159,8 @@ public class TextLine
             public int compare (TextLine line1,
                                 TextLine line2)
             {
-                return Double.compare(
-                        line1.getDskOrigin(skew).getY(),
-                        line2.getDskOrigin(skew).getY());
+                return Double.compare(line1.getDskOrigin(skew).getY(), line2.getDskOrigin(skew)
+                                      .getY());
             }
         };
     }

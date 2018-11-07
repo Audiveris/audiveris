@@ -44,7 +44,6 @@ import java.util.TreeMap;
  */
 public class HeadSpotsBuilder
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Related sheet. */
     private final Sheet sheet;
@@ -52,7 +51,6 @@ public class HeadSpotsBuilder
     /** Spot glyphs, per system. */
     Map<SystemInfo, List<Glyph>> glyphMap = new HashMap<SystemInfo, List<Glyph>>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadSpotsBuilder} object.
      *
@@ -63,7 +61,6 @@ public class HeadSpotsBuilder
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getSpots //
     //----------//
@@ -75,7 +72,8 @@ public class HeadSpotsBuilder
     public Map<SystemInfo, List<Glyph>> getSpots ()
     {
         RunTable headRuns = sheet.getPicture().getTable(Picture.TableKey.HEAD_SPOTS);
-        List<Glyph> spots = GlyphFactory.buildGlyphs(headRuns, new Point(0, 0), GlyphGroup.HEAD_SPOT);
+        List<Glyph> spots = GlyphFactory
+                .buildGlyphs(headRuns, new Point(0, 0), GlyphGroup.HEAD_SPOT);
 
         // Dispose the runTable
         sheet.getPicture().removeTable(Picture.TableKey.HEAD_SPOTS);

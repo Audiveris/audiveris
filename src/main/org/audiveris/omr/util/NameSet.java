@@ -52,12 +52,10 @@ import javax.swing.event.MenuListener;
 @ThreadSafe
 public class NameSet
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Separator */
     private static final String SEPARATOR = ";";
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Global name for this set. */
     private final String setName;
 
@@ -70,7 +68,6 @@ public class NameSet
     /** Max number of names in this set. */
     private final int maxNameCount;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new set of names, with some customizing parameters.
      *
@@ -94,7 +91,6 @@ public class NameSet
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // add //
     //-----//

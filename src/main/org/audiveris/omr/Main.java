@@ -57,7 +57,6 @@ import java.util.concurrent.Future;
  */
 public class Main
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     static {
         // We need class WellKnowns to be elaborated before anything else
@@ -71,12 +70,10 @@ public class Main
     /** CLI parameters. */
     private static CLI cli;
 
-    //~ Constructors -------------------------------------------------------------------------------
     private Main ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // getCli //
     //--------//
@@ -280,8 +277,8 @@ public class Main
                 try {
                     logTasks(tasks, true);
 
-                    List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor().invokeAll(
-                            tasks);
+                    List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor()
+                            .invokeAll(tasks);
                     logger.info("Checking {} task(s)", tasks.size());
 
                     // Check for time-out
@@ -329,49 +326,39 @@ public class Main
         if (constants.showEnvironment.isSet()) {
             logger.info(
                     "Environment:\n" + "- Audiveris:    {}\n" + "- OS:           {}\n"
-                    + "- Architecture: {}\n" + "- Java VM:      {}\n" + "- OCR Engine:   {}",
+                            + "- Architecture: {}\n" + "- Java VM:      {}\n" + "- OCR Engine:   {}",
                     WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD,
                     System.getProperty("os.name") + " " + System.getProperty("os.version"),
                     System.getProperty("os.arch"),
-                    System.getProperty("java.vm.name") + " (build "
-                    + System.getProperty("java.vm.version") + ", " + System.getProperty("java.vm.info")
-                    + ")",
+                    System.getProperty("java.vm.name") + " (build " + System.getProperty(
+                    "java.vm.version") + ", " + System.getProperty("java.vm.info") + ")",
                     TesseractOCR.getInstance().identify());
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean showEnvironment = new Constant.Boolean(
-                true,
-                "Should we show environment?");
+        private final Constant.Boolean showEnvironment = new Constant.Boolean(true,
+                                                                              "Should we show environment?");
 
-        private final Constant.String locale = new Constant.String(
-                "en",
-                "Locale language to be used in the whole application (en, fr)");
+        private final Constant.String locale = new Constant.String("en",
+                                                                   "Locale language to be used in the whole application (en, fr)");
 
-        private final Constant.Boolean persistBatchCliConstants = new Constant.Boolean(
-                false,
-                "Should we persist CLI-defined constants when running in batch?");
+        private final Constant.Boolean persistBatchCliConstants = new Constant.Boolean(false,
+                                                                                       "Should we persist CLI-defined constants when running in batch?");
 
-        private final Constant.Boolean runBatchTasksInParallel = new Constant.Boolean(
-                false,
-                "Should we process all tasks in parallel when running in batch?");
+        private final Constant.Boolean runBatchTasksInParallel = new Constant.Boolean(false,
+                                                                                      "Should we process all tasks in parallel when running in batch?");
 
-        private final Constant.Boolean processSystemsInParallel = new Constant.Boolean(
-                false,
-                "Should we process all systems in parallel in a sheet?");
+        private final Constant.Boolean processSystemsInParallel = new Constant.Boolean(false,
+                                                                                       "Should we process all systems in parallel in a sheet?");
 
-        private final Constant.Integer sheetStepTimeOut = new Constant.Integer(
-                "Seconds",
-                120,
-                "Time-out for one step on a sheet, specified in seconds");
+        private final Constant.Integer sheetStepTimeOut = new Constant.Integer("Seconds", 120,
+                                                                               "Time-out for one step on a sheet, specified in seconds");
     }
 }

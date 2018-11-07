@@ -70,7 +70,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public interface Inter
         extends Entity, VisitableInter, AttachmentHolder
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Call-back when this instance has just been added to SIG.
