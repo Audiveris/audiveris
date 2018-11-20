@@ -160,7 +160,7 @@ public class ClustersRetriever
     private final List<StaffFilament> filaments;
 
     /** Filaments discarded. */
-    private final List<StaffFilament> discardedFilaments = new ArrayList<StaffFilament>();
+    private final List<StaffFilament> discardedFilaments = new ArrayList<>();
 
     /** Skew of the sheet */
     private final Skew skew;
@@ -181,7 +181,7 @@ public class ClustersRetriever
     private int[] colX;
 
     /** Collection of clusters */
-    private final List<LineCluster> clusters = new ArrayList<LineCluster>();
+    private final List<LineCluster> clusters = new ArrayList<>();
 
     /**
      * Creates a new ClustersRetriever object, for a given staff
@@ -205,7 +205,7 @@ public class ClustersRetriever
         skew = sheet.getSkew();
         pictureWidth = sheet.getWidth();
         scale = sheet.getScale();
-        colCombs = new TreeMap<Integer, List<FilamentComb>>();
+        colCombs = new TreeMap<>();
 
         params = new Parameters(scale, interlineScale);
     }
@@ -232,8 +232,11 @@ public class ClustersRetriever
         // Retrieve clusters
         retrieveClusters(checkConsistency);
 
-        logger.info("Retrieved line clusters: {} of size: {} with interline: {}", clusters.size(),
-                    popSize, interlineScale);
+        logger.info(
+                "Retrieved line clusters: {} of size: {} with interline: {}",
+                clusters.size(),
+                popSize,
+                interlineScale);
 
         return discardedFilaments;
     }
@@ -263,31 +266,6 @@ public class ClustersRetriever
     public int getInterline ()
     {
         return interlineScale.main;
-    }
-
-    //-------------//
-    // renderItems //
-    //-------------//
-    /**
-     * Render the vertical combs of filaments
-     *
-     * @param g graphics context
-     */
-    void renderItems (Graphics2D g)
-    {
-        Color oldColor = g.getColor();
-        g.setColor(combColor);
-
-        for (Entry<Integer, List<FilamentComb>> entry : colCombs.entrySet()) {
-            int col = entry.getKey();
-            int x = colX[col];
-
-            for (FilamentComb comb : entry.getValue()) {
-                g.draw(new Line2D.Double(x, comb.getY(0), x, comb.getY(comb.getCount() - 1)));
-            }
-        }
-
-        g.setColor(oldColor);
     }
 
     //-----------//
@@ -387,8 +365,10 @@ public class ClustersRetriever
             // Overlap: measure vertical distances at middle abscissa of common part
             final int xMid = (maxLeft + minRight) / 2;
             final double slope = sheet.getSkew().getSlope();
-            dist = bestMatch(ordinatesOf(one.getPointsAt(xMid, params.maxExpandDx, slope)),
-                             ordinatesOf(two.getPointsAt(xMid, params.maxExpandDx, slope)), deltaPos);
+            dist = bestMatch(
+                    ordinatesOf(one.getPointsAt(xMid, params.maxExpandDx, slope)),
+                    ordinatesOf(two.getPointsAt(xMid, params.maxExpandDx, slope)),
+                    deltaPos);
 
             if (dist <= params.maxMergeDy) {
                 // Check there is no collision on common lines
@@ -426,8 +406,8 @@ public class ClustersRetriever
                                     LineCluster two,
                                     int delta)
     {
-        final List<StaffFilament> oneLines = new ArrayList<StaffFilament>(one.getLines());
-        final List<StaffFilament> twoLines = new ArrayList<StaffFilament>(two.getLines());
+        final List<StaffFilament> oneLines = new ArrayList<>(one.getLines());
+        final List<StaffFilament> twoLines = new ArrayList<>(two.getLines());
 
         for (int i1 = 0; i1 < oneLines.size(); i1++) {
             final StaffFilament f1 = oneLines.get(i1);
@@ -463,7 +443,7 @@ public class ClustersRetriever
     private double computeAcceptableLength ()
     {
         // Determine minimum true length for valid clusters
-        List<Integer> lengths = new ArrayList<Integer>();
+        List<Integer> lengths = new ArrayList<>();
 
         for (LineCluster cluster : clusters) {
             lengths.add(cluster.getTrueLength());
@@ -489,7 +469,8 @@ public class ClustersRetriever
         StaffFilament twoAnc = (StaffFilament) two.getAncestor();
 
         if (oneAnc != twoAnc) {
-            if (oneAnc.getLength(Orientation.HORIZONTAL) >= twoAnc.getLength(Orientation.HORIZONTAL)) {
+            if (oneAnc.getLength(Orientation.HORIZONTAL) >= twoAnc.getLength(
+                    Orientation.HORIZONTAL)) {
                 ///logger.info("Inclusion " + twoAnc + " into " + oneAnc);
                 oneAnc.include(twoAnc);
                 oneAnc.getCombs().putAll(twoAnc.getCombs());
@@ -640,8 +621,11 @@ public class ClustersRetriever
 
                         if (cluster.includeFilamentByIndex(fil, index)) {
                             if (logger.isDebugEnabled() || fil.isVip() || cluster.isVip()) {
-                                logger.info("VIP aggregated F{} to C{} at index {}", fil.getId(),
-                                            cluster.getId(), index);
+                                logger.info(
+                                        "VIP aggregated F{} to C{} at index {}",
+                                        fil.getId(),
+                                        cluster.getId(),
+                                        index);
 
                                 if (fil.isVip()) {
                                     cluster.setVip(true);
@@ -670,10 +654,10 @@ public class ClustersRetriever
      */
     private void expandClusters ()
     {
-        List<StaffFilament> startFils = new ArrayList<StaffFilament>(filaments);
+        List<StaffFilament> startFils = new ArrayList<>(filaments);
         Collections.sort(startFils, byStartAbscissa);
 
-        List<StaffFilament> stopFils = new ArrayList<StaffFilament>(startFils);
+        List<StaffFilament> stopFils = new ArrayList<>(startFils);
         Collections.sort(stopFils, byStopAbscissa);
 
         // Browse clusters, starting with the longest ones
@@ -703,7 +687,7 @@ public class ClustersRetriever
             Map<Integer, FilamentComb> combs = fil.getCombs();
 
             // Sequence of lines around the filament, indexed by relative pos
-            Map<Integer, StaffFilament> lines = new TreeMap<Integer, StaffFilament>();
+            Map<Integer, StaffFilament> lines = new TreeMap<>();
 
             // Loop on all combs this filament is involved in
             for (FilamentComb comb : combs.values()) {
@@ -835,7 +819,7 @@ public class ClustersRetriever
             // Keep on working while we do have a candidate to check for merge
             CandidateLoop:
             while (true) {
-                Wrapper<Integer> deltaPos = new Wrapper<Integer>(null);
+                Wrapper<Integer> deltaPos = new Wrapper<>(null);
                 Rectangle candidateBox = candidate.getBounds();
                 candidateBox.grow(params.maxMergeDx, params.clusterYMargin);
 
@@ -855,8 +839,11 @@ public class ClustersRetriever
                     if (headBox.intersects(candidateBox)) {
                         // Try a merge
                         if (canMerge(head, candidate, deltaPos)) {
-                            logger.debug("Merging {} with {} delta:{}", candidate, head,
-                                         deltaPos.value);
+                            logger.debug(
+                                    "Merging {} with {} delta:{}",
+                                    candidate,
+                                    head,
+                                    deltaPos.value);
 
                             // Do the merge
                             candidate.mergeWith(head, deltaPos.value);
@@ -1016,7 +1003,7 @@ public class ClustersRetriever
         double samplingDx = (double) pictureWidth / (sampleCount + 1);
 
         for (int col = 1; col <= sampleCount; col++) {
-            final List<FilamentComb> colList = new ArrayList<FilamentComb>();
+            final List<FilamentComb> colList = new ArrayList<>();
             colCombs.put(col, colList);
 
             final int x = (int) Math.rint(samplingDx * col);
@@ -1074,7 +1061,7 @@ public class ClustersRetriever
      */
     private List<FilY> retrieveFilamentsAtX (double x)
     {
-        List<FilY> list = new ArrayList<FilY>();
+        List<FilY> list = new ArrayList<>();
 
         for (StaffFilament fil : filaments) {
             if ((x >= fil.getStartPoint().getX()) && (x <= fil.getStopPoint().getX())) {
@@ -1087,7 +1074,6 @@ public class ClustersRetriever
         return list;
     }
 
-    //
     //    //---------------------//
     //    // retrievePopularSize //
     //    //---------------------//
@@ -1097,7 +1083,7 @@ public class ClustersRetriever
     //    private void retrievePopularSize ()
     //    {
     //        // Build histogram of combs lengths
-    //        Histogram<Integer> histo = new Histogram<Integer>();
+    //        Histogram<Integer> histo = new Histogram<>();
     //
     //        for (List<FilamentComb> list : colCombs.values()) {
     //            for (FilamentComb comb : list) {
@@ -1121,51 +1107,86 @@ public class ClustersRetriever
         Collections.sort(clusters, byOrdinate);
 
         // Trim clusters with too many lines
-        for (Iterator<LineCluster> it = clusters.iterator(); it.hasNext();) {
-            LineCluster cluster = it.next();
+        for (LineCluster cluster : clusters) {
             cluster.trim(popSize);
         }
+    }
+
+    //-------------//
+    // renderItems //
+    //-------------//
+    /**
+     * Render the vertical combs of filaments
+     *
+     * @param g graphics context
+     */
+    void renderItems (Graphics2D g)
+    {
+        Color oldColor = g.getColor();
+        g.setColor(combColor);
+
+        for (Entry<Integer, List<FilamentComb>> entry : colCombs.entrySet()) {
+            int col = entry.getKey();
+            int x = colX[col];
+
+            for (FilamentComb comb : entry.getValue()) {
+                g.draw(new Line2D.Double(x, comb.getY(0), x, comb.getY(comb.getCount() - 1)));
+            }
+        }
+
+        g.setColor(oldColor);
     }
 
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction samplingDx = new Scale.Fraction(1,
-                                                                     "Typical delta X between two vertical samplings");
+        private final Scale.Fraction samplingDx = new Scale.Fraction(
+                1,
+                "Typical delta X between two vertical samplings");
 
-        private final Scale.Fraction maxExpandDx = new Scale.Fraction(2,
-                                                                      "Maximum dx to aggregate a filament to a cluster");
+        private final Scale.Fraction maxExpandDx = new Scale.Fraction(
+                2,
+                "Maximum dx to aggregate a filament to a cluster");
 
-        private final Scale.Fraction maxExpandDy = new Scale.Fraction(0.175,
-                                                                      "Maximum dy to aggregate a filament to a cluster");
+        private final Scale.Fraction maxExpandDy = new Scale.Fraction(
+                0.175,
+                "Maximum dy to aggregate a filament to a cluster");
 
-        private final Scale.Fraction maxMergeDx = new Scale.Fraction(6,
-                                                                     "Maximum dx to merge two clusters");
+        private final Scale.Fraction maxMergeDx = new Scale.Fraction(
+                6,
+                "Maximum dx to merge two clusters");
 
-        private final Scale.Fraction maxMergeDy = new Scale.Fraction(0.4,
-                                                                     "Maximum dy to merge two clusters");
+        private final Scale.Fraction maxMergeDy = new Scale.Fraction(
+                0.4,
+                "Maximum dy to merge two clusters");
 
-        private final Scale.Fraction maxMergeCenterDy = new Scale.Fraction(1.0,
-                                                                           "Maximum center dy to merge two clusters");
+        private final Scale.Fraction maxMergeCenterDy = new Scale.Fraction(
+                1.0,
+                "Maximum center dy to merge two clusters");
 
-        private final Scale.Fraction clusterYMargin = new Scale.Fraction(2,
-                                                                         "Rough margin around cluster ordinate");
+        private final Scale.Fraction clusterYMargin = new Scale.Fraction(
+                2,
+                "Rough margin around cluster ordinate");
 
-        private final Scale.Fraction combMinMargin = new Scale.Fraction(0.0,
-                                                                        "Comb margin below minimum interline (use with caution)");
+        private final Scale.Fraction combMinMargin = new Scale.Fraction(
+                0.0,
+                "Comb margin below minimum interline (use with caution)");
 
-        private final Scale.Fraction combMaxMargin = new Scale.Fraction(0.0,
-                                                                        "Comb margin above maximum interline (use with caution)");
+        private final Scale.Fraction combMaxMargin = new Scale.Fraction(
+                0.0,
+                "Comb margin above maximum interline (use with caution)");
 
-        private final Constant.Ratio minClusterLengthRatio = new Constant.Ratio(0.2,
-                                                                                "Minimum cluster true length (as ratio of median true length)");
+        private final Constant.Ratio minClusterLengthRatio = new Constant.Ratio(
+                0.2,
+                "Minimum cluster true length (as ratio of median true length)");
 
-        private final Constant.Ratio maxClusterDiffLengthRatio = new Constant.Ratio(0.5,
-                                                                                    "Maximum ratio of difference in length within raw lines of a cluster");
+        private final Constant.Ratio maxClusterDiffLengthRatio = new Constant.Ratio(
+                0.5,
+                "Maximum ratio of difference in length within raw lines of a cluster");
     }
 
     //------//
@@ -1192,8 +1213,8 @@ public class ClustersRetriever
 
         final double y;
 
-        public FilY (StaffFilament filament,
-                     double y)
+        FilY (StaffFilament filament,
+              double y)
         {
             this.filament = filament;
             this.y = y;
@@ -1240,8 +1261,8 @@ public class ClustersRetriever
          * @param scale          the sheet global scaling factor
          * @param interlineScale the scaling for these clusters
          */
-        public Parameters (Scale scale,
-                           InterlineScale interlineScale)
+        Parameters (Scale scale,
+                    InterlineScale interlineScale)
         {
             samplingDx = scale.toPixels(constants.samplingDx);
             maxExpandDx = scale.toPixels(constants.maxExpandDx);

@@ -74,11 +74,12 @@ public class FlagsDownSymbol
     {
         MyParams p = initParams(font);
 
-        p.rect = new Rectangle(0, 0, (int) Math.ceil(p.rect2.getWidth()), (((fn / 2)
-                                                                                    + ((fn + 1) % 2))
-                                                                           * Math
-                                       .abs(p.dy)) + ((fn % 2) * (int) Math
-                               .ceil(p.rect1.getHeight())));
+        p.rect = new Rectangle(
+                0,
+                0,
+                (int) Math.ceil(p.rect2.getWidth()),
+                (((fn / 2) + ((fn + 1) % 2)) * Math.abs(p.dy)) + ((fn % 2) * (int) Math.ceil(
+                p.rect1.getHeight())));
 
         return p;
     }
@@ -86,6 +87,12 @@ public class FlagsDownSymbol
     //------------//
     // initParams //
     //------------//
+    /**
+     * Specific initialization, based on provided font, depending on flag direction.
+     *
+     * @param font provided font
+     * @return initialized params
+     */
     protected MyParams initParams (MusicFont font)
     {
         MyParams p = new MyParams();

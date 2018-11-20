@@ -61,7 +61,8 @@ public class SlurInfo
     /** Number of points for side circles. */
     protected final int sideLength;
 
-    /** Is the slur: above heads, below heads or flat.
+    /**
+     * Is the slur: above heads, below heads or flat.
      * 1 for above, -1 for below, 0 for flat
      */
     protected int above;
@@ -255,6 +256,11 @@ public class SlurInfo
     //-------------//
     // getMidPoint //
     //-------------//
+    /**
+     * Report slur middle point
+     *
+     * @return mid point
+     */
     public Point2D getMidPoint ()
     {
         return model.getMidPoint();
@@ -387,9 +393,15 @@ public class SlurInfo
         }
     }
 
-    //---------------//
+    //--------------//
     // setSideModel //
-    //---------------//
+    //--------------//
+    /**
+     * Assign model to provided side of the slur.
+     *
+     * @param model   chosen model
+     * @param reverse desired direction
+     */
     public void setSideModel (Model model,
                               boolean reverse)
     {
@@ -414,9 +426,9 @@ public class SlurInfo
         Line2D bisector = LineUtil.bisector(getEnd(above), getEnd(!above));
         double length = bisector.getP1().distance(bisector.getP2());
 
-        return new Point2D.Double((bisector.getX2() - bisector.getX1()) / length, (bisector.getY2()
-                                                                                           - bisector
-                                          .getY1()) / length);
+        return new Point2D.Double(
+                (bisector.getX2() - bisector.getX1()) / length,
+                (bisector.getY2() - bisector.getY1()) / length);
     }
 
     //-----------//

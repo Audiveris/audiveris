@@ -50,41 +50,6 @@ public class StaffPeak
         implements Comparable<StaffPeak>
 {
 
-    /**
-     * All attributes flags that can be assigned to a StaffPeak instance.
-     */
-    public static enum Attribute
-    {
-        /** This is a thin peak */
-        THIN,
-        /** This is a thick peak */
-        THICK,
-        /** This peak defines staff left end */
-        STAFF_LEFT_END,
-        /** This peak defines staff right end */
-        STAFF_RIGHT_END,
-        /** This peak is a top portion of a bracket */
-        BRACKET_TOP,
-        /** This peak is a middle portion of a bracket */
-        BRACKET_MIDDLE,
-        /** This peak is a bottom portion of a bracket */
-        BRACKET_BOTTOM,
-        /** This peak is the thick one of a C-Clef */
-        CCLEF_ONE,
-        /** This peak is the thin one of a C-Clef */
-        CCLEF_TWO,
-        /** This peak is part of the tail of a C-Clef */
-        CCLEF_TAIL,
-        /** This peak is a portion of a brace */
-        BRACE,
-        /** This peak is a top portion of a brace */
-        BRACE_TOP,
-        /** This peak is a middle portion of a brace */
-        BRACE_MIDDLE,
-        /** This peak is a bottom portion of a brace */
-        BRACE_BOTTOM;
-    }
-
     /** Containing staff. */
     protected final Staff staff;
 
@@ -106,17 +71,17 @@ public class StaffPeak
     /** Underlying filament. */
     protected Filament filament;
 
-    /** Top serif filament, if any. */
-    private Filament topSerif;
-
-    /** Bottom serif filament, if any. */
-    private Filament bottomSerif;
-
     /** Corresponding inter, if any. */
     protected Inter inter;
 
     /** Attributes currently set. */
     protected final EnumSet<Attribute> attrs = EnumSet.noneOf(Attribute.class);
+
+    /** Top serif filament, if any. */
+    private Filament topSerif;
+
+    /** Bottom serif filament, if any. */
+    private Filament bottomSerif;
 
     /** Evaluation, if any. */
     private final GradeImpacts impacts;
@@ -170,6 +135,11 @@ public class StaffPeak
     //-----------------------//
     // computeDeskewedCenter //
     //-----------------------//
+    /**
+     * Compute the (de-skewed) peak center.
+     *
+     * @param skew global sheet skew
+     */
     public void computeDeskewedCenter (Skew skew)
     {
         Point2D mid = new Point2D.Double((start + stop) / 2.0, (top + bottom) / 2.0);
@@ -216,6 +186,11 @@ public class StaffPeak
     //-----------//
     // getBounds //
     //-----------//
+    /**
+     * Report the bounding box of the peak.
+     *
+     * @return bounds
+     */
     public Rectangle getBounds ()
     {
         return new Rectangle(start, top, getWidth(), bottom - top + 1);
@@ -232,9 +207,27 @@ public class StaffPeak
         return column;
     }
 
+    //-----------//
+    // setColumn //
+    //-----------//
+    /**
+     * Assign the containing column.
+     *
+     * @param column the column to set
+     */
+    public void setColumn (BarColumn column)
+    {
+        this.column = column;
+    }
+
     //---------------------//
     // getDeskewedAbscissa //
     //---------------------//
+    /**
+     * Report the abscissa of peak de-skewed center.
+     *
+     * @return (de-skewed) x
+     */
     public double getDeskewedAbscissa ()
     {
         return dsk.getX();
@@ -243,6 +236,11 @@ public class StaffPeak
     //-------------------//
     // getDeskewedCenter //
     //-------------------//
+    /**
+     * Report the de-skewed peak center
+     *
+     * @return de-skewed center
+     */
     public Point2D getDeskewedCenter ()
     {
         return dsk;
@@ -251,15 +249,35 @@ public class StaffPeak
     //-------------//
     // getFilament //
     //-------------//
+    /**
+     * Report the related filament, if any
+     *
+     * @return filament, perhaps null
+     */
     public Filament getFilament ()
     {
         return filament;
+    }
+
+    //-------------//
+    // setFilament //
+    //-------------//
+    /**
+     * Assign a related filament.
+     *
+     * @param filament the related filament
+     */
+    public void setFilament (Filament filament)
+    {
+        this.filament = filament;
     }
 
     //------------//
     // getImpacts //
     //------------//
     /**
+     * Report the peak evaluation, if any.
+     *
      * @return the impacts
      */
     public GradeImpacts getImpacts ()
@@ -271,6 +289,8 @@ public class StaffPeak
     // getInter //
     //----------//
     /**
+     * Report the related inter, if any.
+     *
      * @return the inter
      */
     public Inter getInter ()
@@ -278,9 +298,28 @@ public class StaffPeak
         return inter;
     }
 
+    //----------//
+    // setInter //
+    //----------//
+    /**
+     * Set the related Inter.
+     *
+     * @param inter the inter to set (instance of BraceInter or AbstractVerticalInter)
+     */
+    public void setInter (Inter inter)
+    {
+        this.inter = inter;
+    }
+
     //-------------//
     // getOrdinate //
     //-------------//
+    /**
+     * Report peak ordinate on desired vertical side.
+     *
+     * @param side the desired vertical side
+     * @return the end ordinate on given side
+     */
     public int getOrdinate (VerticalSide side)
     {
         if (side == VerticalSide.TOP) {
@@ -294,6 +333,8 @@ public class StaffPeak
     // getStaff //
     //----------//
     /**
+     * Report the underlying staff.
+     *
      * @return the staff
      */
     public Staff getStaff ()
@@ -305,6 +346,8 @@ public class StaffPeak
     // getStart //
     //----------//
     /**
+     * Report the starting abscissa
+     *
      * @return the start
      */
     public int getStart ()
@@ -316,6 +359,8 @@ public class StaffPeak
     // getStop //
     //---------//
     /**
+     * Report the ending abscissa
+     *
      * @return the stop
      */
     public int getStop ()
@@ -327,6 +372,8 @@ public class StaffPeak
     // getTop //
     //--------//
     /**
+     * Return line ordinate at top of peak.
+     *
      * @return the top
      */
     public int getTop ()
@@ -338,6 +385,8 @@ public class StaffPeak
     // getTopSerif //
     //-------------//
     /**
+     * Report the serif at top of peak, if any
+     *
      * @return the topSerif
      */
     public Filament getTopSerif ()
@@ -348,6 +397,11 @@ public class StaffPeak
     //----------//
     // getWidth //
     //----------//
+    /**
+     * Report peak width
+     *
+     * @return the width of peak
+     */
     public int getWidth ()
     {
         return stop - start + 1;
@@ -434,6 +488,12 @@ public class StaffPeak
     //------------//
     // isStaffEnd //
     //------------//
+    /**
+     * Tell whether this peak is a staff end on provided horizontal side.
+     *
+     * @param side desired horizontal side
+     * @return true if so
+     */
     public boolean isStaffEnd (HorizontalSide side)
     {
         return isSet((side == LEFT) ? STAFF_LEFT_END : STAFF_RIGHT_END);
@@ -442,6 +502,11 @@ public class StaffPeak
     //-------//
     // isVip //
     //-------//
+    /**
+     * Tell whether it's a VIP object
+     *
+     * @return true if so
+     */
     public boolean isVip ()
     {
         return (filament != null) && filament.isVip();
@@ -450,10 +515,16 @@ public class StaffPeak
     //--------//
     // render //
     //--------//
+    /**
+     * Render this peak on the provided graphics
+     *
+     * @param g graphics context
+     */
     public void render (Graphics2D g)
     {
-        g.setColor(isBrace() ? Colors.STAFF_PEAK_BRACE : (isBracket() ? Colors.STAFF_PEAK_BRACKET
-                : Colors.STAFF_PEAK));
+        g.setColor(
+                isBrace() ? Colors.STAFF_PEAK_BRACE
+                        : (isBracket() ? Colors.STAFF_PEAK_BRACKET : Colors.STAFF_PEAK));
         g.fillRect(start, top, stop - start + 1, bottom - top + 1);
     }
 
@@ -489,38 +560,6 @@ public class StaffPeak
             set(BRACKET_BOTTOM);
             bottomSerif = serif;
         }
-    }
-
-    //-----------//
-    // setColumn //
-    //-----------//
-    /**
-     * @param column the column to set
-     */
-    public void setColumn (BarColumn column)
-    {
-        this.column = column;
-    }
-
-    //-------------//
-    // setFilament //
-    //-------------//
-    public void setFilament (Filament filament)
-    {
-        this.filament = filament;
-    }
-
-    //----------//
-    // setInter //
-    //----------//
-    /**
-     * Set the related Inter.
-     *
-     * @param inter the inter to set (instance of BraceInter or AbstractVerticalInter)
-     */
-    public void setInter (Inter inter)
-    {
-        this.inter = inter;
     }
 
     //-------------//
@@ -577,6 +616,11 @@ public class StaffPeak
     //-----------//
     // internals //
     //-----------//
+    /**
+     * Report a string description of class internals
+     *
+     * @return string description of internals
+     */
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder();
@@ -586,5 +630,40 @@ public class StaffPeak
         }
 
         return sb.toString();
+    }
+
+    /**
+     * All attributes flags that can be assigned to a StaffPeak instance.
+     */
+    public static enum Attribute
+    {
+        /** This is a thin peak */
+        THIN,
+        /** This is a thick peak */
+        THICK,
+        /** This peak defines staff left end */
+        STAFF_LEFT_END,
+        /** This peak defines staff right end */
+        STAFF_RIGHT_END,
+        /** This peak is a top portion of a bracket */
+        BRACKET_TOP,
+        /** This peak is a middle portion of a bracket */
+        BRACKET_MIDDLE,
+        /** This peak is a bottom portion of a bracket */
+        BRACKET_BOTTOM,
+        /** This peak is the thick one of a C-Clef */
+        CCLEF_ONE,
+        /** This peak is the thin one of a C-Clef */
+        CCLEF_TWO,
+        /** This peak is part of the tail of a C-Clef */
+        CCLEF_TAIL,
+        /** This peak is a portion of a brace */
+        BRACE,
+        /** This peak is a top portion of a brace */
+        BRACE_TOP,
+        /** This peak is a middle portion of a brace */
+        BRACE_MIDDLE,
+        /** This peak is a bottom portion of a brace */
+        BRACE_BOTTOM;
     }
 }

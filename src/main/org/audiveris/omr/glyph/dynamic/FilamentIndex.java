@@ -56,8 +56,9 @@ public class FilamentIndex
     private static final Logger logger = LoggerFactory.getLogger(FilamentIndex.class);
 
     /** Events that can be published on filament service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]{EntityListEvent.class,
-                                                                   IdEvent.class};
+    private static final Class<?>[] eventsAllowed = new Class<?>[]{
+        EntityListEvent.class,
+        IdEvent.class};
 
     /** Related sheet. */
     @Navigable(false)
@@ -143,16 +144,17 @@ public class FilamentIndex
     public void publish (final Filament filament)
     {
         if (entityService != null) {
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
                 {
-                    entityService.publish(new EntityListEvent<Filament>(this,
-                                                                        SelectionHint.ENTITY_INIT,
-                                                                        MouseMovement.PRESSING,
-                                                                        filament));
+                    entityService.publish(
+                            new EntityListEvent<>(
+                                    this,
+                                    SelectionHint.ENTITY_INIT,
+                                    MouseMovement.PRESSING,
+                                    filament));
                 }
             });
         }
@@ -161,12 +163,13 @@ public class FilamentIndex
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.String vipFilaments = new Constant.String("",
-                                                                         "(Debug) Comma-separated values of VIP filaments IDs");
+        private final Constant.String vipFilaments = new Constant.String(
+                "",
+                "(Debug) Comma-separated values of VIP filaments IDs");
     }
 
     //-----------------//
@@ -176,8 +179,8 @@ public class FilamentIndex
             extends EntityService<Filament>
     {
 
-        public FilamentService (FilamentIndex index,
-                                Sheet sheet)
+        FilamentService (FilamentIndex index,
+                         Sheet sheet)
         {
             super(index, sheet.getLocationService(), eventsAllowed);
         }

@@ -68,8 +68,10 @@ public abstract class AbstractGrayFilter
             throw new IllegalArgumentException("Input image is not of type TYPE_BYTE_GRAY");
         }
 
-        final BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(),
-                                                       BufferedImage.TYPE_BYTE_GRAY);
+        final BufferedImage output = new BufferedImage(
+                input.getWidth(),
+                input.getHeight(),
+                BufferedImage.TYPE_BYTE_GRAY);
 
         filter(new ByteProcessor(input), new ByteProcessor(output));
 

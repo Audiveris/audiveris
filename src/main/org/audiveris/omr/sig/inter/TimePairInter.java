@@ -81,33 +81,6 @@ public class TimePairInter
         visitor.visit(this);
     }
 
-    //-------------//
-    // createAdded //
-    //-------------//
-    /**
-     * Create and add a {@code TimePairInter} object from its two halves.
-     *
-     * @param num numerator: non-null, registered in sig
-     * @param den denominator: non-null, registered in sig
-     * @return the created instance, already added to sig
-     */
-    public static TimePairInter createAdded (TimeNumberInter num,
-                                             TimeNumberInter den)
-    {
-        double grade = 0.5 * (num.getGrade() + den.getGrade());
-        TimePairInter pair = new TimePairInter(null, grade);
-        SIGraph sig = num.getSig();
-        sig.addVertex(pair);
-        pair.addMember(num);
-        pair.addMember(den);
-
-        if (pair.isVip()) {
-            logger.info("VIP created {} from num:{} den:{}", pair, num, den);
-        }
-
-        return pair;
-    }
-
     //-----------//
     // addMember //
     //-----------//
@@ -247,8 +220,9 @@ public class TimePairInter
             final List<Inter> members = getMembers();
 
             if (members.size() == 2) {
-                timeRational = new TimeRational(((TimeNumberInter) members.get(0)).getValue(),
-                                                ((TimeNumberInter) members.get(1)).getValue());
+                timeRational = new TimeRational(
+                        ((AbstractNumberInter) members.get(0)).getValue(),
+                        ((AbstractNumberInter) members.get(1)).getValue());
             }
         }
 
@@ -297,5 +271,32 @@ public class TimePairInter
     public String shapeString ()
     {
         return "TIME_SIG_" + getTimeRational();
+    }
+
+    //-------------//
+    // createAdded //
+    //-------------//
+    /**
+     * Create and add a {@code TimePairInter} object from its two halves.
+     *
+     * @param num numerator: non-null, registered in sig
+     * @param den denominator: non-null, registered in sig
+     * @return the created instance, already added to sig
+     */
+    public static TimePairInter createAdded (TimeNumberInter num,
+                                             TimeNumberInter den)
+    {
+        double grade = 0.5 * (num.getGrade() + den.getGrade());
+        TimePairInter pair = new TimePairInter(null, grade);
+        SIGraph sig = num.getSig();
+        sig.addVertex(pair);
+        pair.addMember(num);
+        pair.addMember(den);
+
+        if (pair.isVip()) {
+            logger.info("VIP created {} from num:{} den:{}", pair, num, den);
+        }
+
+        return pair;
     }
 }

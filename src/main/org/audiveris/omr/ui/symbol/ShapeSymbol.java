@@ -33,11 +33,10 @@ import java.io.IOException;
 /**
  * Class {@code ShapeSymbol} extends the {@link BasicSymbol} with the handling of a
  * related {@link Shape}.
- * A ShapeSymbol thus adds several features:<ul>
- * <p>
+ * A ShapeSymbol thus adds several features:
+ * <ul>
  * <li>It can be used for Drag &amp; Drop operations, since it implements the {@link Transferable}
  * interface.</li>
- * <p>
  * <li>It can be used to <b>train</b> the glyph classifier when we don't have enough "real" glyphs
  * available.</li>
  * </ul>
@@ -54,7 +53,8 @@ public class ShapeSymbol
 
     /** Composite used for decoration */
     protected static final AlphaComposite decoComposite = AlphaComposite.getInstance(
-            AlphaComposite.SRC_OVER, 0.15f);
+            AlphaComposite.SRC_OVER,
+            0.15f);
 
     /** Related shape. */
     protected final Shape shape;
@@ -91,25 +91,6 @@ public class ShapeSymbol
                         int... codes)
     {
         this(false, shape, false, codes);
-    }
-
-    //-------------//
-    // numberCodes //
-    //-------------//
-    public static int[] numberCodes (int number)
-    {
-        ShapeSymbol symbol = Symbols.getSymbol(TIME_ZERO);
-        int base = symbol.codes[0];
-        int[] numberCodes = (number > 9) ? new int[2] : new int[1];
-        int index = 0;
-
-        if (number > 9) {
-            numberCodes[index++] = base + (number / 10);
-        }
-
-        numberCodes[index] = base + (number % 10);
-
-        return numberCodes;
     }
 
     //----------//
@@ -181,16 +162,41 @@ public class ShapeSymbol
         return new ShapeSymbol(true, shape, decorated, codes);
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    protected String internalsString ()
+    protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internalsString());
+        StringBuilder sb = new StringBuilder(super.internals());
 
         sb.append(" ").append(shape);
 
         return sb.toString();
+    }
+
+    //-------------//
+    // numberCodes //
+    //-------------//
+    /**
+     * Report the codes for a time number symbol.
+     *
+     * @param number integer value of the symbol
+     * @return corresponding codes in music font
+     */
+    public static int[] numberCodes (int number)
+    {
+        ShapeSymbol symbol = Symbols.getSymbol(TIME_ZERO);
+        int base = symbol.codes[0];
+        int[] numberCodes = (number > 9) ? new int[2] : new int[1];
+        int index = 0;
+
+        if (number > 9) {
+            numberCodes[index++] = base + (number / 10);
+        }
+
+        numberCodes[index] = base + (number % 10);
+
+        return numberCodes;
     }
 }

@@ -77,6 +77,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -91,6 +92,7 @@ import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -99,6 +101,12 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.util.IndentingXMLStreamWriter;
 
 /**
  * Class {@code Sheet} corresponds to one image in a book image file.
@@ -109,7 +117,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Methods are organized as follows:
  * <dl>
  * <dt>Administration</dt>
- * <dd><ul>
+ * <dd>
+ * <ul>
  * <li>{@link #getId}</li>
  * <li>{@link #getStub}</li>
  * <li>{@link #getSheetFileName}</li>
@@ -122,10 +131,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getGlyphIndex}</li>
  * <li>{@link #getInterIndex}</li>
  * <li>{@link #getPersistentIdGenerator}</li>
- * </ul></dd>
- * <p>
+ * </ul>
+ * </dd>
  * <dt>Pages, Systems and Staves</dt>
- * <dd><ul>
+ * <dd>
+ * <ul>
  * <li>{@link #addPage}</li>
  * <li>{@link #getPages}</li>
  * <li>{@link #getLastPage}</li>
@@ -133,17 +143,19 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getSystemManager}</li>
  * <li>{@link #getSystems}</li>
  * <li>{@link #dumpSystemInfos}</li>
- * </ul></dd>
- * <p>
+ * </ul>
+ * </dd>
  * <dt>Samples</dt>
- * <dd><ul>
+ * <dd>
+ * <ul>
  * <li>{@link #annotate()}</li>
  * <li>{@link #annotate(java.nio.file.Path)}</li>
  * <li>{@link #sample}</li>
- * </ul></dd>
- * <p>
+ * </ul>
+ * </dd>
  * <dt>Artifacts</dt>
- * <dd><ul>
+ * <dd>
+ * <ul>
  * <li>{@link #setImage}</li>
  * <li>{@link #hasPicture}</li>
  * <li>{@link #getPicture}</li>
@@ -158,10 +170,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #export}</li>
  * <li>{@link #setSheetDelta}</li>
  * <li>{@link #getSheetDelta}</li>
- * </ul></dd>
- * <p>
+ * </ul>
+ * </dd>
  * <dt>UI</dt>
- * <dd><ul>
+ * <dd>
+ * <ul>
  * <li>{@link #getSymbolsEditor}</li>
  * <li>{@link #createBinaryView}</li>
  * <li>{@link #createPictureView}</li>
@@ -173,9 +186,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getLocationService}</li>
  * <li>{@link #addItemRenderer}</li>
  * <li>{@link #renderItems}</li>
- * </ul></dd>
+ * </ul>
+ * </dd>
  * </dl>
- * <p>
  * The picture below represents the data model used for marshalling/unmarshalling a sheet to/from
  * a sheet#n.xml file within a book .omr file
  * <p>
@@ -196,19 +209,21 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class Sheet
 {
 
-    /** The radix used for folder of this sheet internals. */
-    public static final String INTERNALS_RADIX = "sheet#";
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(Sheet.class);
 
+    /** The radix used for folder of this sheet internals. */
+    public static final String INTERNALS_RADIX = "sheet#";
+
     /** Events that can be published on sheet location service. */
-    private static final Class<?>[] allowedEvents = new Class<?>[]{LocationEvent.class,
-                                                                   PixelEvent.class};
+    private static final Class<?>[] allowedEvents = new Class<?>[]{
+        LocationEvent.class,
+        PixelEvent.class};
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
-    //
     // Persistent data
     //----------------
     //
@@ -231,9 +246,10 @@ public class Sheet
 
     /** Corresponding page(s). A single sheet may relate to several pages. */
     @XmlElement(name = "page")
-    private final List<Page> pages = new ArrayList<Page>();
+    private final List<Page> pages = new ArrayList<>();
 
-    /** Global glyph index.
+    /**
+     * Global glyph index.
      * See annotated get/set methods: {@link #getGlyphIndexContent()}
      */
     private GlyphIndex glyphIndex;
@@ -286,7 +302,7 @@ public class Sheet
     private SheetDiff sheetDelta;
 
     /**
-     * Creates a new {@code BasicSheet} object with a binary table.
+     * Creates a new {@code Sheet} object with a binary table.
      *
      * @param stub        the related sheet stub
      * @param binaryTable the binary table, if any
@@ -341,20 +357,6 @@ public class Sheet
      */
     private Sheet ()
     {
-    }
-
-    //------------------//
-    // getSheetFileName //
-    //------------------//
-    /**
-     * Report the file name of a sheet in the .omr zip file system.
-     *
-     * @param number sheet number (counted from 1) within the containing book
-     * @return the sheet file name
-     */
-    public static String getSheetFileName (int number)
-    {
-        return Sheet.INTERNALS_RADIX + number + ".xml";
     }
 
     //-----------------//
@@ -466,14 +468,15 @@ public class Sheet
             BufferedImage img = runTable.getBufferedImage();
             os = Files.newOutputStream(imgPath, CREATE);
             ImageIO.write(img, Annotations.SHEET_IMAGE_FORMAT, os);
-        } catch (Exception ex) {
+        } catch (IOException |
+                 JAXBException ex) {
             logger.warn("Error annotating {} {}", stub, ex.toString(), ex);
         } finally {
             if (os != null) {
                 try {
                     os.flush();
                     os.close();
-                } catch (Exception ignored) {
+                } catch (IOException ignored) {
                 }
             }
         }
@@ -489,8 +492,7 @@ public class Sheet
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(
-                        new Runnable()
+                SwingUtilities.invokeAndWait(new Runnable()
                 {
                     @Override
                     public void run ()
@@ -498,7 +500,8 @@ public class Sheet
                         createBinaryView();
                     }
                 });
-            } catch (Exception ex) {
+            } catch (InterruptedException |
+                     InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
             }
         } else {
@@ -510,8 +513,10 @@ public class Sheet
 
                 // Display sheet binary
                 PictureView pictureView = new PictureView(this);
-                assembly.addViewTab(tab, pictureView, new BoardsPane(new PixelBoard(this),
-                                                                     new BinarizationBoard(this)));
+                assembly.addViewTab(
+                        tab,
+                        pictureView,
+                        new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
             } else {
                 assembly.selectViewTab(tab);
             }
@@ -530,8 +535,10 @@ public class Sheet
 
         // Display sheet picture
         PictureView pictureView = new PictureView(this);
-        stub.getAssembly().addViewTab(SheetTab.PICTURE_TAB, pictureView, new BoardsPane(
-                                      new PixelBoard(this), new BinarizationBoard(this)));
+        stub.getAssembly().addViewTab(
+                SheetTab.PICTURE_TAB,
+                pictureView,
+                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
     }
 
     //----------------//
@@ -597,7 +604,8 @@ public class Sheet
      * Export a single sheet in MusicXML.
      * <p>
      * The output is structured differently according to whether the sheet contains one or several
-     * pages.<ul>
+     * pages.
+     * <ul>
      * <li>A single-page sheet results in one score output.</li>
      * <li>A multi-page sheet results in one opus output (if useOpus is set) or a series of scores
      * (is useOpus is not set).</li>
@@ -622,8 +630,8 @@ public class Sheet
 
             final String ext = FileUtil.getExtension(path);
             final String sheetName = FileUtil.getNameSansExtension(path.getFileName());
-            final boolean compressed = (ext.equals(OMR.COMPRESSED_SCORE_EXTENSION)) ? true : ((ext
-                    .equals(OMR.SCORE_EXTENSION)) ? false : BookManager.useCompression());
+            final boolean compressed = (ext.equals(OMR.COMPRESSED_SCORE_EXTENSION)) ? true
+                    : ((ext.equals(OMR.SCORE_EXTENSION)) ? false : BookManager.useCompression());
             final boolean useSig = BookManager.useSignature();
 
             int modifs = 0; // Count of modifications
@@ -908,6 +916,19 @@ public class Sheet
     }
 
     //----------//
+    // setScale //
+    //----------//
+    /**
+     * Remember scale information to this sheet
+     *
+     * @param scale the computed sheet global scale
+     */
+    public void setScale (Scale scale)
+    {
+        this.scale = scale;
+    }
+
+    //----------//
     // setImage //
     //----------//
     /**
@@ -928,7 +949,8 @@ public class Sheet
 
             done(Step.LOAD);
         } catch (ImageFormatException ex) {
-            String msg = "Unsupported image format in file " + stub.getBook().getInputPath() + "\n"
+            String msg = "Unsupported image format in file " + stub.getBook().getInputPath()
+                                 + "\n"
                                  + ex.getMessage();
 
             if (OMR.gui != null) {
@@ -941,30 +963,6 @@ public class Sheet
         } catch (Throwable ex) {
             logger.warn("Error loading image", ex);
         }
-    }
-
-    //-----------//
-    // unmarshal //
-    //-----------//
-    /**
-     * Unmarshal the provided XML stream to allocate the corresponding sheet.
-     *
-     * @param in the input stream that contains the sheet in XML format.
-     *           The stream is not closed by this method
-     *
-     * @return the allocated sheet.
-     * @exception JAXBException raised when unmarshalling goes wrong
-     */
-    public static Sheet unmarshal (InputStream in)
-            throws JAXBException
-    {
-        Unmarshaller um = getJaxbContext().createUnmarshaller();
-
-        ///um.setListener(new Jaxb.UnmarshalLogger());
-        Sheet sheet = (Sheet) um.unmarshal(in);
-        logger.debug("Sheet unmarshalled");
-
-        return sheet;
     }
 
     //---------------//
@@ -980,6 +978,19 @@ public class Sheet
         return sheetDelta;
     }
 
+    //---------------//
+    // setSheetDelta //
+    //---------------//
+    /**
+     * Remember the sheet delta in sheet
+     *
+     * @param sheetDelta difference between input (pixels) and output (recognized entities)
+     */
+    public void setSheetDelta (SheetDiff sheetDelta)
+    {
+        this.sheetDelta = sheetDelta;
+    }
+
     //---------//
     // getSkew //
     //---------//
@@ -991,6 +1002,19 @@ public class Sheet
     public Skew getSkew ()
     {
         return skew;
+    }
+
+    //---------//
+    // setSkew //
+    //---------//
+    /**
+     * Link skew information to this sheet
+     *
+     * @param skew the skew information
+     */
+    public void setSkew (Skew skew)
+    {
+        this.skew = skew;
     }
 
     //-----------------//
@@ -1155,50 +1179,15 @@ public class Sheet
                 if ((shape != null) && (staff != null) && (glyph != null)) {
                     Double pitch = (inter instanceof AbstractPitchedInter)
                             ? ((AbstractPitchedInter) inter).getPitch() : null;
-                    repository.addSample(inter.getShape(), glyph, staff.getSpecificInterline(),
-                                         sampleSheet, pitch);
+                    repository.addSample(
+                            inter.getShape(),
+                            glyph,
+                            staff.getSpecificInterline(),
+                            sampleSheet,
+                            pitch);
                 }
             }
         }
-    }
-
-    //----------//
-    // setScale //
-    //----------//
-    /**
-     * Remember scale information to this sheet
-     *
-     * @param scale the computed sheet global scale
-     */
-    public void setScale (Scale scale)
-    {
-        this.scale = scale;
-    }
-
-    //---------------//
-    // setSheetDelta //
-    //---------------//
-    /**
-     * Remember the sheet delta in sheet
-     *
-     * @param sheetDelta difference between input (pixels) and output (recognized entities)
-     */
-    public void setSheetDelta (SheetDiff sheetDelta)
-    {
-        this.sheetDelta = sheetDelta;
-    }
-
-    //---------//
-    // setSkew //
-    //---------//
-    /**
-     * Link skew information to this sheet
-     *
-     * @param skew the skew information
-     */
-    public void setSkew (Skew skew)
-    {
-        this.skew = skew;
     }
 
     //-------//
@@ -1231,10 +1220,25 @@ public class Sheet
             Path structurePath = sheetFolder.resolve(getSheetFileName(stub.getNumber()));
             Files.deleteIfExists(structurePath);
             Files.createDirectories(sheetFolder);
-            Jaxb.marshal(this, structurePath, getJaxbContext());
+
+            try (OutputStream os = Files.newOutputStream(structurePath, CREATE);) {
+                Marshaller m = getJaxbContext().createMarshaller();
+                XMLStreamWriter writer = new IndentingXMLStreamWriter(
+                        XMLOutputFactory.newInstance().createXMLStreamWriter(os, "UTF-8"));
+
+                if (constants.useMarshalLogger.isSet()) {
+                    m.setListener(new Jaxb.MarshalLogger());
+                }
+
+                m.marshal(this, writer);
+                os.flush();
+            }
+
             stub.setModified(false);
             logger.info("Stored {}", structurePath);
-        } catch (Exception ex) {
+        } catch (IOException |
+                 JAXBException |
+                 XMLStreamException ex) {
             logger.warn("Error in saving sheet structure " + ex, ex);
         }
     }
@@ -1245,7 +1249,180 @@ public class Sheet
     @Override
     public String toString ()
     {
-        return "Sheet{" + getId() + "}";
+        final StringBuilder sb = new StringBuilder("Sheet{");
+
+        if (getId() != null) {
+            sb.append(getId());
+        }
+
+        sb.append('}');
+
+        return sb.toString();
+    }
+
+    //------------------------//
+    // createGlyphsController //
+    //------------------------//
+    private void createGlyphsController ()
+    {
+        GlyphsModel model = new GlyphsModel(this, getGlyphIndex().getEntityService());
+        glyphsController = new GlyphsController(model);
+    }
+
+    //------//
+    // done //
+    //------//
+    /**
+     * Remember that the provided step has been completed on the sheet.
+     *
+     * @param step the provided step
+     */
+    private void done (Step step)
+    {
+        stub.done(step);
+    }
+
+    //---------//
+    // getBook //
+    //---------//
+    private Book getBook ()
+    {
+        return stub.getBook();
+    }
+
+    //----------------------//
+    // getGlyphIndexContent // Needed for JAXB
+    //----------------------//
+    /**
+     * Mean for JAXB marshalling only.
+     *
+     * @return collection of glyphs from glyphIndex.weakIndex
+     */
+    @SuppressWarnings("unchecked")
+    @XmlElement(name = "glyph-index")
+    @XmlJavaTypeAdapter(GlyphListAdapter.class)
+    private ArrayList<Glyph> getGlyphIndexContent ()
+    {
+        if (glyphIndex == null) {
+            return null;
+        }
+
+        return glyphIndex.getEntities();
+    }
+
+    //----------------------//
+    // setGlyphIndexContent // Needed for JAXB
+    //----------------------//
+    /**
+     * Meant for JAXB unmarshalling only.
+     *
+     * @param glyphs collection of glyphs to feed to the glyphIndex.weakIndex
+     */
+    @SuppressWarnings("unchecked")
+    private void setGlyphIndexContent (ArrayList<Glyph> glyphs)
+    {
+        getGlyphIndex().setEntities(glyphs);
+    }
+
+    //-----------//
+    // getNumber // Needed for JAXB
+    //-----------//
+    /**
+     * Sheet 1-based number within book.
+     */
+    @XmlAttribute(name = "number")
+    private int getNumber ()
+    {
+        return stub.getNumber();
+    }
+
+    //----------------//
+    // initTransients //
+    //----------------//
+    /**
+     * Initialize needed transient members.
+     * (which by definition have not been set by the unmarshalling).
+     *
+     * @param stub the related stub
+     */
+    private void initTransients (SheetStub stub)
+    {
+        logger.debug("Sheet#{} initTransients", stub.getNumber());
+
+        this.stub = stub;
+
+        // Update UI information if so needed
+        if (OMR.gui != null) {
+            locationService = new SelectionService("locationService", allowedEvents);
+            errorsEditor = new ErrorsEditor(this);
+            itemRenderers = new LinkedHashSet<>();
+            addItemRenderer(staffManager);
+        }
+
+        if (picture != null) {
+            picture.initTransients(this);
+        }
+
+        if (glyphIndex != null) {
+            glyphIndex.initTransients(this);
+        }
+
+        for (Page page : pages) {
+            page.initTransients(this);
+        }
+
+        if (systemManager == null) {
+            systemManager = new SystemManager(this);
+        } else {
+            systemManager.initTransients(this);
+        }
+
+        // systemManager
+        List<SystemInfo> systems = new ArrayList<>();
+
+        for (Page page : pages) {
+            for (SystemInfo system : page.getSystems()) {
+                system.initTransients(this, page);
+                systems.add(system);
+
+                List<Staff> systemStaves = new ArrayList<>();
+
+                for (Part part : system.getParts()) {
+                    part.setSystem(system);
+
+                    for (Staff staff : part.getStaves()) {
+                        staff.setPart(part);
+                        systemStaves.add(staff);
+                    }
+                }
+
+                system.setStaves(systemStaves);
+            }
+        }
+
+        systemManager.setSystems(systems);
+
+        staffManager = new StaffManager(this);
+
+        lagManager = new LagManager(this);
+    }
+
+    //-----------//
+    // setBinary //
+    //-----------//
+    private void setBinary (RunTable binaryTable)
+    {
+        try {
+            picture = new Picture(this, binaryTable);
+
+            if (OMR.gui != null) {
+                createBinaryView();
+            }
+
+            done(Step.LOAD);
+            done(Step.BINARY);
+        } finally {
+        }
     }
 
     //-------//
@@ -1290,8 +1467,7 @@ public class Sheet
             getErrorsEditor().clearStep(step);
 
             if (interController != null) {
-                SwingUtilities.invokeLater(
-                        new Runnable()
+                SwingUtilities.invokeLater(new Runnable()
                 {
                     // This part is run on swing thread
                     @Override
@@ -1302,6 +1478,46 @@ public class Sheet
                 });
             }
         }
+    }
+
+    //------------------//
+    // getSheetFileName //
+    //------------------//
+    /**
+     * Report the file name of a sheet in the .omr zip file system.
+     *
+     * @param number sheet number (counted from 1) within the containing book
+     * @return the sheet file name
+     */
+    public static String getSheetFileName (int number)
+    {
+        return Sheet.INTERNALS_RADIX + number + ".xml";
+    }
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal the provided XML stream to allocate the corresponding sheet.
+     *
+     * @param in the input stream that contains the sheet in XML format.
+     *           The stream is not closed by this method
+     * @return the allocated sheet.
+     * @exception JAXBException raised when unmarshalling goes wrong
+     */
+    public static Sheet unmarshal (InputStream in)
+            throws JAXBException
+    {
+        Unmarshaller um = getJaxbContext().createUnmarshaller();
+
+        if (constants.useUnmarshalLogger.isSet()) {
+            um.setListener(new Jaxb.UnmarshalLogger());
+        }
+
+        Sheet sheet = (Sheet) um.unmarshal(in);
+        logger.debug("Sheet unmarshalled");
+
+        return sheet;
     }
 
     //----------------//
@@ -1318,169 +1534,20 @@ public class Sheet
         return jaxbContext;
     }
 
-    //------------------------//
-    // createGlyphsController //
-    //------------------------//
-    private void createGlyphsController ()
-    {
-        GlyphsModel model = new GlyphsModel(this, getGlyphIndex().getEntityService());
-        glyphsController = new GlyphsController(model);
-    }
-
-    //------//
-    // done //
-    //------//
-    /**
-     * Remember that the provided step has been completed on the sheet.
-     *
-     * @param step the provided step
-     */
-    private void done (Step step)
-    {
-        ((SheetStub) stub).done(step);
-    }
-
-    //---------//
-    // getBook //
-    //---------//
-    private Book getBook ()
-    {
-        return stub.getBook();
-    }
-
-    //----------------------//
-    // getGlyphIndexContent // Needed for JAXB
-    //----------------------//
-    /**
-     * Mean for JAXB marshalling only.
-     *
-     * @return collection of glyphs from glyphIndex.weakIndex
-     */
-    @SuppressWarnings("unchecked")
-    @XmlElement(name = "glyph-index")
-    @XmlJavaTypeAdapter(GlyphListAdapter.class)
-    private ArrayList<Glyph> getGlyphIndexContent ()
-    {
-        if (glyphIndex == null) {
-            return null;
-        }
-
-        return glyphIndex.getEntities();
-    }
-
     //-----------//
-    // getNumber // Needed for JAXB
+    // Constants //
     //-----------//
-    /**
-     * Sheet 1-based number within book.
-     */
-    @XmlAttribute(name = "number")
-    private int getNumber ()
+    private static class Constants
+            extends ConstantSet
     {
-        return stub.getNumber();
-    }
 
-    //----------------//
-    // initTransients //
-    //----------------//
-    /**
-     * Initialize needed transient members.
-     * (which by definition have not been set by the unmarshalling).
-     *
-     * @param stub the related stub
-     */
-    private void initTransients (SheetStub stub)
-    {
-        logger.debug("BasicSheet#{} initTransients", stub.getNumber());
+        private final Constant.Boolean useMarshalLogger = new Constant.Boolean(
+                false,
+                "Should we log every sheet marshalling?");
 
-        this.stub = stub;
-
-        // Update UI information if so needed
-        if (OMR.gui != null) {
-            locationService = new SelectionService("locationService", allowedEvents);
-            errorsEditor = new ErrorsEditor(this);
-            itemRenderers = new LinkedHashSet<ItemRenderer>();
-            addItemRenderer(staffManager);
-        }
-
-        if (picture != null) {
-            picture.initTransients(this);
-        }
-
-        if (glyphIndex != null) {
-            glyphIndex.initTransients(this);
-        }
-
-        for (Page page : pages) {
-            page.initTransients(this);
-        }
-
-        if (systemManager == null) {
-            systemManager = new SystemManager(this);
-        } else {
-            systemManager.initTransients(this);
-        }
-
-        // systemManager
-        List<SystemInfo> systems = new ArrayList<SystemInfo>();
-
-        for (Page page : pages) {
-            for (SystemInfo system : page.getSystems()) {
-                system.initTransients(this, page);
-                systems.add(system);
-
-                List<Staff> systemStaves = new ArrayList<Staff>();
-
-                for (Part part : system.getParts()) {
-                    part.setSystem(system);
-
-                    for (Staff staff : part.getStaves()) {
-                        staff.setPart(part);
-                        systemStaves.add(staff);
-                    }
-                }
-
-                system.setStaves(systemStaves);
-            }
-        }
-
-        systemManager.setSystems(systems);
-
-        staffManager = new StaffManager(this);
-
-        lagManager = new LagManager(this);
-    }
-
-    //-----------//
-    // setBinary //
-    //-----------//
-    private void setBinary (RunTable binaryTable)
-    {
-        try {
-            picture = new Picture(this, binaryTable);
-
-            if (OMR.gui != null) {
-                createBinaryView();
-            }
-
-            done(Step.LOAD);
-            done(Step.BINARY);
-        } finally {
-        }
-    }
-
-    //----------------------//
-    // setGlyphIndexContent // Needed for JAXB
-    //----------------------//
-    /**
-     * Meant for JAXB unmarshalling only.
-     *
-     * @param glyphs collection of glyphs to feed to the glyphIndex.weakIndex
-     */
-    @SuppressWarnings("unchecked")
-    private void setGlyphIndexContent (ArrayList<Glyph> glyphs)
-    {
-        getGlyphIndex().setEntities(glyphs);
+        private final Constant.Boolean useUnmarshalLogger = new Constant.Boolean(
+                false,
+                "Should we log every sheet unmarshalling?");
     }
 
     //-----------//
@@ -1492,13 +1559,27 @@ public class Sheet
         @XmlElement(name = "glyph")
         public ArrayList<Glyph> glyphs;
 
-        public GlyphList ()
+        GlyphList ()
         {
         }
 
-        public GlyphList (ArrayList<Glyph> glyphs)
+        GlyphList (ArrayList<Glyph> glyphs)
         {
             this.glyphs = glyphs;
+        }
+
+        @Override
+        public String toString ()
+        {
+            final StringBuilder sb = new StringBuilder("GlyphList{");
+
+            if (glyphs != null) {
+                sb.append("size:").append(glyphs.size());
+            }
+
+            sb.append('}');
+
+            return sb.toString();
         }
     }
 

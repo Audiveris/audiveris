@@ -114,10 +114,10 @@ public class ShapeBoard
     private static final Map<ShapeSet, Integer> heights = buildHeightMap();
 
     /** Map first typed char to selected shape set. */
-    private static final Map<Character, ShapeSet> setMap = new HashMap<Character, ShapeSet>();
+    private static final Map<Character, ShapeSet> setMap = new HashMap<>();
 
     /** Map 2-char typed string to selected shape. */
-    private static final Map<String, Shape> shapeMap = new HashMap<String, Shape>();
+    private static final Map<String, Shape> shapeMap = new HashMap<>();
 
     static {
         populateCharMaps();
@@ -182,7 +182,7 @@ public class ShapeBoard
     private final Panel setsPanel;
 
     /** Map of shape panels, indexed by shapeSet. */
-    private final Map<ShapeSet, Panel> shapesPanels = new HashMap<ShapeSet, Panel>();
+    private final Map<ShapeSet, Panel> shapesPanels = new HashMap<>();
 
     /** History of recently used shapes. */
     private final ShapeHistory shapeHistory;
@@ -346,7 +346,7 @@ public class ShapeBoard
     //----------------//
     private static Map<ShapeSet, Integer> buildHeightMap ()
     {
-        Map<ShapeSet, Integer> map = new HashMap<ShapeSet, Integer>();
+        Map<ShapeSet, Integer> map = new HashMap<>();
         map.put(ShapeSet.Accidentals, 40);
         map.put(ShapeSet.Articulations, 40);
         map.put(ShapeSet.Attributes, 60);
@@ -576,15 +576,18 @@ public class ShapeBoard
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean publishLocationWhileDragging = new Constant.Boolean(false,
-                                                                                           "Should we publish the current location while dragging a shape?");
+        private final Constant.Boolean publishLocationWhileDragging = new Constant.Boolean(
+                false,
+                "Should we publish the current location while dragging a shape?");
 
-        private final Constant.Integer maxHistoryLength = new Constant.Integer("shapes", 8,
-                                                                               "Maximum number of shapes kept in history");
+        private final Constant.Integer maxHistoryLength = new Constant.Integer(
+                "shapes",
+                8,
+                "Maximum number of shapes kept in history");
     }
 
     //---------------//
@@ -811,8 +814,10 @@ public class ShapeBoard
                     if (shape.isDraggable()) {
                         if (dndOperation == null) {
                             // Set payload
-                            dndOperation = new DndOperation(sheet, zoom, InterFactory.createManual(
-                                                            shape, sheet));
+                            dndOperation = new DndOperation(
+                                    sheet,
+                                    zoom,
+                                    InterFactory.createManual(shape, sheet));
                         }
 
                         dndOperation.enteringTarget();
@@ -827,8 +832,9 @@ public class ShapeBoard
                 if (shape.isDraggable()) {
                     // Update reference point
                     Point localRef = dndOperation.getReference(localPt);
-                    glass.setReference((localRef != null) ? new ScreenPoint(view, zoom.scaled(
-                                                                            localRef)) : null);
+                    glass.setReference(
+                            (localRef != null) ? new ScreenPoint(view, zoom.scaled(localRef))
+                                    : null);
                 }
             } else if (prevComponent.get() != null) {
                 // No longer on a droppable target, reuse initial image & size
@@ -853,7 +859,7 @@ public class ShapeBoard
     {
 
         /** Shapes recently used, ordered from most to less recent. */
-        private final List<Shape> shapes = new ArrayList<Shape>();
+        private final List<Shape> shapes = new ArrayList<>();
 
         private final Panel panel = new Panel();
 
@@ -880,8 +886,7 @@ public class ShapeBoard
         {
             if (!SwingUtilities.isEventDispatchThread()) {
                 try {
-                    SwingUtilities.invokeAndWait(
-                            new Runnable()
+                    SwingUtilities.invokeAndWait(new Runnable()
                     {
                         @Override
                         public void run ()

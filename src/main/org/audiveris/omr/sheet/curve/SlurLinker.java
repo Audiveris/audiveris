@@ -135,29 +135,33 @@ public class SlurLinker
         final Point2D lastBase;
 
         // Qualify the slur as horizontal or vertical
-        if ((abs(LineUtil.getSlope(first, last)) <= params.slopeSeparator) || (slurWidth
-                                                                                       >= params.wideSlurWidth)) {
+        if ((abs(LineUtil.getSlope(first, last)) <= params.slopeSeparator)
+                    || (slurWidth >= params.wideSlurWidth)) {
             // Horizontal: Use base parallel to slur
             info.setHorizontal(true);
             firstExt = extension(mid, first, params.coverageHExt);
             lastExt = extension(mid, last, params.coverageHExt);
-            firstBase = new Point2D.Double(firstExt.getX(), firstExt.getY() + (vDir
-                                                                                       * params.coverageHDepth));
-            lastBase = new Point2D.Double(lastExt.getX(), lastExt.getY() + (vDir
-                                                                                    * params.coverageHDepth));
+            firstBase = new Point2D.Double(
+                    firstExt.getX(),
+                    firstExt.getY() + (vDir * params.coverageHDepth));
+            lastBase = new Point2D.Double(
+                    lastExt.getX(),
+                    lastExt.getY() + (vDir * params.coverageHDepth));
             baseLine = new Line2D.Double(firstBase, lastBase);
 
             if (slurWidth > (2 * params.coverageHIn)) {
                 // Wide slur: separate first & last areas
                 Point2D firstIn = extension(mid, first, -params.coverageHIn);
                 firstPath = new GeoPath(new Line2D.Double(firstIn, firstExt));
-                firstPath.append(new Line2D.Double(firstBase, intersectionAtX(baseLine, firstIn
-                                                                              .getX())), true);
+                firstPath.append(
+                        new Line2D.Double(firstBase, intersectionAtX(baseLine, firstIn.getX())),
+                        true);
 
                 Point2D lastIn = extension(mid, last, -params.coverageHIn);
                 lastPath = new GeoPath(new Line2D.Double(lastIn, lastExt));
                 lastPath.append(
-                        new Line2D.Double(lastBase, intersectionAtX(baseLine, lastIn.getX())), true);
+                        new Line2D.Double(lastBase, intersectionAtX(baseLine, lastIn.getX())),
+                        true);
             } else {
                 // Narrow slur: just one vertical separation
                 Point2D midBase = intersectionAtX(baseLine, mid.getX());
@@ -176,24 +180,27 @@ public class SlurLinker
             double vDepth = (slurWidth <= params.maxSmallSlurWidth) ? params.coverageVDepthSmall
                     : params.coverageVDepth;
             Point2D depth = new Point2D.Double(vDepth * bisUnit.getX(), vDepth * bisUnit.getY());
-            firstBase = new Point2D.Double(firstExt.getX() + depth.getX(), firstExt.getY() + depth
-                                           .getY());
-            lastBase = new Point2D.Double(lastExt.getX() + depth.getX(), lastExt.getY() + depth
-                                          .getY());
+            firstBase = new Point2D.Double(
+                    firstExt.getX() + depth.getX(),
+                    firstExt.getY() + depth.getY());
+            lastBase = new Point2D.Double(
+                    lastExt.getX() + depth.getX(),
+                    lastExt.getY() + depth.getY());
             baseLine = new Line2D.Double(firstBase, lastBase);
 
             if (first.distance(last) > (2 * params.coverageVIn)) {
                 // Tall slur, separate first & last areas
                 Point2D firstIn = extension(firstExt, first, params.coverageVIn);
-                Point2D firstBaseIn = new Point2D.Double(firstIn.getX() + depth.getX(), firstIn
-                                                         .getY() + depth.getY());
+                Point2D firstBaseIn = new Point2D.Double(
+                        firstIn.getX() + depth.getX(),
+                        firstIn.getY() + depth.getY());
                 firstPath = new GeoPath(new Line2D.Double(firstIn, firstExt));
                 firstPath.append(new Line2D.Double(firstBase, firstBaseIn), true);
 
                 Point2D lastIn = extension(lastExt, last, params.coverageVIn);
-                Point2D lastBaseIn = new Point2D.Double(lastIn.getX() + depth.getX(), lastIn.getY()
-                                                                                              + depth
-                                                                .getY());
+                Point2D lastBaseIn = new Point2D.Double(
+                        lastIn.getX() + depth.getX(),
+                        lastIn.getY() + depth.getY());
                 lastPath = new GeoPath(new Line2D.Double(lastIn, lastExt));
                 lastPath.append(new Line2D.Double(lastBase, lastBaseIn), true);
             } else {
@@ -211,7 +218,7 @@ public class SlurLinker
         firstPath.closePath();
         lastPath.closePath();
 
-        Map<HorizontalSide, Area> areaMap = new EnumMap<HorizontalSide, Area>(HorizontalSide.class);
+        Map<HorizontalSide, Area> areaMap = new EnumMap<>(HorizontalSide.class);
         Area firstArea = new Area(firstPath);
         ///info.setArea(firstArea, true);
         areaMap.put(LEFT, firstArea);
@@ -236,8 +243,8 @@ public class SlurLinker
      * <li>Left and right chords must differ enough in abscissa.</li>
      * <li>To be really accepted, a chord candidate must contain a head suitable to be linked on
      * proper slur side.</li>
-     * <p>
-     * <li>Special heuristics for mirrored chords:<ul>
+     * <li>Special heuristics for mirrored chords:
+     * <ul>
      * <li>If the slur goes to another staff, select the mirror chord whose stem points towards
      * the other staff.</li>
      * <li>If the slur stays in its staff, select the mirror chord with same stem direction as
@@ -261,8 +268,7 @@ public class SlurLinker
                                                              Map<HorizontalSide, List<Inter>> chords)
     {
         // The pair to populate
-        final Map<HorizontalSide, SlurHeadLink> linkPair
-                = new EnumMap<HorizontalSide, SlurHeadLink>(HorizontalSide.class);
+        final Map<HorizontalSide, SlurHeadLink> linkPair = new EnumMap<>(HorizontalSide.class);
 
         // Slur target locations on each side
         final Point leftTarget = getTargetPoint(slur, LEFT);
@@ -274,7 +280,7 @@ public class SlurLinker
 
         // The same chord cannot be linked to both slur ends
         // Keep it only where it is closer to slur target
-        Set<Inter> commons = new LinkedHashSet<Inter>();
+        Set<Inter> commons = new LinkedHashSet<>();
         commons.addAll(lefts.keySet());
         commons.retainAll(rights.keySet());
 
@@ -290,12 +296,11 @@ public class SlurLinker
         }
 
         // Reduce each side, except for couple [chord / mirrored chord]
-        Map<HorizontalSide, SlurHeadLink> mirrors = new EnumMap<HorizontalSide, SlurHeadLink>(
-                HorizontalSide.class);
+        Map<HorizontalSide, SlurHeadLink> mirrors = new EnumMap<>(HorizontalSide.class);
 
         for (HorizontalSide side : HorizontalSide.values()) {
             Map<Inter, SlurHeadLink> links = (side == LEFT) ? lefts : rights;
-            List<SlurHeadLink> list = new ArrayList<SlurHeadLink>(links.values());
+            List<SlurHeadLink> list = new ArrayList<>(links.values());
 
             if (!list.isEmpty()) {
                 Collections.sort(list, SlurHeadLink.byEuclidean);
@@ -475,7 +480,7 @@ public class SlurLinker
                                              Area area,
                                              List<Inter> chords)
     {
-        final Map<Inter, SlurHeadLink> found = new HashMap<Inter, SlurHeadLink>();
+        final Map<Inter, SlurHeadLink> found = new HashMap<>();
         final SlurInfo info = slur.getInfo();
         final Point end = info.getEnd(side == LEFT);
         final Point target = getTargetPoint(slur, side);
@@ -559,48 +564,63 @@ public class SlurLinker
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction coverageHExt = new Scale.Fraction(1.25,
-                                                                       "Length of extension for horizontal slur coverage");
+        private final Scale.Fraction coverageHExt = new Scale.Fraction(
+                1.25,
+                "Length of extension for horizontal slur coverage");
 
-        private final Scale.Fraction coverageHIn = new Scale.Fraction(0.5,
-                                                                      "Internal abscissa of horizontal slur coverage");
+        private final Scale.Fraction coverageHIn = new Scale.Fraction(
+                0.5,
+                "Internal abscissa of horizontal slur coverage");
 
-        private final Scale.Fraction coverageHDepth = new Scale.Fraction(3.0,
-                                                                         "Vertical extension of horizontal slur coverage");
+        private final Scale.Fraction coverageHDepth = new Scale.Fraction(
+                3.0,
+                "Vertical extension of horizontal slur coverage");
 
-        private final Scale.Fraction coverageVExt = new Scale.Fraction(2.0,
-                                                                       "Length of extension for vertical slur coverage");
+        private final Scale.Fraction coverageVExt = new Scale.Fraction(
+                2.0,
+                "Length of extension for vertical slur coverage");
 
-        private final Scale.Fraction coverageVIn = new Scale.Fraction(1.5,
-                                                                      "Internal abscissa of vertical slur coverage");
+        private final Scale.Fraction coverageVIn = new Scale.Fraction(
+                1.5,
+                "Internal abscissa of vertical slur coverage");
 
-        private final Scale.Fraction coverageVDepth = new Scale.Fraction(2.5,
-                                                                         "Vertical extension of vertical slur coverage");
+        private final Scale.Fraction coverageVDepth = new Scale.Fraction(
+                2.5,
+                "Vertical extension of vertical slur coverage");
 
-        private final Scale.Fraction coverageVDepthSmall = new Scale.Fraction(1.5,
-                                                                              "Vertical extension of small vertical slur coverage");
+        private final Scale.Fraction coverageVDepthSmall = new Scale.Fraction(
+                1.5,
+                "Vertical extension of small vertical slur coverage");
 
-        private final Scale.Fraction targetExtension = new Scale.Fraction(0.5,
-                                                                          "Extension length from slur end to slur target point");
+        private final Scale.Fraction targetExtension = new Scale.Fraction(
+                0.5,
+                "Extension length from slur end to slur target point");
 
-        private final Constant.Double slopeSeparator = new Constant.Double("tangent", 0.5,
-                                                                           "Slope that separates vertical slurs from horizontal slurs");
+        private final Constant.Double slopeSeparator = new Constant.Double(
+                "tangent",
+                0.5,
+                "Slope that separates vertical slurs from horizontal slurs");
 
-        private final Constant.Double maxOrphanSlope = new Constant.Double("tangent", 0.5,
-                                                                           "Maximum slope for an orphan slur");
+        private final Constant.Double maxOrphanSlope = new Constant.Double(
+                "tangent",
+                0.5,
+                "Maximum slope for an orphan slur");
 
-        private final Scale.Fraction maxOrphanDx = new Scale.Fraction(6.0,
-                                                                      "Maximum dx to staff end for an orphan slur");
+        private final Scale.Fraction maxOrphanDx = new Scale.Fraction(
+                6.0,
+                "Maximum dx to staff end for an orphan slur");
 
-        private final Scale.Fraction wideSlurWidth = new Scale.Fraction(6.0,
-                                                                        "Minimum width to be a wide slur");
+        private final Scale.Fraction wideSlurWidth = new Scale.Fraction(
+                6.0,
+                "Minimum width to be a wide slur");
 
-        private final Scale.Fraction maxSmallSlurWidth = new Scale.Fraction(1.5,
-                                                                            "Maximum width for a small slur");
+        private final Scale.Fraction maxSmallSlurWidth = new Scale.Fraction(
+                1.5,
+                "Maximum width for a small slur");
     }
 
     //------------//
@@ -643,7 +663,7 @@ public class SlurLinker
          *
          * @param scale the scaling factor
          */
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             coverageHExt = scale.toPixels(constants.coverageHExt);
             coverageHIn = scale.toPixels(constants.coverageHIn);

@@ -36,7 +36,8 @@ import java.util.Objects;
  * Class {@code ScoreReduction} reduces the logical parts for a score,
  * based on the merge of Audiveris Page instances.
  * <p>
- * <b>Features not yet implemented:</b> <ul>
+ * <b>Features not yet implemented:</b>
+ * <ul>
  * <li>Connection of slurs between pages</li>
  * <li>In part-list, handling of part-group beside score-part</li>
  * </ul>
@@ -98,17 +99,18 @@ public class ScoreReduction
     private List<List<Candidate>> buildSequences (List<Page> pages)
     {
         // Build candidates (here a candidate is a LogicalPart, with affiliated system parts)
-        List<List<Candidate>> sequences = new ArrayList<List<Candidate>>();
+        List<List<Candidate>> sequences = new ArrayList<>();
 
         for (Page page : pages) {
-            List<Candidate> candidates = new ArrayList<Candidate>();
+            List<Candidate> candidates = new ArrayList<>();
             List<LogicalPart> partList = page.getLogicalParts();
 
             if (partList != null) {
                 for (LogicalPart logicalPart : partList) {
-                    Candidate candidate = new LogicalPartCandidate(logicalPart, page, page
-                                                                   .getSystemPartsById(logicalPart
-                                                                           .getId()));
+                    Candidate candidate = new LogicalPartCandidate(
+                            logicalPart,
+                            page,
+                            page.getSystemPartsById(logicalPart.getId()));
                     candidates.add(candidate);
                 }
             }
@@ -130,7 +132,7 @@ public class ScoreReduction
      */
     private boolean storeResults (List<ResultEntry> resultEntries)
     {
-        List<LogicalPart> partList = new ArrayList<LogicalPart>();
+        List<LogicalPart> partList = new ArrayList<>();
 
         for (ResultEntry entry : resultEntries) {
             LogicalPart logicalPart = entry.result;
@@ -162,9 +164,9 @@ public class ScoreReduction
 
         private final List<Part> systemParts;
 
-        public LogicalPartCandidate (LogicalPart logicalPart,
-                                     Page page,
-                                     List<Part> systemParts)
+        LogicalPartCandidate (LogicalPart logicalPart,
+                              Page page,
+                              List<Part> systemParts)
         {
             this.logicalPart = logicalPart;
             this.page = page;

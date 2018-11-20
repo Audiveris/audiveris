@@ -145,6 +145,9 @@ public class ChordSplitter
     //-------//
     // split //
     //-------//
+    /**
+     * Perform the chord split.
+     */
     public void split ()
     {
         if (chord.isVip()) {
@@ -196,10 +199,10 @@ public class ChordSplitter
     private void getAllPartitions ()
     {
         // Collection of tied heads
-        final List<HeadInter> tiedHeads = new ArrayList<HeadInter>();
+        final List<HeadInter> tiedHeads = new ArrayList<>();
 
         // Detect the partitions of consistent heads in this chord
-        allPartitions = new ArrayList<Partition>();
+        allPartitions = new ArrayList<>();
 
         for (List<SlurInter> slurList : origins.values()) {
             Partition partition = new Partition();
@@ -239,13 +242,12 @@ public class ChordSplitter
      */
     private Map<StemInter, List<Partition>> getSubStems ()
     {
-        final Map<StemInter, List<Partition>> stemMap
-                = new LinkedHashMap<StemInter, List<Partition>>();
+        final Map<StemInter, List<Partition>> stemMap = new LinkedHashMap<>();
         int iFirst = 0; // Index of first partition pending
         int iLastAddressed = -1; // Index of last addressed partition
         final int rootHeight = rootStem.getBounds().height;
-        int yStart = (int) Math.rint(((stemDir > 0) ? rootStem.getTop() : rootStem.getBottom())
-                .getY());
+        int yStart = (int) Math.rint(
+                ((stemDir > 0) ? rootStem.getTop() : rootStem.getBottom()).getY());
 
         for (int iLast = 0, iMax = allPartitions.size() - 1; iLast <= iMax; iLast++) {
             final int yStop = (iLast != iMax) ? (allPartitions.get(iLast + 1).first().getCenter().y
@@ -295,7 +297,7 @@ public class ChordSplitter
      */
     private void injectStandardHeads (Collection<HeadInter> tiedHeads)
     {
-        List<HeadInter> stdHeads = new ArrayList<HeadInter>();
+        List<HeadInter> stdHeads = new ArrayList<>();
 
         for (Inter inter : chord.getNotes()) {
             HeadInter head = (HeadInter) inter;
@@ -355,8 +357,10 @@ public class ChordSplitter
 
                 if (stem != rootStem) {
                     // Link partition heads to (sub) stem
-                    HeadStemRelation relation = (HeadStemRelation) sig.getRelation(head, rootStem,
-                                                                                   HeadStemRelation.class);
+                    HeadStemRelation relation = (HeadStemRelation) sig.getRelation(
+                            head,
+                            rootStem,
+                            HeadStemRelation.class);
 
                     if (relation != null) {
                         sig.removeEdge(relation);
@@ -375,12 +379,13 @@ public class ChordSplitter
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction minSubStemLength = new Scale.Fraction(2.5,
-                                                                           "Minimum sub-stem length for a tie split");
+        private final Scale.Fraction minSubStemLength = new Scale.Fraction(
+                2.5,
+                "Minimum sub-stem length for a tie split");
     }
 
     //-----------//
@@ -394,7 +399,7 @@ public class ChordSplitter
             implements Comparable<Partition>
     {
 
-        public Partition ()
+        Partition ()
         {
             super(HeadChordInter.headComparator);
         }
@@ -415,6 +420,12 @@ public class ChordSplitter
             final int last = last().getCenter().y;
 
             return Math.max(first - y, y - last);
+        }
+
+        @Override
+        public Object clone ()
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 }

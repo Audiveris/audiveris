@@ -31,9 +31,13 @@ import java.util.List;
  * Class {@code TreeNode} handles a node in a tree hierarchy,
  * which is typically the tree organization of a score entity.
  * <p>
- * A TreeNode has : <ul> <li> A parent (which may be null) to which the TreeNode
- * belongs <li> A list (which may be empty) of contained chidren, for which the
- * TreeNode is the parent. </ul>
+ * A TreeNode has :
+ * <ul>
+ * <li>A parent (which may be null) to which the TreeNode
+ * belongs
+ * <li>A list (which may be empty) of contained chidren, for which the
+ * TreeNode is the parent.
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -43,12 +47,12 @@ public abstract class TreeNode
     private static final Logger logger = LoggerFactory.getLogger(TreeNode.class);
 
     /**
-     * Children : the list of nodes just below in the tree
+     * Children : the list of nodes just below in the tree.
      */
-    protected final List<TreeNode> children = new ArrayList<TreeNode>();
+    protected final List<TreeNode> children = new ArrayList<>();
 
     /**
-     * Container : the node just above in the tree
+     * Container : the node just above in the tree.
      */
     @Navigable(false)
     protected TreeNode parent;
@@ -189,7 +193,7 @@ public abstract class TreeNode
     {
         logger.debug("getChildrenCopy of {}", this);
 
-        return new ArrayList<TreeNode>(children);
+        return new ArrayList<>(children);
     }
 
     //----------------//
@@ -224,6 +228,20 @@ public abstract class TreeNode
     public TreeNode getParent ()
     {
         return parent;
+    }
+
+    //-----------//
+    // setParent //
+    //-----------//
+    /**
+     * Modify the link to the parent of this node.
+     *
+     * @param parent the (new) parent
+     */
+    public void setParent (TreeNode parent)
+    {
+        logger.debug("setParent parent={} for {}", parent, this);
+        this.parent = parent;
     }
 
     //--------------------//
@@ -264,17 +282,4 @@ public abstract class TreeNode
         }
     }
 
-    //-----------//
-    // setParent //
-    //-----------//
-    /**
-     * Modify the link to the parent of this node.
-     *
-     * @param parent the (new) parent
-     */
-    public void setParent (TreeNode parent)
-    {
-        logger.debug("setParent parent={} for {}", parent, this);
-        this.parent = parent;
-    }
 }

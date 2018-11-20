@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
+import java.io.IOException;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -64,15 +65,15 @@ public class Language
 
     private static final Logger logger = LoggerFactory.getLogger(Language.class);
 
-    /** Languages file name. */
-    private static final String LANG_FILE_NAME = "ISO639-3.xml";
-
     /** Separator in a specification. */
     public static final String SEP_CHAR = "+";
 
     /** Default language specification (such as deu+eng+fra). */
     public static final Param<String> ocrDefaultLanguages
             = new ConstantBasedParam<String, Constant.String>(constants.defaultSpecification);
+
+    /** Languages file name. */
+    private static final String LANG_FILE_NAME = "ISO639-3.xml";
 
     /** Language used when specification is empty. */
     private static final String NO_SPEC = "eng";
@@ -147,12 +148,13 @@ public class Language
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.String defaultSpecification = new Constant.String("deu+eng+fra",
-                                                                                 "OCR language(s)");
+        private final Constant.String defaultSpecification = new Constant.String(
+                "deu+eng+fra",
+                "OCR language(s)");
     }
 
     //---------------------//
@@ -198,8 +200,9 @@ public class Language
             if (!getValue().equals(specific)) {
                 if (specific == null) {
                     constant.resetToSource();
-                    logger.info("Default OCR language specification is reset to \"{}\"", constant
-                                .getSourceValue());
+                    logger.info(
+                            "Default OCR language specification is reset to \"{}\"",
+                            constant.getSourceValue());
                 } else {
                     constant.setStringValue(specific);
                     logger.info("Default OCR language specification is now \"{}\"", specific);
@@ -222,33 +225,24 @@ public class Language
     {
 
         /** Map of language code -> language full name. */
-        private final SortedMap<String, String> codes = new TreeMap<String, String>();
+        private final SortedMap<String, String> codes = new TreeMap<>();
 
         /** Convenient sequence of codes, parallel to sorted map. */
         private final List<String> codesList;
 
-        public SupportedLanguages ()
+        SupportedLanguages ()
         {
             // Build the map of all possible codes
             Properties langNames = new Properties();
             URI uri = UriUtil.toURI(WellKnowns.RES_URI, LANG_FILE_NAME);
 
-            try {
-                InputStream input = null;
+            try (InputStream input = uri.toURL().openStream()) {
+                langNames.loadFromXML(input);
 
-                try {
-                    input = uri.toURL().openStream();
-                    langNames.loadFromXML(input);
-
-                    for (String code : langNames.stringPropertyNames()) {
-                        codes.put(code, langNames.getProperty(code, code));
-                    }
-                } finally {
-                    if (input != null) {
-                        input.close();
-                    }
+                for (String code : langNames.stringPropertyNames()) {
+                    codes.put(code, langNames.getProperty(code, code));
                 }
-            } catch (Throwable ex) {
+            } catch (IOException ex) {
                 logger.error("Error loading " + uri, ex);
             }
 
@@ -258,7 +252,7 @@ public class Language
             codes.keySet().retainAll(supported);
 
             // Create parallel list of codes
-            codesList = new ArrayList<String>(codes.keySet());
+            codesList = new ArrayList<>(codes.keySet());
         }
 
         /**

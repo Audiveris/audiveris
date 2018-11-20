@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
  * It uses a vertical window which performs the computation in constant time, provided that the
  * vertical window always moves to the right. Instead of a whole table of integrals, this class uses
  * a vertical tile whose width equals the window size, and the height equals the picture height.
+ * <br>
  * <pre>
  *                                              +----------------+
  *                                              |   TILE_WIDTH   |
@@ -59,6 +60,7 @@ import org.slf4j.LoggerFactory;
  * |                                            c|              d|
  * +---------------------------------------------+---------------+
  * </pre>
+ * <p>
  * Since only the (1 + WINDOW_SIZE) last columns are relevant, a tile uses a circular buffer to
  * handle only those columns.
  * <p>
@@ -95,7 +97,6 @@ public class VerticalFilter
                 true);
     }
 
-    //
     //--------//
     // MyTile //
     //--------//
@@ -106,7 +107,7 @@ public class VerticalFilter
             extends Tile
     {
 
-        public MyTile (boolean squared)
+        MyTile (boolean squared)
         {
             super(2 + (2 * HALF_WINDOW_SIZE), source.getHeight(), squared);
         }

@@ -25,6 +25,8 @@ import org.audiveris.omr.constant.Constant;
 
 /**
  * A subclass of Constant.Integer, meant to store a number of pixels.
+ *
+ * @author Hervé Bitteur
  */
 public class PixelCount
         extends Constant.Integer

@@ -88,8 +88,10 @@ public class EntityAction
 
         // Accelerator key?
         if (key != null) {
-            item.setAccelerator(KeyStroke.getKeyStroke((int) key.charAt(0), Toolkit
-                                                       .getDefaultToolkit().getMenuShortcutKeyMask()));
+            item.setAccelerator(
+                    KeyStroke.getKeyStroke(
+                            key.charAt(0),
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         }
 
         // Add an icon in the Tool bar?
@@ -158,5 +160,12 @@ public class EntityAction
         if (delegate != null) {
             delegate.actionPerformed(e);
         }
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 }

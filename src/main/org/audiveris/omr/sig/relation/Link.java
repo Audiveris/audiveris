@@ -98,18 +98,6 @@ public class Link
         sig.addEdge(source, target, relation);
     }
 
-    //--------//
-    // bestOf //
-    //--------//
-    public static Link bestOf (List<Link> links)
-    {
-        if (links.size() > 1) {
-            Collections.sort(links, byReverseGrade);
-        }
-
-        return links.isEmpty() ? null : links.get(0);
-    }
-
     //----------//
     // toString //
     //----------//
@@ -123,5 +111,23 @@ public class Link
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //--------//
+    // bestOf //
+    //--------//
+    /**
+     * Report the best of provided links.
+     *
+     * @param links provided links
+     * @return the best link or null if empty
+     */
+    public static Link bestOf (List<Link> links)
+    {
+        if (links.size() > 1) {
+            Collections.sort(links, byReverseGrade);
+        }
+
+        return links.isEmpty() ? null : links.get(0);
     }
 }

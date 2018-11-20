@@ -36,18 +36,18 @@ import java.util.Arrays;
  * Class {@code AdaptiveFilter} is an abstract implementation of {@code PixelFilter}
  * which provides foreground information based on mean value and standard deviation in
  * pixel neighborhood.
- * <p>
- * See work of Sauvola et al.<a
- * href="http://www.mediateam.oulu.fi/publications/pdf/24.p">
- * here</a>.
+ * <br>
+ * See work of <a href="http://www.mediateam.oulu.fi/publications/pdf/24.p">
+ * Sauvola et al.</a>
  * <p>
  * The mean value and the standard deviation value are provided thanks to underlying integrals
  * {@link Tile} instances.
  * The precise tile size and behavior is the responsibility of subclasses of this class.
- * <p>
- * See work of Shafait et al. <a
- * href="http://www.dfki.uni-kl.de/~shafait/papers/Shafait-efficient-binarization-SPIE08.pdf">
- * here</a>.
+ * <br>
+ * See work of <a href=
+ * "http://www.dfki.uni-kl.de/~shafait/papers/Shafait-efficient-binarization-SPIE08.pdf">
+ * Shafait et al.</a>
+ *
  * <pre>
  * 0---------------------------------------------+---------------+
  * |                                             |               |
@@ -63,13 +63,14 @@ import java.util.Arrays;
  * |                                            c|              d|
  * +---------------------------------------------+---------------+
  * </pre>
+ *
  * Key table features:
  * <ul>
  * <li>Assumption: The integral of any rectangle with origin at (0,0) is stored
  * in the bottom right cell of the rectangle.</li>
- * <li>As a consequence the integral of any rectangle, whatever its origin, can be simply computed
- * as: <code>a + d - b - c</code> </li>
- * <li>In particular if lower right rectangle is reduced to a single cell, then
+ * <li>As a consequence, the integral of any rectangle, whatever its origin, can be simply computed
+ * as: <code>a + d - b - c</code></li>
+ * <li>In particular, if lower right rectangle is reduced to a single cell, then
  * <code>d = pixel_value + top + left - topLeft</code>
  * <br>
  * This property is used to incrementally populate the table.</li>
@@ -87,7 +88,6 @@ public abstract class AdaptiveFilter
 
     private static final Logger logger = LoggerFactory.getLogger(AdaptiveFilter.class);
 
-    //
     /** Default value for (half of) window size. */
     protected final int HALF_WINDOW_SIZE = constants.halfWindowSize.getValue();
 
@@ -177,7 +177,6 @@ public abstract class AdaptiveFilter
         }
     }
 
-    //
     // -------//
     // isFore //
     // -------//
@@ -208,30 +207,6 @@ public abstract class AdaptiveFilter
         return (MEAN_COEFF * mean) + (STD_DEV_COEFF * stdDev);
     }
 
-    //-----------------//
-    // AdaptiveContext //
-    //-----------------//
-    public static class AdaptiveContext
-            extends Context
-    {
-
-        /** Mean pixel value in the neighborhood. */
-        public final double mean;
-
-        /** Standard deviation of pixel values in the neighborhood. */
-        public final double standardDeviation;
-
-        public AdaptiveContext (double mean,
-                                double standardDeviation,
-                                double threshold)
-        {
-            super(threshold);
-            this.mean = mean;
-            this.standardDeviation = standardDeviation;
-        }
-    }
-
-    //
     //------//
     // Tile //
     //------//
@@ -263,9 +238,9 @@ public abstract class AdaptiveFilter
          * @param height    tile height = image height
          * @param squared   true for squared values, false for plain values
          */
-        public Tile (int tileWidth,
-                     int height,
-                     boolean squared)
+        Tile (int tileWidth,
+              int height,
+              boolean squared)
         {
             this.TILE_WIDTH = tileWidth;
             this.height = height;
@@ -371,14 +346,49 @@ public abstract class AdaptiveFilter
         }
     }
 
+    //-----------------//
+    // AdaptiveContext //
+    //-----------------//
+    /**
+     *
+     */
+    public static class AdaptiveContext
+            extends Context
+    {
+
+        /** Mean pixel value in the neighborhood. */
+        public final double mean;
+
+        /** Standard deviation of pixel values in the neighborhood. */
+        public final double standardDeviation;
+
+        /**
+         * Create an AdaptiveContext object.
+         *
+         * @param mean              mean pixel value in neighborhood
+         * @param standardDeviation standard deviation of pixel value in neighborhood
+         * @param threshold         threshold to apply on pixel value
+         */
+        public AdaptiveContext (double mean,
+                                double standardDeviation,
+                                double threshold)
+        {
+            super(threshold);
+            this.mean = mean;
+            this.standardDeviation = standardDeviation;
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Integer halfWindowSize = new Constant.Integer("Pixels", 18,
-                                                                             "Half size of window around a given pixel");
+        private final Constant.Integer halfWindowSize = new Constant.Integer(
+                "Pixels",
+                18,
+                "Half size of window around a given pixel");
     }
 }

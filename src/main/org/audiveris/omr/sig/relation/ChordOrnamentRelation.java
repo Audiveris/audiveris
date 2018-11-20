@@ -40,22 +40,6 @@ public class ChordOrnamentRelation
 
     private static final Constants constants = new Constants();
 
-    //-------------------//
-    // getXOutGapMaximum //
-    //-------------------//
-    public static Scale.Fraction getXOutGapMaximum (boolean manual)
-    {
-        return manual ? constants.xGapMaxManual : constants.xGapMax;
-    }
-
-    //----------------//
-    // getYGapMaximum //
-    //----------------//
-    public static Scale.Fraction getYGapMaximum (boolean manual)
-    {
-        return manual ? constants.yGapMaxManual : constants.yGapMax;
-    }
-
     //----------------//
     // isSingleSource //
     //----------------//
@@ -101,26 +85,47 @@ public class ChordOrnamentRelation
         return getYGapMaximum(manual);
     }
 
+    //-------------------//
+    // getXOutGapMaximum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMaximum (boolean manual)
+    {
+        return manual ? constants.xGapMaxManual : constants.xGapMax;
+    }
+
+    //----------------//
+    // getYGapMaximum //
+    //----------------//
+    public static Scale.Fraction getYGapMaximum (boolean manual)
+    {
+        return manual ? constants.yGapMaxManual : constants.yGapMax;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio ornamentTargetCoeff = new Constant.Ratio(0.5,
-                                                                              "Supporting coeff for (target) ornament");
+        private final Constant.Ratio ornamentTargetCoeff = new Constant.Ratio(
+                0.5,
+                "Supporting coeff for (target) ornament");
 
-        private final Scale.Fraction xGapMax = new Scale.Fraction(0.75,
-                                                                  "Maximum horizontal gap between ornament center & chord");
+        private final Scale.Fraction xGapMax = new Scale.Fraction(
+                0.75,
+                "Maximum horizontal gap between ornament center & chord");
 
-        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(1.2,
-                                                                        "Maximum manual horizontal gap between ornament center & chord");
+        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(
+                1.2,
+                "Maximum manual horizontal gap between ornament center & chord");
 
-        private final Scale.Fraction yGapMax = new Scale.Fraction(2.0,
-                                                                  "Maximum vertical gap between ornament center & chord");
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
+                2.0,
+                "Maximum vertical gap between ornament center & chord");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(3.0,
-                                                                        "Maximum manual vertical gap between ornament center & chord");
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+                3.0,
+                "Maximum manual vertical gap between ornament center & chord");
     }
 }

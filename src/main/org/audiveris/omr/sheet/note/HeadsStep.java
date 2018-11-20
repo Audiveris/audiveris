@@ -85,15 +85,30 @@ public class HeadsStep
     //---------//
     // Context //
     //---------//
+    /**
+     * COntext for step processing.
+     */
     protected static class Context
     {
 
+        /**
+         * Table of distances.
+         */
         public final DistanceTable distanceTable;
 
+        /**
+         * Spots per system.
+         */
         public final Map<SystemInfo, List<Glyph>> sheetSpots;
 
-        public Context (DistanceTable distanceTable,
-                        Map<SystemInfo, List<Glyph>> sheetSpots)
+        /**
+         * Create a Context.
+         *
+         * @param distanceTable
+         * @param sheetSpots
+         */
+        Context (DistanceTable distanceTable,
+                 Map<SystemInfo, List<Glyph>> sheetSpots)
         {
             this.distanceTable = distanceTable;
             this.sheetSpots = sheetSpots;

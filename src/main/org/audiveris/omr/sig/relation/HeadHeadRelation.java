@@ -75,14 +75,22 @@ public class HeadHeadRelation
         return constants.headSupportCoeff.getValue();
     }
 
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio headSupportCoeff = new Constant.Ratio(1,
-                                                                           "Value for (source or target) head coeff in head-head support formula");
+        private final Constant.Ratio headSupportCoeff = new Constant.Ratio(
+                1,
+                "Value for (source or target) head coeff in head-head support formula");
     }
 }

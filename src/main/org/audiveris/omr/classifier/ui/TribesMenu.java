@@ -111,10 +111,12 @@ public class TribesMenu
             TribeMenu tribeMenu = (TribeMenu) e.getSource();
             Glyph glyph = tribeMenu.getGlyph();
 
-            sheet.getGlyphIndex().getEntityService().publish(new EntityListEvent<Glyph>(this,
-                                                                                        SelectionHint.ENTITY_INIT,
-                                                                                        MouseMovement.PRESSING,
-                                                                                        glyph));
+            sheet.getGlyphIndex().getEntityService().publish(
+                    new EntityListEvent<>(
+                            this,
+                            SelectionHint.ENTITY_INIT,
+                            MouseMovement.PRESSING,
+                            glyph));
         }
     }
 }

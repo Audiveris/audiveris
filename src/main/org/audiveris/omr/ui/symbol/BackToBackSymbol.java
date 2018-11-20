@@ -88,8 +88,9 @@ public class BackToBackSymbol
 
         Rectangle2D rightRect = p.layout.getBounds();
         p.dx = (int) Math.ceil(rightRect.getWidth() * DX_RATIO);
-        p.rect = new Rectangle((int) Math.ceil(rightRect.getWidth() * WIDTH_RATIO), (int) Math.ceil(
-                               rightRect.getHeight()));
+        p.rect = new Rectangle(
+                (int) Math.ceil(rightRect.getWidth() * WIDTH_RATIO),
+                (int) Math.ceil(rightRect.getHeight()));
 
         return p;
     }

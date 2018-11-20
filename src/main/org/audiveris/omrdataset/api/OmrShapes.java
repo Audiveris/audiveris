@@ -66,7 +66,7 @@ public abstract class OmrShapes
      */
     public static final List<String> getNames ()
     {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
 
         for (OmrShape shape : OmrShape.values()) {
             list.add(shape.toString());
@@ -136,7 +136,7 @@ public abstract class OmrShapes
 
     private static Map<OmrShape, NumDen> buildComboMap ()
     {
-        final Map<OmrShape, NumDen> map = new EnumMap<OmrShape, NumDen>(OmrShape.class);
+        final Map<OmrShape, NumDen> map = new EnumMap<>(OmrShape.class);
         map.put(OmrShape.timeSig2over4, new NumDen(2, 4));
         map.put(OmrShape.timeSig2over2, new NumDen(2, 2));
         map.put(OmrShape.timeSig3over2, new NumDen(3, 2));

@@ -43,7 +43,6 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
-import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
@@ -55,6 +54,7 @@ import org.audiveris.omr.util.Corner;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import static org.audiveris.omr.util.VerticalSide.*;
+import org.audiveris.omr.util.Jaxb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +77,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code HeadInter} represents a note head, that is any head shape including
@@ -92,16 +93,16 @@ public class HeadInter
         extends AbstractNoteInter
 {
 
-    private static final Logger logger = LoggerFactory.getLogger(HeadInter.class);
-
     private static final Constants constants = new Constants();
 
-    //
+    private static final Logger logger = LoggerFactory.getLogger(HeadInter.class);
+
     // Persistent data
     //----------------
     //
     /** Absolute location of head template pivot. */
     @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.PointAdapter.class)
     private final Point pivot;
 
     /** Relative pivot position WRT head. */
@@ -208,6 +209,11 @@ public class HeadInter
     //-----------//
     // duplicate //
     //-----------//
+    /**
+     * Duplicate this head, keeping the same head shape (black vs void).
+     *
+     * @return a duplicate head
+     */
     public HeadInter duplicate ()
     {
         return duplicateAs(shape);
@@ -216,6 +222,14 @@ public class HeadInter
     //-------------//
     // duplicateAs //
     //-------------//
+    /**
+     * Build a duplicate of this head, perhaps with a different shape.
+     * <p>
+     * Used when say a half head is shared, with flag/beam on one side.
+     *
+     * @param shape precise shape for the duplicate
+     * @return duplicate
+     */
     public HeadInter duplicateAs (Shape shape)
     {
         HeadInter clone = new HeadInter(pivot, anchor, bounds, shape, impacts, staff, pitch);
@@ -268,6 +282,11 @@ public class HeadInter
     //----------//
     // getChord //
     //----------//
+    /**
+     * Report the containing (head) chord, if any.
+     *
+     * @return containing chord or null
+     */
     @Override
     public HeadChordInter getChord ()
     {
@@ -286,6 +305,11 @@ public class HeadInter
     //---------------//
     // getDescriptor //
     //---------------//
+    /**
+     * Report the descriptor used to generate this head shape with proper size.
+     *
+     * @return related template descriptor
+     */
     public ShapeDescriptor getDescriptor ()
     {
         if (descriptor == null) {
@@ -294,22 +318,6 @@ public class HeadInter
         }
 
         return descriptor;
-    }
-
-    //--------------------//
-    // getShrinkHoriRatio //
-    //--------------------//
-    public static double getShrinkHoriRatio ()
-    {
-        return constants.shrinkHoriRatio.getValue();
-    }
-
-    //--------------------//
-    // getShrinkVertRatio //
-    //--------------------//
-    public static double getShrinkVertRatio ()
-    {
-        return constants.shrinkVertRatio.getValue();
     }
 
     //--------------//
@@ -324,8 +332,7 @@ public class HeadInter
     public Map<HorizontalSide, Set<StemInter>> getSideStems ()
     {
         // Split connected stems into left and right sides
-        final Map<HorizontalSide, Set<StemInter>> map = new EnumMap<HorizontalSide, Set<StemInter>>(
-                HorizontalSide.class);
+        final Map<HorizontalSide, Set<StemInter>> map = new EnumMap<>(HorizontalSide.class);
 
         for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
             HeadStemRelation rel = (HeadStemRelation) relation;
@@ -333,7 +340,7 @@ public class HeadInter
             Set<StemInter> set = map.get(side);
 
             if (set == null) {
-                map.put(side, set = new LinkedHashSet<StemInter>());
+                map.put(side, set = new LinkedHashSet<>());
             }
 
             set.add((StemInter) sig.getEdgeTarget(rel));
@@ -375,63 +382,13 @@ public class HeadInter
      */
     public Set<StemInter> getStems ()
     {
-        final Set<StemInter> set = new LinkedHashSet<StemInter>();
+        final Set<StemInter> set = new LinkedHashSet<>();
 
         for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
             set.add((StemInter) sig.getEdgeTarget(relation));
         }
 
         return set;
-    }
-
-    //----------------//
-    // haveSameHeight //
-    //----------------//
-    /**
-     * Check whether two heads represent the same height
-     * (same octave, same step, same alteration).
-     *
-     * @param h1 first head
-     * @param h2 second head, down the score
-     * @return true if the heads are equivalent.
-     */
-    public static boolean haveSameHeight (HeadInter h1,
-                                          HeadInter h2)
-    {
-        if ((h1 == null) || (h2 == null)) {
-            return false;
-        }
-
-        // Step
-        if (h1.getStep() != h2.getStep()) {
-            return false;
-        }
-
-        // Octave
-        if (h1.getOctave() != h2.getOctave()) {
-            return false;
-        }
-
-        // Alteration
-        Staff s1 = h1.getStaff();
-        Measure m1 = s1.getPart().getMeasureAt(h1.getCenter());
-        KeyInter k1 = m1.getKeyBefore(s1);
-        int f1 = (k1 != null) ? k1.getFifths() : 0;
-
-        Staff s2 = h2.getStaff();
-        Measure m2 = s2.getPart().getMeasureAt(h2.getCenter());
-        KeyInter k2 = m2.getKeyBefore(s2);
-        int f2 = (k2 != null) ? k2.getFifths() : 0;
-
-        if (m1 == m2) {
-            // Both heads are in same measure
-            return (f1 == f2) && (h1.getStaff() == h2.staff);
-        } else {
-            int a1 = h1.getAlter(f1, false);
-            int a2 = h2.getAlter(f2, false);
-
-            return a1 == a2;
-        }
     }
 
     //----------//
@@ -485,9 +442,10 @@ public class HeadInter
             int minArea = Math.min(thisArea, thatArea);
             int commonArea = common.width * common.height;
             double areaRatio = (double) commonArea / minArea;
-            boolean res = (common.width
-                                   > (constants.maxOverlapDxRatio.getValue() * thisBounds.width))
-                                  && (areaRatio > constants.maxOverlapAreaRatio.getValue());
+            boolean res = (common.width > (constants.maxOverlapDxRatio.getValue()
+                                                   * thisBounds.width)) && (areaRatio
+                                                                                    > constants.maxOverlapAreaRatio
+                            .getValue());
 
             return res;
 
@@ -554,9 +512,8 @@ public class HeadInter
         RunTable runTable = new RunTableFactory(VERTICAL).createTable(buf);
 
         // Glyph
-        glyph = sheet.getGlyphIndex().registerOriginal(new Glyph(descBox.x + foreBox.x, descBox.y
-                                                                                                + foreBox.y,
-                                                                 runTable));
+        glyph = sheet.getGlyphIndex().registerOriginal(
+                new Glyph(descBox.x + foreBox.x, descBox.y + foreBox.y, runTable));
 
         // Use glyph bounds as inter bounds
         bounds = glyph.getBounds();
@@ -597,26 +554,6 @@ public class HeadInter
         return Collections.emptyList();
     }
 
-    //--------//
-    // shrink //
-    //--------//
-    /**
-     * Shrink a bit a bounding bounds when checking for note overlap.
-     *
-     * @param box the bounding bounds
-     * @return the shrunk bounds
-     */
-    public static Rectangle2D shrink (Rectangle box)
-    {
-        double newWidth = constants.shrinkHoriRatio.getValue() * box.width;
-        double newHeight = constants.shrinkVertRatio.getValue() * box.height;
-
-        return new Rectangle2D.Double(box.getCenterX() - (newWidth / 2.0), box.getCenterY()
-                                                                                   - (newHeight
-                                                                                              / 2.0),
-                                      newWidth, newHeight);
-    }
-
     //-----------//
     // internals //
     //-----------//
@@ -654,8 +591,10 @@ public class HeadInter
             return 0;
 
         default:
-            logger.warn("Weird shape {} for accidental {}", accidental.getShape(), accidental
-                        .getId());
+            logger.warn(
+                    "Weird shape {} for accidental {}",
+                    accidental.getShape(),
+                    accidental.getId());
 
             return 0; // Should not happen
         }
@@ -719,7 +658,7 @@ public class HeadInter
         // Look for previous accidental with same note step in the same measure
         // Let's avoid the use of time slots (which would require RHYTHMS step to be done!)
         Measure measure = getChord().getMeasure();
-        List<Inter> heads = new ArrayList<Inter>();
+        List<Inter> heads = new ArrayList<>();
 
         for (HeadChordInter headChord : measure.getHeadChords()) {
             heads.addAll(headChord.getMembers());
@@ -733,7 +672,8 @@ public class HeadInter
 
             if (head == this) {
                 started = true;
-            } else if (started && (head.getStep() == getStep()) && (head.getOctave() == getOctave())
+            } else if (started && (head.getStep() == getStep())
+                               && (head.getOctave() == getOctave())
                                && (head.getStaff() == getStaff())) {
                 AlterInter accid = head.getAccidental();
 
@@ -852,11 +792,108 @@ public class HeadInter
         return bestLink;
     }
 
+    //--------------------//
+    // getShrinkHoriRatio //
+    //--------------------//
+    /**
+     * Report horizontal ratio to check overlap
+     *
+     * @return horizontal ratio
+     */
+    public static double getShrinkHoriRatio ()
+    {
+        return constants.shrinkHoriRatio.getValue();
+    }
+
+    //--------------------//
+    // getShrinkVertRatio //
+    //--------------------//
+    /**
+     * Report vertical ratio to check overlap
+     *
+     * @return vertical ratio
+     */
+    public static double getShrinkVertRatio ()
+    {
+        return constants.shrinkVertRatio.getValue();
+    }
+
+    //----------------//
+    // haveSameHeight //
+    //----------------//
+    /**
+     * Check whether two heads represent the same height
+     * (same octave, same step, same alteration).
+     *
+     * @param h1 first head
+     * @param h2 second head, down the score
+     * @return true if the heads are equivalent.
+     */
+    public static boolean haveSameHeight (HeadInter h1,
+                                          HeadInter h2)
+    {
+        if ((h1 == null) || (h2 == null)) {
+            return false;
+        }
+
+        // Step
+        if (h1.getStep() != h2.getStep()) {
+            return false;
+        }
+
+        // Octave
+        if (h1.getOctave() != h2.getOctave()) {
+            return false;
+        }
+
+        // Alteration
+        Staff s1 = h1.getStaff();
+        Measure m1 = s1.getPart().getMeasureAt(h1.getCenter());
+        KeyInter k1 = m1.getKeyBefore(s1);
+        int f1 = (k1 != null) ? k1.getFifths() : 0;
+
+        Staff s2 = h2.getStaff();
+        Measure m2 = s2.getPart().getMeasureAt(h2.getCenter());
+        KeyInter k2 = m2.getKeyBefore(s2);
+        int f2 = (k2 != null) ? k2.getFifths() : 0;
+
+        if (m1 == m2) {
+            // Both heads are in same measure
+            return (f1 == f2) && (h1.getStaff() == h2.staff);
+        } else {
+            int a1 = h1.getAlter(f1, false);
+            int a2 = h2.getAlter(f2, false);
+
+            return a1 == a2;
+        }
+    }
+
+    //--------//
+    // shrink //
+    //--------//
+    /**
+     * Shrink a bit a bounding bounds when checking for note overlap.
+     *
+     * @param box the bounding bounds
+     * @return the shrunk bounds
+     */
+    public static Rectangle2D shrink (Rectangle box)
+    {
+        double newWidth = constants.shrinkHoriRatio.getValue() * box.width;
+        double newHeight = constants.shrinkVertRatio.getValue() * box.height;
+
+        return new Rectangle2D.Double(
+                box.getCenterX() - (newWidth / 2.0),
+                box.getCenterY() - (newHeight / 2.0),
+                newWidth,
+                newHeight);
+    }
+
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
-            extends BasicImpacts
+            extends GradeImpacts
     {
 
         private static final String[] NAMES = new String[]{"dist"};
@@ -873,20 +910,24 @@ public class HeadInter
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(0.5,
-                                                                          "Horizontal shrink ratio to apply when checking note overlap");
+        private final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(
+                0.5,
+                "Horizontal shrink ratio to apply when checking note overlap");
 
-        private final Constant.Ratio shrinkVertRatio = new Constant.Ratio(0.5,
-                                                                          "Vertical shrink ratio to apply when checking note overlap");
+        private final Constant.Ratio shrinkVertRatio = new Constant.Ratio(
+                0.5,
+                "Vertical shrink ratio to apply when checking note overlap");
 
-        private final Constant.Ratio maxOverlapDxRatio = new Constant.Ratio(0.2,
-                                                                            "Maximum acceptable abscissa overlap ratio between notes");
+        private final Constant.Ratio maxOverlapDxRatio = new Constant.Ratio(
+                0.2,
+                "Maximum acceptable abscissa overlap ratio between notes");
 
-        private final Constant.Ratio maxOverlapAreaRatio = new Constant.Ratio(0.25,
-                                                                              "Maximum acceptable box area overlap ratio between notes");
+        private final Constant.Ratio maxOverlapAreaRatio = new Constant.Ratio(
+                0.25,
+                "Maximum acceptable box area overlap ratio between notes");
     }
 }

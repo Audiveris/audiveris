@@ -42,21 +42,24 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * distance between two staff lines (center to center).
  * <p>
  * Primary informations: This data is always detected, otherwise the current page is detected as not
- * being a music page.<ul>
+ * being a music page.
+ * <ul>
  * <li><b>Staff interline</b>: min, main, max. (Vertical distance measured from line center to line
  * center)</li>
  * <li><b>Staff line thickness</b> (fore): min, main, max.</li>
  * </ul>
  * <p>
  * Secondary informations: This data is always made available, either based on detected value or
- * derived from other information.<ul>
+ * derived from other information.
+ * <ul>
  * <li><b>Beam thickness</b>: main. A second peak in the histogram of vertical foreground runs
  * signals the presence of beams.
  * Otherwise it is computed as a ratio of main background length between staff lines.</li>
  * <li><b>Stem thickness</b>: main, max. These values are computed during STEM_SEEDS step.</li>
  * </ul>
  * <p>
- * Optional informations: This data may exist or not, according to the sheet at hand.<ul>
+ * Optional informations: This data may exist or not, according to the sheet at hand.
+ * <ul>
  * <li><b>Black head</b>: Typical width and height measured for black heads.</li>
  * <li><b>Music font</b>: Precise point size determined for music font rendering of heads.</li>
  * <li><b>Small staff scale</b>:
@@ -70,15 +73,15 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * There are two different measurements, pixels and fractions:
  * <dl>
  * <dt><b>pixel</b></dt>
- * <dd> This is simply an absolute number of pixels, so generally an integer.</dd>
+ * <dd>This is simply an absolute number of pixels, so generally an integer.</dd>
  * <dt><b>(interline) Fraction</b></dt>
- * <dd> This is a number (or fraction) of interlines.
+ * <dd>This is a number (or fraction) of interlines.
  * Typical unit value for interline is around 20 pixels.</dd>
  * <dt><b>(interline) AreaFraction</b></dt>
- * <dd> This is a number (or fraction) of square interlines, meant to measure glyph area or weight.
+ * <dd>This is a number (or fraction) of square interlines, meant to measure glyph area or weight.
  * Typical unit value for interline area is around 400 pixels.</dd>
- * <dt> <b>LineFraction</b></dt>
- * <dd> This is a number (or fraction) of line thickness.
+ * <dt><b>LineFraction</b></dt>
+ * <dd>This is a number (or fraction) of line thickness.
  * Typical unit value for line is around 4 pixels.</dd>
  * </dl>
  *
@@ -90,35 +93,6 @@ public class Scale
 {
 
     private static final Logger logger = LoggerFactory.getLogger(Scale.class);
-
-    public static enum Item
-    {
-        line("Line thickness"),
-        interline("Interline"),
-        smallInterline("Small interline"),
-        beam("Beam thickness"),
-        stem("Stem thickness");
-
-        private final String description;
-
-        Item (String description)
-        {
-            this.description = description;
-        }
-
-        public String getDescription ()
-        {
-            return description;
-        }
-    }
-
-    public enum Size
-    {
-        /** Standard staff. */
-        LARGE,
-        /** Small staff. */
-        SMALL;
-    }
 
     /** Interline scale. */
     @XmlElement(name = "interline")
@@ -167,6 +141,9 @@ public class Scale
         this.smallScale = smallScale;
     }
 
+    /**
+     *
+     */
     public Scale ()
     {
     }
@@ -236,6 +213,19 @@ public class Scale
     public BlackHeadScale getBlackHeadScale ()
     {
         return blackHeadScale;
+    }
+
+    //-------------------//
+    // setBlackHeadScale //
+    //-------------------//
+    /**
+     * Remember black head scale.
+     *
+     * @param blackHeadScale the blackHeadScale to set
+     */
+    public void setBlackHeadScale (BlackHeadScale blackHeadScale)
+    {
+        this.blackHeadScale = blackHeadScale;
     }
 
     //---------//
@@ -522,6 +512,19 @@ public class Scale
     }
 
     //-------------------//
+    // setMusicFontScale //
+    //-------------------//
+    /**
+     * Remember music font scale.
+     *
+     * @param musicFontScale the musicFontScale to set
+     */
+    public void setMusicFontScale (MusicFontScale musicFontScale)
+    {
+        this.musicFontScale = musicFontScale;
+    }
+
+    //-------------------//
     // getSmallInterline //
     //-------------------//
     /**
@@ -566,6 +569,16 @@ public class Scale
         return smallScale;
     }
 
+    /**
+     * Set small scale information.
+     *
+     * @param smallScale the smallScale to set
+     */
+    public void setSmallScale (Scale smallScale)
+    {
+        this.smallScale = smallScale;
+    }
+
     //--------------//
     // getStemScale //
     //--------------//
@@ -577,6 +590,19 @@ public class Scale
     public StemScale getStemScale ()
     {
         return stemScale;
+    }
+
+    //--------------//
+    // setStemScale //
+    //--------------//
+    /**
+     * Remember stem scaling information.
+     *
+     * @param stemScale stem scaling
+     */
+    public void setStemScale (StemScale stemScale)
+    {
+        this.stemScale = stemScale;
     }
 
     //------------------//
@@ -671,19 +697,6 @@ public class Scale
         beamScale.setDistance(meanValue, standardDeviation);
     }
 
-    //-------------------//
-    // setBlackHeadScale //
-    //-------------------//
-    /**
-     * Remember black head scale.
-     *
-     * @param blackHeadScale the blackHeadScale to set
-     */
-    public void setBlackHeadScale (BlackHeadScale blackHeadScale)
-    {
-        this.blackHeadScale = blackHeadScale;
-    }
-
     //--------------//
     // setItemValue //
     //--------------//
@@ -716,40 +729,6 @@ public class Scale
         default:
             throw new IllegalArgumentException("No value defined for scaling item " + item);
         }
-    }
-
-    //-------------------//
-    // setMusicFontScale //
-    //-------------------//
-    /**
-     * Remember music font scale.
-     *
-     * @param musicFontScale the musicFontScale to set
-     */
-    public void setMusicFontScale (MusicFontScale musicFontScale)
-    {
-        this.musicFontScale = musicFontScale;
-    }
-
-    /**
-     * @param smallScale the smallScale to set
-     */
-    public void setSmallScale (Scale smallScale)
-    {
-        this.smallScale = smallScale;
-    }
-
-    //--------------//
-    // setStemScale //
-    //--------------//
-    /**
-     * Remember stem scaling information.
-     *
-     * @param stemScale stem scaling
-     */
-    public void setStemScale (StemScale stemScale)
-    {
-        this.stemScale = stemScale;
     }
 
     //----------//
@@ -826,7 +805,7 @@ public class Scale
      */
     public double toPixelsDouble (LineFraction lineFrac)
     {
-        return (double) lineScale.main * lineFrac.getValue();
+        return lineScale.main * lineFrac.getValue();
     }
 
     //----------//
@@ -841,16 +820,22 @@ public class Scale
     //----------//
     // toString //
     //----------//
+    /**
+     * An extensible description of scale.
+     *
+     * @param full true for full description
+     * @return scale description
+     */
     public String toString (boolean full)
     {
         StringBuilder sb = new StringBuilder("Scale{");
 
         if (lineScale != null) {
-            sb.append("  line").append(lineScale);
+            sb.append(lineScale);
         }
 
         if (interlineScale != null) {
-            sb.append(" interline").append(interlineScale);
+            sb.append(" ").append(interlineScale);
         }
 
         if (beamScale != null) {
@@ -892,6 +877,46 @@ public class Scale
     private double fracToPixels (double val)
     {
         return interlineScale.main * val;
+    }
+
+    /**
+     * Kind of staff size.
+     */
+    public enum Size
+    {
+        /** Standard staff. */
+        LARGE,
+        /** Small staff. */
+        SMALL
+    }
+
+    /**
+     * Scale information kind.
+     */
+    public static enum Item
+    {
+        line("Line thickness"),
+        interline("Interline"),
+        smallInterline("Small interline"),
+        beam("Beam thickness"),
+        stem("Stem thickness");
+
+        private final String description;
+
+        Item (String description)
+        {
+            this.description = description;
+        }
+
+        /**
+         * Report item description
+         *
+         * @return description
+         */
+        public String getDescription ()
+        {
+            return description;
+        }
     }
 
     //--------------//
@@ -1167,6 +1192,9 @@ public class Scale
             extends Constant.Double
     {
 
+        /**
+         *
+         */
         public static final Fraction ZERO = new Fraction(0, "zero");
 
         static {
@@ -1203,11 +1231,23 @@ public class Scale
             extends Range
     {
 
+        /**
+         * Create an InterlineScale object.
+         *
+         * @param range the underlying range
+         */
         public InterlineScale (Range range)
         {
             this(range.min, range.main, range.max);
         }
 
+        /**
+         * Create an InterlineScale object.
+         *
+         * @param min  minimum value
+         * @param main most frequent value
+         * @param max  maximum value
+         */
         public InterlineScale (int min,
                                int main,
                                int max)
@@ -1231,32 +1271,6 @@ public class Scale
         public double pixelsToFrac (double pixels)
         {
             return pixels / main;
-        }
-
-        public static int toPixels (int interline,
-                                    Fraction frac)
-        {
-            return (int) Math.rint(toPixelsDouble(interline, frac));
-        }
-
-        /**
-         * Compute the squared-normalized number of pixels, according to the provided
-         * interline.
-         *
-         * @param interline provided interline value
-         * @param areaFrac  a measure based on interline (1 = one interline square)
-         * @return the actual squared number of pixels with the current scale
-         */
-        public static int toPixels (int interline,
-                                    AreaFraction areaFrac)
-        {
-            return (int) Math.rint(interline * interline * areaFrac.getValue());
-        }
-
-        public static double toPixelsDouble (int interline,
-                                             Fraction frac)
-        {
-            return interline * frac.getValue();
         }
 
         /**
@@ -1293,6 +1307,52 @@ public class Scale
         public double toPixelsDouble (Fraction frac)
         {
             return toPixelsDouble(main, frac);
+        }
+
+        /**
+         * Compute in pixels the provided Fraction, under the provided interline.
+         *
+         * @param interline the actual interline value
+         * @param frac      the interline-based specification
+         * @return the resulting integer value in pixels
+         */
+        public static int toPixels (int interline,
+                                    Fraction frac)
+        {
+            return (int) Math.rint(toPixelsDouble(interline, frac));
+        }
+
+        /**
+         * Compute the squared-normalized number of pixels, according to the provided
+         * interline.
+         *
+         * @param interline provided interline value
+         * @param areaFrac  a measure based on interline (1 = one interline square)
+         * @return the actual squared number of pixels with the current scale
+         */
+        public static int toPixels (int interline,
+                                    AreaFraction areaFrac)
+        {
+            return (int) Math.rint(interline * interline * areaFrac.getValue());
+        }
+
+        /**
+         * Compute in pixels the provided Fraction, under the provided interline.
+         *
+         * @param interline the actual interline value
+         * @param frac      the interline-based specification
+         * @return the resulting double value in pixels
+         */
+        public static double toPixelsDouble (int interline,
+                                             Fraction frac)
+        {
+            return interline * frac.getValue();
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "interline" + super.toString();
         }
     }
 
@@ -1338,11 +1398,23 @@ public class Scale
             extends Range
     {
 
+        /**
+         * Create a LineScale object.
+         *
+         * @param range the defining range
+         */
         public LineScale (Range range)
         {
             this(range.min, range.main, range.max);
         }
 
+        /**
+         * Create a LineScale object.
+         *
+         * @param min  minimum value
+         * @param main most frequent value
+         * @param max  maximum value
+         */
         public LineScale (int min,
                           int main,
                           int max)
@@ -1378,7 +1450,13 @@ public class Scale
          */
         public double toPixelsDouble (LineFraction lineFrac)
         {
-            return (double) main * lineFrac.getValue();
+            return main * lineFrac.getValue();
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "line" + super.toString();
         }
     }
 

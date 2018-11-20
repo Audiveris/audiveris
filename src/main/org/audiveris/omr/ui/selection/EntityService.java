@@ -47,7 +47,6 @@ import java.util.List;
  * {@link #disconnect} methods.
  *
  * @param <E> precise entity type
- *
  * @author Hervé Bitteur
  */
 public class EntityService<E extends Entity>
@@ -64,7 +63,7 @@ public class EntityService<E extends Entity>
     protected final SelectionService locationService;
 
     /** Basket of entities selected via location (rectangle/point). */
-    protected final List<E> basket = new ArrayList<E>();
+    protected final List<E> basket = new ArrayList<>();
 
     /**
      * Creates a new {@code EntityService} object with no underlying index.
@@ -219,6 +218,12 @@ public class EntityService<E extends Entity>
     //-----------------//
     // getMostRelevant //
     //-----------------//
+    /**
+     * Among the list of selected entities, report the most "relevant" one.
+     *
+     * @param list the sequence of selected entities
+     * @return the chosen entity
+     */
     protected E getMostRelevant (List<E> list)
     {
         if (!list.isEmpty()) {
@@ -245,8 +250,8 @@ public class EntityService<E extends Entity>
 
             if (entity != null) {
                 if (locationService != null) {
-                    locationService.publish(new LocationEvent(this, hint, listEvent.movement, entity
-                                                              .getBounds()));
+                    locationService.publish(
+                            new LocationEvent(this, hint, listEvent.movement, entity.getBounds()));
                 }
 
                 // Use this entity to start a basket
@@ -267,7 +272,7 @@ public class EntityService<E extends Entity>
     protected void handleEvent (IdEvent idEvent)
     {
         final E entity = index.getEntity(idEvent.getData());
-        publish(new EntityListEvent<E>(this, idEvent.hint, idEvent.movement, entity));
+        publish(new EntityListEvent<>(this, idEvent.hint, idEvent.movement, entity));
     }
 
     //---------------------//
@@ -295,7 +300,7 @@ public class EntityService<E extends Entity>
                 // Non-degenerated rectangle: look for contained entities
                 basket.clear();
                 basket.addAll(index.getContainedEntities(rect));
-                publish(new EntityListEvent<E>(this, hint, movement, basket));
+                publish(new EntityListEvent<>(this, hint, movement, basket));
             } else {
                 // Just a point: look for most relevant entity
                 E entity = getMostRelevant(index.getContainingEntities(rect.getLocation()));
@@ -343,7 +348,7 @@ public class EntityService<E extends Entity>
                 }
 
                 // Publish basket
-                publish(new EntityListEvent<E>(this, null, movement, basket));
+                publish(new EntityListEvent<>(this, null, movement, basket));
             }
         }
     }

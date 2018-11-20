@@ -41,7 +41,7 @@ class TaskHistory
     private static final Logger logger = LoggerFactory.getLogger(TaskHistory.class);
 
     /** History of action sequences. */
-    private final List<UITaskList> sequences = new ArrayList<UITaskList>();
+    private final List<UITaskList> sequences = new ArrayList<>();
 
     /** Current position in history, always pointing to sequence just done. */
     private int cursor = -1;

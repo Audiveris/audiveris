@@ -33,7 +33,6 @@ import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.util.SeparableMenu;
 
 import org.jdesktop.application.Action;
-import org.jdesktop.application.ApplicationAction;
 import org.jdesktop.application.ApplicationActionMap;
 
 import org.slf4j.Logger;
@@ -86,6 +85,11 @@ public class TribeMenu
     //---------//
     // addGood //
     //---------//
+    /**
+     * Add a good sample
+     *
+     * @param e triggering event
+     */
     @Action
     public void addGood (ActionEvent e)
     {
@@ -106,6 +110,11 @@ public class TribeMenu
     //----------//
     // addOther //
     //----------//
+    /**
+     * Add a plain sample
+     *
+     * @param e triggering event
+     */
     @Action
     public void addOther (ActionEvent e)
     {
@@ -153,10 +162,10 @@ public class TribeMenu
 
         if (currentTribe != null) {
             // Good: Add compatible glyph to current tribe
-            add(new JMenuItem((ApplicationAction) actionMap.get("addGood")));
+            add(new JMenuItem(actionMap.get("addGood")));
 
             // Other: Add sub-optimal glyph to current tribe
-            add(new JMenuItem((ApplicationAction) actionMap.get("addOther")));
+            add(new JMenuItem(actionMap.get("addOther")));
         }
     }
 
@@ -183,7 +192,7 @@ public class TribeMenu
             extends JMenu
     {
 
-        public SelectMenu ()
+        SelectMenu ()
         {
             super("Set as Best");
 
@@ -192,18 +201,16 @@ public class TribeMenu
 
         private void populate ()
         {
-            ShapeSet.addAllShapes(
-                    this,
-                    new ActionListener()
-            {
-                @Override
-                public void actionPerformed (ActionEvent e)
-                {
-                    JMenuItem source = (JMenuItem) e.getSource();
-                    Shape shape = Shape.valueOf(source.getText());
-                    selectBest(shape);
-                }
-            });
+            ShapeSet.addAllShapes(this, new ActionListener()
+                          {
+                              @Override
+                              public void actionPerformed (ActionEvent e)
+                              {
+                                  JMenuItem source = (JMenuItem) e.getSource();
+                                  Shape shape = Shape.valueOf(source.getText());
+                                  selectBest(shape);
+                              }
+                          });
         }
     }
 }

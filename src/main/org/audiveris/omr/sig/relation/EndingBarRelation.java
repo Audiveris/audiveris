@@ -47,8 +47,9 @@ public class EndingBarRelation
 
     private static final Constants constants = new Constants();
 
-    private static final double[] WEIGHTS = new double[]{constants.xWeight.getValue(),
-                                                         constants.yWeight.getValue()};
+    private static final double[] WEIGHTS = new double[]{
+        constants.xWeight.getValue(),
+        constants.yWeight.getValue()};
 
     /** Which side of ending is used?. */
     @XmlAttribute(name = "side")
@@ -76,6 +77,13 @@ public class EndingBarRelation
     public EndingBarRelation ()
     {
         this.xDistance = 0;
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 
     //----------------//
@@ -216,29 +224,36 @@ public class EndingBarRelation
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio endingSupportCoeff = new Constant.Ratio(3,
-                                                                             "Supporting coeff for (source) ending");
+        private final Constant.Ratio endingSupportCoeff = new Constant.Ratio(
+                3,
+                "Supporting coeff for (source) ending");
 
-        private final Scale.Fraction xGapMax = new Scale.Fraction(2.0,
-                                                                  "Maximum horizontal gap between ending and barline");
+        private final Scale.Fraction xGapMax = new Scale.Fraction(
+                2.0,
+                "Maximum horizontal gap between ending and barline");
 
-        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(3.0,
-                                                                        "Maximum manual horizontal gap between ending and barline");
+        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(
+                3.0,
+                "Maximum manual horizontal gap between ending and barline");
 
-        private final Scale.Fraction yGapMax = new Scale.Fraction(10.0,
-                                                                  "Maximum vertical gap between bottom of ending leg and top of barline");
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
+                10.0,
+                "Maximum vertical gap between bottom of ending leg and top of barline");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(15.0,
-                                                                        "Maximum manual vertical gap between bottom of ending leg and top of barline");
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+                15.0,
+                "Maximum manual vertical gap between bottom of ending leg and top of barline");
 
-        private final Constant.Ratio xWeight = new Constant.Ratio(1,
-                                                                  "Relative impact weight for xGap (in or out)");
+        private final Constant.Ratio xWeight = new Constant.Ratio(
+                1,
+                "Relative impact weight for xGap (in or out)");
 
-        private final Constant.Ratio yWeight = new Constant.Ratio(0,
-                                                                  "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(
+                0,
+                "Relative impact weight for yGap");
     }
 }

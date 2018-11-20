@@ -77,6 +77,9 @@ public class KeySlice
         this.roi = roi;
     }
 
+    /**
+     * Remove the alter in this slice.
+     */
     public void deleteAlter ()
     {
         if (alter != null) {
@@ -86,6 +89,8 @@ public class KeySlice
     }
 
     /**
+     * Report the slice alter
+     *
      * @return the alter, if any
      */
     public KeyAlterInter getAlter ()
@@ -94,6 +99,19 @@ public class KeySlice
     }
 
     /**
+     * Set slice alter
+     *
+     * @param alter the alter to set
+     */
+    public void setAlter (KeyAlterInter alter)
+    {
+        deleteAlter();
+        this.alter = alter;
+    }
+
+    /**
+     * Report slice evaluation
+     *
      * @return the eval
      */
     public Evaluation getEval ()
@@ -102,6 +120,18 @@ public class KeySlice
     }
 
     /**
+     * Set slice evaluation
+     *
+     * @param eval the eval to set
+     */
+    public void setEval (Evaluation eval)
+    {
+        this.eval = eval;
+    }
+
+    /**
+     * Report slice glyph
+     *
      * @return the glyph
      */
     public Glyph getGlyph ()
@@ -109,12 +139,29 @@ public class KeySlice
         return glyph;
     }
 
+    /**
+     * Set slice glyph
+     *
+     * @param glyph the glyph to set
+     */
+    public void setGlyph (Glyph glyph)
+    {
+        this.glyph = glyph;
+    }
+
+    /**
+     * Report slice ID
+     *
+     * @return 1-based rank of slice within key
+     */
     public int getId ()
     {
         return 1 + roi.indexOf(this);
     }
 
     /**
+     * Report a slice string description
+     *
      * @return a fixed-size description string (9 char)
      */
     public String getLabel ()
@@ -130,6 +177,8 @@ public class KeySlice
     }
 
     /**
+     * Report slice bounds
+     *
      * @return the rectangle definition
      */
     public final Rectangle getRect ()
@@ -137,49 +186,54 @@ public class KeySlice
         return new Rectangle(rect);
     }
 
+    /**
+     * Define a new rectangle for this slice.
+     *
+     * @param rect the slice new rectangle
+     */
+    public void setRect (Rectangle rect)
+    {
+        this.rect = new Rectangle(rect);
+    }
+
+    /**
+     * Report slice starting abscissa
+     *
+     * @return the abscissa value on left side
+     */
     public final int getStart ()
     {
         return rect.x;
     }
 
+    /**
+     * Report slice ending abscissa
+     *
+     * @return the abscissa value of right side
+     */
     public final int getStop ()
     {
         return (rect.x + rect.width) - 1;
     }
 
+    /**
+     * Report slice width
+     *
+     * @return the slice width
+     */
     public final int getWidth ()
     {
         return rect.width;
     }
 
+    /**
+     * Tell whether slice is stuffed with some invalid material.
+     *
+     * @return true if so
+     */
     public boolean isStuffed ()
     {
         return stuffed;
-    }
-
-    /**
-     * @param alter the alter to set
-     */
-    public void setAlter (KeyAlterInter alter)
-    {
-        deleteAlter();
-        this.alter = alter;
-    }
-
-    /**
-     * @param eval the eval to set
-     */
-    public void setEval (Evaluation eval)
-    {
-        this.eval = eval;
-    }
-
-    /**
-     * @param glyph the glyph to set
-     */
-    public void setGlyph (Glyph glyph)
-    {
-        this.glyph = glyph;
     }
 
     //--------------//
@@ -209,15 +263,8 @@ public class KeySlice
     }
 
     /**
-     * Define a new rectangle for this slice.
      *
-     * @param rect the slice new rectangle
      */
-    public void setRect (Rectangle rect)
-    {
-        this.rect = new Rectangle(rect);
-    }
-
     public void setStuffed ()
     {
         stuffed = true;

@@ -49,7 +49,6 @@ public class AdaptiveDescriptor
 
     private static final Logger logger = LoggerFactory.getLogger(AdaptiveDescriptor.class);
 
-    //
     /** Coefficient for mean. */
     @XmlAttribute(name = "mean-coeff")
     public final double meanCoeff;
@@ -76,55 +75,6 @@ public class AdaptiveDescriptor
     {
         meanCoeff = 0;
         stdDevCoeff = 0;
-    }
-
-    //-------------------//
-    // defaultIsSpecific //
-    //-------------------//
-    public static boolean defaultIsSpecific ()
-    {
-        return !constants.meanCoeff.isSourceValue() || !constants.stdDevCoeff.isSourceValue();
-    }
-
-    //------------//
-    // getDefault //
-    //------------//
-    public static AdaptiveDescriptor getDefault ()
-    {
-        return new AdaptiveDescriptor(getDefaultMeanCoeff(), getDefaultStdDevCoeff());
-    }
-
-    //---------------------//
-    // getDefaultMeanCoeff //
-    //---------------------//
-    public static double getDefaultMeanCoeff ()
-    {
-        return constants.meanCoeff.getValue();
-    }
-
-    //-----------------------//
-    // getDefaultStdDevCoeff //
-    //-----------------------//
-    public static double getDefaultStdDevCoeff ()
-    {
-        return constants.stdDevCoeff.getValue();
-    }
-
-    //----------------//
-    // getSourceValue //
-    //----------------//
-    public static AdaptiveDescriptor getSourceValue ()
-    {
-        return new AdaptiveDescriptor(constants.meanCoeff.getSourceValue(), constants.stdDevCoeff
-                                      .getSourceValue());
-    }
-
-    //---------------------//
-    // setDefaultMeanCoeff //
-    //---------------------//
-    public static void setDefaultMeanCoeff (double meanCoeff)
-    {
-        constants.meanCoeff.setValue(meanCoeff);
     }
 
     //-----------//
@@ -161,23 +111,6 @@ public class AdaptiveDescriptor
         return hash;
     }
 
-    //---------------//
-    // resetToSource //
-    //---------------//
-    public static void resetToSource ()
-    {
-        constants.meanCoeff.resetToSource();
-        constants.stdDevCoeff.resetToSource();
-    }
-
-    //-----------------------//
-    // setDefaultStdDevCoeff //
-    //-----------------------//
-    public static void setDefaultStdDevCoeff (double stdDevCoeff)
-    {
-        constants.stdDevCoeff.setValue(stdDevCoeff);
-    }
-
     //--------//
     // equals //
     //--------//
@@ -208,17 +141,86 @@ public class AdaptiveDescriptor
         return sb.toString();
     }
 
+    //-------------------//
+    // defaultIsSpecific //
+    //-------------------//
+    public static boolean defaultIsSpecific ()
+    {
+        return !constants.meanCoeff.isSourceValue() || !constants.stdDevCoeff.isSourceValue();
+    }
+
+    //------------//
+    // getDefault //
+    //------------//
+    public static AdaptiveDescriptor getDefault ()
+    {
+        return new AdaptiveDescriptor(getDefaultMeanCoeff(), getDefaultStdDevCoeff());
+    }
+
+    //---------------------//
+    // getDefaultMeanCoeff //
+    //---------------------//
+    public static double getDefaultMeanCoeff ()
+    {
+        return constants.meanCoeff.getValue();
+    }
+
+    //---------------------//
+    // setDefaultMeanCoeff //
+    //---------------------//
+    public static void setDefaultMeanCoeff (double meanCoeff)
+    {
+        constants.meanCoeff.setValue(meanCoeff);
+    }
+
+    //-----------------------//
+    // getDefaultStdDevCoeff //
+    //-----------------------//
+    public static double getDefaultStdDevCoeff ()
+    {
+        return constants.stdDevCoeff.getValue();
+    }
+
+    //-----------------------//
+    // setDefaultStdDevCoeff //
+    //-----------------------//
+    public static void setDefaultStdDevCoeff (double stdDevCoeff)
+    {
+        constants.stdDevCoeff.setValue(stdDevCoeff);
+    }
+
+    //----------------//
+    // getSourceValue //
+    //----------------//
+    public static AdaptiveDescriptor getSourceValue ()
+    {
+        return new AdaptiveDescriptor(
+                constants.meanCoeff.getSourceValue(),
+                constants.stdDevCoeff.getSourceValue());
+    }
+
+    //---------------//
+    // resetToSource //
+    //---------------//
+    public static void resetToSource ()
+    {
+        constants.meanCoeff.resetToSource();
+        constants.stdDevCoeff.resetToSource();
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio meanCoeff = new Constant.Ratio(0.7,
-                                                                    "Threshold formula coefficient for mean pixel value");
+        private final Constant.Ratio meanCoeff = new Constant.Ratio(
+                0.7,
+                "Threshold formula coefficient for mean pixel value");
 
-        private final Constant.Ratio stdDevCoeff = new Constant.Ratio(0.9,
-                                                                      "Threshold formula coefficient for pixel standard deviation");
+        private final Constant.Ratio stdDevCoeff = new Constant.Ratio(
+                0.9,
+                "Threshold formula coefficient for pixel standard deviation");
     }
 }

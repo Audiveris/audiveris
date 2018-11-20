@@ -44,7 +44,6 @@ public abstract class AbstractEntity
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractEntity.class);
 
-    //
     // Persistent data
     //----------------
     //
@@ -79,21 +78,21 @@ public abstract class AbstractEntity
     }
 
     //-------//
-    // isVip //
-    //-------//
-    @Override
-    public boolean isVip ()
-    {
-        return vip;
-    }
-
-    //-------//
     // setId //
     //-------//
     @Override
     public void setId (int id)
     {
         this.id = id;
+    }
+
+    //-------//
+    // isVip //
+    //-------//
+    @Override
+    public boolean isVip ()
+    {
+        return vip;
     }
 
     //--------//
@@ -132,6 +131,11 @@ public abstract class AbstractEntity
     //-----------//
     // internals //
     //-----------//
+    /**
+     * Report description of object internals.
+     *
+     * @return internals description
+     */
     protected String internals ()
     {
         return "";

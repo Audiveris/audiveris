@@ -47,6 +47,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,7 +67,8 @@ import javax.swing.event.ChangeListener;
  * views around the same sheet.
  * All views share the same zoom and the same position within their containing {@link JScrollPane}.
  * <p>
- * It gathers: <ul>
+ * It gathers:
+ * <ul>
  * <li>a {@link Zoom} with its dedicated graphical {@link LogSlider}</li>
  * <li>a mouse adapter {@link Rubber}</li>
  * <li>a tabbed pane of {@link JScrollPane}'s for all views of this sheet</li>
@@ -83,7 +85,6 @@ public class SheetAssembly
 
     private static final Logger logger = LoggerFactory.getLogger(SheetAssembly.class);
 
-    //
     /** Link with sheet stub. */
     @Navigable(false)
     private final SheetStub stub;
@@ -104,7 +105,7 @@ public class SheetAssembly
     private final Rubber rubber = new Rubber(zoom);
 
     /** Map: scrollPane -> view tab. */
-    private final Map<JScrollPane, ViewTab> tabs = new HashMap<JScrollPane, ViewTab>();
+    private final Map<JScrollPane, ViewTab> tabs = new HashMap<>();
 
     /** Previously selected tab. */
     private ViewTab previousTab = null;
@@ -151,8 +152,7 @@ public class SheetAssembly
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(
-                        new Runnable()
+                SwingUtilities.invokeAndWait(new Runnable()
                 {
                     @Override
                     public void run ()
@@ -160,7 +160,8 @@ public class SheetAssembly
                         addBoard(tab, board);
                     }
                 });
-            } catch (Exception ex) {
+            } catch (InterruptedException |
+                     InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
             }
         } else {
@@ -206,8 +207,7 @@ public class SheetAssembly
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(
-                        new Runnable()
+                SwingUtilities.invokeAndWait(new Runnable()
                 {
                     @Override
                     public void run ()
@@ -215,7 +215,8 @@ public class SheetAssembly
                         addViewTab(label, scrollView, boardsPane);
                     }
                 });
-            } catch (Exception ex) {
+            } catch (InterruptedException |
+                     InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
             }
         } else {
@@ -329,6 +330,11 @@ public class SheetAssembly
     //--------------------//
     // getSelectedTabName //
     //--------------------//
+    /**
+     * Report name of selected tab.
+     *
+     * @return name of selected tab
+     */
     public String getSelectedTabName ()
     {
         ViewTab currentTab = getCurrentViewTab();
@@ -375,6 +381,11 @@ public class SheetAssembly
     //---------//
     // getStub //
     //---------//
+    /**
+     * Report the underlying sheet stub.
+     *
+     * @return the related sheet stub
+     */
     public SheetStub getStub ()
     {
         return stub;
@@ -430,8 +441,7 @@ public class SheetAssembly
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(
-                        new Runnable()
+                SwingUtilities.invokeAndWait(new Runnable()
                 {
                     @Override
                     public void run ()
@@ -439,7 +449,8 @@ public class SheetAssembly
                         reset();
                     }
                 });
-            } catch (Exception ex) {
+            } catch (InterruptedException |
+                     InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
             }
         } else {
@@ -452,7 +463,7 @@ public class SheetAssembly
 
             close();
 
-            for (ViewTab tab : new ArrayList<ViewTab>(tabs.values())) {
+            for (ViewTab tab : new ArrayList<>(tabs.values())) {
                 tab.remove();
             }
 
@@ -510,8 +521,10 @@ public class SheetAssembly
     public void stateChanged (ChangeEvent e)
     {
         ViewTab currentTab = getCurrentViewTab();
-        logger.debug("SheetAssembly stateChanged previousTab:{} currentTab:{}", previousTab,
-                     currentTab);
+        logger.debug(
+                "SheetAssembly stateChanged previousTab:{} currentTab:{}",
+                previousTab,
+                currentTab);
 
         if (currentTab != previousTab) {
             if (previousTab != null) {
@@ -589,69 +602,6 @@ public class SheetAssembly
         }
     }
 
-    //--------------//
-    // ScrollValues //
-    //--------------//
-    /**
-     * To preserve and replicate scroll bar values.
-     */
-    private static class ScrollValues
-    {
-
-        final DefaultBoundedRangeModel hori; // Model for horizontal scrollbar
-
-        final DefaultBoundedRangeModel vert; // Model for vertical scrollbar
-
-        public ScrollValues (ScrollView scrollView)
-        {
-            hori = copy(scrollView.getComponent().getHorizontalScrollBar().getModel());
-            vert = copy(scrollView.getComponent().getVerticalScrollBar().getModel());
-        }
-
-        public void applyTo (JScrollPane scrollPane)
-        {
-            apply(hori, scrollPane.getHorizontalScrollBar().getModel());
-            apply(vert, scrollPane.getVerticalScrollBar().getModel());
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "ScrollValues{hori:" + hori + ", vert:" + vert + "}";
-        }
-
-        private void apply (BoundedRangeModel src,
-                            BoundedRangeModel tgt)
-        {
-            tgt.setRangeProperties(src.getValue(), src.getExtent(), src.getMinimum(), src
-                                   .getMaximum(), false);
-        }
-
-        private DefaultBoundedRangeModel copy (BoundedRangeModel m)
-        {
-            return new DefaultBoundedRangeModel(m.getValue(), m.getExtent(), m.getMinimum(), m
-                                                .getMaximum());
-        }
-    }
-
-    //-----------//
-    // ViewsPane //
-    //-----------//
-    /**
-     * Closable tabbed pane, with user confirmation on tab closing.
-     */
-    private static class ViewsPane
-            extends ClosableTabbedPane
-    {
-
-        @Override
-        public boolean tabAboutToClose (int tabIndex)
-        {
-            return OMR.gui.displayConfirmation(getTitleAt(tabIndex) + " tab is about to close."
-                                                       + "\nDo you confirm?");
-        }
-    }
-
     //---------//
     // ViewTab //
     //---------//
@@ -668,9 +618,9 @@ public class SheetAssembly
 
         ScrollView scrollView; // Component in the JTabbedPane
 
-        public ViewTab (String title,
-                        BoardsPane boardsPane,
-                        ScrollView scrollView)
+        ViewTab (String title,
+                 BoardsPane boardsPane,
+                 ScrollView scrollView)
         {
             this.title = title;
             this.boardsPane = boardsPane;
@@ -681,8 +631,11 @@ public class SheetAssembly
             rubberPanel.setZoom(zoom);
             rubberPanel.setRubber(rubber);
 
-            logger.debug("Creating ViewTab {} modelSize:{} stub.hasSheet(): {}", title, modelSize,
-                         stub.hasSheet());
+            logger.debug(
+                    "Creating ViewTab {} modelSize:{} stub.hasSheet(): {}",
+                    title,
+                    modelSize,
+                    stub.hasSheet());
 
             // Set the model size?
             if (modelSize == null) {
@@ -753,8 +706,11 @@ public class SheetAssembly
          */
         public void selected ()
         {
-            logger.debug("SheetAssembly: {} viewTab.   selected for {} dim:{}", stub.getId(), this,
-                         scrollView.getView().getPreferredSize());
+            logger.debug(
+                    "SheetAssembly: {} viewTab.   selected for {} dim:{}",
+                    stub.getId(),
+                    this,
+                    scrollView.getView().getPreferredSize());
 
             // Link rubber with proper view
             RubberPanel rubberPanel = scrollView.getView();
@@ -777,8 +733,8 @@ public class SheetAssembly
                 Rectangle location = (locationEvent != null) ? locationEvent.getData() : null;
 
                 if (location != null) {
-                    locationService.publish(new LocationEvent(this, locationEvent.hint, null,
-                                                              location));
+                    locationService.publish(
+                            new LocationEvent(this, locationEvent.hint, null, location));
                 }
             }
 
@@ -836,4 +792,75 @@ public class SheetAssembly
             }
         }
     }
+
+    //--------------//
+    // ScrollValues //
+    //--------------//
+    /**
+     * To preserve and replicate scroll bar values.
+     */
+    private static class ScrollValues
+    {
+
+        final DefaultBoundedRangeModel hori; // Model for horizontal scrollbar
+
+        final DefaultBoundedRangeModel vert; // Model for vertical scrollbar
+
+        ScrollValues (ScrollView scrollView)
+        {
+            hori = copy(scrollView.getComponent().getHorizontalScrollBar().getModel());
+            vert = copy(scrollView.getComponent().getVerticalScrollBar().getModel());
+        }
+
+        public void applyTo (JScrollPane scrollPane)
+        {
+            apply(hori, scrollPane.getHorizontalScrollBar().getModel());
+            apply(vert, scrollPane.getVerticalScrollBar().getModel());
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "ScrollValues{hori:" + hori + ", vert:" + vert + "}";
+        }
+
+        private void apply (BoundedRangeModel src,
+                            BoundedRangeModel tgt)
+        {
+            tgt.setRangeProperties(
+                    src.getValue(),
+                    src.getExtent(),
+                    src.getMinimum(),
+                    src.getMaximum(),
+                    false);
+        }
+
+        private DefaultBoundedRangeModel copy (BoundedRangeModel m)
+        {
+            return new DefaultBoundedRangeModel(
+                    m.getValue(),
+                    m.getExtent(),
+                    m.getMinimum(),
+                    m.getMaximum());
+        }
+    }
+
+    //-----------//
+    // ViewsPane //
+    //-----------//
+    /**
+     * Closable tabbed pane, with user confirmation on tab closing.
+     */
+    private static class ViewsPane
+            extends ClosableTabbedPane
+    {
+
+        @Override
+        public boolean tabAboutToClose (int tabIndex)
+        {
+            return OMR.gui.displayConfirmation(
+                    getTitleAt(tabIndex) + " tab is about to close." + "\nDo you confirm?");
+        }
+    }
+
 }

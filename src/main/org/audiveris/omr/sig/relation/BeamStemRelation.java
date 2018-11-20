@@ -67,8 +67,9 @@ public class BeamStemRelation
 
     private static final Logger logger = LoggerFactory.getLogger(BeamStemRelation.class);
 
-    private static final double[] OUT_WEIGHTS = new double[]{constants.xOutWeight.getValue(),
-                                                             constants.yWeight.getValue()};
+    private static final double[] OUT_WEIGHTS = new double[]{
+        constants.xOutWeight.getValue(),
+        constants.yWeight.getValue()};
 
     /** Which portion of beam is used?. */
     @XmlAttribute(name = "beam-portion")
@@ -79,6 +80,13 @@ public class BeamStemRelation
      */
     public BeamStemRelation ()
     {
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 
     //-----------------------//
@@ -335,38 +343,48 @@ public class BeamStemRelation
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio beamSupportCoeff = new Constant.Ratio(4,
-                                                                           "Value for source (beam) coeff in support formula");
+        private final Constant.Ratio beamSupportCoeff = new Constant.Ratio(
+                4,
+                "Value for source (beam) coeff in support formula");
 
-        private final Constant.Ratio stemSupportCoeff = new Constant.Ratio(2,
-                                                                           "Value for target (stem) coeff in support formula");
+        private final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
+                2,
+                "Value for target (stem) coeff in support formula");
 
-        private final Scale.Fraction yGapMax = new Scale.Fraction(0.8,
-                                                                  "Maximum vertical gap between stem & beam");
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
+                0.8,
+                "Maximum vertical gap between stem & beam");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(1.2,
-                                                                        "Maximum manual vertical gap between stem & beam");
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+                1.2,
+                "Maximum manual vertical gap between stem & beam");
 
-        private final Scale.Fraction xInGapMax = new Scale.Fraction(0.5,
-                                                                    "Maximum horizontal overlap between stem & beam");
+        private final Scale.Fraction xInGapMax = new Scale.Fraction(
+                0.5,
+                "Maximum horizontal overlap between stem & beam");
 
-        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(0.75,
-                                                                          "Maximum manual horizontal overlap between stem & beam");
+        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(
+                0.75,
+                "Maximum manual horizontal overlap between stem & beam");
 
-        private final Scale.Fraction xOutGapMax = new Scale.Fraction(0.1,
-                                                                     "Maximum horizontal gap between stem & beam");
+        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
+                0.1,
+                "Maximum horizontal gap between stem & beam");
 
-        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(0.2,
-                                                                           "Maximum manual horizontal gap between stem & beam");
+        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
+                0.2,
+                "Maximum manual horizontal gap between stem & beam");
 
-        private final Constant.Ratio xOutWeight = new Constant.Ratio(1,
-                                                                     "Relative impact weight for xOutGap");
+        private final Constant.Ratio xOutWeight = new Constant.Ratio(
+                1,
+                "Relative impact weight for xOutGap");
 
-        private final Constant.Ratio yWeight = new Constant.Ratio(4,
-                                                                  "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(
+                4,
+                "Relative impact weight for yGap");
     }
 }

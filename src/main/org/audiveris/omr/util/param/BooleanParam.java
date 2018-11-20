@@ -32,6 +32,9 @@ public class BooleanParam
         extends Param<Boolean>
 {
 
+    /**
+     * JAXB adapter for BooleanParam type.
+     */
     public static class Adapter
             extends XmlAdapter<String, BooleanParam>
     {

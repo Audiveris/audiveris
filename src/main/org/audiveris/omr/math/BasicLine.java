@@ -36,7 +36,7 @@ import java.util.Collection;
  *
  * @author Hervé Bitteur
  */
-public class BasicLine
+public final class BasicLine
         implements Line
 {
 
@@ -188,6 +188,12 @@ public class BasicLine
     //------------//
     // distanceOf //
     //------------//
+    /**
+     * Report the algebraic distance from the provided Point2D to the line.
+     *
+     * @param point the provided point
+     * @return the algebraic distance
+     */
     public double distanceOf (Point2D point)
     {
         return distanceOf(point.getX(), point.getY());
@@ -334,6 +340,11 @@ public class BasicLine
     //--------------//
     // includePoint //
     //--------------//
+    /**
+     * Add a defining point to the line.
+     *
+     * @param point the point to include
+     */
     public void includePoint (Point2D point)
     {
         includePoint(point.getX(), point.getY());
@@ -552,36 +563,6 @@ public class BasicLine
         return yAtX(x);
     }
 
-    //------//
-    // getA // Meant for test
-    //------//
-    double getA ()
-    {
-        checkLineParameters();
-
-        return a;
-    }
-
-    //------//
-    // getB // Meant for test
-    //------//
-    double getB ()
-    {
-        checkLineParameters();
-
-        return b;
-    }
-
-    //------//
-    // getC // Meant for test
-    //------//
-    double getC ()
-    {
-        checkLineParameters();
-
-        return c;
-    }
-
     //---------//
     // compute //
     //---------//
@@ -631,4 +612,35 @@ public class BasicLine
         b /= norm;
         c /= norm;
     }
+
+    //------//
+    // getA // Meant for test
+    //------//
+    double getA ()
+    {
+        checkLineParameters();
+
+        return a;
+    }
+
+    //------//
+    // getB // Meant for test
+    //------//
+    double getB ()
+    {
+        checkLineParameters();
+
+        return b;
+    }
+
+    //------//
+    // getC // Meant for test
+    //------//
+    double getC ()
+    {
+        checkLineParameters();
+
+        return c;
+    }
+
 }

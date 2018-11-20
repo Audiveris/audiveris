@@ -83,7 +83,6 @@ public class SymbolsBuilder
     /** Shape classifier to use. */
     private final Classifier classifier = ShapeClassifier.getInstance();
 
-    //
     //    /** Shape second classifier to use. */
     //    private final Classifier classifier2 = ShapeClassifier.getSecondInstance();
     //
@@ -91,7 +90,7 @@ public class SymbolsBuilder
     private final InterFactory factory;
 
     /** Aras where fine glyphs may be needed. */
-    private final List<Rectangle> fineBoxes = new ArrayList<Rectangle>();
+    private final List<Rectangle> fineBoxes = new ArrayList<>();
 
     /** Scale-dependent global constants. */
     private final Parameters params;
@@ -120,6 +119,7 @@ public class SymbolsBuilder
      * Find all possible interpretations of symbols composed from available system glyphs.
      * <p>
      * <b>Synopsis:</b>
+     *
      * <pre>
      * - retrieveFineBoxes()                            // Retrieve areas around small chords
      * - getSymbolsGlyphs()                             // Retrieve all glyphs usable for symbols
@@ -131,7 +131,7 @@ public class SymbolsBuilder
      *          - build compound glyph                  // Build one compound glyph per subset
      *          - evaluateGlyph(compound)               // Run shape classifier on compound
      *          - FOREACH acceptable evaluation
-     *             + symbolFactory.create(eval, glyph) // Create inter(s) related to evaluation
+     *             + symbolFactory.create(eval, glyph)  // Create inter(s) related to evaluation
      * </pre>
      *
      * @param optionalsMap the optional (weak) glyphs per system
@@ -192,8 +192,12 @@ public class SymbolsBuilder
         }
 
         // TODO: checks should be run only AFTER both classifiers have been run
-        Evaluation[] evals = classifier.evaluate(glyph, system, 2, Grades.symbolMinGrade, EnumSet
-                                                 .of(Classifier.Condition.CHECKED));
+        Evaluation[] evals = classifier.evaluate(
+                glyph,
+                system,
+                2,
+                Grades.symbolMinGrade,
+                EnumSet.of(Classifier.Condition.CHECKED));
 
         //        Evaluation[] evals2 = classifier2.evaluate(
         //                glyph,
@@ -244,7 +248,7 @@ public class SymbolsBuilder
     private List<Glyph> getSymbolsGlyphs (Map<SystemInfo, List<Glyph>> optionalsMap)
     {
         // Sorted by abscissa, ordinate, id
-        List<Glyph> glyphs = new ArrayList<Glyph>();
+        List<Glyph> glyphs = new ArrayList<>();
 
         for (Glyph glyph : system.getGroupedGlyphs(GlyphGroup.SYMBOL)) {
             final int weight = glyph.getWeight();
@@ -307,8 +311,8 @@ public class SymbolsBuilder
     private void processClusters (SimpleGraph<Glyph, GlyphLink> systemGraph)
     {
         // Retrieve all the clusters of glyphs (sets of connected glyphs)
-        final ConnectivityInspector<Glyph, GlyphLink> inspector
-                = new ConnectivityInspector<Glyph, GlyphLink>(systemGraph);
+        final ConnectivityInspector<Glyph, GlyphLink> inspector = new ConnectivityInspector<>(
+                systemGraph);
         final List<Set<Glyph>> sets = inspector.connectedSets();
         logger.debug("symbols sets: {}", sets.size());
 
@@ -325,10 +329,10 @@ public class SymbolsBuilder
                 if (setSize <= maxPartCount) {
                     subSet = set;
                 } else {
-                    List<Glyph> list = new ArrayList<Glyph>(set);
+                    List<Glyph> list = new ArrayList<>(set);
                     Collections.sort(list, Glyphs.byReverseWeight);
                     list = list.subList(0, Math.min(list.size(), maxPartCount));
-                    subSet = new LinkedHashSet<Glyph>(list);
+                    subSet = new LinkedHashSet<>(list);
                     logger.info("Symbol parts shrunk from {} to {}", setSize, maxPartCount);
                 }
 
@@ -357,78 +361,12 @@ public class SymbolsBuilder
         for (Inter inter : smallChords) {
             // Define a fine box on the right side of the small chord
             Rectangle box = inter.getBounds();
-            Rectangle fineBox = new Rectangle(box.x + box.width, box.y, params.smallChordMargin,
-                                              box.height);
+            Rectangle fineBox = new Rectangle(
+                    box.x + box.width,
+                    box.y,
+                    params.smallChordMargin,
+                    box.height);
             fineBoxes.add(fineBox);
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean printWatch = new Constant.Boolean(false,
-                                                                         "Should we print out the stop watch?");
-
-        private final Constant.Integer maxPartCount = new Constant.Integer("Glyphs", 7,
-                                                                           "Maximum number of parts considered for a symbol");
-
-        private final Scale.Fraction maxGap = new Scale.Fraction(
-                0.5, // 0.75 vs 0.5 is a bit too small for fermata - dot distance
-                "Maximum distance between two compound parts");
-
-        private final Scale.AreaFraction minWeight = new Scale.AreaFraction(0.03,
-                                                                            "Minimum weight for glyph consideration");
-
-        private final Scale.AreaFraction minFineWeight = new Scale.AreaFraction(0.006,
-                                                                                "Minimum weight for glyph consideration in a fine area");
-
-        private final Scale.Fraction smallChordMargin = new Scale.Fraction(1,
-                                                                           "Margin on right side of small chords to extend fine boxes");
-
-        private final Scale.Fraction maxSymbolWidth = new Scale.Fraction(4.0,
-                                                                         "Maximum width for a symbol");
-
-        private final Scale.Fraction maxSymbolHeight = new Scale.Fraction(10.0,
-                                                                          "Maximum height for a symbol (when found within staff abscissa range)");
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
-     */
-    private static class Parameters
-    {
-
-        final double maxGap;
-
-        final int maxSymbolWidth;
-
-        final int maxSymbolHeight;
-
-        final int smallChordMargin;
-
-        final int minWeight;
-
-        final int minFineWeight;
-
-        public Parameters (Scale scale)
-        {
-            maxGap = scale.toPixelsDouble(constants.maxGap);
-            maxSymbolWidth = scale.toPixels(constants.maxSymbolWidth);
-            maxSymbolHeight = scale.toPixels(constants.maxSymbolHeight);
-            smallChordMargin = scale.toPixels(constants.smallChordMargin);
-            minWeight = scale.toPixels(constants.minWeight);
-            minFineWeight = scale.toPixels(constants.minFineWeight);
-
-            if (logger.isDebugEnabled()) {
-                new Dumping().dump(this);
-            }
         }
     }
 
@@ -441,7 +379,7 @@ public class SymbolsBuilder
 
         private final Scale scale = sheet.getScale();
 
-        public SymbolAdapter (SimpleGraph<Glyph, GlyphLink> graph)
+        SymbolAdapter (SimpleGraph<Glyph, GlyphLink> graph)
         {
             super(graph);
         }
@@ -477,4 +415,82 @@ public class SymbolsBuilder
             return !classifier.isBigEnough(normed);
         }
     }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        private final Constant.Integer maxPartCount = new Constant.Integer(
+                "Glyphs",
+                7,
+                "Maximum number of parts considered for a symbol");
+
+        private final Scale.Fraction maxGap = new Scale.Fraction(
+                0.5, // 0.75 vs 0.5 is a bit too small for fermata - dot distance
+                "Maximum distance between two compound parts");
+
+        private final Scale.AreaFraction minWeight = new Scale.AreaFraction(
+                0.03,
+                "Minimum weight for glyph consideration");
+
+        private final Scale.AreaFraction minFineWeight = new Scale.AreaFraction(
+                0.006,
+                "Minimum weight for glyph consideration in a fine area");
+
+        private final Scale.Fraction smallChordMargin = new Scale.Fraction(
+                1,
+                "Margin on right side of small chords to extend fine boxes");
+
+        private final Scale.Fraction maxSymbolWidth = new Scale.Fraction(
+                4.0,
+                "Maximum width for a symbol");
+
+        private final Scale.Fraction maxSymbolHeight = new Scale.Fraction(
+                10.0,
+                "Maximum height for a symbol (when found within staff abscissa range)");
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+
+        final double maxGap;
+
+        final int maxSymbolWidth;
+
+        final int maxSymbolHeight;
+
+        final int smallChordMargin;
+
+        final int minWeight;
+
+        final int minFineWeight;
+
+        Parameters (Scale scale)
+        {
+            maxGap = scale.toPixelsDouble(constants.maxGap);
+            maxSymbolWidth = scale.toPixels(constants.maxSymbolWidth);
+            maxSymbolHeight = scale.toPixels(constants.maxSymbolHeight);
+            smallChordMargin = scale.toPixels(constants.smallChordMargin);
+            minWeight = scale.toPixels(constants.minWeight);
+            minFineWeight = scale.toPixels(constants.minFineWeight);
+
+            if (logger.isDebugEnabled()) {
+                new Dumping().dump(this);
+            }
+        }
+    }
+
 }

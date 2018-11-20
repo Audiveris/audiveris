@@ -117,7 +117,7 @@ public class LineCluster
 
         id = "C" + seed.getId();
 
-        lines = new TreeMap<Integer, StaffFilament>();
+        lines = new TreeMap<>();
 
         include(seed, 0);
     }
@@ -158,6 +158,11 @@ public class LineCluster
     //-----------//
     // getBounds //
     //-----------//
+    /**
+     * Report the bounding box of the cluster
+     *
+     * @return bounds
+     */
     public Rectangle getBounds ()
     {
         if (contourBox == null) {
@@ -199,6 +204,11 @@ public class LineCluster
     //--------------//
     // getFirstLine //
     //--------------//
+    /**
+     * Report the first line in cluster
+     *
+     * @return the first line
+     */
     public StaffFilament getFirstLine ()
     {
         return lines.get(lines.firstKey());
@@ -208,6 +218,8 @@ public class LineCluster
     // getId //
     //-------//
     /**
+     * Report the cluster ID.
+     *
      * @return the id
      */
     public String getId ()
@@ -229,6 +241,11 @@ public class LineCluster
     //-------------//
     // getLastLine //
     //-------------//
+    /**
+     * Report the last line in cluster
+     *
+     * @return last line
+     */
     public StaffFilament getLastLine ()
     {
         return lines.get(lines.lastKey());
@@ -237,6 +254,11 @@ public class LineCluster
     //----------//
     // getLines //
     //----------//
+    /**
+     * Report the cluster lines.
+     *
+     * @return lines
+     */
     public Collection<StaffFilament> getLines ()
     {
         return lines.values();
@@ -270,8 +292,8 @@ public class LineCluster
                                       double globalSlope)
     {
         // Populate points (and holes)
-        SortedMap<Integer, Point2D> points = new TreeMap<Integer, Point2D>();
-        List<Integer> holes = new ArrayList<Integer>();
+        SortedMap<Integer, Point2D> points = new TreeMap<>();
+        List<Integer> holes = new ArrayList<>();
 
         for (Entry<Integer, StaffFilament> entry : lines.entrySet()) {
             int pos = entry.getKey();
@@ -287,8 +309,8 @@ public class LineCluster
         // Try to fill holes by extrapolation
         for (int pos : holes) {
             final StaffFilament line = lines.get(pos);
-            final Point2D end = (x <= line.getStartPoint().getX()) ? line.getStartPoint() : line
-                    .getStopPoint();
+            final Point2D end = (x <= line.getStartPoint().getX()) ? line.getStartPoint()
+                    : line.getStopPoint();
             final double endX = end.getX();
             Double y = null;
 
@@ -316,12 +338,17 @@ public class LineCluster
             points.put(pos, (y != null) ? new Point2D.Double(x, y) : null);
         }
 
-        return new ArrayList<Point2D>(points.values());
+        return new ArrayList<>(points.values());
     }
 
     //---------//
     // getSize //
     //---------//
+    /**
+     * Report the cluster count of lines
+     *
+     * @return count of lines
+     */
     public int getSize ()
     {
         return lines.size();
@@ -330,9 +357,14 @@ public class LineCluster
     //-----------//
     // getStarts //
     //-----------//
+    /**
+     * Report the sequence of lines starting point
+     *
+     * @return starts
+     */
     public List<Point2D> getStarts ()
     {
-        List<Point2D> points = new ArrayList<Point2D>(getSize());
+        List<Point2D> points = new ArrayList<>(getSize());
 
         for (StaffFilament line : lines.values()) {
             points.add(line.getStartPoint());
@@ -344,9 +376,14 @@ public class LineCluster
     //----------//
     // getStops //
     //----------//
+    /**
+     * Report the sequence of lines ending point
+     *
+     * @return stops
+     */
     public List<Point2D> getStops ()
     {
-        List<Point2D> points = new ArrayList<Point2D>(getSize());
+        List<Point2D> points = new ArrayList<>(getSize());
 
         for (StaffFilament line : lines.values()) {
             points.add(line.getStopPoint());
@@ -413,10 +450,12 @@ public class LineCluster
 
                     if (overlap > 0) {
                         // Check resulting thickness
-                        double thickness = Compounds.getThicknessAt(Math.max(filBox.x, sctBox.x)
-                                                                            + (overlap / 2),
-                                                                    Orientation.HORIZONTAL, scale,
-                                                                    filament, line);
+                        double thickness = Compounds.getThicknessAt(
+                                Math.max(filBox.x, sctBox.x) + (overlap / 2),
+                                Orientation.HORIZONTAL,
+                                scale,
+                                filament,
+                                line);
 
                         if (thickness > scale.getMaxFore()) {
                             if (filament.isVip() || logger.isDebugEnabled()) {
@@ -448,9 +487,24 @@ public class LineCluster
         return vip;
     }
 
+    //--------//
+    // setVip //
+    //--------//
+    @Override
+    public void setVip (boolean vip)
+    {
+        this.vip = vip;
+    }
+
     //-----------//
     // mergeWith //
     //-----------//
+    /**
+     * Include another cluster into this one.
+     *
+     * @param that     the other cluster to include
+     * @param deltaPos shift between clusters vertical positions
+     */
     public void mergeWith (LineCluster that,
                            int deltaPos)
     {
@@ -469,7 +523,7 @@ public class LineCluster
         int firstPos = lines.firstKey();
 
         if (firstPos != 0) {
-            SortedMap<Integer, StaffFilament> newLines = new TreeMap<Integer, StaffFilament>();
+            SortedMap<Integer, StaffFilament> newLines = new TreeMap<>();
 
             for (Entry<Integer, StaffFilament> entry : lines.entrySet()) {
                 int pos = entry.getKey();
@@ -483,15 +537,6 @@ public class LineCluster
         }
 
         invalidateCache();
-    }
-
-    //--------//
-    // setVip //
-    //--------//
-    @Override
-    public void setVip (boolean vip)
-    {
-        this.vip = vip;
     }
 
     //----------//
@@ -509,8 +554,8 @@ public class LineCluster
 
         for (Entry<Integer, StaffFilament> entry : lines.entrySet()) {
             final StaffFilament fil = entry.getValue();
-            sb.append(" ").append("fil#").append(fil.getId()).append("@")
-                    .append(fil.getClusterPos());
+            sb.append(" ").append("fil#").append(fil.getId()).append("@").append(
+                    fil.getClusterPos());
         }
 
         sb.append("}");
@@ -590,7 +635,7 @@ public class LineCluster
 
         // Loop on all combs that involve this filament
         // Use a copy to avoid concurrent modification error
-        List<FilamentComb> combs = new ArrayList<FilamentComb>(pivot.getCombs().values());
+        List<FilamentComb> combs = new ArrayList<>(pivot.getCombs().values());
 
         for (FilamentComb comb : combs) {
             if (comb.isProcessed()) {

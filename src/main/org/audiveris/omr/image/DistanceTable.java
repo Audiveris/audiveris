@@ -94,8 +94,10 @@ public interface DistanceTable
         @Override
         public BufferedImage getImage (int maxDistance)
         {
-            final BufferedImage img = new BufferedImage(getWidth(), getHeight(),
-                                                        BufferedImage.TYPE_INT_ARGB);
+            final BufferedImage img = new BufferedImage(
+                    getWidth(),
+                    getHeight(),
+                    BufferedImage.TYPE_INT_ARGB);
 
             // Built a LUT (biased one cell to make room for VALUE_UNKNOWN)
             final int rawDistMax = maxDistance * normalizer;

@@ -108,7 +108,7 @@ public class SheetCounter
         /** Final arguments, with optional "--" separator. */
         @Argument
         @Option(name = "--", handler = StopOptionHandler.class)
-        List<Path> arguments = new ArrayList<Path>();
+        List<Path> arguments = new ArrayList<>();
 
         private Parameters ()
         {

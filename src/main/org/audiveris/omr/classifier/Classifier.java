@@ -149,7 +149,6 @@ public interface Classifier
      */
     boolean isBigEnough (double weight);
 
-    //
     //    /**
     //     * Remove a training listener
     //     *

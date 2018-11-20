@@ -33,6 +33,8 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code TurnSlashSymbol} displays a TURN symbol with a vertical slash.
+ *
+ * @author Hervé Bitteur
  */
 public class TurnSlashSymbol
         extends ShapeSymbol
@@ -71,8 +73,9 @@ public class TurnSlashSymbol
         p.layout = font.layout(turnSymbol.getString());
 
         Rectangle2D rect = p.layout.getBounds();
-        p.rect = new Rectangle((int) Math.ceil(rect.getWidth()), (int) Math.ceil(rect.getHeight()
-                                                                                         * 1.4));
+        p.rect = new Rectangle(
+                (int) Math.ceil(rect.getWidth()),
+                (int) Math.ceil(rect.getHeight() * 1.4));
         p.stroke = new BasicStroke(Math.max(1f, p.rect.width / 20f));
 
         return p;

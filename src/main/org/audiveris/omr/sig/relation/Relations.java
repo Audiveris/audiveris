@@ -74,13 +74,18 @@ public abstract class Relations
     private static final Logger logger = LoggerFactory.getLogger(Relations.class);
 
     private static final Map<Class<? extends Inter>, Set<Class<? extends Relation>>> src
-            = new LinkedHashMap<Class<? extends Inter>, Set<Class<? extends Relation>>>();
+            = new LinkedHashMap<>();
 
     private static final Map<Class<? extends Inter>, Set<Class<? extends Relation>>> tgt
-            = new LinkedHashMap<Class<? extends Inter>, Set<Class<? extends Relation>>>();
+            = new LinkedHashMap<>();
 
     static {
         buildMaps();
+    }
+
+    /** Not meant to be instantiated. */
+    private Relations ()
+    {
     }
 
     /**
@@ -95,8 +100,7 @@ public abstract class Relations
             Class<? extends Inter> sourceClass,
             Class<? extends Inter> targetClass)
     {
-        final Set<Class<? extends Relation>> defined
-                = new LinkedHashSet<Class<? extends Relation>>();
+        final Set<Class<? extends Relation>> defined = new LinkedHashSet<>();
         Set<Class<? extends Relation>> from = definedRelationsFrom(sourceClass);
         Set<Class<? extends Relation>> to = definedRelationsTo(targetClass);
         defined.addAll(from);
@@ -120,8 +124,7 @@ public abstract class Relations
     {
         Objects.requireNonNull(sourceClass, "Source class is null");
 
-        final Set<Class<? extends Relation>> defined
-                = new LinkedHashSet<Class<? extends Relation>>();
+        final Set<Class<? extends Relation>> defined = new LinkedHashSet<>();
         Class classe = sourceClass;
 
         while (true) {
@@ -156,8 +159,7 @@ public abstract class Relations
     {
         Objects.requireNonNull(targetClass, "Target class is null");
 
-        final Set<Class<? extends Relation>> defined
-                = new LinkedHashSet<Class<? extends Relation>>();
+        final Set<Class<? extends Relation>> defined = new LinkedHashSet<>();
         Class classe = targetClass;
 
         while (true) {
@@ -217,7 +219,7 @@ public abstract class Relations
         }
 
         // Suggestions
-        Set<Class<? extends Relation>> suggestions = new LinkedHashSet<Class<? extends Relation>>(
+        Set<Class<? extends Relation>> suggestions = new LinkedHashSet<>(
                 definedRelationsBetween(source.getClass(), target.getClass()));
 
         // Let's not remove existing relation, to allow cleaning of relations
@@ -241,7 +243,8 @@ public abstract class Relations
      * target inter class.
      * <p>
      * A few relations are used only for support during reduction, rather than symbolic relation.
-     * They are thus excluded for lack of usefulness at UI level:<ul>
+     * They are thus excluded for lack of usefulness at UI level:
+     * <ul>
      * <li>BarConnectionRelation
      * <li>BeamHeadRelation
      * <li>ClefKeyRelation
@@ -305,7 +308,7 @@ public abstract class Relations
         Set<Class<? extends Relation>> set = map.get(classe);
 
         if (set == null) {
-            map.put(classe, set = new LinkedHashSet<Class<? extends Relation>>());
+            map.put(classe, set = new LinkedHashSet<>());
         }
 
         return set;

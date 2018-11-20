@@ -51,12 +51,16 @@ public class RunBoard
     private static final Class<?>[] eventClasses = new Class<?>[]{RunEvent.class};
 
     /** Field for run length */
-    private final LIntegerField rLength = new LIntegerField(false, "Length",
-                                                            "Length of run in pixels");
+    private final LIntegerField rLength = new LIntegerField(
+            false,
+            "Length",
+            "Length of run in pixels");
 
     /** Field for run start */
-    private final LIntegerField rStart = new LIntegerField(false, "Start",
-                                                           "Pixel coordinate at start of run");
+    private final LIntegerField rStart = new LIntegerField(
+            false,
+            "Start",
+            "Pixel coordinate at start of run");
 
     /**
      * Create a Run Board on the RunTable of a provided ag
@@ -82,7 +86,8 @@ public class RunBoard
         super(
                 Board.RUN.name + ((runTable.getOrientation() == Orientation.VERTICAL) ? " Vert"
                 : " Hori"),
-                Board.RUN.position + ((runTable.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
+                Board.RUN.position + ((runTable.getOrientation() == Orientation.VERTICAL) ? 100
+                : 0),
                 runTable.getRunService(),
                 eventClasses,
                 selected,

@@ -108,7 +108,7 @@ public class Population
             throw new RuntimeException("Population is empty");
         }
 
-        return s / (double) n;
+        return s / n;
     }
 
     //----------------------//

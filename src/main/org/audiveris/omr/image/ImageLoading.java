@@ -59,16 +59,19 @@ import javax.media.jai.JAI;
  * Class {@code ImageLoading} handles the loading of one or several images out of an
  * input file.
  * <p>
- * It works in two phases:<ol>
+ * It works in two phases:
+ * <ol>
  * <li>An initial call to {@link #getLoader(Path)} tries to return a {@link Loader} instance that
  * fits the provided input file.</li>
- * <li>Then this Loader instance can be used via:<ul>
+ * <li>Then this Loader instance can be used via:
+ * <ul>
  * <li>{@link Loader#getImageCount()} to know how many images are available in the input file,</li>
  * <li>{@link Loader#getImage(int)} to return any specific image,</li>
  * <li>{@link Loader#dispose()} to finally release any resources.</li>
  * </ul>
  * </ol>
- * This class leverages several software pieces, each with its own Loader subclass:<ul>
+ * This class leverages several software pieces, each with its own Loader subclass:
+ * <ul>
  * <li><b>JPod</b> for PDF files. This replaces former use of GhostScript sub-process.</li>
  * <li><b>ImageIO</b> for all files except PDF.</li>
  * <li><b>JAI</b> if ImageIO failed. Note that JAI can find only one image per file.</li>
@@ -182,7 +185,7 @@ public abstract class ImageLoading
             int imageCount = reader.getNumImages(true);
 
             return new ImageIOLoader(reader, imageCount);
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             logger.warn("ImageIO failed for " + imgPath, ex);
 
             return null;
@@ -285,12 +288,14 @@ public abstract class ImageLoading
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Integer pdfResolution = new Constant.Integer("DPI", 300,
-                                                                            "DPI resolution for PDF images");
+        private final Constant.Integer pdfResolution = new Constant.Integer(
+                "DPI",
+                300,
+                "DPI resolution for PDF images");
     }
 
     //----------------//
@@ -303,7 +308,7 @@ public abstract class ImageLoading
         /** Count of images available in input file. */
         protected final int imageCount;
 
-        public AbstractLoader (int imageCount)
+        AbstractLoader (int imageCount)
         {
             this.imageCount = imageCount;
         }
@@ -336,8 +341,8 @@ public abstract class ImageLoading
 
         private final ImageReader reader;
 
-        public ImageIOLoader (ImageReader reader,
-                              int imageCount)
+        ImageIOLoader (ImageReader reader,
+                       int imageCount)
         {
             super(imageCount);
             this.reader = reader;
@@ -370,8 +375,8 @@ public abstract class ImageLoading
 
         private final PDDocument doc;
 
-        public JPodLoader (PDDocument doc,
-                           int imageCount)
+        JPodLoader (PDDocument doc,
+                    int imageCount)
         {
             super(imageCount);
             this.doc = doc;
@@ -412,21 +417,25 @@ public abstract class ImageLoading
             double pageWidth = Math.abs(newDims.getX());
             double pageHeight = Math.abs(newDims.getY());
 
-            BufferedImage image = new BufferedImage((int) (pageWidth * scale), (int) (pageHeight
-                                                                                              * scale),
-                                                    BufferedImage.TYPE_BYTE_GRAY);
+            BufferedImage image = new BufferedImage(
+                    (int) (pageWidth * scale),
+                    (int) (pageHeight * scale),
+                    BufferedImage.TYPE_BYTE_GRAY);
 
             Graphics2D g2 = (Graphics2D) image.getGraphics();
 
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+            g2.setRenderingHint(
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_OFF);
             //g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
             //                    RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
             //g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
             //   		    RenderingHints.VALUE_COLOR_RENDER_QUALITY);
             //g2.setRenderingHint(RenderingHints.KEY_DITHERING,
             //		    RenderingHints.VALUE_DITHER_ENABLE);
-            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g2.setRenderingHint(
+                    RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 
             //g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
             //	            RenderingHints.VALUE_STROKE_PURE);
@@ -448,8 +457,9 @@ public abstract class ImageLoading
 
             if (content != null) {
                 CSPlatformRenderer renderer = new CSPlatformRenderer(null, gctx);
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                                    RenderingHints.VALUE_ANTIALIAS_OFF);
+                g2.setRenderingHint(
+                        RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_OFF);
                 renderer.process(content, page.getResources());
             }
 
@@ -469,7 +479,7 @@ public abstract class ImageLoading
 
         private final BufferedImage image; // The single image
 
-        public JaiLoader (BufferedImage image)
+        JaiLoader (BufferedImage image)
         {
             super(1); // JAI can return just one image
             this.image = image;

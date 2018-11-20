@@ -75,10 +75,10 @@ public class Curves
     private final Skeleton skeleton;
 
     /** Line segments found. */
-    private final List<SegmentInter> segments = new ArrayList<SegmentInter>();
+    private final List<SegmentInter> segments = new ArrayList<>();
 
     /** Registered item renderers, if any. */
-    private final Set<ItemRenderer> itemRenderers = new LinkedHashSet<ItemRenderer>();
+    private final Set<ItemRenderer> itemRenderers = new LinkedHashSet<>();
 
     /** Builder for slurs (also used to evaluate arcs). */
     private SlursBuilder slursBuilder;
@@ -100,8 +100,10 @@ public class Curves
         // Display skeleton buffer?
         if ((OMR.gui != null) && constants.displayCurves.isSet()) {
             view = new Curves.MyView(img);
-            sheet.getStub().getAssembly().addViewTab("Curves", new ScrollImageView(sheet, view),
-                                                     new BoardsPane(new PixelBoard(sheet)));
+            sheet.getStub().getAssembly().addViewTab(
+                    "Curves",
+                    new ScrollImageView(sheet, view),
+                    new BoardsPane(new PixelBoard(sheet)));
         }
     }
 
@@ -190,6 +192,11 @@ public class Curves
     //----------//
     // getSheet //
     //----------//
+    /**
+     * Report the containing sheet
+     *
+     * @return the containing sheet
+     */
     public Sheet getSheet ()
     {
         return sheet;
@@ -209,6 +216,11 @@ public class Curves
     //-----------------//
     // getSlursBuilder //
     //-----------------//
+    /**
+     * Report the SlursBuilder companion.
+     *
+     * @return SlursBuilder instance
+     */
     public SlursBuilder getSlursBuilder ()
     {
         return slursBuilder;
@@ -237,7 +249,7 @@ public class Curves
      */
     private static List<Point> getBreakPoints ()
     {
-        List<Point> points = new ArrayList<Point>();
+        List<Point> points = new ArrayList<>();
 
         try {
             String str = constants.breakPointCoordinates.getValue();
@@ -261,23 +273,6 @@ public class Curves
         return points;
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean displayCurves = new Constant.Boolean(false,
-                                                                            "Should we display the view on curves?");
-
-        private final Constant.Boolean printWatch = new Constant.Boolean(false,
-                                                                         "Should we print out the stop watch?");
-
-        private final Constant.String breakPointCoordinates = new Constant.String("",
-                                                                                  "(Debug) Comma-separated coordinates of curve break points if any");
-    }
-
     //--------//
     // MyView //
     //--------//
@@ -288,7 +283,7 @@ public class Curves
             extends ImageView
     {
 
-        public MyView (BufferedImage image)
+        MyView (BufferedImage image)
         {
             super(image);
         }
@@ -304,5 +299,25 @@ public class Curves
                 renderer.renderItems(g);
             }
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean displayCurves = new Constant.Boolean(
+                false,
+                "Should we display the view on curves?");
+
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        private final Constant.String breakPointCoordinates = new Constant.String(
+                "",
+                "(Debug) Comma-separated coordinates of curve break points if any");
     }
 }

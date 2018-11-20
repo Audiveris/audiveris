@@ -51,12 +51,14 @@ import java.util.List;
  * <p>
  * It handles where and how to handle inputs (images, books) and outputs (save, export, print,
  * sample).
- * <br>
- * Default input folder:<ul>
+ * <p>
+ * Default input folder:
+ * <ul>
  * <li>(image) input: last image input folder used
  * <li>(book) input: base
  * </ul>
- * Default output folder and file:<ul>
+ * Default output folder and file:
+ * <ul>
  * <li>save: base/radix/radix.omr
  * <li>export: base/radix/radix.mxl
  * <li>print: base/radix/radix.pdf
@@ -71,30 +73,29 @@ import java.util.List;
  * <p>
  * For example, Mozart 40th symphony as available on IMSLP web site is made of one PDF file
  * containing 49 images (sheets).
- * Its logical structure is a sequence of 4 movements:<ol>
+ * Its logical structure is a sequence of 4 movements:
+ * <ol>
  * <li>Allegro Molto, starting on sheet #1</li>
  * <li>Andante, starting on sheet #19</li>
  * <li>Allegretto, starting on sheet #30</li>
  * <li>Allegro Assai, starting on sheet #33, system #2 (middle of the sheet)</li>
  * </ol>
- * <p>
  * Assuming Opus is supported, the final result would be a single opus file:
- * <blockquote>
+ *
  * <pre>
- * Mozart_S40.opus.mxl (with each of the 4 movements included in this opus file)
+ *      Mozart_S40.opus.mxl (with each of the 4 movements included in this opus file)
  * </pre>
- * </blockquote>
+ *
  * Assuming Opus is NOT supported, the final result would be something like:
- * <blockquote>
+ *
  * <pre>
- * Mozart_S40/
- * Mozart_S40/mvt1.mxl
- * Mozart_S40/mvt2.mxl
- * Mozart_S40/mvt3.mxl
- * Mozart_S40/mvt4.mxl
+ *      Mozart_S40/
+ *      Mozart_S40/mvt1.mxl
+ *      Mozart_S40/mvt2.mxl
+ *      Mozart_S40/mvt3.mxl
+ *      Mozart_S40/mvt4.mxl
  * </pre>
- * </blockquote>
- * <p>
+ *
  * We could process all the 49 sheets in memory (although this is not practically feasible) with a
  * single book, discovering the 4 movements one after the other, and finally creating one MusicXML
  * Opus containing 4 {@link Score} instances, one for each movement.
@@ -116,11 +117,8 @@ public class BookManager
 
     private static final Logger logger = LoggerFactory.getLogger(BookManager.class);
 
-    /** The single instance of this class. */
-    private static volatile BookManager INSTANCE;
-
     /** All book instances. */
-    private final List<Book> books = new ArrayList<Book>();
+    private final List<Book> books = new ArrayList<>();
 
     /** Alias patterns. */
     private final AliasPatterns aliasPatterns = new AliasPatterns();
@@ -136,6 +134,166 @@ public class BookManager
      */
     private BookManager ()
     {
+    }
+
+    //----------//
+    // getAlias //
+    //----------//
+    /**
+     * Try to retrieve an alias for the provided name, by applying registered patterns.
+     *
+     * @param name the full name provided
+     * @return the first alias found, or null if none
+     */
+    public String getAlias (String name)
+    {
+        return aliasPatterns.getAlias(name);
+    }
+
+    //-------------//
+    // getAllBooks //
+    //-------------//
+    @Override
+    public List<Book> getAllBooks ()
+    {
+        return Collections.unmodifiableList(books);
+    }
+
+    //----------//
+    // loadBook //
+    //----------//
+    @Override
+    public Book loadBook (Path bookPath)
+    {
+        Book book = Book.loadBook(bookPath);
+
+        if (book != null) {
+            addBook(book);
+
+            getBookHistory().add(bookPath); // Insert in book history
+        }
+
+        return book;
+    }
+
+    //-----------//
+    // loadInput //
+    //-----------//
+    @Override
+    public Book loadInput (Path path)
+    {
+        final Book book = new Book(path);
+
+        // Alias?
+        if (AliasPatterns.useAliasPatterns()) {
+            final String nameSansExt = FileUtil.getNameSansExtension(path);
+            String alias = getAlias(nameSansExt);
+
+            if (alias != null) {
+                book.setAlias(alias);
+                logger.info("Found alias: {} for {}", alias, nameSansExt);
+            }
+        }
+
+        book.setModified(true);
+        book.setDirty(true);
+        addBook(book);
+
+        getImageHistory().add(path); // Insert in input history
+
+        return book;
+    }
+
+    //------------//
+    // removeBook //
+    //------------//
+    /**
+     * Remove the provided book from the collection of Book instances.
+     *
+     * @param book the book to remove
+     * @return true if actually removed
+     */
+    @Override
+    public synchronized boolean removeBook (Book book)
+    {
+        logger.debug("removeBook {}", book);
+
+        return books.remove(book);
+    }
+
+    //----------------//
+    // getBookHistory //
+    //----------------//
+    /**
+     * Get access to the list of previous books.
+     *
+     * @return the history set of book files
+     */
+    public PathHistory getBookHistory ()
+    {
+        if (bookHistory == null) {
+            bookHistory = new PathHistory(
+                    "Book History",
+                    constants.bookHistory,
+                    null,
+                    constants.historySize.getValue());
+        }
+
+        return bookHistory;
+    }
+
+    //-----------------//
+    // getInputHistory //
+    //-----------------//
+    /**
+     * Get access to the list of previous inputs.
+     *
+     * @return the history set of input files
+     */
+    public PathHistory getImageHistory ()
+    {
+        if (imageHistory == null) {
+            imageHistory = new PathHistory(
+                    "Input History",
+                    constants.imageHistory,
+                    constants.defaultImageFolder,
+                    constants.historySize.getValue());
+        }
+
+        return imageHistory;
+    }
+
+    //---------//
+    // addBook //
+    //---------//
+    /**
+     * Insert this new book in the set of book instances.
+     *
+     * @param book the book to insert
+     */
+    private void addBook (Book book)
+    {
+        logger.debug("addBook {}", book);
+
+        //
+        //        // Remove duplicate if any
+        //        for (Iterator<Book> it = books.iterator(); it.hasNext();) {
+        //            Book b = it.next();
+        //            Path path = b.getInputPath();
+        //
+        //            if (path.equals(book.getInputPath())) {
+        //                logger.debug("Removing duplicate {}", b);
+        //                it.remove();
+        //                b.close();
+        //
+        //                break;
+        //            }
+        //        }
+        //
+        // Insert new book instance
+        synchronized (books) {
+            books.add(book);
+        }
     }
 
     //-------------//
@@ -222,29 +380,6 @@ public class BookManager
         }
     }
 
-    //----------//
-    // getAlias //
-    //----------//
-    /**
-     * Try to retrieve an alias for the provided name, by applying registered patterns.
-     *
-     * @param name the full name provided
-     * @return the first alias found, or null if none
-     */
-    public String getAlias (String name)
-    {
-        return aliasPatterns.getAlias(name);
-    }
-
-    //-------------//
-    // getAllBooks //
-    //-------------//
-    @Override
-    public List<Book> getAllBooks ()
-    {
-        return Collections.unmodifiableList(books);
-    }
-
     //---------------//
     // getBaseFolder //
     //---------------//
@@ -306,95 +441,43 @@ public class BookManager
      */
     public static String getExportExtension ()
     {
-        return useOpus() ? OMR.OPUS_EXTENSION : (useCompression() ? OMR.COMPRESSED_SCORE_EXTENSION
-                : OMR.SCORE_EXTENSION);
+        return useOpus() ? OMR.OPUS_EXTENSION
+                : (useCompression() ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION);
     }
 
     //-------------//
     // getInstance //
     //-------------//
     /**
-     * Report the single instance of this class.
+     * Report the single instance of BookManager in the application.
      *
-     * @return the single instance
+     * @return the instance
      */
     public static BookManager getInstance ()
     {
-        if (INSTANCE == null) {
-            INSTANCE = new BookManager();
-        }
-
-        return INSTANCE;
+        return LazySingleton.INSTANCE;
     }
 
-    //----------//
-    // loadBook //
-    //----------//
-    @Override
-    public Book loadBook (Path bookPath)
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
     {
-        Book book = Book.loadBook(bookPath);
 
-        if (book != null) {
-            addBook(book);
-
-            getBookHistory().add(bookPath); // Insert in book history
-        }
-
-        return book;
-    }
-
-    //-----------//
-    // loadInput //
-    //-----------//
-    @Override
-    public Book loadInput (Path path)
-    {
-        final Book book = new Book(path);
-
-        // Alias?
-        if (AliasPatterns.useAliasPatterns()) {
-            final String nameSansExt = FileUtil.getNameSansExtension(path);
-            String alias = getAlias(nameSansExt);
-
-            if (alias != null) {
-                book.setAlias(alias);
-                logger.info("Found alias: {} for {}", alias, nameSansExt);
-            }
-        }
-
-        book.setModified(true);
-        book.setDirty(true);
-        addBook(book);
-
-        getImageHistory().add(path); // Insert in input history
-
-        return book;
+        static final BookManager INSTANCE = new BookManager();
     }
 
     //--------------//
     // useSignature //
     //--------------//
+    /**
+     * Tell whether we should inject ProxyMusic signature.
+     *
+     * @return true if so
+     */
     public static boolean useSignature ()
     {
         return constants.defaultSigned.isSet();
-    }
-
-    //------------//
-    // removeBook //
-    //------------//
-    /**
-     * Remove the provided book from the collection of Book instances.
-     *
-     * @param book the book to remove
-     * @return true if actually removed
-     */
-    @Override
-    public synchronized boolean removeBook (Book book)
-    {
-        logger.debug("removeBook {}", book);
-
-        return books.remove(book);
     }
 
     //----------------//
@@ -408,24 +491,6 @@ public class BookManager
     public static boolean useCompression ()
     {
         return constants.useCompression.getValue();
-    }
-
-    //----------------//
-    // getBookHistory //
-    //----------------//
-    /**
-     * Get access to the list of previous books.
-     *
-     * @return the history set of book files
-     */
-    public PathHistory getBookHistory ()
-    {
-        if (bookHistory == null) {
-            bookHistory = new PathHistory("Book History", constants.bookHistory, null,
-                                          constants.historySize.getValue());
-        }
-
-        return bookHistory;
     }
 
     //----------------------//
@@ -527,6 +592,11 @@ public class BookManager
     //---------//
     // useOpus //
     //---------//
+    /**
+     * Tell whether Opus concept can be used
+     *
+     * @return true if so
+     */
     public static boolean useOpus ()
     {
         return constants.useOpus.isSet();
@@ -546,90 +616,48 @@ public class BookManager
         return constants.useSeparateBookFolders.isSet();
     }
 
-    //-----------------//
-    // getInputHistory //
-    //-----------------//
-    /**
-     * Get access to the list of previous inputs.
-     *
-     * @return the history set of input files
-     */
-    public PathHistory getImageHistory ()
-    {
-        if (imageHistory == null) {
-            imageHistory = new PathHistory("Input History", constants.imageHistory,
-                                           constants.defaultImageFolder, constants.historySize
-                                                   .getValue());
-        }
-
-        return imageHistory;
-    }
-
-    //---------//
-    // addBook //
-    //---------//
-    /**
-     * Insert this new book in the set of book instances.
-     *
-     * @param book the book to insert
-     */
-    private void addBook (Book book)
-    {
-        logger.debug("addBook {}", book);
-
-        //
-        //        // Remove duplicate if any
-        //        for (Iterator<Book> it = books.iterator(); it.hasNext();) {
-        //            Book b = it.next();
-        //            Path path = b.getInputPath();
-        //
-        //            if (path.equals(book.getInputPath())) {
-        //                logger.debug("Removing duplicate {}", b);
-        //                it.remove();
-        //                b.close();
-        //
-        //                break;
-        //            }
-        //        }
-        //
-        // Insert new book instance
-        synchronized (books) {
-            books.add(book);
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean useOpus = new Constant.Boolean(false,
-                                                                      "Should we use Opus notion for export (rather than separate files)?");
+        private final Constant.Boolean useOpus = new Constant.Boolean(
+                false,
+                "Should we use Opus notion for export (rather than separate files)?");
 
-        private final Constant.Boolean useCompression = new Constant.Boolean(true,
-                                                                             "Should we compress the MusicXML output?");
+        private final Constant.Boolean useCompression = new Constant.Boolean(
+                true,
+                "Should we compress the MusicXML output?");
 
-        private final Constant.Boolean useSeparateBookFolders = new Constant.Boolean(true,
-                                                                                     "Should we use a separate folder for each book?");
+        private final Constant.Boolean useSeparateBookFolders = new Constant.Boolean(
+                true,
+                "Should we use a separate folder for each book?");
 
         private final Constant.String baseFolder = new Constant.String(
-                WellKnowns.DEFAULT_BASE_FOLDER.toString(), "Base for output folders");
+                WellKnowns.DEFAULT_BASE_FOLDER.toString(),
+                "Base for output folders");
 
         private final Constant.String defaultImageFolder = new Constant.String(
-                WellKnowns.EXAMPLES_FOLDER.toString(), "Default folder for selection of image files");
+                WellKnowns.EXAMPLES_FOLDER.toString(),
+                "Default folder for selection of image files");
 
-        private final Constant.Boolean defaultSigned = new Constant.Boolean(true,
-                                                                            "Should we inject ProxyMusic signature in the exported scores?");
+        private final Constant.Boolean defaultSigned = new Constant.Boolean(
+                true,
+                "Should we inject ProxyMusic signature in the exported scores?");
 
-        private final Constant.String imageHistory = new Constant.String("",
-                                                                         "History of images most recently loaded");
+        private final Constant.String imageHistory = new Constant.String(
+                "",
+                "History of images most recently loaded");
 
-        private final Constant.String bookHistory = new Constant.String("",
-                                                                        "History of books most recently loaded or saved");
+        private final Constant.String bookHistory = new Constant.String(
+                "",
+                "History of books most recently loaded or saved");
 
-        private final Constant.Integer historySize = new Constant.Integer("count", 10,
-                                                                          "Maximum number of files names kept in history");
+        private final Constant.Integer historySize = new Constant.Integer(
+                "count",
+                10,
+                "Maximum number of files names kept in history");
     }
 }

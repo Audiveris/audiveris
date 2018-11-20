@@ -40,6 +40,11 @@ import javax.swing.SpinnerModel;
 public abstract class SpinnerUtil
 {
 
+    /** Not meant to be instantiated. */
+    private SpinnerUtil ()
+    {
+    }
+
     //----------------//
     // fixIntegerList //
     //----------------//
@@ -56,21 +61,19 @@ public abstract class SpinnerUtil
 
         final JFormattedTextField ftf = editor.getTextField();
         ftf.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "enterAction");
-        ftf.getActionMap().put(
-                "enterAction",
-                new AbstractAction()
-        {
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                try {
-                    spinner.setValue(Integer.parseInt(ftf.getText()));
-                } catch (Exception ex) {
-                    // Reset to last value
-                    ftf.setText(ftf.getValue().toString());
-                }
-            }
-        });
+        ftf.getActionMap().put("enterAction", new AbstractAction()
+                       {
+                           @Override
+                           public void actionPerformed (ActionEvent e)
+                           {
+                               try {
+                                   spinner.setValue(Integer.parseInt(ftf.getText()));
+                               } catch (NumberFormatException ex) {
+                                   // Reset to last value
+                                   ftf.setText(ftf.getValue().toString());
+                               }
+                           }
+                       });
     }
 
     //-------------//

@@ -88,7 +88,8 @@ public class PictureView
         view.setLocationService(sheet.getLocationService());
 
         // Listen to all view parameters
-        ViewParameters.getInstance().addPropertyChangeListener(new WeakPropertyChangeListener(this));
+        ViewParameters.getInstance().addPropertyChangeListener(
+                new WeakPropertyChangeListener(this));
 
         // Insert view
         setView(view);

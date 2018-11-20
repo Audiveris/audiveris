@@ -188,7 +188,7 @@ public class BasicARTMoments
                         sb.append(" ");
                     }
 
-                    sb.append(String.format("%3.0f", 1000 * getMoment(p, r)));
+                    sb.append(String.format("%3.0f", 1_000 * getMoment(p, r)));
                 }
             }
         }

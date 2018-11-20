@@ -43,8 +43,9 @@ public class SeparableToolBar
     /**
      * Dimension of the separator.
      */
-    private static final Dimension gap = new Dimension(constants.separatorWidth.getValue(),
-                                                       constants.separatorWidth.getValue());
+    private static final Dimension gap = new Dimension(
+            constants.separatorWidth.getValue(),
+            constants.separatorWidth.getValue());
 
     /**
      * Creates a new SeparableToolBar object.
@@ -122,11 +123,13 @@ public class SeparableToolBar
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Integer separatorWidth = new Constant.Integer("Pixels", 15,
-                                                                             "Width of separator");
+        private final Constant.Integer separatorWidth = new Constant.Integer(
+                "Pixels",
+                15,
+                "Width of separator");
     }
 }

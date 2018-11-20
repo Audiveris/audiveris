@@ -77,49 +77,6 @@ public class SectionSets
     {
     }
 
-    //------------------//
-    // createFromGlyphs //
-    //------------------//
-    /**
-     * Convenient method to create the proper SectionSets out of a provided
-     * collection of glyphs
-     *
-     * @param glyphs the provided glyphs
-     * @return a newly built SectionSets instance
-     */
-    public static SectionSets createFromGlyphs (Collection<Glyph> glyphs)
-    {
-        throw new RuntimeException("HB. Not implemented yet");
-
-        //        SectionSets sectionSets = new SectionSets();
-        //        sectionSets.sets = new ArrayList<Collection<Section>>();
-        //
-        //        for (Glyph glyph : glyphs) {
-        //            sectionSets.sets.add(new ArrayList<Section>(glyph.getMembers()));
-        //        }
-        //
-        //        return sectionSets;
-    }
-
-    //--------------------//
-    // createFromSections //
-    //--------------------//
-    /**
-     * Convenient method to create the proper SectionSets out of a provided
-     * collection of sections
-     *
-     * @param sections the provided sections
-     * @return a newly built SectionSets instance (a singleton actually)
-     */
-    public static SectionSets createFromSections (Collection<Section> sections)
-    {
-        SectionSets sectionSets = new SectionSets();
-        sectionSets.sets = new ArrayList<Collection<Section>>();
-        sectionSets.sets.add(sections);
-
-        return sectionSets;
-    }
-
     //---------//
     // getSets //
     //---------//
@@ -132,15 +89,14 @@ public class SectionSets
     public Collection<Collection<Section>> getSets (Sheet sheet)
     {
         if (sets == null) {
-            sets = new ArrayList<Collection<Section>>();
+            sets = new ArrayList<>();
 
             for (SectionDescSet idSet : descSets) {
-                List<Section> sectionSet = new ArrayList<Section>();
+                List<Section> sectionSet = new ArrayList<>();
 
                 for (SectionDesc sectionId : idSet.sections) {
-                    Lag lag = sheet.getLagManager().getLag((sectionId.orientation
-                                                                    == Orientation.VERTICAL)
-                                    ? Lags.VLAG
+                    Lag lag = sheet.getLagManager().getLag(
+                            (sectionId.orientation == Orientation.VERTICAL) ? Lags.VLAG
                                     : Lags.HLAG);
                     Section section = lag.getEntity(sectionId.id);
 
@@ -193,18 +149,61 @@ public class SectionSets
     {
         // Convert sections -> ids
         if (sets != null) {
-            descSets = new ArrayList<SectionDescSet>();
+            descSets = new ArrayList<>();
 
             for (Collection<Section> set : sets) {
                 SectionDescSet descSet = new SectionDescSet();
 
                 for (Section section : set) {
-                    descSet.sections.add(new SectionDesc(section.getId(), section.getOrientation()));
+                    descSet.sections.add(
+                            new SectionDesc(section.getId(), section.getOrientation()));
                 }
 
                 descSets.add(descSet);
             }
         }
+    }
+
+    //------------------//
+    // createFromGlyphs //
+    //------------------//
+    /**
+     * Convenient method to create the proper SectionSets out of a provided
+     * collection of glyphs
+     *
+     * @param glyphs the provided glyphs
+     * @return a newly built SectionSets instance
+     */
+    public static SectionSets createFromGlyphs (Collection<Glyph> glyphs)
+    {
+        throw new RuntimeException("HB. Not implemented yet");
+
+        //        SectionSets sectionSets = new SectionSets();
+        //        sectionSets.sets = new ArrayList<>();
+        //
+        //        for (Glyph glyph : glyphs) {
+        //            sectionSets.sets.add(new ArrayList<Section>(glyph.getMembers()));
+        //        }
+        //
+        //        return sectionSets;
+    }
+
+    //--------------------//
+    // createFromSections //
+    //--------------------//
+    /**
+     * Convenient method to create the proper SectionSets out of a provided
+     * collection of sections
+     *
+     * @param sections the provided sections
+     * @return a newly built SectionSets instance (a singleton actually)
+     */
+    public static SectionSets createFromSections (Collection<Section> sections)
+    {
+        SectionSets sectionSets = new SectionSets();
+        sectionSets.sets = new ArrayList<>();
+        sectionSets.sets.add(sections);
+        return sectionSets;
     }
 
     //-------------//
@@ -220,7 +219,7 @@ public class SectionSets
         //@XmlList
         // Annotation to avoid any wrapper:
         //@XmlValue
-        //private Collection<Integer> ids = new ArrayList<Integer>();
+        //private Collection<Integer> ids = new ArrayList<>();
         /** Section id */
         @XmlAttribute(name = "id")
         int id;
@@ -230,12 +229,12 @@ public class SectionSets
         Orientation orientation;
 
         // For JAXB
-        public SectionDesc ()
+        SectionDesc ()
         {
         }
 
-        public SectionDesc (int id,
-                            Orientation orientation)
+        SectionDesc (int id,
+                     Orientation orientation)
         {
             this.id = id;
             this.orientation = orientation;
@@ -269,6 +268,6 @@ public class SectionSets
         //        // Annotation to avoid any wrapper:
         //        @XmlValue
         @XmlElement(name = "section")
-        private Collection<SectionDesc> sections = new ArrayList<SectionDesc>();
+        private Collection<SectionDesc> sections = new ArrayList<>();
     }
 }

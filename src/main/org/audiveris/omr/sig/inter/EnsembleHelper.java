@@ -46,6 +46,11 @@ public abstract class EnsembleHelper
 
     private static final Logger logger = LoggerFactory.getLogger(EnsembleHelper.class);
 
+    /** Not meant to be instantiated. */
+    private EnsembleHelper ()
+    {
+    }
+
     //-----------//
     // addMember //
     //-----------//
@@ -89,7 +94,7 @@ public abstract class EnsembleHelper
             return Collections.EMPTY_LIST;
         }
 
-        List<Inter> members = new ArrayList<Inter>();
+        List<Inter> members = new ArrayList<>();
 
         if (sig.containsVertex(ensemble)) {
             for (Relation rel : sig.getRelations(ensemble, Containment.class)) {

@@ -31,7 +31,7 @@ import java.util.regex.Matcher;
 public abstract class RegexUtil
 {
 
-    // Not meant to be instantiated
+    /** Not meant to be instantiated. */
     private RegexUtil ()
     {
     }

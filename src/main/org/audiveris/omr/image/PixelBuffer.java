@@ -206,6 +206,11 @@ public class PixelBuffer
     //-----------------//
     // toBufferedImage //
     //-----------------//
+    /**
+     * Report the BufferedImage for this buffer.
+     *
+     * @return corresponding image
+     */
     public BufferedImage toBufferedImage ()
     {
         StopWatch watch = new StopWatch("PixelBuffer");

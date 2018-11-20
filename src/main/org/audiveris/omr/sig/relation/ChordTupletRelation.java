@@ -115,6 +115,13 @@ public class ChordTupletRelation
         return tupletCoeff;
     }
 
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
     //----------------//
     // getTupletCoeff //
     //----------------//
@@ -135,14 +142,16 @@ public class ChordTupletRelation
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio tupletThreeSupportCoeff = new Constant.Ratio(2 * 0.33,
-                                                                                  "Supporting coeff for tuplet 3");
+        private final Constant.Ratio tupletThreeSupportCoeff = new Constant.Ratio(
+                2 * 0.33,
+                "Supporting coeff for tuplet 3");
 
-        private final Constant.Ratio tupletSixSupportCoeff = new Constant.Ratio(2 * 0.17,
-                                                                                "Supporting coeff for tuplet 6");
+        private final Constant.Ratio tupletSixSupportCoeff = new Constant.Ratio(
+                2 * 0.17,
+                "Supporting coeff for tuplet 6");
     }
 }

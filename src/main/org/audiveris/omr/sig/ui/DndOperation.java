@@ -22,7 +22,6 @@
 package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.OMR;
-import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.PointUtil;
@@ -54,8 +53,6 @@ import java.util.Arrays;
  */
 public class DndOperation
 {
-
-    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(DndOperation.class);
 
@@ -253,13 +250,5 @@ public class DndOperation
         if (image != null) {
             glass.setImage(image);
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
     }
 }

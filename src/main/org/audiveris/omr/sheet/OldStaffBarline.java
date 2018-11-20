@@ -49,5 +49,5 @@ public class OldStaffBarline
     @XmlList
     @XmlIDREF
     @XmlValue
-    public final ArrayList<BarlineInter> bars = new ArrayList<BarlineInter>();
+    public final ArrayList<BarlineInter> bars = new ArrayList<>();
 }

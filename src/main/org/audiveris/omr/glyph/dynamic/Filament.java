@@ -41,6 +41,8 @@ import java.util.Comparator;
  * alignments.</li>
  * <li>{@link StraightFilament} implements a straight filament, for stems and legs of endings.</li>
  * </ul>
+ *
+ * @author Hervé Bitteur
  */
 public abstract class Filament
         extends SectionCompound
@@ -130,19 +132,6 @@ public abstract class Filament
                                      boolean showPoints,
                                      double pointWidth);
 
-    //---------------//
-    // getProbeWidth //
-    //---------------//
-    /**
-     * Report the width of the window used to determine filament position
-     *
-     * @return the scale-independent probe width
-     */
-    public static Scale.Fraction getProbeWidth ()
-    {
-        return constants.probeWidth;
-    }
-
     //----------//
     // getSlope //
     //----------//
@@ -189,6 +178,14 @@ public abstract class Filament
     //-----------------//
     // setEndingPoints //
     //-----------------//
+    /**
+     * Assign the ending points.
+     * <p>
+     * This triggers a (re)-computing of line and bounds.
+     *
+     * @param startPoint the provided starting point
+     * @param stopPoint  the providing stopping point
+     */
     public void setEndingPoints (Point2D startPoint,
                                  Point2D stopPoint)
     {
@@ -208,6 +205,11 @@ public abstract class Filament
     //---------------------//
     // getRoughOrientation //
     //---------------------//
+    /**
+     * Report a (rough) orientation of the filament (vertical or horizontal)
+     *
+     * @return rough orientation
+     */
     protected Orientation getRoughOrientation ()
     {
         checkBounds();
@@ -218,6 +220,9 @@ public abstract class Filament
     //-----------------//
     // invalidateCache //
     //-----------------//
+    /**
+     * Invalidate the cached data.
+     */
     @Override
     protected void invalidateCache ()
     {
@@ -225,14 +230,28 @@ public abstract class Filament
         startPoint = stopPoint = null;
     }
 
+    //---------------//
+    // getProbeWidth //
+    //---------------//
+    /**
+     * Report the width of the window used to determine filament position
+     *
+     * @return the scale-independent probe width
+     */
+    public static Scale.Fraction getProbeWidth ()
+    {
+        return constants.probeWidth;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction probeWidth = new Scale.Fraction(0.5,
-                                                                     "Width of probing window to retrieve filament ordinate");
+        private final Scale.Fraction probeWidth = new Scale.Fraction(
+                0.5,
+                "Width of probing window to retrieve filament ordinate");
     }
 }

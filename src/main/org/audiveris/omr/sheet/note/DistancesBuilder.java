@@ -88,6 +88,11 @@ public class DistancesBuilder
     //----------------//
     // buildDistances //
     //----------------//
+    /**
+     * Build the table of distances.
+     *
+     * @return the table of distance values
+     */
     public DistanceTable buildDistances ()
     {
         // Compute the distance-to-foreground transform image
@@ -100,13 +105,16 @@ public class DistancesBuilder
 
         // Display distances image in a template view?
         if ((OMR.gui != null) && constants.displayTemplates.isSet()) {
-            SelectionService templateService = new SelectionService("templateService", new Class[]{
-                AnchoredTemplateEvent.class});
+            SelectionService templateService = new SelectionService(
+                    "templateService",
+                    new Class[]{AnchoredTemplateEvent.class});
             BufferedImage img = table.getImage(sheet.getScale().getInterline() / 2);
             TemplateBoard templateBoard = new TemplateBoard(sheet, table, templateService);
             sheet.getStub().getAssembly().addViewTab(
                     SheetTab.TEMPLATE_TAB,
-                    new ScrollImageView(sheet, new TemplateView(sheet, img, table, templateService)),
+                    new ScrollImageView(
+                            sheet,
+                            new TemplateView(sheet, img, table, templateService)),
                     new BoardsPane(new DistanceBoard(sheet, table), templateBoard));
             templateBoard.stateChanged(null); // To feed template service
         }
@@ -180,11 +188,12 @@ public class DistancesBuilder
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean displayTemplates = new Constant.Boolean(false,
-                                                                               "Should we display the templates tab?");
+        private final Constant.Boolean displayTemplates = new Constant.Boolean(
+                false,
+                "Should we display the templates tab?");
     }
 }

@@ -37,6 +37,7 @@ import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Convenient class meant to temporarily inject some debugging.
@@ -147,11 +148,11 @@ public class Debug
     private static PrintWriter getPrintWriter (OutputStream os)
     {
         try {
-            final BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os,
-                                                                                WellKnowns.FILE_ENCODING));
+            final BufferedWriter bw = new BufferedWriter(
+                    new OutputStreamWriter(os, WellKnowns.FILE_ENCODING));
 
             return new PrintWriter(bw);
-        } catch (Exception ex) {
+        } catch (UnsupportedEncodingException ex) {
             logger.warn("Error creating PrintWriter " + ex, ex);
 
             return null;

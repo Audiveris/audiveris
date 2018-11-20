@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Management data meant to describe an implementation instance of a PixelFilter.
  * (kind of filter + related parameters)
+ *
+ * @author Hervé Bitteur
  */
 public abstract class FilterDescriptor
 {
@@ -65,7 +67,6 @@ public abstract class FilterDescriptor
      */
     public abstract PixelFilter getFilter (ByteProcessor source);
 
-    //
     //---------//
     // getKind //
     //---------//
@@ -76,14 +77,6 @@ public abstract class FilterDescriptor
      */
     public abstract FilterKind getKind ();
 
-    //----------------//
-    // getDefaultKind //
-    //----------------//
-    public static FilterKind getDefaultKind ()
-    {
-        return constants.defaultKind.getValue();
-    }
-
     //----------//
     // hashCode //
     //----------//
@@ -93,14 +86,6 @@ public abstract class FilterDescriptor
         int hash = 5;
 
         return hash;
-    }
-
-    //----------------//
-    // setDefaultKind //
-    //----------------//
-    public static void setDefaultKind (FilterKind kind)
-    {
-        constants.defaultKind.setValue(kind);
     }
 
     //----------//
@@ -128,15 +113,32 @@ public abstract class FilterDescriptor
         return sb.toString();
     }
 
+    //----------------//
+    // getDefaultKind //
+    //----------------//
+    public static FilterKind getDefaultKind ()
+    {
+        return constants.defaultKind.getValue();
+    }
+
+    //----------------//
+    // setDefaultKind //
+    //----------------//
+    public static void setDefaultKind (FilterKind kind)
+    {
+        constants.defaultKind.setValue(kind);
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Enum<FilterKind> defaultKind = new Constant.Enum<FilterKind>(
-                FilterKind.class, FilterKind.ADAPTIVE,
+        private final Constant.Enum<FilterKind> defaultKind = new Constant.Enum<>(
+                FilterKind.class,
+                FilterKind.ADAPTIVE,
                 "Default kind of PixelFilter (GLOBAL or ADAPTIVE)");
     }
 

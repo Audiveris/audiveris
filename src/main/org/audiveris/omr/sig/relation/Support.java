@@ -104,11 +104,26 @@ public abstract class Support
     // getGrade //
     //----------//
     /**
+     * Report the support grade.
+     *
      * @return the grade
      */
     public double getGrade ()
     {
         return grade;
+    }
+
+    //----------//
+    // setGrade //
+    //----------//
+    /**
+     * Set the support grade value.
+     *
+     * @param grade the grade to set
+     */
+    public void setGrade (double grade)
+    {
+        this.grade = grade;
     }
 
     //------------//
@@ -124,25 +139,6 @@ public abstract class Support
         return impacts;
     }
 
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    public double getMinGrade ()
-    {
-        return constants.minGrade.getValue();
-    }
-
-    //----------//
-    // setGrade //
-    //----------//
-    /**
-     * @param grade the grade to set
-     */
-    public void setGrade (double grade)
-    {
-        this.grade = grade;
-    }
-
     //------------//
     // setImpacts //
     //------------//
@@ -154,6 +150,19 @@ public abstract class Support
     public void setImpacts (GradeImpacts impacts)
     {
         this.impacts = impacts;
+    }
+
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    /**
+     * Report the minimum grade for this relation.
+     *
+     * @return minimum grade
+     */
+    public double getMinGrade ()
+    {
+        return constants.minGrade.getValue();
     }
 
     //----------//
@@ -190,11 +199,12 @@ public abstract class Support
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio minGrade = new Constant.Ratio(0.1,
-                                                                   "Minimum support relation grade");
+        private final Constant.Ratio minGrade = new Constant.Ratio(
+                0.1,
+                "Minimum support relation grade");
     }
 }

@@ -23,7 +23,6 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.curve.SegmentInfo;
-import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -74,6 +73,11 @@ public class SegmentInter
     //---------//
     // getInfo //
     //---------//
+    /**
+     * Report the related building information.
+     *
+     * @return segment building info
+     */
     public SegmentInfo getInfo ()
     {
         return info;
@@ -83,7 +87,7 @@ public class SegmentInter
     // Impacts //
     //---------//
     public static class Impacts
-            extends BasicImpacts
+            extends GradeImpacts
     {
 
         private static final String[] NAMES = new String[]{"dist"};

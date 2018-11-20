@@ -85,19 +85,25 @@ public class BlockScanner
                                       String language,
                                       int id)
     {
-        return OcrUtil.scan(buffer.getBufferedImage(), constants.whiteMarginAdded.getValue(),
-                            OCR.LayoutMode.SINGLE_BLOCK, language, sheet.getScale().getInterline(),
-                            sheet.getId() + "-b" + id);
+        return OcrUtil.scan(
+                buffer.getBufferedImage(),
+                constants.whiteMarginAdded.getValue(),
+                OCR.LayoutMode.SINGLE_BLOCK,
+                language,
+                sheet.getScale().getInterline(),
+                sheet.getId() + "-b" + id);
     }
 
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Integer whiteMarginAdded = new Constant.Integer("pixels", 10,
-                                                                               "Margin of white pixels added around block image");
+        private final Constant.Integer whiteMarginAdded = new Constant.Integer(
+                "pixels",
+                10,
+                "Margin of white pixels added around block image");
     }
 }

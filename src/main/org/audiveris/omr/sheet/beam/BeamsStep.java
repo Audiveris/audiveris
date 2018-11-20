@@ -85,8 +85,9 @@ public class BeamsStep
         if (distances.getCardinality() > 0) {
             logger.info("BeamDistance{{}}", distances);
 
-            sheet.getScale().setBeamDistance(distances.getMeanValue(), distances
-                                             .getStandardDeviation());
+            sheet.getScale().setBeamDistance(
+                    distances.getMeanValue(),
+                    distances.getStandardDeviation());
         }
 
         // Dispose of BEAM_SPOT glyphs, a glyph may be split into several beams
@@ -116,7 +117,7 @@ public class BeamsStep
         new SpotsBuilder(sheet).buildSheetSpots(spotLag);
 
         // Allocate map to collect vertical distances between beams of the same group
-        Map<SystemInfo, Population> distanceMap = new TreeMap<SystemInfo, Population>();
+        Map<SystemInfo, Population> distanceMap = new TreeMap<>();
 
         for (SystemInfo system : sheet.getSystems()) {
             distanceMap.put(system, new Population());
@@ -128,6 +129,9 @@ public class BeamsStep
     //---------//
     // Context //
     //---------//
+    /**
+     * Context for step processing.
+     */
     protected static class Context
     {
 
@@ -137,8 +141,14 @@ public class BeamsStep
         /** Lag of spot sections. */
         public final Lag spotLag;
 
-        public Context (Map<SystemInfo, Population> distanceMap,
-                        Lag spotLag)
+        /**
+         * Create Context.
+         *
+         * @param distanceMap
+         * @param spotLag
+         */
+        Context (Map<SystemInfo, Population> distanceMap,
+                 Lag spotLag)
         {
             this.distancemap = distanceMap;
             this.spotLag = spotLag;

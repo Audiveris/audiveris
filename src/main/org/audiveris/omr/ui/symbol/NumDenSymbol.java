@@ -32,6 +32,8 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code NumDenSymbol} displays a time sig, with numerator and denominator.
+ *
+ * @author Hervé Bitteur
  */
 public class NumDenSymbol
         extends ShapeSymbol
@@ -114,9 +116,9 @@ public class NumDenSymbol
 
         Rectangle2D numRect = p.numLayout.getBounds();
         Rectangle2D denRect = p.denLayout.getBounds();
-        p.rect = new Rectangle((int) Math.rint(Math.max(numRect.getWidth(), denRect.getWidth())),
-                               p.dy + (int) Math.rint(Math.max(numRect.getHeight(), denRect
-                                                               .getHeight())));
+        p.rect = new Rectangle(
+                (int) Math.rint(Math.max(numRect.getWidth(), denRect.getWidth())),
+                p.dy + (int) Math.rint(Math.max(numRect.getHeight(), denRect.getHeight())));
 
         return p;
     }
@@ -153,7 +155,7 @@ public class NumDenSymbol
 
         final TextLayout denLayout;
 
-        public MyParams (MusicFont font)
+        MyParams (MusicFont font)
         {
             dy = (int) Math.rint(2 * font.getStaffInterline());
             numLayout = font.layout(numCodes);

@@ -120,6 +120,13 @@ public class HeadStemRelation
         stem.checkAbnormal();
     }
 
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
     //------------------//
     // getXInGapMaximum //
     //------------------//
@@ -290,41 +297,52 @@ public class HeadStemRelation
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio headSupportCoeff = new Constant.Ratio(1,
-                                                                           "Value for (source) head coeff in support formula");
+        private final Constant.Ratio headSupportCoeff = new Constant.Ratio(
+                1,
+                "Value for (source) head coeff in support formula");
 
-        private final Constant.Ratio stemSupportCoeff = new Constant.Ratio(1,
-                                                                           "Value for (target) stem coeff in support formula");
+        private final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
+                1,
+                "Value for (target) stem coeff in support formula");
 
-        private final Scale.Fraction xInGapMax = new Scale.Fraction(0.3,
-                                                                    "Maximum horizontal overlap between stem & head");
+        private final Scale.Fraction xInGapMax = new Scale.Fraction(
+                0.3,
+                "Maximum horizontal overlap between stem & head");
 
-        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(0.45,
-                                                                          "Maximum manual horizontal overlap between stem & head");
+        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(
+                0.45,
+                "Maximum manual horizontal overlap between stem & head");
 
-        private final Scale.Fraction xOutGapMax = new Scale.Fraction(0.275,
-                                                                     "Maximum horizontal gap between stem & head");
+        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
+                0.275,
+                "Maximum horizontal gap between stem & head");
 
-        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(0.35,
-                                                                           "Maximum manual horizontal gap between stem & head");
+        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
+                0.35,
+                "Maximum manual horizontal gap between stem & head");
 
-        private final Scale.Fraction yGapMax = new Scale.Fraction(0.8,
-                                                                  "Maximum vertical gap between stem & head");
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
+                0.8,
+                "Maximum vertical gap between stem & head");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(1.2,
-                                                                        "Maximum manual vertical gap between stem & head");
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+                1.2,
+                "Maximum manual vertical gap between stem & head");
 
-        private final Constant.Ratio anchorHeightRatio = new Constant.Ratio(0.25,
-                                                                            "Vertical margin for stem anchor portion (as ratio of head height)");
+        private final Constant.Ratio anchorHeightRatio = new Constant.Ratio(
+                0.25,
+                "Vertical margin for stem anchor portion (as ratio of head height)");
 
-        private final Scale.Fraction maxInvadingDx = new Scale.Fraction(0.05,
-                                                                        "Maximum invading horizontal gap between stem & head");
+        private final Scale.Fraction maxInvadingDx = new Scale.Fraction(
+                0.05,
+                "Maximum invading horizontal gap between stem & head");
 
-        private final Scale.Fraction maxInvadingDy = new Scale.Fraction(0.0,
-                                                                        "Maximum invading vertical gap between stem & head");
+        private final Scale.Fraction maxInvadingDy = new Scale.Fraction(
+                0.0,
+                "Maximum invading vertical gap between stem & head");
     }
 }

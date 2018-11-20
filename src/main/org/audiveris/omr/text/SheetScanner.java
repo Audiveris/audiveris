@@ -135,9 +135,13 @@ public class SheetScanner
             final String language = textParam.getValue();
             logger.debug("scanSheet lan:{} on {}", language, sheet);
 
-            return OcrUtil.scan(image, constants.whiteMarginAdded.getValue(),
-                                OCR.LayoutMode.MULTI_BLOCK, language, sheet.getScale()
-                                        .getInterline(), sheet.getId());
+            return OcrUtil.scan(
+                    image,
+                    constants.whiteMarginAdded.getValue(),
+                    OCR.LayoutMode.MULTI_BLOCK,
+                    language,
+                    sheet.getScale().getInterline(),
+                    sheet.getId());
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -163,16 +167,14 @@ public class SheetScanner
         if (constants.displayTexts.isSet() && (OMR.gui != null)) {
             sheet.getStub().getAssembly().addViewTab(
                     "Texts",
-                    new ScrollImageView(
-                            sheet,
-                            new ImageView(img)
-                    {
-                        @Override
-                        protected void renderItems (Graphics2D g)
-                        {
-                            sheet.renderItems(g); // Apply registered sheet renderers
-                        }
-                    }),
+                    new ScrollImageView(sheet, new ImageView(img)
+                                {
+                                    @Override
+                                    protected void renderItems (Graphics2D g)
+                                    {
+                                        sheet.renderItems(g); // Apply registered sheet renderers
+                                    }
+                                }),
                     new BoardsPane(new PixelBoard(sheet)));
         }
 
@@ -187,27 +189,34 @@ public class SheetScanner
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(false,
-                                                                         "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
 
-        private final Constant.Boolean displayTexts = new Constant.Boolean(false,
-                                                                           "Should we display the texts image?");
+        private final Constant.Boolean displayTexts = new Constant.Boolean(
+                false,
+                "Should we display the texts image?");
 
-        private final Constant.Boolean keepTextsBuffer = new Constant.Boolean(false,
-                                                                              "Should we store texts buffer on disk?");
+        private final Constant.Boolean keepTextsBuffer = new Constant.Boolean(
+                false,
+                "Should we store texts buffer on disk?");
 
-        private final Scale.Fraction staffHorizontalMargin = new Scale.Fraction(0.25,
-                                                                                "Horizontal margin around staff core area");
+        private final Scale.Fraction staffHorizontalMargin = new Scale.Fraction(
+                0.25,
+                "Horizontal margin around staff core area");
 
-        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(0.25,
-                                                                              "Vertical margin around staff core area");
+        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
+                0.25,
+                "Vertical margin around staff core area");
 
-        private final Constant.Integer whiteMarginAdded = new Constant.Integer("pixels", 10,
-                                                                               "Margin of white pixels added around sheet image");
+        private final Constant.Integer whiteMarginAdded = new Constant.Integer(
+                "pixels",
+                10,
+                "Margin of white pixels added around sheet image");
     }
 
     //--------------//
@@ -230,9 +239,9 @@ public class SheetScanner
          * @param g      graphics context on buffer
          * @param sheet  related sheet
          */
-        public TextsCleaner (ByteProcessor buffer,
-                             Graphics2D g,
-                             Sheet sheet)
+        TextsCleaner (ByteProcessor buffer,
+                      Graphics2D g,
+                      Sheet sheet)
         {
             super(buffer, g, sheet);
             params = new Parameters(sheet.getScale());
@@ -246,11 +255,11 @@ public class SheetScanner
          */
         public void eraseInters ()
         {
-            List<Area> cores = new ArrayList<Area>();
+            List<Area> cores = new ArrayList<>();
 
             for (SystemInfo system : sheet.getSystems()) {
                 final SIGraph sig = system.getSig();
-                final List<Inter> erased = new ArrayList<Inter>();
+                final List<Inter> erased = new ArrayList<>();
 
                 for (Inter inter : sig.vertexSet()) {
                     if (!inter.isRemoved()) {
@@ -359,7 +368,7 @@ public class SheetScanner
 
             final int vMargin;
 
-            public Parameters (Scale scale)
+            Parameters (Scale scale)
             {
                 hMargin = scale.toPixels(constants.staffHorizontalMargin);
                 vMargin = scale.toPixels(constants.staffVerticalMargin);

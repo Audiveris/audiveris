@@ -45,6 +45,7 @@ import static org.audiveris.omr.sig.relation.StemPortion.STEM_TOP;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import org.audiveris.omr.util.Jaxb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +62,7 @@ import java.util.Set;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code StemInter} represents Stem interpretations.
@@ -77,16 +79,17 @@ public class StemInter
     /** Anchor vertical margin, relative to head height. */
     private static final double ANCHOR_MARGIN_RATIO = 0.67;
 
-    //
     // Persistent data
     //----------------
     //
     /** Top point. */
     @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
     private Point2D top;
 
     /** Bottom point. */
     @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
     private Point2D bottom;
 
     /**
@@ -233,8 +236,8 @@ public class StemInter
     {
         Scale scale = sig.getSystem().getSheet().getScale();
         final Line2D stemLine = computeExtendedLine();
-        final List<Relation> links = new ArrayList<Relation>(sig.getRelations(this,
-                                                                              AbstractStemConnection.class));
+        final List<Relation> links = new ArrayList<>(
+                sig.getRelations(this, AbstractStemConnection.class));
         sig.sortBySource(links);
 
         for (Relation rel : links) {
@@ -313,6 +316,11 @@ public class StemInter
     //-----------//
     // duplicate //
     //-----------//
+    /**
+     * Duplicate a Stem instance (used with mirrored heads).
+     *
+     * @return duplicate
+     */
     public StemInter duplicate ()
     {
         StemInter clone = new StemInter(glyph, impacts);
@@ -350,9 +358,11 @@ public class StemInter
         final ByteProcessor buffer = glyph.getRunTable().getBuffer();
 
         // ROI definition (WRT stem buffer coordinates)
-        final Rectangle roi = new Rectangle(0, yTop - glyph.getTop(), glyph.getWidth(), yBottom
-                                                                                                - yTop
-                                                                                        + 1);
+        final Rectangle roi = new Rectangle(
+                0,
+                yTop - glyph.getTop(),
+                glyph.getWidth(),
+                yBottom - yTop + 1);
 
         // Create sub-glyph
         final Point stemOffset = new Point();
@@ -380,7 +390,7 @@ public class StemInter
      */
     public Set<AbstractBeamInter> getBeams ()
     {
-        final Set<AbstractBeamInter> set = new LinkedHashSet<AbstractBeamInter>();
+        final Set<AbstractBeamInter> set = new LinkedHashSet<>();
 
         for (Relation relation : sig.getRelations(this, BeamStemRelation.class)) {
             set.add((AbstractBeamInter) sig.getEdgeSource(relation));
@@ -406,7 +416,8 @@ public class StemInter
     /**
      * Report the chord(s) currently attached to the provided stem.
      * <p>
-     * We can have: <ul>
+     * We can have:
+     * <ul>
      * <li>No chord found, simply because this stem has not yet been processed.</li>
      * <li>One chord found, this is the normal case.</li>
      * <li>Two chords found, when the same stem is "shared" by two chords (as in complex structures
@@ -421,7 +432,7 @@ public class StemInter
 
         for (Relation rel : sig.getRelations(this, ChordStemRelation.class)) {
             if (chords == null) {
-                chords = new ArrayList<HeadChordInter>();
+                chords = new ArrayList<>();
             }
 
             chords.add((HeadChordInter) sig.getOppositeInter(this, rel));
@@ -444,7 +455,7 @@ public class StemInter
      */
     public Set<HeadInter> getHeads ()
     {
-        final Set<HeadInter> set = new LinkedHashSet<HeadInter>();
+        final Set<HeadInter> set = new LinkedHashSet<>();
 
         for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
             set.add((HeadInter) sig.getEdgeSource(relation));
@@ -464,14 +475,6 @@ public class StemInter
     public Line2D getMedian ()
     {
         return new Line2D.Double(top, bottom);
-    }
-
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    public static double getMinGrade ()
-    {
-        return AbstractInter.getMinGrade();
     }
 
     //--------//
@@ -512,8 +515,8 @@ public class StemInter
             Shape headShape = sig.getOppositeInter(this, rel).getShape();
 
             // First head tested is enough.
-            return (headShape == Shape.NOTEHEAD_BLACK_SMALL) || (headShape
-                                                                         == Shape.NOTEHEAD_VOID_SMALL);
+            return (headShape == Shape.NOTEHEAD_BLACK_SMALL)
+                           || (headShape == Shape.NOTEHEAD_VOID_SMALL);
         }
 
         return false;
@@ -609,8 +612,9 @@ public class StemInter
         }
 
         if (bottom == null) {
-            bottom = new Point2D.Double(bounds.x + (0.5 * bounds.width), (bounds.y + bounds.height)
-                                                                                 - 1);
+            bottom = new Point2D.Double(
+                    bounds.x + (0.5 * bounds.width),
+                    (bounds.y + bounds.height) - 1);
         }
     }
 
@@ -624,5 +628,18 @@ public class StemInter
 
         top = glyph.getStartPoint(VERTICAL);
         bottom = glyph.getStopPoint(VERTICAL);
+    }
+
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    /**
+     * Report the minimum acceptable grade
+     *
+     * @return minimum grade
+     */
+    public static double getMinGrade ()
+    {
+        return AbstractInter.getMinGrade();
     }
 }

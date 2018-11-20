@@ -31,9 +31,11 @@ import org.audiveris.omr.sig.inter.BracketInter;
 import org.audiveris.omr.sig.inter.Inter;
 
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -123,11 +125,14 @@ public class TestStep
     private static PrintWriter getPrintWriter (Path path)
     {
         try {
-            final BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
-                    new FileOutputStream(path.toFile()), WellKnowns.FILE_ENCODING));
+            final BufferedWriter bw = new BufferedWriter(
+                    new OutputStreamWriter(
+                            new FileOutputStream(path.toFile()),
+                            WellKnowns.FILE_ENCODING));
 
             return new PrintWriter(bw);
-        } catch (Exception ex) {
+        } catch (FileNotFoundException |
+                 UnsupportedEncodingException ex) {
             System.err.println("Error creating " + path + ex);
 
             return null;

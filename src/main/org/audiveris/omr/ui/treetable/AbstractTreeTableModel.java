@@ -5,7 +5,6 @@
 //----------------------------------------------------------------------------//
 package org.audiveris.omr.ui.treetable;
 
-
 /*
  * @(#)AbstractTreeTableModel.java 1.2 98/10/27
  *
@@ -73,7 +72,6 @@ public abstract class AbstractTreeTableModel
      * DOCUMENT ME!
      *
      * @param column DOCUMENT ME!
-     *
      * @return DOCUMENT ME!
      */
     @Override
@@ -91,7 +89,6 @@ public abstract class AbstractTreeTableModel
      *
      * @param parent DOCUMENT ME!
      * @param child  DOCUMENT ME!
-     *
      * @return DOCUMENT ME!
      */
     @Override
@@ -140,7 +137,6 @@ public abstract class AbstractTreeTableModel
      * DOCUMENT ME!
      *
      * @param node DOCUMENT ME!
-     *
      * @return DOCUMENT ME!
      */
     @Override
@@ -200,6 +196,7 @@ public abstract class AbstractTreeTableModel
      * notification on this event type. The event instance
      * is lazily created using the parameters passed into
      * the fire method.
+     *
      * @see EventListenerList
      */
     protected void fireTreeNodesChanged (Object source,
@@ -225,11 +222,16 @@ public abstract class AbstractTreeTableModel
         }
     }
 
-    /*
+    /**
      * Notify all listeners that have registered interest for
      * notification on this event type. The event instance
      * is lazily created using the parameters passed into
      * the fire method.
+     *
+     * @param source       DOCUMENT ME!
+     * @param path         DOCUMENT ME!
+     * @param childIndices DOCUMENT ME!
+     * @param children     DOCUMENT ME!
      * @see EventListenerList
      */
     protected void fireTreeNodesInserted (Object source,
@@ -255,11 +257,16 @@ public abstract class AbstractTreeTableModel
         }
     }
 
-    /*
+    /**
      * Notify all listeners that have registered interest for
      * notification on this event type. The event instance
      * is lazily created using the parameters passed into
      * the fire method.
+     *
+     * @param source       DOCUMENT ME!
+     * @param path         DOCUMENT ME!
+     * @param childIndices DOCUMENT ME!
+     * @param children     DOCUMENT ME!
      * @see EventListenerList
      */
     protected void fireTreeNodesRemoved (Object source,
@@ -285,11 +292,16 @@ public abstract class AbstractTreeTableModel
         }
     }
 
-    /*
+    /**
      * Notify all listeners that have registered interest for
      * notification on this event type. The event instance
      * is lazily created using the parameters passed into
      * the fire method.
+     *
+     * @param source       DOCUMENT ME!
+     * @param path         DOCUMENT ME!
+     * @param childIndices DOCUMENT ME!
+     * @param children     DOCUMENT ME!
      * @see EventListenerList
      */
     protected void fireTreeStructureChanged (Object source,

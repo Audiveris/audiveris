@@ -44,20 +44,6 @@ public class OmrUIDefaults
         extends UIDefaults
 {
 
-    private static volatile OmrUIDefaults INSTANCE;
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    public static OmrUIDefaults getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new OmrUIDefaults();
-        }
-
-        return INSTANCE;
-    }
-
     //------------//
     // getKeyCode //
     //------------//
@@ -129,19 +115,33 @@ public class OmrUIDefaults
         }
 
         Properties p = new Properties();
-        InputStream in = null;
 
-        try {
-            in = new FileInputStream(file);
+        try (InputStream in = new FileInputStream(file)) {
             p.load(in);
             loadFrom(p);
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (Exception ignored) {
-                }
-            }
         }
     }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this class in application.
+     *
+     * @return the instance
+     */
+    public static OmrUIDefaults getInstance ()
+    {
+        return LazySingleton.INSTANCE;
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final OmrUIDefaults INSTANCE = new OmrUIDefaults();
+    }
+
 }

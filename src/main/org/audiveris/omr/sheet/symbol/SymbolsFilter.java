@@ -137,10 +137,10 @@ public class SymbolsFilter
 
         // Display for visual check?
         if (constants.displaySymbols.isSet() && (OMR.gui != null)) {
-            sheet.getStub().getAssembly().addViewTab("Symbols", new ScrollImageView(sheet,
-                                                                                    new MyView(img,
-                                                                                               optionalsMap)),
-                                                     new BoardsPane(new PixelBoard(sheet)));
+            sheet.getStub().getAssembly().addViewTab(
+                    "Symbols",
+                    new ScrollImageView(sheet, new MyView(img, optionalsMap)),
+                    new BoardsPane(new PixelBoard(sheet)));
         }
 
         buildSymbolsGlyphs(buffer);
@@ -181,7 +181,7 @@ public class SymbolsFilter
     private void dispatchPageSymbols (List<Glyph> glyphs)
     {
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
-        final List<SystemInfo> relevants = new ArrayList<SystemInfo>();
+        final List<SystemInfo> relevants = new ArrayList<>();
         final SystemManager systemManager = sheet.getSystemManager();
 
         for (Glyph glyph : glyphs) {
@@ -197,26 +197,6 @@ public class SymbolsFilter
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean displaySymbols = new Constant.Boolean(false,
-                                                                             "Should we display the symbols image?");
-
-        private final Constant.Boolean keepSymbolsBuffer = new Constant.Boolean(false,
-                                                                                "Should we store symbols image on disk?");
-
-        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(0.5,
-                                                                              "Margin erased above & below staff header area");
-
-        private final Constant.Integer minWordLength = new Constant.Integer("letter count", 4,
-                                                                            "Minimum number of chars in a sentence word");
-    }
-
     //--------//
     // MyView //
     //--------//
@@ -230,12 +210,12 @@ public class SymbolsFilter
         // All optional glyphs. */
         private final Set<Glyph> optionals;
 
-        public MyView (BufferedImage image,
-                       Map<SystemInfo, List<Glyph>> optionalMap)
+        MyView (BufferedImage image,
+                Map<SystemInfo, List<Glyph>> optionalMap)
         {
             super(image);
 
-            optionals = new LinkedHashSet<Glyph>();
+            optionals = new LinkedHashSet<>();
 
             for (List<Glyph> glyphs : optionalMap.values()) {
                 optionals.addAll(glyphs);
@@ -265,6 +245,31 @@ public class SymbolsFilter
             // Global sheet renderers
             sheet.renderItems(g);
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean displaySymbols = new Constant.Boolean(
+                false,
+                "Should we display the symbols image?");
+
+        private final Constant.Boolean keepSymbolsBuffer = new Constant.Boolean(
+                false,
+                "Should we store symbols image on disk?");
+
+        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
+                0.5,
+                "Margin erased above & below staff header area");
+
+        private final Constant.Integer minWordLength = new Constant.Integer(
+                "letter count",
+                4,
+                "Minimum number of chars in a sentence word");
     }
 
     //----------------//
@@ -302,9 +307,9 @@ public class SymbolsFilter
          * @param g      graphics context on buffer
          * @param sheet  related sheet
          */
-        public SymbolsCleaner (ByteProcessor buffer,
-                               Graphics2D g,
-                               Sheet sheet)
+        SymbolsCleaner (ByteProcessor buffer,
+                        Graphics2D g,
+                        Sheet sheet)
         {
             super(buffer, g, sheet);
         }
@@ -331,8 +336,8 @@ public class SymbolsFilter
                 eraseStavesHeader(system, constants.staffVerticalMargin);
 
                 // Partition inters into strongs and weaks
-                final List<Inter> strongs = new ArrayList<Inter>();
-                final List<Inter> weaks = new ArrayList<Inter>();
+                final List<Inter> strongs = new ArrayList<>();
+                final List<Inter> weaks = new ArrayList<>();
                 systemWeaks = null;
 
                 for (Inter inter : sig.vertexSet()) {
@@ -374,7 +379,7 @@ public class SymbolsFilter
                 }
 
                 // Save the weaks apart and erase them
-                systemWeaks = new ArrayList<Glyph>();
+                systemWeaks = new ArrayList<>();
                 weaksMap.put(system, systemWeaks);
 
                 for (Inter inter : weaks) {
@@ -468,8 +473,10 @@ public class SymbolsFilter
             // Save the glyph?
             if (systemWeaks != null) {
                 // The glyph may be made of several parts, so it's safer to restart from pixels
-                List<Glyph> glyphs = GlyphFactory.buildGlyphs(glyph.getRunTable(), glyph
-                                                              .getTopLeft(), GlyphGroup.SYMBOL);
+                List<Glyph> glyphs = GlyphFactory.buildGlyphs(
+                        glyph.getRunTable(),
+                        glyph.getTopLeft(),
+                        GlyphGroup.SYMBOL);
                 systemWeaks.addAll(glyphs);
             }
         }
@@ -498,8 +505,10 @@ public class SymbolsFilter
             RunTable runTable = factory.createTable(buf);
 
             // Glyphs
-            List<Glyph> glyphs = GlyphFactory.buildGlyphs(runTable, new Point(0, 0),
-                                                          GlyphGroup.SYMBOL);
+            List<Glyph> glyphs = GlyphFactory.buildGlyphs(
+                    runTable,
+                    new Point(0, 0),
+                    GlyphGroup.SYMBOL);
 
             systemWeaks.addAll(glyphs);
         }

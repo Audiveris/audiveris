@@ -90,39 +90,44 @@ public class ValidationPanel
     private final ValidateAction validateAction = new ValidateAction();
 
     /** Display percentage of samples correctly recognized. */
-    private final LLabel accuracyValue = new LLabel("Accuracy:",
-                                                    "Percentage of samples correctly recognized");
+    private final LLabel accuracyValue = new LLabel(
+            "Accuracy:",
+            "Percentage of samples correctly recognized");
 
     /** Display number of samples correctly recognized. */
-    private final LLabel positiveValue = new LLabel("True Positives:",
-                                                    "Number of samples correctly recognized");
+    private final LLabel positiveValue = new LLabel(
+            "True Positives:",
+            "Number of samples correctly recognized");
 
     /** Display number of samples mistaken with some other shape. */
-    private final LLabel falsePositiveValue = new LLabel("False Positives:",
-                                                         "Number of samples incorrectly recognized");
+    private final LLabel falsePositiveValue = new LLabel(
+            "False Positives:",
+            "Number of samples incorrectly recognized");
 
     /** Collection of samples leading to false positives. */
-    private final List<Sample> falsePositives = new ArrayList<Sample>();
+    private final List<Sample> falsePositives = new ArrayList<>();
 
     /** User action to investigate on false positives. */
     private final FalsePositiveAction falsePositiveAction = new FalsePositiveAction();
 
     /** Display number of samples weakly recognized. */
-    private final LLabel weakPositiveValue = new LLabel("Weak Positives:",
-                                                        "Number of samples weakly recognized");
+    private final LLabel weakPositiveValue = new LLabel(
+            "Weak Positives:",
+            "Number of samples weakly recognized");
 
     /** Collection of samples not recognized (false negatives). */
-    private final List<Sample> weakPositives = new ArrayList<Sample>();
+    private final List<Sample> weakPositives = new ArrayList<>();
 
     /** User action to investigate on weak positives. */
     private final WeakPositiveAction weakPositiveAction = new WeakPositiveAction();
 
     /** Display number of samples weakly negative. */
-    private final LLabel weakNegativeValue = new LLabel("Weak Negatives:",
-                                                        "Number of samples weakly negative");
+    private final LLabel weakNegativeValue = new LLabel(
+            "Weak Negatives:",
+            "Number of samples weakly negative");
 
     /** Collection of samples weakly negatives. */
-    private final List<Sample> weakNegatives = new ArrayList<Sample>();
+    private final List<Sample> weakNegatives = new ArrayList<>();
 
     /** User action to investigate on weak negatives. */
     private final WeakNegativeAction weakNegativeAction = new WeakNegativeAction();
@@ -199,7 +204,12 @@ public class ValidationPanel
         CellConstraints cst = new CellConstraints();
 
         /** Common JGoogies builder for this class and its subclass if any */
-        FormLayout layout = Panel.makeFormLayout(5, 3, "", Trainer.LABEL_WIDTH, Trainer.FIELD_WIDTH);
+        FormLayout layout = Panel.makeFormLayout(
+                5,
+                3,
+                "",
+                Trainer.LABEL_WIDTH,
+                Trainer.FIELD_WIDTH);
         PanelBuilder builder = new PanelBuilder(layout, component);
 
         // Validation title & progress bar
@@ -274,8 +284,8 @@ public class ValidationPanel
         int positives = 0;
 
         // Validation is performed on TRAIN or TEST set
-        final List<Sample> samples = isTrainSet ? sampleSource.getTrainSamples() : sampleSource
-                .getTestSamples();
+        final List<Sample> samples = isTrainSet ? sampleSource.getTrainSamples()
+                : sampleSource.getTestSamples();
 
         progressBar.setValue(0);
         progressBar.setMaximum(samples.size());
@@ -283,8 +293,12 @@ public class ValidationPanel
         int index = 0;
 
         for (Sample sample : samples) {
-            Evaluation[] evals = task.classifier.evaluate(sample, sample.getInterline(), 1, 0,
-                                                          Classifier.NO_CONDITIONS);
+            Evaluation[] evals = task.classifier.evaluate(
+                    sample,
+                    sample.getInterline(),
+                    1,
+                    0,
+                    Classifier.NO_CONDITIONS);
             Evaluation eval = evals[0];
 
             if (eval.shape.getPhysicalShape() == sample.getShape().getPhysicalShape()) {
@@ -309,8 +323,12 @@ public class ValidationPanel
         double accuracy = allPositives / (double) total;
         DecimalFormat df = new DecimalFormat("#.####");
         String accuStr = df.format(accuracy);
-        logger.info("{} accuracy: {}  {}/{}", task.classifier.getName(), accuStr, allPositives,
-                    total);
+        logger.info(
+                "{} accuracy: {}  {}/{}",
+                task.classifier.getName(),
+                accuStr,
+                allPositives,
+                total);
         accuracyValue.setText(accuStr);
         positiveValue.setText(Integer.toString(positives));
         weakPositiveValue.setText(Integer.toString(weakPositives.size()));
@@ -349,7 +367,7 @@ public class ValidationPanel
             extends AbstractAction
     {
 
-        public FalsePositiveAction ()
+        FalsePositiveAction ()
         {
             super("View");
         }
@@ -360,6 +378,13 @@ public class ValidationPanel
             SampleBrowser.getInstance().displayAll(falsePositives);
             SampleBrowser.getInstance().setVisible();
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     //----------------//
@@ -369,7 +394,7 @@ public class ValidationPanel
             extends AbstractAction
     {
 
-        public ValidateAction ()
+        ValidateAction ()
         {
             super("Test");
         }
@@ -377,8 +402,7 @@ public class ValidationPanel
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            executor.execute(
-                    new Runnable()
+            executor.execute(new Runnable()
             {
                 @Override
                 public void run ()
@@ -403,6 +427,13 @@ public class ValidationPanel
                 }
             });
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     //--------------------//
@@ -412,7 +443,7 @@ public class ValidationPanel
             extends AbstractAction
     {
 
-        public WeakNegativeAction ()
+        WeakNegativeAction ()
         {
             super("View");
         }
@@ -423,6 +454,13 @@ public class ValidationPanel
             SampleBrowser.getInstance().displayAll(weakNegatives);
             SampleBrowser.getInstance().setVisible();
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     //--------------------//
@@ -432,7 +470,7 @@ public class ValidationPanel
             extends AbstractAction
     {
 
-        public WeakPositiveAction ()
+        WeakPositiveAction ()
         {
             super("View");
         }
@@ -442,6 +480,13 @@ public class ValidationPanel
         {
             SampleBrowser.getInstance().displayAll(weakPositives);
             SampleBrowser.getInstance().setVisible();
+        }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 }

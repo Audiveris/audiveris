@@ -50,7 +50,7 @@ public class TargetSystem
     public final double right;
 
     /** Sequence of staves */
-    public final List<TargetStaff> staves = new ArrayList<TargetStaff>();
+    public final List<TargetStaff> staves = new ArrayList<>();
 
     /**
      * Creates a new TargetSystem object.

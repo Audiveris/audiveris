@@ -93,56 +93,6 @@ public class SlotsBuilder
 
     private static final Logger logger = LoggerFactory.getLogger(SlotsBuilder.class);
 
-    //-----//
-    // Rel //
-    //-----//
-    /**
-     * Describes the oriented relationship between two chords of the measure stack.
-     */
-    protected static enum Rel
-    {
-        /**
-         * Strongly before.
-         * Stem-located before in the same beam group.
-         * Abscissa-located before the vertically overlapping chord.
-         * Important abscissa difference in different staves.
-         */
-        BEFORE("B"),
-        //
-        /** Strongly after.
-         * Stem-located after in the same beam group.
-         * Abscissa-located after the vertically overlapping chord.
-         * Important abscissa difference in different staves.
-         */
-        AFTER("A"),
-        //
-        /**
-         * Strongly equal.
-         * Identical thanks to an originating glyph in common.
-         * Adjacency detected in same staff.
-         */
-        EQUAL("="),
-        //
-        /**
-         * Weakly close.
-         * No important difference, use other separation criteria.
-         */
-        CLOSE("?");
-
-        private final String mnemo;
-
-        Rel (String mnemo)
-        {
-            this.mnemo = mnemo;
-        }
-
-        @Override
-        public String toString ()
-        {
-            return mnemo;
-        }
-    }
-
     /** The dedicated measure stack. */
     private final MeasureStack stack;
 
@@ -153,11 +103,11 @@ public class SlotsBuilder
     private final Parameters params;
 
     /** Inter-chord relationships for the current measure stack. */
-    private SimpleDirectedGraph<AbstractChordInter, Edge> graph
-            = new SimpleDirectedGraph<AbstractChordInter, Edge>(Edge.class);
+    private SimpleDirectedGraph<AbstractChordInter, Edge> graph = new SimpleDirectedGraph<>(
+            Edge.class);
 
     /** Current earliest term for each staff in stack. */
-    private final Map<Staff, Rational> stackTerms = new LinkedHashMap<Staff, Rational>();
+    private final Map<Staff, Rational> stackTerms = new LinkedHashMap<>();
 
     /** Comparator based on inter-chord relationships, then on timeOffset when known. */
     private final Comparator<AbstractChordInter> byRel = new Comparator<AbstractChordInter>()
@@ -325,8 +275,7 @@ public class SlotsBuilder
     private void buildRelationships ()
     {
         // Sort measure standard chords by abscissa
-        List<AbstractChordInter> stdChords = new ArrayList<AbstractChordInter>(stack
-                .getStandardChords());
+        List<AbstractChordInter> stdChords = new ArrayList<>(stack.getStandardChords());
         Collections.sort(stdChords, Inters.byAbscissa);
 
         // Populate graph with chords
@@ -364,8 +313,7 @@ public class SlotsBuilder
 
         // The 'actives' collection gathers the chords that are not terminated at the
         // time slot being considered. Initially, it contains just the whole chords.
-        List<AbstractChordInter> actives = new ArrayList<AbstractChordInter>(stack
-                .getWholeRestChords());
+        List<AbstractChordInter> actives = new ArrayList<>(stack.getWholeRestChords());
         Collections.sort(actives, Inters.byAbscissa);
 
         // Create voices for whole rest chords
@@ -398,8 +346,8 @@ public class SlotsBuilder
 
             // Which chords end here, and is their voice available or not for the slot?
             // (if a beam group continues, its voice remains locked)
-            List<AbstractChordInter> freeEndings = new ArrayList<AbstractChordInter>();
-            List<AbstractChordInter> endings = new ArrayList<AbstractChordInter>();
+            List<AbstractChordInter> freeEndings = new ArrayList<>();
+            List<AbstractChordInter> endings = new ArrayList<>();
             detectEndings(actives, term, endings, freeEndings);
 
             // Do we have pending chords that start at this slot?
@@ -464,11 +412,6 @@ public class SlotsBuilder
 
         Slot prevSlot = stack.getSlots().get(slot.getId() - 2);
         int dx = slot.getXOffset() - prevSlot.getXOffset();
-
-        if (dx >= params.minInterSlotDx) {
-            return true;
-        }
-
         //
         //            // We are too close, find out the guilty chord
         //            logger.debug("Too close slot {}", slot);
@@ -496,7 +439,8 @@ public class SlotsBuilder
         //                }
         //            }
         //
-        return false;
+
+        return dx >= params.minInterSlotDx;
     }
 
     //----------------------//
@@ -510,7 +454,7 @@ public class SlotsBuilder
     private boolean checkStavesAreFilled ()
     {
         // Use a temporary map: (staff -> chords)
-        Map<Staff, List<AbstractChordInter>> map = new HashMap<Staff, List<AbstractChordInter>>();
+        Map<Staff, List<AbstractChordInter>> map = new HashMap<>();
 
         for (Staff staff : stack.getSystem().getStaves()) {
             map.put(staff, new ArrayList<AbstractChordInter>());
@@ -723,7 +667,7 @@ public class SlotsBuilder
      */
     private Set<AbstractChordInter> getClosure (AbstractChordInter chord)
     {
-        Set<AbstractChordInter> closes = new LinkedHashSet<AbstractChordInter>();
+        Set<AbstractChordInter> closes = new LinkedHashSet<>();
         closes.add(chord);
 
         for (AbstractChordInter ch : stack.getStandardChords()) {
@@ -748,7 +692,7 @@ public class SlotsBuilder
      */
     private List<AbstractChordInter> getPendingChords ()
     {
-        List<AbstractChordInter> pendings = new ArrayList<AbstractChordInter>();
+        List<AbstractChordInter> pendings = new ArrayList<>();
 
         for (AbstractChordInter chord : stack.getStandardChords()) {
             if (!chord.isWholeRest()) {
@@ -844,14 +788,13 @@ public class SlotsBuilder
     {
         for (Measure measure : stack.getMeasures()) {
             for (BeamGroup group : measure.getBeamGroups()) {
-                Set<AbstractChordInter> chordSet = new LinkedHashSet<AbstractChordInter>();
+                Set<AbstractChordInter> chordSet = new LinkedHashSet<>();
 
                 for (AbstractBeamInter beam : group.getBeams()) {
                     chordSet.addAll(beam.getChords());
                 }
 
-                final List<AbstractChordInter> groupChords = new ArrayList<AbstractChordInter>(
-                        chordSet);
+                final List<AbstractChordInter> groupChords = new ArrayList<>(chordSet);
                 Collections.sort(groupChords, Inters.byAbscissa);
 
                 for (int i = 0; i < groupChords.size(); i++) {
@@ -876,7 +819,7 @@ public class SlotsBuilder
      */
     private void inspectLocations (List<AbstractChordInter> stdChords)
     {
-        final List<ChordPair> adjacencies = new ArrayList<ChordPair>();
+        final List<ChordPair> adjacencies = new ArrayList<>();
 
         for (int i = 0; i < stdChords.size(); i++) {
             AbstractChordInter ch1 = stdChords.get(i);
@@ -965,7 +908,7 @@ public class SlotsBuilder
      */
     private void inspectMirrors ()
     {
-        final List<HeadChordInter> headChords = new ArrayList<HeadChordInter>(stack.getHeadChords());
+        final List<HeadChordInter> headChords = new ArrayList<>(stack.getHeadChords());
 
         for (int i = 0; i < headChords.size(); i++) {
             HeadChordInter ch1 = headChords.get(i);
@@ -1003,7 +946,7 @@ public class SlotsBuilder
     {
         final SIGraph sig = stack.getSystem().getSig();
 
-        final List<HeadChordInter> headChords = new ArrayList<HeadChordInter>(stack.getHeadChords());
+        final List<HeadChordInter> headChords = new ArrayList<>(stack.getHeadChords());
 
         for (int i = 0; i < headChords.size(); i++) {
             HeadChordInter ch1 = headChords.get(i);
@@ -1019,7 +962,7 @@ public class SlotsBuilder
                 continue;
             }
 
-            Set<Inter> alignedStems = new LinkedHashSet<Inter>();
+            Set<Inter> alignedStems = new LinkedHashSet<>();
 
             for (Relation rel : aligns) {
                 Inter inter = sig.getOppositeInter(stem1, rel);
@@ -1095,7 +1038,7 @@ public class SlotsBuilder
     {
         dump("pendings", pendings);
 
-        List<AbstractChordInter> incomings = new ArrayList<AbstractChordInter>();
+        List<AbstractChordInter> incomings = new ArrayList<>();
         AbstractChordInter firstChord = pendings.get(0);
 
         PendingLoop:
@@ -1156,6 +1099,57 @@ public class SlotsBuilder
         }
     }
 
+    //-----//
+    // Rel //
+    //-----//
+    /**
+     * Describes the oriented relationship between two chords of the measure stack.
+     */
+    protected static enum Rel
+    {
+        /**
+         * Strongly before.
+         * Stem-located before in the same beam group.
+         * Abscissa-located before the vertically overlapping chord.
+         * Important abscissa difference in different staves.
+         */
+        BEFORE("B"),
+        //
+        /**
+         * Strongly after.
+         * Stem-located after in the same beam group.
+         * Abscissa-located after the vertically overlapping chord.
+         * Important abscissa difference in different staves.
+         */
+        AFTER("A"),
+        //
+        /**
+         * Strongly equal.
+         * Identical thanks to an originating glyph in common.
+         * Adjacency detected in same staff.
+         */
+        EQUAL("="),
+        //
+        /**
+         * Weakly close.
+         * No important difference, use other separation criteria.
+         */
+        CLOSE("?");
+
+        private final String mnemo;
+
+        Rel (String mnemo)
+        {
+            this.mnemo = mnemo;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return mnemo;
+        }
+    }
+
     //------//
     // Edge //
     //------//
@@ -1167,7 +1161,10 @@ public class SlotsBuilder
 
         Rel rel; // Relationship carried by the concrete edge
 
-        public Edge (Rel rel)
+        /**
+         * @param rel
+         */
+        Edge (Rel rel)
         {
             this.rel = rel;
         }
@@ -1176,22 +1173,25 @@ public class SlotsBuilder
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction maxSlotDx = new Scale.Fraction(1.05,
-                                                                    "Maximum horizontal delta between a slot and a chord");
+        private final Scale.Fraction maxSlotDx = new Scale.Fraction(
+                1.05,
+                "Maximum horizontal delta between a slot and a chord");
 
-        private final Scale.Fraction minInterSlotDx = new Scale.Fraction(0.5,
-                                                                         "Minimum horizontal delta between two slots");
+        private final Scale.Fraction minInterSlotDx = new Scale.Fraction(
+                0.5,
+                "Minimum horizontal delta between two slots");
 
         private final Scale.Fraction maxAdjacencyXGap = new Scale.Fraction(
                 0.3, //0.65,
                 "Maximum horizontal gap between adjacent chords bounds");
 
-        private final Scale.Fraction maxVerticalOverlap = new Scale.Fraction(0.25,
-                                                                             "Maximum vertical overlap tolerated");
+        private final Scale.Fraction maxVerticalOverlap = new Scale.Fraction(
+                0.25,
+                "Maximum vertical overlap tolerated");
     }
 
     //-----------//
@@ -1207,13 +1207,17 @@ public class SlotsBuilder
 
         final AbstractChordInter two;
 
-        public ChordPair (AbstractChordInter one,
-                          AbstractChordInter two)
+        ChordPair (AbstractChordInter one,
+                   AbstractChordInter two)
         {
             this.one = one;
             this.two = two;
-            logger.debug("Adjacent {}@{} & {}@{}", one, one.getHeadLocation(), two, two
-                         .getHeadLocation());
+            logger.debug(
+                    "Adjacent {}@{} & {}@{}",
+                    one,
+                    one.getHeadLocation(),
+                    two,
+                    two.getHeadLocation());
         }
 
         @Override
@@ -1237,7 +1241,7 @@ public class SlotsBuilder
 
         private final int maxVerticalOverlap;
 
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             maxSlotDx = scale.toPixels(constants.maxSlotDx);
             minInterSlotDx = scale.toPixels(constants.minInterSlotDx);

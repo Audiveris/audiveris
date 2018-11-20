@@ -79,7 +79,8 @@ import java.util.Set;
  * may require symbols nearby and thus can take place only when all other symbols have been built.
  * Hence implementing methods are named "instant*()" or "late*()" respectively.
  * <p>
- * A dot can be:<ul>
+ * A dot can be:
+ * <ul>
  * <li>a part of a repeat sign (upper or lower dot),
  * <li>a staccato sign,
  * <li>an augmentation dot (first or second dot), [TODO: Handle augmentation dot for mirrored notes]
@@ -109,7 +110,7 @@ public class DotFactory
     private final Scale scale;
 
     /** Dot candidates. Sorted top down, then left to right. */
-    private final List<Dot> dots = new ArrayList<Dot>();
+    private final List<Dot> dots = new ArrayList<>();
 
     /**
      * Creates a new DotFactory object.
@@ -245,15 +246,19 @@ public class DotFactory
 
             if (distance >= constants.minDyFromLine.getValue()) {
                 if (glyph.isVip()) {
-                    logger.info("VIP glyph#{} dot distance:{} OK", glyph.getId(), String.format(
-                                "%.2f", distance));
+                    logger.info(
+                            "VIP glyph#{} dot distance:{} OK",
+                            glyph.getId(),
+                            String.format("%.2f", distance));
                 }
 
                 return true;
             } else {
                 if (glyph.isVip()) {
-                    logger.info("VIP glyph#{} dot distance:{} too close", glyph.getId(), String
-                                .format("%.2f", distance));
+                    logger.info(
+                            "VIP glyph#{} dot distance:{} too close",
+                            glyph.getId(),
+                            String.format("%.2f", distance));
                 }
 
                 return false;
@@ -296,7 +301,7 @@ public class DotFactory
     {
         for (MeasureStack stack : system.getStacks()) {
             for (HorizontalSide side : HorizontalSide.values()) {
-                final List<RepeatDotInter> repeatDots = new ArrayList<RepeatDotInter>();
+                final List<RepeatDotInter> repeatDots = new ArrayList<>();
                 int virtualDotCount = 0; // Virtual dots inferred from StaffBarline shape
 
                 for (Measure measure : stack.getMeasures()) {
@@ -321,7 +326,9 @@ public class DotFactory
                             }
 
                             for (Relation rel : dRels) {
-                                RepeatDotInter dot = (RepeatDotInter) sig.getOppositeInter(bar, rel);
+                                RepeatDotInter dot = (RepeatDotInter) sig.getOppositeInter(
+                                        bar,
+                                        rel);
                                 repeatDots.add(dot);
                                 logger.debug("Repeat dot for {}", dot);
                             }
@@ -330,13 +337,13 @@ public class DotFactory
                             Shape shape = staffBarline.getShape();
 
                             if (side == LEFT) {
-                                if ((shape == Shape.LEFT_REPEAT_SIGN) || (shape
-                                                                                  == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
+                                if ((shape == Shape.LEFT_REPEAT_SIGN)
+                                            || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
                                     virtualDotCount += 2;
                                 }
                             } else {
-                                if ((shape == Shape.RIGHT_REPEAT_SIGN) || (shape
-                                                                                   == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
+                                if ((shape == Shape.RIGHT_REPEAT_SIGN)
+                                            || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
                                     virtualDotCount += 2;
                                 }
                             }
@@ -351,7 +358,7 @@ public class DotFactory
                 if (dotCount >= staffCount) {
                     // It's a repeat side, delete inters that conflict with repeat dots
                     // This works for real dots only, not for virtual ones
-                    List<Inter> toDelete = new ArrayList<Inter>();
+                    List<Inter> toDelete = new ArrayList<>();
 
                     for (RepeatDotInter dot : repeatDots) {
                         Rectangle dotBox = dot.getBounds();
@@ -470,8 +477,10 @@ public class DotFactory
         final Rectangle luBox = new Rectangle(dotPt);
         luBox.grow(maxDx, maxDy);
 
-        final List<Inter> bars = Inters.intersectedInters(interFactory.getSystemBars(),
-                                                          GeoOrder.BY_ABSCISSA, luBox);
+        final List<Inter> bars = Inters.intersectedInters(
+                interFactory.getSystemBars(),
+                GeoOrder.BY_ABSCISSA,
+                luBox);
 
         if (bars.isEmpty()) {
             return;
@@ -547,9 +556,12 @@ public class DotFactory
         Glyph glyph = dot.getGlyph();
 
         if (glyph != null) {
-            ArticulationInter.createValidAdded(glyph, Shape.STACCATO, Grades.intrinsicRatio * dot
-                                               .getGrade(), system, interFactory
-                                                       .getSystemHeadChords());
+            ArticulationInter.createValidAdded(
+                    glyph,
+                    Shape.STACCATO,
+                    Grades.intrinsicRatio * dot.getGrade(),
+                    system,
+                    interFactory.getSystemHeadChords());
 
             //        } else {
             //            ArticulationInter.createValidAdded(
@@ -700,7 +712,7 @@ public class DotFactory
         Glyph glyph = dot.getGlyph();
         AugmentationDotInter aug = new AugmentationDotInter(glyph, grade);
 
-        List<Link> links = new ArrayList<Link>();
+        List<Link> links = new ArrayList<>();
         Link headLink = aug.lookupHeadLink(interFactory.getSystemHeadChords(), system);
 
         if (headLink != null) {
@@ -721,9 +733,11 @@ public class DotFactory
                     Inter mirror = link.partner.getMirror();
 
                     if (mirror != null) {
-                        logger
-                                .debug("Edge from {} to mirrored {} and {}", aug, link.partner,
-                                       mirror);
+                        logger.debug(
+                                "Edge from {} to mirrored {} and {}",
+                                aug,
+                                link.partner,
+                                mirror);
                         sig.addEdge(aug, mirror, link.relation.duplicate());
                     }
                 }
@@ -749,12 +763,13 @@ public class DotFactory
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction minDyFromLine = new Scale.Fraction(0.3,
-                                                                        "Minimum vertical distance between dot center and staff line/ledger");
+        private final Scale.Fraction minDyFromLine = new Scale.Fraction(
+                0.3,
+                "Minimum vertical distance between dot center and staff line/ledger");
     }
 
     //-----//
@@ -823,8 +838,8 @@ public class DotFactory
 
         private final Evaluation eval; // Evaluation result
 
-        public GlyphDot (Evaluation eval,
-                         Glyph glyph)
+        GlyphDot (Evaluation eval,
+                  Glyph glyph)
         {
             this.eval = eval;
             this.glyph = glyph;

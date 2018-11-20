@@ -87,6 +87,16 @@ public class Run
         return length;
     }
 
+    /**
+     * (package private) method to set length value.
+     *
+     * @param length the length to set
+     */
+    void setLength (int length)
+    {
+        this.length = length;
+    }
+
     //----------//
     // getStart //
     //----------//
@@ -99,6 +109,16 @@ public class Run
     public final int getStart ()
     {
         return start;
+    }
+
+    /**
+     * (package private) method to set start value.
+     *
+     * @param start the start to set
+     */
+    void setStart (int start)
+    {
+        this.start = start;
     }
 
     //---------//
@@ -173,23 +193,4 @@ public class Run
         return sb.toString();
     }
 
-    /**
-     * (package private) method to set length value.
-     *
-     * @param length the length to set
-     */
-    void setLength (int length)
-    {
-        this.length = length;
-    }
-
-    /**
-     * (package private) method to set start value.
-     *
-     * @param start the start to set
-     */
-    void setStart (int start)
-    {
-        this.start = start;
-    }
 }

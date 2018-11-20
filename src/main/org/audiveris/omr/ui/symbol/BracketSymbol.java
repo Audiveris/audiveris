@@ -81,8 +81,10 @@ public class BracketSymbol
         Rectangle2D upperRect = p.upperLayout.getBounds();
         Rectangle2D trunkRect = p.layout.getBounds();
         Rectangle2D lowerRect = p.lowerLayout.getBounds();
-        p.rect = new Rectangle((int) Math.ceil(upperRect.getWidth()), (int) Math.floor(upperRect
-                               .getHeight() + trunkRect.getHeight() + lowerRect.getHeight()));
+        p.rect = new Rectangle(
+                (int) Math.ceil(upperRect.getWidth()),
+                (int) Math.floor(
+                        upperRect.getHeight() + trunkRect.getHeight() + lowerRect.getHeight()));
 
         return p;
     }

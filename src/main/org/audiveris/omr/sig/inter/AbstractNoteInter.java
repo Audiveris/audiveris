@@ -57,25 +57,6 @@ public abstract class AbstractNoteInter
     /** All shape-based intrinsic durations. */
     private static final Map<Shape, Rational> shapeDurations = buildShapeDurations();
 
-    /** Names of the various note steps. */
-    public static enum Step
-    {
-        /** La */
-        A,
-        /** Si */
-        B,
-        /** Do */
-        C,
-        /** Ré */
-        D,
-        /** Mi */
-        E,
-        /** Fa */
-        F,
-        /** Sol */
-        G;
-    }
-
     /**
      * Creates a new AbstractNoteInter object.
      *
@@ -126,6 +107,11 @@ public abstract class AbstractNoteInter
     //----------//
     // getChord //
     //----------//
+    /**
+     * Report the containing chord, if any.
+     *
+     * @return containing chord or null
+     */
     public AbstractChordInter getChord ()
     {
         return (AbstractChordInter) getEnsemble();
@@ -169,21 +155,6 @@ public abstract class AbstractNoteInter
         }
 
         return null;
-    }
-
-    //------------------//
-    // getShapeDuration //
-    //------------------//
-    /**
-     * Report the duration indicated by the shape of the note or rest
-     * (regardless of any beam, flag, dot or tuplet).
-     *
-     * @param shape the shape of the note / rest
-     * @return the corresponding intrinsic duration
-     */
-    public static Rational getShapeDuration (Shape shape)
-    {
-        return shapeDurations.get(shape);
     }
 
     //-------//
@@ -275,6 +246,21 @@ public abstract class AbstractNoteInter
         super.remove(extensive);
     }
 
+    //------------------//
+    // getShapeDuration //
+    //------------------//
+    /**
+     * Report the duration indicated by the shape of the note or rest
+     * (regardless of any beam, flag, dot or tuplet).
+     *
+     * @param shape the shape of the note / rest
+     * @return the corresponding intrinsic duration
+     */
+    public static Rational getShapeDuration (Shape shape)
+    {
+        return shapeDurations.get(shape);
+    }
+
     //---------------------//
     // buildShapeDurations //
     //---------------------//
@@ -285,7 +271,7 @@ public abstract class AbstractNoteInter
      */
     private static EnumMap<Shape, Rational> buildShapeDurations ()
     {
-        EnumMap<Shape, Rational> map = new EnumMap<Shape, Rational>(Shape.class);
+        EnumMap<Shape, Rational> map = new EnumMap<>(Shape.class);
 
         map.put(Shape.LONG_REST, new Rational(4, 1)); // 4 measures
 
@@ -314,5 +300,24 @@ public abstract class AbstractNoteInter
         map.put(Shape.ONE_128TH_REST, new Rational(1, 128));
 
         return map;
+    }
+
+    /** Names of the various note steps. */
+    public static enum Step
+    {
+        /** La */
+        A,
+        /** Si */
+        B,
+        /** Do */
+        C,
+        /** Ré */
+        D,
+        /** Mi */
+        E,
+        /** Fa */
+        F,
+        /** Sol */
+        G;
     }
 }

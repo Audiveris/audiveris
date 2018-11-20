@@ -67,23 +67,23 @@ public class Zoom
 
     private static final Logger logger = LoggerFactory.getLogger(Zoom.class);
 
-    // To assign a unique Id
+    /** To assign a unique Id. */
     private static AtomicInteger globalId = new AtomicInteger(0);
 
-    /** Unique event, created lazily */
+    /** Unique event, created lazily. */
     protected ChangeEvent changeEvent = null;
 
-    /** Potential logarithmic slider to drive this zoom */
+    /** Potential logarithmic slider to drive this zoom. */
     protected LogSlider slider;
 
-    /** Collection of event listeners */
-    protected Set<ChangeListener> listeners = new LinkedHashSet<ChangeListener>();
+    /** Collection of event listeners. */
+    protected Set<ChangeListener> listeners = new LinkedHashSet<>();
 
-    /** Current ratio value */
+    /** Current ratio value. */
     protected double ratio;
 
-    // Unique Id (to ease debugging)
-    private int id = globalId.incrementAndGet();
+    /** Unique Id (to ease debugging). */
+    private final int id = globalId.incrementAndGet();
 
     /**
      * Create a zoom entity, with a default ratio value of 1.
@@ -166,6 +166,29 @@ public class Zoom
         return ratio;
     }
 
+    //----------//
+    // setRatio //
+    //----------//
+    /**
+     * Change the display zoom ratio. Nota, if the zoom is coupled with a
+     * slider, this slider has the final word concerning the precise zoom
+     * value, since the slider uses integer (or fractional) values.
+     *
+     * @param ratio the new ratio
+     */
+    public final void setRatio (double ratio)
+    {
+        logger.debug("setRatio ratio={}", ratio);
+
+        // Propagate to slider (useful to keep slider in sync when ratio is
+        // set programmatically)
+        if (slider != null) {
+            slider.setDoubleValue(ratio);
+        } else {
+            forceRatio(ratio);
+        }
+    }
+
     //----------------------//
     // removeChangeListener //
     //----------------------//
@@ -234,8 +257,11 @@ public class Zoom
      */
     public void scale (Line2D line)
     {
-        line.setLine(scaled(line.getX1()), scaled(line.getY1()), scaled(line.getX2()), scaled(line
-                     .getY2()));
+        line.setLine(
+                scaled(line.getX1()),
+                scaled(line.getY1()),
+                scaled(line.getX2()),
+                scaled(line.getY2()));
     }
 
     //--------//
@@ -245,7 +271,6 @@ public class Zoom
      * Coordinate computation, Source &rarr; Display
      *
      * @param val a source value
-     *
      * @return the (scaled) display value
      */
     public int scaled (double val)
@@ -260,7 +285,6 @@ public class Zoom
      * Coordinate computation, Source &rarr; Display
      *
      * @param pt source point
-     *
      * @return the corresponding (scaled) point
      */
     public Point scaled (Point pt)
@@ -278,7 +302,6 @@ public class Zoom
      * Coordinate computation, Source &rarr; Display
      *
      * @param dim source dimension
-     *
      * @return the corresponding (scaled) dimension
      */
     public Dimension scaled (Dimension dim)
@@ -296,7 +319,6 @@ public class Zoom
      * Coordinate computation, Source &rarr; Display
      *
      * @param rect source rectangle
-     *
      * @return the corresponding (scaled) rectangle
      */
     public Rectangle scaled (Rectangle rect)
@@ -305,29 +327,6 @@ public class Zoom
         scale(r);
 
         return r;
-    }
-
-    //----------//
-    // setRatio //
-    //----------//
-    /**
-     * Change the display zoom ratio. Nota, if the zoom is coupled with a
-     * slider, this slider has the final word concerning the precise zoom
-     * value, since the slider uses integer (or fractional) values.
-     *
-     * @param ratio the new ratio
-     */
-    public void setRatio (double ratio)
-    {
-        logger.debug("setRatio ratio={}", ratio);
-
-        // Propagate to slider (useful to keep slider in sync when ratio is
-        // set programmatically)
-        if (slider != null) {
-            slider.setDoubleValue(ratio);
-        } else {
-            forceRatio(ratio);
-        }
     }
 
     //-----------//
@@ -339,7 +338,7 @@ public class Zoom
      *
      * @param slider the related slider UI
      */
-    public void setSlider (final LogSlider slider)
+    public final void setSlider (final LogSlider slider)
     {
         this.slider = slider;
         logger.debug("setSlider");
@@ -348,8 +347,7 @@ public class Zoom
             slider.setFocusable(false);
             slider.setDoubleValue(ratio);
 
-            slider.addChangeListener(
-                    new ChangeListener()
+            slider.addChangeListener(new ChangeListener()
             {
                 @Override
                 public void stateChanged (ChangeEvent e)
@@ -477,11 +475,12 @@ public class Zoom
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean continuousSliderReading = new Constant.Boolean(true,
-                                                                                      "Should we allow continuous reading of the zoom slider");
+        private final Constant.Boolean continuousSliderReading = new Constant.Boolean(
+                true,
+                "Should we allow continuous reading of the zoom slider");
     }
 }

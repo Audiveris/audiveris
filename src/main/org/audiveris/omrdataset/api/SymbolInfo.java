@@ -112,7 +112,7 @@ public class SymbolInfo
     public void addInnerSymbol (SymbolInfo symbol)
     {
         if (innerSymbols == null) {
-            innerSymbols = new ArrayList<SymbolInfo>();
+            innerSymbols = new ArrayList<>();
         }
 
         innerSymbols.add(symbol);

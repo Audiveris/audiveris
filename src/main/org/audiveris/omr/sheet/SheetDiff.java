@@ -67,22 +67,6 @@ public class SheetDiff
 
     private static final Logger logger = LoggerFactory.getLogger(SheetDiff.class);
 
-    public static enum DiffKind
-    {
-        /**
-         * Non recognized entities.
-         * Input data not found in output. */
-        NEGATIVES,
-        /**
-         * Recognized entities.
-         * Intersection of input and output. */
-        POSITIVES,
-        /**
-         * False recognized entities.
-         * Output data not found in input. */
-        FALSE_POSITIVES;
-    }
-
     /** The related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -93,6 +77,11 @@ public class SheetDiff
     /** Cached number of foreground pixels in input image. */
     private Integer inputCount;
 
+    /**
+     * Create a {@code SheetDiff} object.
+     *
+     * @param sheet related sheet
+     */
     public SheetDiff (Sheet sheet)
     {
         this.sheet = sheet;
@@ -113,8 +102,9 @@ public class SheetDiff
         final StopWatch watch = new StopWatch("computeDiff");
         final int width = sheet.getWidth();
         final int height = sheet.getHeight();
-        final ByteProcessor in = new GlobalFilter(sheet.getPicture().getSource(
-                Picture.SourceKey.BINARY), constants.binaryThreshold.getValue()).filteredImage();
+        final ByteProcessor in = new GlobalFilter(
+                sheet.getPicture().getSource(Picture.SourceKey.BINARY),
+                constants.binaryThreshold.getValue()).filteredImage();
 
         watch.start("count input");
         inputCount = getInputCount();
@@ -151,9 +141,11 @@ public class SheetDiff
         final int count = getForeCount(xor);
         final double ratio = (double) count / inputCount;
 
-        logger.info("Delta {}% ({} differences wrt {} input pixels)", String.format("%4.1f", 100
-                                                                                                     * ratio),
-                    count, inputCount);
+        logger.info(
+                "Delta {}% ({} differences wrt {} input pixels)",
+                String.format("%4.1f", 100 * ratio),
+                count,
+                inputCount);
 
         if (constants.printWatch.isSet()) {
             watch.print();
@@ -161,8 +153,10 @@ public class SheetDiff
 
         // Display the filtered differences
         if (OMR.gui != null) {
-            sheet.getStub().getAssembly().addViewTab(SheetTab.DIFF_TAB, new ScrollView(new MyView(
-                                                     xor)), new BoardsPane(new PixelBoard(sheet)));
+            sheet.getStub().getAssembly().addViewTab(
+                    SheetTab.DIFF_TAB,
+                    new ScrollView(new MyView(xor)),
+                    new BoardsPane(new PixelBoard(sheet)));
         }
 
         return ratio;
@@ -187,8 +181,11 @@ public class SheetDiff
 
         watch.start("inputCount");
         getInputCount();
-        logger.info("INPUT count: {} ratio: {}% (out of {} image pixels)", inputCount, String
-                    .format("%.1f", (100d * inputCount) / total), total);
+        logger.info(
+                "INPUT count: {} ratio: {}% (out of {} image pixels)",
+                inputCount,
+                String.format("%.1f", (100d * inputCount) / total),
+                total);
 
         watch.start("output");
         output = getOutput();
@@ -202,9 +199,11 @@ public class SheetDiff
             watch.start(kind.toString());
 
             int count = getCount(kind);
-            logger.info("{}% ({} wrt {} input pixels)", String.format("%15s ratio: %4.1f", kind,
-                                                                      (100d * count) / inputCount),
-                        count, inputCount);
+            logger.info(
+                    "{}% ({} wrt {} input pixels)",
+                    String.format("%15s ratio: %4.1f", kind, (100d * count) / inputCount),
+                    count,
+                    inputCount);
         }
 
         if (constants.printWatch.isSet()) {
@@ -249,8 +248,10 @@ public class SheetDiff
         final Color veryLight = new Color(222, 222, 200);
         final RunTable input = sheet.getPicture().getTable(Picture.TableKey.BINARY);
         final Point offset = new Point(0, 0);
-        final BufferedImage img = new BufferedImage(sheet.getWidth(), sheet.getHeight(),
-                                                    BufferedImage.TYPE_INT_ARGB_PRE);
+        final BufferedImage img = new BufferedImage(
+                sheet.getWidth(),
+                sheet.getHeight(),
+                BufferedImage.TYPE_INT_ARGB_PRE);
         final Graphics2D gbi = img.createGraphics();
 
         // Anti-aliasing
@@ -355,8 +356,10 @@ public class SheetDiff
     private BufferedImage getOutput ()
     {
         if (output == null) {
-            output = new BufferedImage(sheet.getWidth(), sheet.getHeight(),
-                                       BufferedImage.TYPE_BYTE_GRAY);
+            output = new BufferedImage(
+                    sheet.getWidth(),
+                    sheet.getHeight(),
+                    BufferedImage.TYPE_BYTE_GRAY);
 
             Graphics2D gbi = output.createGraphics();
             gbi.setColor(Color.WHITE);
@@ -379,20 +382,6 @@ public class SheetDiff
         return output;
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean printWatch = new Constant.Boolean(false,
-                                                                         "Should we print out the stop watch?");
-
-        private final Constant.Integer binaryThreshold = new Constant.Integer("gray level", 127,
-                                                                              "Global threshold to binarize delta results");
-    }
-
     //--------//
     // MyView //
     //--------//
@@ -401,7 +390,7 @@ public class SheetDiff
             implements PropertyChangeListener
     {
 
-        public MyView (ByteProcessor filtered)
+        MyView (ByteProcessor filtered)
         {
             super(filtered.getBufferedImage());
             setModelSize(new Dimension(sheet.getWidth(), sheet.getHeight()));
@@ -410,8 +399,8 @@ public class SheetDiff
             setLocationService(sheet.getLocationService());
 
             // Listen to all view parameters
-            ViewParameters.getInstance().addPropertyChangeListener(new WeakPropertyChangeListener(
-                    this));
+            ViewParameters.getInstance().addPropertyChangeListener(
+                    new WeakPropertyChangeListener(this));
         }
 
         //----------------//
@@ -422,5 +411,44 @@ public class SheetDiff
         {
             repaint();
         }
+    }
+
+    /**
+     *
+     */
+    public static enum DiffKind
+    {
+        /**
+         * Non recognized entities.
+         * Input data not found in output.
+         */
+        NEGATIVES,
+        /**
+         * Recognized entities.
+         * Intersection of input and output.
+         */
+        POSITIVES,
+        /**
+         * False recognized entities.
+         * Output data not found in input.
+         */
+        FALSE_POSITIVES
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        private final Constant.Integer binaryThreshold = new Constant.Integer(
+                "gray level",
+                127,
+                "Global threshold to binarize delta results");
     }
 }

@@ -35,7 +35,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code TimeNumberInter} represents a top or bottom number in a time signature.
+ * Class {@code TimeNumberInter} represents a top or bottom number
+ * (gathering one or several digits) in a time signature.
  *
  * @author Hervé Bitteur
  */
@@ -89,6 +90,41 @@ public class TimeNumberInter
         visitor.visit(this);
     }
 
+    //---------//
+    // getSide //
+    //---------//
+    /**
+     * Report vertical position with respect to the staff time signature.
+     *
+     * @return TOP or BOTTOM
+     */
+    public VerticalSide getSide ()
+    {
+        return side;
+    }
+
+    //---------//
+    // setSide //
+    //---------//
+    /**
+     * Set the vertical position with respect to the staff time signature.
+     *
+     * @param side the side to set
+     */
+    public void setSide (VerticalSide side)
+    {
+        this.side = side;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
+    }
+
     /**
      * (Try to) create a top or bottom number for time signature.
      *
@@ -108,9 +144,8 @@ public class TimeNumberInter
         double pitch = staff.pitchPositionOf(centroid);
         double absPitch = Math.abs(pitch);
 
-        if ((absPitch < constants.minAbsolutePitch.getValue()) || (absPitch
-                                                                           > constants.maxAbsolutePitch
-                        .getValue())) {
+        if ((absPitch < constants.minAbsolutePitch.getValue())
+                    || (absPitch > constants.maxAbsolutePitch.getValue())) {
             return null;
         }
 
@@ -122,45 +157,21 @@ public class TimeNumberInter
         return inter;
     }
 
-    //---------//
-    // getSide //
-    //---------//
-    public VerticalSide getSide ()
-    {
-        return side;
-    }
-
-    //---------//
-    // setSide //
-    //---------//
-    /**
-     * @param side the side to set
-     */
-    public void setSide (VerticalSide side)
-    {
-        this.side = side;
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
-
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Double minAbsolutePitch = new Constant.Double("pitch", 1.0,
-                                                                             "Minimum absolute pitch value for a time signature number");
+        private final Constant.Double minAbsolutePitch = new Constant.Double(
+                "pitch",
+                1.0,
+                "Minimum absolute pitch value for a time signature number");
 
-        private final Constant.Double maxAbsolutePitch = new Constant.Double("pitch", 3.0,
-                                                                             "Maximum absolute pitch value for a time signature number");
+        private final Constant.Double maxAbsolutePitch = new Constant.Double(
+                "pitch",
+                3.0,
+                "Maximum absolute pitch value for a time signature number");
     }
 }

@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /**
@@ -52,12 +53,12 @@ import java.util.concurrent.Future;
  * It launches the User Interface, unless batch mode is selected.
  *
  * @see CLI
- *
  * @author Hervé Bitteur
  */
 public class Main
 {
 
+    // Don't move this statement!
     static {
         // We need class WellKnowns to be elaborated before anything else
         WellKnowns.ensureLoaded();
@@ -193,6 +194,11 @@ public class Main
     //--------------------------//
     // processSystemsInParallel //
     //--------------------------//
+    /**
+     * Tell whether we should process systems of a sheet in parallel.
+     *
+     * @return true if so
+     */
     public static boolean processSystemsInParallel ()
     {
         return constants.processSystemsInParallel.isSet();
@@ -277,15 +283,16 @@ public class Main
                 try {
                     logTasks(tasks, true);
 
-                    List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor()
-                            .invokeAll(tasks);
+                    List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor().invokeAll(
+                            tasks);
                     logger.info("Checking {} task(s)", tasks.size());
 
                     // Check for time-out
                     for (Future<Void> future : futures) {
                         try {
                             future.get();
-                        } catch (Exception ex) {
+                        } catch (InterruptedException |
+                                 ExecutionException ex) {
                             CliTask task = tasks.get(futures.indexOf(future));
                             final String radix = task.getRadix();
 
@@ -293,7 +300,7 @@ public class Main
                             failure = true;
                         }
                     }
-                } catch (Exception ex) {
+                } catch (InterruptedException ex) {
                     logger.warn("Error in processing tasks", ex);
                     failure = true;
                 }
@@ -325,13 +332,19 @@ public class Main
     {
         if (constants.showEnvironment.isSet()) {
             logger.info(
-                    "Environment:\n" + "- Audiveris:    {}\n" + "- OS:           {}\n"
-                            + "- Architecture: {}\n" + "- Java VM:      {}\n" + "- OCR Engine:   {}",
+                    "Environment:\n" + "- Audiveris:    {}\n"
+                            + "- OS:           {}\n"
+                            + "- Architecture: {}\n"
+                            + "- Java VM:      {}\n"
+                            + "- OCR Engine:   {}",
                     WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD,
                     System.getProperty("os.name") + " " + System.getProperty("os.version"),
                     System.getProperty("os.arch"),
-                    System.getProperty("java.vm.name") + " (build " + System.getProperty(
-                    "java.vm.version") + ", " + System.getProperty("java.vm.info") + ")",
+                    System.getProperty("java.vm.name") + " (build "
+                            + System.getProperty("java.vm.version")
+                            + ", "
+                            + System.getProperty("java.vm.info")
+                            + ")",
                     TesseractOCR.getInstance().identify());
         }
     }
@@ -339,26 +352,33 @@ public class Main
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean showEnvironment = new Constant.Boolean(true,
-                                                                              "Should we show environment?");
+        private final Constant.Boolean showEnvironment = new Constant.Boolean(
+                true,
+                "Should we show environment?");
 
-        private final Constant.String locale = new Constant.String("en",
-                                                                   "Locale language to be used in the whole application (en, fr)");
+        private final Constant.String locale = new Constant.String(
+                "en",
+                "Locale language to be used in the whole application (en, fr)");
 
-        private final Constant.Boolean persistBatchCliConstants = new Constant.Boolean(false,
-                                                                                       "Should we persist CLI-defined constants when running in batch?");
+        private final Constant.Boolean persistBatchCliConstants = new Constant.Boolean(
+                false,
+                "Should we persist CLI-defined constants when running in batch?");
 
-        private final Constant.Boolean runBatchTasksInParallel = new Constant.Boolean(false,
-                                                                                      "Should we process all tasks in parallel when running in batch?");
+        private final Constant.Boolean runBatchTasksInParallel = new Constant.Boolean(
+                false,
+                "Should we process all tasks in parallel when running in batch?");
 
-        private final Constant.Boolean processSystemsInParallel = new Constant.Boolean(false,
-                                                                                       "Should we process all systems in parallel in a sheet?");
+        private final Constant.Boolean processSystemsInParallel = new Constant.Boolean(
+                false,
+                "Should we process all systems in parallel in a sheet?");
 
-        private final Constant.Integer sheetStepTimeOut = new Constant.Integer("Seconds", 120,
-                                                                               "Time-out for one step on a sheet, specified in seconds");
+        private final Constant.Integer sheetStepTimeOut = new Constant.Integer(
+                "Seconds",
+                120,
+                "Time-out for one step on a sheet, specified in seconds");
     }
 }

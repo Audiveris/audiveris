@@ -218,6 +218,11 @@ public class DynamicSection
     //-----------------//
     // computeCentroid //
     //-----------------//
+    /**
+     * Compute section centroid.
+     *
+     * @return absolute centroid
+     */
     protected Point computeCentroid ()
     {
         Point orientedPoint = new Point(0, 0);
@@ -239,6 +244,9 @@ public class DynamicSection
     //-------------------//
     // computeParameters //
     //-------------------//
+    /**
+     * Update cached data for this section.
+     */
     protected void computeParameters ()
     {
         // weight & maxRunLength
@@ -253,8 +261,12 @@ public class DynamicSection
         // Invalidate cached data
         invalidateCache();
 
-        logger.debug("Parameters of {} maxRunLength={} meanRunLength={}" + " weight={}", this,
-                     maxRunLength, getMeanRunLength(), weight);
+        logger.debug(
+                "Parameters of {} maxRunLength={} meanRunLength={}" + " weight={}",
+                this,
+                maxRunLength,
+                getMeanRunLength(),
+                weight);
     }
 
     //----------------//
@@ -289,6 +301,11 @@ public class DynamicSection
     //------------------------//
     // computeRunContribution //
     //------------------------//
+    /**
+     * Compute the contribution of provided run to section data.
+     *
+     * @param run provided run
+     */
     protected void computeRunContribution (Run run)
     {
         final int length = run.getLength();
@@ -299,6 +316,9 @@ public class DynamicSection
     //-----------------//
     // invalidateCache //
     //-----------------//
+    /**
+     * Nullify all cached data.
+     */
     protected void invalidateCache ()
     {
         orientedBounds = null;

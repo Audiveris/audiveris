@@ -30,7 +30,6 @@ import javax.swing.JComboBox;
  * a "Labeled Combo", where the label describes the dynamic content of the combo.
  *
  * @param <E> type of combo entity
- *
  * @author Hervé Bitteur
  */
 public class LComboBox<E>
@@ -68,6 +67,11 @@ public class LComboBox<E>
     //-----------------//
     // getSelectedItem //
     //-----------------//
+    /**
+     * Report the selected item.
+     *
+     * @return selected item
+     */
     @SuppressWarnings("unchecked")
     public E getSelectedItem ()
     {
@@ -77,6 +81,11 @@ public class LComboBox<E>
     //-----------------//
     // setSelectedItem //
     //-----------------//
+    /**
+     * Select the provided item.
+     *
+     * @param item provided item
+     */
     public void setSelectedItem (E item)
     {
         getField().setSelectedItem(item);

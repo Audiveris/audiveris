@@ -40,7 +40,7 @@ public class LocationEvent
 
     /**
      * The location rectangle, which can be degenerated to a point when both
-     * width and height values equal zero
+     * width and height values equal zero.
      */
     private final Rectangle rectangle;
 

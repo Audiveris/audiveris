@@ -87,8 +87,8 @@ public class BookPdfOutput
         PdfWriter writer = null;
 
         try {
-            final List<SheetStub> stubs = (sheet != null) ? Arrays.asList(sheet.getStub()) : book
-                    .getValidStubs();
+            final List<SheetStub> stubs = (sheet != null) ? Arrays.asList(sheet.getStub())
+                    : book.getValidStubs();
             fos = new FileOutputStream(file);
 
             for (SheetStub stub : stubs) {
@@ -117,8 +117,9 @@ public class BookPdfOutput
                 g2.scale(1, 1);
 
                 // Anti-aliasing ON
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                                    RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(
+                        RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
 
                 // Painting
                 SheetResultPainter painter = new SheetResultPainter(

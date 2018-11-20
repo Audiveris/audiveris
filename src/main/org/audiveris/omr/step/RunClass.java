@@ -33,8 +33,10 @@ import java.util.SortedSet;
 public abstract class RunClass
 {
 
+    /** Book involved. */
     protected Book book;
 
+    /** Specific sheet IDs. */
     protected SortedSet<Integer> sheetIds;
 
     /**

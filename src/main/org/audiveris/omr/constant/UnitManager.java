@@ -63,20 +63,19 @@ import java.util.concurrent.ConcurrentSkipListSet;
 public class UnitManager
 {
 
+    private static final Logger logger = LoggerFactory.getLogger(UnitManager.class);
+
     /** The single instance of this class. */
     private static final UnitManager INSTANCE = new UnitManager();
 
-    private static final Logger logger = LoggerFactory.getLogger(UnitManager.class);
-
-    //
     /** The root node. */
     private final PackageNode root = new PackageNode("<root>", null);
 
     /** Map of PackageNodes and UnitNodes. */
-    private final ConcurrentHashMap<String, Node> mapOfNodes = new ConcurrentHashMap<String, Node>();
+    private final ConcurrentHashMap<String, Node> mapOfNodes = new ConcurrentHashMap<>();
 
     /** Set of names of ConstantSets that still need to be initialized. */
-    private final ConcurrentSkipListSet<String> dirtySets = new ConcurrentSkipListSet<String>();
+    private final ConcurrentSkipListSet<String> dirtySets = new ConcurrentSkipListSet<>();
 
     /** This is a singleton. */
     private UnitManager ()
@@ -123,7 +122,7 @@ public class UnitManager
      */
     public void checkAllUnits ()
     {
-        SortedSet<String> constants = new TreeSet<String>();
+        SortedSet<String> constants = new TreeSet<>();
 
         for (Node node : mapOfNodes.values()) {
             if (node instanceof UnitNode) {
@@ -317,7 +316,7 @@ public class UnitManager
     public Set<Object> searchUnits (String string)
     {
         String str = string.toLowerCase(Locale.ENGLISH);
-        Set<Object> found = new LinkedHashSet<Object>();
+        Set<Object> found = new LinkedHashSet<>();
 
         for (Node node : mapOfNodes.values()) {
             if (node instanceof UnitNode) {

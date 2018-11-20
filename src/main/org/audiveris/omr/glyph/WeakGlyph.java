@@ -148,6 +148,16 @@ public class WeakGlyph
         return 0;
     }
 
+    @Override
+    public void setId (int id)
+    {
+        final Glyph glyph = get();
+
+        if (glyph != null) {
+            glyph.setId(id);
+        }
+    }
+
     //----------//
     // hashCode //
     //----------//
@@ -175,16 +185,6 @@ public class WeakGlyph
         }
 
         return false;
-    }
-
-    @Override
-    public void setId (int id)
-    {
-        final Glyph glyph = get();
-
-        if (glyph != null) {
-            glyph.setId(id);
-        }
     }
 
     @Override

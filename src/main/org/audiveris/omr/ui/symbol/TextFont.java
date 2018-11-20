@@ -47,15 +47,15 @@ public class TextFont
 
     private static final Logger logger = LoggerFactory.getLogger(TextFont.class);
 
-    /** Name of the chosen underlying text font */
-    private static final String fontName = constants.defaultTextFontName.getValue();
-
-    /** The base font used for text entities */
-    public static final TextFont baseTextFont = new TextFont(constants.defaultTextFontSize
-            .getValue());
-
     /** Ratio from a 300 DPI scan to font point-size (72 pt/inch) */
     public static final float TO_POINT = 72f / 300f;
+
+    /** The base font used for text entities */
+    public static final TextFont baseTextFont = new TextFont(
+            constants.defaultTextFontSize.getValue());
+
+    /** Name of the chosen underlying text font */
+    private static final String fontName = constants.defaultTextFontName.getValue();
 
     /**
      * Creates a new TextFont object.
@@ -80,8 +80,10 @@ public class TextFont
      */
     public TextFont (FontInfo info)
     {
-        this(info.isSerif ? Font.SERIF : (info.isMonospace ? Font.MONOSPACED : Font.SANS_SERIF),
-             (info.isBold ? Font.BOLD : 0) | (info.isItalic ? Font.ITALIC : 0), info.pointsize);
+        this(
+                info.isSerif ? Font.SERIF : (info.isMonospace ? Font.MONOSPACED : Font.SANS_SERIF),
+                (info.isBold ? Font.BOLD : 0) | (info.isItalic ? Font.ITALIC : 0),
+                info.pointsize);
     }
 
     /**
@@ -94,7 +96,6 @@ public class TextFont
         super(fontName, Font.PLAIN, size);
     }
 
-    //
     //-----------------//
     // computeFontSize //
     //-----------------//
@@ -129,14 +130,17 @@ public class TextFont
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.String defaultTextFontName = new Constant.String("Serif",
-                                                                                "Default font name for texts");
+        private final Constant.String defaultTextFontName = new Constant.String(
+                "Serif",
+                "Default font name for texts");
 
-        private final Constant.Integer defaultTextFontSize = new Constant.Integer("points", 10,
-                                                                                  "Default font point size for texts");
+        private final Constant.Integer defaultTextFontSize = new Constant.Integer(
+                "points",
+                10,
+                "Default font point size for texts");
     }
 }

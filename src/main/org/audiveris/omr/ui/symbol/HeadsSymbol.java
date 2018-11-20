@@ -32,6 +32,8 @@ import java.awt.geom.Rectangle2D;
 /**
  * Class {@code HeadsSymbol} displays a column of several identical heads.
  * (black, void or whole)
+ *
+ * @author Hervé Bitteur
  */
 public class HeadsSymbol
         extends ShapeSymbol
@@ -76,8 +78,9 @@ public class HeadsSymbol
 
         Rectangle2D r = p.layout.getBounds();
         p.dy = (int) Math.rint(font.getStaffInterline());
-        p.rect = new Rectangle((int) Math.ceil(r.getWidth()), ((count * p.dy) + (int) Math.rint(r
-                               .getHeight())) - p.dy);
+        p.rect = new Rectangle(
+                (int) Math.ceil(r.getWidth()),
+                ((count * p.dy) + (int) Math.rint(r.getHeight())) - p.dy);
 
         return p;
     }

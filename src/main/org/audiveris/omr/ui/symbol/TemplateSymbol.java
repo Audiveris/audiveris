@@ -46,10 +46,13 @@ public class TemplateSymbol
 
     /** Affine Transform for small symbol shapes. */
     private static final AffineTransform smallAt = AffineTransform.getScaleInstance(
-            Template.smallRatio, Template.smallRatio);
+            Template.smallRatio,
+            Template.smallRatio);
 
+    /** Template shape. */
     protected final Shape shape;
 
+    /** Indicate a smaller symbol. */
     protected final boolean isSmall;
 
     /**
@@ -69,6 +72,12 @@ public class TemplateSymbol
     //-----------------//
     // getSymbolBounds //
     //-----------------//
+    /**
+     * Report the strict bounds of the symbol (within a perhaps larger template).
+     *
+     * @param font provided font
+     * @return relative symbol bounds within template
+     */
     public Rectangle getSymbolBounds (MusicFont font)
     {
         return getParams(font).symbolRect;
@@ -102,12 +111,16 @@ public class TemplateSymbol
         // For full size symbol, add some margin on each direction of the symbol
         int dx = 2;
         int dy = 2;
-        p.rect = new Rectangle(isSmall ? fullRect.width : (symWidth + dx), isSmall ? interline
-                               : (symHeight + dy));
+        p.rect = new Rectangle(
+                isSmall ? fullRect.width : (symWidth + dx),
+                isSmall ? interline : (symHeight + dy));
 
         // Bounds of symbol within template rectangle
-        p.symbolRect = new Rectangle((p.rect.width - symWidth) / 2, (p.rect.height - symHeight) / 2,
-                                     symWidth, symHeight);
+        p.symbolRect = new Rectangle(
+                (p.rect.width - symWidth) / 2,
+                (p.rect.height - symHeight) / 2,
+                symWidth,
+                symHeight);
 
         return p;
     }

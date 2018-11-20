@@ -61,7 +61,7 @@ public class MeasuresStep
     private static final Set<Class> impactingClasses;
 
     static {
-        impactingClasses = new HashSet<Class>();
+        impactingClasses = new HashSet<>();
         impactingClasses.add(StaffBarlineInter.class);
     }
 
@@ -89,7 +89,8 @@ public class MeasuresStep
     /**
      * {@inheritDoc}
      * <p>
-     * For MEASURES step, in seq argument, we can have either: <ul>
+     * For MEASURES step, in seq argument, we can have either:
+     * <ul>
      * <li>BarlineInter instances
      * <li>StaffBarlineInter instances
      * </ul>
@@ -114,8 +115,9 @@ public class MeasuresStep
             MeasureStack stack = system.getStackAt(centerLeft);
             final boolean isAddition = isAddition(seq);
 
-            if ((!isAddition && (opKind != UITask.OpKind.UNDO)) || (isAddition && (opKind
-                                                                                           == UITask.OpKind.UNDO))) {
+            if ((!isAddition && (opKind != UITask.OpKind.UNDO)) || (isAddition
+                                                                            && (opKind
+                                                                                == UITask.OpKind.UNDO))) {
                 // Remove barlines
                 MeasureStack rightStack = stack.getNextSibling();
 
@@ -178,7 +180,7 @@ public class MeasuresStep
      */
     private List<PartBarline> buildFromStaffBarlines (List<Inter> staffBarlines)
     {
-        final List<PartBarline> systemBarline = new ArrayList<PartBarline>();
+        final List<PartBarline> systemBarline = new ArrayList<>();
 
         Part lastPart = null;
         PartBarline partBarline = null;

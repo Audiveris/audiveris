@@ -25,9 +25,9 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Scale;
-import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.util.Jaxb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,12 +39,14 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code WedgeInter} represents a wedge (crescendo or diminuendo).
  * <p>
  * <img alt="Wedge image"
- * src="http://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Music_hairpins.svg/296px-Music_hairpins.svg.png">
+ * src=
+ * "http://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Music_hairpins.svg/296px-Music_hairpins.svg.png">
  *
  * @author Hervé Bitteur
  */
@@ -60,10 +62,12 @@ public class WedgeInter
 
     /** Top line. */
     @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private Line2D l1;
 
     /** Bottom line. */
     @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private Line2D l2;
 
     /**
@@ -141,6 +145,11 @@ public class WedgeInter
     //----------//
     // getLine1 //
     //----------//
+    /**
+     * Report wedge top line.
+     *
+     * @return top line
+     */
     public Line2D getLine1 ()
     {
         return l1;
@@ -149,6 +158,11 @@ public class WedgeInter
     //----------//
     // getLine2 //
     //----------//
+    /**
+     * Report wedge bottom line.
+     *
+     * @return bottom line
+     */
     public Line2D getLine2 ()
     {
         return l2;
@@ -157,6 +171,12 @@ public class WedgeInter
     //-----------//
     // getSpread //
     //-----------//
+    /**
+     * Report vertical gap between ending points or provided side.
+     *
+     * @param side provided horizontal side
+     * @return vertical gap in pixels
+     */
     public double getSpread (HorizontalSide side)
     {
         if (side == HorizontalSide.LEFT) {
@@ -164,14 +184,6 @@ public class WedgeInter
         } else {
             return l2.getY2() - l1.getY2();
         }
-    }
-
-    //------------------------//
-    // getStackAbscissaMargin //
-    //------------------------//
-    public static Scale.Fraction getStackAbscissaMargin ()
-    {
-        return constants.stackAbscissaMargin;
     }
 
     //----------//
@@ -219,15 +231,32 @@ public class WedgeInter
         return super.internals() + " " + shape;
     }
 
+    //------------------------//
+    // getStackAbscissaMargin //
+    //------------------------//
+    /**
+     * Report margin beyond stack abscissa limits.
+     *
+     * @return margin constant
+     */
+    public static Scale.Fraction getStackAbscissaMargin ()
+    {
+        return constants.stackAbscissaMargin;
+    }
+
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
-            extends BasicImpacts
+            extends GradeImpacts
     {
 
-        private static final String[] NAMES = new String[]{"s1", "s2", "closedDy", "openDy",
-                                                           "openBias"};
+        private static final String[] NAMES = new String[]{
+            "s1",
+            "s2",
+            "closedDy",
+            "openDy",
+            "openBias"};
 
         private static final double[] WEIGHTS = new double[]{1, 1, 1, 1, 1};
 
@@ -249,11 +278,12 @@ public class WedgeInter
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction stackAbscissaMargin = new Scale.Fraction(1.0,
-                                                                              "Margin beyond stack abscissa limits");
+        private final Scale.Fraction stackAbscissaMargin = new Scale.Fraction(
+                1.0,
+                "Margin beyond stack abscissa limits");
     }
 }

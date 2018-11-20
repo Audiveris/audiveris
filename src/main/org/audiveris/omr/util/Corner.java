@@ -45,8 +45,11 @@ public class Corner
     public static final Corner BOTTOM_RIGHT = new Corner(BOTTOM, RIGHT);
 
     /** Most popular connection corners are listed first. */
-    public static final List<Corner> values = Arrays.asList(TOP_RIGHT, BOTTOM_LEFT, TOP_LEFT,
-                                                            BOTTOM_RIGHT);
+    public static final List<Corner> values = Arrays.asList(
+            TOP_RIGHT,
+            BOTTOM_LEFT,
+            TOP_LEFT,
+            BOTTOM_RIGHT);
 
     /** The vertical side. */
     public final VerticalSide vSide;
@@ -67,11 +70,21 @@ public class Corner
         this.hSide = hSide;
     }
 
+    /**
+     * Report the corner integer ID.
+     *
+     * @return id
+     */
     public int getId ()
     {
         return values.indexOf(this);
     }
 
+    /**
+     * Report the corresponding anchor for this corner.
+     *
+     * @return stem-based anchor
+     */
     public Anchor stemAnchor ()
     {
         if (this == TOP_LEFT) {

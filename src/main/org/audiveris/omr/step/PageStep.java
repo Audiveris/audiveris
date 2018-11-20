@@ -91,8 +91,23 @@ public class PageStep
     /** Classes that may impact voices. */
     private static final Set<Class> forVoices;
 
+    /** Classes that may impact lyrics. */
+    private static final Set<Class> forLyrics;
+
+    /** Classes that may impact slurs. */
+    private static final Set<Class> forSlurs;
+
+    /** Classes that may impact parts. */
+    private static final Set<Class> forParts;
+
+    /** Classes that may impact measures. */
+    private static final Set<Class> forMeasures;
+
+    /** All impacting classes. */
+    private static final Set<Class> impactingClasses;
+
     static {
-        forVoices = new HashSet<Class>();
+        forVoices = new HashSet<>();
         forVoices.add(AugmentationDotInter.class);
         forVoices.add(BarlineInter.class);
         forVoices.add(BeamHookInter.class);
@@ -109,52 +124,35 @@ public class PageStep
         forVoices.add(TimePairInter.class);
         forVoices.add(TimeWholeInter.class);
         forVoices.add(TupletInter.class);
-
         forVoices.add(AugmentationRelation.class);
         forVoices.add(DoubleDotRelation.class);
-
         forVoices.add(MeasureStack.class);
     }
 
-    /** Classes that may impact lyrics. */
-    private static final Set<Class> forLyrics;
-
     static {
-        forLyrics = new HashSet<Class>();
+        forLyrics = new HashSet<>();
         forLyrics.add(LyricItemInter.class);
         forLyrics.add(LyricLineInter.class);
     }
 
-    /** Classes that may impact slurs. */
-    private static final Set<Class> forSlurs;
-
     static {
-        forSlurs = new HashSet<Class>();
+        forSlurs = new HashSet<>();
         forSlurs.add(SlurInter.class);
     }
 
-    /** Classes that may impact parts. */
-    private static final Set<Class> forParts;
-
     static {
-        forParts = new HashSet<Class>();
+        forParts = new HashSet<>();
         forParts.add(SentenceInter.class);
     }
 
-    /** Classes that may impact measures. */
-    private static final Set<Class> forMeasures;
-
     static {
-        forMeasures = new HashSet<Class>();
+        forMeasures = new HashSet<>();
         forMeasures.add(BarlineInter.class);
         forMeasures.add(StaffBarlineInter.class);
     }
 
-    /** All impacting classes. */
-    private static final Set<Class> impactingClasses;
-
     static {
-        impactingClasses = new HashSet<Class>();
+        impactingClasses = new HashSet<>();
         impactingClasses.addAll(forVoices);
         impactingClasses.addAll(forLyrics);
         impactingClasses.addAll(forSlurs);
@@ -207,7 +205,7 @@ public class PageStep
         final SystemInfo system = sig.getSystem();
 
         // First, determine what will be impacted
-        Map<Page, Impact> map = new LinkedHashMap<Page, Impact>();
+        Map<Page, Impact> map = new LinkedHashMap<>();
 
         for (UITask task : seq.getTasks()) {
             if (task instanceof InterTask) {

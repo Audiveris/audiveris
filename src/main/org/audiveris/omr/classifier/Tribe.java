@@ -48,11 +48,11 @@ public class Tribe
 
     /** Samples that are considered as compatible with best. */
     @XmlElement(name = "good")
-    private final List<Sample> goods = new ArrayList<Sample>();
+    private final List<Sample> goods = new ArrayList<>();
 
     /** Samples that must be classified with lower grade than best sample. */
     @XmlElement(name = "member")
-    private final List<Sample> members = new ArrayList<Sample>();
+    private final List<Sample> members = new ArrayList<>();
 
     /**
      * Creates a new {@code Tribe} object.
@@ -72,6 +72,11 @@ public class Tribe
         this.head = null;
     }
 
+    /**
+     * Add a good sample.
+     *
+     * @param good the good sample to add
+     */
     public void addGood (Sample good)
     {
         if (!goods.contains(good)) {
@@ -79,6 +84,11 @@ public class Tribe
         }
     }
 
+    /**
+     * Add a basic sample.
+     *
+     * @param other a plain sample to add
+     */
     public void addOther (Sample other)
     {
         if (!members.contains(other)) {
@@ -87,6 +97,8 @@ public class Tribe
     }
 
     /**
+     * Report all the good samples.
+     *
      * @return the goods
      */
     public List<Sample> getGoods ()
@@ -95,6 +107,8 @@ public class Tribe
     }
 
     /**
+     * Report the best sample in tribe.
+     *
      * @return the best
      */
     public Sample getHead ()
@@ -103,6 +117,8 @@ public class Tribe
     }
 
     /**
+     * Return the other samples in tribe (apart the best).
+     *
      * @return the others
      */
     public List<Sample> getMembers ()

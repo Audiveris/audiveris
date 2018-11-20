@@ -55,7 +55,8 @@ import java.util.ArrayList;
  * of components among system staves, and even the horizontal limits of items slices within the
  * key-sig components.
  * <p>
- * Cross-validation at system level: <ul>
+ * Cross-validation at system level:
+ * <ul>
  * <li>Clefs:
  * A clef is mandatory at the beginning of each staff (in the header) and may be different from one
  * staff to the other.
@@ -125,10 +126,10 @@ public class HeaderBuilder
     {
         final Sheet sheet = system.getSheet();
         final String frameTitle = sheet.getId() + " header staff#" + staff.getId();
-        final ChartPlotter plotter = new ChartPlotter(frameTitle, "Abscissae - staff interline:"
-                                                                          + staff
-                                                              .getSpecificInterline(),
-                                                      "Counts");
+        final ChartPlotter plotter = new ChartPlotter(
+                frameTitle,
+                "Abscissae - staff interline:" + staff.getSpecificInterline(),
+                "Counts");
 
         // Draw time sig portion
         String timeString = timeColumn.addPlot(plotter, staff);
@@ -275,7 +276,7 @@ public class HeaderBuilder
             final int start = staff.getHeaderStart();
             final int stop = staff.getHeaderStop();
 
-            for (BarlineInter bar : new ArrayList<BarlineInter>(staff.getBarlines())) {
+            for (BarlineInter bar : new ArrayList<>(staff.getBarlines())) {
                 final Point center = bar.getCenter();
 
                 if ((center.x > start) && (center.x < stop) && !bar.isStaffEnd(LEFT)) {
@@ -343,11 +344,12 @@ public class HeaderBuilder
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction maxHeaderWidth = new Scale.Fraction(15.0,
-                                                                         "Maximum header width (from measure start to end of key-sig or time-sig)");
+        private final Scale.Fraction maxHeaderWidth = new Scale.Fraction(
+                15.0,
+                "Maximum header width (from measure start to end of key-sig or time-sig)");
     }
 }

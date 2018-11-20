@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.glyph;
 
-import org.audiveris.omr.glyph.GlyphGroup;
-
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.SimpleGraph;
 
@@ -41,11 +39,13 @@ import java.util.Set;
  * Class {@code GlyphCluster} handles a cluster of connected glyphs, to retrieve all
  * acceptable compounds built on subsets of these glyphs.
  * <p>
- * The processing of any given subset consists in the following:<ol>
+ * The processing of any given subset consists in the following:
+ * <ol>
  * <li>Build the compound of chosen vertices, and record acceptable evaluations.</li>
  * <li>Build the set of new reachable vertices.</li>
  * <li>For each reachable vertex, recursively process the new set composed of current set + the
- * reachable vertex.</li></ol>
+ * reachable vertex.</li>
+ * </ol>
  * TODO: implement a non-recursive version for better efficiency?
  *
  * @author Hervé Bitteur
@@ -74,48 +74,6 @@ public class GlyphCluster
         this.group = group;
     }
 
-    //-------------//
-    // getSubGraph //
-    //-------------//
-    /**
-     * Extract a subgraph limited to the provided set of glyphs.
-     *
-     * @param set        the provided set of glyphs
-     * @param graph      the global graph to extract from
-     * @param checkEdges true if glyph edges may point outside the provided set.
-     * @return the graph limited to glyph set and related edges
-     */
-    public static SimpleGraph<Glyph, GlyphLink> getSubGraph (Set<Glyph> set,
-                                                             SimpleGraph<Glyph, GlyphLink> graph,
-                                                             boolean checkEdges)
-    {
-        // Which edges should be extracted for this set?
-        Set<GlyphLink> setEdges = new LinkedHashSet<GlyphLink>();
-
-        for (Glyph glyph : set) {
-            Set<GlyphLink> glyphEdges = graph.edgesOf(glyph);
-
-            if (!checkEdges) {
-                setEdges.addAll(glyphEdges); // Take all edges
-            } else {
-                // Keep only the edges that link within the set
-                for (GlyphLink link : glyphEdges) {
-                    Glyph opposite = Graphs.getOppositeVertex(graph, link, glyph);
-
-                    if (set.contains(opposite)) {
-                        setEdges.add(link);
-                    }
-                }
-            }
-        }
-
-        SimpleGraph<Glyph, GlyphLink> subGraph = new SimpleGraph<Glyph, GlyphLink>(GlyphLink.class);
-        Graphs.addAllVertices(subGraph, set);
-        Graphs.addAllEdges(subGraph, graph, setEdges);
-
-        return subGraph;
-    }
-
     //-----------//
     // decompose //
     //-----------//
@@ -124,7 +82,7 @@ public class GlyphCluster
      */
     public void decompose ()
     {
-        final Set<Glyph> considered = new LinkedHashSet<Glyph>(); // Parts considered so far
+        final Set<Glyph> considered = new LinkedHashSet<>(); // Parts considered so far
 
         //TODO: we could truncate this list by discarding the smallest items
         // since a too large list would result in explosion of combinations
@@ -147,7 +105,7 @@ public class GlyphCluster
      */
     private Set<Glyph> getOutliers (Set<Glyph> set)
     {
-        Set<Glyph> outliers = new LinkedHashSet<Glyph>();
+        Set<Glyph> outliers = new LinkedHashSet<>();
 
         for (Glyph part : set) {
             outliers.addAll(adapter.getNeighbors(part));
@@ -188,8 +146,8 @@ public class GlyphCluster
 
         if (!adapter.isTooLight(weight)) {
             // Build compound and get acceptable evaluations for the compound
-            Glyph compound = (parts.size() > 1) ? GlyphFactory.buildGlyph(parts) : parts.iterator()
-                    .next();
+            Glyph compound = (parts.size() > 1) ? GlyphFactory.buildGlyph(parts)
+                    : parts.iterator().next();
             compound.addGroup(group);
 
             // Create all acceptable inters, if any, for the compound
@@ -208,7 +166,7 @@ public class GlyphCluster
 
         ///logger.debug("      {}", Glyphs.ids("outliers", outliers));
         Rectangle setBox = Glyphs.getBounds(parts);
-        Set<Glyph> newConsidered = new LinkedHashSet<Glyph>(seen);
+        Set<Glyph> newConsidered = new LinkedHashSet<>(seen);
 
         for (Glyph outlier : outliers) {
             newConsidered.add(outlier);
@@ -217,16 +175,58 @@ public class GlyphCluster
             Rectangle symBox = outlier.getBounds().union(setBox);
 
             if (!adapter.isTooLarge(symBox)) {
-                Set<Glyph> largerSet = new LinkedHashSet<Glyph>(parts);
+                Set<Glyph> largerSet = new LinkedHashSet<>(parts);
                 largerSet.add(outlier);
                 process(largerSet, newConsidered);
             }
         }
     }
 
+    //-------------//
+    // getSubGraph //
+    //-------------//
+    /**
+     * Extract a subgraph limited to the provided set of glyphs.
+     *
+     * @param set        the provided set of glyphs
+     * @param graph      the global graph to extract from
+     * @param checkEdges true if glyph edges may point outside the provided set.
+     * @return the graph limited to glyph set and related edges
+     */
+    public static SimpleGraph<Glyph, GlyphLink> getSubGraph (Set<Glyph> set,
+                                                             SimpleGraph<Glyph, GlyphLink> graph,
+                                                             boolean checkEdges)
+    {
+        // Which edges should be extracted for this set?
+        Set<GlyphLink> setEdges = new LinkedHashSet<>();
+        for (Glyph glyph : set) {
+            Set<GlyphLink> glyphEdges = graph.edgesOf(glyph);
+
+            if (!checkEdges) {
+                setEdges.addAll(glyphEdges); // Take all edges
+            } else {
+                // Keep only the edges that link within the set
+                for (GlyphLink link : glyphEdges) {
+                    Glyph opposite = Graphs.getOppositeVertex(graph, link, glyph);
+
+                    if (set.contains(opposite)) {
+                        setEdges.add(link);
+                    }
+                }
+            }
+        }
+        SimpleGraph<Glyph, GlyphLink> subGraph = new SimpleGraph<>(GlyphLink.class);
+        Graphs.addAllVertices(subGraph, set);
+        Graphs.addAllEdges(subGraph, graph, setEdges);
+        return subGraph;
+    }
+
     //---------//
     // Adapter //
     //---------//
+    /**
+     * Interface to be implemented by a user of GlyphCluster.
+     */
     public static interface Adapter
     {
 
@@ -287,21 +287,15 @@ public class GlyphCluster
         boolean isTooSmall (Rectangle bounds);
     }
 
-    //-----------------//
-    // AbstractAdapter //
-    //-----------------//
-    /**
-     * Basis for implementing an adapter.
-     */
     public abstract static class AbstractAdapter
             implements Adapter
     {
 
+        /** For debug only */
+        public int trials = 0;
+
         /** Graph of the connected glyphs, with their distance edges if any. */
         protected final SimpleGraph<Glyph, GlyphLink> graph;
-
-        // For debug only
-        public int trials = 0;
 
         /**
          * Build an adapter from a set of parts and the maximum gap between parts.
@@ -336,7 +330,7 @@ public class GlyphCluster
         @Override
         public List<Glyph> getParts ()
         {
-            return new ArrayList<Glyph>(graph.vertexSet());
+            return new ArrayList<>(graph.vertexSet());
         }
 
         @Override

@@ -40,14 +40,6 @@ public abstract class Symbols
 
     private static final Logger logger = LoggerFactory.getLogger(Symbols.class);
 
-    /** Map of (simple) symbols */
-    private static final EnumMap<Shape, ShapeSymbol> sym = new EnumMap<Shape, ShapeSymbol>(
-            Shape.class);
-
-    /** Map of decorated symbols */
-    private static final EnumMap<Shape, ShapeSymbol> dec = new EnumMap<Shape, ShapeSymbol>(
-            Shape.class);
-
     /** Symbol of '8' char for ottava sign (alta or bassa) on F &amp; G clefs */
     public static final BasicSymbol SYMBOL_OTTAVA = new BasicSymbol(false, 165);
 
@@ -89,6 +81,12 @@ public abstract class Symbols
 
     /** Symbol for FLAG_2_UP */
     public static final ShapeSymbol SYMBOL_FLAG_2_UP = new ShapeSymbol(FLAG_2_UP, 75);
+
+    /** Map of (simple) symbols */
+    private static final EnumMap<Shape, ShapeSymbol> sym = new EnumMap<>(Shape.class);
+
+    /** Map of decorated symbols */
+    private static final EnumMap<Shape, ShapeSymbol> dec = new EnumMap<>(Shape.class);
 
     static {
         assignSymbols();
@@ -391,10 +389,13 @@ public abstract class Symbols
         map(TUPLET_SIX, 164);
         map(TUPLET_THREE, 163);
         map(TURN, 84);
-        sym.put(TURN_INVERTED, new TransformedSymbol(false, TURN_INVERTED, TURN,
-                                                     ShapeSymbol.verticalFlip));
+        sym.put(
+                TURN_INVERTED,
+                new TransformedSymbol(false, TURN_INVERTED, TURN, ShapeSymbol.verticalFlip));
         sym.put(TURN_SLASH, new TurnSlashSymbol(false));
-        sym.put(TURN_UP, new TransformedSymbol(false, TURN_UP, TURN, ShapeSymbol.quadrantRotateOne));
+        sym.put(
+                TURN_UP,
+                new TransformedSymbol(false, TURN_UP, TURN, ShapeSymbol.quadrantRotateOne));
 
         map(WHOLE_NOTE, 119);
         small(WHOLE_NOTE_SMALL, 119);

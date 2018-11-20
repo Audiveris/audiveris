@@ -47,6 +47,7 @@ public class StraightFilament
         implements NearLine
 {
 
+    /** The approximating line. */
     protected BasicLine line;
 
     /**
@@ -107,6 +108,11 @@ public class StraightFilament
     //--------------//
     // getBasicLine //
     //--------------//
+    /**
+     * Return the approximating line as a BasicLine
+     *
+     * @return the BasicLine instance
+     */
     public BasicLine getBasicLine ()
     {
         checkLine();
@@ -272,17 +278,30 @@ public class StraightFilament
     //-------------//
     // Constructor //
     //-------------//
-    public static final class Constructor
+    /**
+     * Kind of 'constructor' for a StraightFilament.
+     */
+    public static class Constructor
             implements CompoundFactory.CompoundConstructor
     {
 
         private final int interline;
 
+        /**
+         * Create the constructor.
+         *
+         * @param interline the related interline
+         */
         public Constructor (int interline)
         {
             this.interline = interline;
         }
 
+        /**
+         * Create a new instance of StraightFilament.
+         *
+         * @return the new instance
+         */
         @Override
         public SectionCompound newInstance ()
         {

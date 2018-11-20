@@ -36,6 +36,10 @@ public abstract class ClassUtil
 
     private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
 
+    private ClassUtil ()
+    {
+    }
+
     //-----------------//
     // getCallingFrame //
     //-----------------//

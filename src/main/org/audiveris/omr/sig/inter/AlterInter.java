@@ -120,76 +120,6 @@ public class AlterInter
     }
 
     //--------//
-    // create //
-    //--------//
-    /**
-     * Create an Alter inter, with a grade value, determining pitch WRT provided staff.
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape
-     * @param grade evaluation value
-     * @param staff closest staff (questionable)
-     * @return the created instance
-     */
-    public static AlterInter create (Glyph glyph,
-                                     Shape shape,
-                                     double grade,
-                                     Staff staff)
-    {
-        Pitches pitches = computePitch(glyph, shape, staff);
-
-        return new AlterInter(glyph, shape, grade, staff, pitches.pitch, pitches.measuredPitch);
-    }
-
-    //--------//
-    // create //
-    //--------//
-    /**
-     * Create an Alter inter, with impacts data, determining pitch WRT provided staff.
-     *
-     * @param glyph   underlying glyph
-     * @param shape   precise shape
-     * @param impacts assignment details
-     * @param staff   related staff
-     * @return the created instance
-     */
-    public static AlterInter create (Glyph glyph,
-                                     Shape shape,
-                                     GradeImpacts impacts,
-                                     Staff staff)
-    {
-        Pitches pitches = computePitch(glyph, shape, staff);
-
-        return new AlterInter(glyph, shape, impacts, staff, pitches.pitch, pitches.measuredPitch);
-    }
-
-    //-------------------//
-    // getFlatAreaOffset //
-    //-------------------//
-    /**
-     * Report for a flat sign the center offset WRT area center.
-     *
-     * @return height offset of pitch
-     */
-    public static double getFlatAreaOffset ()
-    {
-        return constants.flatAreaOffset.getValue();
-    }
-
-    //--------------------//
-    // getFlatPitchOffset //
-    //--------------------//
-    /**
-     * Report for a flat sign the vertical offset of pitch ordinate WRT sign top ordinate.
-     *
-     * @return height offset of pitch
-     */
-    public static double getFlatPitchOffset ()
-    {
-        return constants.flatPitchOffset.getValue();
-    }
-
-    //--------//
     // accept //
     //--------//
     @Override
@@ -253,8 +183,9 @@ public class AlterInter
         switch (shape) {
         case FLAT:
         case DOUBLE_FLAT:
-            return new Point(center.x, (int) Math.rint(center.y + (getFlatAreaOffset()
-                                                                           * getBounds().height)));
+            return new Point(
+                    center.x,
+                    (int) Math.rint(center.y + (getFlatAreaOffset() * getBounds().height)));
 
         default:
             return center;
@@ -310,60 +241,6 @@ public class AlterInter
 
         for (Link link : links) {
             link.applyTo(this);
-        }
-    }
-
-    //--------------//
-    // computePitch //
-    //--------------//
-    /**
-     * Compute pitch (integer) and measuredPitch (double) values related to the provided
-     * staff, according to alteration glyph and shape.
-     * <p>
-     * Sharp and natural signs are symmetric, hence their pitch can be directly derived from
-     * centroid ordinate.
-     * <p>
-     * But sharp signs are not symmetric, hence we need a more precise point.
-     * We use two heuristics:<ul>
-     * <li>Augment centroid pitch by a fixed pitch offset, around 0.65</li>
-     * <li>Use point located at a fixed ratio of glyph height, around 0.65, to retrieve pitch.</li>
-     * </ul>
-     * And we use the average value from these two heuristics.
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape
-     * @param staff related staff
-     * @return the pitch values (assigned, measured)
-     */
-    protected static Pitches computePitch (Glyph glyph,
-                                           Shape shape,
-                                           Staff staff)
-    {
-        Point centroid = glyph.getCentroid();
-        double massPitch = staff.pitchPositionOf(centroid);
-
-        // Pitch offset for flat-based alterations
-        if ((shape == Shape.FLAT) || (shape == Shape.DOUBLE_FLAT)) {
-            // Heuristic pitch offset WRT centroid pitch
-            massPitch += getFlatPitchOffset();
-
-            // Heuristic center WRT glyph box
-            Rectangle box = glyph.getBounds();
-            Point center = glyph.getCenter();
-            double geoPitch = staff.pitchPositionOf(new Point2D.Double(center.x, center.y
-                                                                                         + (getFlatAreaOffset()
-                                                                                            * box.height)));
-
-            // Average value of both heuristics
-            double mix = 0.5 * (massPitch + geoPitch);
-
-            // logger.info(
-            //         "G#{} {}",
-            //         glyph.getId(),
-            //         String.format("mass:%+.2f geo:%+.2f mix:%+.2f", massPitch, geoPitch, mix));
-            return new Pitches((int) Math.rint(mix), mix);
-        } else {
-            return new Pitches((int) Math.rint(massPitch), massPitch);
         }
     }
 
@@ -441,7 +318,7 @@ public class AlterInter
             }
 
             if (bestRel != null) {
-                Set<Link> set = new LinkedHashSet<Link>();
+                Set<Link> set = new LinkedHashSet<>();
                 set.add(new Link(bestHead, bestRel, true));
 
                 // If any, include head mirror as well
@@ -456,18 +333,153 @@ public class AlterInter
         return Collections.emptySet();
     }
 
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create an Alter inter, with a grade value, determining pitch WRT provided staff.
+     *
+     * @param glyph underlying glyph
+     * @param shape precise shape
+     * @param grade evaluation value
+     * @param staff closest staff (questionable)
+     * @return the created instance
+     */
+    public static AlterInter create (Glyph glyph,
+                                     Shape shape,
+                                     double grade,
+                                     Staff staff)
+    {
+        Pitches pitches = computePitch(glyph, shape, staff);
+
+        return new AlterInter(glyph, shape, grade, staff, pitches.pitch, pitches.measuredPitch);
+    }
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create an Alter inter, with impacts data, determining pitch WRT provided staff.
+     *
+     * @param glyph   underlying glyph
+     * @param shape   precise shape
+     * @param impacts assignment details
+     * @param staff   related staff
+     * @return the created instance
+     */
+    public static AlterInter create (Glyph glyph,
+                                     Shape shape,
+                                     GradeImpacts impacts,
+                                     Staff staff)
+    {
+        Pitches pitches = computePitch(glyph, shape, staff);
+
+        return new AlterInter(glyph, shape, impacts, staff, pitches.pitch, pitches.measuredPitch);
+    }
+
+    //-------------------//
+    // getFlatAreaOffset //
+    //-------------------//
+    /**
+     * Report for a flat sign the center offset WRT area center.
+     *
+     * @return height offset of pitch
+     */
+    public static double getFlatAreaOffset ()
+    {
+        return constants.flatAreaOffset.getValue();
+    }
+
+    //--------------------//
+    // getFlatPitchOffset //
+    //--------------------//
+    /**
+     * Report for a flat sign the vertical offset of pitch ordinate WRT sign top ordinate.
+     *
+     * @return height offset of pitch
+     */
+    public static double getFlatPitchOffset ()
+    {
+        return constants.flatPitchOffset.getValue();
+    }
+
+    //--------------//
+    // computePitch //
+    //--------------//
+    /**
+     * Compute pitch (integer) and measuredPitch (double) values related to the provided
+     * staff, according to alteration glyph and shape.
+     * <p>
+     * Sharp and natural signs are symmetric, hence their pitch can be directly derived from
+     * centroid ordinate.
+     * <p>
+     * But sharp signs are not symmetric, hence we need a more precise point.
+     * We use two heuristics:
+     * <ul>
+     * <li>Augment centroid pitch by a fixed pitch offset, around 0.65</li>
+     * <li>Use point located at a fixed ratio of glyph height, around 0.65, to retrieve pitch.</li>
+     * </ul>
+     * And we use the average value from these two heuristics.
+     *
+     * @param glyph underlying glyph
+     * @param shape precise shape
+     * @param staff related staff
+     * @return the pitch values (assigned, measured)
+     */
+    protected static Pitches computePitch (Glyph glyph,
+                                           Shape shape,
+                                           Staff staff)
+    {
+        Point centroid = glyph.getCentroid();
+        double massPitch = staff.pitchPositionOf(centroid);
+
+        // Pitch offset for flat-based alterations
+        if ((shape == Shape.FLAT) || (shape == Shape.DOUBLE_FLAT)) {
+            // Heuristic pitch offset WRT centroid pitch
+            massPitch += getFlatPitchOffset();
+
+            // Heuristic center WRT glyph box
+            Rectangle box = glyph.getBounds();
+            Point center = glyph.getCenter();
+            double geoPitch = staff.pitchPositionOf(
+                    new Point2D.Double(center.x, center.y + (getFlatAreaOffset() * box.height)));
+
+            // Average value of both heuristics
+            double mix = 0.5 * (massPitch + geoPitch);
+
+            // logger.info(
+            //         "G#{} {}",
+            //         glyph.getId(),
+            //         String.format("mass:%+.2f geo:%+.2f mix:%+.2f", massPitch, geoPitch, mix));
+            return new Pitches((int) Math.rint(mix), mix);
+        } else {
+            return new Pitches((int) Math.rint(massPitch), massPitch);
+        }
+    }
+
     //---------//
     // Pitches //
     //---------//
+    /**
+     * Gather both rounded and precise pitch values.
+     */
     protected static class Pitches
     {
 
+        /** Rounded to integer value. */
         public final double pitch;
 
+        /** Precise value. */
         public final double measuredPitch;
 
-        public Pitches (double pitch,
-                        double measuredPitch)
+        /**
+         * Create a Pitches object
+         *
+         * @param pitch         rounded value
+         * @param measuredPitch precise value
+         */
+        Pitches (double pitch,
+                 double measuredPitch)
         {
             this.pitch = pitch;
             this.measuredPitch = measuredPitch;
@@ -477,14 +489,17 @@ public class AlterInter
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Double flatPitchOffset = new Constant.Double("pitch", 0.65,
-                                                                            "Pitch offset of flat WRT centroid-based pitch");
+        private final Constant.Double flatPitchOffset = new Constant.Double(
+                "pitch",
+                0.65,
+                "Pitch offset of flat WRT centroid-based pitch");
 
-        private final Constant.Ratio flatAreaOffset = new Constant.Ratio(0.25,
-                                                                         "Center offset of flat WRT area center");
+        private final Constant.Ratio flatAreaOffset = new Constant.Ratio(
+                0.25,
+                "Center offset of flat WRT area center");
     }
 }

@@ -99,6 +99,9 @@ public class AreaMask
     //---------//
     // Adapter //
     //---------//
+    /**
+     *
+     */
     public static interface Adapter
     {
 
@@ -127,8 +130,8 @@ public class AreaMask
 
         private final Wrapper<Integer> fore;
 
-        public ForeCounter (ByteProcessor filter,
-                            Wrapper<Integer> fore)
+        ForeCounter (ByteProcessor filter,
+                     Wrapper<Integer> fore)
         {
             this.filter = filter;
             this.fore = fore;
@@ -140,8 +143,11 @@ public class AreaMask
         public void process (int x,
                              int y)
         {
-            if ((x >= 0) && (x < filterWidth) && (y >= 0) && (y < filterHeight) && (filter.get(x, y)
-                                                                                            == 0)) {
+            if ((x >= 0)
+                        && (x < filterWidth)
+                        && (y >= 0)
+                        && (y < filterHeight)
+                        && (filter.get(x, y) == 0)) {
                 fore.value++;
             }
         }

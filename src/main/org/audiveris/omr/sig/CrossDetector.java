@@ -75,6 +75,9 @@ public class CrossDetector
     //---------//
     // process //
     //---------//
+    /**
+     * Resolve conflicts between overlapping inters from different systems.
+     */
     public void process ()
     {
         final SystemManager manager = sheet.getSystemManager();
@@ -127,8 +130,12 @@ public class CrossDetector
         }
 
         // Cross exclusions
-        logger.debug("Cross detection between {}: {} inters and {}: {} inters", aboveSystem,
-                     aboveInters.size(), belowSystem, belowInters.size());
+        logger.debug(
+                "Cross detection between {}: {} inters and {}: {} inters",
+                aboveSystem,
+                aboveInters.size(),
+                belowSystem,
+                belowInters.size());
         detectCrossOverlaps(aboveInters, belowInters);
     }
 
@@ -273,11 +280,12 @@ public class CrossDetector
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Evaluation.Grade minGradeDiff = new Evaluation.Grade(0.1,
-                                                                           "Minimum difference in ctx-grade to be relevant");
+        private final Evaluation.Grade minGradeDiff = new Evaluation.Grade(
+                0.1,
+                "Minimum difference in ctx-grade to be relevant");
     }
 }

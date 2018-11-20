@@ -54,8 +54,8 @@ public class FilamentComb
     {
         this.col = col;
 
-        filaments = new ArrayList<StaffFilament>();
-        ys = new ArrayList<Double>();
+        filaments = new ArrayList<>();
+        ys = new ArrayList<>();
     }
 
     //--------//
@@ -91,6 +91,12 @@ public class FilamentComb
     //-------------//
     // getFilament //
     //-------------//
+    /**
+     * Report the filament at provided index in comb.
+     *
+     * @param index the provided index in comb
+     * @return the filament at this index
+     */
     public StaffFilament getFilament (int index)
     {
         return filaments.get(index);
@@ -99,6 +105,11 @@ public class FilamentComb
     //--------------//
     // getFilaments //
     //--------------//
+    /**
+     * Report the vertical sequence of filaments in this comb.
+     *
+     * @return vertical sequence of filaments
+     */
     public List<StaffFilament> getFilaments ()
     {
         return filaments;
@@ -107,6 +118,12 @@ public class FilamentComb
     //----------//
     // getIndex //
     //----------//
+    /**
+     * Report the index of provided filament (or its ancestor) in this comb.
+     *
+     * @param filament the provided filament
+     * @return the related index in comb of this filament (or its ancestor)
+     */
     public int getIndex (StaffFilament filament)
     {
         StaffFilament ancestor = (StaffFilament) filament.getAncestor();
@@ -125,6 +142,12 @@ public class FilamentComb
     //------//
     // getY //
     //------//
+    /**
+     * Report ordinate at provided index.
+     *
+     * @param index the provided index in comb
+     * @return the corresponding ordinate value
+     */
     public double getY (int index)
     {
         return ys.get(index);
@@ -134,6 +157,8 @@ public class FilamentComb
     // isProcessed //
     //-------------//
     /**
+     * Tell whether this comb has been processed.
+     *
      * @return the processed
      */
     public boolean isProcessed ()
@@ -145,6 +170,8 @@ public class FilamentComb
     // setProcessed //
     //--------------//
     /**
+     * Flag this comb as processed.
+     *
      * @param processed the processed to set
      */
     public void setProcessed (boolean processed)

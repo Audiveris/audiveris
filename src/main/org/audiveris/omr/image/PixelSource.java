@@ -45,7 +45,6 @@ public interface PixelSource
      *
      * @param x abscissa value
      * @param y ordinate value
-     *
      * @return the pixel value using range 0..255 (0/black for foreground,
      *         255/white for background)
      */

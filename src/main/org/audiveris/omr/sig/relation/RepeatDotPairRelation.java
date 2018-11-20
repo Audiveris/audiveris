@@ -75,14 +75,22 @@ public class RepeatDotPairRelation
         return constants.dotSupportCoeff.getValue();
     }
 
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio dotSupportCoeff = new Constant.Ratio(5,
-                                                                          "Value for source/target (dot) coeff in support formula");
+        private final Constant.Ratio dotSupportCoeff = new Constant.Ratio(
+                5,
+                "Value for source/target (dot) coeff in support formula");
     }
 }

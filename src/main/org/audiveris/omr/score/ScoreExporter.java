@@ -83,10 +83,10 @@ public class ScoreExporter
                         boolean compressed)
             throws Exception
     {
-        final OutputStream os = new FileOutputStream(path.toString());
-        export(os, signed, scoreName, compressed);
-        os.close();
-        logger.info("Score {} exported to {}", scoreName, path);
+        try (OutputStream os = new FileOutputStream(path.toString())) {
+            export(os, signed, scoreName, compressed);
+            logger.info("Score {} exported to {}", scoreName, path);
+        }
     }
 
     //--------//
@@ -121,9 +121,8 @@ public class ScoreExporter
                 scoreName = "score"; // Fall-back value
             }
 
-            mof
-                    .addEntry(new RootFile(scoreName + OMR.SCORE_EXTENSION,
-                                           RootFile.MUSICXML_MEDIA_TYPE));
+            mof.addEntry(
+                    new RootFile(scoreName + OMR.SCORE_EXTENSION, RootFile.MUSICXML_MEDIA_TYPE));
             Marshalling.marshal(scorePartwise, zos, signed, 2);
             mof.close();
         } else {

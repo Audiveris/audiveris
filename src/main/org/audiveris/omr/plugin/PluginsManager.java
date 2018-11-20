@@ -44,6 +44,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -67,16 +68,15 @@ public class PluginsManager
 
     private static final Logger logger = LoggerFactory.getLogger(PluginsManager.class);
 
-    /** File name for plugins definitions: {@value}. */
-    private static final String PLUGINS_FILE_NAME = "plugins.xml";
-
-    /** Singleton. */
-    private static PluginsManager INSTANCE;
-
     /** Persistent default plugin id. */
     public static final Param<String> defaultPluginId = new Default();
 
-    //
+    /** File name for plugins definitions: {@value}. */
+    private static final String PLUGINS_FILE_NAME = "plugins.xml";
+
+    /** Un/marshalling context for use with JAXB. */
+    private static volatile JAXBContext jaxbContext;
+
     /** The concrete UI menu. */
     private JMenu menu;
 
@@ -123,19 +123,6 @@ public class PluginsManager
     }
 
     //------------------//
-    // setDefaultPlugin //
-    //------------------//
-    /**
-     * Assign the default plugin.
-     *
-     * @param defaultPlugin the new default plugin
-     */
-    public final void setDefaultPlugin (Plugin defaultPlugin)
-    {
-        this.defaultPlugin = defaultPlugin;
-    }
-
-    //------------------//
     // getDefaultPlugin //
     //------------------//
     /**
@@ -148,21 +135,17 @@ public class PluginsManager
         return defaultPlugin;
     }
 
-    //-------------//
-    // getInstance //
-    //-------------//
+    //------------------//
+    // setDefaultPlugin //
+    //------------------//
     /**
-     * Report the class singleton.
+     * Assign the default plugin.
      *
-     * @return the unique instance of this class
+     * @param defaultPlugin the new default plugin
      */
-    public static synchronized PluginsManager getInstance ()
+    public final void setDefaultPlugin (Plugin defaultPlugin)
     {
-        if (INSTANCE == null) {
-            INSTANCE = new PluginsManager();
-        }
-
-        return INSTANCE;
+        this.defaultPlugin = defaultPlugin;
     }
 
     //---------//
@@ -202,7 +185,7 @@ public class PluginsManager
      */
     public Collection<String> getPluginIds ()
     {
-        List<String> ids = new ArrayList<String>();
+        List<String> ids = new ArrayList<>();
 
         for (Plugin plugin : plugins) {
             ids.add(plugin.getId());
@@ -235,8 +218,7 @@ public class PluginsManager
 
         if (Files.exists(pluginsPath)) {
             try {
-                JAXBContext jaxbContext = JAXBContext.newInstance(PluginsHolder.class);
-                Unmarshaller um = jaxbContext.createUnmarshaller();
+                Unmarshaller um = getJaxbContext().createUnmarshaller();
                 PluginsHolder pluginsHolder = (PluginsHolder) um.unmarshal(pluginsPath.toFile());
 
                 for (Plugin plugin : pluginsHolder.list) {
@@ -246,7 +228,7 @@ public class PluginsManager
                 logger.info("Loaded plugins from {}", pluginsPath);
 
                 return pluginsHolder.list; // Normal exit
-            } catch (Throwable ex) {
+            } catch (JAXBException ex) {
                 logger.warn("Error loading {}", pluginsPath, ex);
             }
         } else {
@@ -256,10 +238,84 @@ public class PluginsManager
         return Collections.EMPTY_LIST;
     }
 
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of PluginsManager in the application.
+     *
+     * @return the instance
+     */
+    public static PluginsManager getInstance ()
+    {
+        return LazySingleton.INSTANCE;
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(PluginsHolder.class);
+        }
+
+        return jaxbContext;
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final PluginsManager INSTANCE = new PluginsManager();
+    }
+
+    //----------------//
+    // MyMenuListener //
+    //----------------//
+    /**
+     * Class {@code MyMenuListener} is triggered when menu is entered.
+     * <p>
+     * This is meant to enable menu items only when a sheet is selected,
+     * and to indicate the default plugin if any.
+     */
+    private class MyMenuListener
+            extends AbstractMenuListener
+    {
+
+        @Override
+        public void menuSelected (MenuEvent e)
+        {
+            boolean enabled = StubsController.getCurrentStub() != null;
+
+            for (int i = 0; i < menu.getItemCount(); i++) {
+                JMenuItem item = menu.getItem(i);
+
+                // Beware of separators (for which returned menuItem is null)
+                if (item != null) {
+                    item.setEnabled(enabled);
+
+                    // Indicate which plugin is the default (if any)
+                    Action action = item.getAction();
+
+                    if (action instanceof PluginAction) {
+                        Plugin plugin = ((PluginAction) action).getPlugin();
+                        item.setText(
+                                plugin.getId() + ((plugin == defaultPlugin) ? " (default)" : ""));
+                    }
+                }
+            }
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
@@ -310,44 +366,6 @@ public class PluginsManager
         }
     }
 
-    //----------------//
-    // MyMenuListener //
-    //----------------//
-    /**
-     * Class {@code MyMenuListener} is triggered when menu is entered.
-     * <p>
-     * This is meant to enable menu items only when a sheet is selected,
-     * and to indicate the default plugin if any.
-     */
-    private class MyMenuListener
-            extends AbstractMenuListener
-    {
-
-        @Override
-        public void menuSelected (MenuEvent e)
-        {
-            boolean enabled = StubsController.getCurrentStub() != null;
-
-            for (int i = 0; i < menu.getItemCount(); i++) {
-                JMenuItem item = menu.getItem(i);
-
-                // Beware of separators (for which returned menuItem is null)
-                if (item != null) {
-                    item.setEnabled(enabled);
-
-                    // Indicate which plugin is the default (if any)
-                    Action action = item.getAction();
-
-                    if (action instanceof PluginAction) {
-                        Plugin plugin = ((PluginAction) action).getPlugin();
-                        item.setText(plugin.getId()
-                                             + ((plugin == defaultPlugin) ? " (default)" : ""));
-                    }
-                }
-            }
-        }
-    }
-
     //---------------//
     // PluginsHolder //
     //---------------//
@@ -361,7 +379,7 @@ public class PluginsManager
 
         /** List of plugins. */
         @XmlElementRef
-        private List<Plugin> list = new ArrayList<Plugin>();
+        private List<Plugin> list = new ArrayList<>();
 
         /** No-arg constructor meant for JAXB. */
         private PluginsHolder ()

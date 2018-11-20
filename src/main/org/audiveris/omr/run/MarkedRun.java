@@ -61,11 +61,21 @@ public class MarkedRun
         this.mark = mark;
     }
 
+    /**
+     * Report the assigned mark.
+     *
+     * @return mark
+     */
     public int getMark ()
     {
         return mark;
     }
 
+    /**
+     * Assign a mark.
+     *
+     * @param mark assigned mark
+     */
     public void setMark (int mark)
     {
         this.mark = mark;

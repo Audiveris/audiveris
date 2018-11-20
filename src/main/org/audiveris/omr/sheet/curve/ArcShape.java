@@ -23,6 +23,8 @@ package org.audiveris.omr.sheet.curve;
 
 /**
  * Shape detected for arc.
+ *
+ * @author Hervé Bitteur
  */
 public enum ArcShape
 {
@@ -67,11 +69,21 @@ public enum ArcShape
         this.forWedge = forWedge;
     }
 
+    /**
+     * Tell whether this arc is relevant for slur retrieval.
+     *
+     * @return true if so
+     */
     public boolean isSlurRelevant ()
     {
         return forSlur;
     }
 
+    /**
+     * Tell whether this arc is relevant for wedge retrieval.
+     *
+     * @return true if so
+     */
     public boolean isWedgeRelevant ()
     {
         return forWedge;

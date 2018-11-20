@@ -144,6 +144,19 @@ public abstract class AbstractPitchedInter
         return pitch;
     }
 
+    //----------//
+    // setPitch //
+    //----------//
+    /**
+     * Set pitch value.
+     *
+     * @param pitch the pitch to set
+     */
+    public void setPitch (double pitch)
+    {
+        this.pitch = pitch;
+    }
+
     //-----------//
     // setBounds //
     //-----------//
@@ -155,17 +168,6 @@ public abstract class AbstractPitchedInter
         if ((pitch == null) && (staff != null)) {
             setPitch(staff.pitchPositionOf(GeoUtil.centerOf(bounds)));
         }
-    }
-
-    //----------//
-    // setPitch //
-    //----------//
-    /**
-     * @param pitch the pitch to set
-     */
-    public void setPitch (double pitch)
-    {
-        this.pitch = pitch;
     }
 
     //----------//

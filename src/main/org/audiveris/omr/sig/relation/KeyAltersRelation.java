@@ -82,17 +82,26 @@ public class KeyAltersRelation
         return constants.targetSupportCoeff.getValue();
     }
 
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio sourceSupportCoeff = new Constant.Ratio(5,
-                                                                             "Value for (source) alter coeff in support formula");
+        private final Constant.Ratio sourceSupportCoeff = new Constant.Ratio(
+                5,
+                "Value for (source) alter coeff in support formula");
 
-        private final Constant.Ratio targetSupportCoeff = new Constant.Ratio(5,
-                                                                             "Value for (target) alter coeff in support formula");
+        private final Constant.Ratio targetSupportCoeff = new Constant.Ratio(
+                5,
+                "Value for (target) alter coeff in support formula");
     }
 }

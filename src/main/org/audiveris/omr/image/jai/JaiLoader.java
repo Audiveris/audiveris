@@ -78,7 +78,7 @@ public abstract class JaiLoader
 
         try {
             if ((image.getWidth() > 0) && (image.getHeight() > 0)) {
-                SortedMap<Integer, BufferedImage> images = new TreeMap<Integer, BufferedImage>();
+                SortedMap<Integer, BufferedImage> images = new TreeMap<>();
                 images.put(1, image);
 
                 return images;

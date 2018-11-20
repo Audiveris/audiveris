@@ -77,27 +77,6 @@ public class CircleModel
         this.circle = circle;
     }
 
-    /**
-     * Factory method to try to create a valuable circle model.
-     *
-     * @param first  first point
-     * @param middle a point rather in the middle
-     * @param last   last point
-     * @return the CircleModel instance if OK, null otherwise
-     */
-    public static CircleModel create (Point2D first,
-                                      Point2D middle,
-                                      Point2D last)
-    {
-        CircleModel model = new CircleModel(first, middle, last);
-
-        if (model.circle.getRadius().isInfinite()) {
-            return null;
-        } else {
-            return model;
-        }
-    }
-
     @Override
     public int above ()
     {
@@ -151,6 +130,12 @@ public class CircleModel
     }
 
     @Override
+    public void setDistance (double dist)
+    {
+        circle.setDistance(dist);
+    }
+
+    @Override
     public Point2D getEndVector (boolean reverse)
     {
         int dir = reverse ? ccw() : (-ccw());
@@ -171,9 +156,24 @@ public class CircleModel
         circle.reverse();
     }
 
-    @Override
-    public void setDistance (double dist)
+    /**
+     * Factory method to try to create a valuable circle model.
+     *
+     * @param first  first point
+     * @param middle a point rather in the middle
+     * @param last   last point
+     * @return the CircleModel instance if OK, null otherwise
+     */
+    public static CircleModel create (Point2D first,
+                                      Point2D middle,
+                                      Point2D last)
     {
-        circle.setDistance(dist);
+        CircleModel model = new CircleModel(first, middle, last);
+
+        if (model.circle.getRadius().isInfinite()) {
+            return null;
+        } else {
+            return model;
+        }
     }
 }

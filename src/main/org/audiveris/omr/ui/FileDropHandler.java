@@ -138,7 +138,7 @@ public class FileDropHandler
 
         private Book book;
 
-        public DropBookTask (File file)
+        DropBookTask (File file)
         {
             this.file = file;
         }
@@ -183,8 +183,8 @@ public class FileDropHandler
 
         private Book book;
 
-        public DropInputTask (File file,
-                              Step dropStep)
+        DropInputTask (File file,
+                       Step dropStep)
         {
             this.file = file;
             this.dropStep = dropStep;
@@ -235,7 +235,7 @@ public class FileDropHandler
 
         private final File file;
 
-        public DropSamplesTask (File file)
+        DropSamplesTask (File file)
         {
             this.file = file;
         }

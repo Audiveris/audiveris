@@ -51,9 +51,9 @@ public class ViewParameters
         extends AbstractBean
 {
 
-    private static final Logger logger = LoggerFactory.getLogger(ViewParameters.class);
-
     private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(ViewParameters.class);
 
     /** Should the annotations be painted. */
     public static final String ANNOTATION_PAINTING = "annotationPainting";
@@ -103,72 +103,6 @@ public class ViewParameters
     /** Should the inters be painted with grade-based translucency in input view. */
     public static final String TRANSLUCENT_PAINTING = "translucentPainting";
 
-    /**
-     * Enum {@code PaintingLayer} defines layers to be painted.
-     */
-    public static enum PaintingLayer
-    {
-        /** Input: image or glyphs. */
-        INPUT,
-        /** Union of input and output. */
-        INPUT_OUTPUT,
-        /** Output: score entities. */
-        OUTPUT;
-
-        /** Icon assigned to layer. */
-        private Icon icon;
-
-        /**
-         * Lazily building of layer icon.
-         *
-         * @return the layer icon
-         */
-        public Icon getIcon ()
-        {
-            if (icon == null) {
-                ResourceMap resource = Application.getInstance().getContext().getResourceMap(
-                        ViewParameters.class);
-
-                String key = getClass().getSimpleName() + "." + this + ".icon";
-                String resourceName = resource.getString(key);
-                icon = new ImageIcon(ViewParameters.class.getResource(resourceName));
-            }
-
-            return icon;
-        }
-    }
-
-    /**
-     * Enum {@code SelectionMode} defines type of entities to be selected.
-     */
-    public static enum SelectionMode
-    {
-        MODE_GLYPH,
-        MODE_INTER,
-        MODE_SECTION;
-
-        /** Icon assigned to mode. */
-        private Icon icon;
-
-        /**
-         * Lazily building of mode icon.
-         *
-         * @return the mode icon
-         */
-        public Icon getIcon ()
-        {
-            if (icon == null) {
-                ResourceMap resource = Application.getInstance().getContext().getResourceMap(
-                        ViewParameters.class);
-                String key = getClass().getSimpleName() + "." + this + ".icon";
-                String resourceName = resource.getString(key);
-                icon = new ImageIcon(ViewParameters.class.getResource(resourceName));
-            }
-
-            return icon;
-        }
-    }
-
     /** Action for switching layers. (Must be lazily computed) */
     private ApplicationAction layerAction;
 
@@ -193,20 +127,22 @@ public class ViewParameters
     /** Staff peak painting is chosen to be not persistent. */
     private boolean staffPeakPainting = false;
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    public static ViewParameters getInstance ()
-    {
-        return Holder.INSTANCE;
-    }
-
     //------------------//
     // getPaintingLayer //
     //------------------//
     public PaintingLayer getPaintingLayer ()
     {
         return paintingLayer;
+    }
+
+    //------------------//
+    // setPaintingLayer //
+    //------------------//
+    public void setPaintingLayer (PaintingLayer value)
+    {
+        PaintingLayer oldValue = getPaintingLayer();
+        paintingLayer = value;
+        firePropertyChange(LAYER_PAINTING, oldValue, value);
     }
 
     //------------------//
@@ -217,12 +153,32 @@ public class ViewParameters
         return selectionMode;
     }
 
+    //------------------//
+    // setSelectionMode //
+    //------------------//
+    public void setSelectionMode (SelectionMode value)
+    {
+        SelectionMode oldValue = getSelectionMode();
+        selectionMode = value;
+        firePropertyChange(SELECTION_MODE, oldValue, value);
+    }
+
     //----------------------//
     // isAnnotationPainting //
     //----------------------//
     public boolean isAnnotationPainting ()
     {
         return constants.annotationPainting.getValue();
+    }
+
+    //-----------------------//
+    // setAnnotationPainting //
+    //-----------------------//
+    public void setAnnotationPainting (boolean value)
+    {
+        boolean oldValue = constants.annotationPainting.getValue();
+        constants.annotationPainting.setValue(value);
+        firePropertyChange(ANNOTATION_PAINTING, oldValue, value);
     }
 
     //----------------------//
@@ -233,12 +189,32 @@ public class ViewParameters
         return constants.attachmentPainting.getValue();
     }
 
+    //-----------------------//
+    // setAttachmentPainting //
+    //-----------------------//
+    public void setAttachmentPainting (boolean value)
+    {
+        boolean oldValue = constants.attachmentPainting.getValue();
+        constants.attachmentPainting.setValue(value);
+        firePropertyChange(ATTACHMENT_PAINTING, oldValue, value);
+    }
+
     //-----------------//
     // isErrorPainting //
     //-----------------//
     public boolean isErrorPainting ()
     {
         return errorPainting;
+    }
+
+    //------------------//
+    // setErrorPainting //
+    //------------------//
+    public void setErrorPainting (boolean value)
+    {
+        boolean oldValue = errorPainting;
+        errorPainting = value;
+        firePropertyChange(ERROR_PAINTING, oldValue, value);
     }
 
     //-----------------//
@@ -257,12 +233,32 @@ public class ViewParameters
         return constants.invalidSheetDisplay.getValue();
     }
 
+    //------------------------//
+    // setInvalidSheetDisplay //
+    //------------------------//
+    public void setInvalidSheetDisplay (boolean value)
+    {
+        boolean oldValue = constants.invalidSheetDisplay.getValue();
+        constants.invalidSheetDisplay.setValue(value);
+        firePropertyChange(INVALID_SHEET_DISPLAY, oldValue, value);
+    }
+
     //---------------------//
     // isLetterBoxPainting //
     //---------------------//
     public boolean isLetterBoxPainting ()
     {
         return constants.letterBoxPainting.getValue();
+    }
+
+    //----------------------//
+    // setLetterBoxPainting //
+    //----------------------//
+    public void setLetterBoxPainting (boolean value)
+    {
+        boolean oldValue = constants.letterBoxPainting.getValue();
+        constants.letterBoxPainting.setValue(value);
+        firePropertyChange(LETTER_BOX_PAINTING, oldValue, value);
     }
 
     //----------------//
@@ -273,12 +269,32 @@ public class ViewParameters
         return constants.linePainting.getValue();
     }
 
+    //-----------------//
+    // setLinePainting //
+    //-----------------//
+    public void setLinePainting (boolean value)
+    {
+        boolean oldValue = constants.linePainting.getValue();
+        constants.linePainting.setValue(value);
+        firePropertyChange(LINE_PAINTING, oldValue, value);
+    }
+
     //----------------//
     // isMarkPainting //
     //----------------//
     public boolean isMarkPainting ()
     {
         return constants.markPainting.getValue();
+    }
+
+    //-----------------//
+    // setMarkPainting //
+    //-----------------//
+    public void setMarkPainting (boolean value)
+    {
+        boolean oldValue = constants.markPainting.getValue();
+        constants.markPainting.setValue(value);
+        firePropertyChange(MARK_PAINTING, oldValue, value);
     }
 
     //------------------//
@@ -297,144 +313,6 @@ public class ViewParameters
         return constants.sentencePainting.getValue();
     }
 
-    //----------------//
-    // isSlotPainting //
-    //----------------//
-    public boolean isSlotPainting ()
-    {
-        return constants.slotPainting.getValue();
-    }
-
-    //---------------------//
-    // isStaffLinePainting //
-    //---------------------//
-    public boolean isStaffLinePainting ()
-    {
-        return staffLinePainting;
-    }
-
-    //---------------------//
-    // isStaffPeakPainting //
-    //---------------------//
-    public boolean isStaffPeakPainting ()
-    {
-        return staffPeakPainting;
-    }
-
-    //-----------------------//
-    // isTranslationPainting //
-    //-----------------------//
-    public boolean isTranslationPainting ()
-    {
-        return constants.translationPainting.getValue();
-    }
-
-    //-----------------------//
-    // isTranslucentPainting //
-    //-----------------------//
-    public boolean isTranslucentPainting ()
-    {
-        return constants.translucentPainting.getValue();
-    }
-
-    //-----------------//
-    // isVoicePainting //
-    //-----------------//
-    public boolean isVoicePainting ()
-    {
-        return voicePainting;
-    }
-
-    //-----------------------//
-    // setAnnotationPainting //
-    //-----------------------//
-    public void setAnnotationPainting (boolean value)
-    {
-        boolean oldValue = constants.annotationPainting.getValue();
-        constants.annotationPainting.setValue(value);
-        firePropertyChange(ANNOTATION_PAINTING, oldValue, value);
-    }
-
-    //-----------------------//
-    // setAttachmentPainting //
-    //-----------------------//
-    public void setAttachmentPainting (boolean value)
-    {
-        boolean oldValue = constants.attachmentPainting.getValue();
-        constants.attachmentPainting.setValue(value);
-        firePropertyChange(ATTACHMENT_PAINTING, oldValue, value);
-    }
-
-    //------------------//
-    // setErrorPainting //
-    //------------------//
-    public void setErrorPainting (boolean value)
-    {
-        boolean oldValue = errorPainting;
-        errorPainting = value;
-        firePropertyChange(ERROR_PAINTING, oldValue, value);
-    }
-
-    //------------------------//
-    // setInvalidSheetDisplay //
-    //------------------------//
-    public void setInvalidSheetDisplay (boolean value)
-    {
-        boolean oldValue = constants.invalidSheetDisplay.getValue();
-        constants.invalidSheetDisplay.setValue(value);
-        firePropertyChange(INVALID_SHEET_DISPLAY, oldValue, value);
-    }
-
-    //----------------------//
-    // setLetterBoxPainting //
-    //----------------------//
-    public void setLetterBoxPainting (boolean value)
-    {
-        boolean oldValue = constants.letterBoxPainting.getValue();
-        constants.letterBoxPainting.setValue(value);
-        firePropertyChange(LETTER_BOX_PAINTING, oldValue, value);
-    }
-
-    //-----------------//
-    // setLinePainting //
-    //-----------------//
-    public void setLinePainting (boolean value)
-    {
-        boolean oldValue = constants.linePainting.getValue();
-        constants.linePainting.setValue(value);
-        firePropertyChange(LINE_PAINTING, oldValue, value);
-    }
-
-    //-----------------//
-    // setMarkPainting //
-    //-----------------//
-    public void setMarkPainting (boolean value)
-    {
-        boolean oldValue = constants.markPainting.getValue();
-        constants.markPainting.setValue(value);
-        firePropertyChange(MARK_PAINTING, oldValue, value);
-    }
-
-    //------------------//
-    // setPaintingLayer //
-    //------------------//
-    public void setPaintingLayer (PaintingLayer value)
-    {
-        PaintingLayer oldValue = getPaintingLayer();
-        paintingLayer = value;
-        firePropertyChange(LAYER_PAINTING, oldValue, value);
-    }
-
-    //------------------//
-    // setSelectionMode //
-    //------------------//
-    public void setSelectionMode (SelectionMode value)
-    {
-        SelectionMode oldValue = getSelectionMode();
-        selectionMode = value;
-        firePropertyChange(SELECTION_MODE, oldValue, value);
-    }
-
     //---------------------//
     // setSentencePainting //
     //---------------------//
@@ -443,6 +321,14 @@ public class ViewParameters
         boolean oldValue = constants.sentencePainting.getValue();
         constants.sentencePainting.setValue(value);
         firePropertyChange(SENTENCE_PAINTING, oldValue, value);
+    }
+
+    //----------------//
+    // isSlotPainting //
+    //----------------//
+    public boolean isSlotPainting ()
+    {
+        return constants.slotPainting.getValue();
     }
 
     //-----------------//
@@ -455,6 +341,14 @@ public class ViewParameters
         firePropertyChange(SLOT_PAINTING, oldValue, value);
     }
 
+    //---------------------//
+    // isStaffLinePainting //
+    //---------------------//
+    public boolean isStaffLinePainting ()
+    {
+        return staffLinePainting;
+    }
+
     //----------------------//
     // setStaffLinePainting //
     //----------------------//
@@ -463,6 +357,14 @@ public class ViewParameters
         boolean oldValue = staffLinePainting;
         staffLinePainting = value;
         firePropertyChange(STAFF_LINE_PAINTING, oldValue, value);
+    }
+
+    //---------------------//
+    // isStaffPeakPainting //
+    //---------------------//
+    public boolean isStaffPeakPainting ()
+    {
+        return staffPeakPainting;
     }
 
     //----------------------//
@@ -475,6 +377,14 @@ public class ViewParameters
         firePropertyChange(STAFF_PEAK_PAINTING, oldValue, value);
     }
 
+    //-----------------------//
+    // isTranslationPainting //
+    //-----------------------//
+    public boolean isTranslationPainting ()
+    {
+        return constants.translationPainting.getValue();
+    }
+
     //------------------------//
     // setTranslationPainting //
     //------------------------//
@@ -485,6 +395,14 @@ public class ViewParameters
         firePropertyChange(TRANSLATION_PAINTING, oldValue, value);
     }
 
+    //-----------------------//
+    // isTranslucentPainting //
+    //-----------------------//
+    public boolean isTranslucentPainting ()
+    {
+        return constants.translucentPainting.getValue();
+    }
+
     //------------------------//
     // setTranslucentPainting //
     //------------------------//
@@ -493,6 +411,14 @@ public class ViewParameters
         boolean oldValue = constants.translucentPainting.getValue();
         constants.translucentPainting.setValue(value);
         firePropertyChange(TRANSLUCENT_PAINTING, oldValue, value);
+    }
+
+    //-----------------//
+    // isVoicePainting //
+    //-----------------//
+    public boolean isVoicePainting ()
+    {
+        return voicePainting;
     }
 
     //------------------//
@@ -552,8 +478,9 @@ public class ViewParameters
 
         // Update toolbar/menu icon for this dedicated action
         if (selectionAction == null) {
-            selectionAction = ActionManager.getInstance()
-                    .getActionInstance(this, "switchSelections");
+            selectionAction = ActionManager.getInstance().getActionInstance(
+                    this,
+                    "switchSelections");
         }
 
         Icon icon = mode.getIcon();
@@ -746,50 +673,139 @@ public class ViewParameters
     {
     }
 
-    //--------//
-    // Holder //
-    //--------//
-    private static interface Holder
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this class in application.
+     *
+     * @return the instance
+     */
+    public static ViewParameters getInstance ()
+    {
+        return LazySingleton.INSTANCE;
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
     {
 
-        public static final ViewParameters INSTANCE = new ViewParameters();
+        static final ViewParameters INSTANCE = new ViewParameters();
+    }
+
+    /**
+     * Enum {@code PaintingLayer} defines layers to be painted.
+     */
+    public static enum PaintingLayer
+    {
+        /** Input: image or glyphs. */
+        INPUT,
+        /** Union of input and output. */
+        INPUT_OUTPUT,
+        /** Output: score entities. */
+        OUTPUT;
+
+        /** Icon assigned to layer. */
+        private Icon icon;
+
+        /**
+         * Lazily building of layer icon.
+         *
+         * @return the layer icon
+         */
+        public Icon getIcon ()
+        {
+            if (icon == null) {
+                ResourceMap resource = Application.getInstance().getContext().getResourceMap(
+                        ViewParameters.class);
+
+                String key = getClass().getSimpleName() + "." + this + ".icon";
+                String resourceName = resource.getString(key);
+                icon = new ImageIcon(ViewParameters.class.getResource(resourceName));
+            }
+
+            return icon;
+        }
+    }
+
+    /**
+     * Enum {@code SelectionMode} defines type of entities to be selected.
+     */
+    public static enum SelectionMode
+    {
+        MODE_GLYPH,
+        MODE_INTER,
+        MODE_SECTION;
+
+        /** Icon assigned to mode. */
+        private Icon icon;
+
+        /**
+         * Lazily building of mode icon.
+         *
+         * @return the mode icon
+         */
+        public Icon getIcon ()
+        {
+            if (icon == null) {
+                ResourceMap resource = Application.getInstance().getContext().getResourceMap(
+                        ViewParameters.class);
+                String key = getClass().getSimpleName() + "." + this + ".icon";
+                String resourceName = resource.getString(key);
+                icon = new ImageIcon(ViewParameters.class.getResource(resourceName));
+            }
+
+            return icon;
+        }
     }
 
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean annotationPainting = new Constant.Boolean(true,
-                                                                                 "Should the annotations be painted");
+        private final Constant.Boolean annotationPainting = new Constant.Boolean(
+                true,
+                "Should the annotations be painted");
 
-        private final Constant.Boolean slotPainting = new Constant.Boolean(true,
-                                                                           "Should the slots be painted");
+        private final Constant.Boolean slotPainting = new Constant.Boolean(
+                true,
+                "Should the slots be painted");
 
-        private final Constant.Boolean markPainting = new Constant.Boolean(true,
-                                                                           "Should the marks be painted");
+        private final Constant.Boolean markPainting = new Constant.Boolean(
+                true,
+                "Should the marks be painted");
 
-        private final Constant.Boolean invalidSheetDisplay = new Constant.Boolean(true,
-                                                                                  "Should the invalid sheets be displayed");
+        private final Constant.Boolean invalidSheetDisplay = new Constant.Boolean(
+                true,
+                "Should the invalid sheets be displayed");
 
-        private final Constant.Boolean letterBoxPainting = new Constant.Boolean(true,
-                                                                                "Should the letter boxes be painted");
+        private final Constant.Boolean letterBoxPainting = new Constant.Boolean(
+                true,
+                "Should the letter boxes be painted");
 
-        private final Constant.Boolean linePainting = new Constant.Boolean(false,
-                                                                           "Should the stick lines be painted");
+        private final Constant.Boolean linePainting = new Constant.Boolean(
+                false,
+                "Should the stick lines be painted");
 
-        private final Constant.Boolean attachmentPainting = new Constant.Boolean(false,
-                                                                                 "Should the staff & glyph attachments be painted");
+        private final Constant.Boolean attachmentPainting = new Constant.Boolean(
+                false,
+                "Should the staff & glyph attachments be painted");
 
-        private final Constant.Boolean translationPainting = new Constant.Boolean(true,
-                                                                                  "Should the glyph translations links be painted");
+        private final Constant.Boolean translationPainting = new Constant.Boolean(
+                true,
+                "Should the glyph translations links be painted");
 
-        private final Constant.Boolean sentencePainting = new Constant.Boolean(true,
-                                                                               "Should the sentence words links be painted");
+        private final Constant.Boolean sentencePainting = new Constant.Boolean(
+                true,
+                "Should the sentence words links be painted");
 
-        private final Constant.Boolean translucentPainting = new Constant.Boolean(true,
-                                                                                  "Should the inters be painted with grade-based translucency");
+        private final Constant.Boolean translucentPainting = new Constant.Boolean(
+                true,
+                "Should the inters be painted with grade-based translucency");
     }
 }

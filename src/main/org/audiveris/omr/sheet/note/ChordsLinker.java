@@ -153,9 +153,11 @@ public class ChordsLinker
     //------------//
     // linkChords //
     //------------//
+    /**
+     * Allocate beam groups per measure.
+     */
     public void linkChords ()
     {
-        // Allocate beam groups per stack
         for (MeasureStack stack : system.getStacks()) {
             for (Measure measure : stack.getMeasures()) {
                 BeamGroup.populate(measure, true); // True for checkGroupSplit
@@ -166,11 +168,12 @@ public class ChordsLinker
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio maxAbscissaOverlapRatio = new Constant.Ratio(0.25,
-                                                                                  "Maximum abscissa relative overlap ratio between chords of a beam");
+        private final Constant.Ratio maxAbscissaOverlapRatio = new Constant.Ratio(
+                0.25,
+                "Maximum abscissa relative overlap ratio between chords of a beam");
     }
 }

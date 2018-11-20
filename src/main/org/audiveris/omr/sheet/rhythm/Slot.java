@@ -62,10 +62,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Class {@code Slot} represents a roughly defined time slot within a measure stack,
  * to gather all chords that start at the same time.
  * <p>
- * On the diagram shown, slots are indicated by vertical blue lines.</p>
+ * On the diagram shown, slots are indicated by vertical blue lines.
  * <p>
- * The slot embraces all the staves of the system.
- * <p>
+ * NOTA: The slot embraces all the staves in the system.
  * <div style="float: right;">
  * <img src="doc-files/Slot.png" alt="diagram">
  * </div>
@@ -124,7 +123,7 @@ public class Slot
     {
         this.id = id;
         this.stack = stack;
-        this.incomings = new ArrayList<AbstractChordInter>(incomings);
+        this.incomings = new ArrayList<>(incomings);
 
         for (AbstractChordInter chord : incomings) {
             chord.setSlot(this);
@@ -144,11 +143,14 @@ public class Slot
     //-------------//
     // afterReload //
     //-------------//
+    /**
+     * To be called right after unmarshalling.
+     */
     public void afterReload ()
     {
         try {
             // Populate incomings
-            incomings = new ArrayList<AbstractChordInter>();
+            incomings = new ArrayList<>();
 
             final SystemInfo system = stack.getSystem();
 
@@ -317,7 +319,7 @@ public class Slot
     public List<AbstractChordInter> getEmbracedChords (Point top,
                                                        Point bottom)
     {
-        List<AbstractChordInter> embracedChords = new ArrayList<AbstractChordInter>();
+        List<AbstractChordInter> embracedChords = new ArrayList<>();
 
         for (AbstractChordInter chord : getChords()) {
             if (chord.isEmbracedBy(top, bottom)) {
@@ -352,6 +354,20 @@ public class Slot
     public MeasureStack getStack ()
     {
         return stack;
+    }
+
+    //----------//
+    // setStack //
+    //----------//
+    /**
+     * Set the containing stack for this slot.
+     *
+     * @param stack containing stack
+     */
+    public void setStack (MeasureStack stack)
+    {
+        this.stack = stack;
+        computeXOffset();
     }
 
     //---------------//
@@ -398,15 +414,6 @@ public class Slot
     public boolean isSuspicious ()
     {
         return suspicious;
-    }
-
-    //----------//
-    // setStack //
-    //----------//
-    public void setStack (MeasureStack stack)
-    {
-        this.stack = stack;
-        computeXOffset();
     }
 
     //---------------//
@@ -509,7 +516,7 @@ public class Slot
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append("Slot{#").append(id);
 
         sb.append(" xOffset=").append(xOffset);
@@ -518,13 +525,15 @@ public class Slot
             sb.append(" timeOffset=").append(timeOffset);
         }
 
-        sb.append(" incomings=[");
+        if (incomings != null) {
+            sb.append(" incomings=[");
 
-        for (AbstractChordInter chord : incomings) {
-            sb.append("#").append(chord.getId());
+            for (AbstractChordInter chord : incomings) {
+                sb.append("#").append(chord.getId());
+            }
+
+            sb.append("]");
         }
-
-        sb.append("]");
 
         if (isSuspicious()) {
             sb.append(" SUSPICIOUS");
@@ -552,7 +561,7 @@ public class Slot
                 .append(" [");
 
         SortedMap<Integer, AbstractChordInter> voiceChords
-                = new TreeMap<Integer, AbstractChordInter>();
+                = new TreeMap<>();
 
         for (AbstractChordInter chord : getChords()) {
             voiceChords.put(chord.getVoice().getId(), chord);
@@ -660,7 +669,7 @@ public class Slot
             return;
         }
 
-        List<AbstractChordInter> partRookies = new ArrayList<AbstractChordInter>();
+        List<AbstractChordInter> partRookies = new ArrayList<>();
 
         // Some chords already have their voice assigned
         for (AbstractChordInter ch : partIncomings) {
@@ -723,14 +732,14 @@ public class Slot
     private Map<Part, List<AbstractChordInter>> buildPartMap (List<AbstractChordInter> stackChords)
     {
         Map<Part, List<AbstractChordInter>> map
-                = new LinkedHashMap<Part, List<AbstractChordInter>>();
+                = new LinkedHashMap<>();
 
         for (AbstractChordInter ch : stackChords) {
             Part part = ch.getPart();
             List<AbstractChordInter> partChords = map.get(part);
 
             if (partChords == null) {
-                map.put(part, partChords = new ArrayList<AbstractChordInter>());
+                map.put(part, partChords = new ArrayList<>());
             }
 
             partChords.add(ch);
@@ -760,7 +769,6 @@ public class Slot
         xOffset = (int) Math.rint(stack.getXOffset(ref));
     }
 
-    //
     //------------//
     // MyDistance //
     //------------//
@@ -768,7 +776,7 @@ public class Slot
      * Implementation of a 'distance' between an old chord and a new chord to be
      * potentially linked in the same voice.
      */
-    private static final class MyDistance
+    private static class MyDistance
             implements InjectionSolver.Distance
     {
 
@@ -780,7 +788,7 @@ public class Slot
 
         private static final int STAFF_DIFF = 50; // 40;
 
-        private static final int INCOMPATIBLE_VOICES = 10000; // Forbidden
+        private static final int INCOMPATIBLE_VOICES = 10_000; // Forbidden
 
         private final List<AbstractChordInter> news;
 
@@ -788,9 +796,9 @@ public class Slot
 
         private final Scale scale;
 
-        public MyDistance (List<AbstractChordInter> news,
-                           List<AbstractChordInter> olds,
-                           Scale scale)
+        MyDistance (List<AbstractChordInter> news,
+                    List<AbstractChordInter> olds,
+                    Scale scale)
         {
             this.news = news;
             this.olds = olds;

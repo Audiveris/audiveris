@@ -99,7 +99,7 @@ public class BasicLegendreMoments
                         sb.append(" ");
                     }
 
-                    sb.append(String.format(Locale.US, "%04.0f", 1000 * getMoment(m, n)));
+                    sb.append(String.format(Locale.US, "%04.0f", 1_000 * getMoment(m, n)));
                 }
             }
         }

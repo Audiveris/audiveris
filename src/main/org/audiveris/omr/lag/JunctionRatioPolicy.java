@@ -37,6 +37,9 @@ public class JunctionRatioPolicy
 
     private static final Constants constants = new Constants();
 
+    /**
+     * JunctionRatioPolicy based on ratio default value.
+     */
     public static final JunctionRatioPolicy DEFAULT = new JunctionRatioPolicy();
 
     /**
@@ -103,11 +106,12 @@ public class JunctionRatioPolicy
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio maxLengthRatio = new Constant.Ratio(1.25,
-                                                                         "Maximum ratio in length for a run to be combined with an existing section");
+        private final Constant.Ratio maxLengthRatio = new Constant.Ratio(
+                1.25,
+                "Maximum ratio in length for a run to be combined with an existing section");
     }
 }

@@ -92,10 +92,10 @@ public class PageReduction
     private List<List<Candidate>> buildSequences (Page page)
     {
         // Build candidates (here, a candidate is a Part)
-        List<List<Candidate>> sequences = new ArrayList<List<Candidate>>();
+        List<List<Candidate>> sequences = new ArrayList<>();
 
         for (SystemInfo system : page.getSystems()) {
-            List<Candidate> parts = new ArrayList<Candidate>();
+            List<Candidate> parts = new ArrayList<>();
 
             for (Part systemPart : system.getParts()) {
                 parts.add(new PartCandidate(systemPart));
@@ -117,7 +117,7 @@ public class PageReduction
      */
     private void storeResults (List<ResultEntry> resultEntries)
     {
-        List<LogicalPart> logicalParts = new ArrayList<LogicalPart>();
+        List<LogicalPart> logicalParts = new ArrayList<>();
 
         for (ResultEntry entry : resultEntries) {
             LogicalPart logicalPart = entry.result;
@@ -142,7 +142,7 @@ public class PageReduction
 
         private final Part systemPart;
 
-        public PartCandidate (Part part)
+        PartCandidate (Part part)
         {
             this.systemPart = part;
         }

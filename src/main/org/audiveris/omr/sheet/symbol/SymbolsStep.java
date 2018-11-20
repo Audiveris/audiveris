@@ -132,22 +132,25 @@ public class SymbolsStep
     //---------//
     // Context //
     //---------//
+    /**
+     * Context for step processing.
+     */
     protected static class Context
     {
 
         /** Map of optional (weak) glyphs per system. */
-        public final Map<SystemInfo, List<Glyph>> optionalsMap
-                = new TreeMap<SystemInfo, List<Glyph>>();
+        public final Map<SystemInfo, List<Glyph>> optionalsMap = new TreeMap<>();
     }
 
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(false,
-                                                                         "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
     }
 }

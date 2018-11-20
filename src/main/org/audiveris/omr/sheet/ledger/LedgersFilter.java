@@ -71,7 +71,6 @@ public class LedgersFilter
 
     private static final Logger logger = LoggerFactory.getLogger(LedgersFilter.class);
 
-    //
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -145,8 +144,9 @@ public class LedgersFilter
             new LagController(sheet, lag, SheetTab.LEDGER_TAB).refresh();
 
             // Filament board
-            sheet.getStub().getAssembly().addBoard(SheetTab.LEDGER_TAB, new FilamentBoard(sheet
-                                                   .getFilamentIndex().getEntityService(), true));
+            sheet.getStub().getAssembly().addBoard(
+                    SheetTab.LEDGER_TAB,
+                    new FilamentBoard(sheet.getFilamentIndex().getEntityService(), true));
         }
 
         return dispatchLedgerSections(lag.getEntities());
@@ -160,8 +160,8 @@ public class LedgersFilter
      */
     private Map<SystemInfo, List<Section>> dispatchLedgerSections (Collection<Section> sections)
     {
-        Map<SystemInfo, List<Section>> sectionMap = new TreeMap<SystemInfo, List<Section>>();
-        List<SystemInfo> relevants = new ArrayList<SystemInfo>();
+        Map<SystemInfo, List<Section>> sectionMap = new TreeMap<>();
+        List<SystemInfo> relevants = new ArrayList<>();
         SystemManager systemManager = sheet.getSystemManager();
 
         for (Section section : sections) {
@@ -174,7 +174,7 @@ public class LedgersFilter
                     List<Section> list = sectionMap.get(system);
 
                     if (list == null) {
-                        sectionMap.put(system, list = new ArrayList<Section>());
+                        sectionMap.put(system, list = new ArrayList<>());
                     }
 
                     list.add(section);
@@ -204,17 +204,20 @@ public class LedgersFilter
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean displayLedgers = new Constant.Boolean(false,
-                                                                             "Should we display the view on ledgers?");
+        private final Constant.Boolean displayLedgers = new Constant.Boolean(
+                false,
+                "Should we display the view on ledgers?");
 
-        private final Scale.Fraction minDistanceFromStaff = new Scale.Fraction(0.25,
-                                                                               "Minimum vertical distance from nearest staff");
+        private final Scale.Fraction minDistanceFromStaff = new Scale.Fraction(
+                0.25,
+                "Minimum vertical distance from nearest staff");
 
-        private final Constant.String ledgerVipSections = new Constant.String("",
-                                                                              "(Debug) Comma-separated values of VIP ledger sections IDs");
+        private final Constant.String ledgerVipSections = new Constant.String(
+                "",
+                "(Debug) Comma-separated values of VIP ledger sections IDs");
     }
 }

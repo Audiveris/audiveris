@@ -90,23 +90,23 @@ public class BasicSymbol
     /** A transformation for really small icon display. */
     protected static final AffineTransform tiny = AffineTransform.getScaleInstance(0.5, 0.5);
 
-    /** To flag an icon symbol. */
-    protected final boolean isIcon;
-
     /** Sequence of point codes. */
     public final int[] codes;
 
-    /** Related image, corresponding to standard interline. */
-    private BufferedImage image;
+    /** To flag an icon symbol. */
+    protected final boolean isIcon;
 
     /** Pre-scaled symbol for icon display. */
     protected BasicSymbol icon;
 
-    /** Image dimension corresponding to standard interline. */
-    private Dimension dimension;
-
     /** Offset of centroid WRT area center, specified in ratio of width and height. */
     protected Point2D centroidOffset;
+
+    /** Related image, corresponding to standard interline. */
+    private BufferedImage image;
+
+    /** Image dimension corresponding to standard interline. */
+    private Dimension dimension;
 
     /**
      * Creates a new BasicSymbol object.
@@ -131,6 +131,9 @@ public class BasicSymbol
         this(false, codes);
     }
 
+    /**
+     * Useful?
+     */
     public BasicSymbol ()
     {
         this.isIcon = false;
@@ -168,9 +171,9 @@ public class BasicSymbol
             computeCentroidOffset();
         }
 
-        return new Point((int) Math
-                .rint(box.getCenterX() + (box.getWidth() * centroidOffset.getX())), (int) Math.rint(
-                         box.getCenterY() + (box.getHeight() * centroidOffset.getY())));
+        return new Point(
+                (int) Math.rint(box.getCenterX() + (box.getWidth() * centroidOffset.getX())),
+                (int) Math.rint(box.getCenterY() + (box.getHeight() * centroidOffset.getY())));
     }
 
     //--------------//
@@ -233,6 +236,11 @@ public class BasicSymbol
     //-----------//
     // getString //
     //-----------//
+    /**
+     * Report the String defined by Unicode characters
+     *
+     * @return the resulting String
+     */
     public final String getString ()
     {
         return new String(codes, 0, codes.length);
@@ -279,7 +287,7 @@ public class BasicSymbol
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append("{");
 
-        sb.append(internalsString());
+        sb.append(internals());
 
         sb.append("}");
 
@@ -354,6 +362,12 @@ public class BasicSymbol
     //-----------//
     // getParams //
     //-----------//
+    /**
+     * Report the specific Params object to draw this symbol.
+     *
+     * @param font scaled music font
+     * @return the specific Params object
+     */
     protected Params getParams (MusicFont font)
     {
         Params p = new Params();
@@ -384,10 +398,15 @@ public class BasicSymbol
         return dimension.width;
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
-    protected String internalsString ()
+    //-----------//
+    // internals //
+    //-----------//
+    /**
+     * Report a string description of internals.
+     *
+     * @return string of internal informations
+     */
+    protected String internals ()
     {
         StringBuilder sb = new StringBuilder();
 
@@ -470,8 +489,9 @@ public class BasicSymbol
         xBar /= weight;
         yBar /= weight;
 
-        centroidOffset = new Point2D.Double((xBar / image.getWidth()) - 0.5, (yBar / image
-                                            .getHeight()) - 0.5);
+        centroidOffset = new Point2D.Double(
+                (xBar / image.getWidth()) - 0.5,
+                (yBar / image.getHeight()) - 0.5);
     }
 
     //--------------//

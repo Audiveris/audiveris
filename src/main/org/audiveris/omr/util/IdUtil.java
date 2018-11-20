@@ -49,6 +49,10 @@ public abstract class IdUtil
         }
     };
 
+    private IdUtil ()
+    {
+    }
+
     /**
      * Compare the integer values of two provided IDs, checking that they share the
      * same prefix.

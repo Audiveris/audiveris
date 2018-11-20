@@ -42,6 +42,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -100,7 +101,6 @@ public class TesseractOrder
     /** The image being processed. */
     private final PIX image;
 
-    //
     //----------------//
     // TesseractOrder //
     //----------------//
@@ -113,7 +113,6 @@ public class TesseractOrder
      * @param lang          The language specification
      * @param segMode       The desired page segmentation mode
      * @param bufferedImage The image to process
-     *
      * @throws UnsatisfiedLinkError When bridge to C++ could not be loaded
      * @throws IOException          When temporary Tiff buffer failed
      * @throws RuntimeException     When PIX image failed
@@ -144,7 +143,6 @@ public class TesseractOrder
         }
     }
 
-    //
     //---------//
     // process //
     //---------//
@@ -245,8 +243,11 @@ public class TesseractOrder
         IntPointer bottom = new IntPointer(0);
 
         if (it.BoundingBox(level, left, top, right, bottom)) {
-            return new Rectangle(left.get(), top.get(), right.get() - left.get(), bottom.get() - top
-                                 .get());
+            return new Rectangle(
+                    left.get(),
+                    top.get(),
+                    right.get() - left.get(),
+                    bottom.get() - top.get());
         } else {
             return null;
         }
@@ -274,8 +275,15 @@ public class TesseractOrder
 
         String fontName = null;
 
-        BytePointer bp = rit.WordFontAttributes(is_bold, is_italic, is_underlined, is_monospace,
-                                                is_serif, is_smallcaps, pointSize, font_id);
+        BytePointer bp = rit.WordFontAttributes(
+                is_bold,
+                is_italic,
+                is_underlined,
+                is_monospace,
+                is_serif,
+                is_smallcaps,
+                pointSize,
+                font_id);
 
         // don't try to decode fontName from null bytepointer!
         if (bp != null) {
@@ -283,9 +291,15 @@ public class TesseractOrder
         }
 
         if (fontName != null) {
-            return new FontInfo(is_bold.get(), is_italic.get(), is_underlined.get(), is_monospace
-                                .get(), is_serif.get(), is_smallcaps.get(), pointSize.get(),
-                                fontName);
+            return new FontInfo(
+                    is_bold.get(),
+                    is_italic.get(),
+                    is_underlined.get(),
+                    is_monospace.get(),
+                    is_serif.get(),
+                    is_smallcaps.get(),
+                    pointSize.get(),
+                    fontName);
         } else {
             return null;
         }
@@ -303,7 +317,7 @@ public class TesseractOrder
     private List<TextLine> getLines ()
     {
         final ResultIterator it = api.GetIterator();
-        final List<TextLine> lines = new ArrayList<TextLine>(); // All lines built so far
+        final List<TextLine> lines = new ArrayList<>(); // All lines built so far
         TextLine line = null; // The line being built
         TextWord word = null; // The word being built
         int nextLevel;
@@ -335,9 +349,13 @@ public class TesseractOrder
                         continue;
                     }
 
-                    word = new TextWord(getBoundingBox(it, RIL_WORD), it.GetUTF8Text(RIL_WORD)
-                                        .getString(UTF8), getBaseline(it, RIL_WORD), it.Confidence(
-                                        RIL_WORD) / 100.0, fontInfo, line);
+                    word = new TextWord(
+                            getBoundingBox(it, RIL_WORD),
+                            it.GetUTF8Text(RIL_WORD).getString(UTF8),
+                            getBaseline(it, RIL_WORD),
+                            it.Confidence(RIL_WORD) / 100.0,
+                            fontInfo,
+                            line);
                     logger.debug("    {}", word);
                     line.appendWord(word);
 
@@ -353,8 +371,10 @@ public class TesseractOrder
                 }
 
                 // Char/symbol to be processed
-                wordAddChars(word, getBoundingBox(it, RIL_SYMBOL), it.GetUTF8Text(RIL_SYMBOL)
-                             .getString(UTF8));
+                wordAddChars(
+                        word,
+                        getBoundingBox(it, RIL_SYMBOL),
+                        it.GetUTF8Text(RIL_SYMBOL).getString(UTF8));
             } while (it.Next(nextLevel));
 
             // Print raw lines, right out of Tesseract OCR
@@ -363,7 +383,7 @@ public class TesseractOrder
             }
 
             return lines;
-        } catch (Exception ex) {
+        } catch (UnsupportedEncodingException ex) {
             logger.warn("Error decoding tesseract output", ex);
 
             return null;
@@ -376,8 +396,9 @@ public class TesseractOrder
     // toTiffBuffer //
     //--------------//
     /**
-     * Convert the given image into a TIFF-formatted ByteBuffer for
-     * passing it directly to Tesseract.
+     * Convert the given image into a TIFF-formatted ByteBuffer for passing it directly
+     * to Tesseract.
+     * <p>
      * A copy of the tiff buffer can be saved on disk, if so desired.
      *
      * @param image the input image
@@ -388,21 +409,11 @@ public class TesseractOrder
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        try {
-            ImageOutputStream ios = null;
-
-            try {
-                ios = ImageIO.createImageOutputStream(baos);
-
-                ImageWriter writer = ImageIO.getImageWritersByFormatName("tiff").next();
-                writer.setOutput(ios);
-                writer.write(image);
-            } finally {
-                if (ios != null) {
-                    ios.close();
-                }
-            }
-        } catch (Exception ex) {
+        try (ImageOutputStream ios = ImageIO.createImageOutputStream(baos)) {
+            ImageWriter writer = ImageIO.getImageWritersByFormatName("tiff").next();
+            writer.setOutput(ios);
+            writer.write(image);
+        } catch (IOException ex) {
             logger.warn("Could not write image", ex);
         }
 
@@ -420,18 +431,9 @@ public class TesseractOrder
                 Files.createDirectories(WellKnowns.TEMP_FOLDER);
             }
 
-            try {
-                FileOutputStream fos = null;
-
-                try {
-                    fos = new FileOutputStream(path.toFile());
-                    fos.write(bytes);
-                } finally {
-                    if (fos != null) {
-                        fos.close();
-                    }
-                }
-            } catch (Exception ex) {
+            try (FileOutputStream fos = new FileOutputStream(path.toFile())) {
+                fos.write(bytes);
+            } catch (IOException ex) {
                 logger.warn("Could not write to {}", path, ex);
             }
         }
@@ -460,8 +462,11 @@ public class TesseractOrder
             double meanCharWidth = (double) bounds.width / len;
 
             for (int i = 0; i < len; i++) {
-                Rectangle cb = new Rectangle2D.Double(bounds.x + (i * meanCharWidth), bounds.y,
-                                                      meanCharWidth, bounds.height).getBounds();
+                Rectangle cb = new Rectangle2D.Double(
+                        bounds.x + (i * meanCharWidth),
+                        bounds.y,
+                        meanCharWidth,
+                        bounds.height).getBounds();
                 word.addChar(new TextChar(cb, value.substring(i, i + 1)));
             }
         }

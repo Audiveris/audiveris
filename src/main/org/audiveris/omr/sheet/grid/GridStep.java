@@ -71,8 +71,11 @@ public class GridStep
         if (constants.displayNoStaff.isSet()) {
             sheet.getStub().getAssembly().addViewTab(
                     SheetTab.NO_STAFF_TAB,
-                    new ScrollImageView(sheet, new ImageView(sheet.getPicture().getSource(
-                                        Picture.SourceKey.NO_STAFF).getBufferedImage())),
+                    new ScrollImageView(
+                            sheet,
+                            new ImageView(
+                                    sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF)
+                                            .getBufferedImage())),
                     new BoardsPane(new PixelBoard(sheet)));
         }
     }
@@ -99,11 +102,12 @@ public class GridStep
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean displayNoStaff = new Constant.Boolean(false,
-                                                                             "Should we display the staff-free image?");
+        private final Constant.Boolean displayNoStaff = new Constant.Boolean(
+                false,
+                "Should we display the staff-free image?");
     }
 }

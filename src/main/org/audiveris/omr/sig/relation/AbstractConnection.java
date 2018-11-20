@@ -156,12 +156,25 @@ public abstract class AbstractConnection
         return OutImpacts.WEIGHTS;
     }
 
+    /**
+     * Report the maximum acceptable for outer abscissa gap.
+     *
+     * @param manual true for user-driven action
+     * @return maximum x out gap
+     */
     protected abstract Scale.Fraction getXOutGapMax (boolean manual);
 
+    /**
+     * Report the maximum acceptable ordinate gap.
+     *
+     * @param manual true for user-driven action
+     * @return max y gap
+     */
     protected abstract Scale.Fraction getYGapMax (boolean manual);
 
     /**
-     * Report maximum acceptable overlap.
+     * Report maximum acceptable abscissa overlap.
+     * <p>
      * This method is disabled by default, to be overridden if overlap is possible
      *
      * @param manual true for user-driven action
@@ -181,16 +194,26 @@ public abstract class AbstractConnection
         StringBuilder sb = new StringBuilder(super.internals());
 
         if ((dx != null) && (dy != null)) {
-            sb.append("@(").append(String.format("%.2f", dx)).append(",").append(String.format(
-                    "%.2f", dy)).append(")");
+            sb.append("@(").append(String.format("%.2f", dx)).append(",").append(
+                    String.format("%.2f", dy)).append(")");
         }
 
         return sb.toString();
     }
 
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
     //-----------//
     // InImpacts //
     //-----------//
+    /**
+     * Grade impacts for abscissa overlap.
+     */
     public static class InImpacts
             extends SupportImpacts
     {
@@ -198,9 +221,17 @@ public abstract class AbstractConnection
         private static final String[] NAMES = new String[]{"xInGap", "yGap"};
 
         // Default weights
-        private static final double[] WEIGHTS = new double[]{constants.xInWeight.getValue(),
-                                                             constants.yWeight.getValue()};
+        private static final double[] WEIGHTS = new double[]{
+            constants.xInWeight.getValue(),
+            constants.yWeight.getValue()};
 
+        /**
+         * Create an InImpacts object.
+         *
+         * @param xInGap  horizontal overlap
+         * @param yGap    vertical gap
+         * @param weights array of impacts weight
+         */
         public InImpacts (double xInGap,
                           double yGap,
                           double[] weights)
@@ -214,6 +245,9 @@ public abstract class AbstractConnection
     //------------//
     // OutImpacts //
     //------------//
+    /**
+     * Grade impacts for abscissa gap.
+     */
     public static class OutImpacts
             extends SupportImpacts
     {
@@ -221,9 +255,17 @@ public abstract class AbstractConnection
         private static final String[] NAMES = new String[]{"xOutGap", "yGap"};
 
         // Defaults weights
-        private static final double[] WEIGHTS = new double[]{constants.xOutWeight.getValue(),
-                                                             constants.yWeight.getValue()};
+        private static final double[] WEIGHTS = new double[]{
+            constants.xOutWeight.getValue(),
+            constants.yWeight.getValue()};
 
+        /**
+         * Create an OutImpacts object.
+         *
+         * @param xOutGap horizontal gap
+         * @param yGap    vertical gap
+         * @param weights array of impacts weight
+         */
         public OutImpacts (double xOutGap,
                            double yGap,
                            double[] weights)
@@ -237,17 +279,20 @@ public abstract class AbstractConnection
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio xInWeight = new Constant.Ratio(1,
-                                                                    "Relative impact weight for xInGap");
+        private final Constant.Ratio xInWeight = new Constant.Ratio(
+                1,
+                "Relative impact weight for xInGap");
 
-        private final Constant.Ratio xOutWeight = new Constant.Ratio(2,
-                                                                     "Relative impact weight for xOutGap");
+        private final Constant.Ratio xOutWeight = new Constant.Ratio(
+                2,
+                "Relative impact weight for xOutGap");
 
-        private final Constant.Ratio yWeight = new Constant.Ratio(1,
-                                                                  "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(
+                1,
+                "Relative impact weight for yGap");
     }
 }

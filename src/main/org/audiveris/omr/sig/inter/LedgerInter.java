@@ -138,6 +138,16 @@ public class LedgerInter
         return index;
     }
 
+    /**
+     * Set the ledger index, with respect to staff.
+     *
+     * @param index the index to set
+     */
+    public void setIndex (int index)
+    {
+        this.index = index;
+    }
+
     //--------//
     // remove //
     //--------//
@@ -156,13 +166,5 @@ public class LedgerInter
         }
 
         super.remove(extensive);
-    }
-
-    /**
-     * @param index the index to set
-     */
-    public void setIndex (int index)
-    {
-        this.index = index;
     }
 }

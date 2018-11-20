@@ -61,7 +61,7 @@ public class LagManager
     private final Sheet sheet;
 
     /** Map of all public lags. */
-    private final Map<String, Lag> lagMap = new TreeMap<String, Lag>();
+    private final Map<String, Lag> lagMap = new TreeMap<>();
 
     /** Id of last long horizontal section. */
     private int lastLongHSectionId;
@@ -127,8 +127,9 @@ public class LagManager
 
         final Lag vLag = new BasicLag(Lags.VLAG, VERTICAL);
         final int maxVerticalRunShift = scale.toPixels(constants.maxVerticalRunShift);
-        SectionFactory factory = new SectionFactory(vLag, new JunctionShiftPolicy(
-                                                    maxVerticalRunShift));
+        SectionFactory factory = new SectionFactory(
+                vLag,
+                new JunctionShiftPolicy(maxVerticalRunShift));
         factory.createSections(vertTable, null, true);
         setLag(Lags.VLAG, vLag);
         setVipSections(VERTICAL);
@@ -153,21 +154,18 @@ public class LagManager
             return null;
         }
 
-        final int minVerticalRunLength = 1 + (int) Math.rint(sheet.getScale().getMaxFore()
-                                                                     * constants.ledgerThickness
-                        .getValue());
+        final int minVerticalRunLength = 1 + (int) Math.rint(
+                sheet.getScale().getMaxFore() * constants.ledgerThickness.getValue());
 
         // Remove runs whose height is larger than line thickness
-        RunTable shortVertTable = sourceTable.copy().purge(
-                new Predicate<Run>()
+        RunTable shortVertTable = sourceTable.copy().purge(new Predicate<Run>()
         {
             @Override
             public final boolean check (Run run)
             {
                 return run.getLength() >= minVerticalRunLength;
             }
-        },
-                vertTable);
+        }, vertTable);
         RunTableFactory runFactory = new RunTableFactory(HORIZONTAL);
         RunTable horiTable = runFactory.createTable(shortVertTable.getBuffer());
 
@@ -233,6 +231,19 @@ public class LagManager
         return lastLongHSectionId;
     }
 
+    //---------------------//
+    // setLongSectionMaxId //
+    //---------------------//
+    /**
+     * Remember the id of the last long horizontal section
+     *
+     * @param id the id of the last long horizontal section
+     */
+    public void setLongSectionMaxId (int id)
+    {
+        lastLongHSectionId = id;
+    }
+
     //-------------//
     // rebuildHLag //
     //-------------//
@@ -275,22 +286,14 @@ public class LagManager
         }
     }
 
-    //---------------------//
-    // setLongSectionMaxId //
-    //---------------------//
-    /**
-     * Remember the id of the last long horizontal section
-     *
-     * @param id the id of the last long horizontal section
-     */
-    public void setLongSectionMaxId (int id)
-    {
-        lastLongHSectionId = id;
-    }
-
     //----------------//
     // setVipSections //
     //----------------//
+    /**
+     * Assign VIP flag to sections based on map of sections IDs.
+     *
+     * @param orientation section orientation to be processed
+     */
     public void setVipSections (Orientation orientation)
     {
         List<Integer> ids = vipMap.get(orientation);
@@ -312,8 +315,7 @@ public class LagManager
     //----------------//
     private EnumMap<Orientation, List<Integer>> getVipSections ()
     {
-        EnumMap<Orientation, List<Integer>> map = new EnumMap<Orientation, List<Integer>>(
-                Orientation.class);
+        EnumMap<Orientation, List<Integer>> map = new EnumMap<>(Orientation.class);
 
         for (Orientation orientation : Orientation.values()) {
             String vipStr = orientation.isVertical() ? constants.verticalVipSections.getValue()
@@ -356,25 +358,29 @@ public class LagManager
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction maxVerticalRunShift = new Scale.Fraction(0.05,
-                                                                              "Max shift between two runs of vertical sections");
+        private final Scale.Fraction maxVerticalRunShift = new Scale.Fraction(
+                0.05,
+                "Max shift between two runs of vertical sections");
 
         // Constants specified WRT *maximum* line thickness (scale.getmaxFore())
         // ----------------------------------------------
         // Should be 1.0, unless ledgers are thicker than staff lines
-        private final Constant.Ratio ledgerThickness = new Constant.Ratio(1.2,
-                                                                          "Ratio of ledger thickness vs staff line MAXIMUM thickness");
+        private final Constant.Ratio ledgerThickness = new Constant.Ratio(
+                1.2,
+                "Ratio of ledger thickness vs staff line MAXIMUM thickness");
 
         // Constants for debugging
         // -----------------------
-        private final Constant.String horizontalVipSections = new Constant.String("",
-                                                                                  "(Debug) Comma-separated values of VIP horizontal sections IDs");
+        private final Constant.String horizontalVipSections = new Constant.String(
+                "",
+                "(Debug) Comma-separated values of VIP horizontal sections IDs");
 
-        private final Constant.String verticalVipSections = new Constant.String("",
-                                                                                "(Debug) Comma-separated values of VIP vertical sections IDs");
+        private final Constant.String verticalVipSections = new Constant.String(
+                "",
+                "(Debug) Comma-separated values of VIP vertical sections IDs");
     }
 }

@@ -58,6 +58,13 @@ public abstract class PointUtil
         }
     };
 
+    /**
+     * Not meant to be instantiated.
+     */
+    private PointUtil ()
+    {
+    }
+
     //----------//
     // addition //
     //----------//
@@ -141,10 +148,9 @@ public abstract class PointUtil
     {
         double seg = p1.distance(p2);
 
-        return new Point2D.Double(p2.getX() + ((dist * (p2.getX() - p1.getX())) / seg), p2.getY()
-                                                                                                + ((dist
-                                                                                                    * (p2
-                                          .getY() - p1.getY())) / seg));
+        return new Point2D.Double(
+                p2.getX() + ((dist * (p2.getX() - p1.getX())) / seg),
+                p2.getY() + ((dist * (p2.getY() - p1.getY())) / seg));
     }
 
     //--------//
@@ -188,8 +194,9 @@ public abstract class PointUtil
      */
     public static Point2D middle (Line2D line)
     {
-        return new Point2D.Double((line.getX1() + line.getX2()) / 2.0, (line.getY1() + line.getY2())
-                                                                               / 2.0);
+        return new Point2D.Double(
+                (line.getX1() + line.getX2()) / 2.0,
+                (line.getY1() + line.getY2()) / 2.0);
     }
 
     //---------//
@@ -241,6 +248,12 @@ public abstract class PointUtil
     //----------//
     // toString //
     //----------//
+    /**
+     * A toString() that can cope with null instance.
+     *
+     * @param p point instance
+     * @return string value
+     */
     public static String toString (Point p)
     {
         if (p == null) {
@@ -252,4 +265,5 @@ public abstract class PointUtil
 
         return sb.toString();
     }
+
 }

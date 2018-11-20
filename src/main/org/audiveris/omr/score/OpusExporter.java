@@ -78,10 +78,10 @@ public class OpusExporter
                         boolean signed)
             throws Exception
     {
-        final OutputStream os = new FileOutputStream(path.toString());
-        export(os, signed, rootName);
-        os.close();
-        logger.info("Opus {} exported to {}", rootName, path);
+        try (OutputStream os = new FileOutputStream(path.toString())) {
+            export(os, signed, rootName);
+            logger.info("Opus {} exported to {}", rootName, path);
+        }
     }
 
     //--------//

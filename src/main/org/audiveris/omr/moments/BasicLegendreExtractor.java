@@ -191,64 +191,6 @@ public class BasicLegendreExtractor
         }
     }
 
-    //---------------------//
-    // generatePolynomials //
-    //---------------------//
-    /**
-     * Generate all Legendre polynomials, iteratively up to ORDER.
-     *
-     * @return the array of polynomials
-     */
-    private static Polynomial[] generatePolynomials ()
-    {
-        Polynomial[] Q = new Polynomial[ORDER + 1];
-
-        Q[0] = new Polynomial(1, 0);
-        Q[1] = new Polynomial(1, 1);
-
-        for (int n = 2; n <= ORDER; n++) {
-            Q[n] = Q[1].times(Q[n - 1]).times((2 * n) - 1).minus(Q[n - 2].times(n - 1))
-                    .times(1d / n);
-        }
-
-        if (false) {
-            for (int n = 0; n <= ORDER; n++) {
-                System.out.println("P[" + n + "] = " + Q[n]);
-            }
-        }
-
-        return Q;
-    }
-
-    //---------//
-    // initLUT //
-    //---------//
-    /**
-     * Compute, once for all, the lookup table values.
-     */
-    private static void initLUT ()
-    {
-        final LUT anyLut = luts[0][0]; // Just for template
-        final int lutSize = anyLut.getSize();
-        final int lutRadius = anyLut.getRadius();
-
-        for (int x = 0; x < lutSize; x++) {
-            double tx = (x - lutRadius) / (double) lutRadius;
-
-            for (int y = 0; y < lutSize; y++) {
-                double ty = (y - lutRadius) / (double) lutRadius;
-
-                for (int m = 0; m <= ORDER; m++) {
-                    double pmx = P[m].evaluate(tx);
-
-                    for (int n = 0; n <= (ORDER - m); n++) {
-                        luts[m][n].assign(x, y, pmx * P[n].evaluate(ty));
-                    }
-                }
-            }
-        }
-    }
-
     //------------------------//
     // extractMomentsDirectly // Not using LUT (so rather slow...)
     //------------------------//
@@ -312,4 +254,62 @@ public class BasicLegendreExtractor
     //            }
     //        }
     //    }
+    //---------------------//
+    // generatePolynomials //
+    //---------------------//
+    /**
+     * Generate all Legendre polynomials, iteratively up to ORDER.
+     *
+     * @return the array of polynomials
+     */
+    private static Polynomial[] generatePolynomials ()
+    {
+        Polynomial[] Q = new Polynomial[ORDER + 1];
+
+        Q[0] = new Polynomial(1, 0);
+        Q[1] = new Polynomial(1, 1);
+
+        for (int n = 2; n <= ORDER; n++) {
+            Q[n] = Q[1].times(Q[n - 1]).times((2 * n) - 1).minus(Q[n - 2].times(n - 1)).times(
+                    1d / n);
+        }
+
+        if (false) {
+            for (int n = 0; n <= ORDER; n++) {
+                System.out.println("P[" + n + "] = " + Q[n]);
+            }
+        }
+
+        return Q;
+    }
+
+    //---------//
+    // initLUT //
+    //---------//
+    /**
+     * Compute, once for all, the lookup table values.
+     */
+    private static void initLUT ()
+    {
+        final LUT anyLut = luts[0][0]; // Just for template
+        final int lutSize = anyLut.getSize();
+        final int lutRadius = anyLut.getRadius();
+
+        for (int x = 0; x < lutSize; x++) {
+            double tx = (x - lutRadius) / (double) lutRadius;
+
+            for (int y = 0; y < lutSize; y++) {
+                double ty = (y - lutRadius) / (double) lutRadius;
+
+                for (int m = 0; m <= ORDER; m++) {
+                    double pmx = P[m].evaluate(tx);
+
+                    for (int n = 0; n <= (ORDER - m); n++) {
+                        luts[m][n].assign(x, y, pmx * P[n].evaluate(ty));
+                    }
+                }
+            }
+        }
+    }
+
 }

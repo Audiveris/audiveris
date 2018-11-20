@@ -65,10 +65,10 @@ public class ErrorsEditor
     private final ListSelectionListener listener = new MyListener();
 
     /** Set of error records */
-    private final SortedSet<Record> recordSet = new TreeSet<Record>();
+    private final SortedSet<Record> recordSet = new TreeSet<>();
 
     /** Facade model for the JList */
-    private final DefaultListModel<Record> model = new DefaultListModel<Record>();
+    private final DefaultListModel<Record> model = new DefaultListModel<>();
 
     /**
      * Create an instance of ErrorsEditor (one per sheet / score).
@@ -78,7 +78,7 @@ public class ErrorsEditor
     public ErrorsEditor (Sheet sheet)
     {
         this.sheet = sheet;
-        list = new JList<Record>(model);
+        list = new JList<>(model);
         scrollPane = new JScrollPane(list);
         scrollPane.setBorder(null);
         list.addListSelectionListener(listener);
@@ -248,7 +248,6 @@ public class ErrorsEditor
         return scrollPane;
     }
 
-    //
     //    //----------------//
     //    // getCurrentStep //
     //    //----------------//
@@ -342,10 +341,10 @@ public class ErrorsEditor
 
         final String text;
 
-        public Record (Step step,
-                       //                       OldSystemNode node,
-                       Glyph glyph,
-                       String text)
+        Record (Step step,
+                //                       OldSystemNode node,
+                Glyph glyph,
+                String text)
         {
             this.step = step;
             //            this.node = node;

@@ -36,6 +36,7 @@ public class IntegerPane
         extends XactDataPane<Integer>
 {
 
+    /** Data labeled field. */
     protected final LIntegerField data;
 
     /**

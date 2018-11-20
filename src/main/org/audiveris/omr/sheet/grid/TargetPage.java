@@ -39,7 +39,7 @@ public class TargetPage
     public final double height;
 
     /** Sequence of systems */
-    public final List<TargetSystem> systems = new ArrayList<TargetSystem>();
+    public final List<TargetSystem> systems = new ArrayList<>();
 
     /**
      * Creates a new TargetPage object.

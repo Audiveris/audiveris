@@ -45,6 +45,7 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,9 +100,6 @@ public class StubsController
     /** Events that can be published on sheet service. */
     private static final Class<?>[] eventsWritten = new Class<?>[]{StubEvent.class};
 
-    /** The single instance of this class. */
-    private static volatile StubsController INSTANCE;
-
     /** The concrete tabbed pane, one tab per sheet stub. */
     private final JTabbedPane stubsPane;
 
@@ -116,7 +114,7 @@ public class StubsController
      */
     private StubsController ()
     {
-        stubsMap = new HashMap<JComponent, SheetStub>();
+        stubsMap = new HashMap<>();
 
         stubsPane = new JTabbedPane();
         stubsPane.setForeground(Colors.SHEET_NOT_LOADED);
@@ -125,8 +123,9 @@ public class StubsController
         stubsPane.addChangeListener(this);
 
         // Listener on invalid sheets display
-        ViewParameters.getInstance().addPropertyChangeListener(ViewParameters.INVALID_SHEET_DISPLAY,
-                                                               this);
+        ViewParameters.getInstance().addPropertyChangeListener(
+                ViewParameters.INVALID_SHEET_DISPLAY,
+                this);
 
         // Key binding
         bindKeys();
@@ -201,6 +200,11 @@ public class StubsController
     //----------------//
     // deleteAssembly //
     //----------------//
+    /**
+     * Remove the assembly for the provided stub.
+     *
+     * @param stub the provided stub
+     */
     public void deleteAssembly (SheetStub stub)
     {
         removeAssembly(stub); // Removed from stubsPane
@@ -332,51 +336,6 @@ public class StubsController
         return stubsPane;
     }
 
-    //----------------//
-    // getCurrentBook //
-    //----------------//
-    /**
-     * Convenient method to get the current book instance, if any.
-     *
-     * @return the current book instance, or null
-     */
-    public static Book getCurrentBook ()
-    {
-        SheetStub stub = getCurrentStub();
-
-        if (stub == null) {
-            return null;
-        }
-
-        return stub.getBook();
-    }
-
-    //----------------//
-    // getCurrentStub //
-    //----------------//
-    /**
-     * Convenient method to get the currently selected sheet stub, if any.
-     *
-     * @return the selected stub, or null
-     */
-    public static SheetStub getCurrentStub ()
-    {
-        return getInstance().getSelectedStub();
-    }
-
-    //--------------//
-    // getEarlyStep //
-    //--------------//
-    /**
-     * Report the step run by default on every new stub displayed.
-     *
-     * @return the default target step
-     */
-    public static Step getEarlyStep ()
-    {
-        return constants.earlyStep.getValue();
-    }
-
     //----------//
     // getIndex //
     //----------//
@@ -389,23 +348,6 @@ public class StubsController
     public Integer getIndex (SheetStub stub)
     {
         return stubsPane.indexOfComponent(stub.getAssembly().getComponent());
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this class.
-     *
-     * @return the single instance
-     */
-    public static StubsController getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new StubsController();
-        }
-
-        return INSTANCE;
     }
 
     //--------------//
@@ -436,35 +378,6 @@ public class StubsController
         return (stubEvent != null) ? stubEvent.getData() : null;
     }
 
-    //--------------//
-    // invokeSelect //
-    //--------------//
-    /**
-     * Delegate to EDT the selection of provided stub.
-     *
-     * @param stub the stub to select
-     */
-    public static void invokeSelect (final SheetStub stub)
-    {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            try {
-                SwingUtilities.invokeAndWait(
-                        new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        invokeSelect(stub);
-                    }
-                });
-            } catch (Exception ex) {
-                logger.warn("invokeAndWait error", ex);
-            }
-        } else {
-            StubsController.getInstance().selectAssembly(stub);
-        }
-    }
-
     //---------//
     // markTab //
     //---------//
@@ -479,8 +392,7 @@ public class StubsController
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(
-                        new Runnable()
+                SwingUtilities.invokeAndWait(new Runnable()
                 {
                     @Override
                     public void run ()
@@ -488,7 +400,8 @@ public class StubsController
                         markTab(stub, color);
                     }
                 });
-            } catch (Exception ex) {
+            } catch (InterruptedException |
+                     InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
             }
         } else {
@@ -605,25 +518,14 @@ public class StubsController
         }
     }
 
-    //--------------//
-    // setEarlyStep //
-    //--------------//
-    /**
-     * Set the step run by default on every new stub displayed.
-     *
-     * @param step the default target step
-     */
-    public static void setEarlyStep (Step step)
-    {
-        if (step != getEarlyStep()) {
-            constants.earlyStep.setValue(step);
-            logger.info("Early step is now: {}", step);
-        }
-    }
-
     //-----------//
     // reDisplay //
     //-----------//
+    /**
+     * Refresh display for provided stub.
+     *
+     * @param stub the provided stub
+     */
     public void reDisplay (final SheetStub stub)
     {
         Callable<Void> task = new Callable<Void>()
@@ -638,8 +540,7 @@ public class StubsController
                     // Check whether we should run early steps on the sheet
                     checkStubStatus(stub);
 
-                    SwingUtilities.invokeAndWait(
-                            new Runnable()
+                    SwingUtilities.invokeAndWait(new Runnable()
                     {
                         @Override
                         public void run ()
@@ -673,8 +574,7 @@ public class StubsController
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(
-                        new Runnable()
+                SwingUtilities.invokeAndWait(new Runnable()
                 {
                     @Override
                     public void run ()
@@ -682,7 +582,8 @@ public class StubsController
                         selectOtherBook(currentBook);
                     }
                 });
-            } catch (Exception ex) {
+            } catch (InterruptedException |
+                     InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
             }
         } else {
@@ -967,28 +868,126 @@ public class StubsController
     private void insertAssembly (SheetStub stub,
                                  int index)
     {
-        stubsPane.insertTab(defineTitleFor(stub, null), null, stub.getAssembly().getComponent(),
-                            stub.getBook().getInputPath().toString(), index);
+        stubsPane.insertTab(
+                defineTitleFor(stub, null),
+                null,
+                stub.getAssembly().getComponent(),
+                stub.getBook().getInputPath().toString(),
+                index);
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
+    //----------------//
+    // getCurrentBook //
+    //----------------//
+    /**
+     * Convenient method to get the current book instance, if any.
+     *
+     * @return the current book instance, or null
+     */
+    public static Book getCurrentBook ()
+    {
+        SheetStub stub = getCurrentStub();
+
+        if (stub == null) {
+            return null;
+        }
+
+        return stub.getBook();
+    }
+
+    //----------------//
+    // getCurrentStub //
+    //----------------//
+    /**
+     * Convenient method to get the currently selected sheet stub, if any.
+     *
+     * @return the selected stub, or null
+     */
+    public static SheetStub getCurrentStub ()
+    {
+        return getInstance().getSelectedStub();
+    }
+
+    //--------------//
+    // getEarlyStep //
+    //--------------//
+    /**
+     * Report the step run by default on every new stub displayed.
+     *
+     * @return the default target step
+     */
+    public static Step getEarlyStep ()
+    {
+        return constants.earlyStep.getValue();
+    }
+
+    //--------------//
+    // setEarlyStep //
+    //--------------//
+    /**
+     * Set the step run by default on every new stub displayed.
+     *
+     * @param step the default target step
+     */
+    public static void setEarlyStep (Step step)
+    {
+        if (step != getEarlyStep()) {
+            constants.earlyStep.setValue(step);
+            logger.info("Early step is now: {}", step);
+        }
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this class in application.
+     *
+     * @return the instance
+     */
+    public static StubsController getInstance ()
+    {
+        return LazySingleton.INSTANCE;
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
     {
 
-        private final Constant.Enum<Step> earlyStep = new Constant.Enum<Step>(Step.class,
-                                                                              Step.BINARY,
-                                                                              "Early step triggered when an empty stub tab is selected ");
-
-        private final Constant.Ratio initialZoomRatio = new Constant.Ratio(0.5,
-                                                                           "Initial zoom ratio for displayed sheet pictures");
+        static final StubsController INSTANCE = new StubsController();
     }
 
-    //---------------//
-    // CtrlEndAction //
-    //---------------//
+    //--------------//
+    // invokeSelect //
+    //--------------//
+    /**
+     * Delegate to EDT the selection of provided stub.
+     *
+     * @param stub the stub to select
+     */
+    public static void invokeSelect (final SheetStub stub)
+    {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable()
+                {
+                    @Override
+                    public void run ()
+                    {
+                        invokeSelect(stub);
+                    }
+                });
+            } catch (InterruptedException |
+                     InvocationTargetException ex) {
+                logger.warn("invokeAndWait error", ex);
+            }
+        } else {
+            StubsController.getInstance().selectAssembly(stub);
+        }
+    }
+
     private class CtrlEndAction
             extends AbstractAction
     {
@@ -1002,11 +1001,15 @@ public class StubsController
                 stubsPane.setSelectedIndex(count - 1);
             }
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
-    //----------------//
-    // CtrlHomeAction //
-    //----------------//
     private class CtrlHomeAction
             extends AbstractAction
     {
@@ -1018,11 +1021,15 @@ public class StubsController
                 stubsPane.setSelectedIndex(0);
             }
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
-    //----------------//
-    // PageDownAction //
-    //----------------//
     private class PageDownAction
             extends AbstractAction
     {
@@ -1036,11 +1043,15 @@ public class StubsController
                 stubsPane.setSelectedIndex(tabIndex + 1);
             }
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
-    //--------------//
-    // PageUpAction //
-    //--------------//
     private class PageUpAction
             extends AbstractAction
     {
@@ -1054,5 +1065,29 @@ public class StubsController
                 stubsPane.setSelectedIndex(tabIndex - 1);
             }
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Enum<Step> earlyStep = new Constant.Enum<>(
+                Step.class,
+                Step.BINARY,
+                "Early step triggered when an empty stub tab is selected ");
+
+        private final Constant.Ratio initialZoomRatio = new Constant.Ratio(
+                0.5,
+                "Initial zoom ratio for displayed sheet pictures");
     }
 }

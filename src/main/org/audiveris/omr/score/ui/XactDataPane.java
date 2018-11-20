@@ -38,6 +38,7 @@ import javax.swing.SwingConstants;
  * the requested modifications on commit.
  *
  * @param <E> specific data type
+ * @author Hervé Bitteur
  */
 public abstract class XactDataPane<E>
         implements ActionListener

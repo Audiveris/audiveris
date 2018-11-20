@@ -189,13 +189,13 @@ public interface Table
         protected final void checkRoi (Rectangle roi)
         {
             if ((roi.x < 0) || ((roi.x + roi.width) > width)) {
-                throw new IllegalArgumentException("Illegal abscissa range " + roi + " width:"
-                                                           + width);
+                throw new IllegalArgumentException(
+                        "Illegal abscissa range " + roi + " width:" + width);
             }
 
             if ((roi.y < 0) || ((roi.y + roi.height) > height)) {
-                throw new IllegalArgumentException("Illegal ordinate range " + roi + " height:"
-                                                           + height);
+                throw new IllegalArgumentException(
+                        "Illegal ordinate range " + roi + " height:" + height);
             }
         }
     }

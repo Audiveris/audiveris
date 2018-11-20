@@ -68,17 +68,17 @@ public class LinksStep
     /** Classes that may impact texts. */
     private static final Set<Class> forTexts;
 
-    static {
-        forTexts = new HashSet<Class>();
-        forTexts.add(WordInter.class);
-        forTexts.add(SentenceInter.class);
-    }
-
     /** All impacting classes. */
     private static final Set<Class> impactingClasses;
 
     static {
-        impactingClasses = new HashSet<Class>();
+        forTexts = new HashSet<>();
+        forTexts.add(WordInter.class);
+        forTexts.add(SentenceInter.class);
+    }
+
+    static {
+        impactingClasses = new HashSet<>();
         impactingClasses.addAll(forTexts);
     }
 
@@ -139,7 +139,7 @@ public class LinksStep
                 InterTask interTask = (InterTask) task;
                 Inter inter = interTask.getInter();
                 SystemInfo system = inter.getSig().getSystem();
-                Class interClass = (Class) inter.getClass();
+                Class interClass = inter.getClass();
 
                 if (isImpactedBy(interClass, forTexts)) {
                     if (inter instanceof LyricItemInter) {
@@ -156,8 +156,10 @@ public class LinksStep
                             linker.linkOneSentence(sentence);
                         } else if (task instanceof SentenceRoleTask) {
                             SentenceRoleTask roleTask = (SentenceRoleTask) interTask;
-                            linker.unlinkOneSentence(sentence, (opKind == OpKind.UNDO) ? roleTask
-                                                     .getNewRole() : roleTask.getOldRole());
+                            linker.unlinkOneSentence(
+                                    sentence,
+                                    (opKind == OpKind.UNDO) ? roleTask.getNewRole()
+                                            : roleTask.getOldRole());
                             linker.linkOneSentence(sentence);
                         }
                     }
@@ -197,14 +199,16 @@ public class LinksStep
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(false,
-                                                                         "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
 
-        private final Constant.Boolean removeFreeGlyphs = new Constant.Boolean(false,
-                                                                               "Should we remove all free glyphs?");
+        private final Constant.Boolean removeFreeGlyphs = new Constant.Boolean(
+                false,
+                "Should we remove all free glyphs?");
     }
 }

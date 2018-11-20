@@ -128,7 +128,7 @@ public class BeamsBuilder
     private final SIGraph sig;
 
     /** Spots already recognized as beams. */
-    private final List<Glyph> assignedSpots = new ArrayList<Glyph>();
+    private final List<Glyph> assignedSpots = new ArrayList<>();
 
     /** Remaining beam spots candidates, sorted by abscissa. */
     private List<Glyph> sortedBeamSpots;
@@ -170,7 +170,6 @@ public class BeamsBuilder
     //------------//
     /**
      * Find possible interpretations of beams among system spots.
-     * <p>
      */
     public void buildBeams ()
     {
@@ -223,32 +222,6 @@ public class BeamsBuilder
         }
     }
 
-    //----------------//
-    // isSideInSystem //
-    //----------------//
-    /**
-     * Check whether the (beam) side designated by provided point and height values
-     * lies fully in the current system
-     *
-     * @param pt     side point on median
-     * @param height beam height
-     * @return true if side is fully within current system, false otherwise
-     */
-    boolean isSideInSystem (Point2D pt,
-                            double height)
-    {
-        Area area = system.getArea();
-
-        // Check top and bottom points of the beam side
-        for (int dir : new int[]{-1, +1}) {
-            if (!area.contains(pt.getX(), pt.getY() + (dir * (height / 2)))) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     //-------------//
     // browseHooks //
     //-------------//
@@ -270,10 +243,10 @@ public class BeamsBuilder
         final double height = beam.getHeight();
         final double dy = 1.5 * ((side == TOP) ? (-height) : height);
 
-        Area luArea = AreaUtil.horizontalParallelogram(new Point2D.Double(median.getX1(), median
-                                                                          .getY1() + dy),
-                                                       new Point2D.Double(median.getX2(), median
-                                                                          .getY2() + dy), height);
+        Area luArea = AreaUtil.horizontalParallelogram(
+                new Point2D.Double(median.getX1(), median.getY1() + dy),
+                new Point2D.Double(median.getX2(), median.getY2() + dy),
+                height);
         Set<Glyph> glyphs = Glyphs.intersectedGlyphs(sortedBeamSpots, luArea);
 
         for (Glyph glyph : glyphs) {
@@ -497,8 +470,13 @@ public class BeamsBuilder
                                         boolean below,
                                         double distImpact)
     {
-        return computeImpacts(item, above, below, itemParams.minBeamWidthLow,
-                              itemParams.minBeamWidthHigh, distImpact);
+        return computeImpacts(
+                item,
+                above,
+                below,
+                itemParams.minBeamWidthLow,
+                itemParams.minBeamWidthHigh,
+                distImpact);
     }
 
     //--------------------//
@@ -514,8 +492,13 @@ public class BeamsBuilder
     private Impacts computeHookImpacts (BeamItem item,
                                         double distImpact)
     {
-        return computeImpacts(item, true, true, itemParams.minHookWidthLow,
-                              itemParams.minHookWidthHigh, distImpact);
+        return computeImpacts(
+                item,
+                true,
+                true,
+                itemParams.minHookWidthLow,
+                itemParams.minHookWidthHigh,
+                distImpact);
     }
 
     //----------------//
@@ -556,13 +539,18 @@ public class BeamsBuilder
         double beltRatio = (double) belt.value / beltCount;
         int width = (int) Math.rint(item.median.getX2() - item.median.getX1() + 1);
 
-        if ((width < minWidthLow) || (item.height < itemParams.minHeightLow) || (item.height
-                                                                                         > itemParams.maxHeightHigh)
-            || (coreRatio < params.minCoreBlackRatio) || (beltRatio > params.maxBeltBlackRatio)) {
+        if ((width < minWidthLow) || (item.height < itemParams.minHeightLow)
+                    || (item.height > itemParams.maxHeightHigh)
+                    || (coreRatio < params.minCoreBlackRatio)
+                    || (beltRatio > params.maxBeltBlackRatio)) {
             if (item.isVip() || logger.isDebugEnabled()) {
-                logger.info("Rejected {} width:{} height:{} %core:{} %belt:{}", item, width,
-                            item.height, String.format("%.2f", coreRatio), String.format("%.2f",
-                                                                                         beltRatio));
+                logger.info(
+                        "Rejected {} width:{} height:{} %core:{} %belt:{}",
+                        item,
+                        width,
+                        item.height,
+                        String.format("%.2f", coreRatio),
+                        String.format("%.2f", beltRatio));
             }
 
             return null;
@@ -576,8 +564,13 @@ public class BeamsBuilder
         double coreImpact = (coreRatio - params.minCoreBlackRatio) / (1 - params.minCoreBlackRatio);
         double beltImpact = 1 - (beltRatio / params.maxBeltBlackRatio);
 
-        return new Impacts(widthImpact, minHeightImpact, maxHeightImpact, coreImpact, beltImpact,
-                           distImpact);
+        return new Impacts(
+                widthImpact,
+                minHeightImpact,
+                maxHeightImpact,
+                coreImpact,
+                beltImpact,
+                distImpact);
     }
 
     //------------------//
@@ -696,7 +689,7 @@ public class BeamsBuilder
     private List<Inter> createSmallBeamInters (BeamStructure structure,
                                                double distImpact)
     {
-        final List<Inter> beams = new ArrayList<Inter>();
+        final List<Inter> beams = new ArrayList<>();
         final List<BeamLine> lines = structure.getLines();
 
         for (BeamLine line : lines) {
@@ -745,7 +738,7 @@ public class BeamsBuilder
         rawSystemBeams = sig.inters(AbstractBeamInter.class);
 
         // Extend each orphan beam as much as possible
-        for (Inter inter : new ArrayList<Inter>(rawSystemBeams)) {
+        for (Inter inter : new ArrayList<>(rawSystemBeams)) {
             if (inter.isRemoved()) {
                 continue;
             }
@@ -772,8 +765,8 @@ public class BeamsBuilder
 
                     Line2D median = beam.getMedian();
                     Line2D sideMedian = sideBeam.getMedian();
-                    double dx = (side == LEFT) ? (median.getX1() - sideMedian.getX2()) : (sideMedian
-                            .getX1() - median.getX2());
+                    double dx = (side == LEFT) ? (median.getX1() - sideMedian.getX2())
+                            : (sideMedian.getX1() - median.getX2());
                     maxDx = (int) Math.rint(Math.max(0, dx - params.beamsXMargin));
                 }
 
@@ -857,10 +850,10 @@ public class BeamsBuilder
                 }
 
                 // Check the other beam can really extend the current beam
-                final Point2D otherEndPt = (side == LEFT) ? otherMedian.getP1() : otherMedian
-                        .getP2();
-                double extDx = (side == LEFT) ? (endPt.getX() - otherEndPt.getX()) : (otherEndPt
-                        .getX() - endPt.getX());
+                final Point2D otherEndPt = (side == LEFT) ? otherMedian.getP1()
+                        : otherMedian.getP2();
+                double extDx = (side == LEFT) ? (endPt.getX() - otherEndPt.getX())
+                        : (otherEndPt.getX() - endPt.getX());
 
                 if (extDx < (2 * params.maxStemBeamGapX)) {
                     if (logging) {
@@ -1061,11 +1054,11 @@ public class BeamsBuilder
                                   Integer maxDx)
     {
         final boolean logging = beam.isVip() || logger.isDebugEnabled();
-        final int dx = (maxDx == null) ? params.maxExtensionToSpot : Math.min(
-                params.maxExtensionToSpot, maxDx);
+        final int dx = (maxDx == null) ? params.maxExtensionToSpot
+                : Math.min(params.maxExtensionToSpot, maxDx);
         final Area luArea = sideAreaOf("O", beam, side, 0, dx, 0);
-        final List<Glyph> spots = new ArrayList<Glyph>(Glyphs.intersectedGlyphs(sortedBeamSpots,
-                                                                                luArea));
+        final List<Glyph> spots = new ArrayList<>(
+                Glyphs.intersectedGlyphs(sortedBeamSpots, luArea));
         Collections.sort(spots, Glyphs.byAbscissa);
 
         if (beam.getGlyph() != null) {
@@ -1108,12 +1101,11 @@ public class BeamsBuilder
                                   Integer maxDx)
     {
         final boolean logging = beam.isVip() || logger.isDebugEnabled();
-        final int dx = (maxDx == null) ? params.maxExtensionToStem : Math.min(
-                params.maxExtensionToStem, maxDx);
+        final int dx = (maxDx == null) ? params.maxExtensionToStem
+                : Math.min(params.maxExtensionToStem, maxDx);
         final int dy = params.maxStemBeamGapY;
         final Area luArea = sideAreaOf("|", beam, side, dy, dx, 0);
-        List<Glyph> seeds
-                = new ArrayList<Glyph>(Glyphs.intersectedGlyphs(sortedSystemSeeds, luArea));
+        List<Glyph> seeds = new ArrayList<>(Glyphs.intersectedGlyphs(sortedSystemSeeds, luArea));
         Collections.sort(seeds, Glyphs.byAbscissa);
 
         // We should remove seeds already 'embraced' by the beam
@@ -1127,8 +1119,9 @@ public class BeamsBuilder
             }
 
             // Try to extend the beam to this stem seed
-            Line2D seedLine = new Line2D.Double(seed.getStartPoint(Orientation.VERTICAL), seed
-                                                .getStopPoint(Orientation.VERTICAL));
+            Line2D seedLine = new Line2D.Double(
+                    seed.getStartPoint(Orientation.VERTICAL),
+                    seed.getStopPoint(Orientation.VERTICAL));
             Point2D extPt = LineUtil.intersection(beam.getMedian(), seedLine);
 
             return extendToPoint(beam, side, extPt);
@@ -1148,12 +1141,11 @@ public class BeamsBuilder
      */
     private List<CueAggregate> getCueAggregates ()
     {
-        List<CueAggregate> aggregates = new ArrayList<CueAggregate>();
+        List<CueAggregate> aggregates = new ArrayList<>();
 
         // We look for collections of good cue black heads + stem, close enough
         // to be able to be connected by a cue beam.
-        List<Inter> smallBlacks = sig.inters(
-                new Predicate<Inter>()
+        List<Inter> smallBlacks = sig.inters(new Predicate<Inter>()
         {
             @Override
             public boolean check (Inter inter)
@@ -1265,26 +1257,26 @@ public class BeamsBuilder
             // Keep just the closest one to current beam (abscissa-wise)
             if (others.size() > 1) {
                 final double endX = endPt.getX();
-                Collections.sort(
-                        others,
-                        new Comparator<Inter>()
-                {
-                    @Override
-                    public int compare (Inter o1,
-                                        Inter o2)
-                    {
-                        AbstractBeamInter b1 = (AbstractBeamInter) o1;
-                        AbstractBeamInter b2 = (AbstractBeamInter) o2;
+                Collections.sort(others, new Comparator<Inter>()
+                         {
+                             @Override
+                             public int compare (Inter o1,
+                                                 Inter o2)
+                             {
+                                 AbstractBeamInter b1 = (AbstractBeamInter) o1;
+                                 AbstractBeamInter b2 = (AbstractBeamInter) o2;
 
-                        if (side == LEFT) {
-                            return Double.compare(endX - b1.getMedian().getX2(), endX - b2
-                                                  .getMedian().getX2());
-                        } else {
-                            return Double.compare(b1.getMedian().getX1() - endX, b2.getMedian()
-                                                  .getX1() - endX);
-                        }
-                    }
-                });
+                                 if (side == LEFT) {
+                                     return Double.compare(
+                                             endX - b1.getMedian().getX2(),
+                                             endX - b2.getMedian().getX2());
+                                 } else {
+                                     return Double.compare(
+                                             b1.getMedian().getX1() - endX,
+                                             b2.getMedian().getX1() - endX);
+                                 }
+                             }
+                         });
             }
 
             if (!others.isEmpty()) {
@@ -1537,8 +1529,8 @@ public class BeamsBuilder
     {
         final Line2D median = beam.getMedian();
         final double height = beam.getHeight() + (2 * extDy);
-        final double intX = (side == LEFT) ? (median.getX1() - 1 + intDx) : ((median.getX2() + 1)
-                                                                                     - intDx);
+        final double intX = (side == LEFT) ? (median.getX1() - 1 + intDx)
+                : ((median.getX2() + 1) - intDx);
         final Point2D intPt = LineUtil.intersectionAtX(median, intX);
         final double extX = (side == LEFT) ? (median.getX1() - extDx) : (median.getX2() + extDx);
         final Point2D extPt = LineUtil.intersectionAtX(median, extX);
@@ -1567,262 +1559,29 @@ public class BeamsBuilder
     }
 
     //----------------//
-    // ItemParameters //
+    // isSideInSystem //
     //----------------//
-    /** Parameters that govern beam/hook items, sometime dependent on cue/standard. */
-    public static class ItemParameters
-    {
-
-        final double minBeamWidthLow;
-
-        final double minBeamWidthHigh;
-
-        final double minHookWidthLow;
-
-        final double minHookWidthHigh;
-
-        final double maxHookWidth;
-
-        final double minHeightLow;
-
-        final double typicalHeight;
-
-        final double maxHeightHigh;
-
-        final double cornerMargin;
-
-        final double maxItemXGap;
-
-        final int coreSectionWidth;
-
-        public ItemParameters (Scale scale,
-                               double ratio)
-        {
-            minBeamWidthLow = scale.toPixelsDouble(constants.minBeamWidthLow);
-            minBeamWidthHigh = scale.toPixelsDouble(constants.minBeamWidthHigh);
-            minHookWidthLow = scale.toPixelsDouble(constants.minHookWidthLow);
-            minHookWidthHigh = scale.toPixelsDouble(constants.minHookWidthHigh);
-            maxHookWidth = scale.toPixelsDouble(constants.maxHookWidth);
-
-            typicalHeight = scale.getBeamThickness() * ratio;
-            minHeightLow = typicalHeight * constants.minHeightRatioLow.getValue();
-            maxHeightHigh = typicalHeight * constants.maxHeightRatioHigh.getValue();
-            cornerMargin = typicalHeight * constants.cornerMarginRatio.getValue();
-
-            maxItemXGap = scale.toPixelsDouble(constants.maxItemXGap);
-            coreSectionWidth = scale.toPixels(constants.coreSectionWidth);
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-
-        // Item parameters
-        //----------------
-        private final Scale.Fraction minBeamWidthLow = new Scale.Fraction(
-                1.0, // 1.5,
-                "Low minimum width for a beam");
-
-        private final Scale.Fraction minBeamWidthHigh = new Scale.Fraction(4.0,
-                                                                           "High minimum width for a beam");
-
-        private final Scale.Fraction minHookWidthLow = new Scale.Fraction(0.7,
-                                                                          "Low minimum width for a hook");
-
-        private final Scale.Fraction minHookWidthHigh = new Scale.Fraction(1.0,
-                                                                           "High minimum width for a hook");
-
-        private final Scale.Fraction maxHookWidth = new Scale.Fraction(2.0,
-                                                                       "Maximum width for a hook");
-
-        private final Constant.Ratio minHeightRatioLow = new Constant.Ratio(0.7,
-                                                                            "Low minimum height for a beam or hook, specified as ratio of typical beam");
-
-        private final Constant.Ratio maxHeightRatioHigh = new Constant.Ratio(
-                1.4, // 1.3,
-                "High maximum height for a beam or hook, specified as ratio of typical beam");
-
-        private final Constant.Ratio cornerMarginRatio = new Constant.Ratio(0.2,
-                                                                            "Corner margin for a beam or hook, specified as ratio of typical beam");
-
-        private final Scale.Fraction maxItemXGap = new Scale.Fraction(0.5,
-                                                                      "Acceptable abscissa gap within a beam item");
-
-        private final Scale.Fraction coreSectionWidth = new Scale.Fraction(0.15,
-                                                                           "Minimum width for a core section to define borders");
-
-        // Global parameters
-        //------------------
-        private final Scale.Fraction maxSideBeamDx = new Scale.Fraction(4.0,
-                                                                        "Maximum abscissa gap to detect side beams");
-
-        private final Scale.Fraction maxBeamsGapX = new Scale.Fraction(1.0,
-                                                                       "Maximum abscissa gap to merge aligned beams");
-
-        private final Scale.Fraction minBeamsGapX = new Scale.Fraction(0.2,
-                                                                       "Minimum abscissa gap to check inner area");
-
-        private final Scale.Fraction maxBeamsGapY = new Scale.Fraction(0.25,
-                                                                       "Maximum ordinate mismatch to merge aligned beams");
-
-        private final Scale.Fraction beamsXMargin = new Scale.Fraction(0.25,
-                                                                       "Abscissa margin around beams to exclude beam stems");
-
-        private final Scale.Fraction maxStemBeamGapX = new Scale.Fraction(0.2,
-                                                                          "Maximum abscissa gap between stem and beam");
-
-        private final Scale.Fraction maxStemBeamGapY = new Scale.Fraction(0.8,
-                                                                          "Maximum ordinate gap between stem and beam");
-
-        private final Scale.Fraction maxExtensionToStem = new Scale.Fraction(4.0,
-                                                                             "Maximum beam horizontal extension to stem seed");
-
-        private final Scale.Fraction maxExtensionToSpot = new Scale.Fraction(2.0,
-                                                                             "Maximum beam horizontal extension to spot");
-
-        private final Scale.Fraction beltMarginDx = new Scale.Fraction(0.25,
-                                                                       "Horizontal belt margin checked around beam");
-
-        private final Scale.Fraction beltMarginDy = new Scale.Fraction(0.15,
-                                                                       "Vertical belt margin checked around beam");
-
-        private final Constant.Double maxBeamSlope = new Constant.Double("tangent", 1.0,
-                                                                         "Maximum absolute tangent value for a beam angle");
-
-        private final Constant.Double maxBorderSlopeGap = new Constant.Double("tangent", 0.15,
-                                                                              "Maximum delta slope between top and bottom borders of a beam");
-
-        private final Constant.Double maxBeamSlopeGap = new Constant.Double("tangent", 0.07,
-                                                                            "Maximum delta slope between beams of a group");
-
-        private final Scale.Fraction maxDistanceToBorder = new Scale.Fraction(0.15,
-                                                                              "Maximum mean distance to average beam border");
-
-        private final Constant.Ratio maxJitterRatio = new Constant.Ratio(0.02,
-                                                                         "Maximum border jitter ratio");
-
-        private final Constant.Ratio maxBeltBlackRatio = new Constant.Ratio(0.4,
-                                                                            "Maximum ratio of black pixels around beam");
-
-        private final Constant.Ratio minCoreBlackRatio = new Constant.Ratio(0.7,
-                                                                            "Minimum ratio of black pixels inside beam");
-
-        private final Constant.Ratio minExtBlackRatio = new Constant.Ratio(0.6,
-                                                                           "Minimum ratio of black pixels inside beam extension");
-
-        private final Scale.Fraction cueXMargin = new Scale.Fraction(2.0,
-                                                                     "Abscissa margin to aggregate cues");
-
-        private final Scale.Fraction cueYMargin = new Scale.Fraction(3.0,
-                                                                     "Ordinate margin to aggregate cues");
-
-        private final Scale.Fraction cueBoxDx = new Scale.Fraction(0.25,
-                                                                   "Abscissa expansion of aggregate box");
-
-        private final Scale.Fraction cueBoxDy = new Scale.Fraction(1.0,
-                                                                   "Ordinate shift of aggregate box");
-
-        private final Constant.Ratio cueBeamRatio = new Constant.Ratio(0.6,
-                                                                       "Ratio applied for cue beams height");
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
     /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
+     * Check whether the (beam) side designated by provided point and height values
+     * lies fully in the current system
+     *
+     * @param pt     side point on median
+     * @param height beam height
+     * @return true if side is fully within current system, false otherwise
      */
-    private static class Parameters
+    boolean isSideInSystem (Point2D pt,
+                            double height)
     {
+        Area area = system.getArea();
 
-        final int maxSideBeamDx;
-
-        final int minBeamsGapX;
-
-        final int maxBeamsGapX;
-
-        final int maxBeamsGapY;
-
-        final int beamsXMargin;
-
-        final int maxStemBeamGapX;
-
-        final int maxStemBeamGapY;
-
-        final int maxExtensionToStem;
-
-        final int maxExtensionToSpot;
-
-        final int beltMarginDx;
-
-        final int beltMarginDy;
-
-        final double maxBeamSlope;
-
-        final double maxBorderSlopeGap;
-
-        final double maxBeamSlopeGap;
-
-        final double maxDistanceToBorder;
-
-        final double maxJitterRatio;
-
-        final double maxBeltBlackRatio;
-
-        final double minCoreBlackRatio;
-
-        final double minExtBlackRatio;
-
-        final int cueXMargin;
-
-        final int cueYMargin;
-
-        final int cueBoxDx;
-
-        final int cueBoxDy;
-
-        final double cueBeamRatio;
-
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (Scale scale)
-        {
-            maxSideBeamDx = scale.toPixels(constants.maxSideBeamDx);
-            minBeamsGapX = scale.toPixels(constants.minBeamsGapX);
-            maxBeamsGapX = scale.toPixels(constants.maxBeamsGapX);
-            maxBeamsGapY = scale.toPixels(constants.maxBeamsGapY);
-            beamsXMargin = scale.toPixels(constants.beamsXMargin);
-            maxStemBeamGapX = scale.toPixels(constants.maxStemBeamGapX);
-            maxStemBeamGapY = scale.toPixels(constants.maxStemBeamGapY);
-            maxExtensionToStem = scale.toPixels(constants.maxExtensionToStem);
-            maxExtensionToSpot = scale.toPixels(constants.maxExtensionToSpot);
-            beltMarginDx = scale.toPixels(constants.beltMarginDx);
-            beltMarginDy = scale.toPixels(constants.beltMarginDy);
-            maxBeamSlope = constants.maxBeamSlope.getValue();
-            maxBorderSlopeGap = constants.maxBorderSlopeGap.getValue();
-            maxBeamSlopeGap = constants.maxBeamSlopeGap.getValue();
-            maxDistanceToBorder = scale.toPixelsDouble(constants.maxDistanceToBorder);
-            maxJitterRatio = constants.maxJitterRatio.getValue();
-            maxBeltBlackRatio = constants.maxBeltBlackRatio.getValue();
-            minCoreBlackRatio = constants.minCoreBlackRatio.getValue();
-            minExtBlackRatio = constants.minExtBlackRatio.getValue();
-            cueXMargin = scale.toPixels(constants.cueXMargin);
-            cueYMargin = scale.toPixels(constants.cueYMargin);
-            cueBoxDx = scale.toPixels(constants.cueBoxDx);
-            cueBoxDy = scale.toPixels(constants.cueBoxDy);
-            cueBeamRatio = constants.cueBeamRatio.getValue();
-
-            if (logger.isDebugEnabled()) {
-                new Dumping().dump(this);
+        // Check top and bottom points of the beam side
+        for (int dir : new int[]{-1, +1}) {
+            if (!area.contains(pt.getX(), pt.getY() + (dir * (height / 2)))) {
+                return false;
             }
         }
+
+        return true;
     }
 
     //--------------//
@@ -1843,10 +1602,10 @@ public class BeamsBuilder
         private Rectangle bounds;
 
         /** Sequence of cue heads. */
-        private final List<Inter> heads = new ArrayList<Inter>();
+        private final List<Inter> heads = new ArrayList<>();
 
         /** Sequence of stems. (parallel to heads list) */
-        private final List<Inter> stems = new ArrayList<Inter>();
+        private final List<Inter> stems = new ArrayList<>();
 
         /** Global stem direction. (up:-1, down:+1, mixed/unknown:0) */
         private int globalDir = 0;
@@ -1901,30 +1660,25 @@ public class BeamsBuilder
             if (globalDir == 0) {
                 return;
             }
-
             final Corner corner;
             int headX = GeoUtil.centerOf(head.getBounds()).x;
             int stemX = GeoUtil.centerOf(stem.getBounds()).x;
-
             if (headX <= stemX) {
                 corner = (globalDir < 0) ? Corner.TOP_LEFT : Corner.BOTTOM_LEFT;
             } else {
                 corner = (globalDir < 0) ? Corner.TOP_RIGHT : Corner.BOTTOM_RIGHT;
             }
-
             // Limit to beams that cross stem vertical line
-            List<Inter> beams = new ArrayList<Inter>();
+            List<Inter> beams = new ArrayList<>();
             Rectangle fatStemBox = stem.getBounds();
             fatStemBox.grow(params.cueBoxDx, 0);
             fatStemBox.y = bounds.y;
             fatStemBox.height = bounds.height;
-
             for (Inter beam : allBeams) {
                 if (fatStemBox.intersects(beam.getBounds())) {
                     beams.add(beam);
                 }
             }
-
             new StemsBuilder(system).linkCueBeams(head, corner, stem, beams);
         }
 
@@ -2008,26 +1762,20 @@ public class BeamsBuilder
         {
             // Determine stem direction in the aggregate
             globalDir = getDirection();
-
             if (globalDir == 0) {
                 logger.info("Mixed or unknown direction in cue area {}", this);
 
                 return;
             }
-
             // Retrieve candidate glyphs from spots
             List<Glyph> glyphs = getCueGlyphs();
-
             // Retrieve beams from candidate glyphs
-            List<Inter> beams = new ArrayList<Inter>();
-
+            List<Inter> beams = new ArrayList<>();
             for (Glyph glyph : glyphs) {
                 glyph = system.registerGlyph(glyph, GlyphGroup.BEAM_SPOT);
                 spots.add(glyph);
-
-                List<Inter> glyphBeams = new ArrayList<Inter>();
+                List<Inter> glyphBeams = new ArrayList<>();
                 final String failure = checkBeamGlyph(glyph, true, glyphBeams);
-
                 if (failure != null) {
                     if (glyph.isVip()) {
                         logger.info("VIP cue#{} {}", glyph.getId(), failure);
@@ -2040,7 +1788,6 @@ public class BeamsBuilder
                     beams.addAll(glyphBeams);
                 }
             }
-
             // Link stems & beams as possible
             if (!beams.isEmpty()) {
                 for (int i = 0; i < heads.size(); i++) {
@@ -2051,4 +1798,305 @@ public class BeamsBuilder
             }
         }
     }
+
+    //----------------//
+    // ItemParameters //
+    //----------------//
+    /** Parameters that govern beam/hook items, sometime dependent on cue/standard. */
+    public static class ItemParameters
+    {
+
+        final double minBeamWidthLow;
+
+        final double minBeamWidthHigh;
+
+        final double minHookWidthLow;
+
+        final double minHookWidthHigh;
+
+        final double maxHookWidth;
+
+        final double minHeightLow;
+
+        final double typicalHeight;
+
+        final double maxHeightHigh;
+
+        final double cornerMargin;
+
+        final double maxItemXGap;
+
+        final int coreSectionWidth;
+
+        /**
+         * Create an ItemParameters object
+         *
+         * @param scale global sheet scale
+         * @param ratio provided ratio (1.0 for standard beam, about 0.6 for cue beam)
+         */
+        public ItemParameters (Scale scale,
+                               double ratio)
+        {
+            minBeamWidthLow = scale.toPixelsDouble(constants.minBeamWidthLow);
+            minBeamWidthHigh = scale.toPixelsDouble(constants.minBeamWidthHigh);
+            minHookWidthLow = scale.toPixelsDouble(constants.minHookWidthLow);
+            minHookWidthHigh = scale.toPixelsDouble(constants.minHookWidthHigh);
+            maxHookWidth = scale.toPixelsDouble(constants.maxHookWidth);
+
+            typicalHeight = scale.getBeamThickness() * ratio;
+            minHeightLow = typicalHeight * constants.minHeightRatioLow.getValue();
+            maxHeightHigh = typicalHeight * constants.maxHeightRatioHigh.getValue();
+            cornerMargin = typicalHeight * constants.cornerMarginRatio.getValue();
+
+            maxItemXGap = scale.toPixelsDouble(constants.maxItemXGap);
+            coreSectionWidth = scale.toPixels(constants.coreSectionWidth);
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        // Item parameters
+        //----------------
+        private final Scale.Fraction minBeamWidthLow = new Scale.Fraction(
+                1.0, // 1.5,
+                "Low minimum width for a beam");
+
+        private final Scale.Fraction minBeamWidthHigh = new Scale.Fraction(
+                4.0,
+                "High minimum width for a beam");
+
+        private final Scale.Fraction minHookWidthLow = new Scale.Fraction(
+                0.7,
+                "Low minimum width for a hook");
+
+        private final Scale.Fraction minHookWidthHigh = new Scale.Fraction(
+                1.0,
+                "High minimum width for a hook");
+
+        private final Scale.Fraction maxHookWidth = new Scale.Fraction(
+                2.0,
+                "Maximum width for a hook");
+
+        private final Constant.Ratio minHeightRatioLow = new Constant.Ratio(
+                0.7,
+                "Low minimum height for a beam or hook, specified as ratio of typical beam");
+
+        private final Constant.Ratio maxHeightRatioHigh = new Constant.Ratio(
+                1.4, // 1.3,
+                "High maximum height for a beam or hook, specified as ratio of typical beam");
+
+        private final Constant.Ratio cornerMarginRatio = new Constant.Ratio(
+                0.2,
+                "Corner margin for a beam or hook, specified as ratio of typical beam");
+
+        private final Scale.Fraction maxItemXGap = new Scale.Fraction(
+                0.5,
+                "Acceptable abscissa gap within a beam item");
+
+        private final Scale.Fraction coreSectionWidth = new Scale.Fraction(
+                0.15,
+                "Minimum width for a core section to define borders");
+
+        // Global parameters
+        //------------------
+        private final Scale.Fraction maxSideBeamDx = new Scale.Fraction(
+                4.0,
+                "Maximum abscissa gap to detect side beams");
+
+        private final Scale.Fraction maxBeamsGapX = new Scale.Fraction(
+                1.0,
+                "Maximum abscissa gap to merge aligned beams");
+
+        private final Scale.Fraction minBeamsGapX = new Scale.Fraction(
+                0.2,
+                "Minimum abscissa gap to check inner area");
+
+        private final Scale.Fraction maxBeamsGapY = new Scale.Fraction(
+                0.25,
+                "Maximum ordinate mismatch to merge aligned beams");
+
+        private final Scale.Fraction beamsXMargin = new Scale.Fraction(
+                0.25,
+                "Abscissa margin around beams to exclude beam stems");
+
+        private final Scale.Fraction maxStemBeamGapX = new Scale.Fraction(
+                0.2,
+                "Maximum abscissa gap between stem and beam");
+
+        private final Scale.Fraction maxStemBeamGapY = new Scale.Fraction(
+                0.8,
+                "Maximum ordinate gap between stem and beam");
+
+        private final Scale.Fraction maxExtensionToStem = new Scale.Fraction(
+                4.0,
+                "Maximum beam horizontal extension to stem seed");
+
+        private final Scale.Fraction maxExtensionToSpot = new Scale.Fraction(
+                2.0,
+                "Maximum beam horizontal extension to spot");
+
+        private final Scale.Fraction beltMarginDx = new Scale.Fraction(
+                0.25,
+                "Horizontal belt margin checked around beam");
+
+        private final Scale.Fraction beltMarginDy = new Scale.Fraction(
+                0.15,
+                "Vertical belt margin checked around beam");
+
+        private final Constant.Double maxBeamSlope = new Constant.Double(
+                "tangent",
+                1.0,
+                "Maximum absolute tangent value for a beam angle");
+
+        private final Constant.Double maxBorderSlopeGap = new Constant.Double(
+                "tangent",
+                0.15,
+                "Maximum delta slope between top and bottom borders of a beam");
+
+        private final Constant.Double maxBeamSlopeGap = new Constant.Double(
+                "tangent",
+                0.07,
+                "Maximum delta slope between beams of a group");
+
+        private final Scale.Fraction maxDistanceToBorder = new Scale.Fraction(
+                0.15,
+                "Maximum mean distance to average beam border");
+
+        private final Constant.Ratio maxJitterRatio = new Constant.Ratio(
+                0.02,
+                "Maximum border jitter ratio");
+
+        private final Constant.Ratio maxBeltBlackRatio = new Constant.Ratio(
+                0.4,
+                "Maximum ratio of black pixels around beam");
+
+        private final Constant.Ratio minCoreBlackRatio = new Constant.Ratio(
+                0.7,
+                "Minimum ratio of black pixels inside beam");
+
+        private final Constant.Ratio minExtBlackRatio = new Constant.Ratio(
+                0.6,
+                "Minimum ratio of black pixels inside beam extension");
+
+        private final Scale.Fraction cueXMargin = new Scale.Fraction(
+                2.0,
+                "Abscissa margin to aggregate cues");
+
+        private final Scale.Fraction cueYMargin = new Scale.Fraction(
+                3.0,
+                "Ordinate margin to aggregate cues");
+
+        private final Scale.Fraction cueBoxDx = new Scale.Fraction(
+                0.25,
+                "Abscissa expansion of aggregate box");
+
+        private final Scale.Fraction cueBoxDy = new Scale.Fraction(
+                1.0,
+                "Ordinate shift of aggregate box");
+
+        private final Constant.Ratio cueBeamRatio = new Constant.Ratio(
+                0.6,
+                "Ratio applied for cue beams height");
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+
+        final int maxSideBeamDx;
+
+        final int minBeamsGapX;
+
+        final int maxBeamsGapX;
+
+        final int maxBeamsGapY;
+
+        final int beamsXMargin;
+
+        final int maxStemBeamGapX;
+
+        final int maxStemBeamGapY;
+
+        final int maxExtensionToStem;
+
+        final int maxExtensionToSpot;
+
+        final int beltMarginDx;
+
+        final int beltMarginDy;
+
+        final double maxBeamSlope;
+
+        final double maxBorderSlopeGap;
+
+        final double maxBeamSlopeGap;
+
+        final double maxDistanceToBorder;
+
+        final double maxJitterRatio;
+
+        final double maxBeltBlackRatio;
+
+        final double minCoreBlackRatio;
+
+        final double minExtBlackRatio;
+
+        final int cueXMargin;
+
+        final int cueYMargin;
+
+        final int cueBoxDx;
+
+        final int cueBoxDy;
+
+        final double cueBeamRatio;
+
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        Parameters (Scale scale)
+        {
+            maxSideBeamDx = scale.toPixels(constants.maxSideBeamDx);
+            minBeamsGapX = scale.toPixels(constants.minBeamsGapX);
+            maxBeamsGapX = scale.toPixels(constants.maxBeamsGapX);
+            maxBeamsGapY = scale.toPixels(constants.maxBeamsGapY);
+            beamsXMargin = scale.toPixels(constants.beamsXMargin);
+            maxStemBeamGapX = scale.toPixels(constants.maxStemBeamGapX);
+            maxStemBeamGapY = scale.toPixels(constants.maxStemBeamGapY);
+            maxExtensionToStem = scale.toPixels(constants.maxExtensionToStem);
+            maxExtensionToSpot = scale.toPixels(constants.maxExtensionToSpot);
+            beltMarginDx = scale.toPixels(constants.beltMarginDx);
+            beltMarginDy = scale.toPixels(constants.beltMarginDy);
+            maxBeamSlope = constants.maxBeamSlope.getValue();
+            maxBorderSlopeGap = constants.maxBorderSlopeGap.getValue();
+            maxBeamSlopeGap = constants.maxBeamSlopeGap.getValue();
+            maxDistanceToBorder = scale.toPixelsDouble(constants.maxDistanceToBorder);
+            maxJitterRatio = constants.maxJitterRatio.getValue();
+            maxBeltBlackRatio = constants.maxBeltBlackRatio.getValue();
+            minCoreBlackRatio = constants.minCoreBlackRatio.getValue();
+            minExtBlackRatio = constants.minExtBlackRatio.getValue();
+            cueXMargin = scale.toPixels(constants.cueXMargin);
+            cueYMargin = scale.toPixels(constants.cueYMargin);
+            cueBoxDx = scale.toPixels(constants.cueBoxDx);
+            cueBoxDy = scale.toPixels(constants.cueBoxDy);
+            cueBeamRatio = constants.cueBeamRatio.getValue();
+
+            if (logger.isDebugEnabled()) {
+                new Dumping().dump(this);
+            }
+        }
+    }
+
 }

@@ -45,12 +45,21 @@ public interface SampleSource
      */
     List<Sample> getTrainSamples ();
 
+    /**
+     * A basic source of samples, the same set being used for training and for test.
+     */
     static class ConstantSource
             implements SampleSource
     {
 
+        /** The underlying collection of samples. */
         private final List<Sample> samples;
 
+        /**
+         * Create a ConstantSource object.
+         *
+         * @param samples the underlying collection of samples.
+         */
         public ConstantSource (List<Sample> samples)
         {
             this.samples = samples;

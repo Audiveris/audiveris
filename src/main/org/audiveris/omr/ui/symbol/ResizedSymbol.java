@@ -82,13 +82,13 @@ public class ResizedSymbol
         return new ResizedSymbol(true, shape, ratio, decorated, codes);
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    protected String internalsString ()
+    protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internalsString());
+        StringBuilder sb = new StringBuilder(super.internals());
 
         sb.append(" ratio:").append((float) ratio);
 

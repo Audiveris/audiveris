@@ -32,6 +32,8 @@ import java.awt.font.TextLayout;
 /**
  * Class {@code CustomNumDenSymbol} displays a custom time signature, with just the N
  * and D letters.
+ *
+ * @author Hervé Bitteur
  */
 public class CustomNumDenSymbol
         extends ShapeSymbol
@@ -75,8 +77,9 @@ public class CustomNumDenSymbol
         TextFont textFont = new TextFont((int) Math.rint(font.getSize2D() * 0.62));
         p.nLayout = textFont.layout("N");
         p.dLayout = textFont.layout("D");
-        p.rect = new Rectangle((int) Math.ceil(p.nLayout.getBounds().getWidth()), (int) Math.ceil(
-                               p.nLayout.getBounds().getHeight() * 2.2));
+        p.rect = new Rectangle(
+                (int) Math.ceil(p.nLayout.getBounds().getWidth()),
+                (int) Math.ceil(p.nLayout.getBounds().getHeight() * 2.2));
 
         return p;
     }

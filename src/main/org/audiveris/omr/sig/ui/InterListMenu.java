@@ -133,7 +133,7 @@ public class InterListMenu
     private void updateMenu (Collection<Inter> inters)
     {
         // Sort the inters, first by containing system, then by decreasing contextual grade
-        Map<SystemInfo, List<Inter>> interMap = new TreeMap<SystemInfo, List<Inter>>();
+        Map<SystemInfo, List<Inter>> interMap = new TreeMap<>();
 
         if (inters != null) {
             for (Inter inter : inters) {

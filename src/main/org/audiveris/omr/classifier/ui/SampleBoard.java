@@ -109,14 +109,21 @@ public class SampleBoard
      */
     public SampleBoard (SampleController controller)
     {
-        super(Board.SAMPLE, (EntityService<Sample>) controller.getGlyphService(), true, false, false,
-              true, IdOption.ID_LABEL);
+        super(
+                Board.SAMPLE,
+                (EntityService<Sample>) controller.getGlyphService(),
+                true,
+                false,
+                false,
+                true,
+                IdOption.ID_LABEL);
         this.controller = controller;
         this.repository = ((SampleModel) controller.getModel()).getRepository();
 
         // Force a constant dimension for the shapeIcon field, despite variation in size of the icon
-        Dimension dim = new Dimension(constants.shapeIconWidth.getValue(), constants.shapeIconHeight
-                                      .getValue());
+        Dimension dim = new Dimension(
+                constants.shapeIconWidth.getValue(),
+                constants.shapeIconHeight.getValue());
         shapeIcon.setPreferredSize(dim);
         shapeIcon.setMaximumSize(dim);
         shapeIcon.setMinimumSize(dim);
@@ -268,14 +275,16 @@ public class SampleBoard
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final PixelCount shapeIconHeight = new PixelCount(70,
-                                                                  "Exact pixel height for the shape icon field");
+        private final PixelCount shapeIconHeight = new PixelCount(
+                70,
+                "Exact pixel height for the shape icon field");
 
-        private final PixelCount shapeIconWidth = new PixelCount(50,
-                                                                 "Exact pixel width for the shape icon field");
+        private final PixelCount shapeIconWidth = new PixelCount(
+                50,
+                "Exact pixel width for the shape icon field");
     }
 }

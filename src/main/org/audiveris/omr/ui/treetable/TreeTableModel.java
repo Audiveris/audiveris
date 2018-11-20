@@ -5,7 +5,6 @@
 //----------------------------------------------------------------------------//
 package org.audiveris.omr.ui.treetable;
 
-
 /*
  * TreeTableModel.java
  *

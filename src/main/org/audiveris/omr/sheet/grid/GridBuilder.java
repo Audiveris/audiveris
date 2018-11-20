@@ -58,15 +58,15 @@ public class GridBuilder
 
     private static final Logger logger = LoggerFactory.getLogger(GridBuilder.class);
 
-    /** Related sheet. */
-    @Navigable(false)
-    private final Sheet sheet;
-
     /** Companion in charge of staff lines. */
     public final LinesRetriever linesRetriever;
 
     /** Companion in charge of bar lines. */
     public final BarsRetriever barsRetriever;
+
+    /** Related sheet. */
+    @Navigable(false)
+    private final Sheet sheet;
 
     /**
      * Retrieve the frames of all staff lines.
@@ -208,7 +208,7 @@ public class GridBuilder
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 

@@ -151,7 +151,7 @@ public class AugmentationDotInter
 
         for (Relation rel : sig.getRelations(this, AugmentationRelation.class)) {
             if (notes == null) {
-                notes = new ArrayList<AbstractNoteInter>();
+                notes = new ArrayList<>();
             }
 
             notes.add((AbstractNoteInter) sig.getEdgeTarget(rel));
@@ -253,7 +253,7 @@ public class AugmentationDotInter
                                       SystemInfo system)
     {
         // Need getCenter()
-        final List<Link> links = new ArrayList<Link>();
+        final List<Link> links = new ArrayList<>();
         final Scale scale = system.getSheet().getScale();
         final Point dotCenter = getCenter();
         final MeasureStack dotStack = system.getStackAt(dotCenter);
@@ -266,8 +266,8 @@ public class AugmentationDotInter
         final Rectangle luBox = getDotsLuBox(dotCenter, system);
 
         // Relevant dots?
-        final List<Inter> firsts = dotStack.filter(Inters.intersectedInters(systemDots,
-                                                                            GeoOrder.NONE, luBox));
+        final List<Inter> firsts = dotStack.filter(
+                Inters.intersectedInters(systemDots, GeoOrder.NONE, luBox));
 
         // Remove the augmentation dot, if any, that corresponds to the glyph at hand
         for (Inter first : firsts) {
@@ -314,7 +314,7 @@ public class AugmentationDotInter
                                 SystemInfo system)
     {
         // Need sig and getCenter()
-        final List<Link> links = new ArrayList<Link>();
+        final List<Link> links = new ArrayList<>();
         final Scale scale = system.getSheet().getScale();
         final Point dotCenter = getCenter();
         final MeasureStack dotStack = system.getStackAt(dotCenter);
@@ -326,9 +326,8 @@ public class AugmentationDotInter
         // Look for heads reachable from this dot. Heads are processed via their chord.
         final Rectangle luBox = getNotesLuBox(dotCenter, system);
 
-        final List<Inter> chords = dotStack.filter(Inters.intersectedInters(systemHeadChords,
-                                                                            GeoOrder.BY_ABSCISSA,
-                                                                            luBox));
+        final List<Inter> chords = dotStack.filter(
+                Inters.intersectedInters(systemHeadChords, GeoOrder.BY_ABSCISSA, luBox));
         final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum(manual));
 
         for (Inter ic : chords) {
@@ -343,8 +342,8 @@ public class AugmentationDotInter
                 HeadInter head = (HeadInter) ih;
 
                 // Check head is within reach and not yet augmented
-                if (GeoUtil.yEmbraces(luBox, head.getCenter().y) && (head.getFirstAugmentationDot()
-                                                                             == null)) {
+                if (GeoUtil.yEmbraces(luBox, head.getCenter().y) && (head
+                        .getFirstAugmentationDot() == null)) {
                     Point refPt = head.getCenterRight();
                     double xGap = dotCenter.x - refPt.x;
 
@@ -354,7 +353,9 @@ public class AugmentationDotInter
                     }
 
                     // When this method is called, there is at most one stem per head
-                    for (Relation rel : system.getSig().getRelations(head, HeadStemRelation.class)) {
+                    for (Relation rel : system.getSig().getRelations(
+                            head,
+                            HeadStemRelation.class)) {
                         HeadStemRelation hsRel = (HeadStemRelation) rel;
 
                         if (hsRel.getHeadSide() == RIGHT) {
@@ -413,7 +414,7 @@ public class AugmentationDotInter
                                        SystemInfo system)
     {
         // Need getCenter()
-        final List<Link> links = new ArrayList<Link>();
+        final List<Link> links = new ArrayList<>();
         final Scale scale = system.getSheet().getScale();
         final Point dotCenter = getCenter();
         final MeasureStack dotStack = system.getStackAt(dotCenter);
@@ -426,9 +427,8 @@ public class AugmentationDotInter
         final Rectangle luBox = getNotesLuBox(dotCenter, system);
 
         // Relevant rests?
-        final List<Inter> rests = dotStack.filter(Inters.intersectedInters(systemRests,
-                                                                           GeoOrder.BY_ABSCISSA,
-                                                                           luBox));
+        final List<Inter> rests = dotStack.filter(
+                Inters.intersectedInters(systemRests, GeoOrder.BY_ABSCISSA, luBox));
         final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum(manual));
 
         for (Inter inter : rests) {
@@ -548,24 +548,6 @@ public class AugmentationDotInter
         return getLuBox(dotCenter, maxDx, maxDy);
     }
 
-    //----------//
-    // getLuBox //
-    //----------//
-    /**
-     * Report proper lookup box based on provided dot center
-     *
-     * @param dotCenter center of dot candidate
-     * @param maxDx     maximum dx between entity left side and dot center
-     * @param maxDy     maximum dy between entity center and dot center
-     * @return proper lookup box
-     */
-    private static Rectangle getLuBox (Point dotCenter,
-                                       int maxDx,
-                                       int maxDy)
-    {
-        return new Rectangle(dotCenter.x - maxDx, dotCenter.y - maxDy, maxDx, 2 * maxDy);
-    }
-
     //---------------//
     // getNotesLuBox //
     //---------------//
@@ -604,7 +586,7 @@ public class AugmentationDotInter
                              List<Inter> systemDots,
                              SystemInfo system)
     {
-        List<Link> links = new ArrayList<Link>();
+        List<Link> links = new ArrayList<>();
         Link headLink = lookupHeadLink(systemHeadChords, system);
 
         if (headLink != null) {
@@ -615,5 +597,23 @@ public class AugmentationDotInter
         links.addAll(lookupDotLinks(systemDots, system));
 
         return Link.bestOf(links);
+    }
+
+    //----------//
+    // getLuBox //
+    //----------//
+    /**
+     * Report proper lookup box based on provided dot center
+     *
+     * @param dotCenter center of dot candidate
+     * @param maxDx     maximum dx between entity left side and dot center
+     * @param maxDy     maximum dy between entity center and dot center
+     * @return proper lookup box
+     */
+    private static Rectangle getLuBox (Point dotCenter,
+                                       int maxDx,
+                                       int maxDy)
+    {
+        return new Rectangle(dotCenter.x - maxDx, dotCenter.y - maxDy, maxDx, 2 * maxDy);
     }
 }

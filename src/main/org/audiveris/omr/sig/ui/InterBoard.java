@@ -87,7 +87,6 @@ public class InterBoard
     /** To delete/deassign. */
     private final DeassignAction deassignAction = new DeassignAction();
 
-    //
     //    /** Numerator of time signature */
     //    private final LIntegerField timeNum;
     //
@@ -311,7 +310,7 @@ public class InterBoard
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 

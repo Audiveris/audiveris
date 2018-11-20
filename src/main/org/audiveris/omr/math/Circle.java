@@ -243,6 +243,19 @@ public class Circle
         return distance;
     }
 
+    //-------------//
+    // getDistance //
+    //-------------//
+    /**
+     * Record the mean distance (useful for 2-point definitions)
+     *
+     * @param distance the computed mean distance
+     */
+    public void setDistance (double distance)
+    {
+        this.distance = distance;
+    }
+
     //---------------//
     // getFirstAngle //
     //---------------//
@@ -306,10 +319,8 @@ public class Circle
         CubicCurve2D c = getCurve();
 
         return new Point2D.Double(
-                (c.getX1() + (3 * c.getCtrlX1()) + (3 * c.getCtrlX2()) + c.getX2()) / 8, (c.getY1()
-                                                                                                  + (3
-                                                                                                     * c
-                        .getCtrlY1()) + (3 * c.getCtrlY2()) + c.getY2()) / 8);
+                (c.getX1() + (3 * c.getCtrlX1()) + (3 * c.getCtrlX2()) + c.getX2()) / 8,
+                (c.getY1() + (3 * c.getCtrlY1()) + (3 * c.getCtrlY2()) + c.getY2()) / 8);
     }
 
     //-----------//
@@ -348,19 +359,6 @@ public class Circle
         ccw = -ccw;
     }
 
-    //-------------//
-    // getDistance //
-    //-------------//
-    /**
-     * Record the mean distance (useful for 2-point definitions)
-     *
-     * @param distance the computed mean distance
-     */
-    public void setDistance (double distance)
-    {
-        this.distance = distance;
-    }
-
     //----------//
     // toString //
     //----------//
@@ -376,8 +374,11 @@ public class Circle
         sb.append(String.format(" radius=%.1f", radius));
 
         if ((firstAngle != null) && (lastAngle != null)) {
-            sb.append(String.format(" degrees=(%.0f,%.0f)", toDegrees(firstAngle), toDegrees(
-                                    lastAngle)));
+            sb.append(
+                    String.format(
+                            " degrees=(%.0f,%.0f)",
+                            toDegrees(firstAngle),
+                            toDegrees(lastAngle)));
         }
 
         sb.append("}");
@@ -413,7 +414,7 @@ public class Circle
         }
 
         final double bucketSize = (2 * PI) / BUCKET_NB;
-        ArrayList<Double> angles = new ArrayList<Double>();
+        ArrayList<Double> angles = new ArrayList<>();
 
         for (int i = 0; i < xx.length; i++) {
             // Get an angle between 0 and 2*PI
@@ -522,70 +523,48 @@ public class Circle
 
         ///System.out.println("angleDeg/2=" + toDegrees(theta));
         final Matrix rotation = new Matrix(
-                new double[][]{
-                    {cos(theta), -sin(theta), 0},
-                    {sin(theta), cos(theta), 0},
-                    {0, 0, 1}
-                });
+                new double[][]{{cos(theta), -sin(theta), 0}, {sin(theta), cos(theta), 0}, {0, 0, 1}});
 
         // Scaling
         final Matrix scaling = new Matrix(
-                new double[][]{
-                    {radius, 0, 0},
-                    {0, radius, 0},
-                    {0, 0, 1}
-                });
+                new double[][]{{radius, 0, 0}, {0, radius, 0}, {0, 0, 1}});
 
         // Translation
         final Matrix translation = new Matrix(
-                new double[][]{
-                    {1, 0, center.x},
-                    {0, 1, center.y},
-                    {0, 0, 1}
-                });
+                new double[][]{{1, 0, center.x}, {0, 1, center.y}, {0, 0, 1}});
 
         // Composite operation
         final Matrix op = translation.times(scaling).times(rotation);
 
-        final Matrix M0 = op.times(
-                new Matrix(
-                        new double[][]{
-                            {x0},
-                            {y0},
-                            {1}
-                        }));
+        final Matrix M0 = op.times(new Matrix(new double[][]{{x0}, {y0}, {1}}));
 
-        final Matrix M1 = op.times(
-                new Matrix(
-                        new double[][]{
-                            {x1},
-                            {y1},
-                            {1}
-                        }));
+        final Matrix M1 = op.times(new Matrix(new double[][]{{x1}, {y1}, {1}}));
 
-        final Matrix M2 = op.times(
-                new Matrix(
-                        new double[][]{
-                            {x2},
-                            {y2},
-                            {1}
-                        }));
+        final Matrix M2 = op.times(new Matrix(new double[][]{{x2}, {y2}, {1}}));
 
-        final Matrix M3 = op.times(
-                new Matrix(
-                        new double[][]{
-                            {x3},
-                            {y3},
-                            {1}
-                        }));
+        final Matrix M3 = op.times(new Matrix(new double[][]{{x3}, {y3}, {1}}));
 
         // Bezier curve (make sure the curve goes from left to right)
         if (M0.get(0, 0) <= M3.get(0, 0)) {
-            curve = new CubicCurve2D.Double(M0.get(0, 0), M0.get(1, 0), M1.get(0, 0), M1.get(1, 0),
-                                            M2.get(0, 0), M2.get(1, 0), M3.get(0, 0), M3.get(1, 0));
+            curve = new CubicCurve2D.Double(
+                    M0.get(0, 0),
+                    M0.get(1, 0),
+                    M1.get(0, 0),
+                    M1.get(1, 0),
+                    M2.get(0, 0),
+                    M2.get(1, 0),
+                    M3.get(0, 0),
+                    M3.get(1, 0));
         } else {
-            curve = new CubicCurve2D.Double(M3.get(0, 0), M3.get(1, 0), M2.get(0, 0), M2.get(1, 0),
-                                            M1.get(0, 0), M1.get(1, 0), M0.get(0, 0), M0.get(1, 0));
+            curve = new CubicCurve2D.Double(
+                    M3.get(0, 0),
+                    M3.get(1, 0),
+                    M2.get(0, 0),
+                    M2.get(1, 0),
+                    M1.get(0, 0),
+                    M1.get(1, 0),
+                    M0.get(0, 0),
+                    M0.get(1, 0));
         }
     }
 

@@ -46,13 +46,13 @@ public class HistoryMenu
 
     private static final Logger logger = LoggerFactory.getLogger(HistoryMenu.class);
 
-    // Underlying path history
+    /** Underlying path history. */
     protected final PathHistory history;
 
-    // Task class launched on selected path
+    /** Task class launched on selected path. */
     protected final Class<? extends PathTask> pathTaskClass;
 
-    // The concrete menu
+    /** The concrete menu. */
     protected JMenu menu;
 
     /**
@@ -81,26 +81,25 @@ public class HistoryMenu
     public void populate (JMenu menu,
                           Class<?> resourceClass)
     {
-        history.feedMenu(
-                menu,
-                new ActionListener()
-        {
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                try {
-                    final String name = e.getActionCommand().trim();
+        history.feedMenu(menu, new ActionListener()
+                 {
+                     @Override
+                     public void actionPerformed (ActionEvent e)
+                     {
+                         try {
+                             final String name = e.getActionCommand().trim();
 
-                    if (!name.isEmpty()) {
-                        PathTask pathTask = pathTaskClass.newInstance();
-                        pathTask.setPath(Paths.get(name));
-                        pathTask.execute();
-                    }
-                } catch (Exception ex) {
-                    logger.warn("Error in HistoryMenu " + ex, ex);
-                }
-            }
-        });
+                             if (!name.isEmpty()) {
+                                 PathTask pathTask = pathTaskClass.newInstance();
+                                 pathTask.setPath(Paths.get(name));
+                                 pathTask.execute();
+                             }
+                         } catch (IllegalAccessException |
+                                  InstantiationException ex) {
+                             logger.warn("Error in HistoryMenu " + ex, ex);
+                         }
+                     }
+                 });
 
         // Resource injection
         ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(resourceClass);

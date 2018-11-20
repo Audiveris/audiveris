@@ -100,8 +100,9 @@ public class RepeatDotSymbol
 
         if (decorated) {
             // Use a rectangle yTimes times as high as dot
-            p.rect = new Rectangle((int) Math.ceil(rs.getWidth()), (int) Math.ceil(yRatio * rs
-                                   .getHeight()));
+            p.rect = new Rectangle(
+                    (int) Math.ceil(rs.getWidth()),
+                    (int) Math.ceil(yRatio * rs.getHeight()));
 
             // Define specific offset
             p.offset = new Point(0, (int) Math.rint(rs.getHeight() * ((yRatio - 1) / 2)));

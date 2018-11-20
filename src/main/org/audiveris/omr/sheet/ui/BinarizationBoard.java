@@ -64,7 +64,6 @@ public class BinarizationBoard
     /** Format used for every double field. */
     private static final String format = "%.2f";
 
-    //
     /** The related sheet. */
     private final Sheet sheet;
 
@@ -72,8 +71,11 @@ public class BinarizationBoard
     private final LDoubleField mean = new LDoubleField(false, "Mean", "Mean value", format);
 
     /** Standard deviation in neighborhood. */
-    private final LDoubleField stdDev
-            = new LDoubleField(false, "StdDev", "Standard deviation value", format);
+    private final LDoubleField stdDev = new LDoubleField(
+            false,
+            "StdDev",
+            "Standard deviation value",
+            format);
 
     /** Computed threshold. */
     private final LDoubleField threshold = new LDoubleField(false, "Thres.", "Threshold", format);
@@ -85,15 +87,20 @@ public class BinarizationBoard
      */
     public BinarizationBoard (Sheet sheet)
     {
-        super(Board.BINARIZATION, sheet.getLocationService(), eventClasses, false, false, false,
-              false);
+        super(
+                Board.BINARIZATION,
+                sheet.getLocationService(),
+                eventClasses,
+                false,
+                false,
+                false,
+                false);
 
         this.sheet = sheet;
 
         defineLayout();
     }
 
-    //
     //---------//
     // onEvent //
     //---------//
@@ -137,8 +144,10 @@ public class BinarizationBoard
                 PixelFilter filter = desc.getFilter(source);
 
                 if (filter == null) {
-                    filter = new RandomFilter(source, AdaptiveDescriptor.getDefaultMeanCoeff(),
-                                              AdaptiveDescriptor.getDefaultStdDevCoeff());
+                    filter = new RandomFilter(
+                            source,
+                            AdaptiveDescriptor.getDefaultMeanCoeff(),
+                            AdaptiveDescriptor.getDefaultStdDevCoeff());
                 }
 
                 PixelFilter.Context context = filter.getContext(rect.x, rect.y);

@@ -43,9 +43,6 @@ public class StaffSelection
 
     private static final Logger logger = LoggerFactory.getLogger(StaffSelection.class);
 
-    /** Singleton. */
-    private static volatile StaffSelection INSTANCE;
-
     /** Resource injection. */
     private final ResourceMap resources = Application.getInstance().getContext().getResourceMap(
             StaffSelection.class);
@@ -66,22 +63,26 @@ public class StaffSelection
     private final JDialog dialog = pane.createDialog(OMR.gui.getFrame(), resources.getString(
                                                      className + ".title"));
 
+    //-------------//
+    // getInstance //
+    //-------------//
     /**
-     * Report the singleton
+     * Report the single instance of this class in application.
      *
-     * @return the unique instance of this class
+     * @return the instance
      */
     public static StaffSelection getInstance ()
     {
-        if (INSTANCE == null) {
-            synchronized (StaffSelection.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new StaffSelection();
-                }
-            }
-        }
+        return LazySingleton.INSTANCE;
+    }
 
-        return INSTANCE;
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final StaffSelection INSTANCE = new StaffSelection();
     }
 
     /**

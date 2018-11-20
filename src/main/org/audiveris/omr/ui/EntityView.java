@@ -44,7 +44,6 @@ import java.util.List;
  * Class {@code EntityView} is a basic graphical view for an entity type.
  *
  * @param <E> precise entity type
- *
  * @author Hervé Bitteur
  */
 public class EntityView<E extends Entity>
@@ -126,8 +125,8 @@ public class EntityView<E extends Entity>
 
             if (!list.isEmpty()) {
                 // Display entities contour
-                locationService.publish(new LocationEvent(this, listEVent.hint, null, Entities
-                                                          .getBounds(list)));
+                locationService.publish(
+                        new LocationEvent(this, listEVent.hint, null, Entities.getBounds(list)));
             }
         }
     }

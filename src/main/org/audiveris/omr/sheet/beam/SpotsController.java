@@ -113,18 +113,20 @@ public class SpotsController
         sheet.getStub().getAssembly().addViewTab(
                 SheetTab.BEAM_SPOT_TAB,
                 new ScrollView(view),
-                new BoardsPane(new PixelBoard(sheet), new GlyphBoard(index.getEntityService(), true),
-                               new SectionBoard(spotLag, true)));
+                new BoardsPane(
+                        new PixelBoard(sheet),
+                        new GlyphBoard(index.getEntityService(), true),
+                        new SectionBoard(spotLag, true)));
     }
 
     //--------//
     // MyView //
     //--------//
-    private final class MyView
+    private class MyView
             extends NestView
     {
 
-        public MyView (GlyphIndex glyphIndex)
+        MyView (GlyphIndex glyphIndex)
         {
             super(glyphIndex.getEntityService(), Arrays.asList(spotLag), sheet);
 

@@ -75,6 +75,11 @@ public class KeyPeak
         this.area = area;
     }
 
+    /**
+     * Report peak center abscissa
+     *
+     * @return the abscissa of peak center
+     */
     public double getCenter ()
     {
         return 0.5 * (min + max);

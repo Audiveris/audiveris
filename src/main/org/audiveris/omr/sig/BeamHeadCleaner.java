@@ -57,6 +57,9 @@ public class BeamHeadCleaner
     //---------//
     // process //
     //---------//
+    /**
+     * Clear BeamHeadRelations.
+     */
     public void process ()
     {
         SIGraph sig = system.getSig();

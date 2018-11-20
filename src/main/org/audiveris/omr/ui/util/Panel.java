@@ -68,6 +68,87 @@ public class Panel
         setBorder(null);
     }
 
+    //-----------//
+    // getInsets //
+    //-----------//
+    /**
+     * By this way, Swing will paint the component with its specific inset values.
+     *
+     * @return the panel insets
+     */
+    @Override
+    public Insets getInsets ()
+    {
+        if (insets != null) {
+            return insets;
+        } else {
+            return getDefaultInsets();
+        }
+    }
+
+    //-----------//
+    // setInsets //
+    //-----------//
+    /**
+     * Set the panel insets (in number of pixels) on the four directions.
+     *
+     * @param top    inset on top side
+     * @param left   inset on the left side
+     * @param bottom inset on the bottom side
+     * @param right  inset on the right side
+     */
+    public void setInsets (int top,
+                           int left,
+                           int bottom,
+                           int right)
+    {
+        insets = new Insets(top, left, bottom, right);
+    }
+
+    //-------------//
+    // setNoInsets //
+    //-------------//
+    /**
+     * A convenient method to set all 4 insets values to zero.
+     */
+    public void setNoInsets ()
+    {
+        insets = new Insets(0, 0, 0, 0);
+    }
+
+    //----------------//
+    // paintComponent //
+    //----------------//
+    /**
+     * This method is redefined to give a chance to draw the cell boundaries
+     * if so desired.
+     *
+     * @param g the graphic context
+     */
+    @Override
+    protected void paintComponent (Graphics g)
+    {
+        // Note: Uncomment following line for FormDebugPanel
+        ///setPaintInBackground(true);
+        super.paintComponent(g);
+    }
+
+    //------------------//
+    // getDefaultInsets //
+    //------------------//
+    private Insets getDefaultInsets ()
+    {
+        if (DEFAULT_INSETS == null) {
+            DEFAULT_INSETS = new Insets(
+                    constants.insetTop.getValue(),
+                    constants.insetLeft.getValue(),
+                    constants.insetBottom.getValue(),
+                    constants.insetRight.getValue());
+        }
+
+        return DEFAULT_INSETS;
+    }
+
     /**
      * Selector to the default button width.
      *
@@ -141,6 +222,12 @@ public class Panel
     //-------------//
     // makeColumns //
     //-------------//
+    /**
+     * Build the columns specification, with default options.
+     *
+     * @param cols number of logical columns.
+     * @return proper col spec
+     */
     public static String makeColumns (int cols)
     {
         return makeColumns(cols, "right:", Panel.getLabelWidth(), Panel.getFieldWidth());
@@ -149,6 +236,15 @@ public class Panel
     //-------------//
     // makeColumns //
     //-------------//
+    /**
+     * Build the columns specification.
+     *
+     * @param cols           number of logical columns
+     * @param labelAlignment horizontal alignment to apply to label
+     * @param labelWidth     width specification for labels
+     * @param fieldWidth     width specification for fields
+     * @return proper columns specification
+     */
     public static String makeColumns (int cols,
                                       String labelAlignment,
                                       String labelWidth,
@@ -209,13 +305,22 @@ public class Panel
                                              String labelWidth,
                                              String fieldWidth)
     {
-        return new FormLayout(makeColumns(cols, labelAlignment, labelWidth, fieldWidth), makeRows(
-                              rows));
+        return new FormLayout(
+                makeColumns(cols, labelAlignment, labelWidth, fieldWidth),
+                makeRows(rows));
     }
 
     //-------------------//
     // makeLabelsColumns //
     //-------------------//
+    /**
+     * Build a column specification for just labels.
+     *
+     * @param cols          number of columns.
+     * @param labelInterval horizontal gap specification between labels
+     * @param labelWidth    width specification for labels
+     * @return proper columns specification
+     */
     public static String makeLabelsColumns (int cols,
                                             String labelInterval,
                                             String labelWidth)
@@ -294,102 +399,27 @@ public class Panel
     }
 
     //-----------//
-    // getInsets //
-    //-----------//
-    /**
-     * By this way, Swing will paint the component with its specific inset values.
-     *
-     * @return the panel insets
-     */
-    @Override
-    public Insets getInsets ()
-    {
-        if (insets != null) {
-            return insets;
-        } else {
-            return getDefaultInsets();
-        }
-    }
-
-    //-----------//
-    // setInsets //
-    //-----------//
-    /**
-     * Set the panel insets (in number of pixels) on the four directions.
-     *
-     * @param top    inset on top side
-     * @param left   inset on the left side
-     * @param bottom inset on the bottom side
-     * @param right  inset on the right side
-     */
-    public void setInsets (int top,
-                           int left,
-                           int bottom,
-                           int right)
-    {
-        insets = new Insets(top, left, bottom, right);
-    }
-
-    //-------------//
-    // setNoInsets //
-    //-------------//
-    /**
-     * A convenient method to set all 4 insets values to zero.
-     */
-    public void setNoInsets ()
-    {
-        insets = new Insets(0, 0, 0, 0);
-    }
-
-    //----------------//
-    // paintComponent //
-    //----------------//
-    /**
-     * This method is redefined to give a chance to draw the cell boundaries
-     * if so desired.
-     *
-     * @param g the graphic context
-     */
-    @Override
-    protected void paintComponent (Graphics g)
-    {
-        // Note: Uncomment following line for FormDebugPanel
-        ///setPaintInBackground(true);
-        super.paintComponent(g);
-    }
-
-    //------------------//
-    // getDefaultInsets //
-    //------------------//
-    private Insets getDefaultInsets ()
-    {
-        if (DEFAULT_INSETS == null) {
-            DEFAULT_INSETS = new Insets(constants.insetTop.getValue(), constants.insetLeft
-                                        .getValue(), constants.insetBottom.getValue(),
-                                        constants.insetRight.getValue());
-        }
-
-        return DEFAULT_INSETS;
-    }
-
-    //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.String buttonWidth = new Constant.String("45dlu",
-                                                                        "Width of a standard button");
+        private final Constant.String buttonWidth = new Constant.String(
+                "45dlu",
+                "Width of a standard button");
 
-        private final Constant.String fieldInterline = new Constant.String("1dlu",
-                                                                           "Vertical gap between two lines");
+        private final Constant.String fieldInterline = new Constant.String(
+                "1dlu",
+                "Vertical gap between two lines");
 
-        private final Constant.String fieldInterval = new Constant.String("3dlu",
-                                                                          "Horizontal gap between two fields");
+        private final Constant.String fieldInterval = new Constant.String(
+                "3dlu",
+                "Horizontal gap between two fields");
 
-        private final Constant.String fieldWidth = new Constant.String("35dlu",
-                                                                       "Width of a field value");
+        private final Constant.String fieldWidth = new Constant.String(
+                "35dlu",
+                "Width of a field value");
 
         private final PixelCount insetBottom = new PixelCount(6, "Value of Bottom inset");
 
@@ -399,13 +429,16 @@ public class Panel
 
         private final PixelCount insetTop = new PixelCount(6, "Value of Top inset");
 
-        private final Constant.String labelInterval = new Constant.String("1dlu",
-                                                                          "Horizontal gap between a field label and its field value");
+        private final Constant.String labelInterval = new Constant.String(
+                "1dlu",
+                "Horizontal gap between a field label and its field value");
 
-        private final Constant.String labelWidth = new Constant.String("25dlu",
-                                                                       "Width of the label of a field");
+        private final Constant.String labelWidth = new Constant.String(
+                "25dlu",
+                "Width of the label of a field");
 
-        private final Constant.String panelInterline = new Constant.String("6dlu",
-                                                                           "Vertical gap between two panels");
+        private final Constant.String panelInterline = new Constant.String(
+                "6dlu",
+                "Vertical gap between two panels");
     }
 }

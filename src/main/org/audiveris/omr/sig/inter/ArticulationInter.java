@@ -109,42 +109,6 @@ public class ArticulationInter
         return isAbnormal();
     }
 
-    //------------------//
-    // createValidAdded //
-    //------------------//
-    /**
-     * (Try to) create an ArticulationInter.
-     *
-     * @param glyph            underlying glyph
-     * @param shape            detected shape
-     * @param grade            assigned grade
-     * @param system           containing system
-     * @param systemHeadChords system head chords, ordered by abscissa
-     * @return the created articulation or null
-     */
-    public static ArticulationInter createValidAdded (Glyph glyph,
-                                                      Shape shape,
-                                                      double grade,
-                                                      SystemInfo system,
-                                                      List<Inter> systemHeadChords)
-    {
-        if (glyph.isVip()) {
-            logger.info("VIP ArticulationInter create {} as {}", glyph, shape);
-        }
-
-        ArticulationInter artic = new ArticulationInter(glyph, shape, grade);
-        Link link = artic.lookupLink(systemHeadChords);
-
-        if (link != null) {
-            system.getSig().addVertex(artic);
-            link.applyTo(artic);
-
-            return artic;
-        }
-
-        return null;
-    }
-
     //----------//
     // getStaff //
     //----------//
@@ -233,8 +197,10 @@ public class ArticulationInter
         final Rectangle luBox = new Rectangle(arcticCenter);
         luBox.grow(maxDx, maxDy);
 
-        final List<Inter> chords = Inters.intersectedInters(systemHeadChords, GeoOrder.BY_ABSCISSA,
-                                                            luBox);
+        final List<Inter> chords = Inters.intersectedInters(
+                systemHeadChords,
+                GeoOrder.BY_ABSCISSA,
+                luBox);
 
         if (chords.isEmpty()) {
             return null;
@@ -257,8 +223,8 @@ public class ArticulationInter
             // Select proper chord reference point (top or bottom)
             int yRef = (arcticCenter.y > center.y) ? (chordBox.y + chordBox.height) : chordBox.y;
             double absXGap = Math.abs(center.x - arcticCenter.x);
-            double yGap = (arcticCenter.y > center.y) ? (arcticCenter.y - yRef) : (yRef
-                                                                                           - arcticCenter.y);
+            double yGap = (arcticCenter.y > center.y) ? (arcticCenter.y - yRef)
+                    : (yRef - arcticCenter.y);
 
             if (yGap < minDy) {
                 continue;
@@ -279,6 +245,42 @@ public class ArticulationInter
 
         if (bestRel != null) {
             return new Link(bestChord, bestRel, false);
+        }
+
+        return null;
+    }
+
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create an ArticulationInter.
+     *
+     * @param glyph            underlying glyph
+     * @param shape            detected shape
+     * @param grade            assigned grade
+     * @param system           containing system
+     * @param systemHeadChords system head chords, ordered by abscissa
+     * @return the created articulation or null
+     */
+    public static ArticulationInter createValidAdded (Glyph glyph,
+                                                      Shape shape,
+                                                      double grade,
+                                                      SystemInfo system,
+                                                      List<Inter> systemHeadChords)
+    {
+        if (glyph.isVip()) {
+            logger.info("VIP ArticulationInter create {} as {}", glyph, shape);
+        }
+
+        ArticulationInter artic = new ArticulationInter(glyph, shape, grade);
+        Link link = artic.lookupLink(systemHeadChords);
+
+        if (link != null) {
+            system.getSig().addVertex(artic);
+            link.applyTo(artic);
+
+            return artic;
         }
 
         return null;

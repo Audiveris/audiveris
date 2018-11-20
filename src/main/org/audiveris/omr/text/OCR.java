@@ -46,7 +46,6 @@ public interface OCR
         SINGLE_BLOCK;
     }
 
-    //
     /**
      * Report the set of supported language codes
      *
@@ -79,7 +78,8 @@ public interface OCR
      * @param label        an optional label related to the image, null otherwise.
      *                     This is meant for keeping track of the temporary image files.
      * @return a list of TextLine instances, or null.
-     *         The coordinates of any returned TextLine are absolute coordinates thanks to the topLeft
+     *         The coordinates of any returned TextLine are absolute coordinates thanks to the
+     *         topLeft
      *         parameter.
      */
     List<TextLine> recognize (int interline,
@@ -96,11 +96,22 @@ public interface OCR
             extends RuntimeException
     {
 
+        /**
+         * Create a UnavailableOcrException.
+         *
+         * @param msg related message
+         */
         public UnavailableOcrException (String msg)
         {
             super(msg);
         }
 
+        /**
+         * Create a UnavailableOcrException.
+         *
+         * @param msg   related message
+         * @param cause exception cause
+         */
         public UnavailableOcrException (String msg,
                                         Throwable cause)
         {

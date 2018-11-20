@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.grid;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.dynamic.SectionCompound;
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Lags;
 import org.audiveris.omr.sheet.Sheet;
@@ -73,6 +74,9 @@ public class StaffLineCleaner
     //---------//
     // process //
     //---------//
+    /**
+     * Clean the staff lines by "removing" the line glyphs.
+     */
     public void process ()
     {
         StopWatch watch = new StopWatch("StaffLineCleaner");
@@ -85,7 +89,7 @@ public class StaffLineCleaner
 
             // Remove staff line sections from hLag
             for (LineInfo line : originals) {
-                hLag.removeSections(((StaffFilament) line).getMembers());
+                hLag.removeSections(((SectionCompound) line).getMembers());
             }
         }
 
@@ -104,11 +108,12 @@ public class StaffLineCleaner
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(false,
-                                                                         "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
     }
 }

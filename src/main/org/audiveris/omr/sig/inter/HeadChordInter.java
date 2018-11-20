@@ -214,7 +214,7 @@ public class HeadChordInter
 
         for (Relation rel : sig.getRelations(this, ChordArticulationRelation.class)) {
             if (found == null) {
-                found = new ArrayList<ArticulationInter>();
+                found = new ArrayList<>();
             }
 
             found.add((ArticulationInter) sig.getOppositeInter(this, rel));
@@ -418,6 +418,21 @@ public class HeadChordInter
         return null;
     }
 
+    //---------//
+    // setStem //
+    //---------//
+    /**
+     * Set the stem of this head chord.
+     *
+     * @param stem the stem to set
+     */
+    public final void setStem (StemInter stem)
+    {
+        Objects.requireNonNull(sig, "Chord not in SIG.");
+
+        sig.addEdge(this, stem, new ChordStemRelation());
+    }
+
     //------------//
     // getStemDir //
     //------------//
@@ -434,19 +449,6 @@ public class HeadChordInter
         } else {
             return Integer.signum(getTailLocation().y - getHeadLocation().y);
         }
-    }
-
-    //---------//
-    // setStem //
-    //---------//
-    /**
-     * @param stem the stem to set
-     */
-    public final void setStem (StemInter stem)
-    {
-        Objects.requireNonNull(sig, "Chord not in SIG.");
-
-        sig.addEdge(this, stem, new ChordStemRelation());
     }
 
     //-------------//
@@ -485,9 +487,9 @@ public class HeadChordInter
                 tailLocation = new Point(stemBox.x + (stemBox.width / 2), stemBox.y);
             } else {
                 // Stem is down
-                tailLocation = new Point(stemBox.x + (stemBox.width / 2), ((stemBox.y
-                                                                                    + stemBox.height)
-                                                                           - 1));
+                tailLocation = new Point(
+                        stemBox.x + (stemBox.width / 2),
+                        ((stemBox.y + stemBox.height) - 1));
             }
 
             headLocation = new Point(tailLocation.x, leading.getCenter().y);

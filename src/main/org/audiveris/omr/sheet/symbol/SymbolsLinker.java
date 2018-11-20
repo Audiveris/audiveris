@@ -137,8 +137,10 @@ public class SymbolsLinker
                 MeasureStack stack = system.getStackAt(location);
 
                 if (stack == null) {
-                    logger.info("No measure stack for direction {} {}", sentence, sentence
-                                .getValue());
+                    logger.info(
+                            "No measure stack for direction {} {}",
+                            sentence,
+                            sentence.getValue());
 
                     break;
                 }
@@ -198,6 +200,9 @@ public class SymbolsLinker
     //---------//
     // process //
     //---------//
+    /**
+     * Process all links.
+     */
     public void process ()
     {
         linkDynamics();
@@ -334,11 +339,10 @@ public class SymbolsLinker
                     final Point center = fermata.getCenter();
                     final Rectangle bounds = arc.getBounds();
                     final MeasureStack stack = system.getStackAt(center);
-                    final Collection<AbstractChordInter> chords = (fermata.getShape()
-                                                                           == Shape.FERMATA_BELOW)
-                                    ? stack
-                                            .getStandardChordsAbove(center, bounds)
-                                    : stack.getStandardChordsBelow(center, bounds);
+                    final Collection<AbstractChordInter> chords = (fermata
+                            .getShape() == Shape.FERMATA_BELOW) ? stack.getStandardChordsAbove(
+                                            center,
+                                            bounds) : stack.getStandardChordsBelow(center, bounds);
 
                     if (!fermata.linkWithChords(chords)) {
                         // No link to barline, no link to chord, discard it
@@ -461,14 +465,14 @@ public class SymbolsLinker
                 final Line2D topLine = wedge.getLine1();
 
                 for (HorizontalSide side : HorizontalSide.values()) {
-                    final Point2D location = (side == LEFT) ? new Point2D.Double(topLine.getX1()
-                                                                                         + xMargin,
-                                                                                 topLine
-                                                                                         .getY1())
+                    final Point2D location = (side == LEFT) ? new Point2D.Double(
+                            topLine.getX1() + xMargin,
+                            topLine.getY1())
                             : new Point2D.Double(topLine.getX2() - xMargin, topLine.getY2());
                     final MeasureStack stack = system.getStackAt(location);
-                    final AbstractChordInter chordAbove = stack
-                            .getStandardChordAbove(location, null);
+                    final AbstractChordInter chordAbove = stack.getStandardChordAbove(
+                            location,
+                            null);
 
                     if (chordAbove != null) {
                         sig.addEdge(chordAbove, wedge, new ChordWedgeRelation(side));

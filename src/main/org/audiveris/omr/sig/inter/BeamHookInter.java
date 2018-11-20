@@ -50,7 +50,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Class {@code BeamHookInter} represents a beam hook interpretation.
  *
  * @see BeamInter
- *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "beam-hook")
@@ -187,7 +186,10 @@ public class BeamHookInter
         final Rectangle luBox = getBounds();
         luBox.grow(xMargin, yMargin);
 
-        final List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
+        final List<Inter> stems = Inters.intersectedInters(
+                systemStems,
+                GeoOrder.BY_ABSCISSA,
+                luBox);
 
         // Find out the best stem candidate, if any
         double bestDist = Double.MAX_VALUE;
@@ -221,7 +223,7 @@ public class BeamHookInter
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 

@@ -96,8 +96,7 @@ public class ClumpPruner
     {
         // Compute lookup areas for each slur in clump
         // If we cannot compute areas for a slur, we simply discard the slur
-        Map<Inter, Map<HorizontalSide, Area>> areas
-                = new LinkedHashMap<Inter, Map<HorizontalSide, Area>>();
+        Map<Inter, Map<HorizontalSide, Area>> areas = new LinkedHashMap<>();
 
         for (Iterator<Inter> it = clump.iterator(); it.hasNext();) {
             SlurInter slur = (SlurInter) it.next();
@@ -187,8 +186,7 @@ public class ClumpPruner
     private Map<HorizontalSide, Rectangle> getBounds (Set<Inter> clump,
                                                       Map<Inter, Map<HorizontalSide, Area>> areas)
     {
-        Map<HorizontalSide, Rectangle> bounds = new EnumMap<HorizontalSide, Rectangle>(
-                HorizontalSide.class);
+        Map<HorizontalSide, Rectangle> bounds = new EnumMap<>(HorizontalSide.class);
 
         for (HorizontalSide side : HorizontalSide.values()) {
             // Take union of areas for this side
@@ -246,13 +244,12 @@ public class ClumpPruner
         private final List<Inter> sysChords;
 
         /** Head-chords found around clump. */
-        private final Map<HorizontalSide, List<Inter>> chords
-                = new EnumMap<HorizontalSide, List<Inter>>(HorizontalSide.class);
+        private final Map<HorizontalSide, List<Inter>> chords = new EnumMap<>(HorizontalSide.class);
 
-        public ClumpLinker (SystemInfo system,
-                            Set<Inter> clump,
-                            Map<HorizontalSide, Rectangle> bounds,
-                            List<Inter> sysChords)
+        ClumpLinker (SystemInfo system,
+                     Set<Inter> clump,
+                     Map<HorizontalSide, Rectangle> bounds,
+                     List<Inter> sysChords)
         {
             this.system = system;
             this.clump = clump;
@@ -299,16 +296,17 @@ public class ClumpPruner
         public SlurEntry selectSlur (Map<Inter, Map<HorizontalSide, Area>> areas)
         {
             // Determine the pair of best links for every slur candidate
-            List<SlurEntry> entries = new ArrayList<SlurEntry>();
+            List<SlurEntry> entries = new ArrayList<>();
 
             for (Inter inter : clump) {
                 SlurInter slur = (SlurInter) inter;
 
                 // Determine the pair of best links (left & right) for this slur candidate
-                Map<HorizontalSide, SlurHeadLink> linkPair = slurLinker.lookupLinkPair(slur, areas
-                                                                                       .get(slur),
-                                                                                       system,
-                                                                                       chords);
+                Map<HorizontalSide, SlurHeadLink> linkPair = slurLinker.lookupLinkPair(
+                        slur,
+                        areas.get(slur),
+                        system,
+                        chords);
 
                 if (linkPair != null) {
                     entries.add(new SlurEntry(slur, linkPair));
@@ -358,7 +356,7 @@ public class ClumpPruner
          */
         private List<SlurEntry> getNonOrphans (List<SlurEntry> entries)
         {
-            List<SlurEntry> nonOrphans = new ArrayList<SlurEntry>();
+            List<SlurEntry> nonOrphans = new ArrayList<>();
             EntryLoop:
             for (SlurEntry entry : entries) {
                 for (HorizontalSide side : HorizontalSide.values()) {
@@ -468,8 +466,8 @@ public class ClumpPruner
         /** The two best head links (left and right). */
         public final Map<HorizontalSide, SlurHeadLink> links;
 
-        public SlurEntry (SlurInter slur,
-                          Map<HorizontalSide, SlurHeadLink> links)
+        SlurEntry (SlurInter slur,
+                   Map<HorizontalSide, SlurHeadLink> links)
         {
             this.slur = slur;
             this.links = links;

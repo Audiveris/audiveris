@@ -132,7 +132,8 @@ public class ReversePathIterator
 
             if (first) {
                 if (segType != SEG_MOVETO) {
-                    throw new IllegalPathStateException("missing initial moveto in path definition");
+                    throw new IllegalPathStateException(
+                            "missing initial moveto in path definition");
                 }
 
                 first = false;
@@ -300,6 +301,44 @@ public class ReversePathIterator
     }
 
     /**
+     * Returns the winding rule for determining the interior of the
+     * path. This just returns the winding rule of the original path,
+     * which may or may not be what is wanted.
+     *
+     * @return the winding rule.
+     * @see #WIND_EVEN_ODD
+     * @see #WIND_NON_ZERO
+     */
+    @Override
+    public int getWindingRule ()
+    {
+        return windingRule;
+    }
+
+    /**
+     * Tests if the iteration is complete.
+     *
+     * @return {@code true} if all the segments have
+     *         been read; {@code false} otherwise.
+     */
+    @Override
+    public boolean isDone ()
+    {
+        return segmentIndex >= segmentTypes.length;
+    }
+
+    /**
+     * Moves the iterator to the next segment of the path forwards
+     * along the primary direction of traversal as long as there are
+     * more points in that direction.
+     */
+    @Override
+    public void next ()
+    {
+        coordIndex += coordinatesForSegmentType(segmentTypes[segmentIndex++]);
+    }
+
+    /**
      * Get a reverse path iterator for a shape, keeping the shape's winding
      * rule.
      *
@@ -418,44 +457,6 @@ public class ReversePathIterator
                                                        int windingRule)
     {
         return new ReversePathIterator(shape.getPathIterator(at, flatness), windingRule);
-    }
-
-    /**
-     * Returns the winding rule for determining the interior of the
-     * path. This just returns the winding rule of the original path,
-     * which may or may not be what is wanted.
-     *
-     * @return the winding rule.
-     * @see #WIND_EVEN_ODD
-     * @see #WIND_NON_ZERO
-     */
-    @Override
-    public int getWindingRule ()
-    {
-        return windingRule;
-    }
-
-    /**
-     * Tests if the iteration is complete.
-     *
-     * @return {@code true} if all the segments have
-     *         been read; {@code false} otherwise.
-     */
-    @Override
-    public boolean isDone ()
-    {
-        return segmentIndex >= segmentTypes.length;
-    }
-
-    /**
-     * Moves the iterator to the next segment of the path forwards
-     * along the primary direction of traversal as long as there are
-     * more points in that direction.
-     */
-    @Override
-    public void next ()
-    {
-        coordIndex += coordinatesForSegmentType(segmentTypes[segmentIndex++]);
     }
 
     /**

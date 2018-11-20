@@ -110,19 +110,6 @@ public abstract class TimeBuilder
     /** Possible shapes for top or bottom half of time signatures. */
     private static final EnumSet<Shape> halfShapes = EnumSet.copyOf(ShapeSet.PartialTimes);
 
-    /**
-     * The different parts of a time signature.
-     */
-    public static enum TimeKind
-    {
-        /** Whole signature (common or cut or combo). */
-        WHOLE,
-        /** Upper half (numerator number). */
-        NUM,
-        /** Lower half (denominator number). */
-        DEN;
-    }
-
     /** Dedicated staff to analyze. */
     protected final Staff staff;
 
@@ -143,19 +130,19 @@ public abstract class TimeBuilder
     protected final Parameters params;
 
     /** whole candidates. (common or cut or combo like 6/8 ...) */
-    protected final List<Inter> wholes = new ArrayList<Inter>();
+    protected final List<Inter> wholes = new ArrayList<>();
 
     /** Top half candidates. (6/ ...) */
-    protected final List<Inter> nums = new ArrayList<Inter>();
+    protected final List<Inter> nums = new ArrayList<>();
 
     /** Bottom half candidates. (/8 ...) */
-    protected final List<Inter> dens = new ArrayList<Inter>();
+    protected final List<Inter> dens = new ArrayList<>();
 
     /** The time inter instance chosen for the staff. */
     protected AbstractTimeInter timeInter;
 
     /** All glyphs submitted to classifier. */
-    protected final Set<Glyph> glyphCandidates = new LinkedHashSet<Glyph>();
+    protected final Set<Glyph> glyphCandidates = new LinkedHashSet<>();
 
     /**
      * Creates a new {@code TimeBuilder} object.
@@ -243,7 +230,7 @@ public abstract class TimeBuilder
      */
     protected void discardOthers ()
     {
-        final Map<Shape, Glyph> compatibles = new EnumMap<Shape, Glyph>(Shape.class);
+        final Map<Shape, Glyph> compatibles = new EnumMap<>(Shape.class);
 
         if (timeInter instanceof TimeWholeInter) {
             // It's a whole sig: COMMON_TIME or CUT_TIME or combo
@@ -386,6 +373,189 @@ public abstract class TimeBuilder
     }
 
     //-------------//
+    // HalfAdapter //
+    //-------------//
+    /**
+     * Handles the integration between glyph clustering class and time-sig environment.
+     * <p>
+     * For each time kind, we keep the best result found if any.
+     */
+    private class HalfAdapter
+            extends TimeAdapter
+    {
+
+        /** Which half is being searched. (NUM or DEN) */
+        private final TimeKind half;
+
+        HalfAdapter (TimeKind half,
+                     List<Glyph> parts)
+        {
+            super(parts);
+            this.half = half;
+        }
+
+        @Override
+        public void evaluateGlyph (Glyph glyph,
+                                   Set<Glyph> parts)
+        {
+            trials++;
+
+            if (glyph.getId() == 0) {
+                glyph = system.registerGlyph(glyph, null);
+            }
+
+            glyphCandidates.add(glyph);
+
+            Evaluation[] evals = ShapeClassifier.getInstance().evaluate(
+                    glyph,
+                    staff.getSpecificInterline(),
+                    params.maxEvalRank,
+                    Grades.timeMinGrade / Grades.intrinsicRatio,
+                    null);
+
+            for (Evaluation eval : evals) {
+                final Shape shape = eval.shape;
+
+                if (halfShapes.contains(shape)) {
+                    final double grade = Grades.intrinsicRatio * eval.grade;
+                    logger.debug("   {} eval {} for glyph#{}", half, eval, glyph.getId());
+
+                    Inter bestInter = bestMap.get(shape);
+
+                    if ((bestInter == null) || (bestInter.getGrade() < grade)) {
+                        TimeNumberInter inter = TimeNumberInter.create(glyph, shape, grade, staff);
+
+                        if (inter != null) {
+                            bestMap.put(shape, inter);
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override
+        public boolean isTooLight (int weight)
+        {
+            return weight < params.minHalfTimeWeight;
+        }
+    }
+
+    //-------------//
+    // TimeAdapter //
+    //-------------//
+    private abstract class TimeAdapter
+            extends GlyphCluster.AbstractAdapter
+    {
+
+        /** Best inter per time shape. */
+        public Map<Shape, Inter> bestMap = new EnumMap<>(Shape.class);
+
+        TimeAdapter (List<Glyph> parts)
+        {
+            super(parts, params.maxPartGap);
+        }
+
+        public void cleanup ()
+        {
+            for (Inter inter : bestMap.values()) {
+                inter.remove();
+            }
+        }
+
+        public Inter getSingleInter ()
+        {
+            for (Inter inter : bestMap.values()) {
+                if (!inter.isRemoved()) {
+                    return inter;
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        public boolean isTooLarge (Rectangle bounds)
+        {
+            return bounds.width > params.maxTimeWidth;
+        }
+    }
+
+    //--------------//
+    // WholeAdapter //
+    //--------------//
+    /**
+     * Handles the integration between glyph clustering class and time-sig environment.
+     * <p>
+     * For each time value, we keep the best result found if any.
+     */
+    private class WholeAdapter
+            extends TimeAdapter
+    {
+
+        WholeAdapter (List<Glyph> parts)
+        {
+            super(parts);
+        }
+
+        @Override
+        public void evaluateGlyph (Glyph glyph,
+                                   Set<Glyph> parts)
+        {
+            //TODO: check glyph centroid for a whole symbol is not too far from staff middle line
+            trials++;
+
+            if (glyph.getId() == 0) {
+                glyph = system.registerGlyph(glyph, null);
+            }
+
+            glyphCandidates.add(glyph);
+
+            Evaluation[] evals = ShapeClassifier.getInstance().evaluate(
+                    glyph,
+                    staff.getSpecificInterline(),
+                    params.maxEvalRank,
+                    Grades.timeMinGrade / Grades.intrinsicRatio,
+                    null);
+
+            for (Evaluation eval : evals) {
+                final Shape shape = eval.shape;
+
+                if (wholeShapes.contains(shape)) {
+                    final double grade = Grades.intrinsicRatio * eval.grade;
+                    logger.debug("   WHOLE eval {} for glyph#{}", eval, glyph.getId());
+
+                    Inter bestInter = bestMap.get(shape);
+
+                    if ((bestInter == null) || (bestInter.getGrade() < grade)) {
+                        TimeWholeInter inter = new TimeWholeInter(glyph, shape, grade);
+                        inter.setStaff(staff);
+                        bestMap.put(shape, inter);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public boolean isTooLight (int weight)
+        {
+            return weight < params.minWholeTimeWeight;
+        }
+    }
+
+    /**
+     * The different parts of a time signature.
+     */
+    public static enum TimeKind
+    {
+        /** Whole signature (common or cut or combo). */
+        WHOLE,
+        /** Upper half (numerator number). */
+        NUM,
+        /** Lower half (denominator number). */
+        DEN;
+    }
+
+    //-------------//
     // BasicColumn //
     //-------------//
     /**
@@ -416,7 +586,7 @@ public abstract class TimeBuilder
             super(stack.getSystem());
 
             this.stack = stack;
-            this.timeSet = new LinkedHashSet<Inter>(timeSet);
+            this.timeSet = new LinkedHashSet<>(timeSet);
 
             maxDxOffset = stack.getSystem().getSheet().getScale().toPixels(constants.maxDxOffset);
         }
@@ -448,8 +618,8 @@ public abstract class TimeBuilder
 
                 final double xOffset;
 
-                public Item (Inter time,
-                             double xOffset)
+                Item (Inter time,
+                      double xOffset)
                 {
                     this.time = time;
                     this.xOffset = xOffset;
@@ -459,7 +629,7 @@ public abstract class TimeBuilder
             class Line
             {
 
-                List<Item> items = new ArrayList<Item>();
+                List<Item> items = new ArrayList<>();
 
                 Double meanOffset = null;
 
@@ -486,7 +656,7 @@ public abstract class TimeBuilder
                 }
             }
 
-            List<Line> lines = new ArrayList<Line>();
+            List<Line> lines = new ArrayList<>();
 
             for (Staff staff : system.getStaves()) {
                 TimeBuilder builder = builders.get(staff);
@@ -519,20 +689,18 @@ public abstract class TimeBuilder
             }
 
             // Select a single vertical line (based on item count? or the left-most line?)
-            Collections.sort(
-                    lines,
-                    new Comparator<Line>()
-            {
-                @Override
-                public int compare (Line o1,
-                                    Line o2)
-                {
-                    return Double.compare(o1.getOffset(), o2.getOffset());
-                }
-            });
+            Collections.sort(lines, new Comparator<Line>()
+                     {
+                         @Override
+                         public int compare (Line o1,
+                                             Line o2)
+                         {
+                             return Double.compare(o1.getOffset(), o2.getOffset());
+                         }
+                     });
 
             Line chosenLine = lines.get(0);
-            List<Inter> kept = new ArrayList<Inter>();
+            List<Inter> kept = new ArrayList<>();
 
             for (Item item : chosenLine.items) {
                 kept.add(item.time);
@@ -570,6 +738,12 @@ public abstract class TimeBuilder
             extends TimeBuilder
     {
 
+        /**
+         * Create a BasicTimeBuilder object.
+         *
+         * @param staff  the containing staff
+         * @param column the related system column
+         */
         public BasicTimeBuilder (Staff staff,
                                  BasicColumn column)
         {
@@ -613,6 +787,11 @@ public abstract class TimeBuilder
             extends Column
     {
 
+        /**
+         * Create a HeaderColumn object.
+         *
+         * @param system the containing system
+         */
         public HeaderColumn (SystemInfo system)
         {
             super(system);
@@ -734,8 +913,7 @@ public abstract class TimeBuilder
         private final Rectangle roi;
 
         /** 3 adapters for glyph building, one for each kind: whole, num & den. */
-        private final Map<TimeKind, TimeAdapter> adapters = new EnumMap<TimeKind, TimeAdapter>(
-                TimeKind.class);
+        private final Map<TimeKind, TimeAdapter> adapters = new EnumMap<>(TimeKind.class);
 
         /**
          * Creates an instance of {code HeaderTimeBuilder}.
@@ -856,8 +1034,11 @@ public abstract class TimeBuilder
             int delta = first.stop - roi.x;
 
             if (delta > params.maxFirstSpaceWidth) {
-                logger.debug("Staff#{} too large space before time sig: {} vs {}", staff.getId(),
-                             delta, params.maxFirstSpaceWidth);
+                logger.debug(
+                        "Staff#{} too large space before time sig: {} vs {}",
+                        staff.getId(),
+                        delta,
+                        params.maxFirstSpaceWidth);
 
                 return;
             }
@@ -948,10 +1129,12 @@ public abstract class TimeBuilder
             final int start = range.browseStart;
             final int stop = staff.getBrowseStop(start, (start + params.roiWidth) - 1);
 
-            final int top = Math
-                    .min(staff.getFirstLine().yAt(start), staff.getFirstLine().yAt(stop));
-            final int bottom = Math
-                    .max(staff.getLastLine().yAt(stop), staff.getLastLine().yAt(stop));
+            final int top = Math.min(
+                    staff.getFirstLine().yAt(start),
+                    staff.getFirstLine().yAt(stop));
+            final int bottom = Math.max(
+                    staff.getLastLine().yAt(stop),
+                    staff.getLastLine().yAt(stop));
             range.browseStop = stop;
 
             return new Rectangle(start, top, stop - start + 1, bottom - top + 1);
@@ -964,7 +1147,7 @@ public abstract class TimeBuilder
         {
             final int xMin = roi.x;
             final int xMax = (roi.x + roi.width) - 1;
-            final List<Space> spaces = new ArrayList<Space>();
+            final List<Space> spaces = new ArrayList<>();
 
             // Space parameters
             int spaceStart = -1; // Space start abscissa
@@ -1022,10 +1205,12 @@ public abstract class TimeBuilder
             adapters.put(half, adapter);
 
             new GlyphCluster(adapter, null).decompose();
-            logger
-                    .debug("Staff#{} {} {} trials:{}", staff.getId(), half, Glyphs.ids("parts",
-                                                                                       parts),
-                           adapter.trials);
+            logger.debug(
+                    "Staff#{} {} {} trials:{}",
+                    staff.getId(),
+                    half,
+                    Glyphs.ids("parts", parts),
+                    adapter.trials);
 
             if (!adapter.bestMap.isEmpty()) {
                 for (Entry<Shape, Inter> entry : adapter.bestMap.entrySet()) {
@@ -1038,7 +1223,13 @@ public abstract class TimeBuilder
                     inters.add(inter);
 
                     int gid = inter.getGlyph().getId();
-                    logger.debug("Staff#{} {} {} g#{} {}", staff.getId(), half, inter, gid, timeBox);
+                    logger.debug(
+                            "Staff#{} {} {} g#{} {}",
+                            staff.getId(),
+                            half,
+                            inter,
+                            gid,
+                            timeBox);
                 }
             }
         }
@@ -1061,8 +1252,11 @@ public abstract class TimeBuilder
             TimeAdapter wholeAdapter = new WholeAdapter(parts);
             adapters.put(WHOLE, wholeAdapter);
             new GlyphCluster(wholeAdapter, null).decompose();
-            logger.debug("Staff#{} WHOLE {} trials:{}", staff.getId(), Glyphs.ids("parts", parts),
-                         wholeAdapter.trials);
+            logger.debug(
+                    "Staff#{} WHOLE {} trials:{}",
+                    staff.getId(),
+                    Glyphs.ids("parts", parts),
+                    wholeAdapter.trials);
 
             if (!wholeAdapter.bestMap.isEmpty()) {
                 for (Entry<Shape, Inter> entry : wholeAdapter.bestMap.entrySet()) {
@@ -1098,7 +1292,7 @@ public abstract class TimeBuilder
             //        core.grow(-params.xCoreMargin, -params.yCoreMargin);
             //        staff.addAttachment("c", core);
             //
-            //        List<Glyph> toRemove = new ArrayList<Glyph>();
+            //        List<Glyph> toRemove = new ArrayList<>();
             //
             //        for (Glyph part : parts) {
             //            if ((part.getWeight() < params.minPartWeight) || !part.getBounds().intersects(core)) {
@@ -1133,10 +1327,12 @@ public abstract class TimeBuilder
         protected TimeValue timeValue;
 
         /** Map of time builders. (one per staff) */
-        protected final Map<Staff, TimeBuilder> builders = new TreeMap<Staff, TimeBuilder>(
-                Staff.byId);
+        protected final Map<Staff, TimeBuilder> builders = new TreeMap<>(Staff.byId);
 
-        public Column (SystemInfo system)
+        /**
+         * @param system
+         */
+        Column (SystemInfo system)
         {
             this.system = system;
         }
@@ -1151,7 +1347,7 @@ public abstract class TimeBuilder
          */
         public Map<Staff, AbstractTimeInter> getTimeInters ()
         {
-            Map<Staff, AbstractTimeInter> times = new TreeMap<Staff, AbstractTimeInter>(Staff.byId);
+            Map<Staff, AbstractTimeInter> times = new TreeMap<>(Staff.byId);
 
             for (Entry<Staff, TimeBuilder> entry : builders.entrySet()) {
                 times.put(entry.getKey(), entry.getValue().getTimeInter());
@@ -1219,7 +1415,7 @@ public abstract class TimeBuilder
          * appears in each staff as a AbstractTimeInter instance and assign a global grade (as
          * average of staff-based AbstractTimeInter instances for the same TimeValue).</li>
          * <li>The best system-based TimeValue is then chosen as THE time signature for this
-         * system column. </li>
+         * system column.</li>
          * <li>All staff non compatible AbstractTimeInter instances are destroyed and the member
          * numbers that don't belong to the chosen AbstractTimeInter are destroyed.</li>
          * </ol>
@@ -1230,7 +1426,7 @@ public abstract class TimeBuilder
         {
             // Retrieve all time values found, organized by value and staff
             Map<TimeValue, AbstractTimeInter[]> vectors = getValueVectors();
-            Map<TimeValue, Double> grades = new HashMap<TimeValue, Double>();
+            Map<TimeValue, Double> grades = new HashMap<>();
 
             TimeLoop:
             for (Entry<TimeValue, AbstractTimeInter[]> entry : vectors.entrySet()) {
@@ -1242,8 +1438,10 @@ public abstract class TimeBuilder
 
                 for (Inter inter : vector) {
                     if (inter == null) {
-                        logger.debug("System#{} TimeValue {} not found in all staves", system
-                                     .getId(), time);
+                        logger.debug(
+                                "System#{} TimeValue {} not found in all staves",
+                                system.getId(),
+                                time);
 
                         continue TimeLoop;
                     }
@@ -1306,8 +1504,7 @@ public abstract class TimeBuilder
         protected Map<TimeValue, AbstractTimeInter[]> getValueVectors ()
         {
             // Retrieve all occurrences of time values across staves.
-            final Map<TimeValue, AbstractTimeInter[]> values
-                    = new HashMap<TimeValue, AbstractTimeInter[]>();
+            final Map<TimeValue, AbstractTimeInter[]> values = new HashMap<>();
 
             // Loop on system staves
             final List<Staff> staves = system.getStaves();
@@ -1346,7 +1543,8 @@ public abstract class TimeBuilder
                             values.put(time, vector = new AbstractTimeInter[staves.size()]);
                         }
 
-                        if ((vector[index] == null) || (pair.getGrade() > vector[index].getGrade())) {
+                        if ((vector[index] == null) || (pair.getGrade() > vector[index]
+                                .getGrade())) {
                             vector[index] = pair;
                         }
                     }
@@ -1408,8 +1606,12 @@ public abstract class TimeBuilder
 
         final int maxSpaceCumul;
 
-        public Parameters (Scale scale,
-                           int staffSpecific)
+        /**
+         * @param scale
+         * @param staffSpecific
+         */
+        Parameters (Scale scale,
+                    int staffSpecific)
         {
             maxEvalRank = constants.maxEvalRank.getValue();
 
@@ -1439,50 +1641,64 @@ public abstract class TimeBuilder
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Integer maxEvalRank = new Constant.Integer("none", 3,
-                                                                          "Maximum acceptable rank in time evaluation");
+        private final Constant.Integer maxEvalRank = new Constant.Integer(
+                "none",
+                3,
+                "Maximum acceptable rank in time evaluation");
 
-        private final Scale.Fraction roiWidth = new Scale.Fraction(4.0,
-                                                                   "Width of region of interest for time signature");
+        private final Scale.Fraction roiWidth = new Scale.Fraction(
+                4.0,
+                "Width of region of interest for time signature");
 
-        private final Scale.Fraction yMargin = new Scale.Fraction(0.10,
-                                                                  "Vertical white margin on raw rectangle");
+        private final Scale.Fraction yMargin = new Scale.Fraction(
+                0.10,
+                "Vertical white margin on raw rectangle");
 
-        private final Scale.Fraction minTimeWidth = new Scale.Fraction(1.0,
-                                                                       "Minimum width for a time signature");
+        private final Scale.Fraction minTimeWidth = new Scale.Fraction(
+                1.0,
+                "Minimum width for a time signature");
 
-        private final Scale.Fraction maxTimeWidth = new Scale.Fraction(2.0,
-                                                                       "Maximum width for a time signature");
+        private final Scale.Fraction maxTimeWidth = new Scale.Fraction(
+                2.0,
+                "Maximum width for a time signature");
 
-        private final Scale.Fraction maxHalvesDx = new Scale.Fraction(1,
-                                                                      "Maximum abscissa shift between top & bottom halves of a time signature");
+        private final Scale.Fraction maxHalvesDx = new Scale.Fraction(
+                1,
+                "Maximum abscissa shift between top & bottom halves of a time signature");
 
-        private final Scale.Fraction maxDxOffset = new Scale.Fraction(2,
-                                                                      "Maximum abscissa shift between deskewed time items in a stack");
+        private final Scale.Fraction maxDxOffset = new Scale.Fraction(
+                2,
+                "Maximum abscissa shift between deskewed time items in a stack");
 
-        private final Scale.Fraction maxPartGap = new Scale.Fraction(1.0,
-                                                                     "Maximum distance between two glyph parts of a single time symbol");
+        private final Scale.Fraction maxPartGap = new Scale.Fraction(
+                1.0,
+                "Maximum distance between two glyph parts of a single time symbol");
 
-        private final Scale.AreaFraction minWholeTimeWeight = new Scale.AreaFraction(1.0,
-                                                                                     "Minimum weight for a whole time signature");
+        private final Scale.AreaFraction minWholeTimeWeight = new Scale.AreaFraction(
+                1.0,
+                "Minimum weight for a whole time signature");
 
-        private final Scale.AreaFraction minHalfTimeWeight = new Scale.AreaFraction(0.75,
-                                                                                    "Minimum weight for a half time signature");
+        private final Scale.AreaFraction minHalfTimeWeight = new Scale.AreaFraction(
+                0.75,
+                "Minimum weight for a half time signature");
 
-        private final Scale.Fraction maxSpaceCumul = new Scale.Fraction(0.4,
-                                                                        "Maximum cumul value in space");
+        private final Scale.Fraction maxSpaceCumul = new Scale.Fraction(
+                0.4,
+                "Maximum cumul value in space");
 
         // Beware: A too small value might miss the whole time-sig
-        private final Scale.Fraction maxFirstSpaceWidth = new Scale.Fraction(2.5,
-                                                                             "Maximum initial space before time signature");
+        private final Scale.Fraction maxFirstSpaceWidth = new Scale.Fraction(
+                2.5,
+                "Maximum initial space before time signature");
 
         // Beware: A too small value might miss some time-sig items
-        private final Scale.Fraction maxInnerSpace = new Scale.Fraction(0.5,
-                                                                        "Maximum inner space within time signature");
+        private final Scale.Fraction maxInnerSpace = new Scale.Fraction(
+                0.5,
+                "Maximum inner space within time signature");
     }
 
     //-------//
@@ -1497,8 +1713,8 @@ public abstract class TimeBuilder
         /** Right abscissa. */
         protected final int stop;
 
-        public Space (int start,
-                      int stop)
+        Space (int start,
+               int stop)
         {
             this.start = start;
             this.stop = stop;
@@ -1515,173 +1731,4 @@ public abstract class TimeBuilder
         }
     }
 
-    //-------------//
-    // HalfAdapter //
-    //-------------//
-    /**
-     * Handles the integration between glyph clustering class and time-sig environment.
-     * <p>
-     * For each time kind, we keep the best result found if any.
-     */
-    private class HalfAdapter
-            extends TimeAdapter
-    {
-
-        /** Which half is being searched. (NUM or DEN) */
-        private final TimeKind half;
-
-        public HalfAdapter (TimeKind half,
-                            List<Glyph> parts)
-        {
-            super(parts);
-            this.half = half;
-        }
-
-        @Override
-        public void evaluateGlyph (Glyph glyph,
-                                   Set<Glyph> parts)
-        {
-            trials++;
-
-            if (glyph.getId() == 0) {
-                glyph = system.registerGlyph(glyph, null);
-            }
-
-            glyphCandidates.add(glyph);
-
-            Evaluation[] evals = ShapeClassifier.getInstance().evaluate(glyph, staff
-                                                                        .getSpecificInterline(),
-                                                                        params.maxEvalRank,
-                                                                        Grades.timeMinGrade
-                                                                                / Grades.intrinsicRatio,
-                                                                        null);
-
-            for (Evaluation eval : evals) {
-                final Shape shape = eval.shape;
-
-                if (halfShapes.contains(shape)) {
-                    final double grade = Grades.intrinsicRatio * eval.grade;
-                    logger.debug("   {} eval {} for glyph#{}", half, eval, glyph.getId());
-
-                    Inter bestInter = bestMap.get(shape);
-
-                    if ((bestInter == null) || (bestInter.getGrade() < grade)) {
-                        TimeNumberInter inter = TimeNumberInter.create(glyph, shape, grade, staff);
-
-                        if (inter != null) {
-                            bestMap.put(shape, inter);
-                        }
-                    }
-                }
-            }
-        }
-
-        @Override
-        public boolean isTooLight (int weight)
-        {
-            return weight < params.minHalfTimeWeight;
-        }
-    }
-
-    //-------------//
-    // TimeAdapter //
-    //-------------//
-    private abstract class TimeAdapter
-            extends GlyphCluster.AbstractAdapter
-    {
-
-        /** Best inter per time shape. */
-        public Map<Shape, Inter> bestMap = new EnumMap<Shape, Inter>(Shape.class);
-
-        public TimeAdapter (List<Glyph> parts)
-        {
-            super(parts, params.maxPartGap);
-        }
-
-        public void cleanup ()
-        {
-            for (Inter inter : bestMap.values()) {
-                inter.remove();
-            }
-        }
-
-        public Inter getSingleInter ()
-        {
-            for (Inter inter : bestMap.values()) {
-                if (!inter.isRemoved()) {
-                    return inter;
-                }
-            }
-
-            return null;
-        }
-
-        @Override
-        public boolean isTooLarge (Rectangle bounds)
-        {
-            return bounds.width > params.maxTimeWidth;
-        }
-    }
-
-    //--------------//
-    // WholeAdapter //
-    //--------------//
-    /**
-     * Handles the integration between glyph clustering class and time-sig environment.
-     * <p>
-     * For each time value, we keep the best result found if any.
-     */
-    private class WholeAdapter
-            extends TimeAdapter
-    {
-
-        public WholeAdapter (List<Glyph> parts)
-        {
-            super(parts);
-        }
-
-        @Override
-        public void evaluateGlyph (Glyph glyph,
-                                   Set<Glyph> parts)
-        {
-            //TODO: check glyph centroid for a whole symbol is not too far from staff middle line
-            trials++;
-
-            if (glyph.getId() == 0) {
-                glyph = system.registerGlyph(glyph, null);
-            }
-
-            glyphCandidates.add(glyph);
-
-            Evaluation[] evals = ShapeClassifier.getInstance().evaluate(glyph, staff
-                                                                        .getSpecificInterline(),
-                                                                        params.maxEvalRank,
-                                                                        Grades.timeMinGrade
-                                                                                / Grades.intrinsicRatio,
-                                                                        null);
-
-            for (Evaluation eval : evals) {
-                final Shape shape = eval.shape;
-
-                if (wholeShapes.contains(shape)) {
-                    final double grade = Grades.intrinsicRatio * eval.grade;
-                    logger.debug("   WHOLE eval {} for glyph#{}", eval, glyph.getId());
-
-                    Inter bestInter = bestMap.get(shape);
-
-                    if ((bestInter == null) || (bestInter.getGrade() < grade)) {
-                        TimeWholeInter inter = new TimeWholeInter(glyph, shape, grade);
-                        inter.setStaff(staff);
-                        bestMap.put(shape, inter);
-                    }
-                }
-            }
-        }
-
-        @Override
-        public boolean isTooLight (int weight)
-        {
-            return weight < params.minWholeTimeWeight;
-        }
-    }
 }

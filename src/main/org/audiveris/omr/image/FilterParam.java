@@ -36,6 +36,9 @@ public class FilterParam
         extends Param<FilterDescriptor>
 {
 
+    /**
+     * JAXB adapter.
+     */
     public static class Adapter
             extends XmlAdapter<Adapter.Value, FilterParam>
     {
@@ -74,13 +77,15 @@ public class FilterParam
             return fp;
         }
 
+        /**
+         * Flattened value for un/marshalling.
+         */
         protected static class Value
         {
 
             @XmlElementRefs({
-                @XmlElementRef(type = GlobalDescriptor.class)
-                , @XmlElementRef(type = AdaptiveDescriptor.class)
-            })
+                @XmlElementRef(type = GlobalDescriptor.class),
+                @XmlElementRef(type = AdaptiveDescriptor.class)})
             FilterDescriptor filter;
         }
     }

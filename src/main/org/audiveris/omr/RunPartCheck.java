@@ -71,7 +71,7 @@ public class RunPartCheck
                     Sheet sheet = stub.getSheet();
 
                     for (SystemInfo system : sheet.getSystems()) {
-                        List<Staff> staves = new ArrayList<Staff>(system.getStaves());
+                        List<Staff> staves = new ArrayList<>(system.getStaves());
 
                         for (Part part : system.getParts()) {
                             staves.removeAll(part.getStaves());

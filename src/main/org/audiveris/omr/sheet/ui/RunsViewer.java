@@ -73,8 +73,10 @@ public class RunsViewer
             table.setRunService(new RunService(name, table));
         }
 
-        BoardsPane boards = new BoardsPane(new PixelBoard(sheet), new BinarizationBoard(sheet),
-                                           new RunBoard(table, true));
+        BoardsPane boards = new BoardsPane(
+                new PixelBoard(sheet),
+                new BinarizationBoard(sheet),
+                new RunBoard(table, true));
 
         // Here we create new tab with the name of the table
         sheet.getStub().getAssembly().addViewTab(name, new ScrollView(view), boards);
@@ -91,8 +93,8 @@ public class RunsViewer
             extends RunTableView
     {
 
-        public MyRunsTableView (String name,
-                                RunTable table)
+        MyRunsTableView (String name,
+                         RunTable table)
         {
             super(name, table, sheet.getLocationService());
         }

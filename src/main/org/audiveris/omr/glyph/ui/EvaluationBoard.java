@@ -129,8 +129,14 @@ public class EvaluationBoard
                             InterController interController,
                             boolean selected)
     {
-        super(new Desc(classifier.getName(), 700), glyphService, eventsRead, selected, false, false,
-              false);
+        super(
+                new Desc(classifier.getName(), 700),
+                glyphService,
+                eventsRead,
+                selected,
+                false,
+                false,
+                false);
 
         this.classifier = classifier;
         this.interController = interController;
@@ -195,10 +201,13 @@ public class EvaluationBoard
 
                 for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
                     selector.setEvals(
-                            classifier.evaluate(glyph, system, selector.evalCount(),
-                                                constants.minGrade.getValue(), useAnnotations
-                                                ? EnumSet.of(Classifier.Condition.CHECKED)
-                                                : Classifier.NO_CONDITIONS),
+                            classifier.evaluate(
+                                    glyph,
+                                    system,
+                                    selector.evalCount(),
+                                    constants.minGrade.getValue(),
+                                    useAnnotations ? EnumSet.of(Classifier.Condition.CHECKED)
+                                            : Classifier.NO_CONDITIONS),
                             glyph);
 
                     return;
@@ -253,7 +262,7 @@ public class EvaluationBoard
     {
 
         // A collection of EvalButton's
-        final List<EvalButton> buttons = new ArrayList<EvalButton>();
+        final List<EvalButton> buttons = new ArrayList<>();
 
         public Selector ()
         {
@@ -343,15 +352,18 @@ public class EvaluationBoard
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Evaluation.Grade minGrade = new Evaluation.Grade(0.0,
-                                                                       "Threshold on displayable grade");
+        private final Evaluation.Grade minGrade = new Evaluation.Grade(
+                0.0,
+                "Threshold on displayable grade");
 
-        private final Constant.Integer visibleButtons = new Constant.Integer("buttons", 5,
-                                                                             "Max number of buttons in the shape selector");
+        private final Constant.Integer visibleButtons = new Constant.Integer(
+                "buttons",
+                5,
+                "Max number of buttons in the shape selector");
     }
 
     //------------//

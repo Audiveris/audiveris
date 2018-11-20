@@ -108,8 +108,9 @@ public class ArticulationSymbol
 
             // Use a rectangle 'yRatio' times as high as note head
             Rectangle2D rh = p.headLayout.getBounds(); // Head bounds
-            p.rect = new Rectangle((int) Math.ceil(Math.max(rh.getWidth(), rs.getWidth())),
-                                   (int) Math.ceil(yRatio * rh.getHeight()));
+            p.rect = new Rectangle(
+                    (int) Math.ceil(Math.max(rh.getWidth(), rs.getWidth())),
+                    (int) Math.ceil(yRatio * rh.getHeight()));
 
             // Define specific offset
             p.offset = new Point(0, (int) Math.rint(dyRatio * p.rect.height));

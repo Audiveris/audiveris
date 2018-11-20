@@ -72,7 +72,7 @@ public class CueBeamsStep
     @Override
     protected Context doProlog (Sheet sheet)
     {
-        List<Glyph> spots = new ArrayList<Glyph>();
+        List<Glyph> spots = new ArrayList<>();
         Lag spotLag = new BasicLag(Lags.SPOT_LAG, SpotsBuilder.SPOT_ORIENTATION);
 
         // Display on cue spot glyphs?
@@ -87,17 +87,26 @@ public class CueBeamsStep
     //---------//
     // Context //
     //---------//
+    /**
+     * Context for step processing.
+     */
     protected static class Context
     {
-
-        /** Spot glyphs. */
-        private final List<Glyph> spots;
 
         /** Lag of spot sections. */
         public final Lag spotLag;
 
-        public Context (List<Glyph> spots,
-                        Lag spotLag)
+        /** Spot glyphs. */
+        private final List<Glyph> spots;
+
+        /**
+         * Create Context.
+         *
+         * @param spots
+         * @param spotLag
+         */
+        Context (List<Glyph> spots,
+                 Lag spotLag)
         {
             this.spots = spots;
             this.spotLag = spotLag;
@@ -107,11 +116,12 @@ public class CueBeamsStep
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean displayCueBeamSpots = new Constant.Boolean(false,
-                                                                                  "Should we display the cue beam Spots view?");
+        private final Constant.Boolean displayCueBeamSpots = new Constant.Boolean(
+                false,
+                "Should we display the cue beam Spots view?");
     }
 }

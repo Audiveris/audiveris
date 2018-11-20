@@ -96,13 +96,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import org.audiveris.omr.sig.inter.AbstractPitchedInter;
 
 /**
  * Class {@code SigReducer} deals with SIG reduction.
@@ -121,9 +121,8 @@ public class SigReducer
     private static final Logger logger = LoggerFactory.getLogger(SigReducer.class);
 
     /** Shapes for which overlap detection is (currently) disabled. */
-    private static final EnumSet<Shape> disabledShapes = EnumSet.copyOf(Arrays.asList(Shape.LEDGER,
-                                                                                      Shape.CRESCENDO,
-                                                                                      Shape.DIMINUENDO));
+    private static final EnumSet<Shape> disabledShapes = EnumSet.copyOf(
+            Arrays.asList(Shape.LEDGER, Shape.CRESCENDO, Shape.DIMINUENDO));
 
     /** Predicate for non-disabled overlap. */
     private static final Predicate<Inter> overlapPredicate = new Predicate<Inter>()
@@ -143,22 +142,14 @@ public class SigReducer
     /** Shapes that can overlap with a slur. */
     private static final EnumSet<Shape> slurCompShapes = EnumSet.noneOf(Shape.class);
 
+    /** Shapes that can overlap with a stem. */
+    private static final EnumSet<Shape> stemCompShapes = EnumSet.copyOf(
+            Arrays.asList(Shape.SLUR, Shape.CRESCENDO, Shape.DIMINUENDO));
+
     static {
         slurCompShapes.addAll(Accidentals.getShapes());
         slurCompShapes.addAll(CoreBarlines);
         slurCompShapes.addAll(Flags.getShapes());
-    }
-
-    /** Shapes that can overlap with a stem. */
-    private static final EnumSet<Shape> stemCompShapes = EnumSet.copyOf(Arrays.asList(Shape.SLUR,
-                                                                                      Shape.CRESCENDO,
-                                                                                      Shape.DIMINUENDO));
-
-    /** Standard vs Small size. */
-    private static enum Size
-    {
-        STANDARD,
-        SMALL;
     }
 
     /** The dedicated system. */
@@ -237,10 +228,10 @@ public class SigReducer
         Collections.sort(stems, Inters.byReverseGrade);
 
         // Heads organized by shape (black, void, and small versions)
-        Map<Shape, Set<Inter>> heads = new HashMap<Shape, Set<Inter>>();
+        Map<Shape, Set<Inter>> heads = new EnumMap<>(Shape.class);
 
         // Beams organized by size (standard vs small versions)
-        Map<Size, Set<Inter>> beams = new EnumMap<Size, Set<Inter>>(Size.class);
+        Map<Size, Set<Inter>> beams = new EnumMap<>(Size.class);
 
         for (Inter stem : stems) {
             if (stem.isVip()) {
@@ -263,7 +254,7 @@ public class SigReducer
                     Set<Inter> set = heads.get(shape);
 
                     if (set == null) {
-                        heads.put(shape, set = new LinkedHashSet<Inter>());
+                        heads.put(shape, set = new LinkedHashSet<>());
                     }
 
                     set.add(head);
@@ -273,7 +264,7 @@ public class SigReducer
                     Set<Inter> set = beams.get(size);
 
                     if (set == null) {
-                        beams.put(size, set = new LinkedHashSet<Inter>());
+                        beams.put(size, set = new LinkedHashSet<>());
                     }
 
                     set.add(beam);
@@ -283,7 +274,7 @@ public class SigReducer
             // Mutual head exclusion based on head shape
             // But perhaps the joining stem is the problem, so check the two conflicting heads
             // are not linked to any other stem than the one at hand.
-            List<Shape> headShapes = new ArrayList<Shape>(heads.keySet());
+            List<Shape> headShapes = new ArrayList<>(heads.keySet());
 
             for (int ic = 0; ic < (headShapes.size() - 1); ic++) {
                 Shape c1 = headShapes.get(ic);
@@ -310,7 +301,7 @@ public class SigReducer
 
             // Mutual head support within same shape
             for (Set<Inter> set : heads.values()) {
-                List<Inter> list = new ArrayList<Inter>(set);
+                List<Inter> list = new ArrayList<>(set);
 
                 for (int i = 0; i < list.size(); i++) {
                     HeadInter h1 = (HeadInter) list.get(i);
@@ -323,7 +314,7 @@ public class SigReducer
             }
 
             // Mutual beam exclusion based on beam size
-            List<Size> beamSizes = new ArrayList<Size>(beams.keySet());
+            List<Size> beamSizes = new ArrayList<>(beams.keySet());
 
             for (int ic = 0; ic < (beamSizes.size() - 1); ic++) {
                 Size c1 = beamSizes.get(ic);
@@ -355,15 +346,21 @@ public class SigReducer
 
                     if (smallHeadSet != null) {
                         for (Inter smallBeam : beamSet) {
-                            BeamStemRelation bs = (BeamStemRelation) sig
-                                    .getRelation(smallBeam, stem, BeamStemRelation.class);
+                            BeamStemRelation bs = (BeamStemRelation) sig.getRelation(
+                                    smallBeam,
+                                    stem,
+                                    BeamStemRelation.class);
 
                             for (Inter smallHead : smallHeadSet) {
-                                if (sig.getRelation(smallBeam, smallHead, BeamHeadRelation.class)
-                                            == null) {
+                                if (sig.getRelation(
+                                        smallBeam,
+                                        smallHead,
+                                        BeamHeadRelation.class) == null) {
                                     // Use average of beam-stem and head-stem relation grades
                                     HeadStemRelation hs = (HeadStemRelation) sig.getRelation(
-                                            smallHead, stem, HeadStemRelation.class);
+                                            smallHead,
+                                            stem,
+                                            HeadStemRelation.class);
                                     double grade = (bs.getGrade() + hs.getGrade()) / 2;
                                     sig.addEdge(smallBeam, smallHead, new BeamHeadRelation(grade));
                                 }
@@ -383,15 +380,18 @@ public class SigReducer
 
                     if (blackHeadSet != null) {
                         for (Inter beam : beamSet) {
-                            BeamStemRelation bs = (BeamStemRelation) sig.getRelation(beam, stem,
-                                                                                     BeamStemRelation.class);
+                            BeamStemRelation bs = (BeamStemRelation) sig.getRelation(
+                                    beam,
+                                    stem,
+                                    BeamStemRelation.class);
 
                             for (Inter head : blackHeadSet) {
                                 if (sig.getRelation(beam, head, BeamHeadRelation.class) == null) {
                                     // Use average of beam-stem and head-stem relation grades
-                                    HeadStemRelation hs = (HeadStemRelation) sig.getRelation(head,
-                                                                                             stem,
-                                                                                             HeadStemRelation.class);
+                                    HeadStemRelation hs = (HeadStemRelation) sig.getRelation(
+                                            head,
+                                            stem,
+                                            HeadStemRelation.class);
                                     double grade = (bs.getGrade() + hs.getGrade()) / 2;
                                     sig.addEdge(beam, head, new BeamHeadRelation(grade));
                                 }
@@ -413,7 +413,7 @@ public class SigReducer
     {
         logger.debug("S#{} analyzeFrozenInters", system.getId());
 
-        Set<Inter> toDelete = new LinkedHashSet<Inter>();
+        Set<Inter> toDelete = new LinkedHashSet<>();
 
         for (Inter inter : sig.vertexSet()) {
             if (inter.isFrozen()) {
@@ -568,8 +568,9 @@ public class SigReducer
             final HeadChordInter chord = (HeadChordInter) hc;
 
             // Heads, ordered top down
-            final List<? extends Inter> heads = EnsembleHelper.getMembers(chord,
-                                                                          Inters.byCenterOrdinate);
+            final List<? extends Inter> heads = EnsembleHelper.getMembers(
+                    chord,
+                    Inters.byCenterOrdinate);
 
             for (Inter entity : heads) {
                 final Set<Relation> rels = sig.getRelations(entity, AugmentationRelation.class);
@@ -666,7 +667,8 @@ public class SigReducer
         logger.debug("S#{} checkDoubleAlters", system.getId());
 
         int modifs = 0;
-        final List<Inter> doubles = sig.inters(Arrays.asList(Shape.DOUBLE_FLAT, Shape.DOUBLE_SHARP));
+        final List<Inter> doubles = sig.inters(
+                Arrays.asList(Shape.DOUBLE_FLAT, Shape.DOUBLE_SHARP));
 
         for (Inter inter : doubles) {
             final AlterInter alter = (AlterInter) inter;
@@ -737,7 +739,7 @@ public class SigReducer
             }
 
             // Pitch of the note head
-            int pitch = ((HeadInter) head).getIntegerPitch();
+            int pitch = ((AbstractPitchedInter) head).getIntegerPitch();
 
             // Target side and target pitches of other head
             // Look for presence of head on other side with target pitch
@@ -917,7 +919,7 @@ public class SigReducer
         List<Inter> allHeads = sig.inters(ShapeSet.Heads);
         Collections.sort(allHeads, Inters.byAbscissa);
 
-        final List<LedgerInter> toDelete = new ArrayList<LedgerInter>();
+        final List<LedgerInter> toDelete = new ArrayList<>();
         boolean modified;
 
         do {
@@ -928,13 +930,13 @@ public class SigReducer
 
                 // Need a read-only copy to avoid concurrent modifications
                 List<Entry<Integer, List<LedgerInter>>> staffLedgers;
-                staffLedgers = new ArrayList<Entry<Integer, List<LedgerInter>>>(map.entrySet());
+                staffLedgers = new ArrayList<>(map.entrySet());
 
                 for (Entry<Integer, List<LedgerInter>> entry : staffLedgers) {
                     int index = entry.getKey();
 
                     // Need a list copy to avoid concurrent modifications
-                    List<LedgerInter> lineLedgers = new ArrayList<LedgerInter>(entry.getValue());
+                    List<LedgerInter> lineLedgers = new ArrayList<>(entry.getValue());
 
                     for (LedgerInter ledger : lineLedgers) {
                         if (!ledgerHasHeadOrLedger(staff, index, ledger, allHeads)) {
@@ -971,21 +973,19 @@ public class SigReducer
     {
         logger.debug("S#{} checkSlurOnTuplet", system.getId());
 
-        Set<Inter> deleted = new LinkedHashSet<Inter>();
+        Set<Inter> deleted = new LinkedHashSet<>();
         final int maxSlurWidth = scale.toPixels(constants.maxTupletSlurWidth);
-        final List<Inter> slurs = sig.inters(
-                new Predicate<Inter>()
+        final List<Inter> slurs = sig.inters(new Predicate<Inter>()
         {
             @Override
             public boolean check (Inter inter)
             {
-                return !inter.isRemoved() && (inter instanceof SlurInter)
-                               && (inter.getBounds().width <= maxSlurWidth);
+                return !inter.isRemoved() && (inter instanceof SlurInter) && (inter
+                        .getBounds().width <= maxSlurWidth);
             }
         });
 
-        final List<Inter> tuplets = sig.inters(
-                new Predicate<Inter>()
+        final List<Inter> tuplets = sig.inters(new Predicate<Inter>()
         {
             @Override
             public boolean check (Inter inter)
@@ -1239,49 +1239,6 @@ public class SigReducer
         }
     }
 
-    //------------//
-    // compatible //
-    //------------//
-    /**
-     * Check whether the two provided Inter instance can overlap.
-     *
-     * @param inters array of exactly 2 instances
-     * @return true if overlap is accepted, false otherwise
-     */
-    private static boolean compatible (Inter[] inters)
-    {
-        for (int i = 0; i <= 1; i++) {
-            final Inter inter = inters[i];
-            final Inter other = inters[1 - i];
-            final Shape otherShape = other.getShape();
-
-            if (inter instanceof AbstractBeamInter) {
-                if (other instanceof AbstractBeamInter) {
-                    return true;
-                }
-
-                if (beamCompShapes.contains(otherShape)) {
-                    return true;
-                }
-            } else if (inter instanceof SlurInter) {
-                // Test StaffBarlineInter class, for which shape is always null
-                if (other instanceof StaffBarlineInter) {
-                    return true;
-                }
-
-                if (slurCompShapes.contains(otherShape)) {
-                    return true;
-                }
-            } else if (inter instanceof StemInter) {
-                if (stemCompShapes.contains(otherShape)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
     //-----------------------//
     // contextualizeAndPurge //
     //-----------------------//
@@ -1333,7 +1290,7 @@ public class SigReducer
             final Inter leftMirror = left.getMirror();
 
             if (leftMirror != null) {
-                mirrors = new LinkedHashSet<Inter>();
+                mirrors = new LinkedHashSet<>();
                 mirrors.add(leftMirror);
 
                 final AbstractChordInter leftChord = (AbstractChordInter) left.getEnsemble();
@@ -1379,12 +1336,16 @@ public class SigReducer
                         if (left.overlaps(right) && right.overlaps(left)) {
                             // Specific case: Word vs "string" Symbol
                             if (left instanceof WordInter && right instanceof StringSymbolInter) {
-                                if (wordMatchesSymbol((WordInter) left, (StringSymbolInter) right)) {
+                                if (wordMatchesSymbol(
+                                        (WordInter) left,
+                                        (StringSymbolInter) right)) {
                                     left.decrease(0.5);
                                 }
                             } else if (left instanceof StringSymbolInter
                                                && right instanceof WordInter) {
-                                if (wordMatchesSymbol((WordInter) right, (StringSymbolInter) left)) {
+                                if (wordMatchesSymbol(
+                                        (WordInter) right,
+                                        (StringSymbolInter) left)) {
                                     right.decrease(0.5);
                                 }
                             }
@@ -1453,7 +1414,7 @@ public class SigReducer
      */
     private List<Inter> getHeadersInters ()
     {
-        List<Inter> inters = new ArrayList<Inter>();
+        List<Inter> inters = new ArrayList<>();
 
         for (Staff staff : system.getStaves()) {
             StaffHeader header = staff.getHeader();
@@ -1546,8 +1507,10 @@ public class SigReducer
         final int ledgerPitch = Staff.getLedgerPitchPosition(index);
         final int nextPitch = ledgerPitch + Integer.signum(index);
 
-        final List<Inter> heads = Inters
-                .intersectedInters(allHeads, GeoOrder.BY_ABSCISSA, ledgerBox);
+        final List<Inter> heads = Inters.intersectedInters(
+                allHeads,
+                GeoOrder.BY_ABSCISSA,
+                ledgerBox);
 
         for (Inter inter : heads) {
             final HeadInter head = (HeadInter) inter;
@@ -1631,7 +1594,7 @@ public class SigReducer
      */
     private Set<Inter> reduce (Adapter adapter)
     {
-        final Set<Inter> allRemoved = new LinkedHashSet<Inter>();
+        final Set<Inter> allRemoved = new LinkedHashSet<>();
 
         logger.debug("S#{} reducing sig ...", system.getId());
 
@@ -1648,8 +1611,8 @@ public class SigReducer
 
         adapter.prolog();
 
-        Set<Inter> reduced = new LinkedHashSet<Inter>(); // Reduced inters
-        Set<Inter> deleted = new LinkedHashSet<Inter>(); // Deleted inters
+        Set<Inter> reduced = new LinkedHashSet<>(); // Reduced inters
+        Set<Inter> deleted = new LinkedHashSet<>(); // Deleted inters
 
         int epoch = 0;
 
@@ -1741,7 +1704,7 @@ public class SigReducer
         }
 
         // Sort related dots by ordinate
-        final List<Inter> dots = new ArrayList<Inter>();
+        final List<Inter> dots = new ArrayList<>();
 
         for (Relation rel : rels) {
             dots.add(sig.getEdgeSource(rel));
@@ -1853,8 +1816,8 @@ public class SigReducer
         }
 
         final StemPortion forbidden = (stemDir > 0) ? STEM_BOTTOM : STEM_TOP;
-        final List<Relation> toRemove = new ArrayList<Relation>();
-        final List<Inter> toExclude = new ArrayList<Inter>();
+        final List<Relation> toRemove = new ArrayList<>();
+        final List<Inter> toExclude = new ArrayList<>();
 
         for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
             HeadStemRelation hsRel = (HeadStemRelation) rel;
@@ -1891,6 +1854,49 @@ public class SigReducer
         return toRemove.isEmpty();
     }
 
+    //------------//
+    // compatible //
+    //------------//
+    /**
+     * Check whether the two provided Inter instance can overlap.
+     *
+     * @param inters array of exactly 2 instances
+     * @return true if overlap is accepted, false otherwise
+     */
+    private static boolean compatible (Inter[] inters)
+    {
+        for (int i = 0; i <= 1; i++) {
+            final Inter inter = inters[i];
+            final Inter other = inters[1 - i];
+            final Shape otherShape = other.getShape();
+
+            if (inter instanceof AbstractBeamInter) {
+                if (other instanceof AbstractBeamInter) {
+                    return true;
+                }
+
+                if (beamCompShapes.contains(otherShape)) {
+                    return true;
+                }
+            } else if (inter instanceof SlurInter) {
+                // Test StaffBarlineInter class, for which shape is always null
+                if (other instanceof StaffBarlineInter) {
+                    return true;
+                }
+
+                if (slurCompShapes.contains(otherShape)) {
+                    return true;
+                }
+            } else if (inter instanceof StemInter) {
+                if (stemCompShapes.contains(otherShape)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     //-------------------//
     // wordMatchesSymbol //
     //-------------------//
@@ -1915,42 +1921,6 @@ public class SigReducer
         }
 
         return false;
-    }
-
-    //---------//
-    // Adapter //
-    //---------//
-    private abstract static class Adapter
-    {
-
-        Set<Inter> deleted = new LinkedHashSet<Inter>();
-
-        Set<Inter> reduced = new LinkedHashSet<Inter>();
-
-        public int checkConsistencies ()
-        {
-            return 0; // Void by default
-        }
-
-        public void checkFrozens ()
-        {
-            // Void by default
-        }
-
-        public int checkLateConsistencies ()
-        {
-            return 0; // Void by default
-        }
-
-        public Set<Inter> checkSlurs ()
-        {
-            return Collections.emptySet();
-        }
-
-        public void prolog ()
-        {
-            // Void by default
-        }
     }
 
     //-----------------------//
@@ -2082,14 +2052,58 @@ public class SigReducer
         }
     }
 
+    /** Standard vs Small size. */
+    private static enum Size
+    {
+        STANDARD,
+        SMALL;
+    }
+
+    //---------//
+    // Adapter //
+    //---------//
+    private static abstract class Adapter
+    {
+
+        Set<Inter> deleted = new LinkedHashSet<>();
+
+        Set<Inter> reduced = new LinkedHashSet<>();
+
+        public int checkConsistencies ()
+        {
+            return 0; // Void by default
+        }
+
+        public void checkFrozens ()
+        {
+            // Void by default
+        }
+
+        public int checkLateConsistencies ()
+        {
+            return 0; // Void by default
+        }
+
+        public Set<Inter> checkSlurs ()
+        {
+            return Collections.emptySet();
+        }
+
+        public void prolog ()
+        {
+            // Void by default
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(3,
-                                                                             "Maximum width for slur around tuplet");
+        private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
+                3,
+                "Maximum width for slur around tuplet");
     }
 }

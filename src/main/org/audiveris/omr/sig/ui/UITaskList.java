@@ -56,10 +56,10 @@ public class UITaskList
     }
 
     /** Sequence of related actions. */
-    private final List<UITask> list = new ArrayList<UITask>();
+    private final List<UITask> list = new ArrayList<>();
 
     /** Options for the actions list. */
-    private final Set<Option> options = new HashSet<Option>();
+    private final Set<Option> options = new HashSet<>();
 
     /**
      * Creates a new {@code InterTaskList} object.
@@ -105,7 +105,7 @@ public class UITaskList
      */
     public List<Inter> getInters (Class... classes)
     {
-        List<Inter> found = new ArrayList<Inter>();
+        List<Inter> found = new ArrayList<>();
 
         for (UITask task : list) {
             if (task instanceof InterTask) {
@@ -139,7 +139,7 @@ public class UITaskList
      */
     public List<Relation> getRelations (Class... classes)
     {
-        List<Relation> found = new ArrayList<Relation>();
+        List<Relation> found = new ArrayList<>();
 
         for (UITask task : list) {
             if (task instanceof RelationTask) {

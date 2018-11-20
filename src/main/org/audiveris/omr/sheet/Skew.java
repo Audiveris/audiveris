@@ -45,7 +45,6 @@ public class Skew
 
     private static final Logger logger = LoggerFactory.getLogger(Skew.class);
 
-    //
     // Persistent data
     //----------------
     //

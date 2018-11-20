@@ -66,7 +66,13 @@ public class DynamicsInter
     private static final Logger logger = LoggerFactory.getLogger(DynamicsInter.class);
 
     /** Map Shape -> Signature. */
-    private static final Map<Shape, String> sigs = new EnumMap<Shape, String>(Shape.class);
+    private static final Map<Shape, String> sigs = new EnumMap<>(Shape.class);
+
+    /** Map Signature -> Shape. */
+    private static final Map<String, Shape> shapes = new HashMap<>();
+
+    /** Map Shape -> Sound. (TODO: complete the table) */
+    private static final Map<Shape, Integer> sounds = new EnumMap<>(Shape.class);
 
     static {
         //        // Additional characters : m, r, s & z
@@ -98,9 +104,6 @@ public class DynamicsInter
         //        sigs.put(Shape.DYNAMICS_SFPP, "sfpp");
     }
 
-    /** Map Signature -> Shape. */
-    private static final Map<String, Shape> shapes = new HashMap<String, Shape>();
-
     static {
         shapes.put("pp", Shape.DYNAMICS_PP);
         shapes.put("p", Shape.DYNAMICS_P);
@@ -121,9 +124,6 @@ public class DynamicsInter
         //        shapes.put("sfp", Shape.DYNAMICS_SFP);
         //        shapes.put("sfpp", Shape.DYNAMICS_SFPP);
     }
-
-    /** Map Shape -> Sound. (TODO: complete the table) */
-    private static final Map<Shape, Integer> sounds = new HashMap<Shape, Integer>();
 
     static {
         sounds.put(Shape.DYNAMICS_PP, 45);
@@ -184,6 +184,11 @@ public class DynamicsInter
     //---------------//
     // getSoundLevel //
     //---------------//
+    /**
+     * Report the sound level, if any, based on dynamics shape.
+     *
+     * @return sound level or null
+     */
     public Integer getSoundLevel ()
     {
         Shape shape = getShape();
@@ -240,6 +245,12 @@ public class DynamicsInter
     //------------//
     // lookupLink //
     //------------//
+    /**
+     * Look up system for a potential link.
+     *
+     * @param system containing system
+     * @return link or null
+     */
     public Link lookupLink (SystemInfo system)
     {
         if (isVip()) {
@@ -263,9 +274,9 @@ public class DynamicsInter
 
         for (VerticalSide side : VerticalSide.values()) {
             final boolean lookAbove = side == VerticalSide.TOP;
-            AbstractChordInter chord = lookAbove ? stack
-                    .getStandardChordAbove(center, widenedBounds) : stack.getStandardChordBelow(
-                    center, widenedBounds);
+            AbstractChordInter chord = lookAbove ? stack.getStandardChordAbove(
+                    center,
+                    widenedBounds) : stack.getStandardChordBelow(center, widenedBounds);
 
             if ((chord == null) || chord instanceof RestChordInter) {
                 continue;
@@ -352,8 +363,8 @@ public class DynamicsInter
             final DynamicsInter shorter = (DynamicsInter) inter;
             final String shortString = shorter.getSymbolString();
 
-            if ((shorter == this) || (shortString.length() >= cplLength) || !cplString.contains(
-                    shortString)) {
+            if ((shorter == this) || (shortString.length() >= cplLength)
+                        || !cplString.contains(shortString)) {
                 continue;
             }
 
@@ -388,17 +399,20 @@ public class DynamicsInter
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction maxDy = new Scale.Fraction(7,
-                                                                "Maximum vertical distance between dynamics center and related chord/staff");
+        private final Scale.Fraction maxDy = new Scale.Fraction(
+                7,
+                "Maximum vertical distance between dynamics center and related chord/staff");
 
-        private final Scale.Fraction maxXGap = new Scale.Fraction(1.0,
-                                                                  "Maximum horizontal gap between dynamics and related chord/staff");
+        private final Scale.Fraction maxXGap = new Scale.Fraction(
+                1.0,
+                "Maximum horizontal gap between dynamics and related chord/staff");
 
-        private final Constant.Ratio iosMinRatio = new Constant.Ratio(0.8,
-                                                                      "Minimum area ratio of intersection over shorter dynamics");
+        private final Constant.Ratio iosMinRatio = new Constant.Ratio(
+                0.8,
+                "Minimum area ratio of intersection over shorter dynamics");
     }
 }

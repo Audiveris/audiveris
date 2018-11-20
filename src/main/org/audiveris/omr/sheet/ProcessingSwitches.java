@@ -56,6 +56,93 @@ public class ProcessingSwitches
     /** Default switches values. */
     private static volatile ProcessingSwitches defaultSwitches;
 
+    /** Map of switches. */
+    protected final EnumMap<Switch, Param<Boolean>> map = new EnumMap<>(Switch.class);
+
+    /** Parent switches, if any. */
+    private ProcessingSwitches parent;
+
+    /**
+     * Report the parameter for the provided key.
+     *
+     * @param key provided key
+     * @return related parameter
+     */
+    public Param<Boolean> getParam (Switch key)
+    {
+        return map.get(key);
+    }
+
+    /**
+     * Report the current value for the provided key.
+     *
+     * @param key provided key
+     * @return current value, perhaps null
+     */
+    public Boolean getValue (Switch key)
+    {
+        Param<Boolean> param = getParam(key);
+
+        if (param == null) {
+            return null;
+        }
+
+        return param.getValue();
+    }
+
+    /**
+     * Report whether this object provided no specific information.
+     *
+     * @return true if empty
+     */
+    public boolean isEmpty ()
+    {
+        for (Entry<Switch, Param<Boolean>> entry : map.entrySet()) {
+            if (entry.getValue().isSpecific()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Assign the parent of this object.
+     *
+     * @param parent the parent to assign
+     */
+    public void setParent (ProcessingSwitches parent)
+    {
+        this.parent = parent;
+
+        // Populate the map
+        for (Switch key : Switch.values()) {
+            Param<Boolean> param = getParam(key);
+
+            if (param == null) {
+                param = new BooleanParam();
+                param.setParent(parent.getParam(key));
+                map.put(key, param);
+            }
+        }
+    }
+
+    /**
+     * Report the top level switches, which provide default values.
+     *
+     * @return top default switches.
+     */
+    public static ProcessingSwitches getDefaultSwitches ()
+    {
+        // Workaround for elaboration circularity
+        if (defaultSwitches == null) {
+            constants.initialize();
+            defaultSwitches = new DefaultSwitches();
+        }
+
+        return defaultSwitches;
+    }
+
     /** Enumerated names, based on defined constants. */
     public static enum Switch
     {
@@ -84,100 +171,9 @@ public class ProcessingSwitches
         }
     }
 
-    /** Parent switches, if any. */
-    private ProcessingSwitches parent;
-
-    /** Map of switches. */
-    protected final EnumMap<Switch, Param<Boolean>> map = new EnumMap<Switch, Param<Boolean>>(
-            Switch.class);
-
-    public static ProcessingSwitches getDefaultSwitches ()
-    {
-        // Workaround for elaboration circularity
-        if (defaultSwitches == null) {
-            constants.initialize();
-            defaultSwitches = new DefaultSwitches();
-        }
-
-        return defaultSwitches;
-    }
-
-    public Param<Boolean> getParam (Switch key)
-    {
-        return map.get(key);
-    }
-
-    //
-    //    public Boolean getSpecific (Switch key)
-    //    {
-    //        Param<Boolean> param = getParam(key);
-    //
-    //        if (param == null) {
-    //            return null;
-    //        }
-    //
-    //        return param.getSpecific();
-    //    }
-    //
-    public Boolean getValue (Switch key)
-    {
-        Param<Boolean> param = getParam(key);
-
-        if (param == null) {
-            return null;
-        }
-
-        return param.getValue();
-    }
-
-    public boolean isEmpty ()
-    {
-        for (Entry<Switch, Param<Boolean>> entry : map.entrySet()) {
-            if (entry.getValue().isSpecific()) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public void setParent (ProcessingSwitches parent)
-    {
-        this.parent = parent;
-
-        // Populate the map
-        for (Switch key : Switch.values()) {
-            Param<Boolean> param = getParam(key);
-
-            if (param == null) {
-                param = new BooleanParam();
-                param.setParent(parent.getParam(key));
-                map.put(key, param);
-            }
-        }
-    }
-
-    //
-    //    public void setSpecific (Switch key,
-    //                             Boolean specific)
-    //    {
-    //        if (specific == null) {
-    //            map.remove(key);
-    //        } else {
-    //            Param<Boolean> param = getParam(key);
-    //
-    //            if (param == null) {
-    //                map.put(key, param = new BooleanParam());
-    //
-    //                if (parent != null) {
-    //                    param.setParent(parent.getParam(key));
-    //                }
-    //            }
-    //
-    //            param.setSpecific(specific);
-    //        }
-    //    }
-    //
+    /**
+     * JAXB adapter for ProcessingSwitches type.
+     */
     public static class Adapter
             extends XmlAdapter<Adapter.MyEntries, ProcessingSwitches>
     {
@@ -223,14 +219,20 @@ public class ProcessingSwitches
             return switches;
         }
 
-        public static final class MyEntries
+        /**
+         * Flat list of entries.
+         */
+        public static class MyEntries
         {
 
             @XmlElement(name = "switch")
-            List<MyEntry> entries = new ArrayList<MyEntry>();
+            List<MyEntry> entries = new ArrayList<>();
         }
 
-        public static final class MyEntry
+        /**
+         * Plain entry: key / value.
+         */
+        public static class MyEntry
         {
 
             @XmlAttribute(name = "key")
@@ -244,38 +246,47 @@ public class ProcessingSwitches
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean articulations = new Constant.Boolean(true,
-                                                                            "Support for articulations");
+        private final Constant.Boolean articulations = new Constant.Boolean(
+                true,
+                "Support for articulations");
 
-        private final Constant.Boolean chordNames = new Constant.Boolean(false,
-                                                                         "Support for chord names");
+        private final Constant.Boolean chordNames = new Constant.Boolean(
+                false,
+                "Support for chord names");
 
-        private final Constant.Boolean fingerings = new Constant.Boolean(false,
-                                                                         "Support for fingering digits");
+        private final Constant.Boolean fingerings = new Constant.Boolean(
+                false,
+                "Support for fingering digits");
 
-        private final Constant.Boolean frets = new Constant.Boolean(false,
-                                                                    "Support for frets roman digits (I, II, IV...)");
+        private final Constant.Boolean frets = new Constant.Boolean(
+                false,
+                "Support for frets roman digits (I, II, IV...)");
 
-        private final Constant.Boolean pluckings = new Constant.Boolean(false,
-                                                                        "Support for plucking (p, i, m, a)");
+        private final Constant.Boolean pluckings = new Constant.Boolean(
+                false,
+                "Support for plucking (p, i, m, a)");
 
         private final Constant.Boolean lyrics = new Constant.Boolean(true, "Support for lyrics");
 
-        private final Constant.Boolean lyricsAboveStaff = new Constant.Boolean(false,
-                                                                               "Support for lyrics even located above staff");
+        private final Constant.Boolean lyricsAboveStaff = new Constant.Boolean(
+                false,
+                "Support for lyrics even located above staff");
 
-        private final Constant.Boolean smallBlackHeads = new Constant.Boolean(false,
-                                                                              "Support for small black note heads");
+        private final Constant.Boolean smallBlackHeads = new Constant.Boolean(
+                false,
+                "Support for small black note heads");
 
-        private final Constant.Boolean smallVoidHeads = new Constant.Boolean(false,
-                                                                             "Support for small void note heads");
+        private final Constant.Boolean smallVoidHeads = new Constant.Boolean(
+                false,
+                "Support for small void note heads");
 
-        private final Constant.Boolean smallWholeHeads = new Constant.Boolean(false,
-                                                                              "Support for small whole note heads");
+        private final Constant.Boolean smallWholeHeads = new Constant.Boolean(
+                false,
+                "Support for small whole note heads");
     }
 
     //-----------------//
@@ -285,7 +296,7 @@ public class ProcessingSwitches
             extends ProcessingSwitches
     {
 
-        public DefaultSwitches ()
+        DefaultSwitches ()
         {
             for (Switch key : Switch.values()) {
                 map.put(key, new ConstantBasedParam<Boolean, Constant.Boolean>(key.getConstant()));

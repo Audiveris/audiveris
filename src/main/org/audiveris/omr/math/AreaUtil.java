@@ -37,6 +37,11 @@ import java.awt.geom.Point2D;
 public abstract class AreaUtil
 {
 
+    // Not meant to be instantiated.
+    private AreaUtil ()
+    {
+    }
+
     //-------------------------//
     // horizontalParallelogram //
     //-------------------------//
@@ -201,13 +206,16 @@ public abstract class AreaUtil
         final GeoPath path = new GeoPath();
 
         // Left line
-        path.append(median.getPathIterator(AffineTransform.getTranslateInstance(-dx + 0.5, 0)),
-                    false);
+        path.append(
+                median.getPathIterator(AffineTransform.getTranslateInstance(-dx + 0.5, 0)),
+                false);
 
         // Right line (reversed)
-        path.append(ReversePathIterator.getReversePathIterator(median, AffineTransform
-                                                               .getTranslateInstance(dx + 0.5, 0)),
-                    true);
+        path.append(
+                ReversePathIterator.getReversePathIterator(
+                        median,
+                        AffineTransform.getTranslateInstance(dx + 0.5, 0)),
+                true);
 
         path.closePath();
 
@@ -232,6 +240,13 @@ public abstract class AreaUtil
         /** Ratio of white elements on total length. */
         public final double whiteRatio;
 
+        /**
+         * Create a CoreData object.
+         *
+         * @param length     area length to measure
+         * @param gap        longest gag found
+         * @param whiteRatio ratio of white on total length
+         */
         public CoreData (int length,
                          int gap,
                          double whiteRatio)
@@ -244,9 +259,12 @@ public abstract class AreaUtil
         @Override
         public String toString ()
         {
-            return String.format("length:%d largestGap:%d white:%.0f%s", length, gap, 100
-                                                                                              * whiteRatio,
-                                 "%");
+            return String.format(
+                    "length:%d largestGap:%d white:%.0f%s",
+                    length,
+                    gap,
+                    100 * whiteRatio,
+                    "%");
         }
     }
 }

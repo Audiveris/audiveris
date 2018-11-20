@@ -55,7 +55,6 @@ public class StepMenu
 
     private static final Logger logger = LoggerFactory.getLogger(StepMenu.class);
 
-    //
     /** The concrete UI menu. */
     private final JMenu menu;
 
@@ -108,12 +107,36 @@ public class StepMenu
         }
     }
 
-    //------------//
-    // StepAction //
-    //------------//
+    //----------------//
+    // MyMenuListener //
+    //----------------//
     /**
-     * Action to be performed when the related step item is selected.
+     * Class {@code MyMenuListener} is triggered when the whole sub-menu is entered.
+     * This is done with respect to currently displayed sheet.
+     * The steps already done are flagged as such.
      */
+    private class MyMenuListener
+            extends AbstractMenuListener
+    {
+
+        @Override
+        public void menuSelected (MenuEvent e)
+        {
+            SheetStub stub = StubsController.getCurrentStub();
+            boolean isIdle = (stub != null) && (stub.getCurrentStep() == null);
+
+            for (int i = 0; i < menu.getItemCount(); i++) {
+                JMenuItem menuItem = menu.getItem(i);
+
+                // Adjust the status for each step
+                if (menuItem instanceof StepItem) {
+                    StepItem item = (StepItem) menuItem;
+                    item.displayState(stub, isIdle);
+                }
+            }
+        }
+    }
+
     private static class StepAction
             extends AbstractAction
     {
@@ -121,7 +144,7 @@ public class StepMenu
         // The related step
         final Step step;
 
-        public StepAction (Step step)
+        StepAction (Step step)
         {
             super(step.toString());
             this.step = step;
@@ -144,7 +167,8 @@ public class StepMenu
                         if ((sofar != null) && (sofar.compareTo(step) >= 0)) {
                             int answer = JOptionPane.showConfirmDialog(
                                     OMR.gui.getFrame(),
-                                    "About to re-perform step " + step + " from scratch."
+                                    "About to re-perform step " + step
+                                            + " from scratch."
                                             + "\nDo you confirm?",
                                     "Redo confirmation",
                                     JOptionPane.YES_NO_OPTION,
@@ -179,6 +203,13 @@ public class StepMenu
                 }
             }.execute();
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     //----------//
@@ -191,7 +222,7 @@ public class StepMenu
             extends JCheckBoxMenuItem
     {
 
-        public StepItem (Step step)
+        StepItem (Step step)
         {
             super(new StepAction(step));
         }
@@ -212,36 +243,6 @@ public class StepMenu
 
                 if (!isIdle) {
                     action.setEnabled(false);
-                }
-            }
-        }
-    }
-
-    //----------------//
-    // MyMenuListener //
-    //----------------//
-    /**
-     * Class {@code MyMenuListener} is triggered when the whole sub-menu is entered.
-     * This is done with respect to currently displayed sheet.
-     * The steps already done are flagged as such.
-     */
-    private class MyMenuListener
-            extends AbstractMenuListener
-    {
-
-        @Override
-        public void menuSelected (MenuEvent e)
-        {
-            SheetStub stub = StubsController.getCurrentStub();
-            boolean isIdle = (stub != null) && (stub.getCurrentStep() == null);
-
-            for (int i = 0; i < menu.getItemCount(); i++) {
-                JMenuItem menuItem = menu.getItem(i);
-
-                // Adjust the status for each step
-                if (menuItem instanceof StepItem) {
-                    StepItem item = (StepItem) menuItem;
-                    item.displayState(stub, isIdle);
                 }
             }
         }

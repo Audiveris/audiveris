@@ -35,12 +35,6 @@ public class Exclusion
         extends Relation
 {
 
-    public enum Cause
-    {
-        OVERLAP,
-        INCOMPATIBLE;
-    }
-
     @XmlAttribute
     public final Cause cause;
 
@@ -87,5 +81,18 @@ public class Exclusion
     protected String internals ()
     {
         return super.internals() + cause;
+    }
+
+    /**
+     * Cause of exclusion.
+     */
+    public enum Cause
+    {
+
+        /** Physical overlap. */
+        OVERLAP,
+
+        /** Some logical exclusion. */
+        INCOMPATIBLE
     }
 }

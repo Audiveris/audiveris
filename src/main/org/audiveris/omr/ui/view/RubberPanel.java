@@ -152,6 +152,19 @@ public class RubberPanel
         }
     }
 
+    //--------------//
+    // setModelSize //
+    //--------------//
+    /**
+     * Assign the size of the model object, that is the un-scaled size.
+     *
+     * @param modelSize the model size to use
+     */
+    public void setModelSize (Dimension modelSize)
+    {
+        this.modelSize = new Dimension(modelSize);
+    }
+
     //----------------//
     // getPanelCenter //
     //----------------//
@@ -164,8 +177,9 @@ public class RubberPanel
     public Point getPanelCenter ()
     {
         Rectangle vr = getVisibleRect();
-        Point pt = new Point(zoom.unscaled(vr.x + (vr.width / 2)), zoom.unscaled(vr.y + (vr.height
-                                                                                                 / 2)));
+        Point pt = new Point(
+                zoom.unscaled(vr.x + (vr.width / 2)),
+                zoom.unscaled(vr.y + (vr.height / 2)));
 
         logger.debug("getPanelCenter={}", pt);
 
@@ -239,6 +253,27 @@ public class RubberPanel
     }
 
     //---------//
+    // setZoom //
+    //---------//
+    /**
+     * Assign a zoom to this panel
+     *
+     * @param zoom the zoom assigned
+     */
+    public final void setZoom (final Zoom zoom)
+    {
+        // Clean up if needed
+        unsetZoom(this.zoom);
+
+        this.zoom = zoom;
+
+        if (zoom != null) {
+            // Add a listener on this zoom
+            zoom.addChangeListener(this);
+        }
+    }
+
+    //---------//
     // onEvent //
     //---------//
     /**
@@ -288,6 +323,11 @@ public class RubberPanel
     //---------//
     // publish //
     //---------//
+    /**
+     * Publish the provided location event on the proper service.
+     *
+     * @param locationEvent the provided location event
+     */
     public void publish (LocationEvent locationEvent)
     {
         locationService.publish(locationEvent);
@@ -318,15 +358,14 @@ public class RubberPanel
             showFocusLocation(rect, true);
 
             // Then, adjust zoom ratio to fit the rectangle size
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
                 {
                     Rectangle vr = getVisibleRect();
-                    double zoomX = (double) vr.width / (double) rect.width;
-                    double zoomY = (double) vr.height / (double) rect.height;
+                    double zoomX = vr.width / (double) rect.width;
+                    double zoomY = vr.height / (double) rect.height;
                     zoom.setRatio(Math.min(zoomX, zoomY));
                 }
             });
@@ -377,19 +416,6 @@ public class RubberPanel
         this.locationService = locationService;
     }
 
-    //--------------//
-    // setModelSize //
-    //--------------//
-    /**
-     * Assign the size of the model object, that is the un-scaled size.
-     *
-     * @param modelSize the model size to use
-     */
-    public void setModelSize (Dimension modelSize)
-    {
-        this.modelSize = new Dimension(modelSize);
-    }
-
     //-----------//
     // setRubber //
     //-----------//
@@ -406,27 +432,6 @@ public class RubberPanel
         rubber.setZoom(zoom);
         rubber.connectComponent(this);
         rubber.setMouseMonitor(this);
-    }
-
-    //---------//
-    // setZoom //
-    //---------//
-    /**
-     * Assign a zoom to this panel
-     *
-     * @param zoom the zoom assigned
-     */
-    public final void setZoom (final Zoom zoom)
-    {
-        // Clean up if needed
-        unsetZoom(this.zoom);
-
-        this.zoom = zoom;
-
-        if (zoom != null) {
-            // Add a listener on this zoom
-            zoom.addChangeListener(this);
-        }
     }
 
     //-------------------//
@@ -462,14 +467,17 @@ public class RubberPanel
             // Check whether the rectangle is fully visible,
             // if not, scroll so as to make (most of) it visible
             Rectangle scaledRect = zoom.scaled(rect);
-            Point center = new Point(scaledRect.x + (scaledRect.width / 2), scaledRect.y
-                                                                                    + (scaledRect.height
-                                                                                       / 2));
+            Point center = new Point(
+                    scaledRect.x + (scaledRect.width / 2),
+                    scaledRect.y + (scaledRect.height / 2));
 
             if (centered) {
                 Rectangle vr = getVisibleRect();
-                scaledRect = new Rectangle(center.x - (vr.width / 2), center.y - (vr.height / 2),
-                                           vr.width, vr.height);
+                scaledRect = new Rectangle(
+                        center.x - (vr.width / 2),
+                        center.y - (vr.height / 2),
+                        vr.width,
+                        vr.height);
             } else {
                 int margin = constants.focusMargin.getValue();
 
@@ -618,6 +626,11 @@ public class RubberPanel
     //---------------------//
     // handleLocationEvent //
     //---------------------//
+    /**
+     * Handle the provided location event
+     *
+     * @param locationEvent the location event to process
+     */
     protected void handleLocationEvent (LocationEvent locationEvent)
     {
         // Location => move view focus on this location w/ markers
@@ -699,7 +712,7 @@ public class RubberPanel
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 

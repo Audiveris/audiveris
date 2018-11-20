@@ -51,7 +51,6 @@ public class Ghostscript
     /** Path to exec. */
     private static volatile String path;
 
-    //
     //---------//
     // getPath //
     //---------//
@@ -91,11 +90,12 @@ public class Ghostscript
     private static List<String> getRegistryOutputs ()
     {
         /** Radices used in registry search (32, 64 or Wow). */
-        final String[] radices = new String[]{"HKLM\\SOFTWARE\\GPL Ghostscript", // Pure 32/32 or 64/64
-                                              "HKLM\\SOFTWARE\\Wow6432Node\\GPL Ghostscript" // Wow (64/32)
-    };
+        final String[] radices = new String[]{
+            "HKLM\\SOFTWARE\\GPL Ghostscript", // Pure 32/32 or 64/64
+            "HKLM\\SOFTWARE\\Wow6432Node\\GPL Ghostscript" // Wow (64/32)
+        };
 
-        List<String> outputs = new ArrayList<String>();
+        List<String> outputs = new ArrayList<>();
 
         // Access registry twice, one for win32 & win64 and one for Wow
         for (String radix : radices) {
@@ -128,11 +128,12 @@ public class Ghostscript
         /** Regex for registry key line. */
         final Pattern keyPattern = Pattern.compile(
                 "^HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\(Wow6432Node\\\\)?GPL Ghostscript\\\\" + group(
-                        VERSION, "\\d+\\.\\d+") + "$");
+                        VERSION,
+                        "\\d+\\.\\d+") + "$");
 
         /** Regex for registry value line. */
-        final Pattern valPattern = Pattern.compile("^\\s+GS_DLL\\s+REG_SZ\\s+" + group(PATH, ".+")
-                                                           + "$");
+        final Pattern valPattern = Pattern.compile(
+                "^\\s+GS_DLL\\s+REG_SZ\\s+" + group(PATH, ".+") + "$");
 
         /** Regex for dll name. */
         final Pattern dllPattern = Pattern.compile("gsdll" + group(ARCH, "\\d+") + "\\.dll$");
@@ -209,14 +210,22 @@ public class Ghostscript
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Double minVersion = new Constant.Double("version", 9.06,
-                                                                       "Minimum Ghostscript acceptable version");
+        private final Constant.Double minVersion = new Constant.Double(
+                "version",
+                9.06,
+                "Minimum Ghostscript acceptable version");
 
-        private final Constant.Double maxVersion = new Constant.Double("version", 9999,
-                                                                       "Maximum Ghostscript acceptable version");
+        private final Constant.Double maxVersion = new Constant.Double(
+                "version",
+                9_999,
+                "Maximum Ghostscript acceptable version");
+    }
+
+    private Ghostscript ()
+    {
     }
 }

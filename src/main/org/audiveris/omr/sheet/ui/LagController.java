@@ -23,7 +23,6 @@ package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.GlyphsModel;
-import org.audiveris.omr.glyph.ui.GlyphService;
 import org.audiveris.omr.glyph.ui.GlyphsController;
 import org.audiveris.omr.glyph.ui.NestView;
 import org.audiveris.omr.glyph.ui.SymbolGlyphBoard;
@@ -65,7 +64,7 @@ public class LagController
                           Lag lag,
                           SheetTab tab)
     {
-        super(new GlyphsModel(sheet, (GlyphService) sheet.getGlyphIndex().getEntityService()));
+        super(new GlyphsModel(sheet, sheet.getGlyphIndex().getEntityService()));
         this.lag = lag;
         this.tab = tab;
     }
@@ -93,19 +92,23 @@ public class LagController
         // Specific rubber display
         view = new MyView(sheet.getGlyphIndex());
 
-        sheet.getStub().getAssembly().addViewTab(tab, new ScrollView(view), new BoardsPane(
-                                                 new PixelBoard(sheet), new SectionBoard(lag, false),
-                                                 new SymbolGlyphBoard(this, true, true)));
+        sheet.getStub().getAssembly().addViewTab(
+                tab,
+                new ScrollView(view),
+                new BoardsPane(
+                        new PixelBoard(sheet),
+                        new SectionBoard(lag, false),
+                        new SymbolGlyphBoard(this, true, true)));
     }
 
     //--------//
     // MyView //
     //--------//
-    private final class MyView
+    private class MyView
             extends NestView
     {
 
-        public MyView (GlyphIndex glyphIndex)
+        MyView (GlyphIndex glyphIndex)
         {
             super(glyphIndex.getEntityService(), Arrays.asList(lag), sheet);
 

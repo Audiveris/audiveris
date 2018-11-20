@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
@@ -37,6 +38,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ConcurrentModificationException;
@@ -55,14 +57,14 @@ public abstract class OmrFont
 
     private static final Logger logger = LoggerFactory.getLogger(OmrFont.class);
 
-    /** Needed for font size computation. */
-    protected static final FontRenderContext frc = new FontRenderContext(null, true, true);
-
     /** Default color for images. */
     public static final Color defaultImageColor = Color.BLACK;
 
+    /** Needed for font size computation. */
+    protected static final FontRenderContext frc = new FontRenderContext(null, true, true);
+
     /** Cache for fonts. No style, no size. */
-    private static final Map<String, Font> fontCache = new HashMap<String, Font>();
+    private static final Map<String, Font> fontCache = new HashMap<>();
 
     /**
      * Creates a new OmrFont object.
@@ -146,9 +148,9 @@ public abstract class OmrFont
             // Compute symbol origin
             Rectangle2D bounds = layout.getBounds();
             Point2D toTextOrigin = alignment.toTextOrigin(bounds);
-            Point2D origin = new Point2D.Double(location.x + toTextOrigin.getX(), location.y
-                                                                                          + toTextOrigin
-                                                        .getY());
+            Point2D origin = new Point2D.Double(
+                    location.x + toTextOrigin.getX(),
+                    location.y + toTextOrigin.getY());
 
             // Draw the symbol
             layout.draw(g, (float) origin.getX(), (float) origin.getY());
@@ -197,7 +199,8 @@ public abstract class OmrFont
                     input.close();
                 }
             }
-        } catch (Exception ex) {
+        } catch (FontFormatException |
+                 IOException ex) {
             logger.debug("Could not create custom font {} " + ex, fontName);
         }
 

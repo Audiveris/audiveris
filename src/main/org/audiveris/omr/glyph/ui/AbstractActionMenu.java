@@ -39,11 +39,13 @@ import javax.swing.JMenuItem;
  * Class {@code AbstractActionMenu}
  * <p>
  * In a menu, actions are physically grouped by semantic tag and
- * separators are inserted between such groups.</p>
+ * separators are inserted between such groups.
+ * </p>
  * <p>
  * Actions are also organized according to their target menu level,
  * to allow actions to be dispatched into a hierarchy of menus.
- * Although currently all levels are set to 0.</p>
+ * Although currently all levels are set to 0.
+ * </p>
  *
  * @author Hervé Bitteur
  */
@@ -52,10 +54,10 @@ public abstract class AbstractActionMenu
 {
 
     /** Map action -> tag to update according to context */
-    private final Map<DynAction, Integer> dynActions = new LinkedHashMap<DynAction, Integer>();
+    private final Map<DynAction, Integer> dynActions = new LinkedHashMap<>();
 
     /** Map action -> menu level */
-    private final Map<DynAction, Integer> levels = new LinkedHashMap<DynAction, Integer>();
+    private final Map<DynAction, Integer> levels = new LinkedHashMap<>();
 
     /**
      * Creates a new AbstractActionMenu object.
@@ -94,7 +96,7 @@ public abstract class AbstractActionMenu
         super.initMenu();
 
         // Sort actions on their tag
-        SortedSet<Integer> tags = new TreeSet<Integer>(dynActions.values());
+        SortedSet<Integer> tags = new TreeSet<>(dynActions.values());
 
         // Retrieve the highest menu level
         int maxLevel = 0;
@@ -165,7 +167,12 @@ public abstract class AbstractActionMenu
         /** Semantic tag */
         protected final int tag;
 
-        public DynAction (int tag)
+        /**
+         * Create a DynAction instance.
+         *
+         * @param tag
+         */
+        DynAction (int tag)
         {
             this.tag = tag;
         }
@@ -184,5 +191,12 @@ public abstract class AbstractActionMenu
          * Method to update the action according to the current context
          */
         public abstract void update ();
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 }

@@ -37,10 +37,14 @@ public class StructureElement
 
     private static final Logger logger = LoggerFactory.getLogger(StructureElement.class);
 
-    static final String EOL = System.getProperty("line.separator");
-
     /** Epsilon value meant for equality testing: {@value}. */
     private static final double EPSILON = 1E-5;
+
+    static final String EOL = System.getProperty("line.separator");
+
+    public int type = FREE;
+
+    public boolean offsetmodified = false;
 
     private int[] mask;
 
@@ -50,15 +54,11 @@ public class StructureElement
 
     private double radius = 0;
 
-    private int[][] vect;
+    private final int[][] vect;
 
     private int[] offset = OFFSET0;
 
     private int shift = 1;
-
-    public int type = FREE;
-
-    public boolean offsetmodified = false;
 
     /**
      * Creates a new StructureElement object.
@@ -366,7 +366,7 @@ public class StructureElement
         }
 
         case DIAMOND: {
-            d = (double) (Math.abs(X[0]) + Math.abs(X[1]));
+            d = (Math.abs(X[0]) + Math.abs(X[1]));
 
             break;
         }
@@ -392,6 +392,11 @@ public class StructureElement
     public int[] getMask ()
     {
         return mask;
+    }
+
+    public void setMask (int[] amask)
+    {
+        this.mask = amask;
     }
 
     public int getMaskAt (int index)
@@ -436,6 +441,12 @@ public class StructureElement
         return this.offset;
     }
 
+    public void setOffset (int[] offset)
+    {
+        this.offset = offset;
+        offsetmodified = true;
+    }
+
     public double getR ()
     {
         return radius;
@@ -451,6 +462,11 @@ public class StructureElement
         return type;
     }
 
+    public void setType (int type)
+    {
+        this.type = type;
+    }
+
     public int[][] getVect ()
     {
         return vect; //calcVect(this.mask , this.width);
@@ -459,40 +475,6 @@ public class StructureElement
     public int getWidth ()
     {
         return width;
-    }
-
-    public void setMask (int[] amask)
-    {
-        this.mask = amask;
-    }
-
-    public void setOffset (int[] offset)
-    {
-        this.offset = offset;
-        offsetmodified = true;
-    }
-
-    public void setType (int type)
-    {
-        this.type = type;
-    }
-
-    double getNum (StringTokenizer st)
-    {
-        Double d;
-        String token = st.nextToken();
-
-        try {
-            d = Double.valueOf(token);
-        } catch (NumberFormatException e) {
-            d = null;
-        }
-
-        if (d != null) {
-            return d;
-        } else {
-            return 0.0;
-        }
     }
 
     private int[] createDiamondMask (int shift,
@@ -637,19 +619,6 @@ public class StructureElement
         return k;
     }
 
-    private static boolean validate (float var,
-                                     int k)
-    {
-        float a = k * var;
-        int b = (int) (k * var);
-
-        if (((a - b) == 0) || (var < 0)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     private int[][] calcVect (int[] perim,
                               int w)
     {
@@ -731,7 +700,9 @@ public class StructureElement
             for (double y = -r; y <= r; y++) {
                 //int index= (int)(r+x+width*(r+y));
                 //   if (x*x+y*y<r2){
-                if ((((x - offset[0]) * (x - offset[0])) + ((y - offset[1]) * (y - offset[1]))) < r2) {
+                if ((((x - offset[0]) * (x - offset[0])) + ((y - offset[1]) * (y
+                                                                                       - offset[1])))
+                    < r2) {
                     mask[index] = 255;
                 }
 
@@ -741,5 +712,31 @@ public class StructureElement
 
         // return mask;
         return mask;
+    }
+
+    double getNum (StringTokenizer st)
+    {
+        Double d;
+        String token = st.nextToken();
+
+        try {
+            d = Double.valueOf(token);
+        } catch (NumberFormatException e) {
+            d = null;
+        }
+
+        if (d != null) {
+            return d;
+        } else {
+            return 0.0;
+        }
+    }
+
+    private static boolean validate (float var,
+                                     int k)
+    {
+        float a = k * var;
+        int b = (int) (k * var);
+        return ((a - b) == 0) || (var < 0);
     }
 }

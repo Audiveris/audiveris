@@ -81,29 +81,6 @@ public class TimeWholeInter
         visitor.visit(this);
     }
 
-    //--------//
-    // create //
-    //--------//
-    /**
-     * Create a TimeWholeInter.
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape
-     * @param grade evaluation value
-     * @param staff related staff
-     * @return the created instance or null if failed
-     */
-    public static TimeWholeInter create (Glyph glyph,
-                                         Shape shape,
-                                         double grade,
-                                         Staff staff)
-    {
-        TimeWholeInter time = new TimeWholeInter(glyph, shape, grade);
-        time.setStaff(staff);
-
-        return time;
-    }
-
     //-----------------//
     // getSymbolBounds //
     //-----------------//
@@ -130,8 +107,11 @@ public class TimeWholeInter
         MusicFont musicFont = MusicFont.getBaseFont(interline);
         Dimension dim = symbol.getDimension(musicFont);
 
-        return new Rectangle(center.x - (dim.width / 2), center.y - (dim.height / 2), dim.width,
-                             dim.height);
+        return new Rectangle(
+                center.x - (dim.width / 2),
+                center.y - (dim.height / 2),
+                dim.width,
+                dim.height);
     }
 
     //-----------//
@@ -144,5 +124,28 @@ public class TimeWholeInter
         inter.setStaff(targetStaff);
 
         return inter;
+    }
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create a TimeWholeInter.
+     *
+     * @param glyph underlying glyph
+     * @param shape precise shape
+     * @param grade evaluation value
+     * @param staff related staff
+     * @return the created instance or null if failed
+     */
+    public static TimeWholeInter create (Glyph glyph,
+                                         Shape shape,
+                                         double grade,
+                                         Staff staff)
+    {
+        TimeWholeInter time = new TimeWholeInter(glyph, shape, grade);
+        time.setStaff(staff);
+
+        return time;
     }
 }

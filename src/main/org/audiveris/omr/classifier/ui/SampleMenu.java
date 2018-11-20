@@ -147,7 +147,7 @@ public class SampleMenu
             }
         };
 
-        public AssignMenu (Set<Shape> shapes)
+        AssignMenu (Set<Shape> shapes)
         {
             super("Assign sample");
 
@@ -171,7 +171,7 @@ public class SampleMenu
             extends JMenu
     {
 
-        public SelectMenu ()
+        SelectMenu ()
         {
             super("Select sample");
 
@@ -180,18 +180,16 @@ public class SampleMenu
 
         private void populate ()
         {
-            ShapeSet.addAllShapes(
-                    this,
-                    new ActionListener()
-            {
-                @Override
-                public void actionPerformed (ActionEvent e)
-                {
-                    JMenuItem source = (JMenuItem) e.getSource();
-                    Shape shape = Shape.valueOf(source.getText());
-                    addSample(shape);
-                }
-            });
+            ShapeSet.addAllShapes(this, new ActionListener()
+                          {
+                              @Override
+                              public void actionPerformed (ActionEvent e)
+                              {
+                                  JMenuItem source = (JMenuItem) e.getSource();
+                                  Shape shape = Shape.valueOf(source.getText());
+                                  addSample(shape);
+                              }
+                          });
         }
     }
 }

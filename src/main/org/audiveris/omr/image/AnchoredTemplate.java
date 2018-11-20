@@ -31,8 +31,10 @@ import org.audiveris.omr.image.Anchored.Anchor;
 public class AnchoredTemplate
 {
 
+    /** Specific anchor. */
     public final Anchor anchor;
 
+    /** Related template. */
     public final Template template;
 
     /**

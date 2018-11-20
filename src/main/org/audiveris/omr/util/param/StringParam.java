@@ -32,6 +32,9 @@ public class StringParam
         extends Param<String>
 {
 
+    /**
+     * JAXB adapter for StringParam type.
+     */
     public static class Adapter
             extends XmlAdapter<String, StringParam>
     {

@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  * Class {@code UILookAndFeel} enables to select the UI Look and Feel to be used in this
@@ -111,7 +112,10 @@ public class UILookAndFeel
             } else {
                 UIManager.setLookAndFeel(constants.lookAndFeel.getValue());
             }
-        } catch (Exception ex) {
+        } catch (ClassNotFoundException |
+                 IllegalAccessException |
+                 InstantiationException |
+                 UnsupportedLookAndFeelException ex) {
             //ex.printStackTrace();
             logger.warn(ex.toString());
         }
@@ -120,7 +124,7 @@ public class UILookAndFeel
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 

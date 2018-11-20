@@ -91,7 +91,6 @@ public abstract class WordScanner
         this.chars = chars;
     }
 
-    //
     //--------------//
     // getWordChars //
     //--------------//

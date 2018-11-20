@@ -63,7 +63,7 @@ public class PageRef
      *
      * @param sheetNumber    sheet number within book
      * @param id             page id within sheet
-     * @param movementStart  is page a movement start
+     * @param movementStart  is page a movement start?
      * @param deltaMeasureId increase of measure IDs within the page, or null
      */
     public PageRef (int sheetNumber,
@@ -122,6 +122,14 @@ public class PageRef
     }
 
     /**
+     * @param deltaMeasureId the deltaMeasureId to set
+     */
+    public void setDeltaMeasureId (Integer deltaMeasureId)
+    {
+        this.deltaMeasureId = deltaMeasureId;
+    }
+
+    /**
      * @return the id
      */
     public int getId ()
@@ -159,14 +167,6 @@ public class PageRef
     public boolean isMovementStart ()
     {
         return movementStart;
-    }
-
-    /**
-     * @param deltaMeasureId the deltaMeasureId to set
-     */
-    public void setDeltaMeasureId (Integer deltaMeasureId)
-    {
-        this.deltaMeasureId = deltaMeasureId;
     }
 
     @Override

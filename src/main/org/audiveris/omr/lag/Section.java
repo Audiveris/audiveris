@@ -51,11 +51,13 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * {@link org.audiveris.omr.glyph.dynamic.LinkedSection} class.
  * <p>
  * A section carries orientation information, which is the orientation for all runs in this section.
- * <ol> <li> Positions increase in parallel with run numbers, so the thickness of a section is
- * defined as the delta between last and first positions, in other words its number of runs. </li>
- * <li> Coordinates increase along any section run, so the section start is the minimum of all run
+ * <ol>
+ * <li>Positions increase in parallel with run numbers, so the thickness of a section is
+ * defined as the delta between last and first positions, in other words its number of runs.</li>
+ * <li>Coordinates increase along any section run, so the section start is the minimum of all run
  * starting coordinates, and the section stop is the maximum of all run stopping coordinates.
- * We define section length as the value: stop - start +1 </li> </ol>
+ * We define section length as the value: stop - start +1</li>
+ * </ol>
  * <p>
  * <b>Beware</b>, the section orientation only governs the runs orientation.
  * It by no means implies that the section dimension is longer in the direction along the runs than

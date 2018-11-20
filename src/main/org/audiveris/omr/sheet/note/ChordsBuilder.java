@@ -119,7 +119,7 @@ public class ChordsBuilder
     {
         for (Part part : system.getParts()) {
             // Stem-based chords defined so far in part
-            List<HeadChordInter> stemChords = new ArrayList<HeadChordInter>();
+            List<HeadChordInter> stemChords = new ArrayList<>();
 
             for (Staff staff : part.getStaves()) {
                 // Heads in staff
@@ -128,7 +128,7 @@ public class ChordsBuilder
                 logger.debug("Staff#{} heads:{}", staff.getId(), heads.size());
 
                 // Isolated heads (instances of WholeInter or SmallWholeInter) found so far in staff
-                List<HeadInter> wholeHeads = new ArrayList<HeadInter>();
+                List<HeadInter> wholeHeads = new ArrayList<>();
 
                 for (Inter inter : heads) {
                     HeadInter head = (HeadInter) inter;
@@ -150,6 +150,9 @@ public class ChordsBuilder
     //-----------------//
     // buildRestChords //
     //-----------------//
+    /**
+     * Allocate a chord for every rest.
+     */
     public void buildRestChords ()
     {
         List<Inter> rests = sig.inters(RestInter.class);
@@ -177,7 +180,7 @@ public class ChordsBuilder
                                                 List<Relation> rels)
     {
         boolean ok = true;
-        final List<StemInter> stems = new ArrayList<StemInter>();
+        final List<StemInter> stems = new ArrayList<>();
 
         for (HorizontalSide side : HorizontalSide.values()) {
             int idx = (side == LEFT) ? 0 : 1;
@@ -214,9 +217,8 @@ public class ChordsBuilder
             }
 
             // No beam-stuck stem found, use global quality...
-            double leftGrade = stems.get(0).getGrade() * ((HeadStemRelation) rels.get(0)).getGrade();
-            double rightGrade = stems.get(1).getGrade() * ((HeadStemRelation) rels.get(1))
-                    .getGrade();
+            double leftGrade = stems.get(0).getGrade() * ((Support) rels.get(0)).getGrade();
+            double rightGrade = stems.get(1).getGrade() * ((Support) rels.get(1)).getGrade();
             final int idx = (leftGrade < rightGrade) ? 0 : 1;
 
             return HorizontalSide.values()[idx];
@@ -257,8 +259,7 @@ public class ChordsBuilder
         }
 
         // Look for connected stems
-        List<Relation> rels
-                = new ArrayList<Relation>(sig.getRelations(head, HeadStemRelation.class));
+        List<Relation> rels = new ArrayList<>(sig.getRelations(head, HeadStemRelation.class));
 
         if (rels.size() == 2) {
             // A head with 2 stems needs to be logically duplicated
@@ -458,7 +459,8 @@ public class ChordsBuilder
     /**
      * Report the chord(s) currently attached to the provided stem.
      * <p>
-     * We can have: <ul>
+     * We can have:
+     * <ul>
      * <li>No chord found, simply because this stem has not yet been processed.</li>
      * <li>One chord found, this is the normal case.</li>
      * <li>Two chords found, when the same stem is "shared" by two chords (as in complex structures
@@ -472,7 +474,7 @@ public class ChordsBuilder
     private List<HeadChordInter> getStemChords (StemInter stem,
                                                 List<HeadChordInter> stemChords)
     {
-        final List<HeadChordInter> found = new ArrayList<HeadChordInter>();
+        final List<HeadChordInter> found = new ArrayList<>();
 
         for (HeadChordInter chord : stemChords) {
             if (chord.getStem() == stem) {

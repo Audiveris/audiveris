@@ -22,8 +22,8 @@
 package org.audiveris.omr.ui.selection;
 
 /**
- * Enum {@code SelectionHint} gives a hint about what observers should
- * do with the published selection.
+ * Enum {@code SelectionHint} gives a hint about what observers should do with the
+ * published selection.
  *
  * @author Hervé Bitteur
  */
@@ -31,33 +31,38 @@ public enum SelectionHint
 {
     /**
      * Designation is by location pointing, so we keep the original location
-     * information, and try to lookup for designated Run, Section and Glyph
-     * <br>[MouseLeft]
+     * information, and try to lookup for designated Run, Section and Glyph.
+     * <br>
+     * [MouseLeft]
      */
     LOCATION_INIT,
     /**
-     * Designation is by location pointing while adding to the existing selection(s), so we keep the
-     * original location information, and try to lookup for designated Run, Section and Glyph
-     * <br>[CTRL + MouseLeft]
+     * Designation is by location pointing while adding to the existing selection(s),
+     * so we keep the original location information, and try to lookup for designated
+     * Run, Section and Glyph.
+     * <br>
+     * [CTRL + MouseLeft]
      */
     LOCATION_ADD,
     /**
-     * Designation is by context pointing, discarding any previous selection
-     * <br>[MouseRight]
+     * Designation is by context pointing, discarding any previous selection.
+     * <br>
+     * [MouseRight]
      */
     CONTEXT_INIT,
     /**
-     * Designation is by context pointing while keeping the existing selection(s) if any
-     * <br>[CTRL + MouseRight]
+     * Designation is by context pointing while keeping the existing selection(s) if any.
+     * <br>
+     * [CTRL + MouseRight]
      */
     CONTEXT_ADD,
     /**
-     * Designation is at entity level
+     * Designation is at entity level.
      */
     ENTITY_INIT,
     /**
-     * Entity information is for temporary display / evaluation only, with no impact on other
-     * structures such as entity basket
+     * Entity information is for temporary display / evaluation only,
+     * with no impact on other structures such as entity basket.
      */
     ENTITY_TRANSIENT;
 

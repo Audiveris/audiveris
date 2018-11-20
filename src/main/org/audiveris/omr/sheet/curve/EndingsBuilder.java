@@ -135,7 +135,7 @@ public class EndingsBuilder
                               Filament leftLeg,
                               Filament rightLeg)
     {
-        final List<Glyph> parts = new ArrayList<Glyph>(3);
+        final List<Glyph> parts = new ArrayList<>(3);
         parts.add(segment.getGlyph());
         parts.add(leftLeg.toGlyph(null));
 
@@ -158,7 +158,7 @@ public class EndingsBuilder
     {
         Rectangle box = ending.getBounds();
         SIGraph sig = ending.getSig();
-        List<SentenceInter> found = new ArrayList<SentenceInter>();
+        List<SentenceInter> found = new ArrayList<>();
         List<Inter> systemSentences = sig.inters(SentenceInter.class);
 
         for (Inter si : systemSentences) {
@@ -232,23 +232,24 @@ public class EndingsBuilder
                                 Staff staff)
     {
         Point end = seg.getEnd(reverse);
-        Rectangle box = new Rectangle(end.x - params.maxLegXGap, end.y + params.legYMargin, 2
-                                                                                                    * params.maxLegXGap,
-                                      staff.getFirstLine().yAt(end.x) - end.y - (2
-                                                                                         * params.legYMargin));
+        Rectangle box = new Rectangle(
+                end.x - params.maxLegXGap,
+                end.y + params.legYMargin,
+                2 * params.maxLegXGap,
+                staff.getFirstLine().yAt(end.x) - end.y - (2 * params.legYMargin));
 
         SystemInfo system = staff.getSystem();
         Set<Section> sections = Sections.intersectedSections(box, system.getVerticalSections());
         Scale scale = sheet.getScale();
-        FilamentFactory<StraightFilament> factory = new FilamentFactory<StraightFilament>(scale,
-                                                                                          sheet
-                                                                                                  .getFilamentIndex(),
-                                                                                          VERTICAL,
-                                                                                          StraightFilament.class);
+        FilamentFactory<StraightFilament> factory = new FilamentFactory<>(
+                scale,
+                sheet.getFilamentIndex(),
+                VERTICAL,
+                StraightFilament.class);
 
         // Adjust factory parameters
-        factory.setMaxThickness((int) Math.ceil(sheet.getScale().getMaxStem() * constants.stemRatio
-                .getValue()));
+        factory.setMaxThickness(
+                (int) Math.ceil(sheet.getScale().getMaxStem() * constants.stemRatio.getValue()));
         factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
         factory.setMaxOverlapSpace(constants.maxOverlapSpace);
         factory.setMaxCoordGap(constants.maxCoordGap);
@@ -264,8 +265,9 @@ public class EndingsBuilder
         for (Iterator<StraightFilament> it = filaments.iterator(); it.hasNext();) {
             StraightFilament fil = it.next();
 
-            if ((fil.getLength(VERTICAL) < params.minLegLow)
-                        || ((fil.getStartPoint().getY() - end.y) > params.maxLegYGap)) {
+            if ((fil.getLength(VERTICAL) < params.minLegLow) || ((fil.getStartPoint().getY()
+                                                                          - end.y)
+                                                                 > params.maxLegYGap)) {
                 it.remove();
             }
         }
@@ -385,8 +387,8 @@ public class EndingsBuilder
                 continue;
             }
 
-            final double rightDist = scale.pixelsToFrac(Math
-                    .abs(rightBar.getCenter().x - rightEnd.x));
+            final double rightDist = scale.pixelsToFrac(
+                    Math.abs(rightBar.getCenter().x - rightEnd.x));
             final EndingBarRelation rightRel = new EndingBarRelation(RIGHT, rightDist);
             rightRel.setOutGaps(rightDist, 0, false);
 
@@ -401,11 +403,18 @@ public class EndingsBuilder
                     rightRel.getGrade());
 
             if (impacts.getGrade() >= EndingInter.getMinGrade()) {
-                Line2D leftLine = new Line2D.Double(leftLeg.getStartPoint(), leftLeg.getStopPoint());
-                Line2D rightLine = (rightLeg == null) ? null : new Line2D.Double(rightLeg
-                        .getStartPoint(), rightLeg.getStopPoint());
-                EndingInter endingInter = new EndingInter(segment, line, leftLine, rightLine,
-                                                          segment.getBounds(), impacts);
+                Line2D leftLine = new Line2D.Double(
+                        leftLeg.getStartPoint(),
+                        leftLeg.getStopPoint());
+                Line2D rightLine = (rightLeg == null) ? null
+                        : new Line2D.Double(rightLeg.getStartPoint(), rightLeg.getStopPoint());
+                EndingInter endingInter = new EndingInter(
+                        segment,
+                        line,
+                        leftLine,
+                        rightLine,
+                        segment.getBounds(),
+                        impacts);
 
                 // Underlying glyph
                 endingInter.setGlyph(buildGlyph(segment, leftLeg, rightLeg));
@@ -427,43 +436,56 @@ public class EndingsBuilder
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction minLengthLow = new Scale.Fraction(6,
-                                                                       "Low minimum ending length");
+        private final Scale.Fraction minLengthLow = new Scale.Fraction(
+                6,
+                "Low minimum ending length");
 
-        private final Scale.Fraction minLengthHigh = new Scale.Fraction(10,
-                                                                        "High minimum ending length");
+        private final Scale.Fraction minLengthHigh = new Scale.Fraction(
+                10,
+                "High minimum ending length");
 
         private final Scale.Fraction minLegLow = new Scale.Fraction(1.0, "Low minimum leg length");
 
-        private final Scale.Fraction minLegHigh = new Scale.Fraction(2.5, "High minimum leg length");
+        private final Scale.Fraction minLegHigh = new Scale.Fraction(
+                2.5,
+                "High minimum leg length");
 
-        private final Scale.Fraction legYMargin = new Scale.Fraction(0.25,
-                                                                     "Vertical margin for leg lookup area");
+        private final Scale.Fraction legYMargin = new Scale.Fraction(
+                0.25,
+                "Vertical margin for leg lookup area");
 
-        private final Scale.Fraction maxLegXGap = new Scale.Fraction(0.5,
-                                                                     "Maximum abscissa gap between ending and leg");
+        private final Scale.Fraction maxLegXGap = new Scale.Fraction(
+                0.5,
+                "Maximum abscissa gap between ending and leg");
 
-        private final Scale.Fraction maxLegYGap = new Scale.Fraction(0.5,
-                                                                     "Maximum ordinate gap between ending and leg");
+        private final Scale.Fraction maxLegYGap = new Scale.Fraction(
+                0.5,
+                "Maximum ordinate gap between ending and leg");
 
-        private final Constant.Double maxSlope = new Constant.Double("tangent", 0.02,
-                                                                     "Maximum ending slope");
+        private final Constant.Double maxSlope = new Constant.Double(
+                "tangent",
+                0.02,
+                "Maximum ending slope");
 
-        private final Constant.Ratio stemRatio = new Constant.Ratio(1.4,
-                                                                    "Maximum leg thickness as ratio of stem thickness");
+        private final Constant.Ratio stemRatio = new Constant.Ratio(
+                1.4,
+                "Maximum leg thickness as ratio of stem thickness");
 
-        private final Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(1.0,
-                                                                                     "Maximum delta position between two overlapping filaments");
+        private final Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
+                1.0,
+                "Maximum delta position between two overlapping filaments");
 
-        private final Scale.LineFraction maxOverlapSpace = new Scale.LineFraction(0.3,
-                                                                                  "Maximum space between overlapping filaments");
+        private final Scale.LineFraction maxOverlapSpace = new Scale.LineFraction(
+                0.3,
+                "Maximum space between overlapping filaments");
 
-        private final Scale.Fraction maxCoordGap = new Scale.Fraction(0.5,
-                                                                      "Maximum delta coordinate for a gap between filaments");
+        private final Scale.Fraction maxCoordGap = new Scale.Fraction(
+                0.5,
+                "Maximum delta coordinate for a gap between filaments");
     }
 
     //------------//
@@ -493,7 +515,7 @@ public class EndingsBuilder
 
         final double maxSlope;
 
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             minLengthLow = scale.toPixels(constants.minLengthLow);
             minLengthHigh = scale.toPixels(constants.minLengthHigh);

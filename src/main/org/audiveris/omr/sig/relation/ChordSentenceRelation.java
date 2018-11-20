@@ -39,14 +39,6 @@ public class ChordSentenceRelation
 
     private static final Constants constants = new Constants();
 
-    //------------//
-    // getXGapMax //
-    //------------//
-    public static Scale.Fraction getXGapMax ()
-    {
-        return constants.xGapMax;
-    }
-
     //----------------//
     // isSingleSource //
     //----------------//
@@ -65,14 +57,23 @@ public class ChordSentenceRelation
         return true;
     }
 
+    //------------//
+    // getXGapMax //
+    //------------//
+    public static Scale.Fraction getXGapMax ()
+    {
+        return constants.xGapMax;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction xGapMax = new Scale.Fraction(1.0,
-                                                                  "Maximum horizontal gap between chord & sentence");
+        private final Scale.Fraction xGapMax = new Scale.Fraction(
+                1.0,
+                "Maximum horizontal gap between chord & sentence");
     }
 }

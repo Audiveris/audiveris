@@ -43,8 +43,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code RestInter} represents a rest.
- * TODO: Should be closer to AbstractNoteInter?
+ * Class {@code RestInter} represents a rest note.
  *
  * @author Hervé Bitteur
  */
@@ -89,6 +88,29 @@ public class RestInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //----------//
+    // getChord //
+    //----------//
+    /**
+     * Report the containing rest chord.
+     *
+     * @return containing rest chord
+     */
+    @Override
+    public RestChordInter getChord ()
+    {
+        return (RestChordInter) getEnsemble();
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
     }
 
     //-------------//
@@ -235,28 +257,10 @@ public class RestInter
         return restInter;
     }
 
-    //----------//
-    // getChord //
-    //----------//
-    @Override
-    public RestChordInter getChord ()
-    {
-        return (RestChordInter) getEnsemble();
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
-
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 

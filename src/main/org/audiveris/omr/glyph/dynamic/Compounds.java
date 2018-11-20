@@ -146,8 +146,8 @@ public abstract class Compounds
         // Analyze range of Y values
         int minVal = Integer.MAX_VALUE;
         int maxVal = Integer.MIN_VALUE;
-        int[] vals = (orientation == Orientation.HORIZONTAL) ? collector.getYValues() : collector
-                .getXValues();
+        int[] vals = (orientation == Orientation.HORIZONTAL) ? collector.getYValues()
+                : collector.getXValues();
 
         for (int i = 0, iBreak = collector.getSize(); i < iBreak; i++) {
             int val = vals[i];
@@ -190,7 +190,7 @@ public abstract class Compounds
      */
     public static Set<Section> sectionsOf (Collection<SectionCompound> compounds)
     {
-        Set<Section> sections = new TreeSet<Section>();
+        Set<Section> sections = new TreeSet<>();
 
         for (SectionCompound compound : compounds) {
             sections.addAll(compound.getMembers());

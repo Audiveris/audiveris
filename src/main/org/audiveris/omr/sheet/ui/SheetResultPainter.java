@@ -257,8 +257,10 @@ public class SheetResultPainter
             }
 
             // Paint chord related stuff: articulation & arpeggiato if any
-            for (Relation aRel : sig.getRelations(chord, ChordArticulationRelation.class,
-                                                  ChordArpeggiatoRelation.class)) {
+            for (Relation aRel : sig.getRelations(
+                    chord,
+                    ChordArticulationRelation.class,
+                    ChordArpeggiatoRelation.class)) {
                 sig.getOppositeInter(chord, aRel).accept(sigPainter);
             }
         }
@@ -290,8 +292,10 @@ public class SheetResultPainter
             Scale scale = system.getSheet().getScale();
 
             if (scale != null) {
-                lineStroke = new BasicStroke((float) sheet.getScale().getFore(),
-                                             BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+                lineStroke = new BasicStroke(
+                        sheet.getScale().getFore(),
+                        BasicStroke.CAP_ROUND,
+                        BasicStroke.JOIN_ROUND);
                 g.setStroke(lineStroke);
             }
         } else {
@@ -310,12 +314,14 @@ public class SheetResultPainter
             Color oldColor = g.getColor();
             g.setColor(Colors.ANNOTATION);
 
-            Point ul = new Point(system.getBounds().x, system.getTop() + (system.getDeltaY() / 2)
-                                                               + sheet.getScale().getInterline());
+            Point ul = new Point(
+                    system.getBounds().x,
+                    system.getTop() + (system.getDeltaY() / 2) + sheet.getScale().getInterline());
 
-            paint(basicLayout("S" + system.getId(), null), new Point(ul.x + annotationDx, ul.y
-                                                                                                  + annotationDy),
-                  TOP_LEFT);
+            paint(
+                    basicLayout("S" + system.getId(), null),
+                    new Point(ul.x + annotationDx, ul.y + annotationDy),
+                    TOP_LEFT);
             g.setColor(oldColor);
         }
 
@@ -381,8 +387,8 @@ public class SheetResultPainter
             extends SigPainter
     {
 
-        public ResultSigPainter (Graphics g,
-                                 Scale scale)
+        ResultSigPainter (Graphics g,
+                          Scale scale)
         {
             super(g, scale);
         }

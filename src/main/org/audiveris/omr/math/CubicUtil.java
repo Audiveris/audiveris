@@ -54,9 +54,7 @@ public abstract class CubicUtil
     public static Point2D getMidPoint (CubicCurve2D c)
     {
         return new Point2D.Double(
-                (c.getX1() + (3 * c.getCtrlX1()) + (3 * c.getCtrlX2()) + c.getX2()) / 8, (c.getY1()
-                                                                                                  + (3
-                                                                                                     * c
-                        .getCtrlY1()) + (3 * c.getCtrlY2()) + c.getY2()) / 8);
+                (c.getX1() + (3 * c.getCtrlX1()) + (3 * c.getCtrlX2()) + c.getX2()) / 8,
+                (c.getY1() + (3 * c.getCtrlY1()) + (3 * c.getCtrlY2()) + c.getY2()) / 8);
     }
 }

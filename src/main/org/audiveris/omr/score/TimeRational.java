@@ -41,12 +41,12 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * meant to carry the actual rational members of a TimeSignature.
  * <p>
  * For example, (3/4) and (6/8) share the same rational value, but with different actual members.
+ *
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "time-rational")
-@XmlType(propOrder = {
-    "num", "den"}
-)
+@XmlType(propOrder = {"num", "den"})
 public class TimeRational
 {
 
@@ -80,31 +80,6 @@ public class TimeRational
     }
 
     //--------//
-    // decode //
-    //--------//
-    /**
-     * Decode a string expected to contain one TimeRational value, formatted as num / den.
-     *
-     * @param str the string to decode
-     * @return the TimeRational value if successful
-     */
-    public static TimeRational decode (String str)
-    {
-        final String[] tokens = str.split("\\s*/\\s*");
-
-        if (tokens.length == 2) {
-            int num = Integer.decode(tokens[0].trim());
-            int den = Integer.decode(tokens[1].trim());
-
-            return new TimeRational(num, den);
-        } else {
-            logger.warn("Illegal TimeRational value: ", str);
-
-            return null;
-        }
-    }
-
-    //--------//
     // equals //
     //--------//
     @Override
@@ -122,6 +97,13 @@ public class TimeRational
     //----------//
     // getValue //
     //----------//
+    /**
+     * Report the rational value of this time signature.
+     * <p>
+     * Rational value of (2,4) is 1/2
+     *
+     * @return rational value
+     */
     public Rational getValue ()
     {
         return new Rational(num, den);
@@ -140,6 +122,41 @@ public class TimeRational
         return hash;
     }
 
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return num + "/" + den;
+    }
+
+    //--------//
+    // decode //
+    //--------//
+    /**
+     * Decode a string expected to contain one TimeRational value,
+     * formatted as "num / den".
+     *
+     * @param str the string to decode
+     * @return the TimeRational value if successful
+     */
+    public static TimeRational decode (String str)
+    {
+        final String[] tokens = str.split("\\s*/\\s*");
+
+        switch (tokens.length) {
+        case 2: {
+            int num = Integer.decode(tokens[0].trim());
+            int den = Integer.decode(tokens[1].trim());
+
+            return new TimeRational(num, den);
+        }
+        default:
+            throw new NumberFormatException(str);
+        }
+    }
+
     //-------------//
     // parseValues //
     //-------------//
@@ -151,9 +168,8 @@ public class TimeRational
      */
     public static List<TimeRational> parseValues (String str)
     {
-        final List<TimeRational> list = new ArrayList<TimeRational>();
+        final List<TimeRational> list = new ArrayList<>();
         final String[] tokens = str.split("\\s*,\\s*");
-
         for (String token : tokens) {
             String trimmedToken = token.trim();
 
@@ -165,22 +181,15 @@ public class TimeRational
                 }
             }
         }
-
         return list;
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        return num + "/" + den;
     }
 
     //---------//
     // Adapter //
     //---------//
+    /**
+     * JAXB adapter for a TimeRational.
+     */
     public static class Adapter
             extends XmlAdapter<String, TimeRational>
     {

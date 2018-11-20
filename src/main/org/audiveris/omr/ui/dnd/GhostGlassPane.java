@@ -49,11 +49,13 @@ public class GhostGlassPane
 
     /** Composite to be used over a droppable target. */
     private static final AlphaComposite targetComposite = AlphaComposite.getInstance(
-            AlphaComposite.SRC_OVER, 0.5f);
+            AlphaComposite.SRC_OVER,
+            0.5f);
 
     /** Composite to be used over a non-droppable target. */
     private static final AlphaComposite nonTargetComposite = AlphaComposite.getInstance(
-            AlphaComposite.SRC_OVER, 0.2f);
+            AlphaComposite.SRC_OVER,
+            0.2f);
 
     /** The image to be dragged. */
     protected BufferedImage draggedImage = null;

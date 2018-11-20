@@ -27,7 +27,8 @@ import java.util.List;
  * Interface {@code InterEnsemble} refers to an inter that is composed of other inters,
  * with the ability to add or remove members.
  * <p>
- * Examples are:<ul>
+ * Examples are:
+ * <ul>
  * <li>Sentence vs words (and LyricLine vs LyricItems)</li>
  * <li>TimePairInter vs num and den</li>
  * <li>KeyInter vs its alterations</li>
@@ -39,7 +40,8 @@ import java.util.List;
  * {@link SentenceInter} instance cannot exist without at least one member {@link WordInter}
  * instance.
  * <p>
- * Hence, care must be taken to avoid such "empty ensembles":<ul>
+ * Hence, care must be taken to avoid such "empty ensembles":
+ * <ul>
  * <li>Sentence creation must be followed by inclusion of a word.
  * <li>Deletion of sole word of a sentence must be followed by sentence deletion.
  * </ul>

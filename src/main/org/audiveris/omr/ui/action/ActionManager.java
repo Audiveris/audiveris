@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Component;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URI;
@@ -65,12 +66,8 @@ public class ActionManager
     /** Class loader. */
     private static final ClassLoader classLoader = ActionManager.class.getClassLoader();
 
-    /** Singleton. */
-    private static volatile ActionManager INSTANCE;
-
-    //
     /** The map of all menus, so that we can directly provide some. */
-    private final Map<String, JMenu> menuMap = new HashMap<String, JMenu>();
+    private final Map<String, JMenu> menuMap = new HashMap<>();
 
     /** The tool bar that hosts some actions. */
     private final JToolBar toolBar = new JToolBar();
@@ -83,23 +80,6 @@ public class ActionManager
      */
     private ActionManager ()
     {
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single action manager instance.
-     *
-     * @return the unique instance of this class
-     */
-    public static ActionManager getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new ActionManager();
-        }
-
-        return INSTANCE;
     }
 
     //-------------------//
@@ -197,18 +177,18 @@ public class ActionManager
     public void loadAllDescriptors ()
     {
         // Load classes first for system actions, then for user actions if any
-        URI[] uris = new URI[]{UriUtil.toURI(WellKnowns.RES_URI, "system-actions.xml"),
-                               WellKnowns.CONFIG_FOLDER.resolve("user-actions.xml").toUri()
-                               .normalize()};
+        URI[] uris = new URI[]{
+            UriUtil.toURI(WellKnowns.RES_URI, "system-actions.xml"),
+            WellKnowns.CONFIG_FOLDER.resolve("user-actions.xml").toUri().normalize()};
 
         for (int i = 0; i < uris.length; i++) {
             URI uri = uris[i];
 
             try {
                 URL url = uri.toURL();
-                InputStream input = url.openStream();
-                Actions.loadActionDescriptors(input);
-                input.close();
+                try (InputStream input = url.openStream()) {
+                    Actions.loadActionDescriptors(input);
+                }
             } catch (IOException ex) {
                 // Item does not exist
                 if (i == 0) {
@@ -248,8 +228,8 @@ public class ActionManager
             }
 
             // Proper menu decoration
-            ResourceMap resource = OmrGui.getApplication().getContext()
-                    .getResourceMap(Actions.class);
+            ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(
+                    Actions.class);
             menu.setText(domain); // As default
             menu.setName(domain);
 
@@ -328,7 +308,12 @@ public class ActionManager
             } else {
                 logger.error("Unknown action {} in class {}", desc.methodName, desc.className);
             }
-        } catch (Throwable ex) {
+        } catch (ClassNotFoundException |
+                 IllegalAccessException |
+                 IllegalArgumentException |
+                 InstantiationException |
+                 SecurityException |
+                 InvocationTargetException ex) {
             logger.warn("Error while registering " + desc, ex);
         }
 
@@ -391,11 +376,35 @@ public class ActionManager
                             item.setName(desc.menuName);
                             menu.add(item);
                         }
-                    } catch (Throwable ex) {
+                    } catch (ClassNotFoundException |
+                             IllegalAccessException |
+                             InstantiationException ex) {
                         logger.warn("Error with " + desc.itemClassName, ex);
                     }
                 }
             }
         }
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this class in application.
+     *
+     * @return the instance
+     */
+    public static ActionManager getInstance ()
+    {
+        return LazySingleton.INSTANCE;
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final ActionManager INSTANCE = new ActionManager();
     }
 }

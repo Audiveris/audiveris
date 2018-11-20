@@ -26,7 +26,6 @@ package org.audiveris.omr.moments;
  * orthogonal moments.
  *
  * @param <D> the descriptor type
- *
  * @author Hervé Bitteur
  */
 public interface OrthogonalMoments<D extends OrthogonalMoments<D>>
@@ -69,5 +68,4 @@ public interface OrthogonalMoments<D extends OrthogonalMoments<D>>
     //     */
     //    String getLabel (int m,
     //                     int n);
-    //
 }

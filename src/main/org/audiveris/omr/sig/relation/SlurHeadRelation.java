@@ -57,7 +57,6 @@ public class SlurHeadRelation
 
     private static final Logger logger = LoggerFactory.getLogger(SlurHeadRelation.class);
 
-    //
     // Persistent data
     //----------------
     //
@@ -124,11 +123,26 @@ public class SlurHeadRelation
     // getEuclidean //
     //--------------//
     /**
+     * Report the euclidean distance between head and slur end.
+     *
      * @return the euclidean distance
      */
     public double getEuclidean ()
     {
         return euclidean;
+    }
+
+    //--------------//
+    // setEuclidean //
+    //--------------//
+    /**
+     * Set the euclidean distance between head and slur end.
+     *
+     * @param euclidean the euclidean distance to set
+     */
+    public void setEuclidean (double euclidean)
+    {
+        this.euclidean = euclidean;
     }
 
     //---------//
@@ -173,17 +187,6 @@ public class SlurHeadRelation
         }
     }
 
-    //--------------//
-    // setEuclidean //
-    //--------------//
-    /**
-     * @param euclidean the euclidean distance to set
-     */
-    public void setEuclidean (double euclidean)
-    {
-        this.euclidean = euclidean;
-    }
-
     //----------//
     // toString //
     //----------//
@@ -205,11 +208,12 @@ public class SlurHeadRelation
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio slurSupportCoeff = new Constant.Ratio(5,
-                                                                           "Value for (source) slur coeff in support formula");
+        private final Constant.Ratio slurSupportCoeff = new Constant.Ratio(
+                5,
+                "Value for (source) slur coeff in support formula");
     }
 }

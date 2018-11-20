@@ -64,31 +64,30 @@ import javax.swing.event.MouseInputAdapter;
  * can also be modified programmatically, thanks to the {@link #resetOrigin} and
  * {@link #resetRectangle} methods.
  * <p>
- * Basic mouse handling is provided in the following way : <ul>
- * <li> Define the point of interest. Default trigger is to click with the <b>Left</b> button. </li>
- * <li> Define the rectangle of interest. Default trigger is to keep <b>Shift</b> pressed when mouse
- * is moved. </li>
- * <li> Zoom the display to the area delimited by the rubber. Default trigger is <b>Shift +
- * Control</b> when mouse is released. </li>
- * <li> Drag the component itself. Default trigger is when both <b>Left + Right</b> buttons are
- * dragged. </li> </ul>
- * <p>
+ * Basic mouse handling is provided in the following way :
+ * <ul>
+ * <li>Define the point of interest. Default trigger is to click with the <b>Left</b> button.</li>
+ * <li>Define the rectangle of interest. Default trigger is to keep <b>Shift</b> pressed when mouse
+ * is moved.</li>
+ * <li>Zoom the display to the area delimited by the rubber. Default trigger is <b>Shift +
+ * Control</b> when mouse is released.</li>
+ * <li>Drag the component itself. Default trigger is when both <b>Left + Right</b> buttons are
+ * dragged.</li>
+ * </ul>
  * Note: Actual triggers are defined by protected predicate methods that can be redefined in a
  * subclass.
  * <p>
- * Mouse Events are handled in the following way: <ul>
- * <p>
- * <li> <b>Low-level events</b> originate from a JComponent, where the Rubber is registered as a
+ * Mouse Events are handled in the following way:
+ * <ul>
+ * <li><b>Low-level events</b> originate from a JComponent, where the Rubber is registered as a
  * MouseListener and a MouseMotionListener. The component can be linked by the Rubber constructor,
  * or later by using the {@link #connectComponent} method. Rubber is then called on its
  * <i>mouseDragged, mousePressed, mouseReleased</i> methods.
- * <p>
- * <li> <b>High-level events</b>, as computed by Rubber from low-level mouse events, are forwarded
+ * <li><b>High-level events</b>, as computed by Rubber from low-level mouse events, are forwarded
  * to a connected {@link MouseMonitor} if any, which is then called on its <i>pointSelected,
  * pointAdded, contextSelected, rectangleSelected, rectangleZoomed</i> methods. Generally, this
  * MouseMonitor is the originating JComponent, but this is not mandatory.
  * </ul>
- * <p>
  * The Rubber can be linked to a {@link Zoom} to cope with display factor of the related component,
  * but this is not mandatory: If no zoom is connected, a display factor of 1.0 is assumed.
  *
@@ -179,7 +178,7 @@ public class Rubber
      *
      * @param component the related component
      */
-    public void connectComponent (JComponent component)
+    public final void connectComponent (JComponent component)
     {
         // Clean up if needed
         disconnectComponent(this.component);
@@ -253,10 +252,12 @@ public class Rubber
 
         if (isDragWanted(e)) {
             final Rectangle vr = component.getVisibleRect();
-            vr.setBounds((vr.x + rawRect.x) - e.getX(), (vr.y + rawRect.y) - e.getY(), vr.width,
-                         vr.height);
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            vr.setBounds(
+                    (vr.x + rawRect.x) - e.getX(),
+                    (vr.y + rawRect.y) - e.getY(),
+                    vr.width,
+                    vr.height);
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
@@ -472,8 +473,11 @@ public class Rubber
 
             // Vector
             if (vector != null) {
-                Line2D v = new Line2D.Double(vector.getX1(), vector.getY1(), vector.getX2(), vector
-                                             .getY2());
+                Line2D v = new Line2D.Double(
+                        vector.getX1(),
+                        vector.getY1(),
+                        vector.getX2(),
+                        vector.getY2());
 
                 if (zoom != null) {
                     zoom.scale(v);
@@ -551,11 +555,11 @@ public class Rubber
     /**
      * Allows to specify that a zoom is attached to the displayed
      * component, and thus the reported rectangle or center must be
-     * dezoomed on the fly.
+     * de-zoomed on the fly.
      *
      * @param zoom the component related zoom
      */
-    public void setZoom (Zoom zoom)
+    public final void setZoom (Zoom zoom)
     {
         this.zoom = zoom;
     }
@@ -593,11 +597,17 @@ public class Rubber
     private void normalize ()
     {
         if (rect == null) {
-            rect = new Rectangle(unscaled(rawRect.x), unscaled(rawRect.y), unscaled(rawRect.width),
-                                 unscaled(rawRect.height));
+            rect = new Rectangle(
+                    unscaled(rawRect.x),
+                    unscaled(rawRect.y),
+                    unscaled(rawRect.width),
+                    unscaled(rawRect.height));
         } else {
-            rect.setBounds(unscaled(rawRect.x), unscaled(rawRect.y), unscaled(rawRect.width),
-                           unscaled(rawRect.height));
+            rect.setBounds(
+                    unscaled(rawRect.x),
+                    unscaled(rawRect.y),
+                    unscaled(rawRect.width),
+                    unscaled(rawRect.height));
         }
 
         // The x & y are the original coordinates when mouse began
@@ -724,14 +734,17 @@ public class Rubber
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean showCross = new Constant.Boolean(true,
-                                                                        "Should we show just a cross for rubber (or whole lines)");
+        private final Constant.Boolean showCross = new Constant.Boolean(
+                true,
+                "Should we show just a cross for rubber (or whole lines)");
 
-        private final Constant.Integer crossLegLength = new Constant.Integer("Pixels", 100,
-                                                                             "Length for each leg of the rubber cross");
+        private final Constant.Integer crossLegLength = new Constant.Integer(
+                "Pixels",
+                100,
+                "Length for each leg of the rubber cross");
     }
 }

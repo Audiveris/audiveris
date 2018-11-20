@@ -32,6 +32,7 @@ public abstract class PathTask
         extends VoidTask
 {
 
+    /** Underlying path. */
     protected Path path;
 
     /**
@@ -51,6 +52,11 @@ public abstract class PathTask
         this.path = path;
     }
 
+    /**
+     * Set the path value.
+     *
+     * @param path the path used by the task
+     */
     public void setPath (Path path)
     {
         this.path = path;

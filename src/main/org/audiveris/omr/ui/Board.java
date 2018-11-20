@@ -44,30 +44,36 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.text.JTextComponent;
 
 /**
  * Class {@code Board} defines the common properties of any user board such as
  * PixelBoard, SectionBoard, and the like.
  * <p>
  * Each board has a standard header composed of a title, a horizontal separator and optionally a
- * dump button. The board body is handled by the subclass.</p>
+ * dump button. The board body is handled by the subclass.
+ * </p>
  * <p>
  * Any board can be (de)selected in its containing {@link BoardsPane}. This can be done
  * programmatically using {@link #setSelected(boolean)} and manually (via a right-click in the
- * BoardsPane).</p>
+ * BoardsPane).
+ * </p>
  * <p>
  * Only selected boards can be seen in the BoardsPane display. A selected board can be made
  * currently (in)visible programmatically using {@link #setVisible(boolean)}.
  * Typically, {@link org.audiveris.omr.check.CheckBoard}'s are visible only when they carry
- * glyph information.</p>
+ * glyph information.
+ * </p>
  * <p>
  * By default, any board can have a related SelectionService, used for subscribe (input) and publish
  * (output). When {@link #connect} is called, the board instance is subscribed to its
  * SelectionService for a specific collection of event classes. Similarly, {@link #disconnect}
- * un-subscribes the Board instance from the same event classes.</p>
+ * un-subscribes the Board instance from the same event classes.
+ * </p>
  * <p>
  * This {@code Board} class is still an abstract class, since the onEvent() method must be
- * provided by every subclass.</p>
+ * provided by every subclass.
+ * </p>
  *
  * @author Hervé Bitteur
  */
@@ -161,8 +167,15 @@ public abstract class Board
                   boolean useVip,
                   boolean useDump)
     {
-        this(desc.name, desc.position, selectionService, eventsRead, selected, useCount, useVip,
-             useDump);
+        this(
+                desc.name,
+                desc.position,
+                selectionService,
+                eventsRead,
+                selected,
+                useCount,
+                useVip,
+                useDump);
     }
 
     /**
@@ -195,23 +208,6 @@ public abstract class Board
         // Layout header and body parts
         header = new Header(name, useCount, useVip, useDump);
         defineLayout();
-    }
-
-    //-------------//
-    // emptyFields //
-    //-------------//
-    /**
-     * Convenient method to empty all the text fields of a given JComponent.
-     *
-     * @param component the component to "blank".
-     */
-    public static void emptyFields (JComponent component)
-    {
-        for (Component comp : component.getComponents()) {
-            if (comp instanceof JTextField) {
-                ((JTextField) comp).setText("");
-            }
-        }
     }
 
     //---------//
@@ -292,27 +288,6 @@ public abstract class Board
     }
 
     //-------------//
-    // resizeBoard //
-    //-------------//
-    /**
-     * Resize board component, to adapt to its new composition.
-     */
-    public void resizeBoard ()
-    {
-        component.invalidate();
-        component.validate();
-        component.repaint();
-    }
-
-    //-----------//
-    // setParent //
-    //-----------//
-    public void setParent (BoardsPane parent)
-    {
-        this.parent = parent;
-    }
-
-    //-------------//
     // setSelected //
     //-------------//
     /**
@@ -338,6 +313,27 @@ public abstract class Board
         if (parent != null) {
             parent.update();
         }
+    }
+
+    //-------------//
+    // resizeBoard //
+    //-------------//
+    /**
+     * Resize board component, to adapt to its new composition.
+     */
+    public void resizeBoard ()
+    {
+        component.invalidate();
+        component.validate();
+        component.repaint();
+    }
+
+    //-----------//
+    // setParent //
+    //-----------//
+    public void setParent (BoardsPane parent)
+    {
+        this.parent = parent;
     }
 
     //------------//
@@ -438,6 +434,23 @@ public abstract class Board
         builder.add(body, cst.xy(1, 3));
     }
 
+    //-------------//
+    // emptyFields //
+    //-------------//
+    /**
+     * Convenient method to empty all the text fields of a given JComponent.
+     *
+     * @param component the component to "blank".
+     */
+    public static void emptyFields (JComponent component)
+    {
+        for (Component comp : component.getComponents()) {
+            if (comp instanceof JTextField) {
+                ((JTextComponent) comp).setText("");
+            }
+        }
+    }
+
     //------//
     // Desc //
     //------//
@@ -484,10 +497,10 @@ public abstract class Board
         /** Dump button, if any. */
         private final JButton dump;
 
-        public Header (String title,
-                       boolean withCount,
-                       boolean withVip,
-                       boolean withDump)
+        Header (String title,
+                boolean withCount,
+                boolean withVip,
+                boolean withDump)
         {
             this.title = title;
 
@@ -508,8 +521,8 @@ public abstract class Board
             // count label
             sb.append(",").append(Panel.getFieldInterval()).append(",15dlu");
             // vip label+box
-            sb.append(",").append(Panel.getFieldInterval()).append(",12dlu,").append(Panel
-                    .getLabelInterval()).append(",10dlu");
+            sb.append(",").append(Panel.getFieldInterval()).append(",12dlu,").append(
+                    Panel.getLabelInterval()).append(",10dlu");
             // dump button
             sb.append(",").append(Panel.getFieldInterval()).append(",35dlu");
 

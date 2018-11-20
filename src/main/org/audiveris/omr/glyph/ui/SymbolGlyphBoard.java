@@ -45,15 +45,21 @@ public class SymbolGlyphBoard
     private static final Logger logger = LoggerFactory.getLogger(SymbolGlyphBoard.class);
 
     /** Glyph characteristics : normalized weight. */
-    private final LDoubleField weight = new LDoubleField(false, "Weight", "Normalized weight",
-                                                         "%.3f");
+    private final LDoubleField weight = new LDoubleField(
+            false,
+            "Weight",
+            "Normalized weight",
+            "%.3f");
 
     /** Glyph characteristics : normalized width. */
     private final LDoubleField width = new LDoubleField(false, "Width", "Normalized width", "%.3f");
 
     /** Glyph characteristics : normalized height. */
-    private final LDoubleField height = new LDoubleField(false, "Height", "Normalized height",
-                                                         "%.3f");
+    private final LDoubleField height = new LDoubleField(
+            false,
+            "Height",
+            "Normalized height",
+            "%.3f");
 
     /**
      * Create the symbol glyph board.

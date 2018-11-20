@@ -23,6 +23,8 @@ package org.audiveris.omr.glyph;
 
 /**
  * Enum {@code GlyphLayer} defines populations of glyph instances.
+ *
+ * @author Hervé Bitteur
  */
 public enum GlyphLayer
 {
@@ -55,6 +57,11 @@ public enum GlyphLayer
     //----------------//
     // concreteValues //
     //----------------//
+    /**
+     * Report which layers are really used.
+     *
+     * @return layers in use
+     */
     public static GlyphLayer[] concreteValues ()
     {
         return concreteValues;

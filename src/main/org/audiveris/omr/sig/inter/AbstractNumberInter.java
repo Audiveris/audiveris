@@ -96,9 +96,24 @@ public abstract class AbstractNumberInter
         return value;
     }
 
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + value;
+    }
+
     //---------//
     // valueOf //
     //---------//
+    /**
+     * Report the integer value for the provided shape
+     *
+     * @param shape shape to test
+     * @return supported integer value or IllegalArgumentException is thrown
+     */
     protected static int valueOf (Shape shape)
     {
         switch (shape) {
@@ -140,14 +155,5 @@ public abstract class AbstractNumberInter
         }
 
         throw new IllegalArgumentException("No integer value defined for " + shape);
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + value;
     }
 }

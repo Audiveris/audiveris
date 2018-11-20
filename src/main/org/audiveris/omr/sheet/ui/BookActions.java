@@ -105,19 +105,9 @@ public class BookActions
 
     private static final Logger logger = LoggerFactory.getLogger(BookActions.class);
 
-    /** Singleton. */
-    private static BookActions INSTANCE;
-
-    /** Should we rebuild the book on each user action. */
-    private static final String REBUILD_ALLOWED = "rebuildAllowed";
-
-    /** Should we persist any manual assignment (for later training). */
-    private static final String MANUAL_PERSISTED = "manualPersisted";
-
     /** Default parameter. */
     public static final Param<Boolean> defaultPrompt = new Default();
 
-    //
     /** Flag to allow automatic book rebuild on every user edition action. */
     private boolean rebuildAllowed = true;
 
@@ -135,121 +125,6 @@ public class BookActions
         final BookManager mgr = BookManager.getInstance();
         imageHistoryMenu = new HistoryMenu(mgr.getImageHistory(), LoadImageTask.class);
         bookHistoryMenu = new HistoryMenu(mgr.getBookHistory(), LoadBookTask.class);
-    }
-
-    //-----------------//
-    // checkParameters //
-    //-----------------//
-    /**
-     * Make sure that the book parameters are properly set up, even by
-     * prompting the user for them, otherwise return false
-     *
-     * @param sheet the provided sheet
-     * @return true if OK, false otherwise
-     */
-    public static boolean checkParameters (Sheet sheet)
-    {
-        //        if (constants.promptParameters.getValue()) {
-        //            return applyUserSettings(sheet);
-        //        } else {
-        //            return true; /////////////////////////////////////////////////////////////////////////////////////////////
-        //            ///return fillParametersWithDefaults(sheet.getBook());
-        //        }
-        return true;
-    }
-
-    //-----------------//
-    // checkParameters //
-    //-----------------//
-    /**
-     * Make sure that the book parameters are properly set up, even by
-     * prompting the user for them, otherwise return false
-     *
-     * @param book the provided book
-     * @return true if OK, false otherwise
-     */
-    public static boolean checkParameters (Book book)
-    {
-        //        if (constants.promptParameters.getValue()) {
-        //            return applyUserSettings(sheet);
-        //        } else {
-        //            return true; /////////////////////////////////////////////////////////////////////////////////////////////
-        //            ///return fillParametersWithDefaults(sheet.getBook());
-        //        }
-        return true;
-    }
-
-    //-------------//
-    // checkStored //
-    //-------------//
-    /**
-     * Check whether the provided book has been saved if needed
-     * (and therefore, if it can be closed)
-     *
-     * @param book the book to check
-     * @return true if close is allowed, false if not
-     */
-    public static boolean checkStored (Book book)
-    {
-        if (book.isModified() && defaultPrompt.getValue()) {
-            int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), "Save modified book "
-                                                                                   + book.getRadix()
-                                                                                   + "?");
-
-            if (answer == JOptionPane.YES_OPTION) {
-                Path bookPath;
-
-                if (book.getBookPath() == null) {
-                    // Find a suitable target file
-                    bookPath = BookManager.getDefaultSavePath(book);
-
-                    // Check the target is fine
-                    if (!confirmed(bookPath)) {
-                        // Let the user select an alternate output file
-                        bookPath = selectBookPath(true, BookManager.getDefaultSavePath(book));
-
-                        if ((bookPath == null) || !confirmed(bookPath)) {
-                            return false; // No suitable target found
-                        }
-                    }
-                } else {
-                    bookPath = book.getBookPath();
-                }
-
-                try {
-                    // Save the book to target file
-                    book.store(bookPath, false);
-
-                    return true; // Book successfully saved
-                } catch (Exception ex) {
-                    logger.warn("Error saving book", ex);
-
-                    return false; // Saving failed
-                }
-            }
-
-            // Check whether user specifically chose NOT to save the book
-            return answer == JOptionPane.NO_OPTION;
-        } else {
-            return true;
-        }
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton
-     *
-     * @return the unique instance of this class
-     */
-    public static synchronized BookActions getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new BookActions();
-        }
-
-        return INSTANCE;
     }
 
     //--------------//
@@ -395,16 +270,16 @@ public class BookActions
         try {
             final WrappedBoolean apply = new WrappedBoolean(false);
             final SheetParameters sheetParams = new SheetParameters(stub.getSheet());
-            final JOptionPane optionPane = new JOptionPane(sheetParams.getComponent(),
-                                                           JOptionPane.QUESTION_MESSAGE,
-                                                           JOptionPane.OK_CANCEL_OPTION);
+            final JOptionPane optionPane = new JOptionPane(
+                    sheetParams.getComponent(),
+                    JOptionPane.QUESTION_MESSAGE,
+                    JOptionPane.OK_CANCEL_OPTION);
             final String frameTitle = stub.getId() + " parameters";
             final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, true); // Modal flag
             dialog.setContentPane(optionPane);
             dialog.setName("sheetParams");
 
-            optionPane.addPropertyChangeListener(
-                    new PropertyChangeListener()
+            optionPane.addPropertyChangeListener(new PropertyChangeListener()
             {
                 @Override
                 public void propertyChange (PropertyChangeEvent e)
@@ -480,10 +355,14 @@ public class BookActions
 
         if (assembly.getPane(tab.label) == null) {
             Sheet sheet = stub.getSheet(); // This may load the sheet...
-            assembly.addViewTab(tab, new ScrollImageView(sheet, new ImageView(sheet.getPicture()
-                                                         .getSource(Picture.SourceKey.NO_STAFF)
-                                                         .getBufferedImage())), new BoardsPane(
-                                new PixelBoard(sheet)));
+            assembly.addViewTab(
+                    tab,
+                    new ScrollImageView(
+                            sheet,
+                            new ImageView(
+                                    sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF)
+                                            .getBufferedImage())),
+                    new BoardsPane(new PixelBoard(sheet)));
         } else {
             assembly.selectViewTab(tab);
         }
@@ -535,9 +414,12 @@ public class BookActions
 
         if (assembly.getPane(tab.label) == null) {
             Sheet sheet = stub.getSheet(); // This may load the sheet...
-            assembly.addViewTab(tab, new ScrollImageView(sheet, new ImageView(sheet.getPicture()
-                                                         .buildStaffLineGlyphsImage())),
-                                new BoardsPane(new PixelBoard(sheet)));
+            assembly.addViewTab(
+                    tab,
+                    new ScrollImageView(
+                            sheet,
+                            new ImageView(sheet.getPicture().buildStaffLineGlyphsImage())),
+                    new BoardsPane(new PixelBoard(sheet)));
         } else {
             assembly.selectViewTab(tab);
         }
@@ -626,8 +508,12 @@ public class BookActions
         final String ext = BookManager.getExportExtension();
         final Path sansExt = BookManager.getDefaultExportPathSansExt(book);
         final Path targetPath = Paths.get(sansExt + ext);
-        final Path bookPath = UIUtil.pathChooser(true, OMR.gui.getFrame(), targetPath, filter(ext),
-                                                 "Choose book export target");
+        final Path bookPath = UIUtil.pathChooser(
+                true,
+                OMR.gui.getFrame(),
+                targetPath,
+                filter(ext),
+                "Choose book export target");
 
         if ((bookPath == null) || !confirmed(bookPath)) {
             return null;
@@ -665,8 +551,12 @@ public class BookActions
         final String ext = compressed ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION;
         final String suffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
         final Path defaultSheetPath = Paths.get(bookSansExt + suffix + ext);
-        final Path sheetPath = UIUtil.pathChooser(true, OMR.gui.getFrame(), defaultSheetPath,
-                                                  filter(ext), "Choose sheet export target");
+        final Path sheetPath = UIUtil.pathChooser(
+                true,
+                OMR.gui.getFrame(),
+                defaultSheetPath,
+                filter(ext),
+                "Choose sheet export target");
 
         if ((sheetPath == null) || !confirmed(sheetPath)) {
             return null;
@@ -705,10 +595,9 @@ public class BookActions
         SheetStub stub = StubsController.getCurrentStub();
 
         if (stub != null) {
-            int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), "About to set sheet "
-                                                                                   + stub.getId()
-                                                                                   + " as invalid."
-                                                                                   + "\nDo you confirm?");
+            int answer = JOptionPane.showConfirmDialog(
+                    OMR.gui.getFrame(),
+                    "About to set sheet " + stub.getId() + " as invalid." + "\nDo you confirm?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 final Sheet sheet = stub.getSheet();
@@ -751,14 +640,6 @@ public class BookActions
         } else {
             return defaultPlugin.getTask(book);
         }
-    }
-
-    //------------------//
-    // isRebuildAllowed //
-    //------------------//
-    public boolean isRebuildAllowed ()
-    {
-        return rebuildAllowed;
     }
 
     //----------//
@@ -804,8 +685,9 @@ public class BookActions
                 false,
                 OMR.gui.getFrame(),
                 Paths.get(BookManager.getDefaultImageFolder()),
-                new OmrFileFilter("Major image files" + " (" + suffixes + ")", allSuffixes.split(
-                                  "\\s")));
+                new OmrFileFilter(
+                        "Major image files" + " (" + suffixes + ")",
+                        allSuffixes.split("\\s")));
 
         if (path != null) {
             if (!Files.exists(path)) {
@@ -972,10 +854,12 @@ public class BookActions
         }
 
         // Select target book print path
-        final Path bookPrintPath = UIUtil.pathChooser(true, OMR.gui.getFrame(), BookManager
-                                                      .getDefaultPrintPath(book), new OmrFileFilter(
-                                                      OMR.PRINT_EXTENSION),
-                                                      "Choose book print target");
+        final Path bookPrintPath = UIUtil.pathChooser(
+                true,
+                OMR.gui.getFrame(),
+                BookManager.getDefaultPrintPath(book),
+                new OmrFileFilter(OMR.PRINT_EXTENSION),
+                "Choose book print target");
 
         if ((bookPrintPath == null) || !confirmed(bookPrintPath)) {
             return null;
@@ -1010,8 +894,12 @@ public class BookActions
         final String suffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
         final Path defaultSheetPath = Paths.get(bookSansExt + suffix + ext);
 
-        final Path sheetPrintPath = UIUtil.pathChooser(true, OMR.gui.getFrame(), defaultSheetPath,
-                                                       filter(ext), "Choose sheet print target");
+        final Path sheetPrintPath = UIUtil.pathChooser(
+                true,
+                OMR.gui.getFrame(),
+                defaultSheetPath,
+                filter(ext),
+                "Choose sheet print target");
 
         if ((sheetPrintPath == null) || !confirmed(sheetPrintPath)) {
             return null;
@@ -1056,11 +944,10 @@ public class BookActions
         final Book book = StubsController.getCurrentBook();
 
         if (book != null) {
-            int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(),
-                                                       "About to reset all valid sheets of " + book
-                                                               .getRadix()
-                                                               + " to their initial state."
-                                                               + "\nDo you confirm?");
+            int answer = JOptionPane.showConfirmDialog(
+                    OMR.gui.getFrame(),
+                    "About to reset all valid sheets of " + book.getRadix()
+                            + " to their initial state." + "\nDo you confirm?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 book.reset();
@@ -1082,11 +969,10 @@ public class BookActions
         final Book book = StubsController.getCurrentBook();
 
         if (book != null) {
-            int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(),
-                                                       "About to reset all valid sheets of " + book
-                                                               .getRadix()
-                                                               + " to their BINARY state."
-                                                               + "\nDo you confirm?");
+            int answer = JOptionPane.showConfirmDialog(
+                    OMR.gui.getFrame(),
+                    "About to reset all valid sheets of " + book.getRadix()
+                            + " to their BINARY state." + "\nDo you confirm?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 book.resetToBinary();
@@ -1108,10 +994,10 @@ public class BookActions
         SheetStub stub = StubsController.getCurrentStub();
 
         if (stub != null) {
-            int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), "About to reset sheet "
-                                                                                   + stub.getId()
-                                                                                   + " to its initial state."
-                                                                           + "\nDo you confirm?");
+            int answer = JOptionPane.showConfirmDialog(
+                    OMR.gui.getFrame(),
+                    "About to reset sheet " + stub.getId() + " to its initial state."
+                            + "\nDo you confirm?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 stub.reset();
@@ -1133,10 +1019,10 @@ public class BookActions
         SheetStub stub = StubsController.getCurrentStub();
 
         if (stub != null) {
-            int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), "About to reset sheet "
-                                                                                   + stub.getId()
-                                                                                   + " to its BINARY state."
-                                                                           + "\nDo you confirm?");
+            int answer = JOptionPane.showConfirmDialog(
+                    OMR.gui.getFrame(),
+                    "About to reset sheet " + stub.getId() + " to its BINARY state."
+                            + "\nDo you confirm?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 stub.resetToBinary();
@@ -1194,8 +1080,8 @@ public class BookActions
 
         final Path bookPath = BookManager.getDefaultSavePath(book);
 
-        if ((book.getBookPath() != null) && (bookPath.toAbsolutePath().equals(book.getBookPath()
-                .toAbsolutePath()) || confirmed(bookPath))) {
+        if ((book.getBookPath() != null) && (bookPath.toAbsolutePath().equals(
+                book.getBookPath().toAbsolutePath()) || confirmed(bookPath))) {
             return new StoreBookTask(book, bookPath);
         }
 
@@ -1256,16 +1142,6 @@ public class BookActions
         return null;
     }
 
-    //-------------------//
-    // setRebuildAllowed //
-    //-------------------//
-    public void setRebuildAllowed (boolean value)
-    {
-        boolean oldValue = this.rebuildAllowed;
-        this.rebuildAllowed = value;
-        firePropertyChange(REBUILD_ALLOWED, oldValue, value);
-    }
-
     //------------//
     // swapSheets //
     //------------//
@@ -1284,19 +1160,6 @@ public class BookActions
         }
 
         book.swapAllSheets();
-    }
-
-    //---------------//
-    // toggleRebuild //
-    //---------------//
-    /**
-     * Action that toggles the rebuild of book on every user edition
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(selectedProperty = REBUILD_ALLOWED)
-    public void toggleRebuild (ActionEvent e)
-    {
     }
 
     //----------------//
@@ -1465,6 +1328,126 @@ public class BookActions
         scrollView.fitWidth();
     }
 
+    //-----------------//
+    // checkParameters //
+    //-----------------//
+    /**
+     * Make sure that the book parameters are properly set up, even by
+     * prompting the user for them, otherwise return false
+     *
+     * @param sheet the provided sheet
+     * @return true if OK, false otherwise
+     */
+    public static boolean checkParameters (Sheet sheet)
+    {
+        //        if (constants.promptParameters.getValue()) {
+        //            return applyUserSettings(sheet);
+        //        } else {
+        //            return true; /////////////////////////////////////////////////////////////////////////////////////////////
+        //            ///return fillParametersWithDefaults(sheet.getBook());
+        //        }
+        return true;
+    }
+
+    //-----------------//
+    // checkParameters //
+    //-----------------//
+    /**
+     * Make sure that the book parameters are properly set up, even by
+     * prompting the user for them, otherwise return false
+     *
+     * @param book the provided book
+     * @return true if OK, false otherwise
+     */
+    public static boolean checkParameters (Book book)
+    {
+        //        if (constants.promptParameters.getValue()) {
+        //            return applyUserSettings(sheet);
+        //        } else {
+        //            return true; /////////////////////////////////////////////////////////////////////////////////////////////
+        //            ///return fillParametersWithDefaults(sheet.getBook());
+        //        }
+        return true;
+    }
+
+    //-------------//
+    // checkStored //
+    //-------------//
+    /**
+     * Check whether the provided book has been saved if needed
+     * (and therefore, if it can be closed)
+     *
+     * @param book the book to check
+     * @return true if close is allowed, false if not
+     */
+    public static boolean checkStored (Book book)
+    {
+        if (book.isModified() && defaultPrompt.getValue()) {
+            int answer = JOptionPane.showConfirmDialog(
+                    OMR.gui.getFrame(),
+                    "Save modified book " + book.getRadix() + "?");
+
+            if (answer == JOptionPane.YES_OPTION) {
+                Path bookPath;
+
+                if (book.getBookPath() == null) {
+                    // Find a suitable target file
+                    bookPath = BookManager.getDefaultSavePath(book);
+
+                    // Check the target is fine
+                    if (!confirmed(bookPath)) {
+                        // Let the user select an alternate output file
+                        bookPath = selectBookPath(true, BookManager.getDefaultSavePath(book));
+
+                        if ((bookPath == null) || !confirmed(bookPath)) {
+                            return false; // No suitable target found
+                        }
+                    }
+                } else {
+                    bookPath = book.getBookPath();
+                }
+
+                try {
+                    // Save the book to target file
+                    book.store(bookPath, false);
+
+                    return true; // Book successfully saved
+                } catch (Exception ex) {
+                    logger.warn("Error saving book", ex);
+
+                    return false; // Saving failed
+                }
+            }
+
+            // Check whether user specifically chose NOT to save the book
+            return answer == JOptionPane.NO_OPTION;
+        } else {
+            return true;
+        }
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of BookActions in the application.
+     *
+     * @return the instance
+     */
+    public static BookActions getInstance ()
+    {
+        return LazySingleton.INSTANCE;
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final BookActions INSTANCE = new BookActions();
+    }
+
     //-------------------//
     // applyUserSettings //
     //-------------------//
@@ -1480,17 +1463,17 @@ public class BookActions
         try {
             final WrappedBoolean apply = new WrappedBoolean(false);
             final ScoreParameters scoreParams = new ScoreParameters(stub);
-            final JOptionPane optionPane = new JOptionPane(scoreParams.getComponent(),
-                                                           JOptionPane.QUESTION_MESSAGE,
-                                                           JOptionPane.OK_CANCEL_OPTION);
+            final JOptionPane optionPane = new JOptionPane(
+                    scoreParams.getComponent(),
+                    JOptionPane.QUESTION_MESSAGE,
+                    JOptionPane.OK_CANCEL_OPTION);
             final String frameTitle = (stub != null) ? (stub.getBook().getRadix() + " parameters")
                     : "General parameters";
             final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, true); // Modal flag
             dialog.setContentPane(optionPane);
             dialog.setName("scoreParams");
 
-            optionPane.addPropertyChangeListener(
-                    new PropertyChangeListener()
+            optionPane.addPropertyChangeListener(new PropertyChangeListener()
             {
                 @Override
                 public void propertyChange (PropertyChangeEvent e)
@@ -1566,8 +1549,11 @@ public class BookActions
     private static Path selectBookPath (boolean save,
                                         Path path)
     {
-        Path prjPath = UIUtil
-                .pathChooser(save, OMR.gui.getFrame(), path, filter(OMR.BOOK_EXTENSION));
+        Path prjPath = UIUtil.pathChooser(
+                save,
+                OMR.gui.getFrame(),
+                path,
+                filter(OMR.BOOK_EXTENSION));
 
         return (prjPath == null) ? null : prjPath;
     }
@@ -1778,7 +1764,7 @@ public class BookActions
          *
          * @param book the book to close
          */
-        public CloseBookTask (Book book)
+        CloseBookTask (Book book)
         {
             this.book = book;
         }
@@ -1801,19 +1787,21 @@ public class BookActions
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean promptParameters = new Constant.Boolean(false,
-                                                                               "Should we prompt the user for score parameters?");
+        private final Constant.Boolean promptParameters = new Constant.Boolean(
+                false,
+                "Should we prompt the user for score parameters?");
 
         private final Constant.String validImageExtensions = new Constant.String(
                 ".bmp .gif .jpg .png .tiff .tif .pdf",
                 "Valid image file extensions, whitespace-separated");
 
-        private final Constant.Boolean closeConfirmation = new Constant.Boolean(true,
-                                                                                "Should we ask confirmation for closing an unsaved book?");
+        private final Constant.Boolean closeConfirmation = new Constant.Boolean(
+                true,
+                "Should we ask confirmation for closing an unsaved book?");
     }
 
     //---------//
@@ -1850,8 +1838,9 @@ public class BookActions
         {
             if (!getValue().equals(specific)) {
                 constants.closeConfirmation.setValue(specific);
-                logger.info("You will {} be prompted to save book when closing", specific ? "now"
-                            : "no longer");
+                logger.info(
+                        "You will {} be prompted to save book when closing",
+                        specific ? "now" : "no longer");
 
                 return true;
             } else {
@@ -1875,8 +1864,8 @@ public class BookActions
          * @param book            the book to export
          * @param bookPathSansExt (non-null) the target export book path with no extension
          */
-        public ExportBookTask (Book book,
-                               Path bookPathSansExt)
+        ExportBookTask (Book book,
+                        Path bookPathSansExt)
         {
             this.book = book;
             book.setExportPathSansExt(bookPathSansExt);
@@ -1911,8 +1900,8 @@ public class BookActions
 
         final Path sheetExportPath;
 
-        public ExportSheetTask (Sheet sheet,
-                                Path sheetExportPath)
+        ExportSheetTask (Sheet sheet,
+                         Path sheetExportPath)
         {
             this.sheet = sheet;
             this.sheetExportPath = sheetExportPath;
@@ -1946,7 +1935,7 @@ public class BookActions
 
         private final Sheet sheet;
 
-        public RebuildTask (Sheet sheet)
+        RebuildTask (Sheet sheet)
         {
             this.sheet = sheet;
         }
@@ -1975,7 +1964,7 @@ public class BookActions
 
         final Book book;
 
-        public SampleBookTask (Book book)
+        SampleBookTask (Book book)
         {
             this.book = book;
         }
@@ -2012,8 +2001,8 @@ public class BookActions
          * @param book     the book to export
          * @param bookPath (non-null) the target to store book path
          */
-        public StoreBookTask (Book book,
-                              Path bookPath)
+        StoreBookTask (Book book,
+                       Path bookPath)
         {
             this.book = book;
             this.bookPath = bookPath;
@@ -2046,7 +2035,7 @@ public class BookActions
 
         private final Book book;
 
-        public TranscribeBookTask (SheetStub stub)
+        TranscribeBookTask (SheetStub stub)
         {
             this.stub = stub;
             this.book = stub.getBook();
@@ -2084,7 +2073,7 @@ public class BookActions
 
         private final Sheet sheet;
 
-        public TranscribeSheetTask (Sheet sheet)
+        TranscribeSheetTask (Sheet sheet)
         {
             this.sheet = sheet;
         }

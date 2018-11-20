@@ -74,8 +74,9 @@ public class DoubleBarlineSymbol
         p.layout = font.layout(thinSymbol);
 
         Rectangle2D thinRect = p.layout.getBounds();
-        p.rect = new Rectangle((int) Math.ceil(thinRect.getWidth() * WIDTH_RATIO), (int) Math.ceil(
-                               thinRect.getHeight()));
+        p.rect = new Rectangle(
+                (int) Math.ceil(thinRect.getWidth() * WIDTH_RATIO),
+                (int) Math.ceil(thinRect.getHeight()));
 
         return p;
     }

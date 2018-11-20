@@ -67,6 +67,14 @@ public class SymbolSample
     //--------//
     // create //
     //--------//
+    /**
+     * Create a {@code SymbolSample}.
+     *
+     * @param shape     assigned shape
+     * @param symbol    the font-based symbol
+     * @param interline the related interline value
+     * @return the created SymbolSample
+     */
     public static SymbolSample create (Shape shape,
                                        ShapeSymbol symbol,
                                        int interline)

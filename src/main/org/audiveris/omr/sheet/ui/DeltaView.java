@@ -80,7 +80,8 @@ public class DeltaView
         view.setLocationService(sheet.getLocationService());
 
         // Listen to all painting parameters
-        ViewParameters.getInstance().addPropertyChangeListener(new WeakPropertyChangeListener(this));
+        ViewParameters.getInstance().addPropertyChangeListener(
+                new WeakPropertyChangeListener(this));
 
         // Insert view
         setView(view);
@@ -102,7 +103,7 @@ public class DeltaView
             extends RubberPanel
     {
 
-        public MyView ()
+        MyView ()
         {
             setModelSize(new Dimension(sheet.getWidth(), sheet.getHeight()));
         }
@@ -113,12 +114,16 @@ public class DeltaView
         @Override
         public void render (Graphics2D g)
         {
-            BufferedImage img = new BufferedImage(sheet.getWidth(), sheet.getHeight(),
-                                                  BufferedImage.TYPE_INT_ARGB);
+            BufferedImage img = new BufferedImage(
+                    sheet.getWidth(),
+                    sheet.getHeight(),
+                    BufferedImage.TYPE_INT_ARGB);
             Graphics2D gbi = img.createGraphics();
 
             // Anti-aliasing OFF
-            gbi.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            gbi.setRenderingHint(
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
 
             Rectangle clip = g.getClipBounds();
 

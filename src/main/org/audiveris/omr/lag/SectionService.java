@@ -39,8 +39,9 @@ public class SectionService
 {
 
     /** Events that can be published on section service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]{IdEvent.class,
-                                                                   EntityListEvent.class};
+    private static final Class<?>[] eventsAllowed = new Class<?>[]{
+        IdEvent.class,
+        EntityListEvent.class};
 
     /**
      * Creates a new {@code SectionService} object.
@@ -66,8 +67,8 @@ public class SectionService
     protected void handleLocationEvent (LocationEvent locationEvent)
     {
         // Search only when in MODE_SECTION
-        if (ViewParameters.getInstance().getSelectionMode()
-                    == ViewParameters.SelectionMode.MODE_SECTION) {
+        if (ViewParameters.getInstance()
+                .getSelectionMode() == ViewParameters.SelectionMode.MODE_SECTION) {
             super.handleLocationEvent(locationEvent);
         }
     }

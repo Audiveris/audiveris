@@ -42,7 +42,6 @@ import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.PixelEvent;
 import org.audiveris.omr.ui.selection.SelectionService;
-import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
 
@@ -67,12 +66,13 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import javax.media.jai.JAI;
-import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * Class {@code Picture} starts from the original BufferedImage to provide all {@link
@@ -90,10 +90,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  * a location event is received, the corresponding pixel gray value of the INITIAL sources is
  * published.
  * <p>
- * <p>
  * TODO: When an alpha channel is involved, perform the alpha multiplication if the components are
  * not yet premultiplied.
- * <p>
  * <h1>Overview of transforms:<br>
  * <img src="../image/doc-files/transforms.png" alt="Image Transforms UML">
  * </h1>
@@ -111,33 +109,6 @@ public class Picture
 
     private static final Logger logger = LoggerFactory.getLogger(Picture.class);
 
-    /**
-     * The set of handled sources.
-     */
-    public static enum SourceKey
-    {
-        /** The initial gray-level source. */
-        INITIAL,
-        /** The binarized (black &amp; white) source. */
-        BINARY,
-        /** The Gaussian-filtered source. */
-        GAUSSIAN,
-        /** The Median-filtered source. */
-        MEDIAN,
-        /** The source with staff lines removed. */
-        NO_STAFF;
-    }
-
-    /**
-     * The set of handled tables.
-     */
-    public static enum TableKey
-    {
-        BINARY,
-        HEAD_SPOTS;
-    }
-
-    //
     // Persistent data
     //----------------
     //
@@ -151,28 +122,27 @@ public class Picture
 
     /** Map of all handled run tables. */
     @XmlElement(name = "tables")
-    private final EnumMap<TableKey, RunTableHolder> tables = new EnumMap<TableKey, RunTableHolder>(
-            TableKey.class);
+    private final EnumMap<TableKey, RunTableHolder> tables = new EnumMap<>(TableKey.class);
 
     // Transient data
     //---------------
     //
     /** Map of all handled sources. */
     private final ConcurrentSkipListMap<SourceKey, WeakReference<ByteProcessor>> sources
-            = new ConcurrentSkipListMap<SourceKey, WeakReference<ByteProcessor>>();
+            = new ConcurrentSkipListMap<>();
 
     /** Related sheet. */
     @Navigable(false)
     private Sheet sheet;
+
+    /** The initial (gray-level) image, if any. */
+    private BufferedImage initialImage;
 
     /**
      * Service object where gray level of pixel is to be written to when so asked for
      * by the onEvent() method.
      */
     final SelectionService pixelService;
-
-    /** The initial (gray-level) image, if any. */
-    private BufferedImage initialImage;
 
     /**
      * Build a picture instance from a binary table.
@@ -238,6 +208,11 @@ public class Picture
     //-------------------//
     // buildNoStaffTable //
     //-------------------//
+    /**
+     * Build the table without staff lines.
+     *
+     * @return the no-staff table
+     */
     public RunTable buildNoStaffTable ()
     {
         ByteProcessor source = getSource(SourceKey.NO_STAFF);
@@ -252,6 +227,11 @@ public class Picture
     //---------------------------//
     // buildStaffLineGlyphsImage //
     //---------------------------//
+    /**
+     * Build an image containing just the removed staff lines.
+     *
+     * @return image of staff lines
+     */
     public BufferedImage buildStaffLineGlyphsImage ()
     {
         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
@@ -277,7 +257,9 @@ public class Picture
         return img;
     }
 
-    // For debug only
+    /**
+     * For debug only.
+     */
     public void checkSources ()
     {
         for (SourceKey key : SourceKey.values()) {
@@ -288,6 +270,11 @@ public class Picture
     //---------------//
     // disposeSource //
     //---------------//
+    /**
+     * Dispose of the source related to the provided key.
+     *
+     * @param key provided key
+     */
     public void disposeSource (SourceKey key)
     {
         // Nullify cached data, if needed
@@ -298,21 +285,6 @@ public class Picture
         sources.remove(key);
     }
 
-    //
-    //    //--------------//
-    //    // disposeTable //
-    //    //--------------//
-    //    public void disposeTable (TableKey key)
-    //    {
-    //        RunTableHolder tableHolder = tables.get(key);
-    //
-    //        if (tableHolder != null) {
-    //            tableHolder.store();
-    //            tableHolder.setData(null);
-    //            logger.debug("{} table disposed.", key);
-    //        }
-    //    }
-    //
     //---------------//
     // dumpRectangle //
     //---------------//
@@ -384,6 +356,12 @@ public class Picture
     //------------------//
     // gaussianFiltered //
     //------------------//
+    /**
+     * Apply a Gaussian filter on the provided source.
+     *
+     * @param src provided source
+     * @return filtered buffer
+     */
     public ByteProcessor gaussianFiltered (ByteProcessor src)
     {
         StopWatch watch = new StopWatch("Gaussian");
@@ -448,7 +426,8 @@ public class Picture
     //-----------------//
     // getInitialImage //
     //-----------------//
-    /** Report the initial (BufferedImage) image.
+    /**
+     * Report the initial (BufferedImage) image.
      *
      * @return the initial image
      */
@@ -460,7 +439,8 @@ public class Picture
     //------------------//
     // getInitialSource //
     //------------------//
-    /** Report the initial source.
+    /**
+     * Report the initial source.
      *
      * @param img the initial image
      * @return the initial source
@@ -572,7 +552,7 @@ public class Picture
 
             if (src != null) {
                 // Store in cache
-                sources.put(key, new WeakReference<ByteProcessor>(src));
+                sources.put(key, new WeakReference<>(src));
                 logger.debug("{} source built as {}", key, src);
             }
         }
@@ -652,6 +632,12 @@ public class Picture
     //----------------//
     // medianFiltered //
     //----------------//
+    /**
+     * Apply a median filter on the provided source buffer.
+     *
+     * @param src provided source
+     * @return filtered buffer
+     */
     public ByteProcessor medianFiltered (ByteProcessor src)
     {
         StopWatch watch = new StopWatch("Median");
@@ -762,6 +748,12 @@ public class Picture
     //-------//
     // store //
     //-------//
+    /**
+     * Store the picture tables
+     *
+     * @param sheetFolder    target sheet folder
+     * @param oldSheetFolder optional source sheet folder (or null)
+     */
     public void store (Path sheetFolder,
                        Path oldSheetFolder)
     {
@@ -787,10 +779,12 @@ public class Picture
                     Files.deleteIfExists(tablepath);
 
                     RunTable table = holder.getData(sheet.getStub());
-                    Jaxb.marshal(table, tablepath, JAXBContext.newInstance(RunTable.class));
+                    table.marshal(tablepath);
                     holder.setModified(false);
                     logger.info("Stored {}", tablepath);
-                } catch (Exception ex) {
+                } catch (IOException |
+                         JAXBException |
+                         XMLStreamException ex) {
                     logger.warn("Error in picture.store " + ex, ex);
                 }
             }
@@ -804,20 +798,6 @@ public class Picture
     public String toString ()
     {
         return getName();
-    }
-
-    //----------------//
-    // initTransients //
-    //----------------//
-    /**
-     * (package private) method to initialize needed transient members.
-     * (which by definition have not been set by the unmarshalling).
-     *
-     * @param sheet the containing sheet
-     */
-    final void initTransients (Sheet sheet)
-    {
-        this.sheet = sheet;
     }
 
     //-------------------//
@@ -855,8 +835,8 @@ public class Picture
             // RGB + alpha
             return ImageUtil.maxRgbaToGray(img);
         } else {
-            throw new ImageFormatException("Unsupported sample model numBands=" + numBands
-                                                   + " hasAlpha=" + hasAlpha);
+            throw new ImageFormatException(
+                    "Unsupported sample model numBands=" + numBands + " hasAlpha=" + hasAlpha);
         }
     }
 
@@ -966,23 +946,69 @@ public class Picture
         return null;
     }
 
+    //----------------//
+    // initTransients //
+    //----------------//
+    /**
+     * (package private) method to initialize needed transient members.
+     * (which by definition have not been set by the unmarshalling).
+     *
+     * @param sheet the containing sheet
+     */
+    final void initTransients (Sheet sheet)
+    {
+        this.sheet = sheet;
+    }
+
+    /**
+     * The set of handled sources.
+     */
+    public static enum SourceKey
+    {
+        /** The initial gray-level source. */
+        INITIAL,
+        /** The binarized (black &amp; white) source. */
+        BINARY,
+        /** The Gaussian-filtered source. */
+        GAUSSIAN,
+        /** The Median-filtered source. */
+        MEDIAN,
+        /** The source with staff lines removed. */
+        NO_STAFF;
+    }
+
+    /**
+     * The set of handled tables.
+     */
+    public static enum TableKey
+    {
+        BINARY,
+        HEAD_SPOTS;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(false,
-                                                                         "Should we print out the stop watch(es)?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch(es)?");
 
-        private final Constant.Boolean disposeOfInitialSource = new Constant.Boolean(true,
-                                                                                     "Should we dispose of initial source once binarized?");
+        private final Constant.Boolean disposeOfInitialSource = new Constant.Boolean(
+                true,
+                "Should we dispose of initial source once binarized?");
 
-        private final Constant.Integer gaussianRadius = new Constant.Integer("pixels", 1,
-                                                                             "Radius of Gaussian filtering kernel (1 for 3x3, 2 for 5x5, etc)");
+        private final Constant.Integer gaussianRadius = new Constant.Integer(
+                "pixels",
+                1,
+                "Radius of Gaussian filtering kernel (1 for 3x3, 2 for 5x5, etc)");
 
-        private final Constant.Integer medianRadius = new Constant.Integer("pixels", 1,
-                                                                           "Radius of Median filtering kernel (1 for 3x3, 2 for 5x5)");
+        private final Constant.Integer medianRadius = new Constant.Integer(
+                "pixels",
+                1,
+                "Radius of Median filtering kernel (1 for 3x3, 2 for 5x5)");
     }
 }

@@ -120,7 +120,6 @@ public class LedgersBuilder
 
     private static final Failure TOO_SHIFTED = new Failure("Hori-TooShifted");
 
-    //
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -219,26 +218,6 @@ public class LedgersBuilder
         }
     }
 
-    //-----------//
-    // getMiddle //
-    //-----------//
-    /**
-     * Retrieve the middle point of a stick, assumed rather horizontal.
-     *
-     * @param stick the stick to process
-     * @return the middle point
-     */
-    private static Point2D getMiddle (Filament stick)
-    {
-        final Point2D startPoint = stick.getStartPoint();
-        final Point2D stopPoint = stick.getStopPoint();
-
-        return new Point2D.Double((startPoint.getX() + stopPoint.getX()) / 2, (startPoint.getY()
-                                                                                       + stopPoint
-                                          .getY())
-                                                                                      / 2);
-    }
-
     //-------------//
     // beamOverlap //
     //-------------//
@@ -303,8 +282,9 @@ public class LedgersBuilder
      */
     private List<StraightFilament> getCandidateFilaments (List<Section> sections)
     {
-        final int maxThickness = Math.min(scale.toPixels(constants.maxThicknessHigh), scale
-                                          .toPixels(constants.maxThicknessHigh2));
+        final int maxThickness = Math.min(
+                scale.toPixels(constants.maxThicknessHigh),
+                scale.toPixels(constants.maxThicknessHigh2));
 
         // Use stick factory
         final StickFactory factory = new StickFactory(
@@ -334,8 +314,7 @@ public class LedgersBuilder
      */
     private List<Inter> getGoodBeams ()
     {
-        List<Inter> beams = sig.inters(
-                new Predicate<Inter>()
+        List<Inter> beams = sig.inters(new Predicate<Inter>()
         {
             @Override
             public boolean check (Inter inter)
@@ -397,8 +376,10 @@ public class LedgersBuilder
                     if (GeoUtil.xEmbraces(ledgerBox, xMid)) {
                         return LineUtil.intersectionAtX(ledgerGlyph.getLine(), xMid).y;
                     } else {
-                        return LineUtil.yAtX(ledgerGlyph.getStartPoint(HORIZONTAL), ledgerGlyph
-                                             .getStopPoint(HORIZONTAL), xMid);
+                        return LineUtil.yAtX(
+                                ledgerGlyph.getStartPoint(HORIZONTAL),
+                                ledgerGlyph.getStopPoint(HORIZONTAL),
+                                xMid);
                     }
                 }
             }
@@ -478,7 +459,7 @@ public class LedgersBuilder
         virtualLineBox.y += (index * interline);
         virtualLineBox.grow(0, 2 * yMargin);
 
-        final List<LedgerInter> ledgers = new ArrayList<LedgerInter>();
+        final List<LedgerInter> ledgers = new ArrayList<>();
 
         // Filter enclosed candidates and populate acceptable ledgers
         for (StraightFilament stick : ledgerCandidates) {
@@ -495,7 +476,7 @@ public class LedgersBuilder
 
             // Check for presence of ledger on previous line
             // and definition of a reference ordinate (staff line or ledger)
-            final Wrapper<LedgerInter> prevWrapper = new Wrapper<LedgerInter>(null);
+            final Wrapper<LedgerInter> prevWrapper = new Wrapper<>(null);
             final Double yRef = getYReference(staff, index, stick, prevWrapper);
 
             if (yRef == null) {
@@ -547,8 +528,12 @@ public class LedgersBuilder
                 ledger.setStaff(staff);
 
                 if (ledger.isVip()) {
-                    logger.info("VIP {} in staff#{} at {} for {}", ledger, staff.getId(), index,
-                                ledger.getDetails());
+                    logger.info(
+                            "VIP {} in staff#{} at {} for {}",
+                            ledger,
+                            staff.getId(),
+                            index,
+                            ledger.getDetails());
                 }
             }
         }
@@ -566,7 +551,7 @@ public class LedgersBuilder
      */
     private void purgeBeamOverlaps (List<StraightFilament> filaments)
     {
-        List<Filament> toRemove = new ArrayList<Filament>();
+        List<Filament> toRemove = new ArrayList<>();
 
         for (Filament fil : filaments) {
             if (beamOverlap(fil)) {
@@ -596,7 +581,7 @@ public class LedgersBuilder
     {
         final int interline = staff.getSpecificInterline();
         int maxDx = largeScale.toPixels(constants.maxInterLedgerDx);
-        Set<Exclusion> exclusions = new LinkedHashSet<Exclusion>();
+        Set<Exclusion> exclusions = new LinkedHashSet<>();
         Collections.sort(ledgers, Inters.byAbscissa);
 
         for (int i = 0; i < ledgers.size(); i++) {
@@ -618,141 +603,33 @@ public class LedgersBuilder
 
         if (!exclusions.isEmpty()) {
             Set<Inter> deletions = sig.reduceExclusions(exclusions);
-            logger.debug("Staff: {} index: {} deletions: {} {}", staff.getId(), index, deletions
-                         .size(), deletions);
+            logger.debug(
+                    "Staff: {} index: {} deletions: {} {}",
+                    staff.getId(),
+                    index,
+                    deletions.size(),
+                    deletions);
             ledgers.removeAll(deletions);
         }
     }
 
     //-----------//
-    // Constants //
+    // getMiddle //
     //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean printWatch = new Constant.Boolean(false,
-                                                                         "Should we print out the stop watch?");
-
-        private final Constant.Ratio minSideRatio = new Constant.Ratio(0.8,
-                                                                       "Minimum ratio of filament length to be actually enlarged");
-
-        private final Constant.Double convexityLow = new Constant.Double("end number", -0.5,
-                                                                         "Minimum convexity ends");
-
-        private final Constant.Double maxSlopeForCheck = new Constant.Double("tangent", 0.1,
-                                                                             "Maximum slope for visual check");
-
-        // Constants specified WRT mean line thickness
-        // -------------------------------------------
-        private final Scale.LineFraction maxThicknessHigh = new Scale.LineFraction(3,
-                                                                                   "High Maximum thickness of an interesting stick (WRT staff line)");
-
-        private final Scale.LineFraction maxThicknessLow = new Scale.LineFraction(1.0,
-                                                                                  "Low Maximum thickness of an interesting stick (WRT staff line)");
-
-        // Constants specified WRT mean interline
-        // --------------------------------------
-        private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(1.0,
-                                                                               "Minimum length for a section to be considered as core");
-
-        private final Scale.Fraction maxThicknessHigh2 = new Scale.Fraction(0.4,
-                                                                            "High Maximum thickness of an interesting stick (WRT interline)");
-
-        private final Scale.Fraction ledgerMarginY = new Scale.Fraction(0.35,
-                                                                        "Margin on ledger ordinate WRT theoretical ordinate");
-
-        private final Scale.Fraction minAbscissaOverlap = new Scale.Fraction(0.75,
-                                                                             "Minimum abscissa overlap of a ledger with the previous one");
-
-        private final Scale.Fraction minLedgerLengthHigh = new Scale.Fraction(1.5,
-                                                                              "High Minimum length for a ledger");
-
-        private final Scale.Fraction minLedgerLengthLow = new Scale.Fraction(1.0,
-                                                                             "Low Minimum length for a ledger");
-
-        private final Scale.Fraction minWideLedgerLength = new Scale.Fraction(1.5,
-                                                                              "Minimum length for a wide ledger");
-
-        private final Scale.Fraction minLedgerLengthHigh2 = new Scale.Fraction(2.0,
-                                                                               "High Minimum long length for a ledger");
-
-        private final Scale.Fraction minLedgerLengthLow2 = new Scale.Fraction(1.4,
-                                                                              "Low Minimum long length for a ledger");
-
-        private final Scale.Fraction minThicknessHigh = new Scale.Fraction(0.25,
-                                                                           "High Minimum thickness of an interesting stick");
-
-        private final Scale.Fraction maxInterLedgerDx = new Scale.Fraction(2.5,
-                                                                           "Maximum inter-ledger abscissa gap for ordinate compatibility test");
-
-        private final Scale.Fraction maxDistanceHigh = new Scale.Fraction(0.3,
-                                                                          "Low Minimum radius for ledger");
-    }
-
-    //------------------//
-    // LedgerCheckBoard //
-    //------------------//
     /**
-     * A specific board to display intrinsic checks of ledger sticks.
+     * Retrieve the middle point of a stick, assumed rather horizontal.
+     *
+     * @param stick the stick to process
+     * @return the middle point
      */
-    private static class LedgerCheckBoard
-            extends CheckBoard<StickContext>
+    private static Point2D getMiddle (Filament stick)
     {
+        final Point2D startPoint = stick.getStartPoint();
+        final Point2D stopPoint = stick.getStopPoint();
 
-        private final Sheet sheet;
-
-        public LedgerCheckBoard (Sheet sheet)
-        {
-            super("LedgerCheck", null, sheet.getFilamentIndex().getEntityService(), eventClasses);
-            this.sheet = sheet;
-        }
-
-        @Override
-        public void onEvent (UserEvent event)
-        {
-            try {
-                // Ignore RELEASING
-                if (event.movement == MouseMovement.RELEASING) {
-                    return;
-                }
-
-                if (event instanceof EntityListEvent) {
-                    EntityListEvent<Filament> listEvent = (EntityListEvent<Filament>) event;
-                    final Filament fil = listEvent.getEntity();
-
-                    // Make sure we have a rather horizontal stick
-                    if ((fil != null) && (fil instanceof StraightFilament) && (Math.abs(fil
-                            .getSlope()) <= constants.maxSlopeForCheck.getValue())) {
-                        // Use the closest staff
-                        Point center = fil.getCenter();
-                        StaffManager mgr = sheet.getStaffManager();
-                        Staff staff = mgr.getClosestStaff(center);
-                        LedgersBuilder builder = new LedgersBuilder(staff.getSystem());
-                        int interline = staff.getSpecificInterline();
-                        CheckSuite<StickContext> suite = builder.suites.getSuite(interline);
-
-                        // We need a yTarget (which should take previous ledger into account!)
-                        // Instead, we use an index value based on distance to staff
-                        int pitch = (int) Math.rint(staff.pitchPositionOf(center));
-                        int index = (pitch / 2) - (2 * Integer.signum(pitch));
-                        Wrapper<LedgerInter> p = new Wrapper<LedgerInter>(null);
-                        Double yRef = builder.getYReference(staff, index, fil, p);
-
-                        if (yRef != null) {
-                            double yTarget = yRef + (Integer.signum(index) * interline);
-                            applySuite(suite, new StickContext((StraightFilament) fil, yTarget));
-
-                            return;
-                        }
-                    }
-
-                    tellObject(null);
-                }
-            } catch (Exception ex) {
-                logger.warn(getClass().getName() + " onEvent error", ex);
-            }
-        }
+        return new Point2D.Double(
+                (startPoint.getX() + stopPoint.getX()) / 2,
+                (startPoint.getY() + stopPoint.getY()) / 2);
     }
 
     //-------------//
@@ -774,7 +651,7 @@ public class LedgersBuilder
         /**
          * Create a check suite.
          */
-        public LedgerSuite (InterlineScale interlineScale)
+        LedgerSuite (InterlineScale interlineScale)
         {
             super("Ledger");
             this.specific = interlineScale;
@@ -792,16 +669,22 @@ public class LedgersBuilder
                 extends Check<StickContext>
         {
 
-            public ConvexityCheck ()
+            ConvexityCheck ()
             {
-                super("Convex", "Check number of convex stick ends", constants.convexityLow,
-                      Constant.Double.TWO, true, TOO_CONCAVE);
+                super(
+                        "Convex",
+                        "Check number of convex stick ends",
+                        constants.convexityLow,
+                        Constant.Double.TWO,
+                        true,
+                        TOO_CONCAVE);
             }
 
             @Override
             protected double getValue (StickContext context)
             {
-                ByteProcessor pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
+                ByteProcessor pixelFilter = sheet.getPicture().getSource(
+                        Picture.SourceKey.NO_STAFF);
 
                 Filament stick = context.stick;
                 Rectangle box = stick.getBounds();
@@ -839,8 +722,13 @@ public class LedgersBuilder
 
             protected LeftPitchCheck ()
             {
-                super("LPitch", "Check that left ordinate is close to theoretical value",
-                      Constant.Double.ZERO, constants.ledgerMarginY, false, TOO_SHIFTED);
+                super(
+                        "LPitch",
+                        "Check that left ordinate is close to theoretical value",
+                        Constant.Double.ZERO,
+                        constants.ledgerMarginY,
+                        false,
+                        TOO_SHIFTED);
             }
 
             @Override
@@ -860,8 +748,13 @@ public class LedgersBuilder
 
             protected MaxThicknessCheck ()
             {
-                super("MaxTh.", "Check that stick is not too thick", constants.maxThicknessLow,
-                      constants.maxThicknessHigh, false, TOO_THICK);
+                super(
+                        "MaxTh.",
+                        "Check that stick is not too thick",
+                        constants.maxThicknessLow,
+                        constants.maxThicknessHigh,
+                        false,
+                        TOO_THICK);
             }
 
             // Retrieve the thickness data
@@ -905,8 +798,13 @@ public class LedgersBuilder
 
             protected MinThicknessCheck ()
             {
-                super("MinTh.", "Check that stick is thick enough", Constant.Double.ZERO,
-                      constants.minThicknessHigh, true, TOO_THIN);
+                super(
+                        "MinTh.",
+                        "Check that stick is thick enough",
+                        Constant.Double.ZERO,
+                        constants.minThicknessHigh,
+                        true,
+                        TOO_THIN);
             }
 
             // Retrieve the thickness data
@@ -925,8 +823,13 @@ public class LedgersBuilder
 
             protected RightPitchCheck ()
             {
-                super("RPitch", "Check that right ordinate is close to theoretical value",
-                      Constant.Double.ZERO, constants.ledgerMarginY, false, TOO_SHIFTED);
+                super(
+                        "RPitch",
+                        "Check that right ordinate is close to theoretical value",
+                        Constant.Double.ZERO,
+                        constants.ledgerMarginY,
+                        false,
+                        TOO_SHIFTED);
             }
 
             @Override
@@ -946,8 +849,13 @@ public class LedgersBuilder
 
             protected StraightCheck ()
             {
-                super("Straight", "Check that stick is rather straight", Constant.Double.ZERO,
-                      constants.maxDistanceHigh, false, TOO_BENDED);
+                super(
+                        "Straight",
+                        "Check that stick is rather straight",
+                        Constant.Double.ZERO,
+                        constants.maxDistanceHigh,
+                        false,
+                        TOO_BENDED);
             }
 
             @Override
@@ -960,32 +868,6 @@ public class LedgersBuilder
         }
     }
 
-    //--------------//
-    // StickContext //
-    //--------------//
-    private static class StickContext
-    {
-
-        /** The stick being checked. */
-        final StraightFilament stick;
-
-        /** Target ordinate. */
-        final double yTarget;
-
-        public StickContext (StraightFilament stick,
-                             double yTarget)
-        {
-            this.stick = stick;
-            this.yTarget = yTarget;
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "stick#" + stick.getId();
-        }
-    }
-
     //--------//
     // Suites //
     //--------//
@@ -995,9 +877,9 @@ public class LedgersBuilder
     private class Suites
     {
 
-        final Map<Integer, LedgerSuite> map = new HashMap<Integer, LedgerSuite>();
+        final Map<Integer, LedgerSuite> map = new HashMap<>();
 
-        public Suites (Scale sheetScale)
+        Suites (Scale sheetScale)
         {
             final Integer large = sheetScale.getInterline();
             map.put(large, new LedgerSuite(sheetScale.getInterlineScale()));
@@ -1014,4 +896,182 @@ public class LedgersBuilder
             return map.get(interline);
         }
     }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        private final Constant.Ratio minSideRatio = new Constant.Ratio(
+                0.8,
+                "Minimum ratio of filament length to be actually enlarged");
+
+        private final Constant.Double convexityLow = new Constant.Double(
+                "end number",
+                -0.5,
+                "Minimum convexity ends");
+
+        private final Constant.Double maxSlopeForCheck = new Constant.Double(
+                "tangent",
+                0.1,
+                "Maximum slope for visual check");
+
+        // Constants specified WRT mean line thickness
+        // -------------------------------------------
+        private final Scale.LineFraction maxThicknessHigh = new Scale.LineFraction(
+                3,
+                "High Maximum thickness of an interesting stick (WRT staff line)");
+
+        private final Scale.LineFraction maxThicknessLow = new Scale.LineFraction(
+                1.0,
+                "Low Maximum thickness of an interesting stick (WRT staff line)");
+
+        // Constants specified WRT mean interline
+        // --------------------------------------
+        private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(
+                1.0,
+                "Minimum length for a section to be considered as core");
+
+        private final Scale.Fraction maxThicknessHigh2 = new Scale.Fraction(
+                0.4,
+                "High Maximum thickness of an interesting stick (WRT interline)");
+
+        private final Scale.Fraction ledgerMarginY = new Scale.Fraction(
+                0.35,
+                "Margin on ledger ordinate WRT theoretical ordinate");
+
+        private final Scale.Fraction minAbscissaOverlap = new Scale.Fraction(
+                0.75,
+                "Minimum abscissa overlap of a ledger with the previous one");
+
+        private final Scale.Fraction minLedgerLengthHigh = new Scale.Fraction(
+                1.5,
+                "High Minimum length for a ledger");
+
+        private final Scale.Fraction minLedgerLengthLow = new Scale.Fraction(
+                1.0,
+                "Low Minimum length for a ledger");
+
+        private final Scale.Fraction minWideLedgerLength = new Scale.Fraction(
+                1.5,
+                "Minimum length for a wide ledger");
+
+        private final Scale.Fraction minLedgerLengthHigh2 = new Scale.Fraction(
+                2.0,
+                "High Minimum long length for a ledger");
+
+        private final Scale.Fraction minLedgerLengthLow2 = new Scale.Fraction(
+                1.4,
+                "Low Minimum long length for a ledger");
+
+        private final Scale.Fraction minThicknessHigh = new Scale.Fraction(
+                0.25,
+                "High Minimum thickness of an interesting stick");
+
+        private final Scale.Fraction maxInterLedgerDx = new Scale.Fraction(
+                2.5,
+                "Maximum inter-ledger abscissa gap for ordinate compatibility test");
+
+        private final Scale.Fraction maxDistanceHigh = new Scale.Fraction(
+                0.3,
+                "Low Minimum radius for ledger");
+    }
+
+    //------------------//
+    // LedgerCheckBoard //
+    //------------------//
+    /**
+     * A specific board to display intrinsic checks of ledger sticks.
+     */
+    private static class LedgerCheckBoard
+            extends CheckBoard<StickContext>
+    {
+
+        private final Sheet sheet;
+
+        LedgerCheckBoard (Sheet sheet)
+        {
+            super("LedgerCheck", null, sheet.getFilamentIndex().getEntityService(), eventClasses);
+            this.sheet = sheet;
+        }
+
+        @Override
+        public void onEvent (UserEvent event)
+        {
+            try {
+                // Ignore RELEASING
+                if (event.movement == MouseMovement.RELEASING) {
+                    return;
+                }
+
+                if (event instanceof EntityListEvent) {
+                    EntityListEvent<Filament> listEvent = (EntityListEvent<Filament>) event;
+                    final Filament fil = listEvent.getEntity();
+
+                    // Make sure we have a rather horizontal stick
+                    if ((fil != null) && (fil instanceof StraightFilament) && (Math.abs(
+                            fil.getSlope()) <= constants.maxSlopeForCheck.getValue())) {
+                        // Use the closest staff
+                        Point center = fil.getCenter();
+                        StaffManager mgr = sheet.getStaffManager();
+                        Staff staff = mgr.getClosestStaff(center);
+                        LedgersBuilder builder = new LedgersBuilder(staff.getSystem());
+                        int interline = staff.getSpecificInterline();
+                        CheckSuite<StickContext> suite = builder.suites.getSuite(interline);
+
+                        // We need a yTarget (which should take previous ledger into account!)
+                        // Instead, we use an index value based on distance to staff
+                        int pitch = (int) Math.rint(staff.pitchPositionOf(center));
+                        int index = (pitch / 2) - (2 * Integer.signum(pitch));
+                        Wrapper<LedgerInter> p = new Wrapper<>(null);
+                        Double yRef = builder.getYReference(staff, index, fil, p);
+
+                        if (yRef != null) {
+                            double yTarget = yRef + (Integer.signum(index) * interline);
+                            applySuite(suite, new StickContext((StraightFilament) fil, yTarget));
+
+                            return;
+                        }
+                    }
+
+                    tellObject(null);
+                }
+            } catch (Exception ex) {
+                logger.warn(getClass().getName() + " onEvent error", ex);
+            }
+        }
+    }
+
+    //--------------//
+    // StickContext //
+    //--------------//
+    private static class StickContext
+    {
+
+        /** The stick being checked. */
+        final StraightFilament stick;
+
+        /** Target ordinate. */
+        final double yTarget;
+
+        StickContext (StraightFilament stick,
+                      double yTarget)
+        {
+            this.stick = stick;
+            this.yTarget = yTarget;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "stick#" + stick.getId();
+        }
+    }
+
 }

@@ -77,7 +77,8 @@ public class OmrFileFilter
                           String... extensions)
     {
         if (description == null) {
-            this.description = (extensions.length > 1) ? Arrays.toString(extensions) : extensions[0];
+            this.description = (extensions.length > 1) ? Arrays.toString(extensions)
+                    : extensions[0];
         } else {
             this.description = description;
         }

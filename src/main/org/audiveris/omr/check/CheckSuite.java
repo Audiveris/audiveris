@@ -48,9 +48,8 @@ import java.util.List;
  * it can detect that a constraint is not matched and thus make the whole check
  * suite fail.
  *
- * @param <C> the subtype of Checkable objects used in the
- *            homogeneous collection of checks in this suite
- *
+ * @param <C> the subtype of Checkable objects used in the homogeneous collection of checks in this
+ *            suite
  * @author Hervé Bitteur
  */
 public class CheckSuite<C>
@@ -68,10 +67,10 @@ public class CheckSuite<C>
     protected final double goodThreshold;
 
     /** List of checks in the suite. */
-    private final List<Check<C>> checks = new ArrayList<Check<C>>();
+    private final List<Check<C>> checks = new ArrayList<>();
 
     /** Parallel list of related weights. */
-    private final List<Double> weights = new ArrayList<Double>();
+    private final List<Double> weights = new ArrayList<>();
 
     /** Total checks weight. */
     private double totalWeight = 0.0d;
@@ -168,9 +167,14 @@ public class CheckSuite<C>
         int index = 0;
 
         for (Check<C> check : checks) {
-            sb.append(String.format("%4.1f      %-19s  %5b  % 6.2f    % 6.2f%n", weights
-                                    .get(index++), check.getName(), check.isCovariant(), check
-                                    .getLow(), check.getHigh()));
+            sb.append(
+                    String.format(
+                            "%4.1f      %-19s  %5b  % 6.2f    % 6.2f%n",
+                            weights.get(index++),
+                            check.getName(),
+                            check.isCovariant(),
+                            check.getLow(),
+                            check.getHigh()));
         }
 
         logger.info(sb.toString());
@@ -189,9 +193,9 @@ public class CheckSuite<C>
         return checks;
     }
 
-    //-----------------//
+    //------------------//
     // getGoodThreshold //
-    //-----------------//
+    //------------------//
     /**
      * Report the assigned good threshold.
      *

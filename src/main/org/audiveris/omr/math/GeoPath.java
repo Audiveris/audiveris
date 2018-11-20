@@ -126,38 +126,6 @@ public class GeoPath
         return new Point2D.Double(x, y);
     }
 
-    //---------//
-    // labelOf //
-    //---------//
-    /**
-     * Report the kind label of a segment.
-     *
-     * @param segmentKind the int-based segment kind
-     * @return the label for the curve
-     */
-    public static String labelOf (int segmentKind)
-    {
-        switch (segmentKind) {
-        case SEG_MOVETO:
-            return "SEG_MOVETO";
-
-        case SEG_LINETO:
-            return "SEG_LINETO";
-
-        case SEG_QUADTO:
-            return "SEG_QUADTO";
-
-        case SEG_CUBICTO:
-            return "SEG_CUBICTO";
-
-        case SEG_CLOSE:
-            return "SEG_CLOSE";
-
-        default:
-            throw new RuntimeException("Illegal segmentKind " + segmentKind);
-        }
-    }
-
     //----------//
     // toString //
     //----------//
@@ -331,36 +299,6 @@ public class GeoPath
         }
     }
 
-    //---------//
-    // countOf //
-    //---------//
-    /**
-     * Report how many coordinate values a path segment contains.
-     *
-     * @param segmentKind the int-based segment kind
-     * @return the number of coordinates values
-     */
-    protected static int countOf (int segmentKind)
-    {
-        switch (segmentKind) {
-        case SEG_MOVETO:
-        case SEG_LINETO:
-            return 2;
-
-        case SEG_QUADTO:
-            return 4;
-
-        case SEG_CUBICTO:
-            return 6;
-
-        case SEG_CLOSE:
-            return 0;
-
-        default:
-            throw new RuntimeException("Illegal segmentKind " + segmentKind);
-        }
-    }
-
     //-------------//
     // getXSegment //
     //-------------//
@@ -451,5 +389,67 @@ public class GeoPath
 
         // Not found
         throw new RuntimeException("Ordinate not in range: " + y);
+    }
+
+    //---------//
+    // labelOf //
+    //---------//
+    /**
+     * Report the kind label of a segment.
+     *
+     * @param segmentKind the int-based segment kind
+     * @return the label for the curve
+     */
+    public static String labelOf (int segmentKind)
+    {
+        switch (segmentKind) {
+        case SEG_MOVETO:
+            return "SEG_MOVETO";
+
+        case SEG_LINETO:
+            return "SEG_LINETO";
+
+        case SEG_QUADTO:
+            return "SEG_QUADTO";
+
+        case SEG_CUBICTO:
+            return "SEG_CUBICTO";
+
+        case SEG_CLOSE:
+            return "SEG_CLOSE";
+
+        default:
+            throw new RuntimeException("Illegal segmentKind " + segmentKind);
+        }
+    }
+
+    //---------//
+    // countOf //
+    //---------//
+    /**
+     * Report how many coordinate values a path segment contains.
+     *
+     * @param segmentKind the int-based segment kind
+     * @return the number of coordinates values
+     */
+    protected static int countOf (int segmentKind)
+    {
+        switch (segmentKind) {
+        case SEG_MOVETO:
+        case SEG_LINETO:
+            return 2;
+
+        case SEG_QUADTO:
+            return 4;
+
+        case SEG_CUBICTO:
+            return 6;
+
+        case SEG_CLOSE:
+            return 0;
+
+        default:
+            throw new RuntimeException("Illegal segmentKind " + segmentKind);
+        }
     }
 }

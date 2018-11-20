@@ -96,8 +96,8 @@ public class LHexaSpinner
                 } else if (value instanceof Long) {
                     return Long.valueOf(string, 16);
                 } else {
-                    throw new IllegalArgumentException("Illegal Number class for HexaFormatter "
-                                                               + value.getClass());
+                    throw new IllegalArgumentException(
+                            "Illegal Number class for HexaFormatter " + value.getClass());
                 }
             } catch (NumberFormatException ex) {
                 throw new ParseException(string, 0);
@@ -114,6 +114,13 @@ public class LHexaSpinner
 
             return Long.toHexString(((Number) value).longValue());
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     //----------------------//
@@ -123,7 +130,7 @@ public class LHexaSpinner
             extends DefaultFormatterFactory
     {
 
-        public HexaFormatterFactory ()
+        HexaFormatterFactory ()
         {
             super(new HexaFormatter());
         }

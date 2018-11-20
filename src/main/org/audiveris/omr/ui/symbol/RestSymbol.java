@@ -40,7 +40,7 @@ public class RestSymbol
         extends ShapeSymbol
 {
 
-    // The lines
+    /** Staff lines symbol. */
     protected static final BasicSymbol linesSymbol = Symbols.SYMBOL_STAFF_LINES;
 
     /**

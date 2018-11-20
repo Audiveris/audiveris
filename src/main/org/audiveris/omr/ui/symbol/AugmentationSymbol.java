@@ -97,8 +97,9 @@ public class AugmentationSymbol
 
             // Use a rectangle twice as wide as note head
             Rectangle2D hRect = p.headLayout.getBounds();
-            p.rect = new Rectangle((int) Math.ceil(2 * hRect.getWidth()), (int) Math.ceil(hRect
-                                   .getHeight()));
+            p.rect = new Rectangle(
+                    (int) Math.ceil(2 * hRect.getWidth()),
+                    (int) Math.ceil(hRect.getHeight()));
 
             // Define specific offset
             p.offset = new Point((int) Math.rint(dxRatio * p.rect.width), 0);

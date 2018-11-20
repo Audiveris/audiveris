@@ -47,7 +47,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Class {@code FermataInter} represents a full fermata interpretation, either upright
  * or inverted, combining an arc and a dot.
  * <p>
- * <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Urlinie_in_G_with_fermata.png/220px-Urlinie_in_G_with_fermata.png"
+ * <img src=
+ * "http://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Urlinie_in_G_with_fermata.png/220px-Urlinie_in_G_with_fermata.png"
  * alt="Urlinie in G with fermata on penultimate note">
  * <p>
  * An upright fermata refers to the chord in the staff right below in the containing part.
@@ -107,46 +108,6 @@ public class FermataInter
         visitor.visit(this);
     }
 
-    //-------------//
-    // createAdded //
-    //-------------//
-    /**
-     * (Try to) create a fermata inter.
-     *
-     * @param arc    the fermata arc (shape: FERMATA_ARC or FERMATA_ARC_BELOW)
-     * @param dot    the fermata dot
-     * @param system the related system
-     * @return the created instance or null
-     */
-    public static FermataInter createAdded (FermataArcInter arc,
-                                            FermataDotInter dot,
-                                            SystemInfo system)
-    {
-        // Look for proper staff
-        final Point center = arc.getGlyph().getCenter();
-        final Shape arcShape = arc.getShape();
-        final Staff staff = (arcShape == Shape.FERMATA_ARC) ? system.getStaffAtOrBelow(center)
-                : system.getStaffAtOrAbove(center);
-
-        if (staff == null) {
-            return null;
-        }
-
-        final SIGraph sig = arc.getSig();
-        sig.computeContextualGrade(arc);
-        sig.computeContextualGrade(dot);
-
-        final double grade = 0.5 * (arc.getContextualGrade() + dot.getContextualGrade());
-        final Shape shape = (arcShape == Shape.FERMATA_ARC) ? Shape.FERMATA : Shape.FERMATA_BELOW;
-        final FermataInter fermata = new FermataInter(shape, grade);
-        fermata.setStaff(staff);
-        sig.addVertex(fermata);
-        fermata.addMember(arc);
-        fermata.addMember(dot);
-
-        return fermata;
-    }
-
     //-----------//
     // addMember //
     //-----------//
@@ -177,6 +138,11 @@ public class FermataInter
     //--------//
     // getArc //
     //--------//
+    /**
+     * Report the arc part.
+     *
+     * @return the arc
+     */
     public FermataArcInter getArc ()
     {
         final List<Inter> members = getMembers();
@@ -206,6 +172,11 @@ public class FermataInter
     //--------//
     // getDot //
     //--------//
+    /**
+     * Report the dot part.
+     *
+     * @return the dot
+     */
     public FermataDotInter getDot ()
     {
         final List<Inter> members = getMembers();
@@ -292,8 +263,8 @@ public class FermataInter
 
             // If chord is mirrored, select the closest vertically
             if (chord.getMirror() != null) {
-                double dyMirror = Math.sqrt(GeoUtil.ptDistanceSq(chord.getMirror().getBounds(),
-                                                                 center.x, center.y));
+                double dyMirror = Math.sqrt(
+                        GeoUtil.ptDistanceSq(chord.getMirror().getBounds(), center.x, center.y));
 
                 if (dyMirror < dyChord) {
                     dyChord = dyMirror;
@@ -308,8 +279,8 @@ public class FermataInter
 
             if (dyChord > maxDy) {
                 // Check vertical distance between fermata and staff
-                final Staff chordStaff = (shape == Shape.FERMATA) ? chord.getTopStaff() : chord
-                        .getBottomStaff();
+                final Staff chordStaff = (shape == Shape.FERMATA) ? chord.getTopStaff()
+                        : chord.getBottomStaff();
                 final int dyStaff = chordStaff.distanceTo(center);
 
                 if (dyStaff > maxDy) {
@@ -351,14 +322,55 @@ public class FermataInter
         return super.internals() + " " + shape;
     }
 
+    //-------------//
+    // createAdded //
+    //-------------//
+    /**
+     * (Try to) create a fermata inter.
+     *
+     * @param arc    the fermata arc (shape: FERMATA_ARC or FERMATA_ARC_BELOW)
+     * @param dot    the fermata dot
+     * @param system the related system
+     * @return the created instance or null
+     */
+    public static FermataInter createAdded (FermataArcInter arc,
+                                            FermataDotInter dot,
+                                            SystemInfo system)
+    {
+        // Look for proper staff
+        final Point center = arc.getGlyph().getCenter();
+        final Shape arcShape = arc.getShape();
+        final Staff staff = (arcShape == Shape.FERMATA_ARC) ? system.getStaffAtOrBelow(center)
+                : system.getStaffAtOrAbove(center);
+
+        if (staff == null) {
+            return null;
+        }
+
+        final SIGraph sig = arc.getSig();
+        sig.computeContextualGrade(arc);
+        sig.computeContextualGrade(dot);
+
+        final double grade = 0.5 * (arc.getContextualGrade() + dot.getContextualGrade());
+        final Shape shape = (arcShape == Shape.FERMATA_ARC) ? Shape.FERMATA : Shape.FERMATA_BELOW;
+        final FermataInter fermata = new FermataInter(shape, grade);
+        fermata.setStaff(staff);
+        sig.addVertex(fermata);
+        fermata.addMember(arc);
+        fermata.addMember(dot);
+
+        return fermata;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction maxFermataDy = new Scale.Fraction(2.5,
-                                                                       "Maximum vertical distance between fermata center and related chord/staff/barline");
+        private final Scale.Fraction maxFermataDy = new Scale.Fraction(
+                2.5,
+                "Maximum vertical distance between fermata center and related chord/staff/barline");
     }
 }

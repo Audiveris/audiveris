@@ -62,9 +62,7 @@ public class GeoGlyphDescriptor
         // We take all the first moments
         double[] k = glyph.getGeometricMoments(interline).getValues();
 
-        for (int i = 0; i < MOMENT_COUNT; i++) {
-            ins[i] = k[i];
-        }
+        System.arraycopy(k, 0, ins, 0, MOMENT_COUNT);
 
         // We append aspect
         int i = MOMENT_COUNT;

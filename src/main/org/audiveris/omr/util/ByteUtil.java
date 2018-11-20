@@ -33,6 +33,10 @@ import java.util.Arrays;
 public abstract class ByteUtil
 {
 
+    private ByteUtil ()
+    {
+    }
+
     /**
      * Fill the ByteProcessor with provided value.
      *

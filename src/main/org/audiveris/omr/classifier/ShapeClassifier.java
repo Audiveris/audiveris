@@ -84,7 +84,6 @@ public abstract class ShapeClassifier
         //        }
     }
 
-    //
     //    /**
     //     * Report the second classifier instance in use.
     //     *
@@ -109,7 +108,6 @@ public abstract class ShapeClassifier
     {
     }
 
-    //
     //    /**
     //     * Tell whether we are using DeepClassifier (rather than old BasicClassifier).
     //     *
@@ -123,7 +121,7 @@ public abstract class ShapeClassifier
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
         //

@@ -75,6 +75,12 @@ public class Skeleton
 
     private static final Logger logger = LoggerFactory.getLogger(Skeleton.class);
 
+    private static final Color ARC_SLUR = Color.RED;
+
+    private static final Color ARC_LINE = Color.BLUE;
+
+    private static final Color ARC_LAMBDA = Color.LIGHT_GRAY;
+
     /** Color for a foreground pixel discarded. */
     static final int HIDDEN = 230;
 
@@ -90,24 +96,23 @@ public class Skeleton
     /** Color for a foreground junction pixel already processed. */
     static final int JUNCTION_PROCESSED = 90;
 
-    /**
-     * Headings.
-     * <pre>
-     * +-----+-----+-----+
-     * |     |     |     |
-     * |  7  |  8  |  1  |
-     * |     |     |     |
-     * +-----+-----+-----+
-     * |     |     |     |
-     * |  6  |  0  |  2  |
-     * |     |     |     |
-     * +-----+-----+-----+
-     * |     |     |     |
-     * |  5  |  4  |  3  |
-     * |     |     |     |
-     * +-----+-----+-----+
-     * </pre>
-     */
+    //
+    // Headings:
+    //
+    // +-----+-----+-----+
+    // |     |     |     |
+    // |  7  |  8  |  1  |
+    // |     |     |     |
+    // +-----+-----+-----+
+    // |     |     |     |
+    // |  6  |  0  |  2  |
+    // |     |     |     |
+    // +-----+-----+-----+
+    // |     |     |     |
+    // |  5  |  4  |  3  |
+    // |     |     |     |
+    // +-----+-----+-----+
+    //
     /** Delta abscissa, per heading. 0 1 2. 3. 4 . 5 . 6 . 7. 8 */
     static final int[] dxs = new int[]{0, 1, 1, 1, 0, -1, -1, -1, 0};
 
@@ -115,24 +120,22 @@ public class Skeleton
     static final int[] dys = new int[]{0, -1, 0, 1, 1, 1, 0, -1, -1};
 
     /** Headings to scan, according to last heading. */
-    static final int[][] scans = new int[][]{
-        {2, 4, 6, 8, 1, 3, 5, 7}, // 0
-        {2, 8, 1, 3, 7}, // 1
-        {2, 4, 8, 1, 3}, // 2
-        {2, 4, 1, 3, 5}, // 3
-        {2, 4, 6, 3, 5}, // 4
-        {4, 6, 3, 5, 7}, // 5
-        {4, 6, 8, 5, 7}, // 6
-        {6, 8, 1, 5, 7}, // 7
-        {2, 6, 8, 1, 7} //  8
-    };
+    static final int[][] scans = new int[][]{{2, 4, 6, 8, 1, 3, 5, 7}, // 0
+                                             {2, 8, 1, 3, 7}, // 1
+                                             {2, 4, 8, 1, 3}, // 2
+                                             {2, 4, 1, 3, 5}, // 3
+                                             {2, 4, 6, 3, 5}, // 4
+                                             {4, 6, 3, 5, 7}, // 5
+                                             {4, 6, 8, 5, 7}, // 6
+                                             {6, 8, 1, 5, 7}, // 7
+                                             {2, 6, 8, 1, 7} //  8
+};
 
     /** Map (Dx,Dy) -> Heading. */
-    static final int[][] deltaToDir = new int[][]{
-        {7, 6, 5}, // x:-1, y: -1, 0, +1
-        {8, 0, 4}, // x: 0, y: -1, 0, +1
-        {1, 2, 3} //  x:+1, y: -1, 0, +1
-    };
+    static final int[][] deltaToDir = new int[][]{{7, 6, 5}, // x:-1, y: -1, 0, +1
+                                                  {8, 0, 4}, // x: 0, y: -1, 0, +1
+                                                  {1, 2, 3} //  x:+1, y: -1, 0, +1
+};
 
     /** Vertical headings: south & north. */
     static final int[] vertDirs = new int[]{4, 8};
@@ -149,27 +152,21 @@ public class Skeleton
     /** All headings. */
     static final int[] allDirs = new int[]{2, 4, 6, 8, 1, 3, 5, 7};
 
-    private static final Color ARC_SLUR = Color.RED;
-
-    private static final Color ARC_LINE = Color.BLUE;
-
-    private static final Color ARC_LAMBDA = Color.LIGHT_GRAY;
-
-    /** The related sheet. */
-    @Navigable(false)
-    private final Sheet sheet;
-
     /** The skeleton buffer. */
     public ByteProcessor buf;
 
     /** Map of relevant arcs (end points &rarr; arc). */
-    public final Map<Point, Arc> arcsMap = new LinkedHashMap<Point, Arc>();
+    public final Map<Point, Arc> arcsMap = new LinkedHashMap<>();
 
     /** Map of void arcs (pivot &rarr; arc(s)). */
-    public final Map<Point, List<Arc>> voidArcsMap = new LinkedHashMap<Point, List<Arc>>();
+    public final Map<Point, List<Arc>> voidArcsMap = new LinkedHashMap<>();
 
     /** List of arcs end points, with no junction, ordered by abscissa. */
-    public final List<Point> arcsEnds = new ArrayList<Point>();
+    public final List<Point> arcsEnds = new ArrayList<>();
+
+    /** The related sheet. */
+    @Navigable(false)
+    private final Sheet sheet;
 
     /** Map of non crossable erased inters. */
     private Map<SystemInfo, List<Inter>> nonCrossables;
@@ -199,7 +196,8 @@ public class Skeleton
      * Since this skeleton is meant for curves (slurs, wedges, endings) we can limit processing past
      * some reasonable distance from staves (both in vertical and horizontal directions).
      * <p>
-     * We must keep track of erased shapes at system level.<ul>
+     * We must keep track of erased shapes at system level.
+     * <ul>
      * <li>Notes and beams cannot be crossed by a curve.</li>
      * <li>Bar lines, connections and stems can be crossed by a curve.
      * Perhaps another specific background value could be used?</li>
@@ -238,9 +236,14 @@ public class Skeleton
                         Shape.BEAM_HOOK_SMALL));
 
         // Crossable inters
-        crossables = cleaner.eraseShapes(Arrays.asList(Shape.THICK_BARLINE, Shape.THIN_BARLINE,
-                                                       Shape.THIN_CONNECTOR, Shape.THICK_CONNECTOR,
-                                                       Shape.LEDGER, Shape.STEM));
+        crossables = cleaner.eraseShapes(
+                Arrays.asList(
+                        Shape.THICK_BARLINE,
+                        Shape.THIN_BARLINE,
+                        Shape.THIN_CONNECTOR,
+                        Shape.THICK_CONNECTOR,
+                        Shape.LEDGER,
+                        Shape.STEM));
 
         // Erase vertical seeds (?)
         ///erasedSeeds = eraser.eraseGlyphs(Arrays.asList(Shape.VERTICAL_SEED));
@@ -260,6 +263,137 @@ public class Skeleton
         buf = buffer;
 
         return img;
+    }
+
+    //------------//
+    // addVoidArc //
+    //------------//
+    /**
+     * Add a void arc (reduced to its junctions points) into the specific void arcs map.
+     *
+     * @param arc the void arc to register
+     */
+    public void addVoidArc (Arc arc)
+    {
+        for (boolean rev : new boolean[]{true, false}) {
+            Point junctionPt = arc.getJunction(rev);
+            List<Arc> arcs = voidArcsMap.get(junctionPt);
+
+            if (arcs == null) {
+                voidArcsMap.put(junctionPt, arcs = new ArrayList<>());
+            }
+
+            arcs.add(arc);
+        }
+    }
+
+    //----------//
+    // getPixel //
+    //----------//
+    /**
+     * Report pixel value at (x, y) location
+     *
+     * @param x abscissa
+     * @param y ordinate
+     * @return pixel value
+     */
+    public int getPixel (int x,
+                         int y)
+    {
+        return buf.get(x, y);
+    }
+
+    //-------------//
+    // renderItems //
+    //-------------//
+    @Override
+    public void renderItems (Graphics2D g)
+    {
+        // Render seeds
+        for (Arc arc : arcsMap.values()) {
+            setColor(arc, g);
+
+            for (Point p : arc.getPoints()) {
+                g.fillRect(p.x, p.y, 1, 1);
+            }
+        }
+
+        //        // Render artificial junction points (for vertical parts)
+        //        for (Point p : arcsPivots) {
+        //            g.setColor(Color.MAGENTA);
+        //            g.fillOval(p.x, p.y, 1, 1);
+        //        }
+    }
+
+    //----------//
+    // setPixel //
+    //----------//
+    /**
+     * Set pixel value at provided location
+     *
+     * @param x   abscissa
+     * @param y   ordinate
+     * @param val pixel value to set
+     */
+    public void setPixel (int x,
+                          int y,
+                          int val)
+    {
+        buf.set(x, y, val);
+    }
+
+    //----------//
+    // setColor //
+    //----------//
+    /**
+     * Paint the arc with a color that indicates its type of arc.
+     *
+     * @param arc the arc to paint
+     * @param g   graphics context
+     */
+    private void setColor (Arc arc,
+                           Graphics2D g)
+    {
+        if (null == arc.getShape()) {
+            g.setColor(ARC_LAMBDA);
+        } else {
+            switch (arc.getShape()) {
+            case SLUR:
+                g.setColor(ARC_SLUR);
+                break;
+            case LINE:
+                g.setColor(ARC_LINE);
+                break;
+            default:
+                g.setColor(ARC_LAMBDA);
+                break;
+            }
+        }
+    }
+
+    //-----------------//
+    // getErasedInters //
+    //-----------------//
+    /**
+     * Report the collection of erased inters, with provided crossable characteristic
+     *
+     * @param crossable true for crossable, false for non-crossable
+     * @return the desired erased inters
+     */
+    Map<SystemInfo, List<Inter>> getErasedInters (boolean crossable)
+    {
+        return crossable ? crossables : nonCrossables;
+    }
+
+    //----------------//
+    // getErasedSeeds //
+    //----------------//
+    /**
+     * @return the erasedSeeds
+     */
+    Map<SystemInfo, List<Glyph>> getErasedSeeds ()
+    {
+        return erasedSeeds;
     }
 
     //--------//
@@ -337,150 +471,32 @@ public class Skeleton
         return (dir % 2) == 0;
     }
 
-    //------------//
-    // addVoidArc //
-    //------------//
-    /**
-     * Add a void arc (reduced to its junctions points) into the specific void arcs map.
-     *
-     * @param arc the void arc to register
-     */
-    public void addVoidArc (Arc arc)
-    {
-        for (boolean rev : new boolean[]{true, false}) {
-            Point junctionPt = arc.getJunction(rev);
-            List<Arc> arcs = voidArcsMap.get(junctionPt);
-
-            if (arcs == null) {
-                voidArcsMap.put(junctionPt, arcs = new ArrayList<Arc>());
-            }
-
-            arcs.add(arc);
-        }
-    }
-
-    //----------//
-    // getPixel //
-    //----------//
-    /**
-     * Report pixel value at (x, y) location
-     *
-     * @param x abscissa
-     * @param y ordinate
-     * @return pixel value
-     */
-    public int getPixel (int x,
-                         int y)
-    {
-        return buf.get(x, y);
-    }
-
-    //-------------//
-    // renderItems //
-    //-------------//
-    @Override
-    public void renderItems (Graphics2D g)
-    {
-        // Render seeds
-        for (Arc arc : arcsMap.values()) {
-            setColor(arc, g);
-
-            for (Point p : arc.getPoints()) {
-                g.fillRect(p.x, p.y, 1, 1);
-            }
-        }
-
-        //        // Render artificial junction points (for vertical parts)
-        //        for (Point p : arcsPivots) {
-        //            g.setColor(Color.MAGENTA);
-        //            g.fillOval(p.x, p.y, 1, 1);
-        //        }
-    }
-
-    //----------//
-    // setPixel //
-    //----------//
-    /**
-     * Set pixel value at provided location
-     *
-     * @param x   abscissa
-     * @param y   ordinate
-     * @param val pixel value to set
-     */
-    public void setPixel (int x,
-                          int y,
-                          int val)
-    {
-        buf.set(x, y, val);
-    }
-
-    //-----------------//
-    // getErasedInters //
-    //-----------------//
-    /**
-     * Report the collection of erased inters, with provided crossable characteristic
-     *
-     * @param crossable true for crossable, false for non-crossable
-     * @return the desired erased inters
-     */
-    Map<SystemInfo, List<Inter>> getErasedInters (boolean crossable)
-    {
-        return crossable ? crossables : nonCrossables;
-    }
-
-    //----------------//
-    // getErasedSeeds //
-    //----------------//
-    /**
-     * @return the erasedSeeds
-     */
-    Map<SystemInfo, List<Glyph>> getErasedSeeds ()
-    {
-        return erasedSeeds;
-    }
-
-    //----------//
-    // setColor //
-    //----------//
-    /**
-     * Paint the arc with a color that indicates its type of arc.
-     *
-     * @param arc the arc to paint
-     * @param g   graphics context
-     */
-    private void setColor (Arc arc,
-                           Graphics2D g)
-    {
-        if (arc.getShape() == ArcShape.SLUR) {
-            g.setColor(ARC_SLUR);
-        } else if (arc.getShape() == ArcShape.LINE) {
-            g.setColor(ARC_LINE);
-        } else {
-            g.setColor(ARC_LAMBDA);
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean keepSkeleton = new Constant.Boolean(false,
-                                                                           "Should we store skeleton images on disk?");
+        private final Constant.Boolean keepSkeleton = new Constant.Boolean(
+                false,
+                "Should we store skeleton images on disk?");
 
-        private final Constant.Boolean useHeader = new Constant.Boolean(true,
-                                                                        "Should we erase the header at staff start");
+        private final Constant.Boolean useHeader = new Constant.Boolean(
+                true,
+                "Should we erase the header at staff start");
 
-        private final Scale.Fraction systemVerticalMargin = new Scale.Fraction(2.0,
-                                                                               "Margin erased above & below system header area");
+        private final Scale.Fraction systemVerticalMargin = new Scale.Fraction(
+                2.0,
+                "Margin erased above & below system header area");
 
-        private final Scale.Fraction maxDxFromStaff = new Scale.Fraction(1,
-                                                                         "Maximum horizontal gap from any staff");
+        private final Scale.Fraction maxDxFromStaff = new Scale.Fraction(
+                1,
+                "Maximum horizontal gap from any staff");
 
-        private final Scale.Fraction maxDyFromStaff = new Scale.Fraction(10,
-                                                                         "Maximum vertical gap from any staff");
+        private final Scale.Fraction maxDyFromStaff = new Scale.Fraction(
+                10,
+                "Maximum vertical gap from any staff");
     }
 
     //---------------//
@@ -506,9 +522,9 @@ public class Skeleton
          * @param g      graphics context on buffer
          * @param sheet  related sheet
          */
-        public CurvesCleaner (ByteProcessor buffer,
-                              Graphics2D g,
-                              Sheet sheet)
+        CurvesCleaner (ByteProcessor buffer,
+                       Graphics2D g,
+                       Sheet sheet)
         {
             super(buffer, g, sheet);
         }
@@ -568,11 +584,11 @@ public class Skeleton
          */
         public Map<SystemInfo, List<Inter>> eraseShapes (Collection<Shape> shapes)
         {
-            final Map<SystemInfo, List<Inter>> erasedMap = new TreeMap<SystemInfo, List<Inter>>();
+            final Map<SystemInfo, List<Inter>> erasedMap = new TreeMap<>();
 
             for (SystemInfo system : sheet.getSystems()) {
                 final SIGraph sig = system.getSig();
-                final List<Inter> erased = new ArrayList<Inter>();
+                final List<Inter> erased = new ArrayList<>();
                 erasedMap.put(system, erased);
 
                 for (Inter inter : sig.vertexSet()) {

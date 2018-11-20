@@ -52,7 +52,6 @@ import javax.swing.KeyStroke;
  *
  * @param <C> the subtype of Checkable objects used in the homogeneous collection of checks of the
  *            suite
- *
  * @author Hervé Bitteur
  */
 public class CheckPanel<C>
@@ -74,23 +73,22 @@ public class CheckPanel<C>
 
     private static final int FIELD_WIDTH = 4;
 
-    //
-    /** The related check suite (the model) */
+    /** The related check suite (the model). */
     private CheckSuite<C> suite;
 
-    /** The swing component that includes all the fields */
+    /** The swing component that includes all the fields. */
     private Panel component;
 
-    /** The field for global result */
+    /** The field for global result. */
     private final JTextField globalField;
 
-    /** Matrix of all value fields */
+    /** Matrix of all value fields. */
     private JTextField[][] values;
 
-    /** Matrix of all bound fields */
+    /** Matrix of all bound fields. */
     private JTextField[][] bounds;
 
-    /** Last object checked */
+    /** Last object checked. */
     private C checkable;
 
     /**
@@ -209,8 +207,9 @@ public class CheckPanel<C>
             component.setNoInsets();
 
             // Needed to process user input when RETURN/ENTER is pressed
-            component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke
-                    .getKeyStroke("ENTER"), "ParamAction");
+            component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                    KeyStroke.getKeyStroke("ENTER"),
+                    "ParamAction");
             component.getActionMap().put("ParamAction", new ParamAction());
         } else {
             component.removeAll();
@@ -317,8 +316,9 @@ public class CheckPanel<C>
                 NamedDouble constant = (i == 0) ? check.getLowDouble() : check.getHighDouble();
 
                 field.setText(textOf(constant.getValue()));
-                field.setToolTipText("<html>" + constant.getName() + "<br/>" + constant
-                        .getDescription() + "</html>");
+                field.setToolTipText(
+                        "<html>" + constant.getName() + "<br/>" + constant.getDescription()
+                                + "</html>");
             }
         }
     }
@@ -408,7 +408,6 @@ public class CheckPanel<C>
         return Double.NaN;
     }
 
-    //
     //-------------//
     // ParamAction //
     //-------------//
@@ -426,7 +425,7 @@ public class CheckPanel<C>
             // Any & several bounds may have been modified by the user
             // Since the same constant can be used in several fields, we have to
             // take a snapshot of all constants values, before modifying any one
-            Map<NamedDouble, Double> values = new HashMap<NamedDouble, Double>();
+            Map<NamedDouble, Double> values = new HashMap<>();
 
             for (Check<C> check : suite.getChecks()) {
                 values.put(check.getLowDouble(), check.getLowDouble().getValue());
@@ -441,8 +440,8 @@ public class CheckPanel<C>
 
                 // Check the bounds wrt the corresponding fields
                 for (int i = 0; i < 2; i++) {
-                    final NamedDouble constant = (i == 0) ? check.getLowDouble() : check
-                            .getHighDouble();
+                    final NamedDouble constant = (i == 0) ? check.getLowDouble()
+                            : check.getHighDouble();
 
                     // Simplistic test to detect modification
                     final JTextField field = bounds[ic][i];

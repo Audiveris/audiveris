@@ -83,7 +83,8 @@ import java.util.regex.PatternSyntaxException;
  * Class {@code TextBuilder} works at system level, to provide features to check, build
  * and reorganize text items, including interacting with the OCR engine.
  * <p>
- * This builder can operate in 3 different modes: <ol>
+ * This builder can operate in 3 different modes:
+ * <ol>
  * <li><b>Free mode</b>: Engine mode, text role can be any role, determined by heuristics.
  * manualLyrics == null;
  * <li><b>Manual as lyrics</b>: Manual mode, for which text role is imposed as lyrics.
@@ -101,14 +102,14 @@ public class TextBuilder
 
     private static final Logger logger = LoggerFactory.getLogger(TextBuilder.class);
 
+    /** Needed for font size computation. */
+    protected static final FontRenderContext frc = new FontRenderContext(null, true, true);
+
     /** Abnormal characters. */
     private static final char[] ABNORMAL_CHARS = new char[]{'\\'};
 
     /** Regexp for abnormal words. */
     private static final Pattern ABNORMAL_WORDS = getAbnormalWords();
-
-    /** Needed for font size computation. */
-    protected static final FontRenderContext frc = new FontRenderContext(null, true, true);
 
     /** Related system. */
     @Navigable(false)
@@ -125,10 +126,10 @@ public class TextBuilder
     private final Parameters params;
 
     /** Set of text lines. */
-    private final Set<TextLine> textLines = new LinkedHashSet<TextLine>();
+    private final Set<TextLine> textLines = new LinkedHashSet<>();
 
     /** Processed sections. true/false */
-    private final Set<Section> processedSections = new LinkedHashSet<Section>();
+    private final Set<Section> processedSections = new LinkedHashSet<>();
 
     /** Manual mode. */
     private final Boolean manualLyrics;
@@ -163,39 +164,6 @@ public class TextBuilder
         sheet = system.getSheet();
         skew = sheet.getSkew();
         params = new Parameters(sheet.getScale(), true);
-    }
-
-    //----------------//
-    // isMainlyItalic //
-    //----------------//
-    /**
-     * Check whether the (majority of) line is in italic font.
-     *
-     * @param line the line to check
-     * @return true if mainly italics
-     */
-    public static boolean isMainlyItalic (TextLine line)
-    {
-        int reliableWords = 0;
-        int italicWords = 0;
-
-        for (TextWord word : line.getWords()) {
-            if ((word.getConfidence() >= constants.minConfidence.getValue()) && (word.getLength()
-                                                                                         > 1)) {
-                reliableWords++;
-
-                if (word.getFontInfo().isItalic) {
-                    italicWords++;
-                }
-            }
-        }
-
-        // Check for majority among reliable words
-        if (reliableWords != 0) {
-            return (italicWords * 2) >= reliableWords;
-        } else {
-            return false;
-        }
     }
 
     //--------------------//
@@ -248,7 +216,7 @@ public class TextBuilder
         StopWatch watch = new StopWatch("Texts retrieveLines system#" + system.getId());
         watch.start("Pickup system lines");
 
-        List<TextLine> systemLines = new ArrayList<TextLine>();
+        List<TextLine> systemLines = new ArrayList<>();
 
         // We pick up the words that are contained by system area
         // Beware: a text located between two systems must be deep copied to each system!
@@ -314,8 +282,8 @@ public class TextBuilder
     private void checkRole (TextLine line)
     {
         if (line.getRole() == null) {
-            TextRole role = (isManual() && manualLyrics) ? TextRole.Lyrics : TextRole
-                    .guessRole(line, system, manualLyrics == null);
+            TextRole role = (isManual() && manualLyrics) ? TextRole.Lyrics
+                    : TextRole.guessRole(line, system, manualLyrics == null);
 
             if (role != null) {
                 line.setRole(role);
@@ -342,7 +310,7 @@ public class TextBuilder
         {
             // Discard really invalid words
             final double lowConf = constants.lowConfidence.getValue();
-            final List<TextWord> toRemove = new ArrayList<TextWord>();
+            final List<TextWord> toRemove = new ArrayList<>();
 
             for (TextWord word : line.getWords()) {
                 if (word.getConfidence() < lowConf) {
@@ -460,9 +428,12 @@ public class TextBuilder
             double aRatio = yRatio / xRatio;
 
             if ((aRatio < params.minAspectRatio) || (aRatio > params.maxAspectRatio)) {
-                logger
-                        .debug("   Invalid aspect {} vs [{}-{}] for {}", aRatio,
-                               params.minAspectRatio, params.maxAspectRatio, word);
+                logger.debug(
+                        "   Invalid aspect {} vs [{}-{}] for {}",
+                        aRatio,
+                        params.minAspectRatio,
+                        params.maxAspectRatio,
+                        word);
 
                 return "invalid aspect";
             }
@@ -474,8 +445,12 @@ public class TextBuilder
 
             ///logger.info(String.format("aspect:%.2f diag:%.2f %s", aRatio, diagRatio, word));
             if ((diagRatio < params.minDiagRatio) || (diagRatio > params.maxDiagRatio)) {
-                logger.debug("   Invalid diagonal {} vs [{}-{}] for {}", diagRatio,
-                             params.minDiagRatio, params.maxDiagRatio, word);
+                logger.debug(
+                        "   Invalid diagonal {} vs [{}-{}] for {}",
+                        diagRatio,
+                        params.minDiagRatio,
+                        params.maxDiagRatio,
+                        word);
 
                 return "invalid diagonal";
             }
@@ -501,8 +476,8 @@ public class TextBuilder
         for (TextLine line : textLines) {
             final TextRole role = line.getRole();
             final SentenceInter sentence = (role == TextRole.Lyrics) ? LyricLineInter.create(line)
-                    : ((role == TextRole.ChordName) ? ChordNameInter.create(line) : SentenceInter
-                            .create(line));
+                    : ((role == TextRole.ChordName) ? ChordNameInter.create(line)
+                            : SentenceInter.create(line));
 
             // Related staff (can still be modified later)
             Staff staff = sentence.assignStaff(system, line.getLocation());
@@ -582,25 +557,6 @@ public class TextBuilder
         return null;
     }
 
-    //------------------//
-    // getAbnormalWords //
-    //------------------//
-    /**
-     * Compile the provided regexp to detect abnormal words
-     *
-     * @return the pattern for abnormal words, if successful
-     */
-    private static Pattern getAbnormalWords ()
-    {
-        try {
-            return Pattern.compile(constants.abnormalWordRegexp.getValue());
-        } catch (PatternSyntaxException pse) {
-            logger.warn("Error in regexp for abnormal words", pse);
-
-            return null;
-        }
-    }
-
     //-----------------//
     // getDeskewedCore //
     //-----------------//
@@ -657,7 +613,7 @@ public class TextBuilder
                                        List<TextLine> lines)
     {
         SectionFactory factory = new SectionFactory(VERTICAL, JunctionRatioPolicy.DEFAULT);
-        List<Section> allSections = new ArrayList<Section>();
+        List<Section> allSections = new ArrayList<>();
 
         for (TextLine line : lines) {
             for (TextWord word : line.getWords()) {
@@ -686,7 +642,7 @@ public class TextBuilder
                                         TextLine line,
                                         WordScanner scanner)
     {
-        final List<TextWord> subWords = new ArrayList<TextWord>();
+        final List<TextWord> subWords = new ArrayList<>();
         final int contentLength = word.getValue().length();
 
         while (scanner.hasNext()) {
@@ -699,20 +655,29 @@ public class TextBuilder
                 // Compute (sub) baseline parameters
                 Line2D base = word.getBaseline();
                 int x1 = wordChars.get(0).getBounds().x;
-                Point2D p1 = LineUtil.intersection(base.getP1(), base.getP2(),
-                                                   new Point2D.Double(x1, 0), new Point2D.Double(x1,
-                                                                                                 100));
+                Point2D p1 = LineUtil.intersection(
+                        base.getP1(),
+                        base.getP2(),
+                        new Point2D.Double(x1, 0),
+                        new Point2D.Double(x1, 100));
 
                 Rectangle box = wordChars.get(wordChars.size() - 1).getBounds();
                 int x2 = (box.x + box.width) - 1;
-                Point2D p2 = LineUtil.intersection(base.getP1(), base.getP2(),
-                                                   new Point2D.Double(x2, 0), new Point2D.Double(x2,
-                                                                                                 100));
+                Point2D p2 = LineUtil.intersection(
+                        base.getP1(),
+                        base.getP2(),
+                        new Point2D.Double(x2, 0),
+                        new Point2D.Double(x2, 100));
                 Line2D subBase = new Line2D.Double(p1, p2);
 
                 // Allocate sub-word
-                TextWord newWord = new TextWord(subBase, subValue, word.getFontInfo(), word
-                                                .getConfidence(), wordChars, line);
+                TextWord newWord = new TextWord(
+                        subBase,
+                        subValue,
+                        word.getFontInfo(),
+                        word.getConfidence(),
+                        wordChars,
+                        line);
 
                 if (logger.isDebugEnabled()) {
                     logger.info("  subWord '{}' out of '{}'", newWord.getValue(), word.getValue());
@@ -786,14 +751,19 @@ public class TextBuilder
             FontInfo fontInfo = word.getFontInfo();
 
             if (fontInfo.pointsize > params.maxFontSize) {
-                logger.debug("Too big font {} vs {} on {}", fontInfo.pointsize, params.maxFontSize,
-                             line);
+                logger.debug(
+                        "Too big font {} vs {} on {}",
+                        fontInfo.pointsize,
+                        params.maxFontSize,
+                        line);
 
                 return false;
             } else if (fontInfo.pointsize < params.minFontSize) {
-                logger
-                        .debug("Too small font {} vs {} on {}", fontInfo.pointsize,
-                               params.minFontSize, line);
+                logger.debug(
+                        "Too small font {} vs {} on {}",
+                        fontInfo.pointsize,
+                        params.minFontSize,
+                        line);
 
                 return false;
             }
@@ -830,22 +800,24 @@ public class TextBuilder
             logger.debug("  mapping {}", line);
 
             // Browse all words, starting by shorter ones
-            List<TextWord> toRemove = new ArrayList<TextWord>();
-            List<TextWord> sortedWords = new ArrayList<TextWord>(line.getWords());
+            List<TextWord> toRemove = new ArrayList<>();
+            List<TextWord> sortedWords = new ArrayList<>(line.getWords());
             Collections.sort(sortedWords, TextWord.bySize);
 
             for (TextWord word : sortedWords) {
                 // Isolate proper word glyph from its enclosed sections
-                SortedSet<Section> wordSections = retrieveSections(word.getChars(), allSections,
-                                                                   offset);
+                SortedSet<Section> wordSections = retrieveSections(
+                        word.getChars(),
+                        allSections,
+                        offset);
 
                 if (!wordSections.isEmpty()) {
-                    SectionCompound compound = CompoundFactory.buildCompound(wordSections,
-                                                                             constructor);
+                    SectionCompound compound = CompoundFactory.buildCompound(
+                            wordSections,
+                            constructor);
                     Glyph rel = compound.toGlyph(null);
-                    Glyph wordGlyph = glyphIndex.registerOriginal(new Glyph(rel.getLeft() + dx, rel
-                                                                            .getTop() + dy, rel
-                                                                                    .getRunTable()));
+                    Glyph wordGlyph = glyphIndex.registerOriginal(
+                            new Glyph(rel.getLeft() + dx, rel.getTop() + dy, rel.getRunTable()));
 
                     // Link TextWord -> Glyph
                     word.setGlyph(wordGlyph);
@@ -917,7 +889,7 @@ public class TextBuilder
      */
     private TextLine mergeLines (List<TextLine> lines)
     {
-        List<TextWord> words = new ArrayList<TextWord>();
+        List<TextWord> words = new ArrayList<>();
 
         for (TextLine line : lines) {
             line.setProcessed(true);
@@ -942,10 +914,10 @@ public class TextBuilder
     {
         logger.debug("mergeLyricsLines");
 
-        List<TextLine> newLyrics = new ArrayList<TextLine>();
+        List<TextLine> newLyrics = new ArrayList<>();
         Collections.sort(oldLyrics, TextLine.byOrdinate(skew));
 
-        List<TextLine> chunks = new ArrayList<TextLine>();
+        List<TextLine> chunks = new ArrayList<>();
         double lastY = 0;
 
         for (TextLine line : oldLyrics) {
@@ -1035,7 +1007,7 @@ public class TextBuilder
                             candidate.setProcessed(true);
                             candidate = head;
 
-                            break HeadsLoop;
+                            break;
                         }
                     }
                 }
@@ -1043,7 +1015,7 @@ public class TextBuilder
         }
 
         // Remove unavailable lines
-        List<TextLine> newStandards = new ArrayList<TextLine>();
+        List<TextLine> newStandards = new ArrayList<>();
 
         for (TextLine line : oldStandards) {
             if (!line.isProcessed()) {
@@ -1061,10 +1033,10 @@ public class TextBuilder
     private void mergeStandardWords (TextLine line)
     {
         ///logger.debug("  mergeStandardWords for {}", line);
-        final int minWordDx = (int) Math.rint(line.getMeanFont().pointsize
-                                                      * params.minWordDxFontRatio);
-        List<TextWord> toAdd = new ArrayList<TextWord>();
-        List<TextWord> toRemove = new ArrayList<TextWord>();
+        final int minWordDx = (int) Math.rint(
+                line.getMeanFont().pointsize * params.minWordDxFontRatio);
+        List<TextWord> toAdd = new ArrayList<>();
+        List<TextWord> toRemove = new ArrayList<>();
         TextWord prevWord = null;
 
         for (TextWord word : line.getWords()) {
@@ -1094,7 +1066,7 @@ public class TextBuilder
 
         if (!toAdd.isEmpty()) {
             // No use to add & remove the same words
-            List<TextWord> common = new ArrayList<TextWord>(toAdd);
+            List<TextWord> common = new ArrayList<>(toAdd);
             common.retainAll(toRemove);
             toAdd.removeAll(common);
             toRemove.removeAll(common);
@@ -1122,7 +1094,7 @@ public class TextBuilder
             return;
         }
 
-        List<LyricLineInter> lines = new ArrayList<LyricLineInter>();
+        List<LyricLineInter> lines = new ArrayList<>();
 
         for (Inter inter : lyricInters) {
             lines.add((LyricLineInter) inter);
@@ -1162,7 +1134,7 @@ public class TextBuilder
     {
         logger.debug("purgeInvalidLines for {}", kind);
 
-        List<TextLine> newLines = new ArrayList<TextLine>();
+        List<TextLine> newLines = new ArrayList<>();
 
         for (TextLine line : lines) {
             String reason = checkValidity(line);
@@ -1206,8 +1178,8 @@ public class TextBuilder
         logger.debug("System#{} recomposeLines", system.getId());
 
         // Separate lyrics and standard lines, based on their roles
-        List<TextLine> standards = new ArrayList<TextLine>();
-        List<TextLine> lyrics = new ArrayList<TextLine>();
+        List<TextLine> standards = new ArrayList<>();
+        List<TextLine> lyrics = new ArrayList<>();
         separatePopulations(rawLines, standards, lyrics);
 
         // Process lyrics
@@ -1247,7 +1219,7 @@ public class TextBuilder
         }
 
         // Gather and sort all lines (standard & lyrics)
-        List<TextLine> allLines = new ArrayList<TextLine>();
+        List<TextLine> allLines = new ArrayList<>();
         allLines.addAll(lyrics);
         allLines.addAll(standards);
         Collections.sort(allLines, TextLine.byOrdinate(skew));
@@ -1285,16 +1257,16 @@ public class TextBuilder
                                                  Collection<Section> allSections,
                                                  Point offset)
     {
-        final SortedSet<Section> wordSections = new TreeSet<Section>(Section.byFullAbscissa);
-        final CompoundConstructor constructor
-                = new SectionCompound.Constructor(sheet.getInterline());
+        final SortedSet<Section> wordSections = new TreeSet<>(Section.byFullAbscissa);
+        final CompoundConstructor constructor = new SectionCompound.Constructor(
+                sheet.getInterline());
 
         final int dx = (offset != null) ? offset.x : 0;
         final int dy = (offset != null) ? offset.y : 0;
 
         for (TextChar charDesc : chars) {
             final Rectangle charBox = charDesc.getBounds();
-            final SortedSet<Section> charSections = new TreeSet<Section>(Section.byFullAbscissa);
+            final SortedSet<Section> charSections = new TreeSet<>(Section.byFullAbscissa);
 
             for (Section section : allSections) {
                 // Do we contain a section not (yet) assigned?
@@ -1310,8 +1282,10 @@ public class TextBuilder
                 // Register char underlying glyph
                 SectionCompound compound = CompoundFactory.buildCompound(charSections, constructor);
                 Glyph relGlyph = compound.toGlyph(null);
-                Glyph absGlyph = new Glyph(relGlyph.getLeft() + dx, relGlyph.getTop() + dy, relGlyph
-                                           .getRunTable());
+                Glyph absGlyph = new Glyph(
+                        relGlyph.getLeft() + dx,
+                        relGlyph.getTop() + dy,
+                        relGlyph.getRunTable());
                 Glyph charGlyph = sheet.getGlyphIndex().registerOriginal(absGlyph);
                 system.addFreeGlyph(charGlyph);
             }
@@ -1383,7 +1357,7 @@ public class TextBuilder
 
         Collections.sort(oldStandards, TextLine.byOrdinate(skew));
 
-        List<TextLine> newStandards = new ArrayList<TextLine>();
+        List<TextLine> newStandards = new ArrayList<>();
 
         for (TextLine line : oldStandards) {
             final int maxAbscissaGap = getWordGap(line); // TODO: should gap depend on font size?
@@ -1461,8 +1435,8 @@ public class TextBuilder
                              TextLine line)
     {
         // To avoid concurrent modification errors
-        Collection<TextWord> toAdd = new ArrayList<TextWord>();
-        Collection<TextWord> toRemove = new ArrayList<TextWord>();
+        Collection<TextWord> toAdd = new ArrayList<>();
+        Collection<TextWord> toRemove = new ArrayList<>();
 
         for (TextWord word : words) {
             List<TextWord> subWords = null; // Results of split
@@ -1501,9 +1475,14 @@ public class TextBuilder
             //                    }
             //                }
             //            } else {
-            subWords = getSubWords(word, line, new WordScanner.OcrScanner(word.getValue(), line
-                                                                          .isLyrics(), maxCharGap,
-                                                                          word.getChars()));
+            subWords = getSubWords(
+                    word,
+                    line,
+                    new WordScanner.OcrScanner(
+                            word.getValue(),
+                            line.isLyrics(),
+                            maxCharGap,
+                            word.getChars()));
 
             //            }
             if (!subWords.isEmpty()) {
@@ -1520,63 +1499,134 @@ public class TextBuilder
         }
     }
 
+    //----------------//
+    // isMainlyItalic //
+    //----------------//
+    /**
+     * Check whether the (majority of) line is in italic font.
+     *
+     * @param line the line to check
+     * @return true if mainly italics
+     */
+    public static boolean isMainlyItalic (TextLine line)
+    {
+        int reliableWords = 0;
+        int italicWords = 0;
+
+        for (TextWord word : line.getWords()) {
+            if ((word.getConfidence() >= constants.minConfidence.getValue()) && (word
+                    .getLength() > 1)) {
+                reliableWords++;
+
+                if (word.getFontInfo().isItalic) {
+                    italicWords++;
+                }
+            }
+        }
+
+        // Check for majority among reliable words
+        if (reliableWords != 0) {
+            return (italicWords * 2) >= reliableWords;
+        } else {
+            return false;
+        }
+    }
+
+    //------------------//
+    // getAbnormalWords //
+    //------------------//
+    /**
+     * Compile the provided regexp to detect abnormal words
+     *
+     * @return the pattern for abnormal words, if successful
+     */
+    private static Pattern getAbnormalWords ()
+    {
+        try {
+            return Pattern.compile(constants.abnormalWordRegexp.getValue());
+        } catch (PatternSyntaxException pse) {
+            logger.warn("Error in regexp for abnormal words", pse);
+
+            return null;
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(false,
-                                                                         "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
 
-        private final Constant.String abnormalWordRegexp = new Constant.String("^[°>']$",
-                                                                               "Regular expression to detect abnormal words");
+        private final Constant.String abnormalWordRegexp = new Constant.String(
+                "^[°>']$",
+                "Regular expression to detect abnormal words");
 
-        private final Constant.Double minConfidence = new Constant.Double("0..1", 0.65,
-                                                                          "Minimum confidence for OCR validity");
+        private final Constant.Double minConfidence = new Constant.Double(
+                "0..1",
+                0.65,
+                "Minimum confidence for OCR validity");
 
-        private final Constant.Double lowConfidence = new Constant.Double("0..1", 0.30,
-                                                                          "Really low confidence to exclude words");
+        private final Constant.Double lowConfidence = new Constant.Double(
+                "0..1",
+                0.30,
+                "Really low confidence to exclude words");
 
-        private final Scale.Fraction minWidthForCheck = new Scale.Fraction(0.15,
-                                                                           "Minimum width to check word aspect");
+        private final Scale.Fraction minWidthForCheck = new Scale.Fraction(
+                0.15,
+                "Minimum width to check word aspect");
 
-        private final Scale.Fraction minHeightForCheck = new Scale.Fraction(0.15,
-                                                                            "Minimum height to check word aspect");
+        private final Scale.Fraction minHeightForCheck = new Scale.Fraction(
+                0.15,
+                "Minimum height to check word aspect");
 
-        private final Constant.Ratio minAspectRatio = new Constant.Ratio(0.5,
-                                                                         "Minimum ratio between ocr and glyph aspects");
+        private final Constant.Ratio minAspectRatio = new Constant.Ratio(
+                0.5,
+                "Minimum ratio between ocr and glyph aspects");
 
-        private final Constant.Ratio maxAspectRatio = new Constant.Ratio(1.5,
-                                                                         "Maximum ratio between ocr and glyph aspects");
+        private final Constant.Ratio maxAspectRatio = new Constant.Ratio(
+                1.5,
+                "Maximum ratio between ocr and glyph aspects");
 
-        private final Constant.Ratio minDiagRatio = new Constant.Ratio(0.5,
-                                                                       "Minimum ratio between ocr and glyph diagonals");
+        private final Constant.Ratio minDiagRatio = new Constant.Ratio(
+                0.5,
+                "Minimum ratio between ocr and glyph diagonals");
 
-        private final Constant.Ratio maxDiagRatio = new Constant.Ratio(1.5,
-                                                                       "Maximum ratio between ocr and glyph diagonals");
+        private final Constant.Ratio maxDiagRatio = new Constant.Ratio(
+                1.5,
+                "Maximum ratio between ocr and glyph diagonals");
 
-        private final Scale.Fraction minFontSize = new Scale.Fraction(1.25,
-                                                                      "Minimum font size with respect to interline");
+        private final Scale.Fraction minFontSize = new Scale.Fraction(
+                1.25,
+                "Minimum font size with respect to interline");
 
-        private final Scale.Fraction maxFontSize = new Scale.Fraction(8.0,
-                                                                      "Maximum font size with respect to interline");
+        private final Scale.Fraction maxFontSize = new Scale.Fraction(
+                8.0,
+                "Maximum font size with respect to interline");
 
-        private final Scale.Fraction maxLyricsDy = new Scale.Fraction(1.0,
-                                                                      "Max vertical gap between two lyrics chunks");
+        private final Scale.Fraction maxLyricsDy = new Scale.Fraction(
+                1.0,
+                "Max vertical gap between two lyrics chunks");
 
-        private final Scale.Fraction maxCharDx = new Scale.Fraction(1.0,
-                                                                    "Max horizontal gap between two chars in a word");
+        private final Scale.Fraction maxCharDx = new Scale.Fraction(
+                1.0,
+                "Max horizontal gap between two chars in a word");
 
-        private final Constant.Ratio maxWordDxFontRatio = new Constant.Ratio(1.5,
-                                                                             "Max horizontal gap between two non-lyrics words as font ratio");
+        private final Constant.Ratio maxWordDxFontRatio = new Constant.Ratio(
+                1.5,
+                "Max horizontal gap between two non-lyrics words as font ratio");
 
-        private final Constant.Ratio minWordDxFontRatio = new Constant.Ratio(0.125,
-                                                                             "Min horizontal gap between two non-lyrics words as font ratio");
+        private final Constant.Ratio minWordDxFontRatio = new Constant.Ratio(
+                0.125,
+                "Min horizontal gap between two non-lyrics words as font ratio");
 
-        private final Scale.Fraction maxChordDx = new Scale.Fraction(1.0,
-                                                                     "Max horizontal gap between two chord words");
+        private final Scale.Fraction maxChordDx = new Scale.Fraction(
+                1.0,
+                "Max horizontal gap between two chord words");
     }
 
     //------------//
@@ -1611,8 +1661,8 @@ public class TextBuilder
 
         final double maxDiagRatio;
 
-        public Parameters (Scale scale,
-                           boolean isManual)
+        Parameters (Scale scale,
+                    boolean isManual)
         {
             // TODO: check all these constant for specific manual work...
             minFontSize = scale.toPixels(constants.minFontSize);

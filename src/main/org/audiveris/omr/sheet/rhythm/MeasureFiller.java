@@ -44,8 +44,9 @@ public class MeasureFiller
     private static final Logger logger = LoggerFactory.getLogger(MeasureFiller.class);
 
     /** Filling classes. (Clefs and Key signatures) */
-    private static final Class<?>[] FILLING_CLASSES
-            = new Class<?>[]{ClefInter.class, KeyInter.class};
+    private static final Class<?>[] FILLING_CLASSES = new Class<?>[]{
+        ClefInter.class,
+        KeyInter.class};
 
     /** Containing system. */
     private final SystemInfo system;
@@ -60,6 +61,9 @@ public class MeasureFiller
         this.system = system;
     }
 
+    /**
+     * Fill all system measures with Clef and Key entities.
+     */
     public void process ()
     {
         // Lookup the relevant inters from system SIG

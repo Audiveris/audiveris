@@ -123,8 +123,7 @@ public abstract class StepMonitoring
     {
         if (monitor != null) {
             final boolean finished = stub.getCurrentStep() == null;
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()

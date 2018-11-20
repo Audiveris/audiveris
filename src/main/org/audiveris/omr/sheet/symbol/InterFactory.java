@@ -189,31 +189,14 @@ public class InterFactory
         }
     }
 
-    //--------------//
-    // createManual //
-    //--------------//
-    /**
-     * Create a manual inter instance to handle the provided shape.
-     *
-     * @param shape provided shape
-     * @param sheet related sheet
-     * @return the created manual inter or null
-     */
-    public static Inter createManual (Shape shape,
-                                      Sheet sheet)
-    {
-        Inter ghost = doCreateManual(shape, sheet);
-
-        if (ghost != null) {
-            ghost.setManual(true);
-        }
-
-        return ghost;
-    }
-
     //---------------//
     // getSystemBars //
     //---------------//
+    /**
+     * Report all system barlines.
+     *
+     * @return all barlines in the containing system
+     */
     public List<Inter> getSystemBars ()
     {
         if (systemBars == null) {
@@ -227,6 +210,11 @@ public class InterFactory
     //----------------//
     // getSystemRests //
     //----------------//
+    /**
+     * Report all rests in system.
+     *
+     * @return all rests in the containing system
+     */
     public List<Inter> getSystemRests ()
     {
         if (systemRests == null) {
@@ -240,6 +228,9 @@ public class InterFactory
     //------------//
     // lateChecks //
     //------------//
+    /**
+     * Perform late checks.
+     */
     public void lateChecks ()
     {
         // Conflicting dot interpretations
@@ -252,37 +243,6 @@ public class InterFactory
         handleTimes();
     }
 
-    //---------------------//
-    // getSystemHeadChords //
-    //---------------------//
-    List<Inter> getSystemHeadChords ()
-    {
-        return systemHeadChords;
-    }
-
-    //----------------//
-    // getSystemHeads //
-    //----------------//
-    List<Inter> getSystemHeads ()
-    {
-        return systemHeads;
-    }
-
-    //----------------//
-    // getSystemNotes //
-    //----------------//
-    List<Inter> getSystemNotes ()
-    {
-        if (systemNotes == null) {
-            systemNotes = new ArrayList<Inter>(getSystemHeads().size() + getSystemRests().size());
-            systemNotes.addAll(getSystemHeads());
-            systemNotes.addAll(getSystemRests());
-            Collections.sort(systemNotes, Inters.byAbscissa);
-        }
-
-        return systemNotes;
-    }
-
     //----------//
     // doCreate //
     //----------//
@@ -290,7 +250,8 @@ public class InterFactory
      * Create proper inter instance(s) for provided evaluated glyph.
      * <p>
      * This method addresses only the symbols handled via a classifier.
-     * In current OMR design, this does not address: <ul>
+     * In current OMR design, this does not address:
+     * <ul>
      * <li>Brace
      * <li>Bracket
      * <li>Barline
@@ -450,7 +411,11 @@ public class InterFactory
         case STACCATISSIMO:
         case STRONG_ACCENT:
             return switches.getValue(Switch.articulations) ? ArticulationInter.createValidAdded(
-                    glyph, shape, grade, system, systemHeadChords) : null;
+                    glyph,
+                    shape,
+                    grade,
+                    system,
+                    systemHeadChords) : null;
 
         // Markers
         case CODA:
@@ -553,6 +518,180 @@ public class InterFactory
 
             return null;
         }
+    }
+
+    //-----------------------//
+    // handleComplexDynamics //
+    //-----------------------//
+    /**
+     * Handle competition between complex and shorter dynamics.
+     */
+    private void handleComplexDynamics ()
+    {
+        // All dynamics in system
+        final List<Inter> dynamics = sig.inters(DynamicsInter.class);
+        // Complex dynamics in system, sorted by decreasing length
+        final List<DynamicsInter> complexes = new ArrayList<>();
+        for (Inter inter : dynamics) {
+            DynamicsInter dyn = (DynamicsInter) inter;
+
+            if (dyn.getSymbolString().length() > 1) {
+                complexes.add(dyn);
+            }
+        }
+        Collections.sort(complexes, new Comparator<DynamicsInter>()
+                 {
+                     @Override
+                     public int compare (DynamicsInter d1,
+                                         DynamicsInter d2)
+                     {
+                         // Sort by decreasing length
+                         return Integer.compare(
+                                 d2.getSymbolString().length(),
+                                 d1.getSymbolString().length());
+                     }
+                 });
+        for (DynamicsInter complex : complexes) {
+            complex.swallowShorterDynamics(dynamics);
+        }
+    }
+
+    //-------------//
+    // handleTimes //
+    //-------------//
+    /**
+     * Handle time inters outside of system header.
+     * <p>
+     * Isolated time inters found outside of system header lead to the retrieval of a column of
+     * time signatures.
+     */
+    private void handleTimes ()
+    {
+        // Retrieve all time inters (outside staff headers)
+        List<Inter> systemTimes = sig.inters(new Class[]{
+            TimeWholeInter.class, // Whole symbol like C or 6/8
+            TimeNumberInter.class}); // Partial symbol like 6 or 8
+        List<Inter> headerTimes = new ArrayList<>();
+        for (Inter inter : systemTimes) {
+            Staff staff = inter.getStaff();
+
+            if (inter.getCenter().x < staff.getHeaderStop()) {
+                headerTimes.add(inter);
+            }
+        }
+        systemTimes.removeAll(headerTimes);
+        if (systemTimes.isEmpty()) {
+            return;
+        }
+        // Dispatch these time inters into their containing stack
+        Map<MeasureStack, Set<Inter>> timeMap = new TreeMap<>(new Comparator<MeasureStack>()
+        {
+            @Override
+            public int compare (MeasureStack s1,
+                                MeasureStack s2)
+            {
+                return Integer.compare(s1.getIdValue(), s2.getIdValue());
+            }
+        });
+        for (Inter inter : systemTimes) {
+            MeasureStack stack = system.getStackAt(inter.getCenter());
+            Set<Inter> stackSet = timeMap.get(stack);
+            if (stackSet == null) {
+                timeMap.put(stack, stackSet = new LinkedHashSet<>());
+            }
+            stackSet.add(inter);
+        }
+        // Finally, scan each stack populated with some time sig(s)
+        for (Entry<MeasureStack, Set<Inter>> entry : timeMap.entrySet()) {
+            MeasureStack stack = entry.getKey();
+            TimeBuilder.BasicColumn column = new TimeBuilder.BasicColumn(stack, entry.getValue());
+            int res = column.retrieveTime();
+
+            // If the stack does have a validated time sig, discard overlapping stuff right now!
+            if (res != -1) {
+                final Collection<AbstractTimeInter> times = column.getTimeInters().values();
+                final Rectangle columnBox = Inters.getBounds(times);
+                List<Inter> neighbors = sig.inters(new Predicate<Inter>()
+                {
+                    @Override
+                    public boolean check (Inter inter)
+                    {
+                        return inter.getBounds().intersects(columnBox)
+                                       && !(inter instanceof InterEnsemble);
+                    }
+                });
+
+                neighbors.removeAll(times);
+
+                for (AbstractTimeInter time : times) {
+                    for (Iterator<Inter> it = neighbors.iterator(); it.hasNext();) {
+                        Inter neighbor = it.next();
+
+                        try {
+                            if (neighbor.overlaps(time)) {
+                                logger.debug("Deleting time overlapping {}", neighbor);
+                                neighbor.remove();
+                                it.remove();
+                            }
+                        } catch (DeletedInterException ignored) {
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //---------------------//
+    // getSystemHeadChords //
+    //---------------------//
+    List<Inter> getSystemHeadChords ()
+    {
+        return systemHeadChords;
+    }
+
+    //----------------//
+    // getSystemHeads //
+    //----------------//
+    List<Inter> getSystemHeads ()
+    {
+        return systemHeads;
+    }
+
+    //----------------//
+    // getSystemNotes //
+    //----------------//
+    List<Inter> getSystemNotes ()
+    {
+        if (systemNotes == null) {
+            systemNotes = new ArrayList<>(getSystemHeads().size() + getSystemRests().size());
+            systemNotes.addAll(getSystemHeads());
+            systemNotes.addAll(getSystemRests());
+            Collections.sort(systemNotes, Inters.byAbscissa);
+        }
+
+        return systemNotes;
+    }
+
+    //--------------//
+    // createManual //
+    //--------------//
+    /**
+     * Create a manual inter instance to handle the provided shape.
+     *
+     * @param shape provided shape
+     * @param sheet related sheet
+     * @return the created manual inter or null
+     */
+    public static Inter createManual (Shape shape,
+                                      Sheet sheet)
+    {
+        Inter ghost = doCreateManual(shape, sheet);
+
+        if (ghost != null) {
+            ghost.setManual(true);
+        }
+
+        return ghost;
     }
 
     //----------------//
@@ -749,8 +888,10 @@ public class InterFactory
         case STACCATO:
         case STACCATISSIMO:
         case STRONG_ACCENT:
-            return switches.getValue(Switch.articulations) ? new ArticulationInter(null, shape,
-                                                                                   GRADE) : null; // No visit
+            return switches.getValue(Switch.articulations) ? new ArticulationInter(
+                    null,
+                    shape,
+                    GRADE) : null; // No visit
 
         // Markers
         case CODA:
@@ -853,138 +994,4 @@ public class InterFactory
         }
     }
 
-    //-----------------------//
-    // handleComplexDynamics //
-    //-----------------------//
-    /**
-     * Handle competition between complex and shorter dynamics.
-     */
-    private void handleComplexDynamics ()
-    {
-        // All dynamics in system
-        final List<Inter> dynamics = sig.inters(DynamicsInter.class);
-
-        // Complex dynamics in system, sorted by decreasing length
-        final List<DynamicsInter> complexes = new ArrayList<DynamicsInter>();
-
-        for (Inter inter : dynamics) {
-            DynamicsInter dyn = (DynamicsInter) inter;
-
-            if (dyn.getSymbolString().length() > 1) {
-                complexes.add(dyn);
-            }
-        }
-
-        Collections.sort(
-                complexes,
-                new Comparator<DynamicsInter>()
-        {
-            @Override
-            public int compare (DynamicsInter d1,
-                                DynamicsInter d2)
-            {
-                // Sort by decreasing length
-                return Integer.compare(d2.getSymbolString().length(), d1.getSymbolString().length());
-            }
-        });
-
-        for (DynamicsInter complex : complexes) {
-            complex.swallowShorterDynamics(dynamics);
-        }
-    }
-
-    //-------------//
-    // handleTimes //
-    //-------------//
-    /**
-     * Handle time inters outside of system header.
-     * <p>
-     * Isolated time inters found outside of system header lead to the retrieval of a column of
-     * time signatures.
-     */
-    private void handleTimes ()
-    {
-        // Retrieve all time inters (outside staff headers)
-        List<Inter> systemTimes = sig.inters(
-                new Class[]{TimeWholeInter.class, // Whole symbol like C or 6/8
-                            TimeNumberInter.class}); // Partial symbol like 6 or 8
-        List<Inter> headerTimes = new ArrayList<Inter>();
-
-        for (Inter inter : systemTimes) {
-            Staff staff = inter.getStaff();
-
-            if (inter.getCenter().x < staff.getHeaderStop()) {
-                headerTimes.add(inter);
-            }
-        }
-
-        systemTimes.removeAll(headerTimes);
-
-        if (systemTimes.isEmpty()) {
-            return;
-        }
-
-        // Dispatch these time inters into their containing stack
-        Map<MeasureStack, Set<Inter>> timeMap = new TreeMap<MeasureStack, Set<Inter>>(
-                new Comparator<MeasureStack>()
-        {
-            @Override
-            public int compare (MeasureStack s1,
-                                MeasureStack s2)
-            {
-                return Integer.compare(s1.getIdValue(), s2.getIdValue());
-            }
-        });
-
-        for (Inter inter : systemTimes) {
-            MeasureStack stack = system.getStackAt(inter.getCenter());
-            Set<Inter> stackSet = timeMap.get(stack);
-
-            if (stackSet == null) {
-                timeMap.put(stack, stackSet = new LinkedHashSet<Inter>());
-            }
-
-            stackSet.add(inter);
-        }
-
-        // Finally, scan each stack populated with some time sig(s)
-        for (Entry<MeasureStack, Set<Inter>> entry : timeMap.entrySet()) {
-            MeasureStack stack = entry.getKey();
-            TimeBuilder.BasicColumn column = new TimeBuilder.BasicColumn(stack, entry.getValue());
-            int res = column.retrieveTime();
-
-            // If the stack does have a validated time sig, discard overlapping stuff right now!
-            if (res != -1) {
-                final Collection<AbstractTimeInter> times = column.getTimeInters().values();
-                final Rectangle columnBox = Inters.getBounds(times);
-                List<Inter> neighbors = sig.inters(
-                        new Predicate<Inter>()
-                {
-                    @Override
-                    public boolean check (Inter inter)
-                    {
-                        return inter.getBounds().intersects(columnBox)
-                                       && !(inter instanceof InterEnsemble);
-                    }
-                });
-
-                neighbors.removeAll(times);
-
-                for (AbstractTimeInter time : times) {
-                    for (Iterator<Inter> it = neighbors.iterator(); it.hasNext();) {
-                        Inter neighbor = it.next();
-
-                        try {
-                            if (neighbor.overlaps(time)) {
-                                logger.debug("Deleting time overlapping {}", neighbor);
-                                neighbor.remove();
-                                it.remove();
-                            }
-                        } catch (DeletedInterException ignored) {
-                        }
-                    }
-                }
-            }
-        }
-    }
 }

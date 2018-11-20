@@ -44,7 +44,7 @@ public class BeamSymbol
     // The head+stem part
     private static final BasicSymbol quarter = Symbols.SYMBOL_QUARTER;
 
-    // Number of beams
+    /** Number of beams. */
     protected final int beamCount;
 
     /**
@@ -101,8 +101,9 @@ public class BeamSymbol
         p.quarterDx = (int) Math.rint(qRect.getWidth() * 2);
         p.quarterDy = (int) Math.rint(qRect.getWidth() * 0.8);
 
-        p.rect = new Rectangle((int) Math.ceil(qRect.getWidth() + p.quarterDx), (int) Math.ceil(
-                               qRect.getHeight() + p.quarterDy));
+        p.rect = new Rectangle(
+                (int) Math.ceil(qRect.getWidth() + p.quarterDx),
+                (int) Math.ceil(qRect.getHeight() + p.quarterDy));
 
         return p;
     }

@@ -126,14 +126,17 @@ public class InterIndex
         final EntityService<Inter> interService = this.getEntityService();
 
         if (interService != null) {
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
                 {
-                    interService.publish(new EntityListEvent<Inter>(this, SelectionHint.ENTITY_INIT,
-                                                                    MouseMovement.PRESSING, inter));
+                    interService.publish(
+                            new EntityListEvent<>(
+                                    this,
+                                    SelectionHint.ENTITY_INIT,
+                                    MouseMovement.PRESSING,
+                                    inter));
                 }
             });
         }
@@ -142,11 +145,12 @@ public class InterIndex
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.String vipInters = new Constant.String("",
-                                                                      "(Debug) Comma-separated values of VIP inters IDs");
+        private final Constant.String vipInters = new Constant.String(
+                "",
+                "(Debug) Comma-separated values of VIP inters IDs");
     }
 }

@@ -5,7 +5,6 @@
 //----------------------------------------------------------------------------//
 package org.audiveris.omr.ui.treetable;
 
-
 /*
  * @(#)TreeTableModelAdapter.java 1.2 98/10/27
  *
@@ -57,8 +56,7 @@ public class TreeTableModelAdapter
         this.tree = tree;
         this.treeTableModel = treeTableModel;
 
-        tree.addTreeExpansionListener(
-                new TreeExpansionListener()
+        tree.addTreeExpansionListener(new TreeExpansionListener()
         {
             // Don't use fireTableRowsInserted() here; the selection model
             // would get updated twice.
@@ -79,8 +77,7 @@ public class TreeTableModelAdapter
         // tree changes. We use delayedFireTableDataChanged as we can
         // not be guaranteed the tree will have finished processing
         // the event before us.
-        treeTableModel.addTreeModelListener(
-                new TreeModelListener()
+        treeTableModel.addTreeModelListener(new TreeModelListener()
         {
             @Override
             public void treeNodesChanged (TreeModelEvent e)
@@ -115,7 +112,6 @@ public class TreeTableModelAdapter
      * DOCUMENT ME!
      *
      * @param column DOCUMENT ME!
-     *
      * @return DOCUMENT ME!
      */
     @Override
@@ -146,7 +142,6 @@ public class TreeTableModelAdapter
      * DOCUMENT ME!
      *
      * @param column DOCUMENT ME!
-     *
      * @return DOCUMENT ME!
      */
     @Override
@@ -177,7 +172,6 @@ public class TreeTableModelAdapter
      *
      * @param row    DOCUMENT ME!
      * @param column DOCUMENT ME!
-     *
      * @return DOCUMENT ME!
      */
     @Override
@@ -195,7 +189,6 @@ public class TreeTableModelAdapter
      *
      * @param row    DOCUMENT ME!
      * @param column DOCUMENT ME!
-     *
      * @return DOCUMENT ME!
      */
     @Override
@@ -212,7 +205,6 @@ public class TreeTableModelAdapter
      * DOCUMENT ME!
      *
      * @param row DOCUMENT ME!
-     *
      * @return DOCUMENT ME!
      */
     public Object nodeForRow (int row)
@@ -249,8 +241,7 @@ public class TreeTableModelAdapter
      */
     protected void delayedFireTableDataChanged ()
     {
-        SwingUtilities.invokeLater(
-                new Runnable()
+        SwingUtilities.invokeLater(new Runnable()
         {
             @Override
             public void run ()

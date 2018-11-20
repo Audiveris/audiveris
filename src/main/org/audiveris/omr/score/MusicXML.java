@@ -47,8 +47,6 @@ import org.audiveris.proxymusic.YesNo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.String; // Do not remove this line!
-
 import javax.xml.bind.JAXBElement;
 
 /**
@@ -62,9 +60,18 @@ public abstract class MusicXML
     private static final Logger logger = LoggerFactory.getLogger(MusicXML.class);
 
     /** Names of the various note types used in MusicXML. */
-    private static final String[] noteTypeNames = new String[]{"256th", "128th", "64th", "32nd",
-                                                               "16th", "eighth", "quarter", "half",
-                                                               "whole", "breve", "long"};
+    private static final String[] noteTypeNames = new String[]{
+        "256th",
+        "128th",
+        "64th",
+        "32nd",
+        "16th",
+        "eighth",
+        "quarter",
+        "half",
+        "whole",
+        "breve",
+        "long"};
 
     /**
      * Not meant to be instantiated.

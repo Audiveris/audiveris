@@ -33,7 +33,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * to a beam hook interpretation.
  *
  * @see BeamHookInter
- *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "beam")

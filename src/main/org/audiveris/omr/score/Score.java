@@ -58,14 +58,14 @@ public class Score
 
     private static final Logger logger = LoggerFactory.getLogger(Score.class);
 
-    /** Number of lines in a staff */
+    /** Number of lines in a staff. */
     public static final int LINE_NB = 5;
 
-    //
     // Persistent data
     //----------------
     //
-    /** Score id, within containing book.
+    /**
+     * Score id, within containing book.
      * see {@link #getId()}.
      */
     /** LogicalPart list for the whole score. */
@@ -74,7 +74,7 @@ public class Score
 
     /** Pages links. */
     @XmlElement(name = "page")
-    private final List<PageLink> pageLinks = new ArrayList<PageLink>();
+    private final List<PageLink> pageLinks = new ArrayList<>();
 
     // Transient data
     //---------------
@@ -84,7 +84,7 @@ public class Score
     private Book book;
 
     /** Page references. */
-    private ArrayList<PageRef> pageRefs = new ArrayList<PageRef>();
+    private ArrayList<PageRef> pageRefs = new ArrayList<>();
 
     /** Referenced pages. */
     private ArrayList<Page> pages;
@@ -93,7 +93,7 @@ public class Score
     private final Param<List<PartData>> partsParam = new PartsParam();
 
     /** Handling of tempo parameter. */
-    private final Param<Integer> tempoParam = new Param<Integer>();
+    private final Param<Integer> tempoParam = new Param<>();
 
     /** The specified sound volume, if any. */
     private Integer volume;
@@ -106,48 +106,15 @@ public class Score
         tempoParam.setParent(Tempo.defaultTempo);
     }
 
-    //------------------//
-    // getDefaultVolume //
-    //------------------//
-    /**
-     * Report default value for Midi volume.
-     *
-     * @return the default volume value
-     */
-    public static int getDefaultVolume ()
-    {
-        return constants.defaultVolume.getValue();
-    }
-
-    //-----------------//
-    // setDefaultTempo //
-    //-----------------//
-    /**
-     * Assign default value for Midi tempo.
-     *
-     * @param tempo the default tempo value
-     */
-    public static void setDefaultTempo (int tempo)
-    {
-        constants.defaultTempo.setValue(tempo);
-    }
-
-    //------------------//
-    // setDefaultVolume //
-    //------------------//
-    /**
-     * Assign default value for Midi volume.
-     *
-     * @param volume the default volume value
-     */
-    public static void setDefaultVolume (int volume)
-    {
-        constants.defaultVolume.setValue(volume);
-    }
-
     //------------//
     // addPageRef //
     //------------//
+    /**
+     * Add a PageRef.
+     *
+     * @param stubNumber id of containing sheet stub
+     * @param pageRef    to add
+     */
     public void addPageRef (int stubNumber,
                             PageRef pageRef)
     {
@@ -166,15 +133,9 @@ public class Score
         logger.info("Closing {}", this);
     }
 
-    //-------------//
-    // disposePage //
-    //-------------//
-    public void disposePage (Page page)
-    {
-        throw new RuntimeException("disposePage. Not implemented yet.");
-    }
-
     /**
+     * Report the containing book for this score
+     *
      * @return the book
      */
     public Book getBook ()
@@ -182,9 +143,27 @@ public class Score
         return book;
     }
 
+    //---------//
+    // setBook //
+    //---------//
+    /**
+     * Assign the containing book.
+     *
+     * @param book the book to set
+     */
+    public void setBook (Book book)
+    {
+        this.book = book;
+    }
+
     //--------------//
     // getFirstPage //
     //--------------//
+    /**
+     * Report the first page in this score
+     *
+     * @return first page
+     */
     public Page getFirstPage ()
     {
         if (pageRefs.isEmpty()) {
@@ -197,6 +176,11 @@ public class Score
     //-----------------//
     // getFirstPageRef //
     //-----------------//
+    /**
+     * Return the first PageRef in this score
+     *
+     * @return first pageRef
+     */
     public PageRef getFirstPageRef ()
     {
         if (pageRefs.isEmpty()) {
@@ -230,7 +214,9 @@ public class Score
     // getId //
     //-------//
     /**
-     * @return the id, if any
+     * Report the score ID, if any
+     *
+     * @return the id, or null
      */
     @XmlAttribute
     public Integer getId ()
@@ -247,6 +233,11 @@ public class Score
     //-------------//
     // getLastPage //
     //-------------//
+    /**
+     * Report the last page in this score.
+     *
+     * @return last page
+     */
     public Page getLastPage ()
     {
         if (pageRefs.isEmpty()) {
@@ -259,6 +250,11 @@ public class Score
     //----------------//
     // getLastPageRef //
     //----------------//
+    /**
+     * Report the last PageRef in this score.
+     *
+     * @return last pageRef
+     */
     public PageRef getLastPageRef ()
     {
         if (pageRefs.isEmpty()) {
@@ -279,6 +275,19 @@ public class Score
     public List<LogicalPart> getLogicalParts ()
     {
         return logicalParts;
+    }
+
+    //-----------------//
+    // setLogicalParts //
+    //-----------------//
+    /**
+     * Assign a part list valid for the whole score.
+     *
+     * @param logicalParts the list of logical parts
+     */
+    public void setLogicalParts (List<LogicalPart> logicalParts)
+    {
+        this.logicalParts = logicalParts;
     }
 
     //--------------------//
@@ -359,6 +368,12 @@ public class Score
     //------------//
     // getPageRef //
     //------------//
+    /**
+     * Return the score pageRef for a specified sheet stub.
+     *
+     * @param sheetNumber sheet stub number
+     * @return the score page in this sheet, or null
+     */
     public PageRef getPageRef (int sheetNumber)
     {
         for (PageRef pageRef : pageRefs) {
@@ -373,6 +388,11 @@ public class Score
     //-------------//
     // getPageRefs //
     //-------------//
+    /**
+     * Report the sequence of PageRef instances for this score.
+     *
+     * @return sequence of PageRef's
+     */
     public List<PageRef> getPageRefs ()
     {
         return Collections.unmodifiableList(pageRefs);
@@ -389,7 +409,7 @@ public class Score
     public List<Page> getPages ()
     {
         if (pages == null) {
-            pages = new ArrayList<Page>();
+            pages = new ArrayList<>();
 
             // De-reference pageRefs
             for (PageRef ref : pageRefs) {
@@ -403,6 +423,11 @@ public class Score
     //---------------//
     // getPartsParam //
     //---------------//
+    /**
+     * Report the sequence of parts parameters.
+     *
+     * @return sequence of parts parameters (name, midi program)
+     */
     public Param<List<PartData>> getPartsParam ()
     {
         return partsParam;
@@ -458,7 +483,7 @@ public class Score
      */
     public List<SheetStub> getStubs ()
     {
-        final List<SheetStub> pageStubs = new ArrayList<SheetStub>();
+        final List<SheetStub> pageStubs = new ArrayList<>();
         final List<SheetStub> bookStubs = book.getStubs();
 
         for (PageRef ref : pageRefs) {
@@ -471,6 +496,11 @@ public class Score
     //----------------//
     // getTempoParam //
     //---------------//
+    /**
+     * Report the tempo parameter.
+     *
+     * @return tempo information
+     */
     public Param<Integer> getTempoParam ()
     {
         return tempoParam;
@@ -492,6 +522,19 @@ public class Score
         }
 
         return volume;
+    }
+
+    //-----------//
+    // setVolume //
+    //-----------//
+    /**
+     * Assign a volume value.
+     *
+     * @param volume the volume value to be assigned
+     */
+    public void setVolume (Integer volume)
+    {
+        this.volume = volume;
     }
 
     //-----------//
@@ -536,43 +579,6 @@ public class Score
     public boolean isMultiPage ()
     {
         return pageRefs.size() > 1;
-    }
-
-    //---------//
-    // setBook //
-    //---------//
-    /**
-     * @param book the book to set
-     */
-    public void setBook (Book book)
-    {
-        this.book = book;
-    }
-
-    //-----------------//
-    // setLogicalParts //
-    //-----------------//
-    /**
-     * Assign a part list valid for the whole score.
-     *
-     * @param logicalParts the list of logical parts
-     */
-    public void setLogicalParts (List<LogicalPart> logicalParts)
-    {
-        this.logicalParts = logicalParts;
-    }
-
-    //-----------//
-    // setVolume //
-    //-----------//
-    /**
-     * Assign a volume value.
-     *
-     * @param volume the volume value to be assigned
-     */
-    public void setVolume (Integer volume)
-    {
-        this.volume = volume;
     }
 
     //----------//
@@ -644,55 +650,43 @@ public class Score
         return null;
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
+    //------------------//
+    // getDefaultVolume //
+    //------------------//
+    /**
+     * Report default value for Midi volume.
+     *
+     * @return the default volume value
+     */
+    public static int getDefaultVolume ()
     {
-
-        private final Constant.Integer defaultTempo = new Constant.Integer("QuartersPerMn", 120,
-                                                                           "Default tempo, stated in number of quarters per minute");
-
-        private final Constant.Integer defaultVolume = new Constant.Integer("Volume", 78,
-                                                                            "Default Volume in 0..127 range");
+        return constants.defaultVolume.getValue();
     }
 
-    //----------//
-    // PageLink //
-    //----------//
-    private static class PageLink
+    //------------------//
+    // setDefaultVolume //
+    //------------------//
+    /**
+     * Assign default value for Midi volume.
+     *
+     * @param volume the default volume value
+     */
+    public static void setDefaultVolume (int volume)
     {
+        constants.defaultVolume.setValue(volume);
+    }
 
-        @XmlAttribute(name = "sheet-number")
-        public final int sheetNumber;
-
-        @XmlAttribute(name = "sheet-page-id")
-        public final int sheetPageId;
-
-        public PageLink (int sheetNumber,
-                         int sheetPageId)
-        {
-            this.sheetNumber = sheetNumber;
-            this.sheetPageId = sheetPageId;
-        }
-
-        private PageLink ()
-        {
-            this.sheetNumber = 0;
-            this.sheetPageId = 0;
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder("PageLink{");
-            sb.append("sheetNumber:").append(sheetNumber);
-            sb.append(" sheetPageId:").append(sheetPageId);
-            sb.append('}');
-
-            return sb.toString();
-        }
+    //-----------------//
+    // setDefaultTempo //
+    //-----------------//
+    /**
+     * Assign default value for Midi tempo.
+     *
+     * @param tempo the default tempo value
+     */
+    public static void setDefaultTempo (int tempo)
+    {
+        constants.defaultTempo.setValue(tempo);
     }
 
     //------------//
@@ -706,10 +700,8 @@ public class Score
         public List<PartData> getSpecific ()
         {
             List<LogicalPart> list = getLogicalParts();
-
             if (list != null) {
-                List<PartData> data = new ArrayList<PartData>();
-
+                List<PartData> data = new ArrayList<>();
                 for (LogicalPart logicalPart : list) {
                     // Initial setting for part midi program
                     int prog = (logicalPart.getMidiProgram() != null) ? logicalPart.getMidiProgram()
@@ -717,7 +709,6 @@ public class Score
 
                     data.add(new PartData(logicalPart.getName(), prog));
                 }
-
                 return data;
             } else {
                 return null;
@@ -749,4 +740,60 @@ public class Score
             return false;
         }
     }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer defaultTempo = new Constant.Integer(
+                "QuartersPerMn",
+                120,
+                "Default tempo, stated in number of quarters per minute");
+
+        private final Constant.Integer defaultVolume = new Constant.Integer(
+                "Volume",
+                78,
+                "Default Volume in 0..127 range");
+    }
+
+    //----------//
+    // PageLink //
+    //----------//
+    private static class PageLink
+    {
+
+        @XmlAttribute(name = "sheet-number")
+        public final int sheetNumber;
+
+        @XmlAttribute(name = "sheet-page-id")
+        public final int sheetPageId;
+
+        PageLink (int sheetNumber,
+                  int sheetPageId)
+        {
+            this.sheetNumber = sheetNumber;
+            this.sheetPageId = sheetPageId;
+        }
+
+        private PageLink ()
+        {
+            this.sheetNumber = 0;
+            this.sheetPageId = 0;
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("PageLink{");
+            sb.append("sheetNumber:").append(sheetNumber);
+            sb.append(" sheetPageId:").append(sheetPageId);
+            sb.append('}');
+
+            return sb.toString();
+        }
+    }
+
 }

@@ -27,6 +27,7 @@ import org.audiveris.omr.util.Jaxb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -48,6 +50,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * Class {@code SheetContainer} contains descriptions of sample sheets, notably their
@@ -70,12 +73,15 @@ public class SheetContainer
     /** Regex pattern for unique names. */
     private static final Pattern UNIQUE_PATTERN = Pattern.compile("(.*)(_[0-9][0-9])");
 
+    /** Un/marshalling context for use with JAXB. */
+    private static volatile JAXBContext jaxbContext;
+
     // Persistent data
     //----------------
     /** Map (RunTable Hash code => list of sheet descriptors). */
     @XmlElement(name = "sheets")
     @XmlJavaTypeAdapter(Adapter.class)
-    private HashMap<Integer, List<Descriptor>> hashMap = new HashMap<Integer, List<Descriptor>>();
+    private HashMap<Integer, List<Descriptor>> hashMap = new HashMap<>();
 
     // Transient data
     //---------------
@@ -83,7 +89,7 @@ public class SheetContainer
     private boolean modified;
 
     /** Descriptors to be deleted from disk. */
-    private Set<Descriptor> defunctDescriptors = new LinkedHashSet<Descriptor>();
+    private Set<Descriptor> defunctDescriptors = new LinkedHashSet<>();
 
     /**
      * Creates a new {@code SheetContainer} object. Needed for JAXB.
@@ -105,7 +111,7 @@ public class SheetContainer
         List<Descriptor> descriptors = hashMap.get(desc.hash);
 
         if (descriptors == null) {
-            hashMap.put(desc.hash, descriptors = new ArrayList<Descriptor>());
+            hashMap.put(desc.hash, descriptors = new ArrayList<>());
         }
 
         descriptors.add(desc);
@@ -115,6 +121,9 @@ public class SheetContainer
     //------//
     // dump //
     //------//
+    /**
+     * Dump internals of the SheetContainer.
+     */
     public void dump ()
     {
         logger.info("SheetContainer: {}", hashMap);
@@ -140,7 +149,7 @@ public class SheetContainer
             radix = name;
         }
 
-        final List<String> similars = new ArrayList<String>();
+        final List<String> similars = new ArrayList<>();
         boolean collided = false;
 
         for (List<Descriptor> descriptors : hashMap.values()) {
@@ -184,7 +193,7 @@ public class SheetContainer
      */
     public List<Descriptor> getAllDescriptors ()
     {
-        List<Descriptor> all = new ArrayList<Descriptor>();
+        List<Descriptor> all = new ArrayList<>();
 
         for (List<Descriptor> descriptors : hashMap.values()) {
             all.addAll(descriptors);
@@ -267,6 +276,19 @@ public class SheetContainer
         return modified;
     }
 
+    //-------------//
+    // setModified //
+    //-------------//
+    /**
+     * Set the modified status of this container.
+     *
+     * @param modified the modified to set
+     */
+    public void setModified (boolean modified)
+    {
+        this.modified = modified;
+    }
+
     //---------//
     // marshal //
     //---------//
@@ -288,8 +310,7 @@ public class SheetContainer
             Files.createDirectories(path.getParent());
 
             // Container
-            JAXBContext jaxbContext = JAXBContext.newInstance(SheetContainer.class);
-            Jaxb.marshal(this, path, jaxbContext);
+            Jaxb.marshal(this, path, getJaxbContext());
             logger.info("Stored {}", path);
 
             // Remove defunct sheets if any
@@ -300,9 +321,25 @@ public class SheetContainer
             defunctDescriptors.clear();
 
             setModified(false);
-        } catch (Exception ex) {
+        } catch (IOException |
+                 JAXBException |
+                 XMLStreamException ex) {
             logger.error("Error marshalling " + this + " " + ex, ex);
         }
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(SheetContainer.class);
+        }
+
+        return jaxbContext;
     }
 
     //------------------//
@@ -326,17 +363,6 @@ public class SheetContainer
         defunctDescriptors.add(desc);
 
         setModified(true);
-    }
-
-    //-------------//
-    // setModified //
-    //-------------//
-    /**
-     * @param modified the modified to set
-     */
-    public void setModified (boolean modified)
-    {
-        this.modified = modified;
     }
 
     //----------//
@@ -368,12 +394,12 @@ public class SheetContainer
             final Path path = root.resolve(CONTAINER_ENTRY_NAME);
             logger.debug("SheetContainer unmarshalling {}", path);
 
-            JAXBContext jaxbContext = JAXBContext.newInstance(SheetContainer.class);
-            SheetContainer sheetContainer = (SheetContainer) Jaxb.unmarshal(path, jaxbContext);
+            SheetContainer sheetContainer = (SheetContainer) Jaxb.unmarshal(path, getJaxbContext());
             logger.info("Unmarshalled {}", sheetContainer);
 
             return sheetContainer;
-        } catch (Exception ex) {
+        } catch (IOException |
+                 JAXBException ex) {
             logger.warn("Error unmarshalling SheetContainer " + ex, ex);
 
             return null;
@@ -383,6 +409,9 @@ public class SheetContainer
     //---------//
     // Adapter //
     //---------//
+    /**
+     * JAXB adapter to support a HashMap.
+     */
     public static class Adapter
             extends XmlAdapter<ContainerValue, HashMap<Integer, List<Descriptor>>>
     {
@@ -398,13 +427,13 @@ public class SheetContainer
         public HashMap<Integer, List<Descriptor>> unmarshal (ContainerValue value)
                 throws Exception
         {
-            HashMap<Integer, List<Descriptor>> map = new HashMap<Integer, List<Descriptor>>();
+            HashMap<Integer, List<Descriptor>> map = new HashMap<>();
 
             for (Descriptor desc : value.descriptors) {
                 List<Descriptor> descriptors = map.get(desc.hash);
 
                 if (descriptors == null) {
-                    map.put(desc.hash, descriptors = new ArrayList<Descriptor>());
+                    map.put(desc.hash, descriptors = new ArrayList<>());
                 }
 
                 if (!descriptors.contains(desc)) {
@@ -419,14 +448,22 @@ public class SheetContainer
     //----------------//
     // ContainerValue //
     //----------------//
+    /**
+     * A flat list of descriptors to (un)marshal descriptors map.
+     */
     @XmlAccessorType(XmlAccessType.FIELD)
     public static class ContainerValue
     {
 
         /** The collection of sheet descriptors. */
         @XmlElement(name = "sheet")
-        private final List<Descriptor> descriptors = new ArrayList<Descriptor>();
+        private final List<Descriptor> descriptors = new ArrayList<>();
 
+        /**
+         * Populate the flat list.
+         *
+         * @param map the map of descriptors.
+         */
         public ContainerValue (HashMap<Integer, List<Descriptor>> map)
         {
             for (List<Descriptor> list : map.values()) {
@@ -441,11 +478,8 @@ public class SheetContainer
         }
     }
 
-    //------------//
-    // Descriptor //
-    //------------//
     /**
-     * Descriptor of a SampleSheet. To be kept in memory and save loading.
+     * A descriptor for a sample sheet.
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     public static class Descriptor
@@ -462,14 +496,27 @@ public class SheetContainer
 
         /** Collection of all name aliases, perhaps empty. */
         @XmlElement(name = "alias")
-        private final ArrayList<String> aliases = new ArrayList<String>();
+        private final ArrayList<String> aliases = new ArrayList<>();
 
+        /**
+         * Create descriptor for a sample sheet.
+         *
+         * @param name sheet name
+         * @param hash hash code of related image run table or null
+         */
         public Descriptor (String name,
                            Integer hash)
         {
             this(name, hash, EMPTY_LIST);
         }
 
+        /**
+         * Create descriptor for a sample sheet and its aliases.
+         *
+         * @param name    sheet name
+         * @param hash    hash code of related image run table or null
+         * @param aliases other names for the same sheet
+         */
         public Descriptor (String name,
                            Integer hash,
                            List<String> aliases)
@@ -484,6 +531,11 @@ public class SheetContainer
         {
         }
 
+        /**
+         * Register an alias for the sheet.
+         *
+         * @param alias new alias
+         */
         public void addAlias (String alias)
         {
             if ((alias != null) && !isAlias(alias)) {
@@ -512,11 +564,21 @@ public class SheetContainer
             return false;
         }
 
+        /**
+         * Report the collection of aliases.
+         *
+         * @return the sheet aliases, perhaps empty.
+         */
         public List<String> getAliases ()
         {
             return aliases;
         }
 
+        /**
+         * Report concatenated aliases.
+         *
+         * @return string of aliases
+         */
         public String getAliasesString ()
         {
             if (aliases.isEmpty()) {
@@ -536,9 +598,24 @@ public class SheetContainer
             return sb.toString();
         }
 
+        /**
+         * Report the sheet name.
+         *
+         * @return sheet name
+         */
         public String getName ()
         {
             return name;
+        }
+
+        /**
+         * Set sheet name.
+         *
+         * @param name name for sheet
+         */
+        public void setName (String name)
+        {
+            this.name = name;
         }
 
         @Override
@@ -550,6 +627,12 @@ public class SheetContainer
             return hash;
         }
 
+        /**
+         * Check whether the provided name is an alias of this sheet.
+         *
+         * @param str provided name
+         * @return true if so
+         */
         public boolean isAlias (String str)
         {
             if (str.equalsIgnoreCase(name)) {
@@ -563,11 +646,6 @@ public class SheetContainer
             }
 
             return false;
-        }
-
-        public void setName (String name)
-        {
-            this.name = name;
         }
 
         @Override

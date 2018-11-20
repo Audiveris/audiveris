@@ -28,11 +28,17 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
+ * URI utilities.
  *
  * @author Hervé Bitteur
  */
 public abstract class UriUtil
 {
+
+    /** Not meant to be instantiated. */
+    private UriUtil ()
+    {
+    }
 
     //--------//
     // toFile //

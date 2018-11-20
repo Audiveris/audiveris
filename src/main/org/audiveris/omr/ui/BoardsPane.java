@@ -54,7 +54,6 @@ import javax.swing.SwingConstants;
  * Board} instances, where data related to current point, run, section,
  * glyph, etc can be displayed in dedicated boards.
  * <p>
- * <p>
  * There is one BoardsPane instance for each view of the same sheet,
  * each with its own collection of board instances.
  *
@@ -69,7 +68,7 @@ public class BoardsPane
     private final Panel component;
 
     /** Sequence of current boards, kept ordered by board preferred position */
-    private final List<Board> boards = new ArrayList<Board>();
+    private final List<Board> boards = new ArrayList<>();
 
     /** Unique (application-wide) name for this pane. */
     private String name;
@@ -199,6 +198,20 @@ public class BoardsPane
         return name;
     }
 
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assign the unique name for this boards pane.
+     *
+     * @param name the assigned name
+     */
+    public void setName (String name)
+    {
+        this.name = name;
+        component.setName(name);
+    }
+
     //-------------//
     // removeBoard //
     //-------------//
@@ -215,20 +228,6 @@ public class BoardsPane
 
         boards.remove(board);
         update();
-    }
-
-    //---------//
-    // setName //
-    //---------//
-    /**
-     * Assign the unique name for this boards pane.
-     *
-     * @param name the assigned name
-     */
-    public void setName (String name)
-    {
-        this.name = name;
-        component.setName(name);
     }
 
     //----------//
@@ -261,22 +260,6 @@ public class BoardsPane
         sb.append("]}");
 
         return sb.toString();
-    }
-
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Modify the BoardsPane component composition.
-     */
-    void update ()
-    {
-        int count = component.getComponentCount();
-        Component comp = component.getComponent(count - 1);
-        component.remove(comp);
-        component.add(defineLayout());
-        component.revalidate();
-        component.repaint();
     }
 
     //--------------//
@@ -341,6 +324,22 @@ public class BoardsPane
         return null;
     }
 
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Modify the BoardsPane component composition.
+     */
+    void update ()
+    {
+        int count = component.getComponentCount();
+        Component comp = component.getComponent(count - 1);
+        component.remove(comp);
+        component.add(defineLayout());
+        component.revalidate();
+        component.repaint();
+    }
+
     //----------------//
     // MyMouseAdapter //
     //----------------//
@@ -392,8 +391,8 @@ public class BoardsPane
                 for (Board board : boards) {
                     JMenuItem item = new JCheckBoxMenuItem(board.getName(), board.isSelected());
                     item.addItemListener(this);
-                    item.setToolTipText(board.isSelected() ? "Deselect this board?"
-                            : "Select this board?");
+                    item.setToolTipText(
+                            board.isSelected() ? "Deselect this board?" : "Select this board?");
                     popup.add(item);
                 }
 

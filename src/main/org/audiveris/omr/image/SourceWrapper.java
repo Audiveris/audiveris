@@ -55,7 +55,6 @@ public class SourceWrapper
         return source.get(x, y);
     }
 
-    //
     //-----------//
     // getHeight //
     //-----------//

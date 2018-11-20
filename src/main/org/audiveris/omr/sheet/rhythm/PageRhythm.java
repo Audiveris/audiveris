@@ -82,16 +82,17 @@ public class PageRhythm
     private static final Logger logger = LoggerFactory.getLogger(PageRhythm.class);
 
     /** Adjustable rhythm classes. (FRAT: Flag, RestChord, AugmentationDot, Tuplet) */
-    private static final Class<?>[] FRAT_CLASSES = new Class<?>[]{FlagInter.class,
-                                                                  RestChordInter.class,
-                                                                  AugmentationDotInter.class,
-                                                                  TupletInter.class};
+    private static final Class<?>[] FRAT_CLASSES = new Class<?>[]{
+        FlagInter.class,
+        RestChordInter.class,
+        AugmentationDotInter.class,
+        TupletInter.class};
 
-    /** The page being processed.. */
+    /** The page being processed. */
     private final Page page;
 
     /** Sequence of time-sig ranges found in page. */
-    private final List<Range> ranges = new ArrayList<Range>();
+    private final List<Range> ranges = new ArrayList<>();
 
     /**
      * Creates a new {@code PageRhythm} object.
@@ -229,8 +230,11 @@ public class PageRhythm
                     // Adjust time signature? (TODO: today we don't adjust anything in fact)
                     if ((range.duration != null) && ((range.ts == null) || !range.ts
                             .getTimeRational().getValue().equals(range.duration))) {
-                        logger.info("{}{} should update to {}-based time sig?", stack.getSystem()
-                                    .getLogPrefix(), range, range.duration);
+                        logger.info(
+                                "{}{} should update to {}-based time sig?",
+                                stack.getSystem().getLogPrefix(),
+                                range,
+                                range.duration);
                     }
                 }
 
@@ -266,7 +270,7 @@ public class PageRhythm
      */
     private Rational retrieveExpectedDuration (Range range)
     {
-        Histogram<Rational> histo = new Histogram<Rational>();
+        Histogram<Rational> histo = new Histogram<>();
         int stackNb = 0;
         int voiceNb = 0;
 
@@ -398,8 +402,8 @@ public class PageRhythm
 
         Rational duration; // Inferred measure duration for the range
 
-        public Range (int startId,
-                      AbstractTimeInter ts)
+        Range (int startId,
+               AbstractTimeInter ts)
         {
             this.startId = startId;
             this.ts = ts;

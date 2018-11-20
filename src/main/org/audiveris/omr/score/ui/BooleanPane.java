@@ -42,6 +42,7 @@ public class BooleanPane
     /** Boolean box. */
     protected final JCheckBox bbox = new JCheckBox();
 
+    /** Label for the boolean. */
     protected final JLabel label;
 
     /**

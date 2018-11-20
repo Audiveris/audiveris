@@ -39,7 +39,6 @@ public abstract class TextItem
     /** Item value. */
     private String value;
 
-    //
     //----------//
     // TextItem //
     //----------//
@@ -59,30 +58,6 @@ public abstract class TextItem
         this.value = value;
     }
 
-    //----------//
-    // boundsOf //
-    //----------//
-    /**
-     * Compute the bounding box of a collection of TextItem instances.
-     *
-     * @param items the provided collection of TextItem instances
-     * @return the global bounding box
-     */
-    public static Rectangle boundsOf (Collection<? extends TextItem> items)
-    {
-        Rectangle bounds = null;
-
-        for (TextItem item : items) {
-            if (bounds == null) {
-                bounds = item.getBounds();
-            } else {
-                bounds.add(item.getBounds());
-            }
-        }
-
-        return bounds;
-    }
-
     //-----------//
     // getBounds //
     //-----------//
@@ -100,6 +75,19 @@ public abstract class TextItem
         }
     }
 
+    //-----------//
+    // setBounds //
+    //-----------//
+    /**
+     * Set a new bounding box of the item.
+     *
+     * @param bounds the new bounding box
+     */
+    public void setBounds (Rectangle bounds)
+    {
+        this.bounds = bounds;
+    }
+
     //----------//
     // getValue //
     //----------//
@@ -113,17 +101,17 @@ public abstract class TextItem
         return value;
     }
 
-    //-----------//
-    // setBounds //
-    //-----------//
+    //----------//
+    // setValue //
+    //----------//
     /**
-     * Set a new bounding box of the item.
+     * Modify the item value.
      *
-     * @param bounds the new bounding box
+     * @param value the new item value
      */
-    public void setBounds (Rectangle bounds)
+    protected void setValue (String value)
     {
-        this.bounds = bounds;
+        this.value = value;
     }
 
     //----------//
@@ -159,24 +147,6 @@ public abstract class TextItem
         }
     }
 
-    //---------//
-    // valueOf //
-    //---------//
-    public static String valueOf (List<? extends TextItem> items)
-    {
-        StringBuilder sb = new StringBuilder();
-
-        for (TextItem item : items) {
-            if (sb.length() > 0) {
-                sb.append(" ");
-            }
-
-            sb.append(item.getValue());
-        }
-
-        return sb.toString();
-    }
-
     //-----------//
     // internals //
     //-----------//
@@ -192,23 +162,63 @@ public abstract class TextItem
         sb.append(" \"").append(getValue()).append("\"");
 
         if (getBounds() != null) {
-            sb.append(String.format(" bounds[%d,%d,%d,%d]", bounds.x, bounds.y, bounds.width,
-                                    bounds.height));
+            sb.append(
+                    String.format(
+                            " bounds[%d,%d,%d,%d]",
+                            bounds.x,
+                            bounds.y,
+                            bounds.width,
+                            bounds.height));
         }
 
         return sb.toString();
     }
 
     //----------//
-    // setValue //
+    // boundsOf //
     //----------//
     /**
-     * Modify the item value.
+     * Compute the bounding box of a collection of TextItem instances.
      *
-     * @param value the new item value
+     * @param items the provided collection of TextItem instances
+     * @return the global bounding box
      */
-    protected void setValue (String value)
+    public static Rectangle boundsOf (Collection<? extends TextItem> items)
     {
-        this.value = value;
+        Rectangle bounds = null;
+
+        for (TextItem item : items) {
+            if (bounds == null) {
+                bounds = item.getBounds();
+            } else {
+                bounds.add(item.getBounds());
+            }
+        }
+
+        return bounds;
+    }
+
+    //---------//
+    // valueOf //
+    //---------//
+    /**
+     * Report the string content of a sequence of TextItem.
+     *
+     * @param items provided sequence
+     * @return string value
+     */
+    public static String valueOf (List<? extends TextItem> items)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        for (TextItem item : items) {
+            if (sb.length() > 0) {
+                sb.append(" ");
+            }
+
+            sb.append(item.getValue());
+        }
+
+        return sb.toString();
     }
 }

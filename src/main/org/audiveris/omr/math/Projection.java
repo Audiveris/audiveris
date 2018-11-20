@@ -175,6 +175,9 @@ public interface Projection
     //----------//
     // Abstract //
     //----------//
+    /**
+     * Abstract implementation.
+     */
     public abstract class Abstract
             implements Projection
     {
@@ -185,6 +188,12 @@ public interface Projection
         /** Last point on projection axis. */
         protected final int stop;
 
+        /**
+         * Create an instance of Abstract class.
+         *
+         * @param start first value in range
+         * @param stop  last value in range
+         */
         protected Abstract (int start,
                             int stop)
         {

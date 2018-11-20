@@ -27,6 +27,8 @@ import java.util.Arrays;
 /**
  * Class {@code PointsCollector} is meant to cumulate points coordinates, perhaps
  * within a provided <b>absolute</b> region of interest.
+ *
+ * @author Hervé Bitteur
  */
 public class PointsCollector
 {

@@ -27,6 +27,7 @@ import org.audiveris.omr.util.Dumper.Row;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -133,7 +134,6 @@ public class Dumping
      * Return a line which contains the whole set of internal data
      *
      * @param obj the object whose data is to be printed
-     *
      * @return the string of data values
      */
     public String dumpOf (Object obj)
@@ -149,7 +149,6 @@ public class Dumping
      * html editor can easily render this.
      *
      * @param obj the object to dump
-     *
      * @return the HTML string
      */
     public String htmlDumpOf (Object obj)
@@ -160,6 +159,9 @@ public class Dumping
     //-----------//
     // Relevance //
     //-----------//
+    /**
+     * Handles if a field or class is relevant for dumping.
+     */
     public static interface Relevance
     {
 
@@ -184,25 +186,33 @@ public class Dumping
     // PackageRelevance //
     //------------------//
     /**
-     * A relevance filter, based on root packages
+     * A relevance filter, based on root packages.
      */
     public static class PackageRelevance
             implements Relevance
     {
 
-        /** Collection of root packages, to filter non-relevant classes */
-        protected final Set<Package> rootPackages = new LinkedHashSet<Package>();
+        /** Collection of root packages, to filter non-relevant classes. */
+        protected final Set<Package> rootPackages = new LinkedHashSet<>();
 
+        /**
+         * Create a PackageRelevance from a collection of packages.
+         *
+         * @param rootPackages the roots of relevant packages
+         */
         public PackageRelevance (Collection<Package> rootPackages)
         {
             this.rootPackages.addAll(rootPackages);
         }
 
+        /**
+         * Create a PackageRelevance from an array of packages.
+         *
+         * @param rootPackages the roots of relevant packages
+         */
         public PackageRelevance (Package... rootPackages)
         {
-            for (Package pkg : rootPackages) {
-                this.rootPackages.add(pkg);
-            }
+            this.rootPackages.addAll(Arrays.asList(rootPackages));
         }
 
         //-----------------//
@@ -236,11 +246,7 @@ public class Dumping
             }
 
             // We don't print non-user visible entities
-            if (field.getName().indexOf('$') != -1) {
-                return false;
-            }
-
-            return true;
+            return field.getName().indexOf('$') == -1;
         }
     }
 }

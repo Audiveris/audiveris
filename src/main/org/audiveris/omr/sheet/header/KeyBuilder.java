@@ -102,7 +102,8 @@ import java.util.Set;
  * from a time signature.
  * A space, if any, between two key signature items is very narrow.
  * <p>
- * Strategy:<ol>
+ * Strategy:
+ * <ol>
  * <li>Find first significant space right after clef, it's the space that separates the clef from
  * next item (key signature or time signature or first note/rest, etc).
  * This space may not be detected in the projection when the first key signature item is very close
@@ -174,7 +175,7 @@ public class KeyBuilder
     private final int browseStart;
 
     /** (Competing) active clef(s) in staff, just before key signature. */
-    private final List<ClefInter> clefs = new ArrayList<ClefInter>();
+    private final List<ClefInter> clefs = new ArrayList<>();
 
     /** Projection of foreground pixels, indexed by abscissa. */
     private final IntegerFunction projection;
@@ -186,8 +187,7 @@ public class KeyBuilder
     private final HiLoPeakFinder peakFinder;
 
     /** Builders per shape. */
-    private final Map<Shape, ShapeBuilder> shapeBuilders = new EnumMap<Shape, ShapeBuilder>(
-            Shape.class);
+    private final Map<Shape, ShapeBuilder> shapeBuilders = new EnumMap<>(Shape.class);
 
     /**
      * Creates a new {@code KeyBuilder} object.
@@ -266,8 +266,9 @@ public class KeyBuilder
 
         {
             // Values (w/ threshold)
-            XYSeries valueSeries = peakFinder.getValueSeries(projection.getXMin(), projection
-                                                             .getXMax());
+            XYSeries valueSeries = peakFinder.getValueSeries(
+                    projection.getXMin(),
+                    projection.getXMax());
             valueSeries.setKey("Key");
             plotter.add(valueSeries, Colors.CHART_VALUE);
         }
@@ -297,8 +298,8 @@ public class KeyBuilder
         if (((range != null) && range.hasStart()) || (staff.getKeyStart() != null)) {
             // Area limits
             XYSeries series = new XYSeries("KeyArea", false); // No autosort
-            int start = ((range != null) && range.hasStart()) ? range.getStart() : staff
-                    .getKeyStart();
+            int start = ((range != null) && range.hasStart()) ? range.getStart()
+                    : staff.getKeyStart();
             int stop = ((range != null) && range.hasStart()) ? range.getStop() : staff.getKeyStop();
             series.add(start, 0);
             series.add(start, staff.getHeight());
@@ -311,8 +312,8 @@ public class KeyBuilder
             // Browse start for peak threshold
             XYSeries series = new XYSeries("KeyBrowse", false); // No autosort
             int start = browseStart;
-            int stop = (staff.getKeyStop() != null) ? staff.getKeyStop() : ((range != null) ? range
-                    .getStop() : projection.getXMax());
+            int stop = (staff.getKeyStop() != null) ? staff.getKeyStop()
+                    : ((range != null) ? range.getStop() : projection.getXMax());
             series.add(start, 0);
             series.add(start, params.minPeakCumul);
             series.add(stop, params.minPeakCumul);
@@ -392,6 +393,11 @@ public class KeyBuilder
     //-------//
     // getId //
     //-------//
+    /**
+     * Report builder id.
+     *
+     * @return id of unerlying staff
+     */
     public int getId ()
     {
         return staff.getId();
@@ -496,37 +502,6 @@ public class KeyBuilder
     public String toString ()
     {
         return "KeyBuilder#" + getId();
-    }
-
-    //----------------//
-    // checkReplicate //
-    //----------------//
-    /**
-     * Override local key with the one from the "best source" staff in part.
-     *
-     * @param sourceBuilder ShapeBuilder of source staff
-     * @return proper PartStatus value
-     */
-    PartStatus checkReplicate (ShapeBuilder sourceBuilder)
-    {
-        final int fifths = sourceBuilder.getFifths();
-        getShapeBuilder(-fifths).destroy();
-
-        return getShapeBuilder(fifths).checkReplicate(sourceBuilder);
-    }
-
-    //-----------------//
-    // getShapeBuilder //
-    //-----------------//
-    ShapeBuilder getShapeBuilder (int fifths)
-    {
-        if (fifths == 0) {
-            return null;
-        } else if (fifths > 0) {
-            return shapeBuilders.get(SHARP);
-        } else {
-            return shapeBuilders.get(FLAT);
-        }
     }
 
     //--------//
@@ -658,6 +633,37 @@ public class KeyBuilder
         }
     }
 
+    //----------------//
+    // checkReplicate //
+    //----------------//
+    /**
+     * Override local key with the one from the "best source" staff in part.
+     *
+     * @param sourceBuilder ShapeBuilder of source staff
+     * @return proper PartStatus value
+     */
+    PartStatus checkReplicate (ShapeBuilder sourceBuilder)
+    {
+        final int fifths = sourceBuilder.getFifths();
+        getShapeBuilder(-fifths).destroy();
+
+        return getShapeBuilder(fifths).checkReplicate(sourceBuilder);
+    }
+
+    //-----------------//
+    // getShapeBuilder //
+    //-----------------//
+    ShapeBuilder getShapeBuilder (int fifths)
+    {
+        if (fifths == 0) {
+            return null;
+        } else if (fifths > 0) {
+            return shapeBuilders.get(SHARP);
+        } else {
+            return shapeBuilders.get(FLAT);
+        }
+    }
+
     //--------------//
     // ShapeBuilder //
     //--------------//
@@ -674,7 +680,7 @@ public class KeyBuilder
         private final StaffHeader.Range range;
 
         /** Sequence of valid peaks found, ordered by abscissa. */
-        private final List<KeyPeak> peaks = new ArrayList<KeyPeak>();
+        private final List<KeyPeak> peaks = new ArrayList<>();
 
         /** ROI with slices for key search. */
         private final KeyRoi roi;
@@ -682,12 +688,16 @@ public class KeyBuilder
         /** Resulting key inter, if any. */
         private KeyInter keyInter;
 
-        public ShapeBuilder (Shape keyShape,
-                             Rectangle browseRect)
+        ShapeBuilder (Shape keyShape,
+                      Rectangle browseRect)
         {
             this.keyShape = keyShape;
-            roi = new KeyRoi(staff, keyShape, browseRect.y, browseRect.height, column
-                             .getMaxSliceDist());
+            roi = new KeyRoi(
+                    staff,
+                    keyShape,
+                    browseRect.y,
+                    browseRect.height,
+                    column.getMaxSliceDist());
             range = new StaffHeader.Range();
             range.browseStart = browseRect.x;
             range.browseStop = (browseRect.x + browseRect.width) - 1;
@@ -712,18 +722,25 @@ public class KeyBuilder
 
                     if (alter == null) {
                         final Set<Shape> shapes = Collections.singleton(keyShape);
-                        alter = extractor.extractAlter(roi, peaks, slice, shapes,
-                                                       Grades.keyAlterMinGrade2, false);
+                        alter = extractor.extractAlter(
+                                roi,
+                                peaks,
+                                slice,
+                                shapes,
+                                Grades.keyAlterMinGrade2,
+                                false);
                     }
 
                     if (alter != null) {
                         final int std = stdPitches[i];
 
                         if (alter.getIntegerPitch() != std) {
-                            logger.info("Staff#{} key slice#{} pitch adjusted from {} to {}",
-                                        getId(), slice.getId(), String.format("%.1f", alter
-                                                                              .getMeasuredPitch()),
-                                        std);
+                            logger.info(
+                                    "Staff#{} key slice#{} pitch adjusted from {} to {}",
+                                    getId(),
+                                    slice.getId(),
+                                    String.format("%.1f", alter.getMeasuredPitch()),
+                                    std);
                             alter.setPitch(std);
                         }
                     }
@@ -740,8 +757,10 @@ public class KeyBuilder
                     }
                 }
 
-                logger.warn("Staff#{} no header clef, guessed: {}", getId(), KeyInter.guessKind(
-                            keyShape, measuredPitches, null));
+                logger.warn(
+                        "Staff#{} no header clef, guessed: {}",
+                        getId(),
+                        KeyInter.guessKind(keyShape, measuredPitches, null));
             }
         }
 
@@ -834,8 +853,10 @@ public class KeyBuilder
                     final int stop = (nextSlice != null) ? (nextSlice.getStart() - 1) : targetStop;
 
                     localSlice = roi.createSlice(start, stop);
-                    localSlice
-                            .setPitchRect(clef, sourceBuilder.getKeyShape(), params.stdGlyphHeight);
+                    localSlice.setPitchRect(
+                            clef,
+                            sourceBuilder.getKeyShape(),
+                            params.stdGlyphHeight);
 
                     if (!extractor.sliceHasInk(localSlice.getRect())) {
                         // No item can exist here!
@@ -863,8 +884,13 @@ public class KeyBuilder
 
                 if ((alter == null) || (alter.getGrade() < Grades.keyAlterMinGrade1)) {
                     slice.setPitchRect(clef, keyShape, params.stdGlyphHeight);
-                    extractor
-                            .extractAlter(roi, peaks, slice, shapes, Grades.keyAlterMinGrade2, true);
+                    extractor.extractAlter(
+                            roi,
+                            peaks,
+                            slice,
+                            shapes,
+                            Grades.keyAlterMinGrade2,
+                            true);
                 }
             }
 
@@ -1130,8 +1156,12 @@ public class KeyBuilder
 
                     if ((hl != null) && (x >= hl.min)) {
                         // Process this hilo
-                        if (!createPeak(hl.min, hl.main, hl.max, projection.getValue(hl.main),
-                                        projection.getArea(hl.min, hl.max, params.minPeakCumul))) {
+                        if (!createPeak(
+                                hl.min,
+                                hl.main,
+                                hl.max,
+                                projection.getValue(hl.main),
+                                projection.getArea(hl.min, hl.max, params.minPeakCumul))) {
                             return; // Invalid peak encountered
                         }
 
@@ -1198,8 +1228,13 @@ public class KeyBuilder
             final double meanDx = (totalDx - maxDx) / wMean;
             final double wMax = 3.5;
             final double max = ((wMean * meanDx) + (wMax * params.maxPeakDx)) / (wMean + wMax);
-            logger.debug("Staff#{} peak dxs:{} mean:{} maxPeakDx:{} cutOver:{}", getId(), dxs,
-                         meanDx, params.maxPeakDx, max);
+            logger.debug(
+                    "Staff#{} peak dxs:{} mean:{} maxPeakDx:{} cutOver:{}",
+                    getId(),
+                    dxs,
+                    meanDx,
+                    params.maxPeakDx,
+                    max);
 
             for (int is = 0; is < dxs.length; is++) {
                 final double dx = dxs[is];
@@ -1285,8 +1320,10 @@ public class KeyBuilder
             final int il = sheet.getInterline();
             final int sil = staff.getSpecificInterline();
             final Rectangle rect = new Rectangle(x, y - (sil / 2), il, sil);
-            final boolean ok = extractor.isRatherEmpty(rect, params.maxTrailingCumul,
-                                                       params.minTrailingSpace);
+            final boolean ok = extractor.isRatherEmpty(
+                    rect,
+                    params.maxTrailingCumul,
+                    params.minTrailingSpace);
 
             if (!ok) {
                 logger.debug("Staff#{} slice#{} no trailing space", getId(), lastValid.getId());
@@ -1340,9 +1377,12 @@ public class KeyBuilder
                         }
 
                         // Impact of key on clef
-                        final double keyContribution = GradeUtil.contributionOf(keyGrade, clefRatio);
-                        final double clefCtx = GradeUtil
-                                .contextual(clef.getGrade(), keyContribution);
+                        final double keyContribution = GradeUtil.contributionOf(
+                                keyGrade,
+                                clefRatio);
+                        final double clefCtx = GradeUtil.contextual(
+                                clef.getGrade(),
+                                keyContribution);
 
                         if (clefCtx > bestCompatibleClefCtx) {
                             bestCompatibleClefCtx = clefCtx;
@@ -1358,8 +1398,8 @@ public class KeyBuilder
                 double bestClefGrade = -1;
 
                 for (ClefInter clef : clefs) {
-                    final double grade = (clef == bestCompatibleClef) ? bestCompatibleClefCtx : clef
-                            .getGrade();
+                    final double grade = (clef == bestCompatibleClef) ? bestCompatibleClefCtx
+                            : clef.getGrade();
 
                     if (grade > bestClefGrade) {
                         bestClefGrade = grade;
@@ -1455,11 +1495,9 @@ public class KeyBuilder
             }
 
             // Define dPitch threshold based on alters.length
-            final double maxDeltaPitch = (n >= 4) ? params.maxDeltaPitch_4 : (params.maxDeltaPitch_1
-                                                                                      + (((params.maxDeltaPitch_4
-                                                                                           - params.maxDeltaPitch_1)
-                                                                                          * (n - 1))
-                                                                                                 / 3));
+            final double maxDeltaPitch = (n >= 4) ? params.maxDeltaPitch_4
+                    : (params.maxDeltaPitch_1 + (((params.maxDeltaPitch_4 - params.maxDeltaPitch_1)
+                                                          * (n - 1)) / 3));
 
             final int[] clefPitches = KeyInter.getPitches(clefKind, keyShape);
             int alterCount = 0;
@@ -1476,9 +1514,14 @@ public class KeyBuilder
 
                     // Check single difference
                     if (dPitch > maxDeltaPitch) {
-                        logger.debug("Staff#{} slice#{} invalid {} pitch {} vs {} for {}", getId(),
-                                     slice.getId(), keyShape, String.format("%.1f", alterPitch),
-                                     clefPitches[i], clefKind);
+                        logger.debug(
+                                "Staff#{} slice#{} invalid {} pitch {} vs {} for {}",
+                                getId(),
+                                slice.getId(),
+                                keyShape,
+                                String.format("%.1f", alterPitch),
+                                clefPitches[i],
+                                clefKind);
 
                         return 0;
                     } else {
@@ -1501,7 +1544,7 @@ public class KeyBuilder
          */
         private List<Integer> computeStarts (int signature)
         {
-            List<Integer> starts = new ArrayList<Integer>();
+            List<Integer> starts = new ArrayList<>();
 
             if (signature > 0) {
                 // Sharps
@@ -1544,7 +1587,7 @@ public class KeyBuilder
         //----------------//
         private void createKeyInter ()
         {
-            List<KeyAlterInter> alters = new ArrayList<KeyAlterInter>();
+            List<KeyAlterInter> alters = new ArrayList<>();
             Rectangle box = null;
 
             for (KeySlice slice : roi) {
@@ -1667,8 +1710,13 @@ public class KeyBuilder
         private void extractEmptySlices (List<KeySlice> emptySlices)
         {
             for (KeySlice slice : emptySlices) {
-                extractor.extractAlter(roi, peaks, slice, Collections.singleton(keyShape),
-                                       Grades.keyAlterMinGrade2, true);
+                extractor.extractAlter(
+                        roi,
+                        peaks,
+                        slice,
+                        Collections.singleton(keyShape),
+                        Grades.keyAlterMinGrade2,
+                        true);
             }
         }
 
@@ -1695,8 +1743,13 @@ public class KeyBuilder
                 if ((alter == null) || (pitchedGrades[i] < Grades.keyAlterMinGrade1)) {
                     // Adjust slice rectangle, using theoretical pitch
                     slice.setPitchRect(clef, keyShape, params.stdGlyphHeight);
-                    extractor
-                            .extractAlter(roi, peaks, slice, shapes, Grades.keyAlterMinGrade2, true);
+                    extractor.extractAlter(
+                            roi,
+                            peaks,
+                            slice,
+                            shapes,
+                            Grades.keyAlterMinGrade2,
+                            true);
                 }
             }
         }
@@ -1906,7 +1959,7 @@ public class KeyBuilder
             }
 
             // Compute area quorum on all peaks but the smallest one
-            List<KeyPeak> sortedPeaks = new ArrayList<KeyPeak>(peaks);
+            List<KeyPeak> sortedPeaks = new ArrayList<>(peaks);
             Collections.sort(sortedPeaks, KeyPeak.byArea);
 
             int totalArea = 0; // Sum of peaks areas
@@ -2062,117 +2115,154 @@ public class KeyBuilder
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.String vipStaves = new Constant.String("",
-                                                                      "(Debug) Comma-separated values of VIP staff IDs");
+        private final Constant.String vipStaves = new Constant.String(
+                "",
+                "(Debug) Comma-separated values of VIP staff IDs");
 
-        private final Scale.Fraction maxSpaceCumul = new Scale.Fraction(0.4,
-                                                                        "Maximum cumul value in space");
+        private final Scale.Fraction maxSpaceCumul = new Scale.Fraction(
+                0.4,
+                "Maximum cumul value in space");
 
-        private final Scale.Fraction coreStemLength = new Scale.Fraction(2.0,
-                                                                         "Core length for alteration \"stem\" (flat or sharp)");
+        private final Scale.Fraction coreStemLength = new Scale.Fraction(
+                2.0,
+                "Core length for alteration \"stem\" (flat or sharp)");
 
-        private final Constant.Ratio minBlackRatio = new Constant.Ratio(0.75,
-                                                                        "Minimum ratio of black rows in core length");
+        private final Constant.Ratio minBlackRatio = new Constant.Ratio(
+                0.75,
+                "Minimum ratio of black rows in core length");
 
-        private final Scale.Fraction stdGlyphHeight = new Scale.Fraction(2.5,
-                                                                         "Standard alteration height (flat or sharp)");
+        private final Scale.Fraction stdGlyphHeight = new Scale.Fraction(
+                2.5,
+                "Standard alteration height (flat or sharp)");
 
-        private final Scale.Fraction minPeakCumul = new Scale.Fraction(1.25,
-                                                                       "Minimum cumulated value for a peak");
+        private final Scale.Fraction minPeakCumul = new Scale.Fraction(
+                1.25,
+                "Minimum cumulated value for a peak");
 
-        private final Constant.Ratio peakAreaQuorum = new Constant.Ratio(0.5,
-                                                                         "Quorum ratio of peak area WRT peaks mean area");
+        private final Constant.Ratio peakAreaQuorum = new Constant.Ratio(
+                0.5,
+                "Quorum ratio of peak area WRT peaks mean area");
 
-        private final Scale.Fraction preStaffMargin = new Scale.Fraction(2.0,
-                                                                         "Horizontal margin before staff left (for plot display)");
+        private final Scale.Fraction preStaffMargin = new Scale.Fraction(
+                2.0,
+                "Horizontal margin before staff left (for plot display)");
 
-        private final Scale.Fraction maxFirstPeakOffset = new Scale.Fraction(2.3,
-                                                                             "Maximum x offset of first peak (WRT browse start)");
+        private final Scale.Fraction maxFirstPeakOffset = new Scale.Fraction(
+                2.3,
+                "Maximum x offset of first peak (WRT browse start)");
 
-        private final Scale.Fraction maxPeakCumul = new Scale.Fraction(4.25,
-                                                                       "Maximum cumul value to accept peak (absolute value)");
+        private final Scale.Fraction maxPeakCumul = new Scale.Fraction(
+                4.25,
+                "Maximum cumul value to accept peak (absolute value)");
 
-        private final Scale.Fraction minPeakDerivative = new Scale.Fraction(0.35,
-                                                                            "Minimum derivative for peak detection");
+        private final Scale.Fraction minPeakDerivative = new Scale.Fraction(
+                0.35,
+                "Minimum derivative for peak detection");
 
-        private final Constant.Ratio minGainRatio = new Constant.Ratio(0.2,
-                                                                       "Minimum gain ratio when extending peaks");
+        private final Constant.Ratio minGainRatio = new Constant.Ratio(
+                0.2,
+                "Minimum gain ratio when extending peaks");
 
-        private final Scale.Fraction maxPeakWidth = new Scale.Fraction(0.45,
-                                                                       "Maximum width to accept peak");
+        private final Scale.Fraction maxPeakWidth = new Scale.Fraction(
+                0.45,
+                "Maximum width to accept peak");
 
-        private final Scale.Fraction maxFlatHeading = new Scale.Fraction(0.2,
-                                                                         "Maximum heading length before peak for a flat item");
+        private final Scale.Fraction maxFlatHeading = new Scale.Fraction(
+                0.2,
+                "Maximum heading length before peak for a flat item");
 
-        private final Scale.Fraction stdFlatTrail = new Scale.Fraction(1.0,
-                                                                       "Standard trailing length after peak for a flat item");
+        private final Scale.Fraction stdFlatTrail = new Scale.Fraction(
+                1.0,
+                "Standard trailing length after peak for a flat item");
 
-        private final Scale.Fraction minFlatTrail = new Scale.Fraction(0.7,
-                                                                       "Minimum trailing length after peak for a flat item");
+        private final Scale.Fraction minFlatTrail = new Scale.Fraction(
+                0.7,
+                "Minimum trailing length after peak for a flat item");
 
-        private final Scale.Fraction maxFlatTrail = new Scale.Fraction(1.3,
-                                                                       "Maximum trailing length after peak for a flat item");
+        private final Scale.Fraction maxFlatTrail = new Scale.Fraction(
+                1.3,
+                "Maximum trailing length after peak for a flat item");
 
-        private final Scale.Fraction stdSharpTrail = new Scale.Fraction(0.3,
-                                                                        "Standard trailing length after last peak for a sharp item");
+        private final Scale.Fraction stdSharpTrail = new Scale.Fraction(
+                0.3,
+                "Standard trailing length after last peak for a sharp item");
 
-        private final Scale.Fraction minSharpTrail = new Scale.Fraction(0.2,
-                                                                        "Minimum trailing length after last peak for a sharp item");
+        private final Scale.Fraction minSharpTrail = new Scale.Fraction(
+                0.2,
+                "Minimum trailing length after last peak for a sharp item");
 
-        private final Scale.Fraction maxSharpTrail = new Scale.Fraction(0.5,
-                                                                        "Maximum trailing length after last peak for a sharp item");
+        private final Scale.Fraction maxSharpTrail = new Scale.Fraction(
+                0.5,
+                "Maximum trailing length after last peak for a sharp item");
 
-        private final Scale.Fraction minSharpLightPeakDx = new Scale.Fraction(0.25,
-                                                                              "Minimum delta abscissa with closest sharp peak to keep a light peak");
+        private final Scale.Fraction minSharpLightPeakDx = new Scale.Fraction(
+                0.25,
+                "Minimum delta abscissa with closest sharp peak to keep a light peak");
 
-        private final Scale.Fraction minFlatLightPeakDx = new Scale.Fraction(0.5,
-                                                                             "Minimum delta abscissa with closest flat peak to keep a light peak");
+        private final Scale.Fraction minFlatLightPeakDx = new Scale.Fraction(
+                0.5,
+                "Minimum delta abscissa with closest flat peak to keep a light peak");
 
-        private final Scale.Fraction maxPeakDx = new Scale.Fraction(1.5,
-                                                                    "Maximum delta abscissa between peaks");
+        private final Scale.Fraction maxPeakDx = new Scale.Fraction(
+                1.5,
+                "Maximum delta abscissa between peaks");
 
-        private final Scale.Fraction maxSharpDelta = new Scale.Fraction(0.7,
-                                                                        "Maximum short peak delta for sharps");
+        private final Scale.Fraction maxSharpDelta = new Scale.Fraction(
+                0.7,
+                "Maximum short peak delta for sharps");
 
-        private final Scale.Fraction minFlatDelta = new Scale.Fraction(0.45,
-                                                                       "Minimum short peak delta for flats");
+        private final Scale.Fraction minFlatDelta = new Scale.Fraction(
+                0.45,
+                "Minimum short peak delta for flats");
 
-        private final Constant.Double maxDeltaPitch_1 = new Constant.Double("pitch", 0.5,
-                                                                            "Maximum adjustment in pitch for 1 item");
+        private final Constant.Double maxDeltaPitch_1 = new Constant.Double(
+                "pitch",
+                0.5,
+                "Maximum adjustment in pitch for 1 item");
 
-        private final Constant.Double maxDeltaPitch_4 = new Constant.Double("pitch", 2.0,
-                                                                            "Maximum adjustment in pitch for 4+ items");
+        private final Constant.Double maxDeltaPitch_4 = new Constant.Double(
+                "pitch",
+                2.0,
+                "Maximum adjustment in pitch for 4+ items");
 
-        private final Scale.Fraction maxTrailingCumul = new Scale.Fraction(0.25,
-                                                                           "Maximum cumul threshold in trailing area");
+        private final Scale.Fraction maxTrailingCumul = new Scale.Fraction(
+                0.25,
+                "Maximum cumul threshold in trailing area");
 
-        private final Scale.Fraction minTrailingSpace = new Scale.Fraction(0.25,
-                                                                           "Minimum space length after last key item (before potential note head)");
+        private final Scale.Fraction minTrailingSpace = new Scale.Fraction(
+                0.25,
+                "Minimum space length after last key item (before potential note head)");
 
-        private final Scale.Fraction maxSliceDeltaX = new Scale.Fraction(0.15,
-                                                                         "Maximum abscissa delta to replicate slice");
+        private final Scale.Fraction maxSliceDeltaX = new Scale.Fraction(
+                0.15,
+                "Maximum abscissa delta to replicate slice");
 
-        private final Scale.Fraction maxSliceDeltaWidth = new Scale.Fraction(0.15,
-                                                                             "Maximum width delta to replicate slice");
+        private final Scale.Fraction maxSliceDeltaWidth = new Scale.Fraction(
+                0.15,
+                "Maximum width delta to replicate slice");
 
-        private final Scale.Fraction maxSpaceInAlter = new Scale.Fraction(0.4,
-                                                                          "Maximum space within an alter");
+        private final Scale.Fraction maxSpaceInAlter = new Scale.Fraction(
+                0.4,
+                "Maximum space within an alter");
 
         // Beware: A too small value might miss the whole key signature
-        private final Scale.Fraction maxFirstSpaceWidth = new Scale.Fraction(2.1,
-                                                                             "Maximum initial space before key signature");
+        private final Scale.Fraction maxFirstSpaceWidth = new Scale.Fraction(
+                2.1,
+                "Maximum initial space before key signature");
 
         // Beware: A too small value might miss final key signature items
-        private final Scale.Fraction maxInnerSpace = new Scale.Fraction(0.7,
-                                                                        "Maximum inner space within key signature");
+        private final Scale.Fraction maxInnerSpace = new Scale.Fraction(
+                0.7,
+                "Maximum inner space within key signature");
 
         // Beware: A too small value might miss final key signature items
-        private final Scale.Fraction maxInnerPeakGap = new Scale.Fraction(1.25,
-                                                                          "Maximum inner peak gap within key signature");
+        private final Scale.Fraction maxInnerPeakGap = new Scale.Fraction(
+                1.25,
+                "Maximum inner peak gap within key signature");
     }
 
     //------------//
@@ -2255,8 +2345,8 @@ public class KeyBuilder
 
         final int maxTrailingCumul;
 
-        public Parameters (Scale scale,
-                           int staffSpecific)
+        Parameters (Scale scale,
+                    int staffSpecific)
         {
             minGainRatio = constants.minGainRatio.getValue();
             minBlackRatio = constants.minBlackRatio.getValue();

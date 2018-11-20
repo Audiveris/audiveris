@@ -67,7 +67,6 @@ public class Page
 
     private static final Logger logger = LoggerFactory.getLogger(Page.class);
 
-    //
     // Persistent data
     //----------------
     //
@@ -265,6 +264,23 @@ public class Page
         return deltaMeasureId;
     }
 
+    //-------------------//
+    // setDeltaMeasureId //
+    //-------------------//
+    /**
+     * Assign the progression of measure IDs within this page.
+     *
+     * @param deltaMeasureId the deltaMeasureId to set
+     */
+    public void setDeltaMeasureId (Integer deltaMeasureId)
+    {
+        this.deltaMeasureId = deltaMeasureId;
+
+        SheetStub stub = sheet.getStub();
+        PageRef pageRef = stub.getPageRefs().get(id - 1);
+        pageRef.setDeltaMeasureId(deltaMeasureId);
+    }
+
     //--------------//
     // getDimension //
     //--------------//
@@ -322,6 +338,17 @@ public class Page
         return firstSystemId;
     }
 
+    //------------------//
+    // setFirstSystemId //
+    //------------------//
+    /**
+     * @param firstSystemId the firstSystemId to set
+     */
+    public void setFirstSystemId (Integer firstSystemId)
+    {
+        this.firstSystemId = firstSystemId;
+    }
+
     //---------------------//
     // getFollowingInScore //
     //---------------------//
@@ -373,9 +400,26 @@ public class Page
         return lastSystemId;
     }
 
+    //-----------------//
+    // setLastSystemId //
+    //-----------------//
+    /**
+     * @param lastSystemId the lastSystemId to set
+     */
+    public void setLastSystemId (Integer lastSystemId)
+    {
+        this.lastSystemId = lastSystemId;
+    }
+
     //--------------------//
     // getLogicalPartById //
     //--------------------//
+    /**
+     * Report the LogicalPart that corresponds to the provided ID.
+     *
+     * @param id provided ID
+     * @return corresponding LogicalPart or null if not found
+     */
     public LogicalPart getLogicalPartById (int id)
     {
         if (logicalParts != null) {
@@ -400,6 +444,19 @@ public class Page
     public List<LogicalPart> getLogicalParts ()
     {
         return logicalParts;
+    }
+
+    //-----------------//
+    // setLogicalParts //
+    //-----------------//
+    /**
+     * Assign a part list valid for the page.
+     *
+     * @param logicalParts the list of logical parts
+     */
+    public void setLogicalParts (List<LogicalPart> logicalParts)
+    {
+        this.logicalParts = logicalParts;
     }
 
     //-----------------//
@@ -451,6 +508,19 @@ public class Page
     }
 
     //----------//
+    // setScore //
+    //----------//
+    /**
+     * Assign the containing score.
+     *
+     * @param score the score to set
+     */
+    public void setScore (Score score)
+    {
+        this.score = score;
+    }
+
+    //----------//
     // getSheet //
     //----------//
     /**
@@ -474,7 +544,7 @@ public class Page
      */
     public List<Part> getSystemPartsById (int id)
     {
-        List<Part> parts = new ArrayList<Part>();
+        List<Part> parts = new ArrayList<>();
 
         for (SystemInfo system : getSystems()) {
             for (Part part : system.getParts()) {
@@ -502,6 +572,23 @@ public class Page
         return systems;
     }
 
+    //------------//
+    // setSystems //
+    //------------//
+    /**
+     * Using IDs of first and last page systems if any, register the proper (sub-)list
+     * of systems.
+     *
+     * @param sheetSystems the sheet whole list of systems
+     */
+    public void setSystems (List<SystemInfo> sheetSystems)
+    {
+        // Define proper indices
+        int first = (firstSystemId != null) ? (firstSystemId - 1) : 0;
+        int last = (lastSystemId != null) ? (lastSystemId - 1) : (sheetSystems.size() - 1);
+        systems = sheetSystems.subList(first, last + 1);
+    }
+
     //----------------//
     // initTransients //
     //----------------//
@@ -524,6 +611,17 @@ public class Page
     public boolean isMovementStart ()
     {
         return movementStart;
+    }
+
+    //------------------//
+    // setMovementStart //
+    //------------------//
+    /**
+     * @param movementStart the movementStart to set
+     */
+    public void setMovementStart (boolean movementStart)
+    {
+        this.movementStart = movementStart;
     }
 
     //----------------//
@@ -556,102 +654,12 @@ public class Page
     //----------------------//
     // resetDurationDivisor //
     //----------------------//
+    /**
+     * Nullify the duration divisor (before a re-computation).
+     */
     public void resetDurationDivisor ()
     {
         durationDivisor = null;
-    }
-
-    //-------------------//
-    // setDeltaMeasureId //
-    //-------------------//
-    /**
-     * Assign the progression of measure IDs within this page.
-     *
-     * @param deltaMeasureId the deltaMeasureId to set
-     */
-    public void setDeltaMeasureId (Integer deltaMeasureId)
-    {
-        this.deltaMeasureId = deltaMeasureId;
-
-        SheetStub stub = sheet.getStub();
-        PageRef pageRef = stub.getPageRefs().get(id - 1);
-        pageRef.setDeltaMeasureId(deltaMeasureId);
-    }
-
-    //------------------//
-    // setFirstSystemId //
-    //------------------//
-    /**
-     * @param firstSystemId the firstSystemId to set
-     */
-    public void setFirstSystemId (Integer firstSystemId)
-    {
-        this.firstSystemId = firstSystemId;
-    }
-
-    //-----------------//
-    // setLastSystemId //
-    //-----------------//
-    /**
-     * @param lastSystemId the lastSystemId to set
-     */
-    public void setLastSystemId (Integer lastSystemId)
-    {
-        this.lastSystemId = lastSystemId;
-    }
-
-    //-----------------//
-    // setLogicalParts //
-    //-----------------//
-    /**
-     * Assign a part list valid for the page.
-     *
-     * @param logicalParts the list of logical parts
-     */
-    public void setLogicalParts (List<LogicalPart> logicalParts)
-    {
-        this.logicalParts = logicalParts;
-    }
-
-    //------------------//
-    // setMovementStart //
-    //------------------//
-    /**
-     * @param movementStart the movementStart to set
-     */
-    public void setMovementStart (boolean movementStart)
-    {
-        this.movementStart = movementStart;
-    }
-
-    //----------//
-    // setScore //
-    //----------//
-    /**
-     * Assign the containing score.
-     *
-     * @param score the score to set
-     */
-    public void setScore (Score score)
-    {
-        this.score = score;
-    }
-
-    //------------//
-    // setSystems //
-    //------------//
-    /**
-     * Using IDs of first and last page systems if any, register the proper (sub-)list
-     * of systems.
-     *
-     * @param sheetSystems the sheet whole list of systems
-     */
-    public void setSystems (List<SystemInfo> sheetSystems)
-    {
-        // Define proper indices
-        int first = (firstSystemId != null) ? (firstSystemId - 1) : 0;
-        int last = (lastSystemId != null) ? (lastSystemId - 1) : (sheetSystems.size() - 1);
-        systems = sheetSystems.subList(first, last + 1);
     }
 
     //------------------//
@@ -675,7 +683,19 @@ public class Page
     @Override
     public String toString ()
     {
-        return "{Page#" + sheet.getStub().getNumber() + "." + getId() + "}";
+        final StringBuilder sb = new StringBuilder("{Page");
+
+        if (sheet != null && sheet.getStub() != null) {
+            sb.append('#').append(sheet.getStub().getNumber());
+        }
+
+        if (id != 0) {
+            sb.append('.').append(id);
+        }
+
+        sb.append('}');
+
+        return sb.toString();
     }
 
     //------------------------//
@@ -691,7 +711,7 @@ public class Page
     private int computeDurationDivisor ()
     {
         try {
-            final SortedSet<Rational> durations = new TreeSet<Rational>();
+            final SortedSet<Rational> durations = new TreeSet<>();
 
             // Collect duration values for each standard chord in this page
             for (SystemInfo system : getSystems()) {
@@ -705,7 +725,9 @@ public class Page
                                 durations.add(duration);
                             }
                         } catch (Exception ex) {
-                            logger.warn(getClass().getSimpleName() + " Error visiting " + chord, ex);
+                            logger.warn(
+                                    getClass().getSimpleName() + " Error visiting " + chord,
+                                    ex);
                         }
                     }
                 }

@@ -43,9 +43,11 @@ import javax.swing.event.MenuListener;
  * <p>
  * Actually, rather than a set, it is a list where the most recently used
  * are kept at the head of the list. There is no duplicate in the set (tests are
- * case-insensitive). </p>
+ * case-insensitive).
+ * </p>
  * <p>
- * The NameSet can additionally be used to dynamically generate and handle a menu. </p>
+ * The NameSet can additionally be used to dynamically generate and handle a menu.
+ * </p>
  *
  * @author Hervé Bitteur
  */
@@ -63,7 +65,7 @@ public class NameSet
     private final Constant.String constant;
 
     /** List of names in this set. */
-    private final List<String> names = new ArrayList<String>();
+    private final List<String> names = new ArrayList<>();
 
     /** Max number of names in this set. */
     private final int maxNameCount;
@@ -164,6 +166,11 @@ public class NameSet
     //---------//
     // isEmpty //
     //---------//
+    /**
+     * Tell whether the set is empty
+     *
+     * @return true if so
+     */
     public synchronized boolean isEmpty ()
     {
         return names.isEmpty();
@@ -200,7 +207,7 @@ public class NameSet
     //----------------//
     private void updateConstant ()
     {
-        StringBuilder buf = new StringBuilder(1024);
+        StringBuilder buf = new StringBuilder(1_024);
 
         for (String n : names) {
             if (buf.length() > 0) {

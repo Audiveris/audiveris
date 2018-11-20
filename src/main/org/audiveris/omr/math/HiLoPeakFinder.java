@@ -157,14 +157,14 @@ public class HiLoPeakFinder
         this.minDerivative = minDerivative;
         this.minGainRatio = minGainRatio;
 
-        final List<Range> peaks = new ArrayList<Range>();
+        final List<Range> peaks = new ArrayList<>();
         retrieveHiLos();
 
         // Map: originating hilo -> corresponding peak
-        Map<Range, Range> hiloToPeak = new HashMap<Range, Range>();
+        Map<Range, Range> hiloToPeak = new HashMap<>();
 
         // Process hilos by decreasing main value
-        List<Range> decreasing = new ArrayList<Range>(hilos);
+        List<Range> decreasing = new ArrayList<>(hilos);
         Collections.sort(decreasing, byReverseMainValue);
 
         // Convert each hilo to a peak with adjusted limits
@@ -541,7 +541,7 @@ public class HiLoPeakFinder
 
     private TreeMap<Integer, Double> replay (Range peak)
     {
-        TreeMap<Integer, Double> thresholds = new TreeMap<Integer, Double>();
+        TreeMap<Integer, Double> thresholds = new TreeMap<>();
         final int main = peak.main; // argMax(peak.min, peak.max); // for merged peak?
         final int pMin = peak.min;
         final int pMax = peak.max;
@@ -584,7 +584,7 @@ public class HiLoPeakFinder
     {
         logger.debug("Retrieving {} hilos", name);
 
-        hilos = new ArrayList<Range>();
+        hilos = new ArrayList<>();
 
         DerPeak hiPeak = null;
         DerPeak loPeak = null;
@@ -597,8 +597,10 @@ public class HiLoPeakFinder
                 // Strong positive derivatives
                 if (loPeak != null) {
                     // End HiLo because a new Hi is starting
-                    Range hilo = new Range(hiPeak.min, function.argMax(hiPeak.min, loPeak.max),
-                                           loPeak.max);
+                    Range hilo = new Range(
+                            hiPeak.min,
+                            function.argMax(hiPeak.min, loPeak.max),
+                            loPeak.max);
                     logger.debug("built {}", hilo);
                     hilos.add(hilo);
                     loPeak = hiPeak = null;
@@ -620,8 +622,10 @@ public class HiLoPeakFinder
                 }
             } else if (loPeak != null) {
                 // End HiLo because of weak derivatives
-                Range hilo = new Range(hiPeak.min, function.argMax(hiPeak.min, loPeak.max),
-                                       loPeak.max);
+                Range hilo = new Range(
+                        hiPeak.min,
+                        function.argMax(hiPeak.min, loPeak.max),
+                        loPeak.max);
                 logger.debug("built {}", hilo);
                 hilos.add(hilo);
                 loPeak = hiPeak = null;
@@ -645,12 +649,28 @@ public class HiLoPeakFinder
     public static class Quorum
     {
 
+        /**
+         * Quorum minimum value.
+         */
         public final int minTop;
 
+        /**
+         * Range start if any.
+         */
         public final Integer xMin;
 
+        /**
+         * Range stop if any.
+         */
         public final Integer xMax;
 
+        /**
+         * Create a Quorum object, with specified range.
+         *
+         * @param minTop the minimum count
+         * @param xMin   range starting x value
+         * @param xMax   range stopping x value
+         */
         public Quorum (int minTop,
                        Integer xMin,
                        Integer xMax)
@@ -660,6 +680,11 @@ public class HiLoPeakFinder
             this.xMax = xMax;
         }
 
+        /**
+         * Create a Quorum object.
+         *
+         * @param minTop the minimum count
+         */
         public Quorum (int minTop)
         {
             this(minTop, null, null);
@@ -684,8 +709,8 @@ public class HiLoPeakFinder
         /** True when peak cannot be extended anymore. */
         private boolean finished;
 
-        public DerPeak (int min,
-                        int max)
+        DerPeak (int min,
+                 int max)
         {
             this.min = min;
             this.max = max;

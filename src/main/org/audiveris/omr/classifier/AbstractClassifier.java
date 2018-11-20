@@ -73,7 +73,8 @@ import javax.xml.bind.JAXBException;
  * (means and standard deviations).
  * <p>
  * The classifier data is thus composed of two parts (model and norms) which are loaded as a whole
- * according to the following algorithm: <ol>
+ * according to the following algorithm:
+ * <ol>
  * <li>It first tries to find data in the application user local area ('train').
  * If found, this data contains a custom definition of model+norms, typically after a user
  * training.</li>
@@ -85,7 +86,6 @@ import javax.xml.bind.JAXBException;
  * which will be picked up first when the application is run again.
  *
  * @param <M> precise model class to be used
- *
  * @author Hervé Bitteur
  */
 public abstract class AbstractClassifier<M extends Object>
@@ -109,8 +109,8 @@ public abstract class AbstractClassifier<M extends Object>
     public static final String STDS_XML_ENTRY_NAME = "stds.xml";
 
     /** A special evaluation array, used to report NOISE. */
-    private static final Evaluation[] noiseEvaluations = {new Evaluation(Shape.NOISE,
-                                                                         Evaluation.ALGORITHM)};
+    private static final Evaluation[] noiseEvaluations = {
+        new Evaluation(Shape.NOISE, Evaluation.ALGORITHM)};
 
     /** Features means and standard deviations. */
     protected Norms norms;
@@ -327,9 +327,9 @@ public abstract class AbstractClassifier<M extends Object>
                 logger.debug("tmpFile={}", tmpFile);
                 tmpFile.deleteOnExit();
 
-                InputStream is = uri.toURL().openStream();
-                FileUtils.copyInputStreamToFile(is, tmpFile);
-                is.close();
+                try (InputStream is = uri.toURL().openStream()) {
+                    FileUtils.copyInputStreamToFile(is, tmpFile);
+                }
                 zipPath = tmpFile.toPath();
             } else {
                 zipPath = Paths.get(uri);
@@ -405,20 +405,20 @@ public abstract class AbstractClassifier<M extends Object>
 
         if (meansEntry != null) {
             InputStream is = Files.newInputStream(meansEntry); // READ by default
-            DataInputStream dis = new DataInputStream(new BufferedInputStream(is));
-            means = Nd4j.read(dis);
-            logger.info("means:{}", means);
-            dis.close();
+            try (DataInputStream dis = new DataInputStream(new BufferedInputStream(is))) {
+                means = Nd4j.read(dis);
+                logger.info("means:{}", means);
+            }
         }
 
         final Path stdsEntry = root.resolve(STDS_ENTRY_NAME);
 
         if (stdsEntry != null) {
             InputStream is = Files.newInputStream(stdsEntry); // READ by default
-            DataInputStream dis = new DataInputStream(new BufferedInputStream(is));
-            stds = Nd4j.read(dis);
-            logger.info("stds:{}", stds);
-            dis.close();
+            try (DataInputStream dis = new DataInputStream(new BufferedInputStream(is))) {
+                stds = Nd4j.read(dis);
+                logger.info("stds:{}", stds);
+            }
         }
 
         if ((means != null) && (stds != null)) {
@@ -471,22 +471,18 @@ public abstract class AbstractClassifier<M extends Object>
     protected void storeNorms (Path root)
             throws Exception
     {
-        {
-            Path means = root.resolve(MEANS_ENTRY_NAME);
-            DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(Files
-                    .newOutputStream(means, CREATE)));
+        Path means = root.resolve(MEANS_ENTRY_NAME);
+        try (DataOutputStream dos = new DataOutputStream(
+                new BufferedOutputStream(Files.newOutputStream(means, CREATE)))) {
             Nd4j.write(norms.means, dos);
             dos.flush();
-            dos.close();
         }
 
-        {
-            Path stds = root.resolve(STDS_ENTRY_NAME);
-            DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(Files
-                    .newOutputStream(stds, CREATE)));
+        Path stds = root.resolve(STDS_ENTRY_NAME);
+        try (DataOutputStream dos = new DataOutputStream(
+                new BufferedOutputStream(Files.newOutputStream(stds, CREATE)))) {
             Nd4j.write(norms.stds, dos);
             dos.flush();
-            dos.close();
         }
     }
 
@@ -500,7 +496,7 @@ public abstract class AbstractClassifier<M extends Object>
                                    EnumSet<Classifier.Condition> conditions,
                                    int interline)
     {
-        List<Evaluation> bests = new ArrayList<Evaluation>();
+        List<Evaluation> bests = new ArrayList<>();
         Evaluation[] evals = getSortedEvaluations(glyph, interline);
 
         EvalsLoop:
@@ -550,8 +546,14 @@ public abstract class AbstractClassifier<M extends Object>
         /** Features standard deviations. */
         final INDArray stds;
 
-        public Norms (INDArray means,
-                      INDArray stds)
+        /**
+         * Creates a new {@code Norms} object.
+         *
+         * @param means
+         * @param stds
+         */
+        Norms (INDArray means,
+               INDArray stds)
         {
             this.means = means;
             this.stds = stds;
@@ -561,14 +563,16 @@ public abstract class AbstractClassifier<M extends Object>
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(false,
-                                                                         "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
 
-        private final Scale.AreaFraction minWeight = new Scale.AreaFraction(0.04,
-                                                                            "Minimum normalized weight to be considered not a noise");
+        private final Scale.AreaFraction minWeight = new Scale.AreaFraction(
+                0.04,
+                "Minimum normalized weight to be considered not a noise");
     }
 }

@@ -44,7 +44,7 @@ public class TargetStaff
     public final double top;
 
     /** Sequence of staff lines */
-    public final List<TargetLine> lines = new ArrayList<TargetLine>();
+    public final List<TargetLine> lines = new ArrayList<>();
 
     /** Containing system */
     public final TargetSystem system;

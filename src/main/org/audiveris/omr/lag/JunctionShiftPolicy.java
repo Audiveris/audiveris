@@ -66,9 +66,8 @@ public class JunctionShiftPolicy
         // Check based on positions of the two runs
         Run last = section.getLastRun();
 
-        return (Math.abs(run.getStart() - last.getStart()) <= maxShift) && (Math.abs(run.getStop()
-                                                                                             - last
-                        .getStop()) <= maxShift);
+        return (Math.abs(run.getStart() - last.getStart()) <= maxShift) && (Math.abs(
+                run.getStop() - last.getStop()) <= maxShift);
     }
 
     //----------//

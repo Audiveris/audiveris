@@ -62,39 +62,40 @@ import javax.swing.event.ListSelectionListener;
 /**
  * Class {@code ScoreParameters} is a dialog that allows the user to easily manage the
  * most frequent parameters.
- * <div style="float: right;">
- * <img src="doc-files/ScoreParameters-img.png" alt="Score parameters dialog">
- * </div>
- * <p>
  * <p>
  * It addresses:
  * <ul>
  * <li>Binarization parameters</li>
  * <li>Text language specification</li>
  * <li>Support for specific features</li>
- * <!-- TODO <li>Name and instrument related to each score part</li> -->
+ * <!-- TODO
+ * <li>Name and instrument related to each score part</li> -->
  * </ul>
- * <p>
+ * <div style="float: right;">
+ * <img src="doc-files/ScoreParameters-img.png" alt="Score parameters dialog">
+ * </div>
  * <p>
  * The dialog is organized as a scope-based tabbed pane with:
  * <ul>
- * <li>a panel for the <b>default</b> scope,</li>
- * <li>a panel for current <b>book</b> scope (provided that there is a selected book),</li>
- * <li>and one panel for every <b>sheet</b> scope (provided that the book contains more than a
+ * <li>A panel for the <b>default</b> scope,</li>
+ * <li>A panel for current <b>book</b> scope (provided that there is a selected book),</li>
+ * <li>And one panel for every <b>sheet</b> scope (provided that the book contains more than a
  * single sheet).</li>
  * </ul>
- * <p>
- * <p>
- * A panel is a vertical collection of panes, each pane being introduced by a check box and a label.
- * With no specific information, the box is unchecked, the pane content is disabled.
- * With specific information, the box is checked and the pane content is enabled.
- * <br>Manually checking the box represents a selection and indicates the intention to modify the
+ * Panel interface:
+ * <ul>
+ * <li>A panel is a vertical collection of panes, each pane being introduced by a check box
+ * and a label.
+ * <li>With no specific information, the box is unchecked, the pane content is disabled.
+ * <li>With specific information, the box is checked and the pane content is enabled.
+ * <li>
+ * Manually checking the box represents a selection and indicates the intention to modify the
  * pane content (and thus enables the pane fields).
- * <br>Un-checking the box reverts the content to the value it had prior to the selection.
+ * <li>
+ * Un-checking the box reverts the content to the value it had prior to the selection.
+ * </ul>
  * <p>
- * <p>
- * The selected modifications are performed only when the user presses the OK button.
- * <p>
+ * NOTA: The selected modifications are actually applied only when the user presses the OK button.
  * <p>
  * <img src="doc-files/ScoreParameters.png" alt="Score parameters dialog">
  *
@@ -135,7 +136,7 @@ public class ScoreParameters
         ScopedPanel sheetPanel = null; // Only for multi-sheet book
 
         // Default panel
-        List<XactDataPane> defaultPanes = new ArrayList<XactDataPane>();
+        List<XactDataPane> defaultPanes = new ArrayList<>();
         defaultPanes.add(new FilterPane(null, FilterDescriptor.defaultFilter));
 
         TextPane defaultTextPane = createTextPane(null, Language.ocrDefaultLanguages);
@@ -156,12 +157,15 @@ public class ScoreParameters
 
         // Book panel?
         if (book != null) {
-            List<XactDataPane> bookPanes = new ArrayList<XactDataPane>();
-            bookPanes.add(new FilterPane((FilterPane) defaultPanel.getPane(FilterPane.class), book
-                                         .getBinarizationFilter()));
+            List<XactDataPane> bookPanes = new ArrayList<>();
+            bookPanes.add(
+                    new FilterPane(
+                            (FilterPane) defaultPanel.getPane(FilterPane.class),
+                            book.getBinarizationFilter()));
 
-            TextPane bookTextPane = createTextPane((TextPane) defaultPanel.getPane(TextPane.class),
-                                                   book.getOcrLanguages());
+            TextPane bookTextPane = createTextPane(
+                    (TextPane) defaultPanel.getPane(TextPane.class),
+                    book.getOcrLanguages());
 
             if (bookTextPane != null) {
                 bookPanes.add(bookTextPane);
@@ -178,12 +182,15 @@ public class ScoreParameters
             // Sheets panels?
             if (book.isMultiSheet()) {
                 for (SheetStub s : book.getStubs()) {
-                    List<XactDataPane> sheetPanes = new ArrayList<XactDataPane>();
-                    sheetPanes.add(new FilterPane((FilterPane) bookPanel.getPane(FilterPane.class),
-                                                  s.getBinarizationFilter()));
+                    List<XactDataPane> sheetPanes = new ArrayList<>();
+                    sheetPanes.add(
+                            new FilterPane(
+                                    (FilterPane) bookPanel.getPane(FilterPane.class),
+                                    s.getBinarizationFilter()));
 
-                    TextPane sheetTextPane = createTextPane((TextPane) bookPanel.getPane(
-                            TextPane.class), s.getOcrLanguages());
+                    TextPane sheetTextPane = createTextPane(
+                            (TextPane) bookPanel.getPane(TextPane.class),
+                            s.getOcrLanguages());
 
                     if (sheetTextPane != null) {
                         sheetPanes.add(sheetTextPane);
@@ -211,8 +218,9 @@ public class ScoreParameters
 
         // Initially selected tab
         component.addChangeListener(this);
-        component.setSelectedComponent((sheetPanel != null) ? sheetPanel : ((bookPanel != null)
-                ? bookPanel : defaultPanel));
+        component.setSelectedComponent(
+                (sheetPanel != null) ? sheetPanel
+                        : ((bookPanel != null) ? bookPanel : defaultPanel));
     }
 
     //--------//
@@ -301,32 +309,6 @@ public class ScoreParameters
         }
     }
 
-    //---------//
-    // getPane //
-    //---------//
-    /**
-     * Retrieve a SwitchPane knowing its key.
-     *
-     * @param panel containing panel
-     * @param key   desired key
-     * @return corresponding pane
-     */
-    private static SwitchPane getPane (ScopedPanel panel,
-                                       Switch key)
-    {
-        for (XactDataPane pane : panel.getPanes()) {
-            if (pane instanceof SwitchPane) {
-                SwitchPane switchPane = (SwitchPane) pane;
-
-                if (switchPane.getKey() == key) {
-                    return switchPane;
-                }
-            }
-        }
-
-        return null;
-    }
-
     //----------------//
     // createTextPane //
     //----------------//
@@ -355,6 +337,32 @@ public class ScoreParameters
         return null;
     }
 
+    //---------//
+    // getPane //
+    //---------//
+    /**
+     * Retrieve a SwitchPane knowing its key.
+     *
+     * @param panel containing panel
+     * @param key   desired key
+     * @return corresponding pane
+     */
+    private static SwitchPane getPane (ScopedPanel panel,
+                                       Switch key)
+    {
+        for (XactDataPane pane : panel.getPanes()) {
+            if (pane instanceof SwitchPane) {
+                SwitchPane switchPane = (SwitchPane) pane;
+
+                if (switchPane.getKey() == key) {
+                    return switchPane;
+                }
+            }
+        }
+
+        return null;
+    }
+
     //------------//
     // FilterPane //
     //------------//
@@ -367,28 +375,29 @@ public class ScoreParameters
     {
 
         /** ComboBox for filter kind */
-        private final JComboBox<FilterKind> kindCombo = new JComboBox<FilterKind>(FilterKind
-                .values());
+        private final JComboBox<FilterKind> kindCombo = new JComboBox<>(FilterKind.values());
 
         private final JLabel kindLabel = new JLabel("Filter", SwingConstants.RIGHT);
 
         // Data for global
-        private final SpinData globalData = new SpinData("Threshold",
-                                                         "Global threshold for foreground pixels",
-                                                         new SpinnerNumberModel(0, 0, 255, 1));
+        private final SpinData globalData = new SpinData(
+                "Threshold",
+                "Global threshold for foreground pixels",
+                new SpinnerNumberModel(0, 0, 255, 1));
 
         // Data for local
-        private final SpinData localDataMean = new SpinData("Coeff for Mean",
-                                                            "Coefficient for mean pixel value",
-                                                            new SpinnerNumberModel(0.5, 0.5, 1.5,
-                                                                                   0.1));
+        private final SpinData localDataMean = new SpinData(
+                "Coeff for Mean",
+                "Coefficient for mean pixel value",
+                new SpinnerNumberModel(0.5, 0.5, 1.5, 0.1));
 
-        private final SpinData localDataDev = new SpinData("Coeff for StdDev",
-                                                           "Coefficient for standard deviation value",
-                                                           new SpinnerNumberModel(0.2, 0.2, 1.5, 0.1));
+        private final SpinData localDataDev = new SpinData(
+                "Coeff for StdDev",
+                "Coefficient for standard deviation value",
+                new SpinnerNumberModel(0.2, 0.2, 1.5, 0.1));
 
-        public FilterPane (FilterPane parent,
-                           Param<FilterDescriptor> model)
+        FilterPane (FilterPane parent,
+                    Param<FilterDescriptor> model)
         {
             super("Binarization", parent, model);
 
@@ -482,10 +491,11 @@ public class ScoreParameters
         {
             commitSpinners();
 
-            return (readKind() == FilterKind.GLOBAL) ? new GlobalDescriptor((int) globalData.spinner
-                    .getValue())
-                    : new AdaptiveDescriptor((double) localDataMean.spinner.getValue(),
-                                             (double) localDataDev.spinner.getValue());
+            return (readKind() == FilterKind.GLOBAL) ? new GlobalDescriptor(
+                    (int) globalData.spinner.getValue())
+                    : new AdaptiveDescriptor(
+                            (double) localDataMean.spinner.getValue(),
+                            (double) localDataDev.spinner.getValue());
         }
 
         @Override
@@ -539,9 +549,9 @@ public class ScoreParameters
 
         protected final JSpinner spinner;
 
-        public SpinData (String label,
-                         String tip,
-                         SpinnerModel model)
+        SpinData (String label,
+                  String tip,
+                  SpinnerModel model)
         {
             this.label = new JLabel(label, SwingConstants.RIGHT);
 
@@ -589,9 +599,9 @@ public class ScoreParameters
 
         final Switch key;
 
-        public SwitchPane (Switch key,
-                           XactDataPane parent,
-                           Param<Boolean> model)
+        SwitchPane (Switch key,
+                    XactDataPane parent,
+                    Param<Boolean> model)
         {
             super(key.getConstant().getDescription(), parent, "", null, model);
             this.key = key;
@@ -632,20 +642,10 @@ public class ScoreParameters
         }
     }
 
-    //----------//
-    // TextPane //
-    //----------//
-    /**
-     * Pane to set the dominant text language specification.
-     * Scope can be: default, book, sheet.
-     */
     private static class TextPane
             extends XactDataPane<String>
             implements ListSelectionListener
     {
-
-        /** Underlying language list model. */
-        final Language.ListModel listModel;
 
         /** List for choosing elements of language specification. */
         private final JList<String> langList;
@@ -656,14 +656,17 @@ public class ScoreParameters
         /** Resulting visible specification. */
         private final JLabel langSpec = new JLabel("", SwingConstants.RIGHT);
 
-        public TextPane (TextPane parent,
-                         Param<String> model)
+        /** Underlying language list model. */
+        final Language.ListModel listModel;
+
+        TextPane (TextPane parent,
+                  Param<String> model)
         {
             super("OCR language(s)", parent, model);
 
             listModel = new Language.ListModel();
 
-            langList = new JList<String>(listModel);
+            langList = new JList<>(listModel);
             langList.setLayoutOrientation(JList.VERTICAL);
             langList.setToolTipText("Dominant languages for textual items");
             langList.setVisibleRowCount(5);
@@ -821,7 +824,7 @@ public class ScoreParameters
 //        //~ Instance fields ------------------------------------------------------------------------
 //
 //        /** All score part panes */
-//        private final List<PartPanel> partPanels = new ArrayList<PartPanel>();
+//        private final List<PartPanel> partPanels = new ArrayList<>();
 //
 //        //~ Constructors ---------------------------------------------------------------------------
 //        public PartsPane (Score score)
@@ -880,7 +883,7 @@ public class ScoreParameters
 //        @Override
 //        protected List<PartData> read ()
 //        {
-//            List<PartData> data = new ArrayList<PartData>();
+//            List<PartData> data = new ArrayList<>();
 //
 //            for (PartPanel partPanel : partPanels) {
 //                data.add(partPanel.getData());

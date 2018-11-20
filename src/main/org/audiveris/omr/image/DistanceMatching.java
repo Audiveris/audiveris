@@ -66,7 +66,7 @@ public class DistanceMatching
     {
         final int scanWidth = distances.getWidth() - template.getWidth();
         final int scanHeight = distances.getHeight() - template.getHeight();
-        final List<PixelDistance> locations = new ArrayList<PixelDistance>();
+        final List<PixelDistance> locations = new ArrayList<>();
 
         for (int x = 0; x < scanWidth; x++) {
             for (int y = 0; y < scanHeight; y++) {

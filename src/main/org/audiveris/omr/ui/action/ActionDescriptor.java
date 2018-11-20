@@ -61,6 +61,7 @@ public class ActionDescriptor
     @XmlAttribute(name = "method")
     public String methodName;
 
+    /** Containing topic for this action. */
     @XmlAttribute(name = "topic")
     public AdvancedTopics.Topic topic;
 

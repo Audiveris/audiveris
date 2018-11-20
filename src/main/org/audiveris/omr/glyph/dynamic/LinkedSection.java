@@ -89,10 +89,15 @@ public class LinkedSection
     //-----------//
     // addSource //
     //-----------//
+    /**
+     * Add a source to the section.
+     *
+     * @param source a source section
+     */
     public void addSource (LinkedSection source)
     {
         if (sources == null) {
-            sources = new ArrayList<LinkedSection>();
+            sources = new ArrayList<>();
         }
 
         sources.add(source);
@@ -101,10 +106,15 @@ public class LinkedSection
     //-----------//
     // addTarget //
     //-----------//
+    /**
+     * Add a target to the section.
+     *
+     * @param target a target section
+     */
     public void addTarget (LinkedSection target)
     {
         if (targets == null) {
-            targets = new ArrayList<LinkedSection>();
+            targets = new ArrayList<>();
         }
 
         targets.add(target);
@@ -201,9 +211,27 @@ public class LinkedSection
     //-------------//
     // getCompound //
     //-------------//
+    /**
+     * Report the underlying compound.
+     *
+     * @return underlying section compound
+     */
     public SectionCompound getCompound ()
     {
         return compound;
+    }
+
+    //-------------//
+    // setCompound //
+    //-------------//
+    /**
+     * Set the underlying compound section
+     *
+     * @param compound underlying section
+     */
+    public void setCompound (SectionCompound compound)
+    {
+        this.compound = compound;
     }
 
     @Override
@@ -225,9 +253,21 @@ public class LinkedSection
     }
 
     @Override
+    public void setId (int id)
+    {
+        section.setId(id);
+    }
+
+    @Override
     public Lag getLag ()
     {
         return section.getLag();
+    }
+
+    @Override
+    public void setLag (Lag lag)
+    {
+        section.setLag(lag);
     }
 
     @Override
@@ -399,6 +439,11 @@ public class LinkedSection
     //-------------//
     // isProcessed //
     //-------------//
+    /**
+     * Tell whether this LinkedSection has already been processed
+     *
+     * @return true if so
+     */
     public boolean isProcessed ()
     {
         return processed;
@@ -417,6 +462,12 @@ public class LinkedSection
     }
 
     @Override
+    public void setVip (boolean vip)
+    {
+        section.setVip(vip);
+    }
+
+    @Override
     public boolean render (Graphics g,
                            boolean drawBorders,
                            Color specificColor)
@@ -430,38 +481,15 @@ public class LinkedSection
         return section.renderSelected(g);
     }
 
-    //-------------//
-    // setCompound //
-    //-------------//
-    public void setCompound (SectionCompound compound)
-    {
-        this.compound = compound;
-    }
-
-    @Override
-    public void setId (int id)
-    {
-        section.setId(id);
-    }
-
-    @Override
-    public void setLag (Lag lag)
-    {
-        section.setLag(lag);
-    }
-
     //--------------//
     // setProcessed //
     //--------------//
+    /**
+     * Flag the instance as processed.
+     */
     public void setProcessed ()
     {
         processed = true;
-    }
-
-    @Override
-    public void setVip (boolean vip)
-    {
-        section.setVip(vip);
     }
 
     //----------//

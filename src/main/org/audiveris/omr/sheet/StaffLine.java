@@ -59,12 +59,12 @@ public class StaffLine
 
     private static final Logger logger = LoggerFactory.getLogger(StaffLine.class);
 
-    //
     // Persistent data
     //----------------
     //
-    /** Absolute defining points (including start &amp; stop points). */
+    /** Absolute defining points (including start and stop points). */
     @XmlElement(name = "point")
+    @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
     protected final List<Point2D> points;
 
     /** Mean line thickness. */
@@ -156,6 +156,19 @@ public class StaffLine
         return glyph;
     }
 
+    //----------//
+    // setGlyph //
+    //----------//
+    /**
+     * Assign the underlying glyph for the whole staff line
+     *
+     * @param glyph the staff line glyph
+     */
+    public void setGlyph (Glyph glyph)
+    {
+        this.glyph = glyph;
+    }
+
     //-----------//
     // getSpline //
     //-----------//
@@ -190,11 +203,20 @@ public class StaffLine
     }
 
     //----------//
-    // setGlyph //
+    // toString //
     //----------//
-    public void setGlyph (Glyph glyph)
+    @Override
+    public String toString ()
     {
-        this.glyph = glyph;
+        final StringBuilder sb = new StringBuilder("StaffLine{");
+
+        if (points != null) {
+            sb.append("points:").append(points.size());
+        }
+
+        sb.append('}');
+
+        return sb.toString();
     }
 
     //-----//

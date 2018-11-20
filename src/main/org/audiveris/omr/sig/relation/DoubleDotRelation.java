@@ -49,8 +49,16 @@ public class DoubleDotRelation
 
     private static final Logger logger = LoggerFactory.getLogger(DoubleDotRelation.class);
 
-    private static final double[] OUT_WEIGHTS = new double[]{constants.xOutWeight.getValue(),
-                                                             constants.yWeight.getValue()};
+    private static final double[] OUT_WEIGHTS = new double[]{
+        constants.xOutWeight.getValue(),
+        constants.yWeight.getValue()};
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
 
     //-------------------//
     // getXOutGapMaximum //
@@ -153,35 +161,44 @@ public class DoubleDotRelation
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio secondDotSupportCoeff = new Constant.Ratio(5,
-                                                                                "Supporting coeff for (source) second dot");
+        private final Constant.Ratio secondDotSupportCoeff = new Constant.Ratio(
+                5,
+                "Supporting coeff for (source) second dot");
 
-        private final Scale.Fraction xOutGapMax = new Scale.Fraction(1.25,
-                                                                     "Maximum horizontal gap between dots centers");
+        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
+                1.25,
+                "Maximum horizontal gap between dots centers");
 
-        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(2.0,
-                                                                           "Maximum manual horizontal gap between dots centers");
+        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
+                2.0,
+                "Maximum manual horizontal gap between dots centers");
 
-        private final Scale.Fraction xOutGapMin = new Scale.Fraction(0.2,
-                                                                     "Minimum horizontal gap between dot centers");
+        private final Scale.Fraction xOutGapMin = new Scale.Fraction(
+                0.2,
+                "Minimum horizontal gap between dot centers");
 
-        private final Scale.Fraction xOutGapMinManual = new Scale.Fraction(0.1,
-                                                                           "Minimum manual horizontal gap between dot centers");
+        private final Scale.Fraction xOutGapMinManual = new Scale.Fraction(
+                0.1,
+                "Minimum manual horizontal gap between dot centers");
 
-        private final Scale.Fraction yGapMax = new Scale.Fraction(0.25,
-                                                                  "Maximum vertical gap between dots centers");
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
+                0.25,
+                "Maximum vertical gap between dots centers");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(0.4,
-                                                                        "Maximum manual vertical gap between dots centers");
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+                0.4,
+                "Maximum manual vertical gap between dots centers");
 
-        private final Constant.Ratio xOutWeight = new Constant.Ratio(1,
-                                                                     "Relative impact weight for xOutGap");
+        private final Constant.Ratio xOutWeight = new Constant.Ratio(
+                1,
+                "Relative impact weight for xOutGap");
 
-        private final Constant.Ratio yWeight = new Constant.Ratio(3,
-                                                                  "Relative impact weight for yGap");
+        private final Constant.Ratio yWeight = new Constant.Ratio(
+                3,
+                "Relative impact weight for yGap");
     }
 }

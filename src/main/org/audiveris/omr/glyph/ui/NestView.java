@@ -62,7 +62,7 @@ public class NestView
     protected final GlyphIndex glyphIndex;
 
     /** The sequence of lags. */
-    protected final List<Lag> lags = new ArrayList<Lag>();
+    protected final List<Lag> lags = new ArrayList<>();
 
     /** Related sheet, if any. */
     @Navigable(false)
@@ -96,8 +96,8 @@ public class NestView
     public void render (Graphics2D g)
     {
         // Should we draw the section borders?
-        final boolean drawBorders = ViewParameters.getInstance().getSelectionMode()
-                                            == SelectionMode.MODE_SECTION;
+        final boolean drawBorders = ViewParameters.getInstance()
+                .getSelectionMode() == SelectionMode.MODE_SECTION;
 
         // Stroke for borders
         final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
@@ -204,7 +204,6 @@ public class NestView
         }
     }
 
-    //
     //    //---------------------//
     //    // renderGlyphSentence //
     //    //---------------------//
@@ -328,11 +327,12 @@ public class NestView
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean showSentenceBaseline = new Constant.Boolean(true,
-                                                                                   "Should we show sentence baseline (vs inter-word gaps)?");
+        private final Constant.Boolean showSentenceBaseline = new Constant.Boolean(
+                true,
+                "Should we show sentence baseline (vs inter-word gaps)?");
     }
 }

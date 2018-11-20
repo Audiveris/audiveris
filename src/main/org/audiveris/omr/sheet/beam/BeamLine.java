@@ -38,16 +38,16 @@ public class BeamLine
 {
 
     /** Items that compose the line, from left to right. */
-    private final List<BeamItem> items = new ArrayList<BeamItem>();
+    private final List<BeamItem> items = new ArrayList<>();
+
+    /** VIP flag. */
+    private boolean vip;
 
     /** The median line from left item to right item. */
     final Line2D median;
 
     /** The constant height of the line. */
     final double height;
-
-    /** VIP flag. */
-    private boolean vip;
 
     /**
      * Creates a new BeamLine object.

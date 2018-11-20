@@ -93,7 +93,6 @@ public class Sample
         }
     };
 
-    //
     // Persistent data
     //----------------
     //
@@ -167,33 +166,6 @@ public class Sample
         this(0, 0, null, 0, 0, null, null);
     }
 
-    //--------------------//
-    // getRecordableShape //
-    //--------------------//
-    /**
-     * Report the shape to record for the provided shape.
-     * <p>
-     * For example shapes WHOLE_REST and HALF_REST differ only by their pitch position, so they both
-     * end up to HW_REST_set physical shape.
-     *
-     * @param shape the provided shape
-     * @return the recordable shape to use, or null
-     */
-    public static Shape getRecordableShape (Shape shape)
-    {
-        if (shape == null) {
-            return null;
-        }
-
-        Shape physicalShape = shape.getPhysicalShape();
-
-        if (physicalShape.isTrainable() && (physicalShape != Shape.NOISE)) {
-            return physicalShape;
-        } else {
-            return null;
-        }
-    }
-
     /**
      * We need equality strictly based on reference.
      *
@@ -206,6 +178,11 @@ public class Sample
         return this == obj;
     }
 
+    /**
+     * Report the staff interline for this sample.
+     *
+     * @return related staff interline value
+     */
     public int getInterline ()
     {
         return interline;
@@ -260,6 +237,11 @@ public class Sample
         return pitch;
     }
 
+    /**
+     * Report the sample shape.
+     *
+     * @return sample shape
+     */
     public Shape getShape ()
     {
         return shape;
@@ -313,5 +295,32 @@ public class Sample
         }
 
         return sb.toString();
+    }
+
+    //--------------------//
+    // getRecordableShape //
+    //--------------------//
+    /**
+     * Report the shape to record for the provided shape.
+     * <p>
+     * For example shapes WHOLE_REST and HALF_REST differ only by their pitch position, so they both
+     * end up to HW_REST_set physical shape.
+     *
+     * @param shape the provided shape
+     * @return the recordable shape to use, or null
+     */
+    public static Shape getRecordableShape (Shape shape)
+    {
+        if (shape == null) {
+            return null;
+        }
+
+        Shape physicalShape = shape.getPhysicalShape();
+
+        if (physicalShape.isTrainable() && (physicalShape != Shape.NOISE)) {
+            return physicalShape;
+        } else {
+            return null;
+        }
     }
 }

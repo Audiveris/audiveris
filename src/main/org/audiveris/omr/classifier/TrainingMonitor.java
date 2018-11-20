@@ -31,10 +31,26 @@ public interface TrainingMonitor //        extends IterationListener
 
 {
 
+    /**
+     * Call-back at epoch start.
+     *
+     * @param epoch epoch number.
+     */
     public void epochStarted (int epoch);
 
+    /**
+     * Report the number of iterations in a period.
+     *
+     * @return number of iterations between reporting
+     */
     public int getIterationPeriod ();
 
+    /**
+     * Call-back at end of iteration period.
+     *
+     * @param iteration iteration number
+     * @param score     current loss value
+     */
     public void iterationPeriodDone (int iteration,
                                      double score);
 }

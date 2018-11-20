@@ -52,7 +52,7 @@ class PluginAction
      *
      * @param plugin the underlying scripting plugin
      */
-    public PluginAction (Plugin plugin)
+    PluginAction (Plugin plugin)
     {
         super(plugin.getId());
         this.plugin = plugin;
@@ -78,5 +78,12 @@ class PluginAction
     public Plugin getPlugin ()
     {
         return plugin;
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 }

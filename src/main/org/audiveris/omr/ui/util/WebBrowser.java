@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Desktop;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 
@@ -36,7 +37,6 @@ import java.net.URI;
  * web browser.
  * It uses reflection for compatibility with Java 5 and Mac OS X.
  * <p>
- * <p>
  * Nota: Since using Desktop.browse() on a file under Windows crashes JVM 6, this feature is
  * currently delegated to an external and free utility named BareBonesBrowserLaunch, written by Dem
  * Pilafian.
@@ -44,7 +44,6 @@ import java.net.URI;
  *
  * @author Brenton Partridge
  * @author Hervé Bitteur (for delegation to BareBonesBrowserLaunch)
- *
  */
 public class WebBrowser
 {
@@ -52,32 +51,19 @@ public class WebBrowser
     private static final Logger logger = LoggerFactory.getLogger(WebBrowser.class);
 
     /** Major browsers. */
-    private static final String[] browsers
-            = {"firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape"};
+    private static final String[] browsers = {
+        "firefox",
+        "opera",
+        "konqueror",
+        "epiphany",
+        "mozilla",
+        "netscape"};
 
     /** Singleton instance, initially null. */
     private static WebBrowser instance;
 
     private WebBrowser ()
     {
-    }
-
-    //------------//
-    // getBrowser //
-    //------------//
-    /**
-     * Get the singleton WebBrowser implementation.
-     *
-     * @return a WebBrowser implementation, not null
-     *         in normal operation
-     */
-    public static synchronized WebBrowser getBrowser ()
-    {
-        if (instance == null) {
-            instance = setupBrowser();
-        }
-
-        return instance;
     }
 
     //-------------//
@@ -130,6 +116,23 @@ public class WebBrowser
         return "WebBrowser(unimplemented fallback)";
     }
 
+    //------------//
+    // getBrowser //
+    //------------//
+    /**
+     * Get the singleton WebBrowser implementation.
+     *
+     * @return a WebBrowser implementation, not null in normal operation
+     */
+    public static synchronized WebBrowser getBrowser ()
+    {
+        if (instance == null) {
+            instance = setupBrowser();
+        }
+
+        return instance;
+    }
+
     //---------//
     // openURL //
     //---------//
@@ -150,7 +153,8 @@ public class WebBrowser
             } else { //assume Unix or Linux
 
                 for (String browser : browsers) {
-                    if (Runtime.getRuntime().exec(new String[]{"which", browser}).waitFor() == 0) {
+                    if (Runtime.getRuntime().exec(new String[]{"which", browser})
+                            .waitFor() == 0) {
                         Runtime.getRuntime().exec(new String[]{browser, url});
 
                         return;
@@ -159,7 +163,14 @@ public class WebBrowser
 
                 logger.warn("Could not find any suitable web browser");
             }
-        } catch (Exception ex) {
+        } catch (IOException |
+                 ClassNotFoundException |
+                 IllegalAccessException |
+                 IllegalArgumentException |
+                 InterruptedException |
+                 NoSuchMethodException |
+                 SecurityException |
+                 InvocationTargetException ex) {
             logger.warn("Could not launch browser", ex);
         }
     }
@@ -183,7 +194,11 @@ public class WebBrowser
                         Method supported = desktopClass.getMethod("isDesktopSupported");
 
                         return (Boolean) supported.invoke(null);
-                    } catch (Exception e) {
+                    } catch (IllegalAccessException |
+                             IllegalArgumentException |
+                             NoSuchMethodException |
+                             SecurityException |
+                             InvocationTargetException e) {
                         return false;
                     }
                 }
@@ -194,7 +209,7 @@ public class WebBrowser
                     return "WebBrowser(java.awt.Desktop)";
                 }
             };
-        } catch (Exception e) {
+        } catch (ClassNotFoundException e) {
             logger.debug("java.awt.Desktop unsupported or error initializing");
         }
 
@@ -217,7 +232,7 @@ public class WebBrowser
                         return "WebBrowser(com.apple.eio.FileManager)";
                     }
                 };
-            } catch (Exception e) {
+            } catch (ClassNotFoundException e) {
                 logger.debug("Apple EIO FileManager unsupported");
             }
         }

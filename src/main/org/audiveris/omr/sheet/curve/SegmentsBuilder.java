@@ -253,7 +253,7 @@ public class SegmentsBuilder
     protected void weed (Set<Curve> clump)
     {
         // Simply keep the one with longest X range.
-        List<Curve> list = new ArrayList<Curve>(clump);
+        List<Curve> list = new ArrayList<>(clump);
         Collections.sort(list, Curve.byReverseXLength);
         clump.clear();
         clump.add(list.get(0));
@@ -271,7 +271,7 @@ public class SegmentsBuilder
     private List<Arc> getSeedArcs ()
     {
         final StaffManager staffManager = sheet.getStaffManager();
-        final Set<Arc> set = new LinkedHashSet<Arc>();
+        final Set<Arc> set = new LinkedHashSet<>();
 
         ArcLoop:
         for (Arc arc : skeleton.arcsMap.values()) {
@@ -309,7 +309,7 @@ public class SegmentsBuilder
             set.add(arc);
         }
 
-        List<Arc> list = new ArrayList<Arc>(set);
+        List<Arc> list = new ArrayList<>(set);
         Collections.sort(list, Arc.byReverseLength);
 
         return list;
@@ -345,27 +345,34 @@ public class SegmentsBuilder
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction arcMinSeedLength = new Scale.Fraction(1.25,
-                                                                           "Minimum arc length for starting a wedge build");
+        private final Scale.Fraction arcMinSeedLength = new Scale.Fraction(
+                1.25,
+                "Minimum arc length for starting a wedge build");
 
-        private final Constant.Double maxWedgeAngle = new Constant.Double("degree", 20.0,
-                                                                          "Maximum angle (in degrees) for a wedge branch with x-axis");
+        private final Constant.Double maxWedgeAngle = new Constant.Double(
+                "degree",
+                20.0,
+                "Maximum angle (in degrees) for a wedge branch with x-axis");
 
-        private final Scale.Fraction maxExtDistance = new Scale.Fraction(0.35,
-                                                                         "Maximum line distance for extension arc");
+        private final Scale.Fraction maxExtDistance = new Scale.Fraction(
+                0.35,
+                "Maximum line distance for extension arc");
 
-        private final Scale.Fraction maxSegmentDistance = new Scale.Fraction(0.3,
-                                                                             "Maximum line distance for final segment");
+        private final Scale.Fraction maxSegmentDistance = new Scale.Fraction(
+                0.3,
+                "Maximum line distance for final segment");
 
-        private final Scale.Fraction minProjection = new Scale.Fraction(-1.0,
-                                                                        "Minimum projection on curve for arc extension");
+        private final Scale.Fraction minProjection = new Scale.Fraction(
+                -1.0,
+                "Minimum projection on curve for arc extension");
 
-        private final Scale.Fraction maxRunDistance = new Scale.Fraction(0.2,
-                                                                         "Maximum distance from any run end to curve points");
+        private final Scale.Fraction maxRunDistance = new Scale.Fraction(
+                0.2,
+                "Maximum distance from any run end to curve points");
     }
 
     //------------//
@@ -389,7 +396,7 @@ public class SegmentsBuilder
 
         final double maxRunDistance;
 
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             arcMinSeedLength = scale.toPixels(constants.arcMinSeedLength);
             maxWedgeSlope = Math.tan(Math.toRadians(constants.maxWedgeAngle.getValue()));

@@ -85,10 +85,12 @@ public class SelectionPainter
                              boolean potential)
     {
         // Draw support line, using dash and specific color for potential relation
-        final Stroke oldStroke = potential ? UIUtil.setAbsoluteDashedStroke(g, 1f) : UIUtil
-                .setAbsoluteStroke(g, 1f);
-        g.setColor(potential ? Color.PINK : (NoExclusion.class.isAssignableFrom(supportClass)
-                ? Color.GRAY : Color.GREEN));
+        final Stroke oldStroke = potential ? UIUtil.setAbsoluteDashedStroke(g, 1f)
+                : UIUtil.setAbsoluteStroke(g, 1f);
+        g.setColor(
+                potential ? Color.PINK
+                        : (NoExclusion.class.isAssignableFrom(supportClass) ? Color.GRAY
+                        : Color.GREEN));
 
         final double r = 2; // Radius
         final Point oneCenter = one.getRelationCenter();
@@ -138,12 +140,13 @@ public class SelectionPainter
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio minZoomForSupportNames = new Constant.Ratio(2.0,
-                                                                                 "Minimum zoom value to display support names");
+        private final Constant.Ratio minZoomForSupportNames = new Constant.Ratio(
+                2.0,
+                "Minimum zoom value to display support names");
     }
 
     //---------------------//
@@ -153,8 +156,8 @@ public class SelectionPainter
             extends SigPainter
     {
 
-        public SelectionSigPainter (Graphics g,
-                                    Scale scale)
+        SelectionSigPainter (Graphics g,
+                             Scale scale)
         {
             super(g, scale);
         }

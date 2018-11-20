@@ -84,10 +84,11 @@ public class ExtractionMenu
         // Let the user select an output file
         final Book book = sheet.getStub().getBook();
         final Path bookFolder = BookManager.getDefaultBookFolder(book);
-        final File file = UIUtil.fileChooser(true, OMR.gui.getFrame(), new File(bookFolder.toFile(),
-                                                                                sheet.getId()
-                                                                                        + "-ext.png"),
-                                             new OmrFileFilter(".png images", new String[]{".png"}));
+        final File file = UIUtil.fileChooser(
+                true,
+                OMR.gui.getFrame(),
+                new File(bookFolder.toFile(), sheet.getId() + "-ext.png"),
+                new OmrFileFilter(".png images", new String[]{".png"}));
 
         if (file == null) {
             return;
@@ -117,7 +118,7 @@ public class ExtractionMenu
         /** Clamped area. */
         private Rectangle area;
 
-        public AreaAction ()
+        AreaAction ()
         {
             putValue(SHORT_DESCRIPTION, "Save the selected area to disk");
             setEnabled(false); // By default
@@ -129,7 +130,7 @@ public class ExtractionMenu
             try {
                 // Extract the area selected from initial image
                 save(sheet.getPicture().getImage(area));
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 logger.warn("Error in area extraction, " + ex, ex);
             }
         }
@@ -152,6 +153,13 @@ public class ExtractionMenu
                 putValue(NAME, "no area selected");
             }
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     //-------------//
@@ -164,7 +172,7 @@ public class ExtractionMenu
             extends AbstractAction
     {
 
-        public WholeAction ()
+        WholeAction ()
         {
             putValue(NAME, "Whole sheet");
             putValue(SHORT_DESCRIPTION, "Save the whole sheet to disk");
@@ -176,9 +184,16 @@ public class ExtractionMenu
             try {
                 // Extract the whole initial image
                 save(sheet.getPicture().getImage(null));
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 logger.warn("Error in sheet extraction, " + ex, ex);
             }
+        }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 }

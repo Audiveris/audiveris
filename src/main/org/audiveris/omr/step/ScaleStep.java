@@ -65,8 +65,10 @@ public class ScaleStep
     {
         if (constants.displayDelta.isSet()) {
             // Display delta view
-            sheet.getStub().getAssembly().addViewTab(SheetTab.DELTA_TAB, new DeltaView(sheet),
-                                                     new BoardsPane(new PixelBoard(sheet)));
+            sheet.getStub().getAssembly().addViewTab(
+                    SheetTab.DELTA_TAB,
+                    new DeltaView(sheet),
+                    new BoardsPane(new PixelBoard(sheet)));
         }
     }
 
@@ -96,11 +98,12 @@ public class ScaleStep
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean displayDelta = new Constant.Boolean(false,
-                                                                           "Should we display the Delta view?");
+        private final Constant.Boolean displayDelta = new Constant.Boolean(
+                false,
+                "Should we display the Delta view?");
     }
 }

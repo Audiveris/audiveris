@@ -28,7 +28,6 @@ import java.awt.image.WritableRaster;
  * {@link OrthogonalMoments}.
  *
  * @param <D> the descriptor type
- *
  * @author Hervé Bitteur
  */
 public interface MomentsExtractor<D extends OrthogonalMoments<D>>

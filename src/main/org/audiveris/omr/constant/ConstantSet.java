@@ -235,7 +235,7 @@ public abstract class ConstantSet
      */
     private void initMap ()
     {
-        SortedMap<String, Constant> tempMap = new TreeMap<String, Constant>();
+        SortedMap<String, Constant> tempMap = new TreeMap<>();
 
         // Retrieve values of all fields
         Class<?> cl = getClass();

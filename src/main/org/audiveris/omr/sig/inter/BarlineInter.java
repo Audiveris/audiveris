@@ -132,35 +132,6 @@ public class BarlineInter
         }
     }
 
-    //-------------------//
-    // getClosestBarline //
-    //-------------------//
-    /**
-     * From a provided Barline collection, report the one which has the closest abscissa
-     * to a provided point.
-     *
-     * @param bars  the collection of bars to browse
-     * @param point the reference point
-     * @return the abscissa-wise closest barline
-     */
-    public static BarlineInter getClosestBarline (Collection<BarlineInter> bars,
-                                                  Point point)
-    {
-        BarlineInter bestBar = null;
-        int bestDx = Integer.MAX_VALUE;
-
-        for (BarlineInter bar : bars) {
-            int dx = Math.abs(bar.getCenter().x - point.x);
-
-            if (dx < bestDx) {
-                bestDx = dx;
-                bestBar = bar;
-            }
-        }
-
-        return bestBar;
-    }
-
     //------------//
     // getDetails //
     //------------//
@@ -184,7 +155,7 @@ public class BarlineInter
      */
     public SortedSet<Inter> getGroupItems ()
     {
-        SortedSet<Inter> items = new TreeSet<Inter>(Inters.byFullAbscissa);
+        SortedSet<Inter> items = new TreeSet<>(Inters.byFullAbscissa);
         items.add(this);
         browseGroup(this, items);
 
@@ -194,6 +165,11 @@ public class BarlineInter
     //------------//
     // getMeasure //
     //------------//
+    /**
+     * Report the containing measure.
+     *
+     * @return related measure
+     */
     public Measure getMeasure ()
     {
         StaffBarlineInter sb = getStaffBarline();
@@ -270,7 +246,7 @@ public class BarlineInter
      */
     public List<PartBarline> getSystemBarline ()
     {
-        final List<PartBarline> systemBarline = new ArrayList<PartBarline>();
+        final List<PartBarline> systemBarline = new ArrayList<>();
         final StaffBarlineInter staffBarline = getStaffBarline();
 
         if (staffBarline != null) {
@@ -292,6 +268,12 @@ public class BarlineInter
     //------------//
     // isStaffEnd //
     //------------//
+    /**
+     * Tell whether this barline ends the staff on provided side.
+     *
+     * @param side provided side
+     * @return true if so
+     */
     public boolean isStaffEnd (HorizontalSide side)
     {
         return staffEnd == side;
@@ -320,6 +302,11 @@ public class BarlineInter
     //-------------//
     // setStaffEnd //
     //-------------//
+    /**
+     * Set this barline as a staff end.
+     *
+     * @param side which side for the end.
+     */
     public void setStaffEnd (HorizontalSide side)
     {
         staffEnd = side;
@@ -340,8 +327,10 @@ public class BarlineInter
     private void browseGroup (BarlineInter bar,
                               SortedSet<Inter> items)
     {
-        for (Relation rel : sig
-                .getRelations(bar, BarGroupRelation.class, RepeatDotBarRelation.class)) {
+        for (Relation rel : sig.getRelations(
+                bar,
+                BarGroupRelation.class,
+                RepeatDotBarRelation.class)) {
             Inter other = sig.getOppositeInter(bar, rel);
 
             if (!items.contains(other)) {
@@ -352,5 +341,34 @@ public class BarlineInter
                 }
             }
         }
+    }
+
+    //-------------------//
+    // getClosestBarline //
+    //-------------------//
+    /**
+     * From a provided Barline collection, report the one which has the closest abscissa
+     * to a provided point.
+     *
+     * @param bars  the collection of bars to browse
+     * @param point the reference point
+     * @return the abscissa-wise closest barline
+     */
+    public static BarlineInter getClosestBarline (Collection<BarlineInter> bars,
+                                                  Point point)
+    {
+        BarlineInter bestBar = null;
+        int bestDx = Integer.MAX_VALUE;
+
+        for (BarlineInter bar : bars) {
+            int dx = Math.abs(bar.getCenter().x - point.x);
+
+            if (dx < bestDx) {
+                bestDx = dx;
+                bestBar = bar;
+            }
+        }
+
+        return bestBar;
     }
 }

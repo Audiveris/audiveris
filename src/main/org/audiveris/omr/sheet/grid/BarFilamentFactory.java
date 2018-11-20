@@ -146,7 +146,7 @@ public class BarFilamentFactory
                                  Rectangle core,
                                  Collection<Section> source)
     {
-        final List<Section> sections = new ArrayList<Section>(source);
+        final List<Section> sections = new ArrayList<>(source);
         sections.removeAll(fil.getMembers());
 
         boolean expanding;
@@ -215,18 +215,21 @@ public class BarFilamentFactory
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(false,
-                                                                         "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
 
-        private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(0.5,
-                                                                               "Minimum length for a section to be considered as core");
+        private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(
+                0.5,
+                "Minimum length for a section to be considered as core");
 
-        private final Scale.Fraction segmentLength = new Scale.Fraction(1,
-                                                                        "Typical length between filament curve intermediate points");
+        private final Scale.Fraction segmentLength = new Scale.Fraction(
+                1,
+                "Typical length between filament curve intermediate points");
     }
 
     //------------//
@@ -242,7 +245,7 @@ public class BarFilamentFactory
 
         public int segmentLength;
 
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             minCoreSectionLength = scale.toPixels(constants.minCoreSectionLength);
             segmentLength = scale.toPixels(constants.segmentLength);

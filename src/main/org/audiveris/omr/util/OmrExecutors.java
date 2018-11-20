@@ -39,7 +39,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Class {@code OmrExecutors} handles several pools of threads provided to Audiveris
- * application: <ul>
+ * application:
+ * <ul>
  * <li>lowExecutor: a fixed nb (#cpu+1) of threads with low priority</li>
  * <li>highExecutor: a fixed nb (#cpu+1) of threads with high priority</li>
  * <li>cachedLowExecutor: a varying nb of threads with low priority</li>
@@ -60,13 +61,6 @@ public class OmrExecutors
     /** Number of processors available. */
     private static final int cpuCount = Runtime.getRuntime().availableProcessors();
 
-    static {
-        if (constants.printEnvironment.isSet()) {
-            logger.info("Environment. CPU count: {}, Use of parallelism: {}", cpuCount,
-                        defaultParallelism.getValue());
-        }
-    }
-
     // Specific pools
     private static final Pool highs = new Highs();
 
@@ -79,6 +73,15 @@ public class OmrExecutors
 
     /** To prevent parallel creation of pools when closing. */
     private static volatile boolean creationAllowed = true;
+
+    static {
+        if (constants.printEnvironment.isSet()) {
+            logger.info(
+                    "Environment. CPU count: {}, Use of parallelism: {}",
+                    cpuCount,
+                    defaultParallelism.getValue());
+        }
+    }
 
     /**
      * Not meant to be instantiated.
@@ -278,19 +281,22 @@ public class OmrExecutors
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean printEnvironment = new Constant.Boolean(false,
-                                                                               "Should we print out current environment?");
+        private final Constant.Boolean printEnvironment = new Constant.Boolean(
+                false,
+                "Should we print out current environment?");
 
         private final Constant.Boolean useParallelism = new Constant.Boolean(
                 false, //true, // Disabled for the time being
                 "Should we use parallelism when we have several processors?");
 
-        private final Constant.Integer graceDelay = new Constant.Integer("seconds", 60,
-                                                                         "Time to wait for terminating tasks");
+        private final Constant.Integer graceDelay = new Constant.Integer(
+                "seconds",
+                60,
+                "Time to wait for terminating tasks");
     }
 
     //------------//
@@ -424,8 +430,9 @@ public class OmrExecutors
         @Override
         protected ExecutorService createPool ()
         {
-            return Executors.newFixedThreadPool(defaultParallelism.getValue() ? (cpuCount + 1) : 1,
-                                                new Factory(getName(), Thread.NORM_PRIORITY, 0));
+            return Executors.newFixedThreadPool(
+                    defaultParallelism.getValue() ? (cpuCount + 1) : 1,
+                    new Factory(getName(), Thread.NORM_PRIORITY, 0));
         }
     }
 
@@ -446,8 +453,9 @@ public class OmrExecutors
         @Override
         protected ExecutorService createPool ()
         {
-            return Executors.newFixedThreadPool(defaultParallelism.getValue() ? (cpuCount + 1) : 1,
-                                                new Factory(getName(), Thread.MIN_PRIORITY, 0));
+            return Executors.newFixedThreadPool(
+                    defaultParallelism.getValue() ? (cpuCount + 1) : 1,
+                    new Factory(getName(), Thread.MIN_PRIORITY, 0));
         }
     }
 }

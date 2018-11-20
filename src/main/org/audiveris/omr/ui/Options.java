@@ -89,7 +89,7 @@ public class Options
     private Integer rowIndex;
 
     /** Listener on searchField modif. */
-    private DocumentListener docListener = new DocumentListener()
+    private final DocumentListener docListener = new DocumentListener()
     {
         @Override
         public void changedUpdate (DocumentEvent e)
@@ -287,8 +287,7 @@ public class Options
         resource.injectComponents(frame);
 
         // Make sure the search entry field gets the focus at creation time
-        frame.addWindowListener(
-                new WindowAdapter()
+        frame.addWindowListener(new WindowAdapter()
         {
             @Override
             public void windowOpened (WindowEvent e)

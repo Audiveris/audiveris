@@ -40,14 +40,6 @@ public class BracketInter
         extends AbstractVerticalInter
 {
 
-    public static enum BracketKind
-    {
-        TOP,
-        BOTH,
-        BOTTOM,
-        NONE;
-    }
-
     /** Bracket kind. */
     @XmlAttribute(name = "kind")
     private final BracketKind kind;
@@ -105,10 +97,23 @@ public class BracketInter
     // getKind //
     //---------//
     /**
+     * Report the bracket kind.
+     *
      * @return the kind
      */
     public BracketKind getKind ()
     {
         return kind;
+    }
+
+    /**
+     * Kind of bracket.
+     */
+    public static enum BracketKind
+    {
+        TOP,
+        BOTH,
+        BOTTOM,
+        NONE
     }
 }

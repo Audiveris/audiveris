@@ -86,8 +86,9 @@ public class LedgerSymbol
 
         // Use a ledger length twice as large as note head
         Rectangle2D hRect = p.layout.getBounds();
-        p.rect = new Rectangle((int) Math.ceil(2 * hRect.getWidth()), (int) Math.ceil(hRect
-                               .getHeight()));
+        p.rect = new Rectangle(
+                (int) Math.ceil(2 * hRect.getWidth()),
+                (int) Math.ceil(hRect.getHeight()));
 
         return p;
     }

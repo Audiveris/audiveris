@@ -136,8 +136,12 @@ public abstract class ImageUtil
     {
         int type = img.getType();
         ColorModel colorModel = img.getColorModel();
-        logger.info("{} type:({}={}) cm:({})", (title != null) ? title : "", type, typeOf(type),
-                    colorModel);
+        logger.info(
+                "{} type:({}={}) cm:({})",
+                (title != null) ? title : "",
+                type,
+                typeOf(type),
+                colorModel);
     }
 
     //-----------//
@@ -155,9 +159,7 @@ public abstract class ImageUtil
         logger.info("Converting RGB to gray ...");
 
         // We use luminance value based on standard RGB combination
-        double[][] matrix = {
-            {0.114d, 0.587d, 0.299d, 0.0d}
-        };
+        double[][] matrix = {{0.114d, 0.587d, 0.299d, 0.0d}};
 
         return JAI.create("bandcombine", new ParameterBlock().addSource(rgb).add(matrix), null)
                 .getAsBufferedImage();
@@ -283,5 +285,9 @@ public abstract class ImageUtil
         default:
             return "?";
         }
+    }
+
+    private ImageUtil ()
+    {
     }
 }

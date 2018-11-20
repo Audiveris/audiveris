@@ -96,7 +96,7 @@ public class AnnotationsBuilder
     private static final Logger logger = LoggerFactory.getLogger(AnnotationsBuilder.class);
 
     /** Inter excluded classes. */
-    private static final Set<Class> excludedInterClasses = new HashSet<Class>();
+    private static final Set<Class> excludedInterClasses = new HashSet<>();
 
     static {
         excludedInterClasses.add(AbstractChordInter.class);
@@ -205,7 +205,7 @@ public class AnnotationsBuilder
         /** All system note heads, sorted by abscissa. */
         private List<Inter> allHeads;
 
-        public SystemAnnotator (SystemInfo system)
+        SystemAnnotator (SystemInfo system)
         {
             this.system = system;
             sig = system.getSig();
@@ -242,7 +242,7 @@ public class AnnotationsBuilder
                 annotations.addSymbol(new SymbolInfo(oShape, interline, bar.getId(), null, bar
                                                      .getBounds()));
             } else {
-                List<SymbolInfo> inners = new ArrayList<SymbolInfo>();
+                List<SymbolInfo> inners = new ArrayList<>();
 
                 for (Inter item : items) {
                     OmrShape oShape = OmrShapeMapping.SHAPE_TO_OMRSHAPE.get(item.getShape());
@@ -368,7 +368,7 @@ public class AnnotationsBuilder
         private void exportTimePair (TimePairInter pair)
         {
             final int interline = pair.getStaff().getSpecificInterline();
-            final List<SymbolInfo> inners = new ArrayList<SymbolInfo>();
+            final List<SymbolInfo> inners = new ArrayList<>();
 
             for (Inter inter : pair.getMembers()) {
                 OmrShape oShape = OmrShapeMapping.SHAPE_TO_OMRSHAPE.get(inter.getShape());
@@ -379,7 +379,7 @@ public class AnnotationsBuilder
                 }
             }
 
-            final OmrShape pairShape = OmrShapeMapping.getTimeCombo((TimePairInter) pair);
+            final OmrShape pairShape = OmrShapeMapping.getTimeCombo(pair);
 
             if (pairShape != null) {
                 SymbolInfo outer = new SymbolInfo(pairShape, interline, pair.getId(), null, pair

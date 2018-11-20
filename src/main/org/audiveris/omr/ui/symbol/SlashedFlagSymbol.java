@@ -94,11 +94,11 @@ public class SlashedFlagSymbol
 
         Stroke oldStroke = g.getStroke();
         g.setStroke(p.stroke);
-        g.drawLine(loc.x - (p.rect.width / 2), loc.y + (p.rect.height / 5), loc.x + (p.rect.width
-                                                                                             / 2),
-                   loc.y
-                           - (p.rect.height
-                                      / 5));
+        g.drawLine(
+                loc.x - (p.rect.width / 2),
+                loc.y + (p.rect.height / 5),
+                loc.x + (p.rect.width / 2),
+                loc.y - (p.rect.height / 5));
         g.setStroke(oldStroke);
     }
 

@@ -124,7 +124,7 @@ public class Sections
     public static Set<Section> intersectedSections (Rectangle rect,
                                                     Collection<? extends Section> sections)
     {
-        Set<Section> found = new LinkedHashSet<Section>();
+        Set<Section> found = new LinkedHashSet<>();
 
         for (Section section : sections) {
             if (section.intersects(rect)) {

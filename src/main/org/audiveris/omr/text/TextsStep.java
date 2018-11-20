@@ -71,7 +71,7 @@ public class TextsStep
     protected Context doProlog (Sheet sheet)
             throws StepException
     {
-        List<TextLine> lines = new ArrayList<TextLine>();
+        List<TextLine> lines = new ArrayList<>();
 
         // Launch OCR on the whole sheet
         SheetScanner scanner = new SheetScanner(sheet);
@@ -89,15 +89,26 @@ public class TextsStep
     //---------//
     // Context //
     //---------//
+    /**
+     * Context data for this step.
+     */
     protected static class Context
     {
 
+        /** The sheet buffer handed to OCR. */
         public final ByteProcessor buffer;
 
+        /** The raw text lines OCR'ed. */
         public final List<TextLine> textLines;
 
-        public Context (ByteProcessor buffer,
-                        List<TextLine> textLines)
+        /**
+         * Create a Context object.
+         *
+         * @param buffer
+         * @param textLines
+         */
+        Context (ByteProcessor buffer,
+                 List<TextLine> textLines)
         {
             this.buffer = buffer;
             this.textLines = textLines;

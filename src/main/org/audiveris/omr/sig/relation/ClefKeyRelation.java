@@ -65,20 +65,6 @@ public class ClefKeyRelation
         return true;
     }
 
-    //------------------------//
-    // maxContributionForClef //
-    //------------------------//
-    /**
-     * Report the maximum contribution for the clef, brought by the following key.
-     *
-     * @return maximum contribution a clef can expect (from the following key)
-     */
-    public static double maxContributionForClef ()
-    {
-        // Maximum key grade value is Grades.intrinsicRatio
-        return Grades.intrinsicRatio * constants.clefSupportCoeff.getValue();
-    }
-
     //----------------//
     // getSourceCoeff //
     //----------------//
@@ -97,17 +83,33 @@ public class ClefKeyRelation
         return constants.keySupportCoeff.getValue();
     }
 
+    //------------------------//
+    // maxContributionForClef //
+    //------------------------//
+    /**
+     * Report the maximum contribution for the clef, brought by the following key.
+     *
+     * @return maximum contribution a clef can expect (from the following key)
+     */
+    public static double maxContributionForClef ()
+    {
+        // Maximum key grade value is Grades.intrinsicRatio
+        return Grades.intrinsicRatio * constants.clefSupportCoeff.getValue();
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio clefSupportCoeff = new Constant.Ratio(5,
-                                                                           "Value for (source) clef coeff in support formula");
+        private final Constant.Ratio clefSupportCoeff = new Constant.Ratio(
+                5,
+                "Value for (source) clef coeff in support formula");
 
-        private final Constant.Ratio keySupportCoeff = new Constant.Ratio(5,
-                                                                          "Value for (target) key coeff in support formula");
+        private final Constant.Ratio keySupportCoeff = new Constant.Ratio(
+                5,
+                "Value for (target) key coeff in support formula");
     }
 }

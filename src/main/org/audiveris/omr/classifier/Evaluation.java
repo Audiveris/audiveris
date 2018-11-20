@@ -119,6 +119,11 @@ public class Evaluation
         /** The name of the test that failed. */
         public final String test;
 
+        /**
+         * Create a {@code Failure} object.
+         *
+         * @param test the test which failed
+         */
         public Failure (String test)
         {
             this.test = test;

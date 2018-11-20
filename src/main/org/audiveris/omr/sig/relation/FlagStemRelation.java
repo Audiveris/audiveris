@@ -74,34 +74,11 @@ public class FlagStemRelation
         final double margin = scale.getInterline(); // TODO: use a constant instead?
 
         if (FlagsUp.contains(source.getShape())) {
-            return (extensionPoint.getY() > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;
+            return (extensionPoint.getY() > (stemLine.getY2() - margin)) ? STEM_BOTTOM
+                    : STEM_MIDDLE;
         } else {
             return (extensionPoint.getY() < (stemLine.getY1() + margin)) ? STEM_TOP : STEM_MIDDLE;
         }
-    }
-
-    //------------------//
-    // getXInGapMaximum //
-    //------------------//
-    public static Scale.Fraction getXInGapMaximum (boolean manual)
-    {
-        return manual ? constants.xInGapMaxManual : constants.xInGapMax;
-    }
-
-    //-------------------//
-    // getXOutGapMaximum //
-    //-------------------//
-    public static Scale.Fraction getXOutGapMaximum (boolean manual)
-    {
-        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
-    }
-
-    //----------------//
-    // getYGapMaximum //
-    //----------------//
-    public static Scale.Fraction getYGapMaximum (boolean manual)
-    {
-        return manual ? constants.yGapMaxManual : constants.yGapMax;
     }
 
     //----------------//
@@ -180,35 +157,67 @@ public class FlagStemRelation
         return getYGapMaximum(manual);
     }
 
+    //------------------//
+    // getXInGapMaximum //
+    //------------------//
+    public static Scale.Fraction getXInGapMaximum (boolean manual)
+    {
+        return manual ? constants.xInGapMaxManual : constants.xInGapMax;
+    }
+
+    //-------------------//
+    // getXOutGapMaximum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMaximum (boolean manual)
+    {
+        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
+    }
+
+    //----------------//
+    // getYGapMaximum //
+    //----------------//
+    public static Scale.Fraction getYGapMaximum (boolean manual)
+    {
+        return manual ? constants.yGapMaxManual : constants.yGapMax;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio flagSupportCoeff = new Constant.Ratio(3,
-                                                                           "Value for source (flag) coeff in support formula");
+        private final Constant.Ratio flagSupportCoeff = new Constant.Ratio(
+                3,
+                "Value for source (flag) coeff in support formula");
 
-        private final Constant.Ratio stemSupportCoeff = new Constant.Ratio(3,
-                                                                           "Value for target (stem) coeff in support formula");
+        private final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
+                3,
+                "Value for target (stem) coeff in support formula");
 
-        private final Scale.Fraction xInGapMax = new Scale.Fraction(0.3,
-                                                                    "Maximum horizontal overlap between stem & flag");
+        private final Scale.Fraction xInGapMax = new Scale.Fraction(
+                0.3,
+                "Maximum horizontal overlap between stem & flag");
 
-        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(0.45,
-                                                                          "Maximum manual horizontal overlap between stem & flag");
+        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(
+                0.45,
+                "Maximum manual horizontal overlap between stem & flag");
 
-        private final Scale.Fraction xOutGapMax = new Scale.Fraction(0.3,
-                                                                     "Maximum horizontal gap between stem & flag");
+        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
+                0.3,
+                "Maximum horizontal gap between stem & flag");
 
-        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(0.45,
-                                                                           "Maximum manual horizontal gap between stem & flag");
+        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
+                0.45,
+                "Maximum manual horizontal gap between stem & flag");
 
-        private final Scale.Fraction yGapMax = new Scale.Fraction(0.5,
-                                                                  "Maximum vertical gap between stem & flag");
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
+                0.5,
+                "Maximum vertical gap between stem & flag");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(0.75,
-                                                                        "Maximum manual vertical gap between stem & flag");
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+                0.75,
+                "Maximum manual vertical gap between stem & flag");
     }
 }

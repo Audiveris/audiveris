@@ -60,8 +60,12 @@ public class PixelBoard
     private static final Logger logger = LoggerFactory.getLogger(PixelBoard.class);
 
     /** Events this board is interested in. */
-    private static final Class<?>[] eventsRead = new Class<?>[]{LocationEvent.class,
-                                                                PixelEvent.class};
+    private static final Class<?>[] eventsRead = new Class<?>[]{
+        LocationEvent.class,
+        PixelEvent.class};
+
+    /** Pixel level. */
+    protected final LIntegerField level = new LIntegerField(false, "Level", "Pixel level");
 
     /** Abscissa of upper Left point. */
     private final LIntegerField x = new LIntegerField("X", "Abscissa of upper left corner");
@@ -74,9 +78,6 @@ public class PixelBoard
 
     /** Height of rectangle. */
     private final LIntegerField height = new LIntegerField("Height", "Height of rectangle");
-
-    /** Pixel level. */
-    protected final LIntegerField level = new LIntegerField(false, "Level", "Pixel level");
 
     /**
      * Create a PixelBoard, pre-selected by default
@@ -100,8 +101,9 @@ public class PixelBoard
         super(Board.PIXEL, sheet.getLocationService(), eventsRead, selected, false, false, false);
 
         // Needed to process user input when RETURN/ENTER is pressed
-        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke
-                .getKeyStroke("ENTER"), "ParamAction");
+        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke("ENTER"),
+                "ParamAction");
         getComponent().getActionMap().put("ParamAction", new ParamAction());
 
         defineLayout();
@@ -217,9 +219,6 @@ public class PixelBoard
         builder.add(height.getField(), cst.xy(11, r));
     }
 
-    //-------------//
-    // ParamAction //
-    //-------------//
     private class ParamAction
             extends AbstractAction
     {
@@ -230,11 +229,22 @@ public class PixelBoard
         {
             // Publish the new pixel selection rectangle (which can be degenerated to a point)
             getSelectionService().publish(
-                    new LocationEvent(PixelBoard.this, SelectionHint.LOCATION_INIT,
-                                      MouseMovement.PRESSING, new Rectangle(x.getValue(), y
-                                                                            .getValue(), width
-                                                                                    .getValue(),
-                                                                            height.getValue())));
+                    new LocationEvent(
+                            PixelBoard.this,
+                            SelectionHint.LOCATION_INIT,
+                            MouseMovement.PRESSING,
+                            new Rectangle(
+                                    x.getValue(),
+                                    y.getValue(),
+                                    width.getValue(),
+                                    height.getValue())));
+        }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 }

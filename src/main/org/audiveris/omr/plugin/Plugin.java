@@ -178,6 +178,12 @@ public class Plugin
     //-----------//
     // runPlugin //
     //-----------//
+    /**
+     * Run this plugin on the provided book.
+     *
+     * @param book provided book
+     * @return nothing
+     */
     public Void runPlugin (Book book)
     {
         Path exportPath = retrieveExport(book);
@@ -211,7 +217,8 @@ public class Plugin
             // Wait to get exit value
             final int exitValue = process.waitFor();
             logger.info("{} exit value: {}", getId(), exitValue);
-        } catch (Throwable ex) {
+        } catch (IOException |
+                 InterruptedException ex) {
             logger.warn("Error launching {} {}" + this, ex.toString(), ex);
         }
 
@@ -244,7 +251,7 @@ public class Plugin
     //----------//
     private List<String> buildCli (Path exportPath)
     {
-        List<String> cli = new ArrayList<String>(args.size());
+        List<String> cli = new ArrayList<>(args.size());
 
         for (String arg : args) {
             if (arg.trim().equals("{}")) {
@@ -303,7 +310,7 @@ public class Plugin
             }
 
             logger.warn("Cannot find file {}", exportPath);
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             logger.warn("Error getting export file " + ex, ex);
         }
 
@@ -323,7 +330,7 @@ public class Plugin
 
         private final Book book;
 
-        public PluginTask (Book book)
+        PluginTask (Book book)
         {
             this.book = book;
         }

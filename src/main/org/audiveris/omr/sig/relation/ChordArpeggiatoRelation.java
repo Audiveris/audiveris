@@ -32,7 +32,8 @@ import org.jgrapht.event.GraphEdgeChangeEvent;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ChordArpeggiatoRelation}
+ * Class {@code ChordArpeggiatoRelation} represents a relation between a (head) chord
+ * and an arpeggiato.
  *
  * @author Hervé Bitteur
  */
@@ -72,14 +73,6 @@ public class ChordArpeggiatoRelation
     }
 
     //----------------//
-    // getXGapMaximum //
-    //----------------//
-    public static Scale.Fraction getXGapMaximum (boolean manual)
-    {
-        return manual ? constants.xGapMaxManual : constants.xGapMax;
-    }
-
-    //----------------//
     // isSingleSource //
     //----------------//
     @Override
@@ -116,20 +109,31 @@ public class ChordArpeggiatoRelation
         return constants.arpeggiatoSupportCoeff.getValue();
     }
 
+    //----------------//
+    // getXGapMaximum //
+    //----------------//
+    public static Scale.Fraction getXGapMaximum (boolean manual)
+    {
+        return manual ? constants.xGapMaxManual : constants.xGapMax;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio arpeggiatoSupportCoeff = new Constant.Ratio(0.5,
-                                                                                 "Supporting coeff for (source) arpeggiato");
+        private final Constant.Ratio arpeggiatoSupportCoeff = new Constant.Ratio(
+                0.5,
+                "Supporting coeff for (source) arpeggiato");
 
-        private final Scale.Fraction xGapMax = new Scale.Fraction(1.5,
-                                                                  "Maximum horizontal gap between arpeggiato & chord");
+        private final Scale.Fraction xGapMax = new Scale.Fraction(
+                1.5,
+                "Maximum horizontal gap between arpeggiato & chord");
 
-        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(2.5,
-                                                                        "Maximum manual horizontal gap between arpeggiato & chord");
+        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(
+                2.5,
+                "Maximum manual horizontal gap between arpeggiato & chord");
     }
 }

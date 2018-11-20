@@ -230,7 +230,7 @@ public class IntegerFunction
         x1 = Math.max(x1, xMin);
         x2 = Math.min(x2, xMax);
 
-        final List<Integer> maxima = new ArrayList<Integer>();
+        final List<Integer> maxima = new ArrayList<>();
         Integer prevX = null;
         int prevY = 0;
         boolean growing = false;
@@ -255,17 +255,15 @@ public class IntegerFunction
         }
 
         // Sort by decreasing y values
-        Collections.sort(
-                maxima,
-                new Comparator<Integer>()
-        {
-            @Override
-            public int compare (Integer x1,
-                                Integer x2)
-            {
-                return Integer.compare(getValue(x2), getValue(x1)); // Reverse
-            }
-        });
+        Collections.sort(maxima, new Comparator<Integer>()
+                 {
+                     @Override
+                     public int compare (Integer x1,
+                                         Integer x2)
+                     {
+                         return Integer.compare(getValue(x2), getValue(x1)); // Reverse
+                     }
+                 });
 
         return maxima;
     }

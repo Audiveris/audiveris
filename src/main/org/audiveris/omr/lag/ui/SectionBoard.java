@@ -59,16 +59,22 @@ public class SectionBoard
     private final LIntegerField y = new LIntegerField(false, "Y", "Top ordinate in pixels");
 
     /** Field for width. */
-    private final LIntegerField width = new LIntegerField(false, "Width",
-                                                          "Horizontal width in pixels");
+    private final LIntegerField width = new LIntegerField(
+            false,
+            "Width",
+            "Horizontal width in pixels");
 
     /** Field for height. */
-    private final LIntegerField height = new LIntegerField(false, "Height",
-                                                           "Vertical height in pixels");
+    private final LIntegerField height = new LIntegerField(
+            false,
+            "Height",
+            "Vertical height in pixels");
 
     /** Field for weight. */
-    private final LIntegerField weight = new LIntegerField(false, "Weight",
-                                                           "Number of pixels in this section");
+    private final LIntegerField weight = new LIntegerField(
+            false,
+            "Weight",
+            "Number of pixels in this section");
 
     /**
      * Create a Section Board
@@ -80,10 +86,11 @@ public class SectionBoard
                          boolean selected)
     {
         super(
-                new Desc(Board.SECTION.name + ((lag.getOrientation() == Orientation.VERTICAL)
-                        ? " Vert" : " Hori"), Board.SECTION.position + ((lag.getOrientation()
-                                                                                 == Orientation.VERTICAL)
-                                 ? 100 : 0)),
+                new Desc(
+                        Board.SECTION.name + ((lag.getOrientation() == Orientation.VERTICAL)
+                        ? " Vert" : " Hori"),
+                        Board.SECTION.position + ((lag.getOrientation() == Orientation.VERTICAL)
+                        ? 100 : 0)),
                 lag.getEntityService(),
                 selected);
 

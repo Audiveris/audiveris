@@ -85,7 +85,7 @@ public class SystemManager
     private Sheet sheet;
 
     /** Sheet retrieved systems. */
-    private final List<SystemInfo> systems = new ArrayList<SystemInfo>();
+    private final List<SystemInfo> systems = new ArrayList<>();
 
     /**
      * Creates a new SystemManager object.
@@ -141,9 +141,9 @@ public class SystemManager
         PathIterator north = aboves.isEmpty() ? new GeoPath(new Line2D.Double(left, 0, right, 0))
                 .getPathIterator(null) : getGlobalLine(aboves, BOTTOM);
 
-        PathIterator south = belows.isEmpty() ? new GeoPath(new Line2D.Double(left, sheetHeight,
-                                                                              right, sheetHeight))
-                .getPathIterator(null) : getGlobalLine(belows, TOP);
+        PathIterator south = belows.isEmpty() ? new GeoPath(
+                new Line2D.Double(left, sheetHeight, right, sheetHeight)).getPathIterator(null)
+                : getGlobalLine(belows, TOP);
 
         // Define sheet-wide area
         GeoPath wholePath = new GeoPath();
@@ -177,7 +177,7 @@ public class SystemManager
         if (found != null) {
             found.clear();
         } else {
-            found = new ArrayList<SystemInfo>();
+            found = new ArrayList<>();
         }
 
         for (SystemInfo system : systems) {
@@ -205,7 +205,7 @@ public class SystemManager
         }
 
         // Now dispatch the lag sections among relevant systems
-        List<SystemInfo> relevants = new ArrayList<SystemInfo>();
+        List<SystemInfo> relevants = new ArrayList<>();
 
         for (Section section : sheet.getLagManager().getLag(Lags.HLAG).getEntities()) {
             getSystemsOf(section.getCentroid(), relevants);
@@ -231,7 +231,7 @@ public class SystemManager
         }
 
         // Now dispatch the lag sections among relevant systems
-        List<SystemInfo> relevants = new ArrayList<SystemInfo>();
+        List<SystemInfo> relevants = new ArrayList<>();
 
         for (Section section : sheet.getLagManager().getLag(Lags.VLAG).getEntities()) {
             getSystemsOf(section.getCentroid(), relevants);
@@ -267,8 +267,9 @@ public class SystemManager
 
             for (int i = 0; i < found.size(); i++) {
                 SystemInfo syst = found.get(i);
-                int vDist = Math.min(syst.getFirstStaff().distanceTo(point), syst.getLastStaff()
-                                     .distanceTo(point));
+                int vDist = Math.min(
+                        syst.getFirstStaff().distanceTo(point),
+                        syst.getLastStaff().distanceTo(point));
 
                 if (vDist < minDist) {
                     minDist = vDist;
@@ -291,6 +292,22 @@ public class SystemManager
     public List<SystemInfo> getSystems ()
     {
         return Collections.unmodifiableList(systems);
+    }
+
+    //------------//
+    // setSystems //
+    //------------//
+    /**
+     * Assign the whole sequence of systems
+     *
+     * @param systems the (new) systems
+     */
+    public void setSystems (Collection<SystemInfo> systems)
+    {
+        if (this.systems != systems) {
+            this.systems.clear();
+            this.systems.addAll(systems);
+        }
     }
 
     //--------------//
@@ -337,7 +354,7 @@ public class SystemManager
         if (found != null) {
             found.clear();
         } else {
-            found = new ArrayList<SystemInfo>();
+            found = new ArrayList<>();
         }
 
         for (SystemInfo system : systems) {
@@ -367,7 +384,7 @@ public class SystemManager
         if (found != null) {
             found.clear();
         } else {
-            found = new ArrayList<SystemInfo>();
+            found = new ArrayList<>();
         }
 
         for (SystemInfo system : systems) {
@@ -495,22 +512,6 @@ public class SystemManager
         systems.clear();
     }
 
-    //------------//
-    // setSystems //
-    //------------//
-    /**
-     * Assign the whole sequence of systems
-     *
-     * @param systems the (new) systems
-     */
-    public void setSystems (Collection<SystemInfo> systems)
-    {
-        if (this.systems != systems) {
-            this.systems.clear();
-            this.systems.addAll(systems);
-        }
-    }
-
     //-------------------//
     // verticalNeighbors //
     //-------------------//
@@ -525,7 +526,7 @@ public class SystemManager
     public List<SystemInfo> verticalNeighbors (SystemInfo current,
                                                VerticalSide side)
     {
-        final List<SystemInfo> neighbors = new ArrayList<SystemInfo>();
+        final List<SystemInfo> neighbors = new ArrayList<>();
         final int idx = systems.indexOf(current);
         final int dir = (side == TOP) ? (-1) : 1;
         final int iBreak = (side == TOP) ? (-1) : systems.size();
@@ -566,14 +567,6 @@ public class SystemManager
         return neighbors;
     }
 
-    //----------------//
-    // initTransients //
-    //----------------//
-    void initTransients (Sheet sheet)
-    {
-        this.sheet = sheet;
-    }
-
     //---------------//
     // allocatePages //
     //---------------//
@@ -603,8 +596,11 @@ public class SystemManager
                 }
 
                 // Start a new page
-                sheet.addPage(page = new Page(sheet, 1 + sheet.getPages().size(), (systId == 1)
-                                              ? null : systId));
+                sheet.addPage(
+                        page = new Page(
+                                sheet,
+                                1 + sheet.getPages().size(),
+                                (systId == 1) ? null : systId));
                 page.setMovementStart(true);
                 stub.addPageRef(new PageRef(stub.getNumber(), page.getId(), true, null));
             } else if (page == null) {
@@ -677,7 +673,7 @@ public class SystemManager
             return null;
         }
 
-        List<Staff> staffList = new ArrayList<Staff>();
+        List<Staff> staffList = new ArrayList<>();
 
         for (SystemInfo system : list) {
             staffList.add((side == TOP) ? system.getFirstStaff() : system.getLastStaff());
@@ -736,14 +732,23 @@ public class SystemManager
         }
     }
 
+    //----------------//
+    // initTransients //
+    //----------------//
+    void initTransients (Sheet sheet)
+    {
+        this.sheet = sheet;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction minShift = new Scale.Fraction(3.0,
-                                                                   "Minimum shift to detect a system indentation");
+        private final Scale.Fraction minShift = new Scale.Fraction(
+                3.0,
+                "Minimum shift to detect a system indentation");
     }
 }

@@ -47,6 +47,11 @@ import java.util.zip.ZipOutputStream;
 public abstract class ZipFileSystem
 {
 
+    /** Not meant to be instantiated. */
+    private ZipFileSystem ()
+    {
+    }
+
     //--------//
     // create //
     //--------//

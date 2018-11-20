@@ -36,34 +36,28 @@ import static java.lang.Math.*;
  * approximates a collection of points.
  * <p>
  * The ellipse is defined through the 6 coefficients of its algebraic equation:
+ *
  * <pre>
  * A*x**2 + B*x*y + C*y**2 + D*x + E*y + F = 0
  * </pre>
+ *
  * It can also compute the ellipse characteristics (center, theta, major, minor) from its algebraic
  * equation.
  *
  * @author Hervé Bitteur
  */
-public class Ellipse
+public final class Ellipse
 {
 
     private static final Logger logger = LoggerFactory.getLogger(Ellipse.class);
 
     /** Constraint such that 4*A*C - B**2 = 1 */
     private static final Matrix C1 = new Matrix(
-            new double[][]{
-                {0, 0, 2},
-                {0, -1, 0},
-                {2, 0, 0}
-            });
+            new double[][]{{0, 0, 2}, {0, -1, 0}, {2, 0, 0}});
 
     /** Inverse of Constraint */
     private static final Matrix C1inv = new Matrix(
-            new double[][]{
-                {0, 0, 0.5},
-                {0, -1, 0},
-                {0.5, 0, 0}
-            });
+            new double[][]{{0, 0, 0.5}, {0, -1, 0}, {0.5, 0, 0}});
 
     /** Epsilon value for vertical or horizontal ellipses */
     private static final double EPSILON = 1.0e-15;
@@ -360,7 +354,6 @@ public class Ellipse
      */
     protected void computeCharacteristics ()
     {
-        System.out.println("-- computeCharacteristics");
 
         // Compute ellipse center
         center = computeCenter();
@@ -385,7 +378,6 @@ public class Ellipse
     protected void fit (double[] x,
                         double[] y)
     {
-        System.out.println("-- fit");
 
         // Check input
         if (x.length != y.length) {
@@ -401,7 +393,7 @@ public class Ellipse
          * (C1 | 0 )
          * (---+---)
          * ( 0 | 0 )
-         * */
+         */
         ///print(C1,    "C1");
         ///print(C1inv, "C1inv");
         /** number of points */
@@ -447,11 +439,13 @@ public class Ellipse
         ///print(S3, "S3");
         /**
          * Initial equation S.A = lambda.C.A can be rewritten. :
+         *
          * <pre>
          * (S1 | S2)   (A1)            (C1 | 0 )   (A1)
          * (---+---) . (--) = lambda . (---+---) . (--)
          * (S2'| S3)   (A2)            ( 0 | 0 )   (A2)
          * </pre>
+         * <p>
          * which is equivalent to :
          * S1.A1 + S2.A2 = lambda.C1.A1
          * S2'.A1 + S3.A2 = 0
@@ -570,6 +564,12 @@ public class Ellipse
     //-------//
     // print //
     //-------//
+    /**
+     * Print out the provided matrix.
+     *
+     * @param m     matrix
+     * @param title print title
+     */
     protected static void print (Matrix m,
                                  String title)
     {

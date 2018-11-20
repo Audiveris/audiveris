@@ -203,19 +203,6 @@ public class GlyphsModel
         return latestShape;
     }
 
-    //----------//
-    // getSheet //
-    //----------//
-    /**
-     * Report the model underlying sheet.
-     *
-     * @return the underlying sheet instance
-     */
-    public Sheet getSheet ()
-    {
-        return sheet;
-    }
-
     //----------------//
     // setLatestShape //
     //----------------//
@@ -229,6 +216,19 @@ public class GlyphsModel
         if (shape != Shape.GLYPH_PART) {
             latestShape = shape;
         }
+    }
+
+    //----------//
+    // getSheet //
+    //----------//
+    /**
+     * Report the model underlying sheet.
+     *
+     * @return the underlying sheet instance
+     */
+    public Sheet getSheet ()
+    {
+        return sheet;
     }
 
     //---------------//
@@ -248,6 +248,11 @@ public class GlyphsModel
     //-------------//
     // deleteGlyph //
     //-------------//
+    /**
+     * Delete a glyph.
+     *
+     * @param glyph the glyph to delete
+     */
     protected void deleteGlyph (Glyph glyph)
     {
         logger.error("HB. Not yet implemented");

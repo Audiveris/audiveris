@@ -60,7 +60,6 @@ public abstract class Constant<E>
 
     private static final Logger logger = LoggerFactory.getLogger(Constant.class);
 
-    //
     // Data assigned at construction time
     //-----------------------------------
     /** Unit (if relevant) used by the quantity measured. */
@@ -83,7 +82,7 @@ public abstract class Constant<E>
     // Data modified at any time
     //--------------------------
     /** Current data. */
-    private AtomicReference<Tuple> tuple = new AtomicReference<Tuple>();
+    private AtomicReference<Tuple> tuple = new AtomicReference<>();
 
     /**
      * Creates a constant instance, while providing a default value,
@@ -105,10 +104,6 @@ public abstract class Constant<E>
         this.quantityUnit = quantityUnit;
         this.sourceString = sourceString;
         this.description = description;
-
-        //        System.out.println(
-        //            Thread.currentThread().getName() + ": " + "-- Creating Constant: " +
-        //            description);
     }
 
     //----------------//
@@ -363,9 +358,6 @@ public abstract class Constant<E>
     protected void setUnitAndName (java.lang.String unit,
                                    java.lang.String name)
     {
-        //        System.out.println(
-        //            Thread.currentThread().getName() + ": " + "Assigning unit:" + unit +
-        //            " name:" + name);
         this.name = name;
 
         final java.lang.String qName = (unit != null) ? (unit + "." + name) : name;
@@ -411,12 +403,6 @@ public abstract class Constant<E>
         while (qualifiedName == null) {
             i++;
             UnitManager.getInstance().checkDirtySets();
-        }
-
-        // For monitoring/debugging only
-        if (i > 1) {
-            System.out.println(
-                    "*** " + Thread.currentThread().getName() + " checkInitialized loop:" + i);
         }
     }
 
@@ -555,26 +541,6 @@ public abstract class Constant<E>
             setUnitAndName(unit, name);
         }
 
-        //-------------//
-        // decodeColor //
-        //-------------//
-        public static java.awt.Color decodeColor (java.lang.String str)
-        {
-            return java.awt.Color.decode(str);
-        }
-
-        //-------------//
-        // encodeColor //
-        //-------------//
-        public static java.lang.String encodeColor (java.awt.Color color)
-        {
-            return java.lang.String.format(
-                    "#%02x%02x%02x",
-                    color.getRed(),
-                    color.getGreen(),
-                    color.getBlue());
-        }
-
         @Override
         public void setValue (java.awt.Color val)
         {
@@ -585,6 +551,38 @@ public abstract class Constant<E>
         protected java.awt.Color decode (java.lang.String str)
         {
             return decodeColor(str);
+        }
+
+        //-------------//
+        // decodeColor //
+        //-------------//
+        /**
+         * Decode a color string.
+         *
+         * @param str input string
+         * @return the color object
+         */
+        public static java.awt.Color decodeColor (java.lang.String str)
+        {
+            return java.awt.Color.decode(str);
+        }
+
+        //-------------//
+        // encodeColor //
+        //-------------//
+        /**
+         * Encode a color as a string
+         *
+         * @param color Color object to encode
+         * @return color string
+         */
+        public static java.lang.String encodeColor (java.awt.Color color)
+        {
+            return java.lang.String.format(
+                    "#%02x%02x%02x",
+                    color.getRed(),
+                    color.getGreen(),
+                    color.getBlue());
         }
     }
 
@@ -613,6 +611,13 @@ public abstract class Constant<E>
             TWO.setUnitAndName(Constant.class.getName(), "doubleTwo");
         }
 
+        /**
+         * Create a Double object.
+         *
+         * @param quantityUnit name of unit used
+         * @param defaultValue default value
+         * @param description  user description
+         */
         public Double (java.lang.String quantityUnit,
                        double defaultValue,
                        java.lang.String description)
@@ -630,12 +635,24 @@ public abstract class Constant<E>
     //------//
     // Enum //
     //------//
+    /**
+     * An enumerated constant.
+     *
+     * @param <E> underlying enum type
+     */
     public static class Enum<E extends java.lang.Enum<E>>
             extends Constant<java.lang.Enum<E>>
     {
 
         private final Class classe;
 
+        /**
+         * Create an enum constant.
+         *
+         * @param classe       enum class
+         * @param defaultValue default value
+         * @param description  user description
+         */
         public Enum (Class classe,
                      E defaultValue,
                      java.lang.String description)
@@ -782,8 +799,8 @@ public abstract class Constant<E>
 
         final Object cachedValue;
 
-        public Tuple (java.lang.String currentString,
-                      Object cachedValue)
+        Tuple (java.lang.String currentString,
+               Object cachedValue)
         {
             /** Current string Value */
             this.currentString = currentString;

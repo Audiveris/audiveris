@@ -56,7 +56,6 @@ import javax.swing.event.ChangeListener;
  * Class {@code EntityBoard} is a basic board related to an entity type.
  *
  * @param <E> precise entity type
- *
  * @author Hervé Bitteur
  */
 public class EntityBoard<E extends Entity>
@@ -68,14 +67,6 @@ public class EntityBoard<E extends Entity>
 
     /** Events this board is interested in. */
     private static final Class<?>[] eventsRead = new Class<?>[]{EntityListEvent.class};
-
-    /** To select precise ID option. */
-    public static enum IdOption
-    {
-        ID_NONE,
-        ID_LABEL,
-        ID_SPINNER;
-    }
 
     /** Counter of entities selection. */
     protected JLabel count;
@@ -245,8 +236,12 @@ public class EntityBoard<E extends Entity>
             // is received leading to such selfUpdating. Hence the check.
             if (!selfUpdating) {
                 // Notify the new entity id
-                getSelectionService().publish(new IdEvent(this, SelectionHint.ENTITY_INIT, null,
-                                                          (Integer) idSpinner.getValue()));
+                getSelectionService().publish(
+                        new IdEvent(
+                                this,
+                                SelectionHint.ENTITY_INIT,
+                                null,
+                                (Integer) idSpinner.getValue()));
             }
         }
     }
@@ -282,6 +277,11 @@ public class EntityBoard<E extends Entity>
     //-------------------//
     // getSelectedEntity //
     //-------------------//
+    /**
+     * Report the selected entity (first in sequence).
+     *
+     * @return selected entity
+     */
     @SuppressWarnings("unchecked")
     protected E getSelectedEntity ()
     {
@@ -414,7 +414,7 @@ public class EntityBoard<E extends Entity>
      */
     private JSpinner makeIdSpinner (EntityIndex<E> index)
     {
-        JSpinner spinner = new JSpinner(new SpinnerIdModel<E>(index));
+        JSpinner spinner = new JSpinner(new SpinnerIdModel<>(index));
         spinner.setValue(0); // Initial value before listener is set!
         spinner.addChangeListener(this);
         spinner.setLocale(Locale.ENGLISH);
@@ -422,5 +422,13 @@ public class EntityBoard<E extends Entity>
         SpinnerUtil.setEditable(spinner, true);
 
         return spinner;
+    }
+
+    /** To select precise ID option. */
+    public static enum IdOption
+    {
+        ID_NONE,
+        ID_LABEL,
+        ID_SPINNER;
     }
 }

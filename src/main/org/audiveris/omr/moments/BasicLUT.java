@@ -26,7 +26,7 @@ package org.audiveris.omr.moments;
  *
  * @author Hervé Bitteur
  */
-public final class BasicLUT
+public class BasicLUT
         implements LUT
 {
 

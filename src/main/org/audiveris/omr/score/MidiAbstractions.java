@@ -296,8 +296,7 @@ public abstract class MidiAbstractions
         /** 127 */
         "Applause",
         /** 128 */
-        "Gunshot"
-    };
+        "Gunshot"};
 
     /**
      * Not meant to be instantiated.

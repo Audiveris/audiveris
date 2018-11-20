@@ -44,7 +44,6 @@ public class RunTableFactory
 
     private static final Logger logger = LoggerFactory.getLogger(RunTableFactory.class);
 
-    //
     /** The desired orientation. */
     private final Orientation orientation;
 
@@ -77,7 +76,6 @@ public class RunTableFactory
         this.filter = filter;
     }
 
-    //
     // ------------//
     // createTable //
     // ------------//
@@ -95,7 +93,6 @@ public class RunTableFactory
         return createTable(source, roi);
     }
 
-    //
     // ------------//
     // createTable //
     // ------------//
@@ -119,59 +116,6 @@ public class RunTableFactory
         return table;
     }
 
-    //--------//
-    // Filter //
-    //--------//
-    /**
-     * This class is able to filter a run candidate.
-     */
-    public static interface Filter
-    {
-
-        /**
-         * Perform the filter on the provided run candidate.
-         *
-         * @param x      abscissa at beginning of run candidate
-         * @param y      ordinate at beginning of run candidate
-         * @param length the length of the run candidate
-         * @return true if candidate is to be kept
-         */
-        boolean check (int x,
-                       int y,
-                       int length);
-    }
-
-    //--------------//
-    // LengthFilter //
-    //--------------//
-    /**
-     * A convenient run filter, that checks whether the run length is sufficient.
-     */
-    public static class LengthFilter
-            implements Filter
-    {
-
-        private final int minLength;
-
-        /**
-         * Creates a length-based filter.
-         *
-         * @param minLength the minimum acceptable run length (specified in pixels)
-         */
-        public LengthFilter (int minLength)
-        {
-            this.minLength = minLength;
-        }
-
-        @Override
-        public boolean check (int x,
-                              int y,
-                              int length)
-        {
-            return length >= minLength;
-        }
-    }
-
     // ----------//
     // MyAdapter //
     // ----------//
@@ -188,9 +132,9 @@ public class RunTableFactory
         /** Table offset, if any, WRT source. */
         protected Point tableOffset;
 
-        public MyAdapter (ByteProcessor source,
-                          RunTable table,
-                          Point tableOffset)
+        MyAdapter (ByteProcessor source,
+                   RunTable table,
+                   Point tableOffset)
         {
             this.source = source;
             this.table = table;
@@ -258,9 +202,9 @@ public class RunTableFactory
             extends MyAdapter
     {
 
-        public HorizontalAdapter (ByteProcessor source,
-                                  RunTable table,
-                                  Point tableOffset)
+        HorizontalAdapter (ByteProcessor source,
+                           RunTable table,
+                           Point tableOffset)
         {
             super(source, table, tableOffset);
         }
@@ -298,9 +242,9 @@ public class RunTableFactory
             extends MyAdapter
     {
 
-        public VerticalAdapter (ByteProcessor source,
-                                RunTable table,
-                                Point tableOffset)
+        VerticalAdapter (ByteProcessor source,
+                         RunTable table,
+                         Point tableOffset)
         {
             super(source, table, tableOffset);
         }
@@ -325,6 +269,59 @@ public class RunTableFactory
                                        int length)
         {
             return filter.check(pos, coord - length, length);
+        }
+    }
+
+    //--------//
+    // Filter //
+    //--------//
+    /**
+     * This class is able to filter a run candidate.
+     */
+    public static interface Filter
+    {
+
+        /**
+         * Perform the filter on the provided run candidate.
+         *
+         * @param x      abscissa at beginning of run candidate
+         * @param y      ordinate at beginning of run candidate
+         * @param length the length of the run candidate
+         * @return true if candidate is to be kept
+         */
+        boolean check (int x,
+                       int y,
+                       int length);
+    }
+
+    //--------------//
+    // LengthFilter //
+    //--------------//
+    /**
+     * A convenient run filter, that checks whether the run length is sufficient.
+     */
+    public static class LengthFilter
+            implements Filter
+    {
+
+        private final int minLength;
+
+        /**
+         * Creates a length-based filter.
+         *
+         * @param minLength the minimum acceptable run length (specified in pixels)
+         */
+        public LengthFilter (int minLength)
+        {
+            this.minLength = minLength;
+        }
+
+        @Override
+        public boolean check (int x,
+                              int y,
+                              int length)
+        {
+            return length >= minLength;
         }
     }
 }

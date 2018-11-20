@@ -91,6 +91,11 @@ public class Mask
     //------//
     // dump //
     //------//
+    /**
+     * Dump this mask.
+     *
+     * @param title dump title if any
+     */
     public void dump (String title)
     {
         bitmap.dump(title);

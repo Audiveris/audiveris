@@ -106,7 +106,7 @@ public class LocalHistogram
         //   IJ.log("u "+u+" v "+v);
         //int tmin=u; int tmax=v;
         for (int i = u; i <= v; i++) {
-            counts[i] = counts[i] + bh.counts[i];
+            counts[i] += bh.counts[i];
 
             // if (counts[i]<0) IJ.log("less than zero: "+i);
         }
@@ -299,7 +299,7 @@ public class LocalHistogram
         int tmax = v;
 
         for (int i = u; i <= v; i++) {
-            counts[i] = counts[i] - bh.counts[i];
+            counts[i] -= bh.counts[i];
 
             if (counts[i] < 0) {
                 counts[i] = 0;

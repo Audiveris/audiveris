@@ -58,7 +58,6 @@ import org.audiveris.omr.sig.ui.ShapeBoard;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.Colors;
-import org.audiveris.omr.ui.PixelCount;
 import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.ViewParameters.SelectionMode;
 import org.audiveris.omr.ui.selection.EntityListEvent;
@@ -138,7 +137,7 @@ public class SymbolsEditor
         view = new MyView(sheet.getGlyphIndex());
         view.setLocationService(sheet.getLocationService());
 
-        List<Board> boards = new ArrayList<Board>();
+        List<Board> boards = new ArrayList<>();
         boards.add(new PixelBoard(sheet, constants.selectPixelBoard.isSet()));
 
         Lag hLag = sheet.getLagManager().getLag(Lags.HLAG);
@@ -179,12 +178,18 @@ public class SymbolsEditor
             boards.add(new SectionBoard(vLag, constants.selectVerticalSectionBoard.isSet()));
         }
 
-        boards.add(new SymbolGlyphBoard(glyphsController, constants.selectGlyphBoard.isSet(), true));
+        boards.add(
+                new SymbolGlyphBoard(glyphsController, constants.selectGlyphBoard.isSet(), true));
         boards.add(new InterBoard(sheet, constants.selectInterBoard.isSet()));
         boards.add(shapeBoard = new ShapeBoard(sheet, this, constants.selectShapeBoard.isSet()));
-        boards.add(new EvaluationBoard(true, sheet, BasicClassifier.getInstance(), sheet
-                                       .getGlyphIndex().getEntityService(), interController,
-                                       constants.selectBasicClassifierBoard.isSet()));
+        boards.add(
+                new EvaluationBoard(
+                        true,
+                        sheet,
+                        BasicClassifier.getInstance(),
+                        sheet.getGlyphIndex().getEntityService(),
+                        interController,
+                        constants.selectBasicClassifierBoard.isSet()));
 
         //        boards.add(
         //                new EvaluationBoard(
@@ -299,8 +304,7 @@ public class SymbolsEditor
      */
     public void highLight (final Slot slot)
     {
-        SwingUtilities.invokeLater(
-                new Runnable()
+        SwingUtilities.invokeLater(new Runnable()
         {
             @Override
             public void run ()
@@ -334,36 +338,37 @@ public class SymbolsEditor
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final PixelCount measureMargin = new PixelCount(10,
-                                                                "Number of pixels as margin when highlighting a measure");
+        private final Constant.Boolean selectPixelBoard = new Constant.Boolean(
+                false,
+                "Should we select Pixel board by default?");
 
-        private final Constant.Boolean selectPixelBoard = new Constant.Boolean(false,
-                                                                               "Should we select Pixel board by default?");
+        private final Constant.Boolean selectHorizontalSectionBoard = new Constant.Boolean(
+                false,
+                "Should we select Horizontal Section board by default?");
 
-        private final Constant.Boolean selectHorizontalSectionBoard = new Constant.Boolean(false,
-                                                                                           "Should we select Horizontal Section board by default?");
+        private final Constant.Boolean selectVerticalSectionBoard = new Constant.Boolean(
+                false,
+                "Should we select Vertical Section board by default?");
 
-        private final Constant.Boolean selectVerticalSectionBoard = new Constant.Boolean(false,
-                                                                                         "Should we select Vertical Section board by default?");
+        private final Constant.Boolean selectGlyphBoard = new Constant.Boolean(
+                false,
+                "Should we select Glyph board by default?");
 
-        private final Constant.Boolean selectGlyphBoard = new Constant.Boolean(false,
-                                                                               "Should we select Glyph board by default?");
+        private final Constant.Boolean selectInterBoard = new Constant.Boolean(
+                true,
+                "Should we select Inter board by default?");
 
-        private final Constant.Boolean selectInterBoard = new Constant.Boolean(true,
-                                                                               "Should we select Inter board by default?");
+        private final Constant.Boolean selectShapeBoard = new Constant.Boolean(
+                true,
+                "Should we select Shape board by default?");
 
-        private final Constant.Boolean selectShapeBoard = new Constant.Boolean(true,
-                                                                               "Should we select Shape board by default?");
-
-        private final Constant.Boolean selectBasicClassifierBoard = new Constant.Boolean(true,
-                                                                                         "Should we select Basic Classifier board by default?");
-
-        private final Constant.Boolean selectDeepClassifierBoard = new Constant.Boolean(false,
-                                                                                        "Should we select Deep Classifier board by default?");
+        private final Constant.Boolean selectBasicClassifierBoard = new Constant.Boolean(
+                true,
+                "Should we select Basic Classifier board by default?");
     }
 
     //--------//
@@ -381,8 +386,12 @@ public class SymbolsEditor
 
         private MyView (GlyphIndex glyphIndex)
         {
-            super(glyphIndex.getEntityService(), Arrays.asList(sheet.getLagManager().getLag(
-                  Lags.HLAG), sheet.getLagManager().getLag(Lags.VLAG)), sheet);
+            super(
+                    glyphIndex.getEntityService(),
+                    Arrays.asList(
+                            sheet.getLagManager().getLag(Lags.HLAG),
+                            sheet.getLagManager().getLag(Lags.VLAG)),
+                    sheet);
             setName("SymbolsEditor-MyView");
 
             // Subscribe to all lags for SectionSet events
@@ -570,8 +579,8 @@ public class SymbolsEditor
 
             if (viewParams.isInputPainting()) {
                 // Sections
-                final boolean drawBorders = viewParams.getSelectionMode()
-                                                    == SelectionMode.MODE_SECTION;
+                final boolean drawBorders = viewParams
+                        .getSelectionMode() == SelectionMode.MODE_SECTION;
                 final Stroke oldStroke = (drawBorders) ? UIUtil.setAbsoluteStroke(g, 1f) : null;
 
                 for (Lag lag : lags) {

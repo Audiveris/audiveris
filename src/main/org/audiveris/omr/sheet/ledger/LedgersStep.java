@@ -99,12 +99,23 @@ public class LedgersStep
     //---------//
     // Context //
     //---------//
+    /**
+     * Context for step processing.
+     */
     protected static class Context
     {
 
+        /**
+         * Ledger candidate sections per system.
+         */
         public final Map<SystemInfo, List<Section>> sectionMap;
 
-        public Context (Map<SystemInfo, List<Section>> sectionMap)
+        /**
+         * Create a Context.
+         *
+         * @param sectionMap
+         */
+        Context (Map<SystemInfo, List<Section>> sectionMap)
         {
             this.sectionMap = sectionMap;
         }

@@ -91,14 +91,6 @@ public class AliasPatterns
         return null;
     }
 
-    //------------------//
-    // useAliasPatterns //
-    //------------------//
-    public static boolean useAliasPatterns ()
-    {
-        return constants.useAliasPatterns.isSet();
-    }
-
     //-------------------//
     // loadAliasPatterns //
     //-------------------//
@@ -111,11 +103,12 @@ public class AliasPatterns
      */
     private List<Pattern> loadAliasPatterns ()
     {
-        final List<Pattern> patternList = new ArrayList<Pattern>();
+        final List<Pattern> patternList = new ArrayList<>();
 
         if (useAliasPatterns()) {
-            URI[] uris = new URI[]{WellKnowns.CONFIG_FOLDER.resolve(ALIAS_PATTERNS_FILENAME).toUri()
-                .normalize(), UriUtil.toURI(WellKnowns.RES_URI, ALIAS_PATTERNS_FILENAME)};
+            URI[] uris = new URI[]{
+                WellKnowns.CONFIG_FOLDER.resolve(ALIAS_PATTERNS_FILENAME).toUri().normalize(),
+                UriUtil.toURI(WellKnowns.RES_URI, ALIAS_PATTERNS_FILENAME)};
 
             for (int i = 0; i < uris.length; i++) {
                 URI uri = uris[i];
@@ -124,20 +117,19 @@ public class AliasPatterns
                     URL url = uri.toURL();
 
                     // Retrieve the raw strings
-                    JAXBContext jaxbContext = JAXBContext.newInstance(Strings.class);
-                    InputStream input = url.openStream();
-                    Unmarshaller um = jaxbContext.createUnmarshaller();
-                    Strings strings = (Strings) um.unmarshal(input);
-                    input.close();
+                    try (InputStream input = url.openStream()) {
+                        JAXBContext jaxbContext = JAXBContext.newInstance(Strings.class);
+                        Unmarshaller um = jaxbContext.createUnmarshaller();
+                        Strings strings = (Strings) um.unmarshal(input);
+                        List<String> stringList = strings.list;
 
-                    List<String> stringList = strings.list;
+                        // Compile strings into patterns
+                        if (!stringList.isEmpty()) {
+                            logger.info("Alias patterns: {}", stringList);
 
-                    // Compile strings into patterns
-                    if (!stringList.isEmpty()) {
-                        logger.info("Alias patterns: {}", stringList);
-
-                        for (String raw : stringList) {
-                            patternList.add(Pattern.compile(raw));
+                            for (String raw : stringList) {
+                                patternList.add(Pattern.compile(raw));
+                            }
                         }
                     }
                 } catch (IOException ex) {
@@ -154,15 +146,29 @@ public class AliasPatterns
         return patternList;
     }
 
+    //------------------//
+    // useAliasPatterns //
+    //------------------//
+    /**
+     * Tell whether we should use patterns.
+     *
+     * @return true if so
+     */
+    public static boolean useAliasPatterns ()
+    {
+        return constants.useAliasPatterns.isSet();
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean useAliasPatterns = new Constant.Boolean(true,
-                                                                               "Should we apply alias patterns on input names?");
+        private final Constant.Boolean useAliasPatterns = new Constant.Boolean(
+                true,
+                "Should we apply alias patterns on input names?");
     }
 
     //---------//
@@ -175,7 +181,7 @@ public class AliasPatterns
 
         /** List of patterns on input names. */
         @XmlElement(name = "pattern")
-        private List<String> list = new ArrayList<String>();
+        private List<String> list = new ArrayList<>();
 
         /** No-arg constructor meant for JAXB. */
         private Strings ()

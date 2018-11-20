@@ -130,7 +130,7 @@ public class PartConnection
         logger.debug("Created {} from {}", result, candidate);
 
         ResultEntry entry = new ResultEntry();
-        List<Candidate> candidates = new ArrayList<Candidate>();
+        List<Candidate> candidates = new ArrayList<>();
         candidates.add(candidate);
         entry.result = result;
         entry.candidates = candidates;
@@ -173,7 +173,7 @@ public class PartConnection
     private List<ResultEntry> connect (List<List<Candidate>> sequences)
     {
         /** Resulting sequence of logical parts. */
-        resultEntries = new ArrayList<ResultEntry>();
+        resultEntries = new ArrayList<>();
 
         // Two-staff entry found, if any
         ResultEntry biEntry = null;
@@ -195,13 +195,18 @@ public class PartConnection
                     biEntry.candidates.add(sequence.get(biIndex));
 
                     // Process parts above bi
-                    dispatch(sequence.subList(0, biIndex), resultEntries.subList(0, resultEntries
-                                                                                 .indexOf(biEntry)),
-                             -1);
+                    dispatch(
+                            sequence.subList(0, biIndex),
+                            resultEntries.subList(0, resultEntries.indexOf(biEntry)),
+                            -1);
 
                     // Process parts below bi
-                    dispatch(sequence.subList(biIndex + 1, sequence.size()), resultEntries.subList(
-                             resultEntries.indexOf(biEntry) + 1, resultEntries.size()), +1);
+                    dispatch(
+                            sequence.subList(biIndex + 1, sequence.size()),
+                            resultEntries.subList(
+                                    resultEntries.indexOf(biEntry) + 1,
+                                    resultEntries.size()),
+                            +1);
                 } else {
                     dispatch(sequence, resultEntries, -1);
                 }
@@ -238,7 +243,8 @@ public class PartConnection
             resultIndex += dir;
             logger.debug("resultIndex:{}", resultIndex);
 
-            if (((dir > 0) && (resultIndex >= results.size())) || ((dir < 0) && (resultIndex < 0))) {
+            if (((dir > 0) && (resultIndex >= results.size())) || ((dir < 0)
+                                                                           && (resultIndex < 0))) {
                 logger.debug("No more entries available");
 
                 // Create a brand new logical part for this candidate
@@ -301,25 +307,29 @@ public class PartConnection
     public static interface Candidate
     {
 
-        /** Report the abbreviation, if any, that relates to this part
+        /**
+         * Report the abbreviation, if any, that relates to this part
          *
          * @return the abbreviation if any
          */
         String getAbbreviation ();
 
-        /** Report the name of the part, if any
+        /**
+         * Report the name of the part, if any
          *
          * @return the part name if any
          */
         String getName ();
 
-        /** Report the number of staves in the part
+        /**
+         * Report the number of staves in the part
          *
          * @return the number of staves
          */
         int getStaffCount ();
 
-        /** Assign an id to the candidate (and recursively to its affiliates if any).
+        /**
+         * Assign an id to the candidate (and recursively to its affiliates if any).
          *
          * @param id the assigned id value
          */
@@ -329,6 +339,9 @@ public class PartConnection
     //-------------//
     // ResultEntry //
     //-------------//
+    /**
+     * Entry to gather results related to a single part.
+     */
     public static class ResultEntry
     {
 

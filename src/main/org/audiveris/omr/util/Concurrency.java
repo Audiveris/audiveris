@@ -32,9 +32,9 @@ public interface Concurrency
 {
 
     /**
-     * Report whether the entity can be used concurrently
+     * Report whether the entity can be used concurrently.
      *
-     * @return true if thread safe, false otherwise
+     * @return true if so
      */
     boolean isThreadSafe ();
 }

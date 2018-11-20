@@ -31,7 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code Entities}
+ * Class {@code Entities} provides utility methods for entities.
  *
  * @author Hervé Bitteur
  */
@@ -48,6 +48,10 @@ public class Entities
             return o1.getId() - o2.getId();
         }
     };
+
+    private Entities ()
+    {
+    }
 
     //-------------------//
     // containedEntities //
@@ -72,7 +76,7 @@ public class Entities
 
             if ((bounds != null) && rect.contains(bounds)) {
                 if (list == null) {
-                    list = new ArrayList<E>();
+                    list = new ArrayList<>();
                 }
 
                 list.add(entity);
@@ -108,7 +112,7 @@ public class Entities
 
             if (entity.contains(point)) {
                 if (list == null) {
-                    list = new ArrayList<E>();
+                    list = new ArrayList<>();
                 }
 
                 list.add(entity);
@@ -154,7 +158,7 @@ public class Entities
     // ids //
     //-----//
     /**
-     * Build a string with just the ids of the entity collection.
+     * Build a string with just the IDs of the entity collection.
      *
      * @param entities the collection of Entity instances
      * @return the string built

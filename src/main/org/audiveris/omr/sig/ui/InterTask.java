@@ -110,7 +110,7 @@ public abstract class InterTask
 
         for (Relation rel : sig.edgesOf(inter)) {
             if (links == null) {
-                links = new LinkedHashSet<Link>();
+                links = new LinkedHashSet<>();
             }
 
             Inter partner = sig.getOppositeInter(inter, rel);

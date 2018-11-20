@@ -72,7 +72,8 @@ public abstract class DynamicMenu
 
             // Listener to menu selection, to modify content on-the-fly
             menu.addMenuListener(menuListener);
-        } catch (Exception ex) {
+        } catch (IllegalAccessException |
+                 InstantiationException ex) {
             logger.error("Could not instantiate " + menuClass, ex);
             menu = null;
         }
@@ -93,7 +94,8 @@ public abstract class DynamicMenu
 
             // Listener to menu selection, to modify content on-the-fly
             menu.addMenuListener(menuListener);
-        } catch (Exception ex) {
+        } catch (IllegalAccessException |
+                 InstantiationException ex) {
             logger.error("Could not instantiate " + menuClass, ex);
             menu = null;
         }

@@ -36,7 +36,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * retrieve a entity within the collection based on its (strictly positive integer) ID.
  *
  * @param <E> specific type for entity
- *
  * @author Hervé Bitteur
  */
 @XmlJavaTypeAdapter(BasicIndex.InterfaceAdapter.class)

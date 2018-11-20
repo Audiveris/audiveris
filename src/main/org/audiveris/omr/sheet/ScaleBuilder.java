@@ -54,9 +54,10 @@ import java.util.List;
  * <p>
  * A second black peak usually gives the average beam thickness.
  * And similarly, a second combo peak may indicate a series of staves with a different interline
- * than the main series.</p>
+ * than the main series.
  * <p>
- * Internally, additional validity checks are performed:<ol>
+ * Internally, additional validity checks are performed:
+ * <ol>
  * <li>If we cannot retrieve black peak, we decide that the sheet does not contain significant
  * lines.</li>
  * <li>If we cannot retrieve combo peak, we decide that the sheet does not contain regularly spaced
@@ -69,10 +70,9 @@ import java.util.List;
  * <p>
  * If we have doubts about the page at hand and if this page is part of a multi-page score, we
  * propose to simply discard this sheet. In batch, the page is discarded without asking for
- * confirmation.</p>
+ * confirmation.
  *
  * @see Scale
- *
  * @author Hervé Bitteur
  */
 public class ScaleBuilder
@@ -82,7 +82,6 @@ public class ScaleBuilder
 
     private static final Logger logger = LoggerFactory.getLogger(ScaleBuilder.class);
 
-    //
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -138,6 +137,13 @@ public class ScaleBuilder
     //---------------//
     // retrieveScale //
     //---------------//
+    /**
+     * Retrieve scale information on sheet.
+     *
+     * @return scale information
+     * @throws StepException raised if some mandatory information cannot be retrieved.
+     *                       For example if no staves are found.
+     */
     public Scale retrieveScale ()
             throws StepException
     {
@@ -159,22 +165,23 @@ public class ScaleBuilder
         int interline = comboPeak.main;
 
         if (interline == 0) {
-            sheet.getStub().decideOnRemoval(sheet.getId() + LINE_SEPARATOR
-                                                    + "Interline value is zero." + LINE_SEPARATOR
-                                                    + "This sheet does not seem to contain staff lines.",
-                                            false);
+            sheet.getStub().decideOnRemoval(
+                    sheet.getId() + LINE_SEPARATOR + "Interline value is zero." + LINE_SEPARATOR
+                            + "This sheet does not seem to contain staff lines.",
+                    false);
         } else if (interline < constants.minResolution.getValue()) {
             sheet.getStub().decideOnRemoval(
                     sheet.getId() + LINE_SEPARATOR + "With an interline value of " + interline
                             + " pixels," + LINE_SEPARATOR + "either this sheet contains no staves,"
-                            + LINE_SEPARATOR + "or the picture resolution is too low (try 300 DPI).",
+                            + LINE_SEPARATOR
+                            + "or the picture resolution is too low (try 300 DPI).",
                     false);
         } else if (interline > constants.maxInterline.getValue()) {
-            sheet.getStub()
-                    .decideOnRemoval(sheet.getId() + LINE_SEPARATOR + "Too large interline value: "
-                                             + interline + " pixels" + LINE_SEPARATOR
-                                             + "This sheet does not seem to contain staff lines.",
-                                     false);
+            sheet.getStub().decideOnRemoval(
+                    sheet.getId() + LINE_SEPARATOR + "Too large interline value: " + interline
+                            + " pixels" + LINE_SEPARATOR
+                            + "This sheet does not seem to contain staff lines.",
+                    false);
         }
     }
 
@@ -200,8 +207,9 @@ public class ScaleBuilder
 
         // Beam peak?
         final double minBeamFraction = constants.minBeamFraction.getValue();
-        final int minHeight = Math.max(blackPeak.max, (int) Math.rint(minBeamFraction
-                                                                              * comboPeak.main));
+        final int minHeight = Math.max(
+                blackPeak.max,
+                (int) Math.rint(minBeamFraction * comboPeak.main));
         final int maxHeight = getMainWhite();
         beamKey = histoKeeper.retrieveBeamKey(minHeight, maxHeight);
 
@@ -210,8 +218,8 @@ public class ScaleBuilder
         }
 
         // Beam extrapolation from height possible range
-        final int guess = (int) Math.rint(minHeight + ((maxHeight - minHeight)
-                                                               * constants.beamRangeRatio.getValue()));
+        final int guess = (int) Math.rint(
+                minHeight + ((maxHeight - minHeight) * constants.beamRangeRatio.getValue()));
         logger.info("No beam key found, guessed value: {}", guess);
 
         return new BeamScale(guess, true);
@@ -280,8 +288,8 @@ public class ScaleBuilder
 
         // Here, we keep going on with scale data
         InterlineScale smallInterlineScale = computeSmallInterline();
-        Scale smallScale = (smallInterlineScale == null) ? null : new Scale(smallInterlineScale,
-                                                                            null, null, null);
+        Scale smallScale = (smallInterlineScale == null) ? null
+                : new Scale(smallInterlineScale, null, null, null);
 
         // Respect user-assigned scale info, if any
         final Scale scl = sheet.getScale();
@@ -289,7 +297,8 @@ public class ScaleBuilder
 
         if (scl != null) {
             scale = new Scale(
-                    (scl.getInterlineScale() != null) ? scl.getInterlineScale() : computeInterline(),
+                    (scl.getInterlineScale() != null) ? scl.getInterlineScale()
+                    : computeInterline(),
                     (scl.getLineScale() != null) ? scl.getLineScale() : new LineScale(blackPeak),
                     (scl.getBeamScale() != null) ? scl.getBeamScale() : computeBeam(),
                     (scl.getSmallScale() != null) ? scl.getSmallScale() : smallScale);
@@ -298,8 +307,11 @@ public class ScaleBuilder
                 scale.setStemScale(scl.getStemScale());
             }
         } else {
-            scale = new Scale(computeInterline(), new LineScale(blackPeak), computeBeam(),
-                              smallScale);
+            scale = new Scale(
+                    computeInterline(),
+                    new LineScale(blackPeak),
+                    computeBeam(),
+                    smallScale);
         }
 
         return scale;
@@ -322,42 +334,6 @@ public class ScaleBuilder
         }
 
         return mainCombo - blackPeak.main;
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Integer minResolution = new Constant.Integer("Pixels", 11,
-                                                                            "Minimum resolution, expressed as number of pixels per interline");
-
-        private final Constant.Integer maxInterline = new Constant.Integer("Pixels", 100,
-                                                                           "Maximum interline value (in pixels)");
-
-        private final Constant.Ratio minGainRatio = new Constant.Ratio(0.03,
-                                                                       "Minimum ratio of peak runs for peak extension");
-
-        private final Constant.Ratio minDerivativeRatio = new Constant.Ratio(0.025,
-                                                                             "Ratio of total runs for derivative acceptance");
-
-        private final Constant.Ratio maxSecondRatio = new Constant.Ratio(2.0,
-                                                                         "Maximum ratio between second and first combined peak");
-
-        private final Constant.Ratio minBeamFraction = new Constant.Ratio(
-                0.275, // 0.25,
-                "Minimum ratio between beam thickness and interline");
-
-        private final Constant.Ratio minBeamCountRatio = new Constant.Ratio(0.02,
-                                                                            "Ratio of total runs for beam peak acceptance");
-
-        private final Constant.Ratio beamRangeRatio = new Constant.Ratio(0.5,
-                                                                         "Ratio of beam range for extrapolation");
-
-        private final Constant.Ratio minBlackRatio = new Constant.Ratio(0.001,
-                                                                        "Minimum ratio of foreground pixels in image");
     }
 
     //-------------//
@@ -384,14 +360,17 @@ public class ScaleBuilder
 
         final HiLoPeakFinder comboFinder;
 
-        public HistoKeeper ()
+        HistoKeeper ()
         {
             // We assume at least one staff in sheet, hence some maximum values for relevant white
             // and black runs.
             maxBlack = binary.getHeight() / 16;
             maxWhite = binary.getHeight() / 4;
-            logger.debug("maxBlack:{}, maxWhite:{}, maxCombo:{}", maxBlack, maxWhite, maxBlack
-                                                                                              + maxWhite);
+            logger.debug(
+                    "maxBlack:{}, maxWhite:{}, maxCombo:{}",
+                    maxBlack,
+                    maxWhite,
+                    maxBlack + maxWhite);
 
             // Allocate histograms
             blackFunction = new IntegerFunction(0, maxBlack);
@@ -528,10 +507,10 @@ public class ScaleBuilder
         {
             // Combo peak(s)
             final int area = comboFunction.getArea();
-            final List<Range> comboPeaks = comboFinder.findPeaks(1, (int) Math.rint(area
-                                                                                            * constants.minDerivativeRatio
-                                                                         .getValue()),
-                                                                 constants.minGainRatio.getValue());
+            final List<Range> comboPeaks = comboFinder.findPeaks(
+                    1,
+                    (int) Math.rint(area * constants.minDerivativeRatio.getValue()),
+                    constants.minGainRatio.getValue());
 
             if (comboPeaks.isEmpty()) {
                 sheet.getStub().invalidate();
@@ -552,8 +531,10 @@ public class ScaleBuilder
                 // If delta between the two combo peaks is too small, we merge them
                 if (Math.abs(p1.main - p2.main) < blackPeak.main) {
                     logger.info("Merging two close combo peaks {} & {}", comboPeak, comboPeak2);
-                    comboPeak = new Range(Math.min(p1.min, p2.min), (p1.main + p2.main) / 2, Math
-                                          .max(p1.max, p2.max));
+                    comboPeak = new Range(
+                            Math.min(p1.min, p2.min),
+                            (p1.main + p2.main) / 2,
+                            Math.max(p1.max, p2.max));
                     comboPeak2 = null;
                 } else {
                     // If delta between the two combo peaks is too large, we ignore the second
@@ -582,10 +563,10 @@ public class ScaleBuilder
 
             // Black peaks
             final int area = blackFunction.getArea();
-            final List<Range> blackPeaks = blackFinder.findPeaks(1, (int) Math.rint(area
-                                                                                            * constants.minDerivativeRatio
-                                                                         .getValue()),
-                                                                 constants.minGainRatio.getValue());
+            final List<Range> blackPeaks = blackFinder.findPeaks(
+                    1,
+                    (int) Math.rint(area * constants.minDerivativeRatio.getValue()),
+                    constants.minGainRatio.getValue());
 
             if (blackPeaks.isEmpty()) {
                 sheet.getStub().invalidate();
@@ -658,11 +639,11 @@ public class ScaleBuilder
             logger.debug("blackRatio: {}", blackRatio);
 
             if (blackRatio < constants.minBlackRatio.getValue()) {
-                sheet.getStub()
-                        .decideOnRemoval(sheet.getId() + LINE_SEPARATOR + "Too few black pixels: "
-                                                 + String.format("%.4f%%", 100 * blackRatio)
-                                                 + LINE_SEPARATOR + "This sheet is almost blank.",
-                                         false);
+                sheet.getStub().decideOnRemoval(
+                        sheet.getId() + LINE_SEPARATOR + "Too few black pixels: " + String.format(
+                        "%.4f%%",
+                        100 * blackRatio) + LINE_SEPARATOR + "This sheet is almost blank.",
+                        false);
             }
         }
 
@@ -688,5 +669,51 @@ public class ScaleBuilder
 
             return total;
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer minResolution = new Constant.Integer(
+                "Pixels",
+                11,
+                "Minimum resolution, expressed as number of pixels per interline");
+
+        private final Constant.Integer maxInterline = new Constant.Integer(
+                "Pixels",
+                100,
+                "Maximum interline value (in pixels)");
+
+        private final Constant.Ratio minGainRatio = new Constant.Ratio(
+                0.03,
+                "Minimum ratio of peak runs for peak extension");
+
+        private final Constant.Ratio minDerivativeRatio = new Constant.Ratio(
+                0.025,
+                "Ratio of total runs for derivative acceptance");
+
+        private final Constant.Ratio maxSecondRatio = new Constant.Ratio(
+                2.0,
+                "Maximum ratio between second and first combined peak");
+
+        private final Constant.Ratio minBeamFraction = new Constant.Ratio(
+                0.275, // 0.25,
+                "Minimum ratio between beam thickness and interline");
+
+        private final Constant.Ratio minBeamCountRatio = new Constant.Ratio(
+                0.02,
+                "Ratio of total runs for beam peak acceptance");
+
+        private final Constant.Ratio beamRangeRatio = new Constant.Ratio(
+                0.5,
+                "Ratio of beam range for extrapolation");
+
+        private final Constant.Ratio minBlackRatio = new Constant.Ratio(
+                0.001,
+                "Minimum ratio of foreground pixels in image");
     }
 }

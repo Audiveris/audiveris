@@ -58,6 +58,8 @@ import javax.swing.plaf.basic.BasicButtonUI;
 /**
  * Component to be used as tabComponent.
  * Contains a JLabel to show the text and a JButton to close the tab it belongs to.
+ *
+ * @author Hervé Bitteur
  */
 public class ButtonTabComponent
         extends JPanel
@@ -147,7 +149,7 @@ public class ButtonTabComponent
             implements ActionListener
     {
 
-        public TabButton ()
+        TabButton ()
         {
             final int size = 13; // Button side length
             setPreferredSize(new Dimension(size, size));

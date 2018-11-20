@@ -53,36 +53,40 @@ import java.util.concurrent.ConcurrentHashMap;
  * The actual value of an application "constant", as returned by the method
  * {@link Constant#getStringValue}, is determined in the following order, any definition
  * overriding the previous ones:
- * <ol> <li> First, <b>SOURCE</b> values are always provided within <em><b>source
+ * <ol>
+ * <li>First, <b>SOURCE</b> values are always provided within <em><b>source
  * declaration</b></em> of the constants in the Java source file itself.
  * For example, in the <em><b>"omr/sheet/ScaleBuilder.java"</b></em> file, we can find the following
  * declaration which defines the minimum value for sheet resolution, here specified in pixels (the
  * application has difficulties with scans of lower resolution).
+ *
  * <pre>
  * Constant.Integer minResolution = new Constant.Integer(
- *    "Pixels",
- *    11,
- *    "Minimum resolution, expressed as number of pixels per interline");
- * </pre>This declaration must be read as follows:<ul>
- * <p>
+ *         "Pixels",
+ *         11,
+ *         "Minimum resolution, expressed as number of pixels per interline");
+ * </pre>
+ *
+ * This declaration must be read as follows:
+ * <ul>
  * <li>{@code minResolution} is the Java object used in the application.
  * It is defined as a Constant.Integer, a subtype of Constant meant to host Integer values</li>
- * <p>
  * <li>{@code "Pixels"} specifies the unit used. Here we are counting in pixels.</li>
- * <p>
  * <li>{@code 11} is the constant value. This is the value used by the application, provided it is
  * not overridden in the USER properties file or later via a dedicated GUI tool.</li>
- * <p>
  * <li><code>"Minimum resolution, expressed as number of pixels per interline" </code> is the
  * constant description, which will be used as a tool tip in the GUI interface in charge of editing
- * these constants.</li></ul>
+ * these constants.</li>
+ * </ul>
  * </li>
- * <p>
  * <li>Then, <b>USER</b> values, contained in a property file named <em><b>"run.properties"</b></em>
  * can assign overriding values to some constants. For example, the {@code minInterline} constant
  * above could be altered by the following line in this user file:
+ *
  * <pre>
- * omr.sheet.ScaleBuilder.minInterline=12</pre>
+ * omr.sheet.ScaleBuilder.minInterline = 12
+ * </pre>
+ *
  * This file is modified every time the user updates the value of a constant by means of the
  * provided Constant user interface at run-time.
  * The file is not mandatory, and is located in the user application data {@code config} folder.
@@ -90,26 +94,26 @@ import java.util.concurrent.ConcurrentHashMap;
  * Typically, these USER values represent some modification made by the end user at run-time and
  * thus saved from one run to the other.
  * The file is not meant to be edited manually, but rather through the provided GUI tool.</li>
- * <p>
  * <li>Then, <b>CLI</b> values, as set on the command line interface, by means of the
  * <em><b>"-option"</b> key=value</em> command. For further details on this command, refer to the
  * {@link org.audiveris.omr.CLI} class documentation.
- * <br>Persistency here depends on the way Audiveris is running:<ul>
+ * <br>
+ * Persistency here depends on the way Audiveris is running:
+ * <ul>
  * <li>When running in <i>batch</i> mode, these CLI-defined constant values <b>are not</b> persisted
  * in the USER file, unless the constant {@code omr.Main.persistBatchCliConstants} is set to
  * true.</li>
  * <li>When running in <i>interactive</i> mode, these CLI-defined constant values <b>are</b> always
- * persisted in the USER file.</li></ul></li>
- * <p>
+ * persisted in the USER file.</li>
+ * </ul>
+ * </li>
  * <li>Finally, <b>UI Options Menu</b> values, as set online through the graphical user interface.
- * These constant values defined at the GUI level are persisted in the USER file.</li> </ol>
- * <p>
- * <p>
+ * These constant values defined at the GUI level are persisted in the USER file.</li>
+ * </ol>
  * The whole set of constant values is stored on disk when the application is closed. Doing so, the
  * disk values are always kept in synch with the program values, <b>provided the application is
  * normally closed rather than killed</b>. It can also be stored programmatically by calling the
  * {@link #storeResource} method.
- * <p>
  * <p>
  * Only the USER property file is written, the SOURCE values in the source code are not altered.
  * Moreover, if the user has modified a value in such a way that the final value is the same as in
@@ -134,12 +138,11 @@ public class ConstantManager
      * Map of all constants created in the application, regardless whether these
      * constants are enclosed in a ConstantSet or defined as standalone entities.
      */
-    protected final ConcurrentHashMap<String, Constant> constants
-            = new ConcurrentHashMap<String, Constant>();
+    protected final ConcurrentHashMap<String, Constant> constants = new ConcurrentHashMap<>();
 
     /** User properties. */
-    private final UserHolder userHolder = new UserHolder(WellKnowns.CONFIG_FOLDER.resolve(
-            USER_FILE_NAME));
+    private final UserHolder userHolder = new UserHolder(
+            WellKnowns.CONFIG_FOLDER.resolve(USER_FILE_NAME));
 
     private ConstantManager ()
     {
@@ -290,7 +293,7 @@ public class ConstantManager
 
         public Collection<String> getKeys ()
         {
-            Collection<String> strings = new ArrayList<String>();
+            Collection<String> strings = new ArrayList<>();
 
             for (Object obj : properties.keySet()) {
                 strings.add((String) obj);
@@ -306,7 +309,7 @@ public class ConstantManager
 
         public Collection<String> getUnusedKeys ()
         {
-            SortedSet<String> props = new TreeSet<String>();
+            SortedSet<String> props = new TreeSet<>();
 
             for (Object obj : properties.keySet()) {
                 if (!constants.containsKey((String) obj)) {
@@ -319,7 +322,7 @@ public class ConstantManager
 
         public Collection<String> getUselessKeys ()
         {
-            SortedSet<String> props = new TreeSet<String>();
+            SortedSet<String> props = new TreeSet<>();
 
             for (Entry<Object, Object> entry : properties.entrySet()) {
                 Constant constant = constants.get((String) entry.getKey());
@@ -355,8 +358,10 @@ public class ConstantManager
                 }
             } catch (FileNotFoundException ignored) {
                 // This is not at all an error
-                logger.debug("[{}" + "]" + " No property file {}", ConstantManager.class.getName(),
-                             path.toAbsolutePath());
+                logger.debug(
+                        "[{}" + "]" + " No property file {}",
+                        ConstantManager.class.getName(),
+                        path.toAbsolutePath());
             } catch (IOException ex) {
                 logger.error("Error loading constants file {}", path.toAbsolutePath(), ex);
             }
@@ -426,7 +431,9 @@ public class ConstantManager
                     out = new FileOutputStream(path.toFile());
                     properties.store(out, " Audiveris user properties file. Do not edit");
                 } catch (FileNotFoundException ex) {
-                    logger.warn("Property file {} not found or not writable", path.toAbsolutePath());
+                    logger.warn(
+                            "Property file {} not found or not writable",
+                            path.toAbsolutePath());
                 } catch (IOException ex) {
                     logger.warn("Error while storing the property file {}", path.toAbsolutePath());
                 } finally {

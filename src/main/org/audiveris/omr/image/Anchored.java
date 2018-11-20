@@ -38,72 +38,55 @@ public interface Anchored
         /**
          * Area Center.
          */
-        CENTER,
+        CENTER("C"),
         /**
          * X at symbol left abscissa, Y at middle.
          */
-        MIDDLE_LEFT,
+        MIDDLE_LEFT("ML"),
         /**
          * X at symbol right abscissa, Y at middle.
          */
-        MIDDLE_RIGHT,
+        MIDDLE_RIGHT("MR"),
         /**
          * X at symbol left stem, Y at high stem ordinate.
          */
-        TOP_LEFT_STEM,
+        TOP_LEFT_STEM("TLS"),
         /**
          * X at symbol left stem, Y at middle.
          */
-        LEFT_STEM,
+        LEFT_STEM("LS"),
         /**
          * X at symbol left stem, Y at low stem ordinate.
          */
-        BOTTOM_LEFT_STEM,
+        BOTTOM_LEFT_STEM("BLS"),
         /**
          * X at symbol right stem, Y at high stem ordinate.
          */
-        TOP_RIGHT_STEM,
+        TOP_RIGHT_STEM("TRS"),
         /**
          * X at symbol right stem, Y at middle.
          */
-        RIGHT_STEM,
+        RIGHT_STEM("RS"),
         /**
          * X at symbol right stem, Y at low stem ordinate.
          */
-        BOTTOM_RIGHT_STEM;
+        BOTTOM_RIGHT_STEM("BRS");
 
+        final String abbreviation;
+
+        Anchor (String a)
+        {
+            abbreviation = a;
+        }
+
+        /**
+         * Report the abbreviation based on anchor
+         *
+         * @return anchor abbreviation
+         */
         public String abbreviation ()
         {
-            switch (this) {
-            case CENTER:
-                return "C";
-
-            case MIDDLE_LEFT:
-                return "ML";
-
-            case MIDDLE_RIGHT:
-                return "MR";
-
-            case TOP_LEFT_STEM:
-                return "TLS";
-
-            case LEFT_STEM:
-                return "LS";
-
-            case BOTTOM_LEFT_STEM:
-                return "BLS";
-
-            case TOP_RIGHT_STEM:
-                return "TRS";
-
-            case RIGHT_STEM:
-                return "RS";
-
-            case BOTTOM_RIGHT_STEM:
-                return "BRS";
-            }
-
-            return null;
+            return abbreviation;
         }
     }
 

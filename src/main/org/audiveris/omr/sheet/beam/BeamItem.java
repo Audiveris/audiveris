@@ -32,19 +32,21 @@ import java.awt.geom.Point2D;
 /**
  * Class {@code BeamItem} represents one beam candidate, using a very simple
  * parallelogram definition.
+ *
+ * @author Hervé Bitteur
  */
 public class BeamItem
         implements Vip
 {
+
+    /** VIP flag. */
+    private boolean vip;
 
     /** The median line of the beam item. */
     final Line2D median;
 
     /** The constant height of the item. */
     final double height;
-
-    /** VIP flag. */
-    private boolean vip;
 
     /**
      * Creates a new BeamItem object.
@@ -62,6 +64,15 @@ public class BeamItem
     //-------------//
     // getBeltArea //
     //-------------//
+    /**
+     * Build the belt area around this beam item.
+     *
+     * @param coreArea black area
+     * @param dx       horizontal margin
+     * @param topDy    vertical margin above
+     * @param bottomDy vertical margin below
+     * @return belt area around the beam item
+     */
     public Area getBeltArea (Area coreArea,
                              int dx,
                              int topDy,
@@ -85,6 +96,11 @@ public class BeamItem
     //-------------//
     // getCoreArea //
     //-------------//
+    /**
+     * Report the theoretical black area for the beam item
+     *
+     * @return parallelogram for black pixels
+     */
     public Area getCoreArea ()
     {
         return AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height);
@@ -114,7 +130,12 @@ public class BeamItem
     @Override
     public String toString ()
     {
-        return String.format("{item median:(%.1f,%.1f)-(%.1f,%.1f) height:%.1f}", median.getX1(),
-                             median.getY1(), median.getX2(), median.getY2(), height);
+        return String.format(
+                "{item median:(%.1f,%.1f)-(%.1f,%.1f) height:%.1f}",
+                median.getX1(),
+                median.getY1(),
+                median.getX2(),
+                median.getY2(),
+                height);
     }
 }

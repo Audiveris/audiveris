@@ -192,7 +192,7 @@ public class InterController
             protected Void doInBackground ()
             {
                 try {
-                    List<LinkedGhost> lgs = new ArrayList<LinkedGhost>();
+                    List<LinkedGhost> lgs = new ArrayList<>();
 
                     for (Inter inter : inters) {
                         SystemInfo system = inter.getStaff().getSystem();
@@ -252,7 +252,7 @@ public class InterController
         ghost.setGlyph(glyph);
 
         // While interacting with user, make sure we have the target staff
-        final Collection<Link> links = new ArrayList<Link>();
+        final Collection<Link> links = new ArrayList<>();
         final Staff staff = determineStaff(glyph, ghost, links);
 
         if (staff == null) {
@@ -446,7 +446,7 @@ public class InterController
                     }
 
                     // Remove conflicting relations if any
-                    Set<Relation> toRemove = new LinkedHashSet<Relation>();
+                    Set<Relation> toRemove = new LinkedHashSet<>();
 
                     if (relation instanceof SlurHeadRelation) {
                         // This relation is declared multi-source & multi-target
@@ -932,7 +932,7 @@ public class InterController
         final Skew skew = sheet.getSkew();
         final Point center = GeoUtil.centerOf(oneBounds);
         final double slope = skew.getSlope();
-        final List<Inter> closure = new ArrayList<Inter>();
+        final List<Inter> closure = new ArrayList<>();
 
         for (Staff st : system.getStaves()) {
             if (st == staff) {
@@ -1075,7 +1075,7 @@ public class InterController
     private Step firstImpactedStep (UITaskList seq)
     {
         // Classes of inter and relation instances involved
-        final Set<Class> classes = new HashSet<Class>();
+        final Set<Class> classes = new HashSet<>();
 
         for (UITask task : seq.getTasks()) {
             if (task instanceof InterTask) {
@@ -1103,7 +1103,7 @@ public class InterController
     //------------------------//
     private List<Inter> getStaffBarlineClosure (StaffBarlineInter oneBar)
     {
-        final List<Inter> closure = new ArrayList<Inter>();
+        final List<Inter> closure = new ArrayList<>();
 
         for (PartBarline pb : oneBar.getSystemBarline()) {
             closure.addAll(pb.getStaffBarlines());
@@ -1192,7 +1192,7 @@ public class InterController
         }
 
         final List<Inter> intersected = system.getSig().intersectedInters(glyph.getBounds());
-        final List<Inter> competitors = new ArrayList<Inter>();
+        final List<Inter> competitors = new ArrayList<>();
 
         for (Inter inter : intersected) {
             if ((inter != ghost) && (inter.getGlyph() == glyph)) {
@@ -1214,7 +1214,7 @@ public class InterController
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
@@ -1261,13 +1261,13 @@ public class InterController
     {
 
         /** Non-ensemble inters to be removed. */
-        LinkedHashSet<Inter> inters = new LinkedHashSet<Inter>();
+        LinkedHashSet<Inter> inters = new LinkedHashSet<>();
 
         /** Ensemble inters to be removed. */
-        LinkedHashSet<InterEnsemble> ensembles = new LinkedHashSet<InterEnsemble>();
+        LinkedHashSet<InterEnsemble> ensembles = new LinkedHashSet<>();
 
         /** Ensemble inters to be watched for potential removal. */
-        LinkedHashSet<InterEnsemble> watched = new LinkedHashSet<InterEnsemble>();
+        LinkedHashSet<InterEnsemble> watched = new LinkedHashSet<>();
 
         public void include (Inter inter)
         {

@@ -36,7 +36,6 @@ import java.util.List;
 /**
  * Class {@code FilamentView} handles a view on sheet filaments.
  *
- *
  * @author Hervé Bitteur
  */
 public class FilamentView

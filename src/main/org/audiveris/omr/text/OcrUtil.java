@@ -88,8 +88,10 @@ public abstract class OcrUtil
         final BufferedImage bi;
 
         if (margin > 0) {
-            bi = new BufferedImage(width + (2 * margin), height + (2 * margin),
-                                   BufferedImage.TYPE_BYTE_GRAY);
+            bi = new BufferedImage(
+                    width + (2 * margin),
+                    height + (2 * margin),
+                    BufferedImage.TYPE_BYTE_GRAY);
 
             // Background filled with white
             Graphics g = bi.createGraphics();

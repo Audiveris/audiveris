@@ -54,8 +54,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Class {@code TesseractOCR} is an OCR service built on the Google Tesseract engine.
  * <p>
- * <p>
- * It relies on <b>tesseract3</b> C++ program, accessed through a <b>JavaCPP</b>-based bridge.</p>
+ * It relies on <b>tesseract3</b> C++ program, accessed through a <b>JavaCPP</b>-based bridge.
  *
  * @author Hervé Bitteur
  */
@@ -66,9 +65,6 @@ public class TesseractOCR
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TesseractOCR.class);
-
-    /** Singleton. */
-    private static final TesseractOCR INSTANCE = new TesseractOCR();
 
     /** Latin encoder, to check character validity. (not used yet) */
     private static final CharsetEncoder encoder = Charset.forName("iso-8859-1").newEncoder();
@@ -93,19 +89,6 @@ public class TesseractOCR
     {
     }
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the service singleton.
-     *
-     * @return the TesseractOCR service instance
-     */
-    public static TesseractOCR getInstance ()
-    {
-        return INSTANCE;
-    }
-
     //--------------//
     // getLanguages //
     //--------------//
@@ -114,7 +97,7 @@ public class TesseractOCR
     {
         if (isAvailable()) {
             final Path ocrFolder = getOcrFolder();
-            TreeSet<String> set = new TreeSet<String>();
+            TreeSet<String> set = new TreeSet<>();
 
             try {
                 TessBaseAPI api = new TessBaseAPI();
@@ -199,17 +182,21 @@ public class TesseractOCR
 
         try {
             // Allocate a processing order
-            TesseractOrder order = new TesseractOrder(label, serial.incrementAndGet(),
-                                                      constants.keepImages.isSet(), languageCode,
-                                                      getMode(layoutMode), bufferedImage);
+            TesseractOrder order = new TesseractOrder(
+                    label,
+                    serial.incrementAndGet(),
+                    constants.keepImages.isSet(),
+                    languageCode,
+                    getMode(layoutMode),
+                    bufferedImage);
 
             // Process the order
             List<TextLine> lines = order.process();
 
             // Post-processing
             if (lines != null) {
-                final int maxDashWidth = (int) Math.rint(interline * constants.maxDashWidth
-                        .getValue());
+                final int maxDashWidth = (int) Math.rint(
+                        interline * constants.maxDashWidth.getValue());
 
                 for (TextLine line : lines) {
                     for (TextWord word : line.getWords()) {
@@ -275,17 +262,19 @@ public class TesseractOCR
             return Paths.get(System.getenv(pf32)).resolve("tesseract-ocr");
         } else if (WellKnowns.LINUX) {
             // Scan common Linux TESSDATA locations
-            final String[] linuxOcrLocations = {"/usr/share/tesseract-ocr", // Debian, Ubuntu and derivatives
-                                                "/usr/share", // OpenSUSE
-                                                "/usr/share/tesseract" // Fedora
-        };
+            final String[] linuxOcrLocations = {
+                "/usr/share/tesseract-ocr", // Debian, Ubuntu and derivatives
+                "/usr/share", // OpenSUSE
+                "/usr/share/tesseract" // Fedora
+            };
 
             return scanOcrLocations(linuxOcrLocations);
         } else if (WellKnowns.MAC_OS_X) {
             // Scan common Macintosh TESSDATA locations
-            final String[] macOcrLocations = {"/opt/local/share", // Macports
-                                              "/usr/local/opt/tesseract/share" // Homebrew
-        };
+            final String[] macOcrLocations = {
+                "/opt/local/share", // Macports
+                "/usr/local/opt/tesseract/share" // Homebrew
+            };
 
             return scanOcrLocations(macOcrLocations);
         }
@@ -334,20 +323,45 @@ public class TesseractOCR
         return null;
     }
 
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this class in application.
+     *
+     * @return the instance
+     */
+    public static TesseractOCR getInstance ()
+    {
+        return LazySingleton.INSTANCE;
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final TesseractOCR INSTANCE = new TesseractOCR();
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean useOCR = new Constant.Boolean(true,
-                                                                     "Should we use the OCR feature?");
+        private final Constant.Boolean useOCR = new Constant.Boolean(
+                true,
+                "Should we use the OCR feature?");
 
-        private final Constant.Boolean keepImages = new Constant.Boolean(false,
-                                                                         "Should we keep the images sent to Tesseract?");
+        private final Constant.Boolean keepImages = new Constant.Boolean(
+                false,
+                "Should we keep the images sent to Tesseract?");
 
-        private final Scale.Fraction maxDashWidth = new Scale.Fraction(1.0,
-                                                                       "Maximum width for a dash character");
+        private final Scale.Fraction maxDashWidth = new Scale.Fraction(
+                1.0,
+                "Maximum width for a dash character");
     }
 }

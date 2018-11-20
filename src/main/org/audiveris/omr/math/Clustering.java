@@ -12,7 +12,8 @@ import org.slf4j.LoggerFactory;
  * Class {@code Clustering} gathers objects according to their similarity.
  * It uses the implementation of Expectation-Maximization algorithm published by Xavier Philippeau
  * on <a
- * href="http://www.developpez.net/forums/d740672/autres-langages/algorithmes/contribuez/java-algorithme-expectation-maximization-em/">
+ * href=
+ * "http://www.developpez.net/forums/d740672/autres-langages/algorithmes/contribuez/java-algorithme-expectation-maximization-em/">
  * this site</a>
  *
  * @author Xavier Philippeau
@@ -27,6 +28,11 @@ public class Clustering
     private static final double EPSILON = 1E-10;
 
     private static final int MAX_ITER = 10;
+
+    // Not meant to be instantiated.
+    private Clustering ()
+    {
+    }
 
     /**
      * Compute the mixture coefficients using Expectation-Maximization algorithm.
@@ -102,6 +108,9 @@ public class Clustering
         return pi;
     }
 
+    /**
+     * Model description.
+     */
     public static interface Law
     {
 
@@ -123,6 +132,9 @@ public class Clustering
         double proba (double x);
     }
 
+    /**
+     * Gaussian implementation of Law.
+     */
     public static class Gaussian
             implements Law
     {
@@ -144,6 +156,11 @@ public class Clustering
             this.sigma = sigma;
         }
 
+        /**
+         * Report gaussian mean value
+         *
+         * @return mean value
+         */
         public double getMean ()
         {
             return mean;

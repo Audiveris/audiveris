@@ -21,30 +21,79 @@
 // </editor-fold>
 package org.audiveris.omr.sig;
 
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.glyph.Grades;
 
 /**
- * Interface {@code GradeImpacts} defines data that impact a resulting grade value.
+ * Abstract class {@code GradeImpacts} defines data that impact a resulting grade value.
+ * <p>
+ * It uses 3 parallel arrays for:
+ * <ul>
+ * <li>impact name
+ * <li>impact value
+ * <li>impact (relative) weight
+ * </ul>
  *
  * @author Hervé Bitteur
  */
-@XmlJavaTypeAdapter(AbstractImpacts.Adapter.class)
-public interface GradeImpacts
+public abstract class GradeImpacts
 {
+
+    /** Array of actual contributions. */
+    protected final double[] impacts;
+
+    /** Array of impacts name. */
+    private final String[] names;
+
+    /** Array of impacts weight. */
+    private final double[] weights;
+
+    /** Resulting grade. */
+    protected double grade = -1;
+
+    /**
+     * Creates a new BasicImpacts object.
+     *
+     * @param names   array of names
+     * @param weights array of weights
+     */
+    public GradeImpacts (String[] names,
+                         double[] weights)
+    {
+        if (names.length != weights.length) {
+            throw new IllegalArgumentException("Arrays for names & weights have different lengths");
+        }
+
+        this.names = names;
+        this.weights = weights;
+
+        impacts = new double[names.length];
+    }
 
     /**
      * Report a string about impacts details
      *
      * @return string of details
      */
-    String getDump ();
+    public String getDump ()
+    {
+        final StringBuilder sb = new StringBuilder();
+
+        return sb.toString();
+    }
 
     /**
-     * Retrieve a global grade value from detailed impacts.
+     * Report the global grade value from detailed impacts.
      *
      * @return the computed grade in range 0 .. 1
      */
-    double getGrade ();
+    public double getGrade ()
+    {
+        if (grade == -1) {
+            grade = computeGrade();
+        }
+
+        return grade;
+    }
 
     /**
      * Report the value of the grade impact corresponding to index
@@ -52,21 +101,42 @@ public interface GradeImpacts
      * @param index the index of desired impact
      * @return the impact value
      */
-    double getImpact (int index);
+    public double getImpact (int index)
+    {
+        return impacts[index];
+    }
+
+    /**
+     * Set impact at provided index.
+     *
+     * @param index  index in impact array
+     * @param impact value for specific impact
+     */
+    public void setImpact (int index,
+                           double impact)
+    {
+        impacts[index] = GradeUtil.clamp(impact);
+    }
 
     /**
      * Report the number of individual grade impacts.
      *
      * @return the count of impacts
      */
-    int getImpactCount ();
+    public int getImpactCount ()
+    {
+        return impacts.length;
+    }
 
     /**
      * Report the reduction ratio to be applied on intrinsic grade
      *
      * @return the reduction ratio to be applied
      */
-    double getIntrinsicRatio ();
+    public double getIntrinsicRatio ()
+    {
+        return Grades.intrinsicRatio;
+    }
 
     /**
      * Report the name of the grade impact corresponding to index
@@ -74,7 +144,10 @@ public interface GradeImpacts
      * @param index the index of desired impact
      * @return the impact name
      */
-    String getName (int index);
+    public String getName (int index)
+    {
+        return names[index];
+    }
 
     /**
      * Report the weight of the grade impact corresponding to index
@@ -82,5 +155,55 @@ public interface GradeImpacts
      * @param index the index of desired impact
      * @return the impact weight
      */
-    double getWeight (int index);
+    public double getWeight (int index)
+    {
+        return weights[index];
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        final StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < getImpactCount(); i++) {
+            if (sb.length() > 0) {
+                sb.append(" ");
+            }
+
+            sb.append(String.format("%s:%.2f", getName(i), getImpact(i)));
+        }
+
+        return sb.toString();
+    }
+
+    //--------------//
+    // computeGrade //
+    //--------------//
+    /**
+     * Compute resulting grade from all impacts.
+     *
+     * @return the resulting grade
+     */
+    protected double computeGrade ()
+    {
+        double global = 1d;
+        double totalWeight = 0d;
+
+        for (int i = 0; i < getImpactCount(); i++) {
+            double weight = getWeight(i);
+            double impact = getImpact(i);
+            totalWeight += weight;
+
+            if (impact == 0) {
+                global = 0;
+            } else if (weight != 0) {
+                global *= Math.pow(impact, weight);
+            }
+        }
+
+        return getIntrinsicRatio() * Math.pow(global, 1 / totalWeight);
+    }
 }

@@ -71,6 +71,9 @@ public class SelectionService
     //-----------------//
     // dumpSubscribers //
     //-----------------//
+    /**
+     * Dump all current subscribers to this service.
+     */
     public void dumpSubscribers ()
     {
         logger.info("{} subscribers:", this);
@@ -80,9 +83,11 @@ public class SelectionService
 
             if (!subscribers.isEmpty()) {
                 UserEvent last = (UserEvent) getLastEvent(eventClass);
-                logger.info("   {}: {}{}", eventClass.getSimpleName(), subscribers.size(), (last
-                                                                                                    != null)
-                                    ? (" " + last) : "");
+                logger.info(
+                        "   {}: {}{}",
+                        eventClass.getSimpleName(),
+                        subscribers.size(),
+                        (last != null) ? (" " + last) : "");
 
                 for (Object obj : subscribers) {
                     String size = "";
@@ -101,6 +106,11 @@ public class SelectionService
     //---------//
     // getName //
     //---------//
+    /**
+     * Report service name.
+     *
+     * @return service name
+     */
     public String getName ()
     {
         return name;
@@ -165,8 +175,12 @@ public class SelectionService
                                       EventSubscriber es)
     {
         if (isAllowed(classe)) {
-            logger.debug("{}: subscription on {} by {}@{}", this, classe.getSimpleName(), es,
-                         Integer.toHexString(es.hashCode()));
+            logger.debug(
+                    "{}: subscription on {} by {}@{}",
+                    this,
+                    classe.getSimpleName(),
+                    es,
+                    Integer.toHexString(es.hashCode()));
 
             return super.subscribeStrongly(classe, es);
         } else {
@@ -208,8 +222,13 @@ public class SelectionService
                                 EventSubscriber eh)
     {
         boolean res = super.unsubscribe(classe, eh);
-        logger.debug("{}: unsubscription on {} by {}@{} res:{}", this, classe.getSimpleName(), eh,
-                     Integer.toHexString(eh.hashCode()), res);
+        logger.debug(
+                "{}: unsubscription on {} by {}@{} res:{}",
+                this,
+                classe.getSimpleName(),
+                eh,
+                Integer.toHexString(eh.hashCode()),
+                res);
 
         return res;
     }
@@ -217,6 +236,11 @@ public class SelectionService
     //------------------//
     // getEventsAllowed //
     //------------------//
+    /**
+     * Report the event classes that can ne published on this service.
+     *
+     * @return the allowed classes of event
+     */
     protected Class[] getEventsAllowed ()
     {
         return eventsAllowed;
@@ -239,11 +263,12 @@ public class SelectionService
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean checkPublishedEvents = new Constant.Boolean(true,
-                                                                                   "(debug) Should we check published events?");
+        private final Constant.Boolean checkPublishedEvents = new Constant.Boolean(
+                true,
+                "(debug) Should we check published events?");
     }
 }

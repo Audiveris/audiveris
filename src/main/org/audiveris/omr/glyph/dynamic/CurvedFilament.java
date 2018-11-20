@@ -97,9 +97,8 @@ public class CurvedFilament
             Point2D orientedStop = (stopPoint == null) ? null : orientation.oriented(stopPoint);
             Rectangle oBounds = orientation.oriented(getBounds());
             double oStart = (orientedStart != null) ? orientedStart.getX() : oBounds.x;
-            double oStop = (orientedStop != null) ? orientedStop.getX() : (oBounds.x
-                                                                                   + (oBounds.width
-                                                                                              - 1));
+            double oStop = (orientedStop != null) ? orientedStop.getX()
+                    : (oBounds.x + (oBounds.width - 1));
             double length = oStop - oStart + 1;
 
             Rectangle oProbe = new Rectangle(oBounds);
@@ -109,7 +108,7 @@ public class CurvedFilament
             // Determine the number of segments and their precise length
             int segCount = (int) Math.rint(length / segmentLength);
             double segLength = length / segCount;
-            List<Point2D> newPoints = new ArrayList<Point2D>(segCount + 1);
+            List<Point2D> newPoints = new ArrayList<>(segCount + 1);
 
             // First point
             if (startPoint == null) {
@@ -172,9 +171,14 @@ public class CurvedFilament
             }
 
             if (prevBisector != null) {
-                Point2D inter = LineUtil.intersection(prevBisector.getP1(), prevBisector.getP2(),
-                                                      bisector.getP1(), bisector.getP2());
-                double radius = Math.hypot(inter.getX() - point.getX(), inter.getY() - point.getY());
+                Point2D inter = LineUtil.intersection(
+                        prevBisector.getP1(),
+                        prevBisector.getP2(),
+                        bisector.getP1(),
+                        bisector.getP2());
+                double radius = Math.hypot(
+                        inter.getX() - point.getX(),
+                        inter.getY() - point.getY());
 
                 curvatures.includeValue(1 / radius);
             }
@@ -241,6 +245,11 @@ public class CurvedFilament
     //-----------//
     // getSpline //
     //-----------//
+    /**
+     * Report the underlying NaturalSpline.
+     *
+     * @return the computed spline
+     */
     public NaturalSpline getSpline ()
     {
         if (spline == null) {
@@ -286,7 +295,7 @@ public class CurvedFilament
             final List<Line2D> bisectors = getBisectors();
 
             // Compute radius values (using same index as points)
-            final List<Double> radii = new ArrayList<Double>();
+            final List<Double> radii = new ArrayList<>();
             radii.add(null); // To skip index 0 for which we have no value (???)
 
             for (int i = 1, iBreak = points.size() - 1; i < iBreak; i++) {
@@ -308,10 +317,12 @@ public class CurvedFilament
 
             if (minRadius < minimumRadius) {
                 if (logger.isDebugEnabled() || isVip()) {
-                    logger.info("Polishing F#{} minRad: {} seq:{} {}", getId(), (float) minRadius
-                                                                                        / interline,
-                                idx,
-                                points.get(idx));
+                    logger.info(
+                            "Polishing F#{} minRad: {} seq:{} {}",
+                            getId(),
+                            (float) minRadius / interline,
+                            idx,
+                            points.get(idx));
                 }
 
                 // Adjust the removable point for first & last points
@@ -326,10 +337,12 @@ public class CurvedFilament
                 Orientation orientation = getRoughOrientation();
                 final Point2D point = points.get(idx);
                 Point2D orientedPt = orientation.oriented(points.get(idx));
-                Rectangle2D rect = new Rectangle2D.Double(orientedPt.getX() - (probeWidth / 2.0),
-                                                          orientedPt.getY() - (probeWidth / 2.0),
-                                                          probeWidth, probeWidth);
-                List<Section> found = new ArrayList<Section>();
+                Rectangle2D rect = new Rectangle2D.Double(
+                        orientedPt.getX() - (probeWidth / 2.0),
+                        orientedPt.getY() - (probeWidth / 2.0),
+                        probeWidth,
+                        probeWidth);
+                List<Section> found = new ArrayList<>();
 
                 for (Section section : getMembers()) {
                     if (rect.intersects(section.getOrientedBounds())) {
@@ -339,25 +352,27 @@ public class CurvedFilament
 
                 if (found.size() > 1) {
                     // Pick up the section closest to the point
-                    Collections.sort(
-                            found,
-                            new Comparator<Section>()
-                    {
-                        @Override
-                        public int compare (Section s1,
-                                            Section s2)
-                        {
-                            return Double.compare(point.distance(s1.getCentroid()), point.distance(
-                                                  s2.getCentroid()));
-                        }
-                    });
+                    Collections.sort(found, new Comparator<Section>()
+                             {
+                                 @Override
+                                 public int compare (Section s1,
+                                                     Section s2)
+                                 {
+                                     return Double.compare(
+                                             point.distance(s1.getCentroid()),
+                                             point.distance(s2.getCentroid()));
+                                 }
+                             });
                 }
 
                 Section section = found.isEmpty() ? null : found.get(0);
 
                 if (section != null) {
-                    logger.debug("*polishCurvature*. Removed section#{} from {} Filament {}",
-                                 section.getId(), orientation, getId());
+                    logger.debug(
+                            "*polishCurvature*. Removed section#{} from {} Filament {}",
+                            section.getId(),
+                            orientation,
+                            getId());
                     removeSection(section, true);
                     progressed = true;
                 }
@@ -412,19 +427,27 @@ public class CurvedFilament
     //-----------//
     // findPoint //
     //-----------//
+    /**
+     * Report the defining point, if any, near the provided coordinate.
+     *
+     * @param coord       the provided coordinate value
+     * @param orientation the rough filament orientation
+     * @param margin      the maximum acceptable delta on coordinate
+     * @return the defining point or null if none
+     */
     protected Point2D findPoint (int coord,
                                  Orientation orientation,
                                  int margin)
     {
         Point2D best = null;
-        double bestDeltacoord = Integer.MAX_VALUE;
+        double bestDeltaCoord = Integer.MAX_VALUE;
 
         for (Point2D p : points) {
-            double dc = Math.abs(coord - ((orientation == Orientation.HORIZONTAL) ? p.getX() : p
-                    .getY()));
+            double dc = Math.abs(
+                    coord - ((orientation == Orientation.HORIZONTAL) ? p.getX() : p.getY()));
 
-            if ((dc <= margin) && (dc < bestDeltacoord)) {
-                bestDeltacoord = dc;
+            if ((dc <= margin) && (dc < bestDeltaCoord)) {
+                bestDeltaCoord = dc;
                 best = p;
             }
         }
@@ -435,6 +458,9 @@ public class CurvedFilament
     //-----------------//
     // invalidateCache //
     //-----------------//
+    /**
+     *
+     */
     @Override
     protected void invalidateCache ()
     {
@@ -454,7 +480,7 @@ public class CurvedFilament
      */
     private List<Line2D> getBisectors ()
     {
-        List<Line2D> bisectors = new ArrayList<Line2D>();
+        List<Line2D> bisectors = new ArrayList<>();
 
         for (int i = 0; i < (points.size() - 1); i++) {
             bisectors.add(LineUtil.bisector(new Line2D.Double(points.get(i), points.get(i + 1))));
@@ -485,8 +511,11 @@ public class CurvedFilament
         Point2D point = points.get(i);
         Line2D nextBisector = bisectors.get(i);
 
-        Point2D inter = LineUtil.intersection(prevBisector.getP1(), prevBisector.getP2(),
-                                              nextBisector.getP1(), nextBisector.getP2());
+        Point2D inter = LineUtil.intersection(
+                prevBisector.getP1(),
+                prevBisector.getP2(),
+                nextBisector.getP1(),
+                nextBisector.getP2());
 
         return Math.hypot(inter.getX() - point.getX(), inter.getY() - point.getY());
     }
@@ -494,7 +523,10 @@ public class CurvedFilament
     //-------------//
     // Constructor //
     //-------------//
-    public static final class Constructor
+    /**
+     * A constructor for a CurvedFilament.
+     */
+    public static class Constructor
             implements CompoundFactory.CompoundConstructor
     {
 
@@ -502,6 +534,12 @@ public class CurvedFilament
 
         private final int segmentLength;
 
+        /**
+         * Creates the constructor.
+         *
+         * @param interline     related interline value
+         * @param segmentLength typical segmenting length
+         */
         public Constructor (int interline,
                             int segmentLength)
         {
@@ -509,6 +547,11 @@ public class CurvedFilament
             this.segmentLength = segmentLength;
         }
 
+        /**
+         * Creates the CurvedFilament instance
+         *
+         * @return CurvedFilament instance
+         */
         @Override
         public SectionCompound newInstance ()
         {

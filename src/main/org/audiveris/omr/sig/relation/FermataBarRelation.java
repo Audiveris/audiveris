@@ -66,14 +66,22 @@ public class FermataBarRelation
         return constants.fermataSupportCoeff.getValue();
     }
 
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio fermataSupportCoeff = new Constant.Ratio(5,
-                                                                              "Supporting coeff for (source) fermata");
+        private final Constant.Ratio fermataSupportCoeff = new Constant.Ratio(
+                5,
+                "Supporting coeff for (source) fermata");
     }
 }

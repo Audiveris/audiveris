@@ -43,6 +43,10 @@ public abstract class PoorManAlgebra
 
     private static final Logger logger = LoggerFactory.getLogger(PoorManAlgebra.class);
 
+    private PoorManAlgebra ()
+    {
+    }
+
     private static String format (double val)
     {
         return String.format("%.2f", val);
@@ -224,6 +228,10 @@ public abstract class PoorManAlgebra
         {
             throw new UnsupportedOperationException("PoorManAlgebra.Nd4j.write() not supported.");
         }
+
+        private Nd4j ()
+        {
+        }
     }
 
     private static class Matrix
@@ -232,7 +240,7 @@ public abstract class PoorManAlgebra
 
         private final double[][] data;
 
-        public Matrix (double[][] data)
+        Matrix (double[][] data)
         {
             final int rowNb = data.length;
             final int colNb = data[0].length;
@@ -251,7 +259,7 @@ public abstract class PoorManAlgebra
         public INDArray addi (INDArray other)
         {
             if (other instanceof Scalar) {
-                final double val = ((Scalar) other).getDouble(0);
+                final double val = other.getDouble(0);
                 final int rowNb = rows();
                 final int colNb = columns();
 
@@ -395,7 +403,7 @@ public abstract class PoorManAlgebra
 
         private double data;
 
-        public Scalar (double data)
+        Scalar (double data)
         {
             this.data = data;
         }
@@ -473,7 +481,7 @@ public abstract class PoorManAlgebra
 
         private final double[] data;
 
-        public Vector (double[] data)
+        Vector (double[] data)
         {
             this.data = new double[data.length];
             System.arraycopy(data, 0, this.data, 0, data.length);
@@ -490,7 +498,7 @@ public abstract class PoorManAlgebra
         {
             if (other instanceof Scalar) {
                 final int colNb = data.length;
-                final double val = ((Scalar) other).getDouble(0);
+                final double val = other.getDouble(0);
 
                 for (int ic = 0; ic < colNb; ic++) {
                     data[ic] += val;
@@ -585,4 +593,5 @@ public abstract class PoorManAlgebra
             return sb.toString();
         }
     }
+
 }

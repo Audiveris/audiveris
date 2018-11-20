@@ -64,54 +64,6 @@ public class GlobalDescriptor
         threshold = 0;
     }
 
-    //-------------------//
-    // defaultIsSpecific //
-    //-------------------//
-    public static boolean defaultIsSpecific ()
-    {
-        return !constants.defaultThreshold.isSourceValue();
-    }
-
-    //------------//
-    // getDefault //
-    //------------//
-    public static GlobalDescriptor getDefault ()
-    {
-        return new GlobalDescriptor(getDefaultThreshold());
-    }
-
-    //---------------------//
-    // getDefaultThreshold //
-    //---------------------//
-    public static int getDefaultThreshold ()
-    {
-        return constants.defaultThreshold.getValue();
-    }
-
-    //----------------//
-    // getSourceValue //
-    //----------------//
-    public static GlobalDescriptor getSourceValue ()
-    {
-        return new GlobalDescriptor(constants.defaultThreshold.getSourceValue());
-    }
-
-    //---------------//
-    // resetToSource //
-    //---------------//
-    public static void resetToSource ()
-    {
-        constants.defaultThreshold.resetToSource();
-    }
-
-    //---------------------//
-    // setDefaultThreshold //
-    //---------------------//
-    public static void setDefaultThreshold (int threshold)
-    {
-        constants.defaultThreshold.setValue(threshold);
-    }
-
     //--------//
     // equals //
     //--------//
@@ -136,7 +88,6 @@ public class GlobalDescriptor
         return new GlobalFilter(source, threshold);
     }
 
-    //
     //---------//
     // getKind //
     //---------//
@@ -170,14 +121,64 @@ public class GlobalDescriptor
         return sb.toString();
     }
 
+    //-------------------//
+    // defaultIsSpecific //
+    //-------------------//
+    public static boolean defaultIsSpecific ()
+    {
+        return !constants.defaultThreshold.isSourceValue();
+    }
+
+    //------------//
+    // getDefault //
+    //------------//
+    public static GlobalDescriptor getDefault ()
+    {
+        return new GlobalDescriptor(getDefaultThreshold());
+    }
+
+    //---------------------//
+    // getDefaultThreshold //
+    //---------------------//
+    public static int getDefaultThreshold ()
+    {
+        return constants.defaultThreshold.getValue();
+    }
+
+    //---------------------//
+    // setDefaultThreshold //
+    //---------------------//
+    public static void setDefaultThreshold (int threshold)
+    {
+        constants.defaultThreshold.setValue(threshold);
+    }
+
+    //----------------//
+    // getSourceValue //
+    //----------------//
+    public static GlobalDescriptor getSourceValue ()
+    {
+        return new GlobalDescriptor(constants.defaultThreshold.getSourceValue());
+    }
+
+    //---------------//
+    // resetToSource //
+    //---------------//
+    public static void resetToSource ()
+    {
+        constants.defaultThreshold.resetToSource();
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Integer defaultThreshold = new Constant.Integer("GrayLevel", 140,
-                                                                               "Default threshold value (in 0..255)");
+        private final Constant.Integer defaultThreshold = new Constant.Integer(
+                "GrayLevel",
+                140,
+                "Default threshold value (in 0..255)");
     }
 }

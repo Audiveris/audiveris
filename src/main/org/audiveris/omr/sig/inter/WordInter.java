@@ -26,6 +26,7 @@ import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextWord;
+import org.audiveris.omr.util.Jaxb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +61,7 @@ public class WordInter
 
     /** Precise word starting point. */
     @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.PointAdapter.class)
     protected Point location;
 
     /**
@@ -81,8 +83,11 @@ public class WordInter
     public WordInter (TextWord textWord,
                       Shape shape)
     {
-        super(textWord.getGlyph(), textWord.getBounds(), shape, textWord.getConfidence()
-                                                                        * Grades.intrinsicRatio);
+        super(
+                textWord.getGlyph(),
+                textWord.getBounds(),
+                shape,
+                textWord.getConfidence() * Grades.intrinsicRatio);
         value = textWord.getValue();
         fontInfo = textWord.getFontInfo();
         location = textWord.getLocation();
@@ -156,18 +161,6 @@ public class WordInter
     }
 
     //----------//
-    // setGlyph //
-    //----------//
-    @Override
-    public void setGlyph (Glyph glyph)
-    {
-        super.setGlyph(glyph);
-
-        // Location?
-        // FontInfo?
-    }
-
-    //----------//
     // setValue //
     //----------//
     /**
@@ -178,6 +171,18 @@ public class WordInter
     public void setValue (String value)
     {
         this.value = value;
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        super.setGlyph(glyph);
+
+        // Location?
+        // FontInfo?
     }
 
     //-------------//

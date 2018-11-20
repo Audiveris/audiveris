@@ -36,7 +36,6 @@ import java.util.List;
  * convenient to use a list than a true set.
  *
  * @param <E> precise type for entities handled
- *
  * @author Hervé Bitteur
  */
 public class EntityListEvent<E extends Entity>
@@ -62,7 +61,7 @@ public class EntityListEvent<E extends Entity>
         super(source, hint, movement);
 
         if (entities != null) {
-            this.entities = Collections.unmodifiableList(new ArrayList<E>(entities));
+            this.entities = Collections.unmodifiableList(new ArrayList<>(entities));
         } else {
             this.entities = Collections.emptyList();
         }
@@ -84,7 +83,7 @@ public class EntityListEvent<E extends Entity>
         super(source, hint, movement);
 
         if ((entities != null) && (entities.length > 0) && (entities[0] != null)) {
-            this.entities = new ArrayList<E>(Arrays.asList(entities));
+            this.entities = new ArrayList<>(Arrays.asList(entities));
         } else {
             this.entities = Collections.emptyList();
         }

@@ -133,7 +133,7 @@ public class ShapeMenu
             extends JMenu
     {
 
-        public AssignMenu ()
+        AssignMenu ()
         {
             super("Assign");
 

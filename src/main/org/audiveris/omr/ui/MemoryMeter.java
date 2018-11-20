@@ -43,7 +43,6 @@ import javax.swing.SwingUtilities;
 /**
  * Class {@code MemoryMeter} encapsulates the display of a linear memory meter in MB
  * (both used and total), together with a garbage-collection button.
- * <p>
  * <P>
  * There is a alarm threshold that triggers a color switch to red whenever the used memory exceeds
  * the threshold.
@@ -56,7 +55,7 @@ public class MemoryMeter
     private static final Constants constants = new Constants();
 
     /** A mega as 2**20 */
-    private static final double MEGA = 1024 * 1024;
+    private static final double MEGA = 1_024 * 1_024;
 
     /** Default foreground color, when under alarm threshold */
     private Color defaultForeground;
@@ -103,6 +102,9 @@ public class MemoryMeter
     //----------------//
     // collectGarbage //
     //----------------//
+    /**
+     * Manually trigger garbage collection.
+     */
     @Action
     public void collectGarbage ()
     {
@@ -235,16 +237,19 @@ public class MemoryMeter
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
         /** Display period */
-        private final Constant.Integer samplingPeriod = new Constant.Integer("MilliSeconds", 2000,
-                                                                             "Memory display period");
+        private final Constant.Integer samplingPeriod = new Constant.Integer(
+                "MilliSeconds",
+                2_000,
+                "Memory display period");
 
         /** Alarm threshold ratio */
-        private final Constant.Ratio alarmThreshold = new Constant.Ratio(0.75,
-                                                                         "Memory alarm threshold, expressed in ratio of total memory");
+        private final Constant.Ratio alarmThreshold = new Constant.Ratio(
+                0.75,
+                "Memory alarm threshold, expressed in ratio of total memory");
     }
 }

@@ -77,7 +77,9 @@ public class LoadStep
 
                 ///logger.info("Occupied memory: {}", Memory.getValue());
                 final String msg = "Too large image: " + String.format("%,d", count)
-                                           + " pixels (vs " + String.format("%,d", max) + " max)";
+                                           + " pixels (vs "
+                                           + String.format("%,d", max)
+                                           + " max)";
                 stub.decideOnRemoval(msg, false); // This may throw StepException
             }
 
@@ -97,11 +99,13 @@ public class LoadStep
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Integer maxPixelCount = new Constant.Integer("Pixels", 20000000,
-                                                                            "Maximum image size, specified in pixel count");
+        private final Constant.Integer maxPixelCount = new Constant.Integer(
+                "Pixels",
+                20_000_000,
+                "Maximum image size, specified in pixel count");
     }
 }

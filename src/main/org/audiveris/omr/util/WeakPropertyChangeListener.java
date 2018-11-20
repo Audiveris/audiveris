@@ -45,7 +45,7 @@ public class WeakPropertyChangeListener
      */
     public WeakPropertyChangeListener (PropertyChangeListener listener)
     {
-        weakListener = new WeakReference<PropertyChangeListener>(listener);
+        weakListener = new WeakReference<>(listener);
     }
 
     //----------------//

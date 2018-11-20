@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
  * as is the case for many default Param.
  *
  * @author Hervé Bitteur
- *
  * @param <E> type for value
  * @param <C> type for value constant
  */
@@ -88,8 +87,9 @@ public class ConstantBasedParam<E, C extends Constant>
             if (specific == null) {
                 if (!cst.isSourceValue()) {
                     cst.resetToSource();
-                    logger.info("Default " + cst.getDescription() + " reset to {}", cst
-                                .getSourceValue());
+                    logger.info(
+                            "Default " + cst.getDescription() + " reset to {}",
+                            cst.getSourceValue());
                 }
             } else {
                 cst.setValue(specific);

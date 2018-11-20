@@ -95,7 +95,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * </ol>
  *
  * @see Measure
- *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
@@ -111,18 +110,6 @@ public class MeasureStack
     /** String suffix for a cautionary id: {@value}. */
     public static final String CAUTIONARY_SUFFIX = "C";
 
-    /**
-     * All special kinds of measures.
-     */
-    public enum Special
-    {
-        PICKUP,
-        FIRST_HALF,
-        SECOND_HALF,
-        CAUTIONARY;
-    }
-
-    //
     // Persistent data
     //----------------
     //
@@ -140,7 +127,7 @@ public class MeasureStack
 
     /** Sequence of time slots within the measure, from left to right. */
     @XmlElementRef
-    private final List<Slot> slots = new ArrayList<Slot>();
+    private final List<Slot> slots = new ArrayList<>();
 
     /** Indication for special measure stack. */
     @XmlAttribute
@@ -185,10 +172,10 @@ public class MeasureStack
     private SystemInfo system;
 
     /** Vertical sequence of (Part) measures, from top to bottom. */
-    private final List<Measure> measures = new ArrayList<Measure>();
+    private final List<Measure> measures = new ArrayList<>();
 
     /** Unassigned tuplets within stack. */
-    private final Set<TupletInter> stackTuplets = new LinkedHashSet<TupletInter>();
+    private final Set<TupletInter> stackTuplets = new LinkedHashSet<>();
 
     /**
      * Creates a new {@code MeasureStack} object.
@@ -211,6 +198,11 @@ public class MeasureStack
     //----------//
     // addInter //
     //----------//
+    /**
+     * Add an inter to stack.
+     *
+     * @param inter the inter to add
+     */
     public void addInter (Inter inter)
     {
         final Part part = inter.getPart();
@@ -220,7 +212,7 @@ public class MeasureStack
             measure.addInter(inter);
 
             if (inter instanceof TupletInter) {
-                stackTuplets.remove((TupletInter) inter);
+                stackTuplets.remove(inter);
             }
         } else if (inter instanceof TupletInter) {
             stackTuplets.add((TupletInter) inter);
@@ -232,6 +224,11 @@ public class MeasureStack
     //------------//
     // addMeasure //
     //------------//
+    /**
+     * Append a measure in stack.
+     *
+     * @param measure the measure to append
+     */
     public void addMeasure (Measure measure)
     {
         if (measures.isEmpty()) {
@@ -267,6 +264,11 @@ public class MeasureStack
     //------------------//
     // addTimeSignature //
     //------------------//
+    /**
+     * Add a time signature.
+     *
+     * @param ts the time signature to add
+     */
     public void addTimeSignature (AbstractTimeInter ts)
     {
         // Populate (part) measure with provided time signature
@@ -284,6 +286,11 @@ public class MeasureStack
     //-------------//
     // afterReload //
     //-------------//
+    /**
+     * To be called right after unmarshalling.
+     *
+     * @param system the containing system
+     */
     public void afterReload (SystemInfo system)
     {
         try {
@@ -322,22 +329,6 @@ public class MeasureStack
                 voice.checkDuration(this);
             }
         }
-    }
-
-    //------------//
-    // clearFrats //
-    //------------//
-    /**
-     * Get rid of all FRAT inters (both good and poor) in this stack, before a new
-     * configuration is installed.
-     */
-    public void clearFrats ()
-    {
-        for (Measure measure : measures) {
-            measure.clearFrats();
-        }
-
-        stackTuplets.clear();
     }
 
     //----------------//
@@ -438,6 +429,12 @@ public class MeasureStack
     //----------//
     // contains //
     //----------//
+    /**
+     * Tell whether the stack contains the provided point.
+     *
+     * @param point the provided point
+     * @return true if so
+     */
     public boolean contains (Point2D point)
     {
         return system.getStackAt(point) == this;
@@ -455,7 +452,7 @@ public class MeasureStack
      */
     public List<Inter> filter (Collection<Inter> systemInters)
     {
-        List<Inter> kept = new ArrayList<Inter>();
+        List<Inter> kept = new ArrayList<>();
 
         for (Inter inter : systemInters) {
             Point center = inter.getCenter();
@@ -479,7 +476,8 @@ public class MeasureStack
 
             // Precise abscissa limits
             if ((measure.getAbscissa(LEFT, staff) <= center.x) && (center.x <= measure.getAbscissa(
-                    RIGHT, staff))) {
+                    RIGHT,
+                    staff))) {
                 kept.add(inter);
             }
         }
@@ -499,6 +497,19 @@ public class MeasureStack
     public Rational getActualDuration ()
     {
         return actualDuration;
+    }
+
+    //-------------------//
+    // setActualDuration //
+    //-------------------//
+    /**
+     * Register in this measure stack its actual duration.
+     *
+     * @param actualDuration the duration value
+     */
+    public void setActualDuration (Rational actualDuration)
+    {
+        this.actualDuration = actualDuration;
     }
 
     //-----------------//
@@ -566,7 +577,8 @@ public class MeasureStack
      * actually starts this stack in whatever staff, or whether a time signature was
      * found in a previous stack, even in preceding pages.
      * <p>
-     * <b>NOTA</b>This method looks up for time sig in preceding pages as well</p>
+     * <b>NOTA</b>This method looks up for time sig in preceding pages as well
+     * </p>
      *
      * @return the current time signature, or null if not found at all
      */
@@ -639,6 +651,20 @@ public class MeasureStack
         return excess;
     }
 
+    //-----------//
+    // setExcess //
+    //-----------//
+    /**
+     * Assign an excess duration for this stack.
+     *
+     * @param excess the duration in excess
+     */
+    public void setExcess (Rational excess)
+    {
+        this.excess = excess;
+        setAbnormal(true);
+    }
+
     //---------------------//
     // getExpectedDuration //
     //---------------------//
@@ -674,9 +700,27 @@ public class MeasureStack
         //        }
     }
 
+    //---------------------//
+    // setExpectedDuration //
+    //---------------------//
+    /**
+     * Set measure expected duration.
+     *
+     * @param expectedDuration the expected duration
+     */
+    public void setExpectedDuration (Rational expectedDuration)
+    {
+        this.expectedDuration = expectedDuration;
+    }
+
     //-----------------//
     // getFirstMeasure //
     //-----------------//
+    /**
+     * Report the top measure in stack.
+     *
+     * @return top measure
+     */
     public Measure getFirstMeasure ()
     {
         if (measures.isEmpty()) {
@@ -716,9 +760,14 @@ public class MeasureStack
     //---------------//
     // getHeadChords //
     //---------------//
+    /**
+     * Report all head chords in stack.
+     *
+     * @return stack head chords
+     */
     public Set<HeadChordInter> getHeadChords ()
     {
-        Set<HeadChordInter> headChords = new LinkedHashSet<HeadChordInter>();
+        Set<HeadChordInter> headChords = new LinkedHashSet<>();
 
         for (Measure measure : measures) {
             headChords.addAll(measure.getHeadChords());
@@ -739,6 +788,19 @@ public class MeasureStack
     public int getIdValue ()
     {
         return id;
+    }
+
+    //------------//
+    // setIdValue //
+    //------------//
+    /**
+     * Assign the proper page-based id value to this measure stack.
+     *
+     * @param id the proper page-based measure stack id value
+     */
+    public void setIdValue (int id)
+    {
+        this.id = id;
     }
 
     //-------------//
@@ -812,6 +874,11 @@ public class MeasureStack
     //-------------//
     // getMeasures //
     //-------------//
+    /**
+     * Report the vertical sequence of measures in this stack.
+     *
+     * @return measures in stack
+     */
     public List<Measure> getMeasures ()
     {
         return measures;
@@ -1032,9 +1099,14 @@ public class MeasureStack
     //-------------------//
     // getStandardChords //
     //-------------------//
+    /**
+     * Report all the standard (i.e."non-small") chords in the stack.
+     *
+     * @return all standard chords in stack
+     */
     public Set<AbstractChordInter> getStandardChords ()
     {
-        Set<AbstractChordInter> stdChords = new LinkedHashSet<AbstractChordInter>();
+        Set<AbstractChordInter> stdChords = new LinkedHashSet<>();
 
         for (Measure measure : measures) {
             stdChords.addAll(measure.getStandardChords());
@@ -1058,7 +1130,7 @@ public class MeasureStack
                                                            Rectangle xRange)
     {
         Staff desiredStaff = getSystem().getStaffAtOrAbove(point);
-        Set<AbstractChordInter> found = new LinkedHashSet<AbstractChordInter>();
+        Set<AbstractChordInter> found = new LinkedHashSet<>();
         Measure measure = getMeasureAt(desiredStaff);
 
         if (measure != null) {
@@ -1093,7 +1165,7 @@ public class MeasureStack
                                                            Rectangle xRange)
     {
         Staff desiredStaff = getSystem().getStaffAtOrBelow(point);
-        Set<AbstractChordInter> found = new LinkedHashSet<AbstractChordInter>();
+        Set<AbstractChordInter> found = new LinkedHashSet<>();
         Measure measure = getMeasureAt(desiredStaff);
 
         if (measure != null) {
@@ -1159,7 +1231,7 @@ public class MeasureStack
      */
     public Set<TupletInter> getTuplets ()
     {
-        Set<TupletInter> all = new LinkedHashSet<TupletInter>();
+        Set<TupletInter> all = new LinkedHashSet<>();
 
         for (Measure measure : measures) {
             all.addAll(measure.getTuplets());
@@ -1174,9 +1246,14 @@ public class MeasureStack
     //-----------//
     // getVoices //
     //-----------//
+    /**
+     * Report the sequence of voices in stack
+     *
+     * @return the stack voices
+     */
     public List<Voice> getVoices ()
     {
-        List<Voice> stackVoices = new ArrayList<Voice>();
+        List<Voice> stackVoices = new ArrayList<>();
 
         for (Measure measure : measures) {
             stackVoices.addAll(measure.getVoices());
@@ -1188,9 +1265,14 @@ public class MeasureStack
     //--------------------//
     // getWholeRestChords //
     //--------------------//
+    /**
+     * Report all whole rest-chords in stack.
+     *
+     * @return all whole rest chords in stack
+     */
     public Set<AbstractChordInter> getWholeRestChords ()
     {
-        final Set<AbstractChordInter> set = new LinkedHashSet<AbstractChordInter>();
+        final Set<AbstractChordInter> set = new LinkedHashSet<>();
 
         for (Measure measure : measures) {
             for (RestChordInter chord : measure.getRestChords()) {
@@ -1289,6 +1371,19 @@ public class MeasureStack
         return abnormal;
     }
 
+    //-------------//
+    // setAbnormal //
+    //-------------//
+    /**
+     * Mark this stack as being abnormal or not.
+     *
+     * @param abnormal new value
+     */
+    public void setAbnormal (boolean abnormal)
+    {
+        this.abnormal = abnormal;
+    }
+
     //--------------//
     // isCautionary //
     //--------------//
@@ -1331,6 +1426,12 @@ public class MeasureStack
     //----------//
     // isRepeat //
     //----------//
+    /**
+     * Tell whether the stack has a repeat sign on provided side.
+     *
+     * @param side horizontal side
+     * @return true if so
+     */
     public boolean isRepeat (HorizontalSide side)
     {
         return (repeats != null) && repeats.contains(side);
@@ -1355,8 +1456,8 @@ public class MeasureStack
         right = rightStack.right;
 
         if (rightStack.actualDuration != null) {
-            actualDuration = (actualDuration == null) ? rightStack.actualDuration : actualDuration
-                    .plus(rightStack.actualDuration);
+            actualDuration = (actualDuration == null) ? rightStack.actualDuration
+                    : actualDuration.plus(rightStack.actualDuration);
         }
 
         // Merge the repeat info
@@ -1425,6 +1526,11 @@ public class MeasureStack
     //-------------//
     // removeInter //
     //-------------//
+    /**
+     * Remove an inter from the stack.
+     *
+     * @param inter the inter to remove
+     */
     public void removeInter (Inter inter)
     {
         if (inter.isVip()) {
@@ -1504,6 +1610,9 @@ public class MeasureStack
     //-------------//
     // resetRhythm //
     //-------------//
+    /**
+     * Reset rhythm info in this stack.
+     */
     public void resetRhythm ()
     {
         setAbnormal(false);
@@ -1517,86 +1626,34 @@ public class MeasureStack
         }
     }
 
-    //-------------//
-    // setAbnormal //
-    //-------------//
+    //---------------//
+    // setCautionary //
+    //---------------//
     /**
-     * Mark this stack as being abnormal or not.
-     *
-     * @param abnormal new value
+     * Flag stack as cautionary.
      */
-    public void setAbnormal (boolean abnormal)
-    {
-        this.abnormal = abnormal;
-    }
-
-    //-------------------//
-    // setActualDuration //
-    //-------------------//
-    /**
-     * Register in this measure stack its actual duration.
-     *
-     * @param actualDuration the duration value
-     */
-    public void setActualDuration (Rational actualDuration)
-    {
-        this.actualDuration = actualDuration;
-    }
-
-    //-----------//
-    // setPickup //
-    //-----------//
     public void setCautionary ()
     {
         special = Special.CAUTIONARY;
     }
 
-    //-----------//
-    // setExcess //
-    //-----------//
-    /**
-     * Assign an excess duration for this stack.
-     *
-     * @param excess the duration in excess
-     */
-    public void setExcess (Rational excess)
-    {
-        this.excess = excess;
-        setAbnormal(true);
-    }
-
-    //---------------------//
-    // setExpectedDuration //
-    //---------------------//
-    public void setExpectedDuration (Rational expectedDuration)
-    {
-        this.expectedDuration = expectedDuration;
-    }
-
     //--------------//
     // setFirstHalf //
     //--------------//
+    /**
+     * Flag stack as first half.
+     */
     public void setFirstHalf ()
     {
         special = Special.FIRST_HALF;
     }
 
-    //------------//
-    // setIdValue //
-    //------------//
-    /**
-     * Assign the proper page-based id value to this measure stack.
-     *
-     * @param id the proper page-based measure stack id value
-     */
-    public void setIdValue (int id)
-    {
-        this.id = id;
-    }
-
     //-----------//
     // setPickup //
     //-----------//
+    /**
+     * Flag stack as pickup.
+     */
     public void setPickup ()
     {
         special = Special.PICKUP;
@@ -1605,17 +1662,12 @@ public class MeasureStack
     //---------------//
     // setSecondHalf //
     //---------------//
+    /**
+     * Flag stack as second half.
+     */
     public void setSecondHalf ()
     {
         special = Special.SECOND_HALF;
-    }
-
-    //------------//
-    // setSpecial //
-    //------------//
-    public void setSpecial (Special special)
-    {
-        this.special = special;
     }
 
     //---------//
@@ -1695,7 +1747,7 @@ public class MeasureStack
         for (int partIndex = 0; partIndex < systemParts.size(); partIndex++) {
             final Part part = systemParts.get(partIndex);
             final PartBarline partBarline = systemBarline.get(partIndex);
-            Map<Staff, Integer> xRefs = new HashMap<Staff, Integer>();
+            Map<Staff, Integer> xRefs = new HashMap<>();
 
             for (Staff staff : part.getStaves()) {
                 final int xRef = partBarline.getRightX(part, staff);
@@ -1742,5 +1794,17 @@ public class MeasureStack
         sb.append('#').append(getPageId());
 
         return sb.toString();
+    }
+
+    /**
+     * All special kinds of measures.
+     */
+    public enum Special
+    {
+
+        PICKUP,
+        FIRST_HALF,
+        SECOND_HALF,
+        CAUTIONARY
     }
 }

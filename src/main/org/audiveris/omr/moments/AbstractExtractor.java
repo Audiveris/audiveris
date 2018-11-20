@@ -27,7 +27,6 @@ import java.awt.geom.Point2D;
  * Class {@code AbstractExtractor} provides the basis for moments extraction.
  *
  * @param <D> actual descriptor type
- *
  * @author Hervé Bitteur
  */
 public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
@@ -62,17 +61,18 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
     {
         // Check arguments
         if ((xx == null) || (yy == null)) {
-            throw new IllegalArgumentException(getClass().getSimpleName()
-                                                       + " cannot process a null array");
+            throw new IllegalArgumentException(
+                    getClass().getSimpleName() + " cannot process a null array");
         }
 
         if ((mass <= 0) || (mass > xx.length) || (mass > yy.length)) {
-            throw new IllegalArgumentException(getClass().getSimpleName() + " on inconsistent input");
+            throw new IllegalArgumentException(
+                    getClass().getSimpleName() + " on inconsistent input");
         }
 
         if (descriptor == null) {
-            throw new IllegalArgumentException(getClass().getSimpleName()
-                                                       + " has no target descriptor");
+            throw new IllegalArgumentException(
+                    getClass().getSimpleName() + " has no target descriptor");
         }
 
         this.xx = xx;
@@ -118,7 +118,7 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
             m01 += yy[i];
         }
 
-        return new Point2D.Double((double) m10 / (double) mass, (double) m01 / (double) mass);
+        return new Point2D.Double(m10 / (double) mass, m01 / (double) mass);
     }
 
     //------------//

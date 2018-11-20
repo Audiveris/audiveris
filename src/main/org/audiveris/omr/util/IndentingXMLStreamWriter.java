@@ -34,23 +34,13 @@ import javax.xml.stream.XMLStreamWriter;
  * It is a workaround to avoid JAXB default limit to 8 steps.
  *
  * @author Kohsuke Kawaguchi (the author of the internal Sun implementation of class
- * IndentingXMLStreamWriter in com.sun.xml.internal.txw2.output package, this class is derived from)
+ * IndentingXMLStreamWriter in com.sun.xml.internal.txw2.output package, this class is
+ * derived from)
  * @author Hervé Bitteur (using an underlying writer instance)
  */
 public class IndentingXMLStreamWriter
         implements XMLStreamWriter
 {
-
-    /** What we have written in current element. */
-    protected static enum Seen
-    {
-        /** Neither data/text nor sub-element. */
-        NOTHING,
-        /** A (sub-) element. */
-        ELEMENT,
-        /** CData or characters. */
-        DATA;
-    }
 
     /** The actual writer, to which any real work is delegated. */
     protected final XMLStreamWriter writer;
@@ -59,7 +49,7 @@ public class IndentingXMLStreamWriter
     protected final String indentStep;
 
     /** Stack of states, parallel to elements being written. */
-    protected final Deque<Seen> stateStack = new ArrayDeque<Seen>();
+    protected final Deque<Seen> stateStack = new ArrayDeque<>();
 
     /** Current state (in current element). */
     protected Seen state = Seen.NOTHING;
@@ -112,6 +102,13 @@ public class IndentingXMLStreamWriter
     }
 
     @Override
+    public void setNamespaceContext (NamespaceContext context)
+            throws XMLStreamException
+    {
+        writer.setNamespaceContext(context);
+    }
+
+    @Override
     public String getPrefix (String uri)
             throws XMLStreamException
     {
@@ -130,13 +127,6 @@ public class IndentingXMLStreamWriter
             throws XMLStreamException
     {
         writer.setDefaultNamespace(uri);
-    }
-
-    @Override
-    public void setNamespaceContext (NamespaceContext context)
-            throws XMLStreamException
-    {
-        writer.setNamespaceContext(context);
     }
 
     @Override
@@ -431,5 +421,16 @@ public class IndentingXMLStreamWriter
         }
 
         depth++;
+    }
+
+    /** What we have written in current element. */
+    protected static enum Seen
+    {
+        /** Neither data/text nor sub-element. */
+        NOTHING,
+        /** A (sub-) element. */
+        ELEMENT,
+        /** CData or characters. */
+        DATA;
     }
 }

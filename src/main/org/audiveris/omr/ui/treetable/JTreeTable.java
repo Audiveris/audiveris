@@ -95,7 +95,8 @@ public class JTreeTable
         }
     }
 
-    /* Workaround for BasicTableUI anomaly. Make sure the UI never tries to
+    /**
+     * Workaround for BasicTableUI anomaly. Make sure the UI never tries to
      * paint the editor. The UI currently uses different techniques to
      * paint the renderers and editors and overriding setBounds() below
      * is not the right thing to do for an editor. Returning -1 for the
@@ -345,7 +346,7 @@ public class JTreeTable
      * change in the ListSelectionModel happens, the paths are updated in the
      * DefaultTreeSelectionModel.
      */
-    protected class ListToTreeSelectionModelWrapper
+    protected final class ListToTreeSelectionModelWrapper
             extends DefaultTreeSelectionModel
     {
 
@@ -354,7 +355,7 @@ public class JTreeTable
          */
         protected boolean updatingListSelectionModel;
 
-        public ListToTreeSelectionModelWrapper ()
+        ListToTreeSelectionModelWrapper ()
         {
             super();
             getListSelectionModel().addListSelectionListener(createListSelectionListener());
@@ -395,6 +396,13 @@ public class JTreeTable
             // updatingListSelectionModel is true, it implies the
             // ListSelectionModel has already been updated and the
             // paths are the only thing that needs to be updated.
+        }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
 
         /**

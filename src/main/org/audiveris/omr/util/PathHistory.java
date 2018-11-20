@@ -74,6 +74,11 @@ public class PathHistory
     //-----//
     // add //
     //-----//
+    /**
+     * Add a path to history
+     *
+     * @param path the path to include
+     */
     public void add (Path path)
     {
         nameSet.add(path.toAbsolutePath().toString());
@@ -86,8 +91,7 @@ public class PathHistory
 
         if (OMR.gui != null) {
             // Enable input history menu
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
@@ -101,6 +105,13 @@ public class PathHistory
     //----------//
     // feedMenu //
     //----------//
+    /**
+     * Populate a menu with path history.
+     *
+     * @param menu         menu to populate, if null it is allocated
+     * @param itemListener listener for each menu item
+     * @return the populated menu
+     */
     public JMenu feedMenu (JMenu menu,
                            final ActionListener itemListener)
     {
@@ -110,6 +121,11 @@ public class PathHistory
     //---------//
     // isEmpty //
     //---------//
+    /**
+     * Tell whether history is empty.
+     *
+     * @return true if so
+     */
     public boolean isEmpty ()
     {
         return nameSet.isEmpty();
@@ -118,6 +134,12 @@ public class PathHistory
     //--------//
     // remove //
     //--------//
+    /**
+     * Remove a path from history
+     *
+     * @param path to be removed
+     * @return true if actually removed
+     */
     public boolean remove (Path path)
     {
         return nameSet.remove(path.toAbsolutePath().toString());
@@ -126,6 +148,11 @@ public class PathHistory
     //---------//
     // setMenu //
     //---------//
+    /**
+     * Set the related UI menu
+     *
+     * @param menu the related menu
+     */
     public void setMenu (HistoryMenu menu)
     {
         this.menu = menu;

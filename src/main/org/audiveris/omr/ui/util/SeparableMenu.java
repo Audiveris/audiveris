@@ -83,6 +83,17 @@ public class SeparableMenu
     //---------------//
     /**
      * Remove any potential orphan separator at the end of the menu.
+     */
+    public void trimSeparator ()
+    {
+        trimSeparator(this);
+    }
+
+    //---------------//
+    // trimSeparator //
+    //---------------//
+    /**
+     * Remove any potential orphan separator at the end of the menu.
      *
      * @param menu the menu to purge
      */
@@ -92,21 +103,6 @@ public class SeparableMenu
 
         if ((count > 0) && menu.getMenuComponent(count - 1) instanceof JSeparator) {
             menu.remove(count - 1);
-        }
-    }
-
-    //---------------//
-    // trimSeparator //
-    //---------------//
-    /**
-     * Remove any potential orphan separator at the end of the menu.
-     */
-    public void trimSeparator ()
-    {
-        int count = getMenuComponentCount();
-
-        if ((count > 0) && getMenuComponent(count - 1) instanceof JSeparator) {
-            remove(count - 1);
         }
     }
 }

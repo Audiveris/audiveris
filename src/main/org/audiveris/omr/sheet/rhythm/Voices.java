@@ -125,6 +125,11 @@ public abstract class Voices
         }
     };
 
+    // Not meant to be instantiated.
+    private Voices ()
+    {
+    }
+
     //------------//
     // refinePage //
     //------------//
@@ -209,8 +214,8 @@ public abstract class Voices
                         final List<SlurInter> precOrphans = precedingPart.getSlurs(
                                 SlurInter.isEndingOrphan);
 
-                        final Map<SlurInter, SlurInter> links = part
-                                .getCrossSlurLinks(precedingPart); // Links: Slur -> prevSlur
+                        final Map<SlurInter, SlurInter> links = part.getCrossSlurLinks(
+                                precedingPart); // Links: Slur -> prevSlur
 
                         // Apply the links possibilities
                         for (Map.Entry<SlurInter, SlurInter> entry : links.entrySet()) {

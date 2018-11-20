@@ -119,8 +119,7 @@ public class LogPane
      */
     public void notifyLog ()
     {
-        SwingUtilities.invokeLater(
-                new Runnable()
+        SwingUtilities.invokeLater(new Runnable()
         {
             @Override
             public void run ()
@@ -155,8 +154,10 @@ public class LogPane
                                 sb.append("] ");
                             }
 
-                            document.insertString(document.getLength(), sb + event
-                                                  .getFormattedMessage() + "\n", attributes);
+                            document.insertString(
+                                    document.getLength(),
+                                    sb + event.getFormattedMessage() + "\n",
+                                    attributes);
                         } catch (BadLocationException ex) {
                             ex.printStackTrace();
                         }
@@ -185,14 +186,17 @@ public class LogPane
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Integer fontSize = new Constant.Integer("Points", 10,
-                                                                       "Font size for log pane");
+        private final Constant.Integer fontSize = new Constant.Integer(
+                "Points",
+                10,
+                "Font size for log pane");
 
-        private final Constant.String fontName = new Constant.String("Lucida Console",
-                                                                     "Font name for log pane");
+        private final Constant.String fontName = new Constant.String(
+                "Lucida Console",
+                "Font name for log pane");
     }
 }

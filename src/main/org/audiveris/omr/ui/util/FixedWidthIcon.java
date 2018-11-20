@@ -29,6 +29,8 @@ import javax.swing.Icon;
 
 /**
  * Force an icon to be painted within a given width.
+ *
+ * @author Hervé Bitteur
  */
 public class FixedWidthIcon
         implements Icon

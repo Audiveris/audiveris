@@ -162,8 +162,10 @@ public class SpotsBuilder
 
         final double diameter = beam * constants.beamCircleDiameterRatio.getValue();
         final float radius = (float) (diameter - 1) / 2;
-        logger.debug("Spots retrieval beam: {}, diameter: {} ...", String.format("%.1f", beam),
-                     String.format("%.1f", diameter));
+        logger.debug(
+                "Spots retrieval beam: {}, diameter: {} ...",
+                String.format("%.1f", beam),
+                String.format("%.1f", diameter));
 
         final int[] seOffset = {0, 0};
         StructureElement se = new StructureElement(0, 1, radius, seOffset);
@@ -188,10 +190,10 @@ public class SpotsBuilder
                     img = buffer.getBufferedImage();
                 }
 
-                sheet.getStub().getAssembly().addViewTab(SheetTab.GRAY_SPOT_TAB,
-                                                         new ScrollImageView(sheet, new ImageView(
-                                                                             img)), new BoardsPane(
-                                                                 new PixelBoard(sheet)));
+                sheet.getStub().getAssembly().addViewTab(
+                        SheetTab.GRAY_SPOT_TAB,
+                        new ScrollImageView(sheet, new ImageView(img)),
+                        new BoardsPane(new PixelBoard(sheet)));
             }
 
             // Save a specific binarized version for HEADS step
@@ -241,7 +243,7 @@ public class SpotsBuilder
         int count = 0;
 
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
-        final List<SystemInfo> relevants = new ArrayList<SystemInfo>();
+        final List<SystemInfo> relevants = new ArrayList<>();
         final SystemManager systemManager = sheet.getSystemManager();
 
         for (Glyph glyph : spots) {
@@ -319,8 +321,9 @@ public class SpotsBuilder
             // Remove stem runs (could be much more efficient if performed on buffer directly)
             watch.start("createtable");
 
-            RunTableFactory factory = new RunTableFactory(Orientation.HORIZONTAL,
-                                                          new RunTableFactory.LengthFilter(stemWidth));
+            RunTableFactory factory = new RunTableFactory(
+                    Orientation.HORIZONTAL,
+                    new RunTableFactory.LengthFilter(stemWidth));
             RunTable table = factory.createTable(buffer);
             watch.start("table to buffer");
             buffer = table.getBuffer();
@@ -370,38 +373,50 @@ public class SpotsBuilder
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean displayBeamSpots = new Constant.Boolean(false,
-                                                                               "Should we display the beam Spots view?");
+        private final Constant.Boolean displayBeamSpots = new Constant.Boolean(
+                false,
+                "Should we display the beam Spots view?");
 
-        private final Constant.Boolean displayGraySpots = new Constant.Boolean(false,
-                                                                               "Should we display the gray Spots view?");
+        private final Constant.Boolean displayGraySpots = new Constant.Boolean(
+                false,
+                "Should we display the gray Spots view?");
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(false,
-                                                                         "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
 
-        private final Constant.Boolean keepBeamSpots = new Constant.Boolean(false,
-                                                                            "Should we store sheet beam spot images on disk?");
+        private final Constant.Boolean keepBeamSpots = new Constant.Boolean(
+                false,
+                "Should we store sheet beam spot images on disk?");
 
-        private final Constant.Boolean keepHeadSpots = new Constant.Boolean(false,
-                                                                            "Should we store sheet head spot images on disk?");
+        private final Constant.Boolean keepHeadSpots = new Constant.Boolean(
+                false,
+                "Should we store sheet head spot images on disk?");
 
-        private final Constant.Boolean keepCueSpots = new Constant.Boolean(false,
-                                                                           "Should we store cue spot images on disk?");
+        private final Constant.Boolean keepCueSpots = new Constant.Boolean(
+                false,
+                "Should we store cue spot images on disk?");
 
-        private final Constant.Ratio beamCircleDiameterRatio = new Constant.Ratio(0.8,
-                                                                                  "Diameter of circle used to close beam spots, as ratio of beam height");
+        private final Constant.Ratio beamCircleDiameterRatio = new Constant.Ratio(
+                0.8,
+                "Diameter of circle used to close beam spots, as ratio of beam height");
 
-        private final Constant.Integer beamBinarizationThreshold
-                = new Constant.Integer("pixel", 140, "Global binarization threshold for beams");
+        private final Constant.Integer beamBinarizationThreshold = new Constant.Integer(
+                "pixel",
+                140,
+                "Global binarization threshold for beams");
 
-        private final Constant.Integer headBinarizationThreshold
-                = new Constant.Integer("pixel", 170, "Global binarization threshold for heads");
+        private final Constant.Integer headBinarizationThreshold = new Constant.Integer(
+                "pixel",
+                170,
+                "Global binarization threshold for heads");
 
-        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(2.0,
-                                                                              "Margin erased above & below staff header area");
+        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
+                2.0,
+                "Margin erased above & below staff header area");
     }
 }

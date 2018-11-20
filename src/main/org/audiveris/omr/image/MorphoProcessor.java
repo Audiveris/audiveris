@@ -37,31 +37,31 @@ public class MorphoProcessor
 
     private static final Logger logger = LoggerFactory.getLogger(MorphoProcessor.class);
 
+    public static final int BINF = -256;
+
     private static final int ORIG = 0;
 
     private static final int PLUS = 1;
 
     private static final int MINUS = -1;
 
-    public static final int BINF = -256;
+    private final StructureElement se; //, down_se, up_se;
 
-    private StructureElement se; //, down_se, up_se;
+    private final StructureElement minus_se; //, down_se, up_se;
 
-    private StructureElement minus_se; //, down_se, up_se;
+    private final StructureElement plus_se; //, down_se, up_se;
 
-    private StructureElement plus_se; //, down_se, up_se;
+    private final LocalHistogram bh;
 
-    private LocalHistogram bh;
+    private final LocalHistogram p_h;
 
-    private LocalHistogram p_h;
+    private final LocalHistogram m_h;
 
-    private LocalHistogram m_h;
+    private final int[][] pg;
 
-    private int[][] pg;
+    private final int[][] pg_plus;
 
-    private int[][] pg_plus;
-
-    private int[][] pg_minus;
+    private final int[][] pg_minus;
 
     int width;
 
@@ -95,8 +95,7 @@ public class MorphoProcessor
      * with arbitrary structural element
      *
      * @param ip the ImageProcessor
-     *
-     * */
+     */
     public void close (ByteProcessor ip)
     {
         int width = ip.getWidth();
@@ -152,7 +151,8 @@ public class MorphoProcessor
     //--------//
     // dilate //
     //--------//
-    /** Performs gray level dilation
+    /**
+     * Performs gray level dilation
      *
      * @param ip the ImageProcessor
      */
@@ -160,7 +160,7 @@ public class MorphoProcessor
     {
         int width = ip.getWidth();
         int height = ip.getHeight();
-        int max = 32768; //,k=0,x=0,y=0;
+        int max = 32_768; //,k=0,x=0,y=0;
 
         //int[][]pg=se.getVect();
         //  IJ.log("pg: "+pg.length);
@@ -196,7 +196,7 @@ public class MorphoProcessor
     {
         int width = ip.getWidth();
         int height = ip.getHeight();
-        int min = -32767; //,k=0,x=0,y=0;
+        int min = -32_767; //,k=0,x=0,y=0;
 
         int sz = pg.length; //se.getWidth()*se.getHeight();
         // byte[] p=(byte[])ip.convertToByte(false).getValues();
@@ -231,7 +231,7 @@ public class MorphoProcessor
         //fastErode(ip,se);
         int width = ip.getWidth();
         int height = ip.getHeight();
-        int max = 32767; //,k=0,x=0,y=0;
+        int max = 32_767; //,k=0,x=0,y=0;
 
         //int pgzise=pg.length;
         byte[] pixels = (byte[]) ip.getPixels();
@@ -271,7 +271,7 @@ public class MorphoProcessor
             } //odd loop
         }
 
-        int min = -32767; //,k=0,x=0,y=0;
+        int min = -32_767; //,k=0,x=0,y=0;
 
         byte[] newpix2 = new byte[pixels.length];
 
@@ -322,8 +322,8 @@ public class MorphoProcessor
     {
         int width = ip.getWidth();
         int height = ip.getHeight();
-        int min = -32767; //,k=0,x=0,y=0;
-        int max = 32768;
+        int min = -32_767; //,k=0,x=0,y=0;
+        int max = 32_768;
         int w = this.width; //se.getWidth();
         int h = this.height; //se.getHeight();
         // int[][] pg=se.getVect();
@@ -415,11 +415,11 @@ public class MorphoProcessor
             }
 
             if (type == DILATE) {
-                k = k + pg[g][2];
+                k += pg[g][2];
             }
 
             if (type == ERODE) {
-                k = k - pg[g][2];
+                k -= pg[g][2];
             }
 
             if (k < min) {

@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
@@ -74,7 +75,7 @@ public abstract class LogUtil
     private static final String LOGBACK_FILE_NAME = "logback.xml";
 
     /** Initial messages before logging is fully set. */
-    private static final List<String> initialMessages = new ArrayList<String>();
+    private static final List<String> initialMessages = new ArrayList<>();
 
     //-------------//
     // addAppender //
@@ -233,9 +234,10 @@ public abstract class LogUtil
                 File tmpFile = File.createTempFile("logback-", ".xml");
                 tmpFile.deleteOnExit();
 
-                InputStream is = configUri.toURL().openStream();
-                FileUtils.copyInputStreamToFile(is, tmpFile);
-                is.close();
+                try (InputStream is = configUri.toURL().openStream()) {
+                    FileUtils.copyInputStreamToFile(is, tmpFile);
+                }
+
                 localPath = tmpFile.toPath();
             } else {
                 localPath = Paths.get(configUri);
@@ -249,7 +251,7 @@ public abstract class LogUtil
             } else {
                 initMessage("LogUtil. No " + localPath + ", skipped.");
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
 
@@ -363,6 +365,12 @@ public abstract class LogUtil
     //---------//
     // toLevel //
     //---------//
+    /**
+     * Decode a string as a Level value.
+     *
+     * @param str the input string
+     * @return the decoded Level value
+     */
     public static Level toLevel (final String str)
     {
         switch (str.toUpperCase()) {
@@ -401,5 +409,9 @@ public abstract class LogUtil
     private static void initMessage (String str)
     {
         initialMessages.add(str);
+    }
+
+    private LogUtil ()
+    {
     }
 }

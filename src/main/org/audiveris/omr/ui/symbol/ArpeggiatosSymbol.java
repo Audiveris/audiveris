@@ -73,9 +73,9 @@ public class ArpeggiatosSymbol
         p.layout = layout(font);
 
         Rectangle2D r = p.layout.getBounds();
-        p.rect
-                = new Rectangle((int) Math.ceil(r.getWidth()), count * (int) Math
-                                .rint(r.getHeight()));
+        p.rect = new Rectangle(
+                (int) Math.ceil(r.getWidth()),
+                count * (int) Math.rint(r.getHeight()));
 
         return p;
     }

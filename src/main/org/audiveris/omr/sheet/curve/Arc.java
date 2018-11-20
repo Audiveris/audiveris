@@ -69,7 +69,10 @@ public class Arc
     };
 
     /** Sequence of arc points so far. */
-    protected final List<Point> points = new ArrayList<Point>();
+    protected final List<Point> points = new ArrayList<>();
+
+    /** Related model, if any. */
+    protected Model model;
 
     /** Junction point, if any, before points sequence. */
     private Point firstJunction;
@@ -79,9 +82,6 @@ public class Arc
 
     /** Shape found for this arc. */
     private ArcShape shape;
-
-    /** Related model, if any. */
-    protected Model model;
 
     /** Already assigned to a curve?. */
     private boolean assigned;
@@ -210,6 +210,19 @@ public class Arc
         return model;
     }
 
+    //----------//
+    // setModel //
+    //----------//
+    /**
+     * Assign the arc model.
+     *
+     * @param model the model to set
+     */
+    public void setModel (Model model)
+    {
+        this.model = model;
+    }
+
     //-----------//
     // getPoints //
     //-----------//
@@ -250,6 +263,19 @@ public class Arc
         return shape;
     }
 
+    //----------//
+    // setShape //
+    //----------//
+    /**
+     * Assign the arc shape.
+     *
+     * @param shape the shape to set
+     */
+    public void setShape (ArcShape shape)
+    {
+        this.shape = shape;
+    }
+
     //------------//
     // getXLength //
     //------------//
@@ -272,6 +298,19 @@ public class Arc
     public boolean isAssigned ()
     {
         return assigned;
+    }
+
+    //-------------//
+    // setAssigned //
+    //-------------//
+    /**
+     * Set the assigned fleg.
+     *
+     * @param assigned the assigned flag to set
+     */
+    public void setAssigned (boolean assigned)
+    {
+        this.assigned = assigned;
     }
 
     //---------//
@@ -297,17 +336,6 @@ public class Arc
     }
 
     //-------------//
-    // setAssigned //
-    //-------------//
-    /**
-     * @param assigned the assigned flag to set
-     */
-    public void setAssigned (boolean assigned)
-    {
-        this.assigned = assigned;
-    }
-
-    //-------------//
     // setJunction //
     //-------------//
     /**
@@ -324,28 +352,6 @@ public class Arc
         } else {
             lastJunction = junction;
         }
-    }
-
-    //----------//
-    // setModel //
-    //----------//
-    /**
-     * @param model the model to set
-     */
-    public void setModel (Model model)
-    {
-        this.model = model;
-    }
-
-    //----------//
-    // setShape //
-    //----------//
-    /**
-     * @param shape the shape to set
-     */
-    public void setShape (ArcShape shape)
-    {
-        this.shape = shape;
     }
 
     //----------//
@@ -366,6 +372,11 @@ public class Arc
     //-----------//
     // internals //
     //-----------//
+    /**
+     * Report a string description of class internals
+     *
+     * @return string description of internals
+     */
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder();

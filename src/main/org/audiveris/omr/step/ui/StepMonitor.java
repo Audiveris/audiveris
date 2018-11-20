@@ -67,7 +67,6 @@ public class StepMonitor
         bar.setForeground(Colors.PROGRESS_BAR);
     }
 
-    //
     //--------------//
     // getComponent //
     //--------------//
@@ -92,13 +91,38 @@ public class StepMonitor
     public void notifyMsg (final String msg)
     {
         logger.debug("notifyMsg '{}'", msg);
-        SwingUtilities.invokeLater(
-                new Runnable()
+        SwingUtilities.invokeLater(new Runnable()
         {
             @Override
             public void run ()
             {
                 bar.setString(msg);
+            }
+        });
+    }
+
+    //--------//
+    // setBar //
+    //--------//
+    /**
+     * Sets the progress bar to show a percentage.
+     *
+     * @param amount percentage, in decimal form, from 0.0 to 1.0
+     */
+    private void setBar (final double amount)
+    {
+        logger.debug("setBar amount:{}", amount);
+        SwingUtilities.invokeLater(new Runnable()
+        {
+            @Override
+            public void run ()
+            {
+                int divisions = constants.divisions.getValue();
+                bar.setMinimum(0);
+                bar.setMaximum(divisions);
+
+                int val = (int) Math.round(divisions * amount);
+                bar.setValue(val);
             }
         });
     }
@@ -147,8 +171,7 @@ public class StepMonitor
     {
         if (!constants.useIndeterminate.isSet()) {
             logger.debug("animate");
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
@@ -166,48 +189,25 @@ public class StepMonitor
         }
     }
 
-    //--------//
-    // setBar //
-    //--------//
-    /**
-     * Sets the progress bar to show a percentage.
-     *
-     * @param amount percentage, in decimal form, from 0.0 to 1.0
-     */
-    private void setBar (final double amount)
-    {
-        logger.debug("setBar amount:{}", amount);
-        SwingUtilities.invokeLater(
-                new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                int divisions = constants.divisions.getValue();
-                bar.setMinimum(0);
-                bar.setMaximum(divisions);
-
-                int val = (int) Math.round(divisions * amount);
-                bar.setValue(val);
-            }
-        });
-    }
-
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Integer divisions = new Constant.Integer("divisions", 1000,
-                                                                        "Number of divisions (amount of precision) of step monitor, minimum 10");
+        private final Constant.Integer divisions = new Constant.Integer(
+                "divisions",
+                1_000,
+                "Number of divisions (amount of precision) of step monitor, minimum 10");
 
-        private final Ratio ratio = new Ratio(0.1,
-                                              "Amount by which to increase step monitor percentage per animation, between 0 and 1");
+        private final Ratio ratio = new Ratio(
+                0.1,
+                "Amount by which to increase step monitor percentage per animation, between 0 and 1");
 
-        private final Constant.Boolean useIndeterminate = new Constant.Boolean(true,
-                                                                               "Should we use an indeterminate step progress bar?");
+        private final Constant.Boolean useIndeterminate = new Constant.Boolean(
+                true,
+                "Should we use an indeterminate step progress bar?");
     }
 
     //----------------//

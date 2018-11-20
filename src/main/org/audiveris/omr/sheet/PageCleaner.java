@@ -73,13 +73,14 @@ import java.util.List;
  * Class {@code PageCleaner} erases selected inter instances on the provided graphics
  * environment by painting them using white background color.
  * <p>
- * Painting uses various techniques:<ul>
+ * Painting uses various techniques:
+ * <ul>
  * <li>Default is to use inter shape to paint the shape symbol with a thicker
  * {@link #musicFont}.</li>
  * <li>For an area-based inter, area is filled exactly and area contour is drawn with
  * {@link #marginStroke}.</li>
- * <li>For a glyph-based inter, all glyph runs are painted with no margin. </li>
- * <li>For a line-based inter, the line is drawn with a thicker {@link #lineStroke}. </li>
+ * <li>For a glyph-based inter, all glyph runs are painted with no margin.</li>
+ * <li>For a line-based inter, the line is drawn with a thicker {@link #lineStroke}.</li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -456,17 +457,20 @@ public abstract class PageCleaner
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio dilationRatio = new Constant.Ratio(1.1,
-                                                                        "Size augmentation to use with eraser music font");
+        private final Constant.Ratio dilationRatio = new Constant.Ratio(
+                1.1,
+                "Size augmentation to use with eraser music font");
 
-        private final Scale.Fraction symbolSize = new Scale.Fraction(1.1,
-                                                                     "Symbols size to use with eraser music font");
+        private final Scale.Fraction symbolSize = new Scale.Fraction(
+                1.1,
+                "Symbols size to use with eraser music font");
 
-        private final Scale.Fraction lineMargin = new Scale.Fraction(0.1,
-                                                                     "Thickness of white lines drawn on items borders");
+        private final Scale.Fraction lineMargin = new Scale.Fraction(
+                0.1,
+                "Thickness of white lines drawn on items borders");
     }
 }

@@ -46,7 +46,6 @@ public class RunsRetriever
 
     private static final Logger logger = LoggerFactory.getLogger(RunsRetriever.class);
 
-    //
     /** The orientation of desired runs */
     private final Orientation orientation;
 
@@ -67,7 +66,6 @@ public class RunsRetriever
         this.adapter = adapter;
     }
 
-    //
     //--------------//
     // retrieveRuns //
     //--------------//
@@ -102,7 +100,7 @@ public class RunsRetriever
                                   int cMax)
     {
         /** Buffer of runs for current position. */
-        final List<Run> posRuns = new ArrayList<Run>();
+        final List<Run> posRuns = new ArrayList<>();
 
         // Current run is FOREGROUND or BACKGROUND
         boolean isFore = false;
@@ -176,7 +174,7 @@ public class RunsRetriever
             // Parallel (TODO: should use Java 7 fork/join someday...)
             try {
                 // Browse one dimension
-                List<Callable<Void>> tasks = new ArrayList<Callable<Void>>(pMax - pMin + 1);
+                List<Callable<Void>> tasks = new ArrayList<>(pMax - pMin + 1);
 
                 for (int p = pMin; p <= pMax; p++) {
                     final int pp = p;
@@ -208,7 +206,6 @@ public class RunsRetriever
         }
     }
 
-    //
     //---------//
     // Adapter //
     //---------//
@@ -245,7 +242,6 @@ public class RunsRetriever
          *
          * @param coord x for horizontal runs, y for vertical runs
          * @param pos   y for horizontal runs, x for vertical runs
-         *
          * @return true if pixel is foreground, false otherwise
          */
         boolean isFore (int coord,

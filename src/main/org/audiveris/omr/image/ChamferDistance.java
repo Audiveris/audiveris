@@ -11,7 +11,8 @@ import ij.process.ByteProcessor;
  * Class {@code ChamferDistance} implements a Distance Transform operation using
  * chamfer masks.
  *
- * @author Code by Xavier Philippeau <br> Kernels by Verwer, Borgefors and Thiel
+ * @author Code by Xavier Philippeau <br>
+ * Kernels by Verwer, Borgefors and Thiel
  * @author Hervé Bitteur for interface and type-specific implementations
  */
 public interface ChamferDistance
@@ -24,25 +25,39 @@ public interface ChamferDistance
     public static final int VALUE_UNKNOWN = -1;
 
     /** Chessboard mask. */
-    public static final int[][] chessboard = new int[][]{new int[]{1, 0, 1}, new int[]{1, 1, 1}};
+    public static final int[][] chessboard = new int[][]{
+        new int[]{1, 0, 1},
+        new int[]{1, 1, 1}};
 
     /** 3x3 mask. */
-    public static final int[][] chamfer3 = new int[][]{new int[]{1, 0, 3}, new int[]{1, 1, 4}};
+    public static final int[][] chamfer3 = new int[][]{
+        new int[]{1, 0, 3},
+        new int[]{1, 1, 4}};
 
     /** 5x5 mask. */
-    public static final int[][] chamfer5 = new int[][]{new int[]{1, 0, 5}, new int[]{1, 1, 7},
-                                                       new int[]{2, 1, 11}};
+    public static final int[][] chamfer5 = new int[][]{
+        new int[]{1, 0, 5},
+        new int[]{1, 1, 7},
+        new int[]{2, 1, 11}};
 
     /** 7x7 mask. */
-    public static final int[][] chamfer7 = new int[][]{new int[]{1, 0, 14}, new int[]{1, 1, 20},
-                                                       new int[]{2, 1, 31}, new int[]{3, 1, 44}};
+    public static final int[][] chamfer7 = new int[][]{
+        new int[]{1, 0, 14},
+        new int[]{1, 1, 20},
+        new int[]{2, 1, 31},
+        new int[]{3, 1, 44}};
 
     /** 13x13 mask. */
     public static final int[][] chamfer13 = new int[][]{
-        new int[]{1, 0, 68}, new int[]{1, 1, 96}, new int[]{2, 1, 152}, new int[]{3, 1, 215},
-        new int[]{3, 2, 245}, new int[]{4, 1, 280},
-        new int[]{4, 3, 340}, new int[]{5, 1, 346}, new int[]{6, 1, 413}
-    };
+        new int[]{1, 0, 68},
+        new int[]{1, 1, 96},
+        new int[]{2, 1, 152},
+        new int[]{3, 1, 215},
+        new int[]{3, 2, 245},
+        new int[]{4, 1, 280},
+        new int[]{4, 3, 340},
+        new int[]{5, 1, 346},
+        new int[]{6, 1, 413}};
 
     //---------//
     // compute //
@@ -83,6 +98,9 @@ public interface ChamferDistance
      */
     DistanceTable computeToFore (ByteProcessor input);
 
+    /**
+     * Abstract implementation.
+     */
     public abstract class Abstract
             implements ChamferDistance
     {
@@ -186,17 +204,14 @@ public interface ChamferDistance
                         continue;
                     }
 
-                    for (int k = 0; k < chamfer.length; k++) {
-                        int dx = chamfer[k][0];
-                        int dy = chamfer[k][1];
-                        int dt = chamfer[k][2];
-
+                    for (int[] cf : chamfer) {
+                        int dx = cf[0];
+                        int dy = cf[1];
+                        int dt = cf[2];
                         testAndSet(output, x + dx, y + dy, v + dt);
-
                         if (dy != 0) {
                             testAndSet(output, x - dx, y + dy, v + dt);
                         }
-
                         if (dx != dy) {
                             testAndSet(output, x + dy, y + dx, v + dt);
 
@@ -217,17 +232,14 @@ public interface ChamferDistance
                         continue;
                     }
 
-                    for (int k = 0; k < chamfer.length; k++) {
-                        int dx = chamfer[k][0];
-                        int dy = chamfer[k][1];
-                        int dt = chamfer[k][2];
-
+                    for (int[] chamfer1 : chamfer) {
+                        int dx = chamfer1[0];
+                        int dy = chamfer1[1];
+                        int dt = chamfer1[2];
                         testAndSet(output, x - dx, y - dy, v + dt);
-
                         if (dy != 0) {
                             testAndSet(output, x + dx, y - dy, v + dt);
                         }
-
                         if (dx != dy) {
                             testAndSet(output, x - dy, y - dx, v + dt);
 
@@ -313,6 +325,9 @@ public interface ChamferDistance
     //---------//
     // Integer //
     //---------//
+    /**
+     * Integer-based chamfer distance.
+     */
     public class Integer
             extends Abstract
     {
@@ -329,6 +344,9 @@ public interface ChamferDistance
     //-------//
     // Short //
     //-------//
+    /**
+     * Short-based chamfer distance.
+     */
     public class Short
             extends Abstract
     {

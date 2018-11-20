@@ -40,7 +40,6 @@ import org.audiveris.omr.sheet.curve.SlurLinker;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
-import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
@@ -165,8 +164,8 @@ public class SlurInter
                     // Check slur ends in first measure half (excluding header area)
                     Staff staff = system.getClosestStaff(end);
                     Measure measure = stack.getMeasureAt(staff);
-                    int middle = (staff.getHeaderStop() + measure.getAbscissa(LEFT, staff) + measure
-                            .getWidth()) / 2;
+                    int middle = (staff.getHeaderStop() + measure.getAbscissa(LEFT, staff)
+                                          + measure.getWidth()) / 2;
 
                     if (end.getX() < middle) {
                         return true;
@@ -178,7 +177,6 @@ public class SlurInter
         }
     };
 
-    //
     // Persistent data
     //----------------
     //
@@ -315,8 +313,12 @@ public class SlurInter
 
         // Check that part-based staff indices are the same
         if (prevStaff.getIndexInPart() != thisStaff.getIndexInPart()) {
-            logger.debug("{} prevStaff:{} {} staff:{} different part-based staff indices", prevSlur,
-                         prevStaff.getId(), this, thisStaff.getId());
+            logger.debug(
+                    "{} prevStaff:{} {} staff:{} different part-based staff indices",
+                    prevSlur,
+                    prevStaff.getId(),
+                    this,
+                    thisStaff.getId());
 
             return false;
         }
@@ -396,36 +398,14 @@ public class SlurInter
 
         HeadInter h1 = getHead(LEFT);
         HeadInter h2 = getHead(RIGHT);
-        boolean result = (h1 != null) && (h2 != null) && (h1.getStaff() == h2.getStaff())
-                                 && HeadInter.haveSameHeight(h1, h2) && isSpaceClear(h1, h2,
-                                                                                     systemHeadChords);
+        boolean result = (h1 != null) && (h2 != null)
+                                 && (h1.getStaff() == h2.getStaff())
+                                 && HeadInter.haveSameHeight(h1, h2)
+                                 && isSpaceClear(h1, h2, systemHeadChords);
         setTie(result);
 
         if (isVip()) {
             logger.info("VIP {} {}", result ? "Tie" : "Slur", this);
-        }
-    }
-
-    //----------------//
-    // discardOrphans //
-    //----------------//
-    /**
-     * Discard every orphan left over, unless it's a manual one.
-     *
-     * @param orphans the orphan slurs left over
-     * @param side    side of missing connection
-     */
-    public static void discardOrphans (List<SlurInter> orphans,
-                                       HorizontalSide side)
-    {
-        for (SlurInter slur : orphans) {
-            if (slur.isVip()) {
-                logger.info("VIP could not {}-connect {}", side, slur);
-            }
-
-            if (!slur.isManual()) {
-                slur.remove();
-            }
         }
     }
 
@@ -531,6 +511,11 @@ public class SlurInter
     //---------//
     // getInfo //
     //---------//
+    /**
+     * Report the related physical information.
+     *
+     * @return build info
+     */
     public SlurInfo getInfo ()
     {
         return info;
@@ -691,6 +676,25 @@ public class SlurInter
     }
 
     //--------//
+    // setTie //
+    //--------//
+    /**
+     * Set this slur as being a tie.
+     *
+     * @param tie new tie value
+     */
+    public void setTie (boolean tie)
+    {
+        if (this.tie != tie) {
+            this.tie = tie;
+
+            if (sig != null) {
+                sig.getSystem().getSheet().getStub().setModified(true);
+            }
+        }
+    }
+
+    //--------//
     // remove //
     //--------//
     /**
@@ -783,25 +787,6 @@ public class SlurInter
         }
     }
 
-    //--------//
-    // setTie //
-    //--------//
-    /**
-     * Set this slur as being a tie.
-     *
-     * @param tie new tie value
-     */
-    public void setTie (boolean tie)
-    {
-        if (this.tie != tie) {
-            this.tie = tie;
-
-            if (sig != null) {
-                sig.getSystem().getSheet().getStub().setModified(true);
-            }
-        }
-    }
-
     //-------------//
     // lookupLinks //
     //-------------//
@@ -830,8 +815,7 @@ public class SlurInter
         Map<HorizontalSide, Area> sideAreas = slurLinker.defineAreaPair(this);
 
         // Retrieve candidate chords
-        Map<HorizontalSide, List<Inter>> chords = new EnumMap<HorizontalSide, List<Inter>>(
-                HorizontalSide.class);
+        Map<HorizontalSide, List<Inter>> chords = new EnumMap<>(HorizontalSide.class);
         List<Inter> systemChords = system.getSig().inters(HeadChordInter.class);
 
         for (HorizontalSide side : HorizontalSide.values()) {
@@ -840,14 +824,17 @@ public class SlurInter
         }
 
         // Select the best link pair, if any
-        Map<HorizontalSide, SlurHeadLink> linkPair = slurLinker.lookupLinkPair(this, sideAreas,
-                                                                               system, chords);
+        Map<HorizontalSide, SlurHeadLink> linkPair = slurLinker.lookupLinkPair(
+                this,
+                sideAreas,
+                system,
+                chords);
 
         if (linkPair == null) {
             return Collections.emptySet();
         }
 
-        List<Link> links = new ArrayList<Link>();
+        List<Link> links = new ArrayList<>();
 
         for (Link link : linkPair.values()) {
             if (link != null) {
@@ -858,15 +845,42 @@ public class SlurInter
         return links;
     }
 
+    //----------------//
+    // discardOrphans //
+    //----------------//
+    /**
+     * Discard every orphan left over, unless it's a manual one.
+     *
+     * @param orphans the orphan slurs left over
+     * @param side    side of missing connection
+     */
+    public static void discardOrphans (List<SlurInter> orphans,
+                                       HorizontalSide side)
+    {
+        for (SlurInter slur : orphans) {
+            if (slur.isVip()) {
+                logger.info("VIP could not {}-connect {}", side, slur);
+            }
+
+            if (!slur.isManual()) {
+                slur.remove();
+            }
+        }
+    }
+
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
-            extends BasicImpacts
+            extends GradeImpacts
     {
 
-        private static final String[] NAMES = new String[]{"dist", "angle", "width", "height",
-                                                           "vert"};
+        private static final String[] NAMES = new String[]{
+            "dist",
+            "angle",
+            "width",
+            "height",
+            "vert"};
 
         private static final double[] WEIGHTS = new double[]{3, 1, 1, 1, 1};
 
@@ -888,14 +902,17 @@ public class SlurInter
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction maxDeltaY = new Scale.Fraction(4,
-                                                                    "Maximum vertical difference in interlines between connecting slurs");
+        private final Scale.Fraction maxDeltaY = new Scale.Fraction(
+                4,
+                "Maximum vertical difference in interlines between connecting slurs");
 
-        private final Constant.Integer maxTieDeltaMeasureID = new Constant.Integer("none", 1,
-                                                                                   "Maximum delta in measure ID when setting a tie");
+        private final Constant.Integer maxTieDeltaMeasureID = new Constant.Integer(
+                "none",
+                1,
+                "Maximum delta in measure ID when setting a tie");
     }
 }

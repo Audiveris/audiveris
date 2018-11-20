@@ -34,6 +34,8 @@ import java.awt.geom.Rectangle2D;
  * Class {@code SlantedSymbol} draws symbols made of several slanted parts.
  * (such as in DYNAMICS_FP, where both the F and the P are slanted and appear too far from each
  * other)
+ *
+ * @author Hervé Bitteur
  */
 public class SlantedSymbol
         extends ShapeSymbol
@@ -125,8 +127,11 @@ public class SlantedSymbol
             x += (r.getWidth() - dx);
         }
 
-        p.rect = new Rectangle((int) Math.floor(rect.getX()), (int) Math.floor(rect.getY()),
-                               (int) Math.ceil(rect.getWidth()), (int) Math.ceil(rect.getHeight()));
+        p.rect = new Rectangle(
+                (int) Math.floor(rect.getX()),
+                (int) Math.floor(rect.getY()),
+                (int) Math.ceil(rect.getWidth()),
+                (int) Math.ceil(rect.getHeight()));
 
         return p;
     }
@@ -178,6 +183,9 @@ public class SlantedSymbol
     //-------------//
     // SmartLayout //
     //-------------//
+    /**
+     * A trick to remove useless dx margin before and after the symbol is drawn.
+     */
     protected static class SmartLayout
     {
 
@@ -187,8 +195,8 @@ public class SlantedSymbol
         // Translation before and after
         final float dx;
 
-        public SmartLayout (TextLayout layout,
-                            float dx)
+        SmartLayout (TextLayout layout,
+                     float dx)
         {
             this.layout = layout;
             this.dx = dx;

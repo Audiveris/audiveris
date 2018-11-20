@@ -47,7 +47,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Interface {@code Inter} defines a possible interpretation.
  * <p>
  * Every Inter instance is assigned an <i>intrinsic</i> grade in range [0..1].
- * There usually exist two thresholds on grade value:<ol>
+ * There usually exist two thresholds on grade value:
+ * <ol>
  * <li><b>Minimum</b> grade: this is the minimum value required to actually create (or keep) any
  * interpretation instance.</li>
  * <li><b>Good</b> grade: this is the value which designates a really reliable interpretation, which

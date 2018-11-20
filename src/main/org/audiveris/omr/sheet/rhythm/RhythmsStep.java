@@ -81,8 +81,14 @@ public class RhythmsStep
     /** Classes that impact just a measure stack. */
     private static final Set<Class> forStack;
 
+    /** Classes that impact a whole page. */
+    private static final Set<Class> forPage;
+
+    /** All impacting classes. */
+    private static final Set<Class> impactingClasses;
+
     static {
-        forStack = new HashSet<Class>();
+        forStack = new HashSet<>();
         forStack.add(AugmentationDotInter.class);
         forStack.add(BarlineInter.class);
         forStack.add(BeamHookInter.class);
@@ -95,9 +101,7 @@ public class RhythmsStep
         forStack.add(StaffBarlineInter.class);
         forStack.add(StemInter.class);
         forStack.add(TupletInter.class);
-
         forStack.add(MeasureStack.class);
-
         // Relations
         forStack.add(AugmentationRelation.class);
         forStack.add(BeamStemRelation.class);
@@ -105,22 +109,16 @@ public class RhythmsStep
         forStack.add(HeadStemRelation.class);
     }
 
-    /** Classes that impact a whole page. */
-    private static final Set<Class> forPage;
-
     static {
-        forPage = new HashSet<Class>();
+        forPage = new HashSet<>();
         forPage.add(SlurInter.class); // Because of possibility of ties
         forPage.add(TimeNumberInter.class);
         forPage.add(TimePairInter.class);
         forPage.add(TimeWholeInter.class);
     }
 
-    /** All impacting classes. */
-    private static final Set<Class> impactingClasses;
-
     static {
-        impactingClasses = new HashSet<Class>();
+        impactingClasses = new HashSet<>();
         impactingClasses.addAll(forStack);
         impactingClasses.addAll(forPage);
     }
@@ -235,7 +233,7 @@ public class RhythmsStep
 
         boolean onPage = false;
 
-        Set<MeasureStack> onStacks = new LinkedHashSet<MeasureStack>();
+        Set<MeasureStack> onStacks = new LinkedHashSet<>();
 
         @Override
         public String toString ()

@@ -87,14 +87,22 @@ public class BeamHeadRelation
         return constants.headSupportCoeff.getValue();
     }
 
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio headSupportCoeff = new Constant.Ratio(0.75,
-                                                                           "Supporting coeff for (target) head");
+        private final Constant.Ratio headSupportCoeff = new Constant.Ratio(
+                0.75,
+                "Supporting coeff for (target) head");
     }
 }

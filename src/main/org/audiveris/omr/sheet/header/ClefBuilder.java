@@ -46,7 +46,6 @@ import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sig.GradeUtil;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.ClefInter;
@@ -100,9 +99,13 @@ public class ClefBuilder
      * Octave bass clefs are reported to be extremely
      * <a href="http://en.wikipedia.org/wiki/Clef#Octave_clefs">rare</a>.
      */
-    private static final EnumSet<Shape> HEADER_CLEF_SHAPES = EnumSet.of(F_CLEF, G_CLEF, G_CLEF_8VA,
-                                                                        G_CLEF_8VB, C_CLEF,
-                                                                        PERCUSSION_CLEF);
+    private static final EnumSet<Shape> HEADER_CLEF_SHAPES = EnumSet.of(
+            F_CLEF,
+            G_CLEF,
+            G_CLEF_8VA,
+            G_CLEF_8VB,
+            C_CLEF,
+            PERCUSSION_CLEF);
 
     /** Dedicated staff to analyze. */
     private final Staff staff;
@@ -137,7 +140,7 @@ public class ClefBuilder
     private final Classifier classifier = ShapeClassifier.getInstance();
 
     /** All glyphs submitted to classifier. */
-    private final Set<Glyph> glyphCandidates = new LinkedHashSet<Glyph>();
+    private final Set<Glyph> glyphCandidates = new LinkedHashSet<>();
 
     /**
      * Creates a new ClefBuilder object.
@@ -230,11 +233,11 @@ public class ClefBuilder
 
         // Formalize parts relationships in a global graph
         SimpleGraph<Glyph, GlyphLink> graph = Glyphs.buildLinks(parts, params.maxPartGap);
-        List<Set<Glyph>> sets = new ConnectivityInspector<Glyph, GlyphLink>(graph).connectedSets();
+        List<Set<Glyph>> sets = new ConnectivityInspector<>(graph).connectedSets();
         logger.debug("Staff#{} sets: {}", staff.getId(), sets.size());
 
         // Best inter per clef kind
-        Map<ClefKind, ClefInter> bestMap = new EnumMap<ClefKind, ClefInter>(ClefKind.class);
+        Map<ClefKind, ClefInter> bestMap = new EnumMap<>(ClefKind.class);
 
         for (Set<Glyph> set : sets) {
             // Use only the subgraph for this set
@@ -360,7 +363,7 @@ public class ClefBuilder
     private void purgeClefs (Map<ClefKind, ClefInter> bestMap)
     {
         final double maxContrib = ClefKeyRelation.maxContributionForClef();
-        final List<ClefInter> inters = new ArrayList<ClefInter>(bestMap.values());
+        final List<ClefInter> inters = new ArrayList<>(bestMap.values());
         Collections.sort(inters, Inters.byReverseGrade);
 
         interLoop:
@@ -397,7 +400,7 @@ public class ClefBuilder
     private void purgeParts (List<Glyph> parts,
                              boolean isFirstPass)
     {
-        List<Glyph> toRemove = new ArrayList<Glyph>();
+        List<Glyph> toRemove = new ArrayList<>();
 
         for (Glyph part : parts) {
             if (part.getWeight() < params.minPartWeight) {
@@ -428,7 +431,7 @@ public class ClefBuilder
     private void registerClefs (Collection<ClefInter> clefSet)
     {
         // Sort clefs by decreasing grade
-        final List<ClefInter> clefList = new ArrayList<ClefInter>(clefSet);
+        final List<ClefInter> clefList = new ArrayList<>(clefSet);
         Collections.sort(clefList, Inters.byReverseGrade);
 
         for (int idx = 0; idx < clefList.size(); idx++) {
@@ -493,6 +496,77 @@ public class ClefBuilder
         }
     }
 
+    //-------------//
+    // ClefAdapter //
+    //-------------//
+    /**
+     * Handles the integration between glyph clustering class and clef environment.
+     * <p>
+     * For each clef kind, we keep the best result found if any.
+     */
+    private class ClefAdapter
+            extends GlyphCluster.AbstractAdapter
+    {
+
+        /** Best inter per clef kind. */
+        private final Map<ClefKind, ClefInter> bestMap;
+
+        ClefAdapter (SimpleGraph<Glyph, GlyphLink> graph,
+                     Map<ClefKind, ClefInter> bestMap)
+        {
+            super(graph);
+            this.bestMap = bestMap;
+        }
+
+        @Override
+        public void evaluateGlyph (Glyph glyph,
+                                   Set<Glyph> parts)
+        {
+            trials++;
+
+            if (glyph.getId() == 0) {
+                glyph = system.registerGlyph(glyph, null);
+            }
+
+            glyphCandidates.add(glyph);
+
+            logger.debug("ClefAdapter evaluateGlyph on {}", glyph);
+
+            Evaluation[] evals = classifier.evaluate(
+                    glyph,
+                    staff.getSpecificInterline(),
+                    params.maxEvalRank,
+                    Grades.clefMinGrade / Grades.intrinsicRatio,
+                    null);
+
+            for (Evaluation eval : evals) {
+                final Shape shape = eval.shape;
+
+                if (HEADER_CLEF_SHAPES.contains(shape)) {
+                    final double grade = Grades.intrinsicRatio * eval.grade;
+                    ClefKind kind = ClefInter.kindOf(glyph.getCenter(), shape, staff);
+                    ClefInter bestInter = bestMap.get(kind);
+
+                    if ((bestInter == null) || (bestInter.getGrade() < grade)) {
+                        bestMap.put(kind, ClefInter.create(glyph, shape, grade, staff));
+                    }
+                }
+            }
+        }
+
+        @Override
+        public boolean isTooLarge (Rectangle bounds)
+        {
+            return bounds.height > params.maxGlyphHeight;
+        }
+
+        @Override
+        public boolean isTooLight (int weight)
+        {
+            return weight < params.minGlyphWeight;
+        }
+    }
+
     //--------//
     // Column //
     //--------//
@@ -505,8 +579,13 @@ public class ClefBuilder
         private final SystemInfo system;
 
         /** Map of clef builders. (one per staff) */
-        private final Map<Staff, ClefBuilder> builders = new TreeMap<Staff, ClefBuilder>(Staff.byId);
+        private final Map<Staff, ClefBuilder> builders = new TreeMap<>(Staff.byId);
 
+        /**
+         * Create a Column.
+         *
+         * @param system the containing system
+         */
         public Column (SystemInfo system)
         {
             this.system = system;
@@ -597,8 +676,8 @@ public class ClefBuilder
 
         final int minGlyphWeight;
 
-        public Parameters (Scale scale,
-                           int staffSpecific)
+        Parameters (Scale scale,
+                    int staffSpecific)
         {
             maxPartCount = constants.maxPartCount.getValue();
             maxEvalRank = constants.maxEvalRank.getValue();
@@ -625,116 +704,61 @@ public class ClefBuilder
         }
     }
 
-    //-------------//
-    // ClefAdapter //
-    //-------------//
-    /**
-     * Handles the integration between glyph clustering class and clef environment.
-     * <p>
-     * For each clef kind, we keep the best result found if any.
-     */
-    private class ClefAdapter
-            extends GlyphCluster.AbstractAdapter
-    {
-
-        /** Best inter per clef kind. */
-        private final Map<ClefKind, ClefInter> bestMap;
-
-        public ClefAdapter (SimpleGraph<Glyph, GlyphLink> graph,
-                            Map<ClefKind, ClefInter> bestMap)
-        {
-            super(graph);
-            this.bestMap = bestMap;
-        }
-
-        @Override
-        public void evaluateGlyph (Glyph glyph,
-                                   Set<Glyph> parts)
-        {
-            trials++;
-
-            if (glyph.getId() == 0) {
-                glyph = system.registerGlyph(glyph, null);
-            }
-
-            glyphCandidates.add(glyph);
-
-            logger.debug("ClefAdapter evaluateGlyph on {}", glyph);
-
-            Evaluation[] evals = classifier.evaluate(glyph, staff.getSpecificInterline(),
-                                                     params.maxEvalRank, Grades.clefMinGrade
-                                                                                 / Grades.intrinsicRatio,
-                                                     null);
-
-            for (Evaluation eval : evals) {
-                final Shape shape = eval.shape;
-
-                if (HEADER_CLEF_SHAPES.contains(shape)) {
-                    final double grade = Grades.intrinsicRatio * eval.grade;
-                    ClefKind kind = ClefInter.kindOf(glyph.getCenter(), shape, staff);
-                    ClefInter bestInter = bestMap.get(kind);
-
-                    if ((bestInter == null) || (bestInter.getGrade() < grade)) {
-                        bestMap.put(kind, ClefInter.create(glyph, shape, grade, staff));
-                    }
-                }
-            }
-        }
-
-        @Override
-        public boolean isTooLarge (Rectangle bounds)
-        {
-            return bounds.height > params.maxGlyphHeight;
-        }
-
-        @Override
-        public boolean isTooLight (int weight)
-        {
-            return weight < params.minGlyphWeight;
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction maxClefEnd = new Scale.Fraction(4.5,
-                                                                     "Maximum x distance from measure start to end of clef");
+        private final Scale.Fraction maxClefEnd = new Scale.Fraction(
+                4.5,
+                "Maximum x distance from measure start to end of clef");
 
-        private final Scale.Fraction aboveStaff = new Scale.Fraction(3.0,
-                                                                     "Top of lookup area above stave");
+        private final Scale.Fraction aboveStaff = new Scale.Fraction(
+                3.0,
+                "Top of lookup area above stave");
 
-        private final Scale.Fraction belowStaff = new Scale.Fraction(3.25,
-                                                                     "Bottom of lookup area below stave");
+        private final Scale.Fraction belowStaff = new Scale.Fraction(
+                3.25,
+                "Bottom of lookup area below stave");
 
-        private final Scale.Fraction beltMargin = new Scale.Fraction(0.15,
-                                                                     "White margin within raw rectangle");
+        private final Scale.Fraction beltMargin = new Scale.Fraction(
+                0.15,
+                "White margin within raw rectangle");
 
-        private final Scale.Fraction xCoreMargin = new Scale.Fraction(0.4,
-                                                                      "Horizontal margin around core rectangle");
+        private final Scale.Fraction xCoreMargin = new Scale.Fraction(
+                0.4,
+                "Horizontal margin around core rectangle");
 
-        private final Scale.Fraction yCoreMargin = new Scale.Fraction(0.5,
-                                                                      "Vertical margin around core rectangle");
+        private final Scale.Fraction yCoreMargin = new Scale.Fraction(
+                0.5,
+                "Vertical margin around core rectangle");
 
-        private final Constant.Integer maxPartCount = new Constant.Integer("Glyphs", 8,
-                                                                           "Maximum number of parts considered for a clef");
+        private final Constant.Integer maxPartCount = new Constant.Integer(
+                "Glyphs",
+                8,
+                "Maximum number of parts considered for a clef");
 
-        private final Scale.AreaFraction minPartWeight = new Scale.AreaFraction(0.01,
-                                                                                "Minimum weight for a glyph part");
+        private final Scale.AreaFraction minPartWeight = new Scale.AreaFraction(
+                0.01,
+                "Minimum weight for a glyph part");
 
-        private final Scale.Fraction maxPartGap = new Scale.Fraction(1.0,
-                                                                     "Maximum distance between two parts of a single clef symbol");
+        private final Scale.Fraction maxPartGap = new Scale.Fraction(
+                1.0,
+                "Maximum distance between two parts of a single clef symbol");
 
-        private final Scale.Fraction maxGlyphHeight = new Scale.Fraction(9.0,
-                                                                         "Maximum height for clef glyph");
+        private final Scale.Fraction maxGlyphHeight = new Scale.Fraction(
+                9.0,
+                "Maximum height for clef glyph");
 
-        private final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(1.0,
-                                                                                 "Minimum weight for clef glyph");
+        private final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
+                1.0,
+                "Minimum weight for clef glyph");
 
-        private final Constant.Integer maxEvalRank = new Constant.Integer("none", 3,
-                                                                          "Maximum acceptable rank in clef evaluation");
+        private final Constant.Integer maxEvalRank = new Constant.Integer(
+                "none",
+                3,
+                "Maximum acceptable rank in clef evaluation");
     }
 }

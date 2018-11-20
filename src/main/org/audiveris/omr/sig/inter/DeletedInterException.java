@@ -31,6 +31,7 @@ public class DeletedInterException
         extends Exception
 {
 
+    /** Inter involved in deletion. */
     public final Inter inter;
 
     /**

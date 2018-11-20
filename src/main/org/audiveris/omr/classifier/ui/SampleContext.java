@@ -69,9 +69,9 @@ public class SampleContext
 
     private final ContextView contextView;
 
-    private final SelectionService locationService = new SelectionService("sampleLocationService",
-                                                                          new Class<?>[]{
-                                                                              LocationEvent.class});
+    private final SelectionService locationService = new SelectionService(
+            "sampleLocationService",
+            new Class<?>[]{LocationEvent.class});
 
     private EntityService<Sample> sampleService;
 
@@ -92,6 +92,11 @@ public class SampleContext
     //---------//
     // connect //
     //---------//
+    /**
+     * Connect to the provided SampleService
+     *
+     * @param sampleService the SampleService to connect to
+     */
     public void connect (EntityService<Sample> sampleService)
     {
         this.sampleService = sampleService;
@@ -102,6 +107,9 @@ public class SampleContext
     //---------//
     // refresh //
     //---------//
+    /**
+     * Update the context view with the current sample.
+     */
     public void refresh ()
     {
         Sample sample = sampleService.getSelectedEntity();
@@ -132,15 +140,12 @@ public class SampleContext
         /** RunTable of sheet image, if any. */
         private RunTable sheetTable;
 
-        public ContextView (Zoom zoom,
-                            Rubber rubber)
+        ContextView (Zoom zoom,
+                     Rubber rubber)
         {
             super(zoom, rubber);
         }
 
-        //---------//
-        // onEvent //
-        //---------//
         @Override
         public void onEvent (UserEvent event)
         {
@@ -160,9 +165,6 @@ public class SampleContext
             }
         }
 
-        //-----------------------//
-        // handleEntityListEvent //
-        //-----------------------//
         /**
          * Interest in EntityList
          *
@@ -174,9 +176,6 @@ public class SampleContext
             display(listEvent.getEntity());
         }
 
-        //---------------------//
-        // handleLocationEvent //
-        //---------------------//
         @Override
         protected void handleLocationEvent (LocationEvent locationEvent)
         {
@@ -198,14 +197,12 @@ public class SampleContext
         {
             if (sample != null) {
                 g.setColor(Color.BLUE);
-                sample.getRunTable().render(g, (sheetTable != null) ? sample.getTopLeft()
-                                            : NO_OFFSET);
+                sample.getRunTable().render(
+                        g,
+                        (sheetTable != null) ? sample.getTopLeft() : NO_OFFSET);
             }
         }
 
-        //---------//
-        // display //
-        //---------//
         private void display (Sample newSample)
         {
             sample = newSample;

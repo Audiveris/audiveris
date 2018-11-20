@@ -53,7 +53,6 @@ public abstract class AbstractWeightedEntity
 
     private static final EnumSet<GlyphGroup> NO_GROUP = EnumSet.noneOf(GlyphGroup.class);
 
-    //
     // Persistent data
     //----------------
     //

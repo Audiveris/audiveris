@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * <li>Detect implicit measures (as pickup measures)</li>
  * <li>Detect first half repeat measures</li>
  * <li>Detect implicit measures (as second half repeats)</li>
- * <li>Detect inside barlines (empty measures) </li>
+ * <li>Detect inside barlines (empty measures)</li>
  * <li>Detect cautionary measures (CKT changes at end of staff)</li>
  * <li>Assign final page-based measure IDs</li>
  * </ul>
@@ -78,6 +78,11 @@ public class MeasureFixer
     //--------------//
     // process Page //
     //--------------//
+    /**
+     * Process the provided page.
+     *
+     * @param page the page to process
+     */
     public void process (Page page)
     {
         logger.debug("{} Visiting {}", getClass().getSimpleName(), page);
@@ -94,8 +99,15 @@ public class MeasureFixer
     }
 
     //---------------//
-    // process Score // Currently not used
+    // process Score //
     //---------------//
+    /**
+     * Process the provided score.
+     * <p>
+     * Currently not used.
+     *
+     * @param score the score to process
+     */
     public void process (Score score)
     {
         logger.debug("{} Visiting {}", getClass().getSimpleName(), score);
@@ -189,7 +201,8 @@ public class MeasureFixer
     private boolean isSecondRepeatHalf ()
     {
         // Check for partial first half
-        if ((prevStackTermination == null) || (prevStackTermination.compareTo(Rational.ZERO) >= 0)) {
+        if ((prevStackTermination == null) || (prevStackTermination.compareTo(
+                Rational.ZERO) >= 0)) {
             return false;
         }
 
@@ -207,8 +220,8 @@ public class MeasureFixer
         }
 
         // Check for an exact duration sum (TODO: is this too strict?)
-        return prevStackTermination.plus(stackTermination).abs().equals(prevStack
-                .getExpectedDuration());
+        return prevStackTermination.plus(stackTermination).abs().equals(
+                prevStack.getExpectedDuration());
     }
 
     //----------------//
@@ -231,9 +244,10 @@ public class MeasureFixer
             // Check if all voices in all parts exhibit the same termination
             stackTermination = getStackTermination();
 
-            logger.debug("stackFinal:{}{}", stackTermination, (stackTermination != null) ? ("="
-                                                                                                    + stackTermination)
-                         : "");
+            logger.debug(
+                    "stackFinal:{}{}",
+                    stackTermination,
+                    (stackTermination != null) ? ("=" + stackTermination) : "");
 
             if (isEmpty(stack)) {
                 logger.debug("empty");
@@ -241,8 +255,9 @@ public class MeasureFixer
                 // This whole stack is empty (no notes/rests, hence no voices)
                 // We will merge with the following stack, if any
                 if (stack != system.getLastStack()) {
-                    setId((lastId != null) ? (lastId + 1) : ((prevSystemLastId != null)
-                            ? (prevSystemLastId + 1) : 1));
+                    setId(
+                            (lastId != null) ? (lastId + 1)
+                                    : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
                 } else {
                     // This is just a cautionary stack at right end of system
                     logger.debug("cautionary");
@@ -256,8 +271,9 @@ public class MeasureFixer
             } else if (isPickup(stack)) {
                 logger.debug("pickup");
                 stack.setPickup();
-                setId((lastId != null) ? (-lastId) : ((prevSystemLastId != null)
-                        ? (-prevSystemLastId) : 0));
+                setId(
+                        (lastId != null) ? (-lastId)
+                                : ((prevSystemLastId != null) ? (-prevSystemLastId) : 0));
             } else if (isSecondRepeatHalf()) {
                 logger.debug("secondHalf");
 
@@ -282,8 +298,9 @@ public class MeasureFixer
                 logger.debug("normal");
 
                 // Normal measure
-                setId((lastId != null) ? (lastId + 1) : ((prevSystemLastId != null)
-                        ? (prevSystemLastId + 1) : 1));
+                setId(
+                        (lastId != null) ? (lastId + 1)
+                                : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
             }
 
             // Inspect stack for repeat signs

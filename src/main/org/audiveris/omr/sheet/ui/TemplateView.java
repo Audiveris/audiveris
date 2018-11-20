@@ -76,7 +76,8 @@ public class TemplateView
     private static final Logger logger = LoggerFactory.getLogger(TemplateView.class);
 
     private static final AlphaComposite templateComposite = AlphaComposite.getInstance(
-            AlphaComposite.SRC_OVER, 0.25f);
+            AlphaComposite.SRC_OVER,
+            0.25f);
 
     private final Sheet sheet;
 
@@ -235,11 +236,12 @@ public class TemplateView
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio minZoomRatio = new Constant.Ratio(4.0,
-                                                                       "Minimum zoom ratio to show template key points");
+        private final Constant.Ratio minZoomRatio = new Constant.Ratio(
+                4.0,
+                "Minimum zoom ratio to show template key points");
     }
 }

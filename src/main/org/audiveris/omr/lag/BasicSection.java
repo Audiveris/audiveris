@@ -84,7 +84,7 @@ public class BasicSection
 
     /** The collection of runs that make up the section */
     @XmlElement(name = "run")
-    protected final List<Run> runs = new ArrayList<Run>();
+    protected final List<Run> runs = new ArrayList<>();
 
     /** Containing lag, if any. */
     protected Lag lag;
@@ -134,27 +134,6 @@ public class BasicSection
         weight = ds.getWeight();
         polygon = ds.getPolygon();
         orientedLine = ds.getOrientedLine();
-    }
-
-    //---------------//
-    // allocateTable //
-    //---------------//
-    /**
-     * For basic print out, allocate a drawing table, to be later filled
-     * with section pixels
-     *
-     * @param box the limits of the drawing table
-     * @return the table ready to be filled
-     */
-    public static char[][] allocateTable (Rectangle box)
-    {
-        char[][] table = new char[box.height + 1][box.width + 1];
-
-        for (int i = 0; i < table.length; i++) {
-            Arrays.fill(table[i], ' ');
-        }
-
-        return table;
     }
 
     //----------//
@@ -311,40 +290,6 @@ public class BasicSection
         drawingOfTable(table, box);
     }
 
-    //----------------//
-    // drawingOfTable //
-    //----------------//
-    /**
-     * Printout the filled drawing table
-     *
-     * @param table the filled table
-     * @param box   the table limits in the image
-     * @return the drawing as a string
-     */
-    public static String drawingOfTable (char[][] table,
-                                         Rectangle box)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%n"));
-
-        sb.append(String.format("xMin=%d, xMax=%d%n", box.x, (box.x + box.width) - 1));
-        sb.append(String.format("yMin=%d, yMax=%d%n", box.y, (box.y + box.height) - 1));
-
-        for (int iy = 0; iy < table.length; iy++) {
-            sb.append(String.format("%d:", iy + box.y));
-
-            char[] line = table[iy];
-
-            for (int ix = 0; ix < line.length; ix++) {
-                sb.append(line[ix]);
-            }
-
-            sb.append(String.format("%n"));
-        }
-
-        return sb.toString();
-    }
-
     //--------//
     // equals //
     //--------//
@@ -466,7 +411,7 @@ public class BasicSection
     @Override
     public double getAspect (Orientation orientation)
     {
-        return (double) getLength(orientation) / (double) getThickness(orientation);
+        return getLength(orientation) / (double) getThickness(orientation);
     }
 
     //-----------//
@@ -537,6 +482,19 @@ public class BasicSection
     public Lag getLag ()
     {
         return lag;
+    }
+
+    //--------//
+    // setLag //
+    //--------//
+    @Override
+    public void setLag (Lag lag)
+    {
+        this.lag = lag;
+
+        if (lag != null) {
+            orientation = lag.getOrientation();
+        }
     }
 
     //------------//
@@ -869,24 +827,6 @@ public class BasicSection
         }
     }
 
-    //--------//
-    // setLag //
-    //--------//
-    /**
-     * (package access from lag?)
-     *
-     * @param lag the containing lag
-     */
-    @Override
-    public void setLag (Lag lag)
-    {
-        this.lag = lag;
-
-        if (lag != null) {
-            orientation = lag.getOrientation();
-        }
-    }
-
     //---------//
     // touches //
     //---------//
@@ -966,6 +906,11 @@ public class BasicSection
     //---------------------//
     // computeOrientedLine //
     //---------------------//
+    /**
+     * Compute the oriented approximating line.
+     *
+     * @return the oriented line
+     */
     protected Line computeOrientedLine ()
     {
         // Compute the section line
@@ -993,6 +938,59 @@ public class BasicSection
     protected String internals ()
     {
         return orientation.isVertical() ? "V" : "H";
+    }
+
+    //---------------//
+    // allocateTable //
+    //---------------//
+    /**
+     * For basic print out, allocate a drawing table, to be later filled
+     * with section pixels
+     *
+     * @param box the limits of the drawing table
+     * @return the table ready to be filled
+     */
+    public static char[][] allocateTable (Rectangle box)
+    {
+        char[][] table = new char[box.height + 1][box.width + 1];
+        for (char[] table1 : table) {
+            Arrays.fill(table1, ' ');
+        }
+        return table;
+    }
+
+    //----------------//
+    // drawingOfTable //
+    //----------------//
+    /**
+     * Printout the filled drawing table
+     *
+     * @param table the filled table
+     * @param box   the table limits in the image
+     * @return the drawing as a string
+     */
+    public static String drawingOfTable (char[][] table,
+                                         Rectangle box)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%n"));
+
+        sb.append(String.format("xMin=%d, xMax=%d%n", box.x, (box.x + box.width) - 1));
+        sb.append(String.format("yMin=%d, yMax=%d%n", box.y, (box.y + box.height) - 1));
+
+        for (int iy = 0; iy < table.length; iy++) {
+            sb.append(String.format("%d:", iy + box.y));
+
+            char[] line = table[iy];
+
+            for (int ix = 0; ix < line.length; ix++) {
+                sb.append(line[ix]);
+            }
+
+            sb.append(String.format("%n"));
+        }
+
+        return sb.toString();
     }
 
     //---------//

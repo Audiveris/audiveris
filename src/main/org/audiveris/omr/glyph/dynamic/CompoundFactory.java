@@ -88,7 +88,7 @@ public class CompoundFactory
             throw new IllegalArgumentException("Building a SectionCompound out of no parts");
         }
 
-        List<Section> sections = new ArrayList<Section>();
+        List<Section> sections = new ArrayList<>();
 
         for (SectionCompound part : parts) {
             sections.addAll(part.getMembers());
@@ -115,10 +115,10 @@ public class CompoundFactory
                                                         CompoundConstructor constructor)
     {
         // Build a temporary graph of all sections with "touching" relations
-        List<Section> list = new ArrayList<Section>(sections);
+        List<Section> list = new ArrayList<>(sections);
 
         ///Collections.sort(list, Section.byAbscissa);
-        SimpleGraph<Section, Touching> graph = new SimpleGraph<Section, Touching>(Touching.class);
+        SimpleGraph<Section, Touching> graph = new SimpleGraph<>(Touching.class);
 
         // Populate graph with all sections as vertices
         for (Section section : list) {
@@ -137,12 +137,11 @@ public class CompoundFactory
         }
 
         // Retrieve all the clusters of sections (sets of touching sections)
-        ConnectivityInspector<Section, Touching> inspector
-                = new ConnectivityInspector<Section, Touching>(graph);
+        ConnectivityInspector<Section, Touching> inspector = new ConnectivityInspector<>(graph);
         List<Set<Section>> sets = inspector.connectedSets();
         logger.debug("sets: {}", sets.size());
 
-        List<SectionCompound> compounds = new ArrayList<SectionCompound>();
+        List<SectionCompound> compounds = new ArrayList<>();
 
         for (Set<Section> set : sets) {
             compounds.add(buildCompound(set, constructor));
@@ -160,6 +159,11 @@ public class CompoundFactory
     public interface CompoundConstructor
     {
 
+        /**
+         * Actual creation of compound instance.
+         *
+         * @return the created compound
+         */
         SectionCompound newInstance ();
     }
 
@@ -170,6 +174,10 @@ public class CompoundFactory
      * Represents a "touching" relationship between two sections.
      */
     private static class Touching
+    {
+    }
+
+    private CompoundFactory ()
     {
     }
 }

@@ -41,7 +41,7 @@ public class InstancesWatcher<E>
     private static final Logger logger = LoggerFactory.getLogger(InstancesWatcher.class);
 
     /** Weak references to instances. */
-    private final Set<WeakReference<E>> actives = new LinkedHashSet<WeakReference<E>>();
+    private final Set<WeakReference<E>> actives = new LinkedHashSet<>();
 
     /**
      * Register an instance.
@@ -51,7 +51,7 @@ public class InstancesWatcher<E>
      */
     public synchronized void addRef (E ref)
     {
-        actives.add(new WeakReference<E>(ref));
+        actives.add(new WeakReference<>(ref));
     }
 
     /**

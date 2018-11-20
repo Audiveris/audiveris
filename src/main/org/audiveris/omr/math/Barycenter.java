@@ -25,6 +25,8 @@ import java.awt.geom.Point2D;
 
 /**
  * Class {@code Barycenter} is meant to cumulate data when computing barycenter.
+ *
+ * @author Hervé Bitteur
  */
 public class Barycenter
 {
@@ -52,6 +54,11 @@ public class Barycenter
     //-----------//
     // getWeight //
     //-----------//
+    /**
+     * Report the total weight.
+     *
+     * @return total weight
+     */
     public final double getWeight ()
     {
         return weight;

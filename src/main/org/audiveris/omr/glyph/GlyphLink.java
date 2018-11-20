@@ -50,6 +50,11 @@ public interface GlyphLink
             this.distance = distance;
         }
 
+        /**
+         * Report the link distance
+         *
+         * @return distance
+         */
         public double getDistance ()
         {
             return distance;

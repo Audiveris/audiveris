@@ -24,7 +24,7 @@ package org.audiveris.omr.ui.view;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 
-import java.util.Hashtable;
+import java.util.Hashtable; // Obsolete but mandatory
 
 import javax.swing.JLabel;
 import javax.swing.JSlider;
@@ -32,7 +32,6 @@ import javax.swing.JSlider;
 /**
  * Class {@code LogSlider} is a specific {@link JSlider} which handles double values
  * with a logarithmic scale (while normal JSlider handles only integer values).
- * <p>
  * <p>
  * As with a basic JSlider, any external entity can be notified of new slider value, by first
  * registering to this LogSlider via the {@link #addChangeListener} method.
@@ -77,7 +76,7 @@ public class LogSlider
         super(orientation, min * unit, max * unit, initial * unit);
 
         // Cache data
-        this.base = (double) base;
+        this.base = base;
 
         // Ticks
         super.setMajorTickSpacing(unit);
@@ -94,13 +93,19 @@ public class LogSlider
         //             break;
         //         case VERTICAL   : setBorder (BorderFactory.createEmptyBorder(0,0,0,5));
         //         }
-        // Create and populate the label table
-        Hashtable<Integer, JLabel> labelTable = new Hashtable<Integer, JLabel>();
+        //
+        /**
+         * Create and populate the label table.
+         * NOTA: Obsolete class Hashtable is imposed by {@link JSlider#setLabelTable(Dictionary)}
+         */
+        Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
 
         for (int i = min; i <= max; i++) {
-            labelTable.put(Integer.valueOf(i * unit), new JLabel((i < 0) ? ("1/" + (int) expOf(-i
-                                                                                                       * unit))
-                           : ("" + (int) expOf(i * unit))));
+            labelTable.put(
+                    i * unit,
+                    new JLabel(
+                            (i < 0) ? ("1/" + (int) expOf(-i * unit))
+                                    : ("" + (int) expOf(i * unit))));
         }
 
         setLabelTable(labelTable);
@@ -177,7 +182,7 @@ public class LogSlider
     //-------//
     private double expOf (int i)
     {
-        return Math.pow(base, (double) i / doubleUnit);
+        return Math.pow(base, i / doubleUnit);
     }
 
     //-------//
@@ -191,11 +196,13 @@ public class LogSlider
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Integer resolution = new Constant.Integer("Values", 480,
-                                                                         "Number of values between two major ticks");
+        private final Constant.Integer resolution = new Constant.Integer(
+                "Values",
+                480,
+                "Number of values between two major ticks");
     }
 }

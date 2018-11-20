@@ -79,7 +79,7 @@ public class BarFilamentBuilder
         peakBox.grow(0, verticalExtension);
 
         final int xBreak = peakBox.x + peakBox.width;
-        final List<Section> sections = new ArrayList<Section>();
+        final List<Section> sections = new ArrayList<>();
         final int maxSectionWidth = peak.getWidth(); // Width of this particular peak
 
         for (Section section : allSections) {

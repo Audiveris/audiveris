@@ -217,7 +217,7 @@ public class UnitTreeTable
      */
     public List<Integer> setNodesSelection (Collection<Object> matches)
     {
-        List<TreePath> paths = new ArrayList<TreePath>();
+        List<TreePath> paths = new ArrayList<>();
 
         for (Object object : matches) {
             if (object instanceof Constant) {
@@ -237,7 +237,7 @@ public class UnitTreeTable
         // Selection on table side
         clearSelection();
 
-        List<Integer> rows = new ArrayList<Integer>();
+        List<Integer> rows = new ArrayList<>();
 
         for (TreePath path : paths) {
             int row = tree.getRowForPath(path);
@@ -279,7 +279,7 @@ public class UnitTreeTable
                               String fullName)
     {
         UnitManager unitManager = UnitManager.getInstance();
-        List<Object> objects = new ArrayList<Object>();
+        List<Object> objects = new ArrayList<>();
         objects.add(unitManager.getRoot());
 
         int dotPos = -1;

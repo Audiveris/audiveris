@@ -101,12 +101,11 @@ public class MainGui
 
     private static final Logger logger = LoggerFactory.getLogger(MainGui.class);
 
-    //
-    /** Official name of the application. */
-    private String appName;
-
     /** Sheet tabbed pane, which may contain several views. */
     public StubsController stubsController;
+
+    /** Official name of the application. */
+    private String appName;
 
     /** The related concrete frame. */
     private JFrame frame;
@@ -142,7 +141,6 @@ public class MainGui
     {
     }
 
-    //
     //----------//
     // clearLog //
     //----------//
@@ -168,8 +166,11 @@ public class MainGui
     public boolean displayConfirmation (String message,
                                         String title)
     {
-        int answer = JOptionPane.showConfirmDialog(frame, message, title + " - " + appName,
-                                                   JOptionPane.YES_NO_OPTION);
+        int answer = JOptionPane.showConfirmDialog(
+                frame,
+                message,
+                title + " - " + appName,
+                JOptionPane.YES_NO_OPTION);
 
         return answer == JOptionPane.YES_OPTION;
     }
@@ -191,8 +192,11 @@ public class MainGui
     @Override
     public void displayError (String message)
     {
-        JOptionPane.showMessageDialog(frame, message, "Error - " + appName,
-                                      JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(
+                frame,
+                message,
+                "Error - " + appName,
+                JOptionPane.ERROR_MESSAGE);
     }
 
     //----------------//
@@ -212,8 +216,11 @@ public class MainGui
     @Override
     public int displayModelessConfirm (String message)
     {
-        return ModelessOptionPane.showModelessConfirmDialog(frame, message, "Confirm - " + appName,
-                                                            JOptionPane.YES_NO_OPTION);
+        return ModelessOptionPane.showModelessConfirmDialog(
+                frame,
+                message,
+                "Confirm - " + appName,
+                JOptionPane.YES_NO_OPTION);
     }
 
     //----------------//
@@ -232,8 +239,11 @@ public class MainGui
     public void displayWarning (String message,
                                 String title)
     {
-        JOptionPane.showMessageDialog(frame, message, title + " - " + appName,
-                                      JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(
+                frame,
+                message,
+                title + " - " + appName,
+                JOptionPane.WARNING_MESSAGE);
     }
 
     //----------//
@@ -294,8 +304,7 @@ public class MainGui
             }
 
             final SheetStub stub = stubEvent.getData();
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
@@ -710,7 +719,6 @@ public class MainGui
                 .isErrorsWindowDisplayed();
     }
 
-    //
     //------------------//
     // BoardsScrollPane //
     //------------------//
@@ -732,12 +740,13 @@ public class MainGui
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(true,
-                                                                                    "Should we preload costly packages in the background?");
+        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
+                true,
+                "Should we preload costly packages in the background?");
     }
 
     //-----------------//
@@ -750,7 +759,7 @@ public class MainGui
             implements ExitListener
     {
 
-        public GuiExitListener ()
+        GuiExitListener ()
         {
         }
 
@@ -782,7 +791,7 @@ public class MainGui
             int count = 0;
 
             // NB: Use a COPY of instances, to avoid concurrent modification
-            for (Book book : new ArrayList<Book>(OMR.engine.getAllBooks())) {
+            for (Book book : new ArrayList<>(OMR.engine.getAllBooks())) {
                 book.close();
                 count++;
             }

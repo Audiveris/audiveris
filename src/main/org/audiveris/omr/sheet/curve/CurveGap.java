@@ -72,28 +72,6 @@ public abstract class CurveGap
     }
 
     /**
-     * Factory method to create the CurveGap instance with proper orientation.
-     *
-     * @param p1 curve end point
-     * @param p2 arc end point
-     * @return either a Horizontal or a Vertical gap instance according to relative position of
-     *         p1 and p2.
-     */
-    public static CurveGap create (Point p1,
-                                   Point p2)
-    {
-        // Determine if line is rather horizontal or vertical
-        final int dx = Math.abs(p2.x - p1.x);
-        final int dy = Math.abs(p2.y - p1.y);
-
-        if (dx >= dy) {
-            return new Horizontal(p1, p2);
-        } else {
-            return new Vertical(p1, p2);
-        }
-    }
-
-    /**
      * Compute the gap vector based on foreground pixels found in gap area.
      *
      * @param buf the binary buffer
@@ -116,6 +94,11 @@ public abstract class CurveGap
         return vector;
     }
 
+    /**
+     * Report the lookup area.
+     *
+     * @return lookup area
+     */
     public Area getArea ()
     {
         return area;
@@ -166,6 +149,28 @@ public abstract class CurveGap
      */
     protected abstract void populateVector (int x,
                                             int y);
+
+    /**
+     * Factory method to create the CurveGap instance with proper orientation.
+     *
+     * @param p1 curve end point
+     * @param p2 arc end point
+     * @return either a Horizontal or a Vertical gap instance according to relative position of
+     *         p1 and p2.
+     */
+    public static CurveGap create (Point p1,
+                                   Point p2)
+    {
+        // Determine if line is rather horizontal or vertical
+        final int dx = Math.abs(p2.x - p1.x);
+        final int dy = Math.abs(p2.y - p1.y);
+
+        if (dx >= dy) {
+            return new Horizontal(p1, p2);
+        } else {
+            return new Vertical(p1, p2);
+        }
+    }
 
     /**
      * For rather horizontal gaps.

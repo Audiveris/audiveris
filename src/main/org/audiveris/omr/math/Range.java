@@ -86,6 +86,11 @@ public class Range
     //----------//
     // getWidth //
     //----------//
+    /**
+     * Report the range width, (max - min + 1).
+     *
+     * @return range width
+     */
     public int getWidth ()
     {
         return max - min + 1;

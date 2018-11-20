@@ -181,6 +181,8 @@ task "git_build"(type:Exec) {
 }
 
 task generateProgramId(dependsOn: git_build) {
+    group "build"
+    description "Generates ProgramId source"
     doLast{
         project.ext.outputDir = file("$buildDir/generated-src/org/audiveris/omr")
 

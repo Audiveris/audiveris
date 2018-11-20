@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.file.Path;
@@ -68,12 +69,12 @@ public abstract class GlyphDescriptor
                         Collection<Sample> samples,
                         boolean withNorms)
     {
-        try {
-            final String ext = "." + name + ".csv";
-            final Path path = WellKnowns.TRAIN_FOLDER.resolve(radix + ext);
-            final PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
-                    new FileOutputStream(path.toFile()), WellKnowns.FILE_ENCODING)));
+        final String ext = "." + name + ".csv";
+        final Path path = WellKnowns.TRAIN_FOLDER.resolve(radix + ext);
 
+        try (FileOutputStream fos = new FileOutputStream(path.toFile());
+             OutputStreamWriter osw = new OutputStreamWriter(fos, WellKnowns.FILE_ENCODING);
+             PrintWriter out = new PrintWriter(new BufferedWriter(osw))) {
             for (Sample sample : samples) {
                 for (double in : getFeatures(sample, sample.getInterline())) {
                     out.print(in);
@@ -95,9 +96,9 @@ public abstract class GlyphDescriptor
             //        }
             //
             out.flush();
-            out.close();
+
             logger.info("{} {} samples saved in {}", samples.size(), radix, path.toAbsolutePath());
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             logger.warn("Could not save {} samples " + ex, radix, ex);
         }
     }

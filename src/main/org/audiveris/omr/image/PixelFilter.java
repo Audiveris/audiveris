@@ -74,6 +74,11 @@ public interface PixelFilter
         /** Threshold used on pixel value. */
         public final double threshold;
 
+        /**
+         * Create Context object.
+         *
+         * @param threshold value
+         */
         public Context (double threshold)
         {
             this.threshold = threshold;

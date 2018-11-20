@@ -45,6 +45,11 @@ public class WindowsRegistry
 
     private static final Logger logger = LoggerFactory.getLogger(WindowsRegistry.class);
 
+    /** Not meant to be instantiated. */
+    private WindowsRegistry ()
+    {
+    }
+
     //-------//
     // query //
     //-------//
@@ -57,10 +62,10 @@ public class WindowsRegistry
     public static List<String> query (String... args)
     {
         // Output lines
-        List<String> output = new ArrayList<String>();
+        List<String> output = new ArrayList<>();
 
         // Command arguments
-        List<String> cmdArgs = new ArrayList<String>();
+        List<String> cmdArgs = new ArrayList<>();
         cmdArgs.addAll(Arrays.asList("cmd.exe", "/c", "reg", "query"));
         cmdArgs.addAll(Arrays.asList(args));
         logger.debug("cmdArgs: {}", cmdArgs);
@@ -90,7 +95,8 @@ public class WindowsRegistry
             logger.debug("Exit value is: {}", exitValue);
         } catch (RuntimeException rex) {
             throw rex;
-        } catch (Exception ex) {
+        } catch (IOException |
+                 InterruptedException ex) {
             logger.warn("Error running " + cmdArgs, ex);
         } finally {
             if (br != null) {

@@ -21,7 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.check;
 
-import org.audiveris.omr.sig.BasicImpacts;
+import org.audiveris.omr.sig.GradeImpacts;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,7 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class SuiteImpacts
-        extends BasicImpacts
+        extends GradeImpacts
 {
 
     private static final Logger logger = LoggerFactory.getLogger(SuiteImpacts.class);
@@ -55,6 +55,46 @@ public class SuiteImpacts
     {
         super(names, weights);
         this.suiteName = suiteName;
+    }
+
+    //---------//
+    // getDump //
+    //---------//
+    @Override
+    public String getDump ()
+    {
+        //        final List<Check<C>> checks = suite.getChecks();
+        //        final StringBuilder sb = new StringBuilder();
+        //        sb.append(suite.getName()).append(" ").append(checkable);
+        //
+        //        for (int i = 0; i < checks.size(); i++) {
+        //            Check<C> check = checks.get(i);
+        //            sb.append(" ").append(check.getName()).append(":").append(
+        //                    String.format("%.2f", values[i]));
+        //        }
+        //
+        //        sb.append(
+        //                String.format(
+        //                        " => %.2f (min %.2f, good %.2f)",
+        //                        grade,
+        //                        suite.getMinThreshold(),
+        //                        suite.getGoodThreshold()));
+        //
+        //        return sb.toString();
+        return suiteName;
+    }
+
+    //----------//
+    // setGrade //
+    //----------//
+    /**
+     * Set the suite grade value
+     *
+     * @param grade suite grade value
+     */
+    public void setGrade (double grade)
+    {
+        this.grade = grade;
     }
 
     //-------------//
@@ -96,40 +136,5 @@ public class SuiteImpacts
 
             return null;
         }
-    }
-
-    //---------//
-    // getDump //
-    //---------//
-    @Override
-    public String getDump ()
-    {
-        //        final List<Check<C>> checks = suite.getChecks();
-        //        final StringBuilder sb = new StringBuilder();
-        //        sb.append(suite.getName()).append(" ").append(checkable);
-        //
-        //        for (int i = 0; i < checks.size(); i++) {
-        //            Check<C> check = checks.get(i);
-        //            sb.append(" ").append(check.getName()).append(":").append(
-        //                    String.format("%.2f", values[i]));
-        //        }
-        //
-        //        sb.append(
-        //                String.format(
-        //                        " => %.2f (min %.2f, good %.2f)",
-        //                        grade,
-        //                        suite.getMinThreshold(),
-        //                        suite.getGoodThreshold()));
-        //
-        //        return sb.toString();
-        return suiteName;
-    }
-
-    //----------//
-    // setGrade //
-    //----------//
-    public void setGrade (double grade)
-    {
-        this.grade = grade;
     }
 }

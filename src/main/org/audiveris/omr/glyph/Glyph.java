@@ -84,7 +84,6 @@ public class Glyph
 
     private static final Logger logger = LoggerFactory.getLogger(Glyph.class);
 
-    //
     // Persistent data
     //----------------
     //
@@ -178,8 +177,12 @@ public class Glyph
         StringBuilder sb = new StringBuilder();
 
         // Admin
-        sb.append(String.format("%s#%s @%s%n", getClass().getSimpleName(), id, Integer.toHexString(
-                                hashCode())));
+        sb.append(
+                String.format(
+                        "%s#%s @%s%n",
+                        getClass().getSimpleName(),
+                        id,
+                        Integer.toHexString(hashCode())));
 
         if (isVip()) {
             sb.append(String.format("   vip%n"));
@@ -222,11 +225,7 @@ public class Glyph
             return false;
         }
 
-        if (!Objects.equals(this.runTable, other.runTable)) {
-            return false;
-        }
-
-        return true;
+        return Objects.equals(this.runTable, other.runTable);
     }
 
     /**
@@ -322,6 +321,16 @@ public class Glyph
     public GlyphIndex getIndex ()
     {
         return index;
+    }
+
+    /**
+     * The setter for glyph index.
+     *
+     * @param index the containing glyph index
+     */
+    public void setIndex (GlyphIndex index)
+    {
+        this.index = index;
     }
 
     @Override
@@ -504,7 +513,11 @@ public class Glyph
                     for (Iterator<Run> it = runTable.iterator(iSeq); it.hasNext();) {
                         final Run run = it.next();
 
-                        if (shape.intersects(left + run.getStart(), top + iSeq, run.getLength(), 1)) {
+                        if (shape.intersects(
+                                left + run.getStart(),
+                                top + iSeq,
+                                run.getLength(),
+                                1)) {
                             return true;
                         }
                     }
@@ -517,7 +530,11 @@ public class Glyph
                     for (Iterator<Run> it = runTable.iterator(iSeq); it.hasNext();) {
                         Run run = it.next();
 
-                        if (shape.intersects(left + iSeq, top + run.getStart(), 1, run.getLength())) {
+                        if (shape.intersects(
+                                left + iSeq,
+                                top + run.getStart(),
+                                1,
+                                run.getLength())) {
                             return true;
                         }
                     }
@@ -552,26 +569,6 @@ public class Glyph
         return this.runTable.equals(that.runTable);
     }
 
-    /**
-     * Test whether the glyph is transient (not yet inserted into the index)
-     *
-     * @return true if transient
-     */
-    public boolean isTransient ()
-    {
-        return index == null;
-    }
-
-    /**
-     * Report whether this glyph is virtual (rather than real)
-     *
-     * @return true if virtual
-     */
-    public boolean isVirtual ()
-    {
-        return false;
-    }
-
     @Override
     public void renderLine (Graphics2D g)
     {
@@ -582,20 +579,14 @@ public class Glyph
 
             if (line != null) {
                 ///g.draw(line);
-                g.draw(new Line2D.Double(line.getX1(), line.getY1() + 0.5, line.getX2() + 1, line
-                                         .getY2() + 0.5));
+                g.draw(
+                        new Line2D.Double(
+                                line.getX1(),
+                                line.getY1() + 0.5,
+                                line.getX2() + 1,
+                                line.getY2() + 0.5));
             }
         }
-    }
-
-    /**
-     * The setter for glyph index.
-     *
-     * @param index the containing glyph index
-     */
-    public void setIndex (GlyphIndex index)
-    {
-        this.index = index;
     }
 
     @Override

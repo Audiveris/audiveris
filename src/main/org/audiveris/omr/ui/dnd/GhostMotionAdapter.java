@@ -40,7 +40,7 @@ public class GhostMotionAdapter
 
     private static final Logger logger = LoggerFactory.getLogger(GhostMotionAdapter.class);
 
-    /** The related glasspane */
+    /** The related glasspane. */
     protected GhostGlassPane glassPane;
 
     /**

@@ -32,6 +32,8 @@ import java.awt.Stroke;
 
 /**
  * Class {@code CrescendoSymbol} displays a crescendo symbol: {@literal "<"}.
+ *
+ * @author Hervé Bitteur
  */
 public class CrescendoSymbol
         extends ShapeSymbol
@@ -68,8 +70,10 @@ public class CrescendoSymbol
 
         double interline = font.getStaffInterline();
         p.rect = new Rectangle((int) Math.ceil(5 * interline), (int) Math.ceil(1.5 * interline));
-        p.stroke = new BasicStroke(Math.max(1f, (float) interline / 7f), BasicStroke.CAP_ROUND,
-                                   BasicStroke.JOIN_ROUND);
+        p.stroke = new BasicStroke(
+                Math.max(1f, (float) interline / 7f),
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND);
 
         return p;
     }

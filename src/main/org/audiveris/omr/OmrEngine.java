@@ -31,7 +31,8 @@ import java.util.List;
  * <p>
  * OMR deals with instances of {@link Book} class.
  * <p>
- * A Book instance can be obtained from:<ul>
+ * A Book instance can be obtained from:
+ * <ul>
  * <li>An input image file, via {@link #loadInput(java.nio.file.Path)},</li>
  * <li>A book file, via {@link #loadBook(java.nio.file.Path)}.</li>
  * </ul>

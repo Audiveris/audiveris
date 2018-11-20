@@ -28,7 +28,7 @@ public class WatershedGrayLevel
     private static final int[] dy8 = new int[]{-1, -1, -1, 0, 1, 1, 1, 0};
 
     /** Original gray-level image, organized row per row. */
-    private Table image;
+    private final Table image;
 
     /** Image width. */
     private final int width;
@@ -166,7 +166,6 @@ public class WatershedGrayLevel
         exploreList = null;
     }
 
-    //
     //    private void dumpRmap ()
     //    {
     //        System.out.println("rmap:");
@@ -311,6 +310,12 @@ public class WatershedGrayLevel
     private static class ListOfPixels
             extends LinkedList<Pixel>
     {
+
+        @Override
+        public Object clone ()
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     //-------//
@@ -328,9 +333,9 @@ public class WatershedGrayLevel
 
         int level;
 
-        public Pixel (int x,
-                      int y,
-                      int level)
+        Pixel (int x,
+               int y,
+               int level)
         {
             this.x = x;
             this.y = y;

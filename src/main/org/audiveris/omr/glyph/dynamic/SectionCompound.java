@@ -55,21 +55,21 @@ public class SectionCompound
         extends AbstractWeightedEntity
 {
 
+    /** Cached bounds. */
+    protected Rectangle bounds;
+
     /**
      * Sections that compose this compound.
      * The collection is kept sorted on natural Section order (abscissa then ordinate then id, even
      * with mixed section orientations).
      */
-    private final SortedSet<Section> members = new TreeSet<Section>(Section.byFullAbscissa);
+    private final SortedSet<Section> members = new TreeSet<>(Section.byFullAbscissa);
 
     /** Link to the compound, if any, this one is a part of. */
     private SectionCompound partOf;
 
     /** Cached weight. */
     private Integer weight;
-
-    /** Cached bounds. */
-    protected Rectangle bounds;
 
     /**
      * Create a new {@code SectionCompound} object.
@@ -170,6 +170,19 @@ public class SectionCompound
         checkBounds();
 
         return new Rectangle(bounds);
+    }
+
+    //-----------//
+    // setBounds //
+    //-----------//
+    /**
+     * Force the compound contour bounds (when start and stop points are forced).
+     *
+     * @param bounds the forced contour box
+     */
+    public void setBounds (Rectangle bounds)
+    {
+        this.bounds = bounds;
     }
 
     //-----------//
@@ -300,6 +313,19 @@ public class SectionCompound
         return partOf;
     }
 
+    //-----------//
+    // setPartOf //
+    //-----------//
+    /**
+     * Record the link to the compound which has "stolen" the sections of this compound.
+     *
+     * @param compound the containing compound, if any
+     */
+    public void setPartOf (SectionCompound compound)
+    {
+        partOf = compound;
+    }
+
     //--------//
     // getTop //
     //--------//
@@ -369,32 +395,6 @@ public class SectionCompound
         return bool;
     }
 
-    //-----------//
-    // setBounds //
-    //-----------//
-    /**
-     * Force the compound contour bounds (when start and stop points are forced).
-     *
-     * @param bounds the forced contour box
-     */
-    public void setBounds (Rectangle bounds)
-    {
-        this.bounds = bounds;
-    }
-
-    //-----------//
-    // setPartOf //
-    //-----------//
-    /**
-     * Record the link to the compound which has "stolen" the sections of this compound.
-     *
-     * @param compound the containing compound, if any
-     */
-    public void setPartOf (SectionCompound compound)
-    {
-        partOf = compound;
-    }
-
     //---------------//
     // stealSections //
     //---------------//
@@ -417,6 +417,11 @@ public class SectionCompound
     //----------//
     // toBuffer //
     //----------//
+    /**
+     * Build a buffer with compounds pixels.
+     *
+     * @return the populated buffer
+     */
     public ByteProcessor toBuffer ()
     {
         checkBounds();
@@ -481,6 +486,9 @@ public class SectionCompound
     //-------------//
     // checkBounds //
     //-------------//
+    /**
+     *
+     */
     protected void checkBounds ()
     {
         if (bounds == null) {
@@ -516,6 +524,9 @@ public class SectionCompound
     //-----------------//
     // invalidateCache //
     //-----------------//
+    /**
+     * Invalidate cached data.
+     */
     protected void invalidateCache ()
     {
         weight = null;
@@ -525,17 +536,30 @@ public class SectionCompound
     //-------------//
     // Constructor //
     //-------------//
-    public static final class Constructor
+    /**
+     * A constructor for a SectionCompound.
+     */
+    public static class Constructor
             implements CompoundFactory.CompoundConstructor
     {
 
         private final int interline;
 
+        /**
+         * Create the constructor.
+         *
+         * @param interline related interline
+         */
         public Constructor (int interline)
         {
             this.interline = interline;
         }
 
+        /**
+         * Create the SectionCompound instance
+         *
+         * @return SectionCompound instance
+         */
         @Override
         public SectionCompound newInstance ()
         {

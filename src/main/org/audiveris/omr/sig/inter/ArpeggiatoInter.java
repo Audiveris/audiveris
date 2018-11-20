@@ -106,37 +106,6 @@ public class ArpeggiatoInter
         return isAbnormal();
     }
 
-    //------------------//
-    // createValidAdded //
-    //------------------//
-    /**
-     * (Try to) create and add an arpeggiato inter.
-     *
-     * @param glyph            the arpeggiato glyph
-     * @param grade            the interpretation quality
-     * @param system           the related system
-     * @param systemHeadChords abscissa-ordered list of head-chords in this system
-     * @return the created arpeggiato or null
-     */
-    public static ArpeggiatoInter createValidAdded (Glyph glyph,
-                                                    double grade,
-                                                    SystemInfo system,
-                                                    List<Inter> systemHeadChords)
-    {
-        ArpeggiatoInter arpeggiato = new ArpeggiatoInter(glyph, grade);
-
-        Link link = arpeggiato.lookupLink(systemHeadChords, system);
-
-        if (link != null) {
-            system.getSig().addVertex(arpeggiato);
-            link.applyTo(arpeggiato);
-
-            return arpeggiato;
-        }
-
-        return null;
-    }
-
     //----------//
     // getVoice //
     //----------//
@@ -194,8 +163,10 @@ public class ArpeggiatoInter
         luBox.x += luBox.width;
         luBox.width = scale.toPixels(ChordArpeggiatoRelation.getXGapMaximum(manual));
 
-        final List<Inter> chords = Inters.intersectedInters(systemHeadChords, GeoOrder.BY_ABSCISSA,
-                                                            luBox);
+        final List<Inter> chords = Inters.intersectedInters(
+                systemHeadChords,
+                GeoOrder.BY_ABSCISSA,
+                luBox);
 
         int bestOverlap = 0;
         HeadChordInter bestChord = null;
@@ -226,5 +197,36 @@ public class ArpeggiatoInter
         }
 
         return new Link(bestChord, rel, false);
+    }
+
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create and add an arpeggiato inter.
+     *
+     * @param glyph            the arpeggiato glyph
+     * @param grade            the interpretation quality
+     * @param system           the related system
+     * @param systemHeadChords abscissa-ordered list of head-chords in this system
+     * @return the created arpeggiato or null
+     */
+    public static ArpeggiatoInter createValidAdded (Glyph glyph,
+                                                    double grade,
+                                                    SystemInfo system,
+                                                    List<Inter> systemHeadChords)
+    {
+        ArpeggiatoInter arpeggiato = new ArpeggiatoInter(glyph, grade);
+
+        Link link = arpeggiato.lookupLink(systemHeadChords, system);
+
+        if (link != null) {
+            system.getSig().addVertex(arpeggiato);
+            link.applyTo(arpeggiato);
+
+            return arpeggiato;
+        }
+
+        return null;
     }
 }

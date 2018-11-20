@@ -73,29 +73,6 @@ public class MarkerInter
         visitor.visit(this);
     }
 
-    //--------//
-    // create //
-    //--------//
-    /**
-     * Create a MarkerInter.
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape
-     * @param grade evaluation value
-     * @param staff related staff
-     * @return the created instance
-     */
-    public static MarkerInter create (Glyph glyph,
-                                      Shape shape,
-                                      double grade,
-                                      Staff staff)
-    {
-        MarkerInter marker = new MarkerInter(glyph, shape, grade);
-        marker.setStaff(staff);
-
-        return marker;
-    }
-
     //----------------------//
     // linkWithStaffBarline //
     //----------------------//
@@ -117,5 +94,28 @@ public class MarkerInter
         }
 
         return false;
+    }
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create a MarkerInter.
+     *
+     * @param glyph underlying glyph
+     * @param shape precise shape
+     * @param grade evaluation value
+     * @param staff related staff
+     * @return the created instance
+     */
+    public static MarkerInter create (Glyph glyph,
+                                      Shape shape,
+                                      double grade,
+                                      Staff staff)
+    {
+        MarkerInter marker = new MarkerInter(glyph, shape, grade);
+        marker.setStaff(staff);
+
+        return marker;
     }
 }

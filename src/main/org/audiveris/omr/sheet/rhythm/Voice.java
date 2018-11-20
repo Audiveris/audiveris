@@ -52,7 +52,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 /**
  * Class {@code Voice} gathers all informations related to a voice within a measure.
  * <p>
- * We now assign voice ID according to the part staff where this voice starts:<ol>
+ * We now assign voice ID according to the part staff where this voice starts:
+ * <ol>
  * <li>If starting on first staff, we use IDs: 1..4
  * <li>If starting on second staff, we use IDs: 5..8
  * </ol>
@@ -65,14 +66,6 @@ public class Voice
 {
 
     private static final Logger logger = LoggerFactory.getLogger(Voice.class);
-
-    public static enum Status
-    {
-        /** A chord begins at this slot. */
-        BEGIN,
-        /** A chord is still active at this slot. */
-        CONTINUE;
-    }
 
     // Persistent data
     //----------------
@@ -160,6 +153,11 @@ public class Voice
     //-------------//
     // afterReload //
     //-------------//
+    /**
+     * To be called right after unmarshalling.
+     *
+     * @param measure the containing measure
+     */
     public void afterReload (Measure measure)
     {
         try {
@@ -184,27 +182,6 @@ public class Voice
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }
-    }
-
-    //------------------//
-    // createWholeVoice //
-    //------------------//
-    /**
-     * Factory method to create a voice made of just one whole/multi rest.
-     *
-     * @param wholeChord the whole/multi rest chord
-     * @param measure    the containing measure
-     * @return the created voice instance
-     */
-    public static Voice createWholeVoice (RestChordInter wholeChord,
-                                          Measure measure)
-    {
-        logger.debug("createWholeVoice for {} in {}", wholeChord, measure);
-
-        Voice voice = new Voice(wholeChord, measure);
-        voice.wholeRestChord = wholeChord;
-
-        return voice;
     }
 
     //---------------//
@@ -232,8 +209,10 @@ public class Voice
 
                             // Need a forward before this chord ?
                             if (timeCounter.compareTo(slot.getTimeOffset()) < 0) {
-                                insertForward(slot.getTimeOffset().minus(timeCounter),
-                                              Mark.Position.BEFORE, chord);
+                                insertForward(
+                                        slot.getTimeOffset().minus(timeCounter),
+                                        Mark.Position.BEFORE,
+                                        chord);
                                 timeCounter = slot.getTimeOffset();
                             }
 
@@ -365,6 +344,20 @@ public class Voice
         return id;
     }
 
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Change the voice id (to rename voices)
+     *
+     * @param id the new id value
+     */
+    public void setId (int id)
+    {
+        ///logger.debug("measure#{} {} renamed as {}", measure.getIdValue(), this, id);
+        this.id = id;
+    }
+
     //--------------------------//
     // getInferredTimeSignature //
     //--------------------------//
@@ -377,7 +370,7 @@ public class Voice
     {
         if (inferredTimeSig == null) {
             // Sequence of group (beamed or isolated chords) durations
-            List<Rational> durations = new ArrayList<Rational>();
+            List<Rational> durations = new ArrayList<>();
 
             // Voice time offset
             Rational timeOffset = null;
@@ -519,6 +512,17 @@ public class Voice
         return measure;
     }
 
+    //------------//
+    // setMeasure //
+    //------------//
+    /**
+     * @param measure the measure to set
+     */
+    public void setMeasure (Measure measure)
+    {
+        this.measure = measure;
+    }
+
     //----------//
     // getRests //
     //----------//
@@ -529,7 +533,7 @@ public class Voice
      */
     public List<AbstractChordInter> getRests ()
     {
-        List<AbstractChordInter> rests = new ArrayList<AbstractChordInter>();
+        List<AbstractChordInter> rests = new ArrayList<>();
 
         if (isWhole()) {
             rests.add(wholeRestChord);
@@ -579,6 +583,19 @@ public class Voice
         return startingStaff;
     }
 
+    //------------------//
+    // setStartingStaff //
+    //------------------//
+    /**
+     * Set voice starting staff.
+     *
+     * @param startingStaff the startingStaff to set
+     */
+    public void setStartingStaff (Staff startingStaff)
+    {
+        this.startingStaff = startingStaff;
+    }
+
     //----------------//
     // getTermination //
     //----------------//
@@ -590,6 +607,14 @@ public class Voice
     public Rational getTermination ()
     {
         return termination;
+    }
+
+    //----------------//
+    // setTermination //
+    //----------------//
+    private void setTermination (Rational termination)
+    {
+        this.termination = termination;
     }
 
     //---------------//
@@ -608,6 +633,9 @@ public class Voice
     //---------------//
     // initTransient //
     //---------------//
+    /**
+     * @param measure the containing measure
+     */
     public final void initTransient (Measure measure)
     {
         this.measure = measure;
@@ -640,31 +668,6 @@ public class Voice
         return wholeRestChord != null;
     }
 
-    //-------//
-    // setId //
-    //-------//
-    /**
-     * Change the voice id (to rename voices)
-     *
-     * @param id the new id value
-     */
-    public void setId (int id)
-    {
-        ///logger.debug("measure#{} {} renamed as {}", measure.getIdValue(), this, id);
-        this.id = id;
-    }
-
-    //------------//
-    // setMeasure //
-    //------------//
-    /**
-     * @param measure the measure to set
-     */
-    public void setMeasure (Measure measure)
-    {
-        this.measure = measure;
-    }
-
     //-------------//
     // setSlotInfo //
     //-------------//
@@ -684,25 +687,12 @@ public class Voice
         }
 
         if (slots == null) {
-            slots = new TreeMap<Integer, SlotVoice>();
+            slots = new TreeMap<>();
         }
 
         slots.put(slot.getId(), chordInfo);
         updateSlotTable();
         logger.debug("setSlotInfo slot#{} {}", slot.getId(), this);
-    }
-
-    //------------------//
-    // setStartingStaff //
-    //------------------//
-    /**
-     * Set voice starting staff.
-     *
-     * @param startingStaff the startingStaff to set
-     */
-    public void setStartingStaff (Staff startingStaff)
-    {
-        this.startingStaff = startingStaff;
     }
 
     //------------//
@@ -817,8 +807,8 @@ public class Voice
                 SlotVoice info = getSlotInfo(slot);
 
                 if (info == null) {
-                    if ((lastChord != null) && (lastChord.getEndTime().compareTo(slot
-                            .getTimeOffset()) > 0)) {
+                    if ((lastChord != null) && (lastChord.getEndTime().compareTo(
+                            slot.getTimeOffset()) > 0)) {
                         setSlotInfo(slot, new SlotVoice(lastChord, Status.CONTINUE));
                     }
                 } else {
@@ -850,14 +840,6 @@ public class Voice
         //        chord.addMark(mark);
     }
 
-    //----------------//
-    // setTermination //
-    //----------------//
-    private void setTermination (Rational termination)
-    {
-        this.termination = termination;
-    }
-
     //-----------//
     // timeSigOf //
     //-----------//
@@ -877,8 +859,9 @@ public class Voice
         int gcd = GCD.gcd(count, timeRational.num);
 
         // Make sure num is a multiple of count
-        timeRational = new TimeRational((count / gcd) * timeRational.num, (count / gcd)
-                                                                                  * timeRational.den);
+        timeRational = new TimeRational(
+                (count / gcd) * timeRational.num,
+                (count / gcd) * timeRational.den);
 
         // No 1 as num
         if (timeRational.num == 1) {
@@ -891,6 +874,38 @@ public class Voice
         }
 
         return timeRational;
+    }
+
+    //------------------//
+    // createWholeVoice //
+    //------------------//
+    /**
+     * Factory method to create a voice made of just one whole/multi rest.
+     *
+     * @param wholeChord the whole/multi rest chord
+     * @param measure    the containing measure
+     * @return the created voice instance
+     */
+    public static Voice createWholeVoice (RestChordInter wholeChord,
+                                          Measure measure)
+    {
+        logger.debug("createWholeVoice for {} in {}", wholeChord, measure);
+
+        Voice voice = new Voice(wholeChord, measure);
+        voice.wholeRestChord = wholeChord;
+
+        return voice;
+    }
+
+    /**
+     * Voice status with respect to a slot.
+     */
+    public static enum Status
+    {
+        /** A chord begins at this slot. */
+        BEGIN,
+        /** A chord is still active at this slot. */
+        CONTINUE
     }
 
     //-----------//
@@ -913,6 +928,12 @@ public class Voice
         @XmlAttribute
         public final Status status;
 
+        /**
+         * Create a SlotVoice object.
+         *
+         * @param chord  implementing chord at this slot
+         * @param status tell if the chord is starting or continuing at this slot
+         */
         public SlotVoice (AbstractChordInter chord,
                           Status status)
         {
@@ -930,11 +951,18 @@ public class Voice
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder();
-            sb.append("{Info");
-            sb.append(" Ch#").append(chord.getId());
-            sb.append(" ").append(status);
-            sb.append("}");
+            final StringBuilder sb = new StringBuilder();
+            sb.append("{SlotVoice");
+
+            if (chord != null) {
+                sb.append(" Ch#").append(chord.getId());
+            }
+
+            if (status != null) {
+                sb.append(' ').append(status);
+            }
+
+            sb.append('}');
 
             return sb.toString();
         }

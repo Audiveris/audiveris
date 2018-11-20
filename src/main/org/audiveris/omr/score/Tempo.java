@@ -51,12 +51,14 @@ public abstract class Tempo
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Integer defaultTempo = new Constant.Integer("QuartersPerMn", 120,
-                                                                           "Default tempo, stated in number of quarters per minute");
+        private final Constant.Integer defaultTempo = new Constant.Integer(
+                "QuartersPerMn",
+                120,
+                "Default tempo, stated in number of quarters per minute");
     }
 
     //---------//

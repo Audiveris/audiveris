@@ -70,38 +70,9 @@ public abstract class AdvancedTopics
     /** Layout for 3 items. */
     private static final FormLayout layout3 = new FormLayout("12dlu,1dlu,65dlu,2dlu,pref", "pref");
 
-    public static enum Topic
+    /** Not meant to be instantiated. */
+    private AdvancedTopics ()
     {
-        SAMPLES(constants.useSamples),
-        ANNOTATIONS(constants.useAnnotations),
-        PLOTS(constants.usePlots),
-        SPECIFIC_VIEWS(constants.useSpecificViews),
-        SPECIFIC_ITEMS(constants.useSpecificItems),
-        WINDOW_LAYOUT(constants.useWindowLayout),
-        DEBUG(constants.useDebug);
-
-        /** Underlying constant. */
-        private final Constant.Boolean constant;
-
-        Topic (Constant.Boolean constant)
-        {
-            this.constant = constant;
-        }
-
-        public String getDescription ()
-        {
-            return constant.getDescription();
-        }
-
-        public boolean isSet ()
-        {
-            return constant.isSet();
-        }
-
-        public void set (boolean val)
-        {
-            constant.setValue(val);
-        }
     }
 
     //--------------//
@@ -143,17 +114,54 @@ public abstract class AdvancedTopics
         return frame;
     }
 
+    /**
+     * All advanced topics.
+     */
+    public static enum Topic
+    {
+        SAMPLES(constants.useSamples),
+        ANNOTATIONS(constants.useAnnotations),
+        PLOTS(constants.usePlots),
+        SPECIFIC_VIEWS(constants.useSpecificViews),
+        SPECIFIC_ITEMS(constants.useSpecificItems),
+        WINDOW_LAYOUT(constants.useWindowLayout),
+        DEBUG(constants.useDebug);
+
+        /** Underlying constant. */
+        private final Constant.Boolean constant;
+
+        Topic (Constant.Boolean constant)
+        {
+            this.constant = constant;
+        }
+
+        public String getDescription ()
+        {
+            return constant.getDescription();
+        }
+
+        public boolean isSet ()
+        {
+            return constant.isSet();
+        }
+
+        public void set (boolean val)
+        {
+            constant.setValue(val);
+        }
+    }
+
     //---------------//
     // AllTopicsPane //
     //---------------//
     /**
      * Pane for the advanced topic switches.
      */
-    private static final class AllTopicsPane
+    private static class AllTopicsPane
             extends JPanel
     {
 
-        public AllTopicsPane ()
+        AllTopicsPane ()
         {
             setBorder(BorderFactory.createTitledBorder("These switches require a restart"));
 
@@ -172,30 +180,37 @@ public abstract class AdvancedTopics
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Boolean useSamples = new Constant.Boolean(false,
-                                                                         "Handling of samples repositories and classifier");
+        private final Constant.Boolean useSamples = new Constant.Boolean(
+                false,
+                "Handling of samples repositories and classifier");
 
-        private final Constant.Boolean useAnnotations = new Constant.Boolean(false,
-                                                                             "Production of image annotation with symbols");
+        private final Constant.Boolean useAnnotations = new Constant.Boolean(
+                false,
+                "Production of image annotation with symbols");
 
-        private final Constant.Boolean usePlots = new Constant.Boolean(false,
-                                                                       "Display of scale / stem / staves plots");
+        private final Constant.Boolean usePlots = new Constant.Boolean(
+                false,
+                "Display of scale / stem / staves plots");
 
-        private final Constant.Boolean useSpecificViews = new Constant.Boolean(false,
-                                                                               "Display of specific sheet views");
+        private final Constant.Boolean useSpecificViews = new Constant.Boolean(
+                false,
+                "Display of specific sheet views");
 
-        private final Constant.Boolean useSpecificItems = new Constant.Boolean(false,
-                                                                               "Specific items shown in sheet view");
+        private final Constant.Boolean useSpecificItems = new Constant.Boolean(
+                false,
+                "Specific items shown in sheet view");
 
-        private final Constant.Boolean useWindowLayout = new Constant.Boolean(false,
-                                                                              "Handling of main window layout");
+        private final Constant.Boolean useWindowLayout = new Constant.Boolean(
+                false,
+                "Handling of main window layout");
 
-        private final Constant.Boolean useDebug = new Constant.Boolean(false,
-                                                                       "Support for debug features");
+        private final Constant.Boolean useDebug = new Constant.Boolean(
+                false,
+                "Support for debug features");
     }
 
     //-----------//
@@ -209,11 +224,12 @@ public abstract class AdvancedTopics
             implements ActionListener
     {
 
-        private final JComboBox<Step> box; // ComboBox for desired step
+        // ComboBox for desired step
+        private final JComboBox<Step> box;
 
-        public EarlyPane ()
+        EarlyPane ()
         {
-            box = new JComboBox<Step>(Step.values());
+            box = new JComboBox<>(Step.values());
             box.setToolTipText("Which step to trigger on any image input");
             box.setSelectedItem(StubsController.getEarlyStep());
             box.addActionListener(this);
@@ -245,12 +261,13 @@ public abstract class AdvancedTopics
             implements ActionListener
     {
 
-        private final JComboBox<String> box; // ComboBox for registered plugins
+        // ComboBox for registered plugins
+        private final JComboBox<String> box;
 
-        public PluginPane ()
+        PluginPane ()
         {
             final Collection<String> ids = PluginsManager.getInstance().getPluginIds();
-            box = new JComboBox<String>(ids.toArray(new String[ids.size()]));
+            box = new JComboBox<>(ids.toArray(new String[ids.size()]));
             box.setToolTipText("Default plugin to be launched");
             box.setSelectedItem(PluginsManager.defaultPluginId.getValue());
 
@@ -275,14 +292,15 @@ public abstract class AdvancedTopics
     /**
      * Handling of one topic switch.
      */
-    private static final class TopicPane
+    private static class TopicPane
             extends Panel
             implements ActionListener
     {
 
-        final Topic topic; // Handled topic
+        // Handled topic
+        final Topic topic;
 
-        public TopicPane (Topic topic)
+        TopicPane (Topic topic)
         {
             this.topic = topic;
 

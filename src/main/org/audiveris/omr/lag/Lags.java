@@ -77,4 +77,8 @@ public class Lags
 
         return buf;
     }
+
+    private Lags ()
+    {
+    }
 }

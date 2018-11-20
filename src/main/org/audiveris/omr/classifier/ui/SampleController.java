@@ -81,6 +81,12 @@ public class SampleController
         assignAction = new AssignAction();
     }
 
+    /**
+     * Assign a new shape to a sample.
+     *
+     * @param sample   sample at hand
+     * @param newShape new sample shape
+     */
     public void assignSample (Sample sample,
                               Shape newShape)
     {
@@ -107,6 +113,11 @@ public class SampleController
         return null;
     }
 
+    /**
+     * Report the Assign action.
+     *
+     * @return the Assign action
+     */
     public AssignAction getAssignAction ()
     {
         return assignAction;
@@ -118,11 +129,21 @@ public class SampleController
         return null;
     }
 
+    /**
+     * Report the Remove action
+     *
+     * @return the Remove action
+     */
     public ApplicationAction getRemoveAction ()
     {
         return removeAction;
     }
 
+    /**
+     * Remove the provided sample
+     *
+     * @param sample sample to remove
+     */
     public void removeSample (Sample sample)
     {
         final SampleModel sampleModel = (SampleModel) model;
@@ -132,6 +153,11 @@ public class SampleController
     //--------------//
     // RemoveSample //
     //--------------//
+    /**
+     * Action to remove current sample
+     *
+     * @param e triggering event
+     */
     @Action
     public void removeSample (ActionEvent e)
     {
@@ -175,6 +201,9 @@ public class SampleController
             }
         };
 
+        /**
+         * Create an {@code AssignAction} object.
+         */
         public AssignAction ()
         {
             super("Assign to...");
@@ -198,6 +227,11 @@ public class SampleController
             }
         }
 
+        /**
+         * Context popup menu.
+         *
+         * @return related menu
+         */
         public JMenu getMenu ()
         {
             return menu;

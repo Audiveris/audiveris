@@ -32,7 +32,6 @@ import javax.swing.SwingConstants;
  * @param <C> precise subtype of JComponent field
  * <br>
  * <img src="doc-files/Fields.png" alt="Labeled Field Component UML">
- *
  * @author Hervé Bitteur
  */
 public class LField<C extends JComponent>

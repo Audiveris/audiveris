@@ -74,6 +74,7 @@ public class Trainer
         extends SingleFrameApplication
 {
 
+    // Don't move this statement
     // @formatter:off
     static {
         // We need class WellKnowns to be elaborated before anything else (when in standalone mode)
@@ -89,12 +90,6 @@ public class Trainer
     /** Stand-alone run (vs part of Audiveris). */
     private static boolean standAlone = false;
 
-    /** Standard width for labels in DLUs. */
-    static final String LABEL_WIDTH = "50dlu";
-
-    /** Standard width for fields/buttons in DLUs. */
-    static final String FIELD_WIDTH = "30dlu";
-
     /** An adapter triggered on window closing. */
     private static final WindowAdapter windowCloser = new WindowAdapter()
     {
@@ -108,6 +103,12 @@ public class Trainer
             System.exit(0);
         }
     };
+
+    /** Standard width for labels in DLUs. */
+    static final String LABEL_WIDTH = "50dlu";
+
+    /** Standard width for fields/buttons in DLUs. */
+    static final String FIELD_WIDTH = "30dlu";
 
     /** Related frame. */
     private JFrame frame;
@@ -129,54 +130,6 @@ public class Trainer
         } else {
             INSTANCE = this;
         }
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    public static synchronized Trainer getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new Trainer();
-        }
-
-        return INSTANCE;
-    }
-
-    //--------//
-    // launch //
-    //--------//
-    /**
-     * (Re)activate the trainer tool
-     */
-    public static void launch ()
-    {
-        if (standAlone) {
-        } else {
-            final JFrame frame = getInstance().frame;
-            OmrGui.getApplication().show(frame);
-            UIUtil.unMinimize(frame);
-        }
-    }
-
-    //------//
-    // main //
-    //------//
-    /**
-     * Just to allow stand-alone running of this class
-     *
-     * @param args not used
-     */
-    public static void main (String... args)
-    {
-        standAlone = true;
-
-        // Set UI Look and Feel
-        UILookAndFeel.setUI(null);
-        Locale.setDefault(Locale.ENGLISH);
-
-        // Off we go...
-        Application.launch(Trainer.class, args);
     }
 
     //------------//
@@ -213,14 +166,6 @@ public class Trainer
     }
 
     //--------------//
-    // displayFrame //
-    //--------------//
-    void displayFrame ()
-    {
-        frame.toFront();
-    }
-
-    //--------------//
     // defineLayout //
     //--------------//
     /**
@@ -228,7 +173,6 @@ public class Trainer
      *
      * @param frame the bare frame
      * @return the populated frame
-     *
      */
     private JFrame defineLayout (final JFrame frame)
     {
@@ -293,29 +237,70 @@ public class Trainer
         return builder.getPanel();
     }
 
+    //--------------//
+    // displayFrame //
+    //--------------//
+    void displayFrame ()
+    {
+        frame.toFront();
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton.
+     *
+     * @return the single Trainer instance
+     */
+    public static synchronized Trainer getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new Trainer();
+        }
+
+        return INSTANCE;
+    }
+
+    //--------//
+    // launch //
+    //--------//
+    /**
+     * (Re)activate the trainer tool
+     */
+    public static void launch ()
+    {
+        if (standAlone) {
+        } else {
+            final JFrame frame = getInstance().frame;
+            OmrGui.getApplication().show(frame);
+            UIUtil.unMinimize(frame);
+        }
+    }
+
     //------//
-    // Task //
+    // main //
     //------//
     /**
-     * Class {@code Task} handles, for a given classifier, which activity is currently
-     * being carried out, only one being current at any time.
+     * Just to allow stand-alone running of this class
+     *
+     * @param args not used
      */
+    public static void main (String... args)
+    {
+        standAlone = true;
+
+        // Set UI Look and Feel
+        UILookAndFeel.setUI(null);
+        Locale.setDefault(Locale.ENGLISH);
+
+        // Off we go...
+        Application.launch(Trainer.class, args);
+    }
+
     public static class Task
             extends Observable
     {
-
-        /**
-         * Enum {@code Activity} defines all activities in training.
-         */
-        static enum Activity
-        {
-            /** No ongoing activity */
-            INACTIVE,
-            /** Training on samples */
-            TRAINING,
-            /** Validating classifier */
-            VALIDATION;
-        }
 
         /** Managed classifier. */
         public final Classifier classifier;
@@ -323,6 +308,11 @@ public class Trainer
         /** Current activity. */
         private Activity activity = Activity.INACTIVE;
 
+        /**
+         * The shape classifier to use
+         *
+         * @param classifier selected classifier
+         */
         public Task (Classifier classifier)
         {
             this.classifier = classifier;
@@ -349,6 +339,19 @@ public class Trainer
             setChanged();
             notifyObservers();
         }
+
+        /**
+         * Enum {@code Activity} defines all activities in training.
+         */
+        static enum Activity
+        {
+            /** No ongoing activity */
+            INACTIVE,
+            /** Training on samples */
+            TRAINING,
+            /** Validating classifier */
+            VALIDATION;
+        }
     }
 
     //-------------//
@@ -358,10 +361,14 @@ public class Trainer
             extends Panel
     {
 
-        public TitledPanel (String title)
+        TitledPanel (String title)
         {
-            setBorder(BorderFactory.createTitledBorder(new EtchedBorder(), title,
-                                                       TitledBorder.CENTER, TitledBorder.TOP));
+            setBorder(
+                    BorderFactory.createTitledBorder(
+                            new EtchedBorder(),
+                            title,
+                            TitledBorder.CENTER,
+                            TitledBorder.TOP));
             setInsets(30, 10, 10, 10); // TLBR
         }
     }

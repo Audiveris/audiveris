@@ -124,7 +124,6 @@ public abstract class TableUtil
         }
     }
 
-    //
     //    /**
     //     * Print out a PixelBuffer.
     //     *
@@ -266,6 +265,12 @@ public abstract class TableUtil
     //-------//
     // store //
     //-------//
+    /**
+     * Store the provided table as a BufferedImage to disk.
+     *
+     * @param id    a distinguished name
+     * @param table the table to store
+     */
     public static void store (String id,
                               short[][] table)
     {
@@ -290,7 +295,7 @@ public abstract class TableUtil
             for (int y = 0; y < height; y++) {
                 int val = table[x][y];
                 val = (val * 255) / max;
-                pix[0] = (int) val;
+                pix[0] = val;
                 raster.setPixel(x, y, pix);
             }
         }
@@ -313,8 +318,6 @@ public abstract class TableUtil
             }
         }
 
-        System.out.println("max = " + max);
-
         int[][] ints = new int[width][height];
 
         for (int y = 0; y < height; y++) {
@@ -324,5 +327,9 @@ public abstract class TableUtil
         }
 
         return ints;
+    }
+
+    private TableUtil ()
+    {
     }
 }

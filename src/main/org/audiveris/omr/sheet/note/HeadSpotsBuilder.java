@@ -49,7 +49,7 @@ public class HeadSpotsBuilder
     private final Sheet sheet;
 
     /** Spot glyphs, per system. */
-    Map<SystemInfo, List<Glyph>> glyphMap = new HashMap<SystemInfo, List<Glyph>>();
+    Map<SystemInfo, List<Glyph>> glyphMap = new HashMap<>();
 
     /**
      * Creates a new {@code HeadSpotsBuilder} object.
@@ -72,8 +72,10 @@ public class HeadSpotsBuilder
     public Map<SystemInfo, List<Glyph>> getSpots ()
     {
         RunTable headRuns = sheet.getPicture().getTable(Picture.TableKey.HEAD_SPOTS);
-        List<Glyph> spots = GlyphFactory
-                .buildGlyphs(headRuns, new Point(0, 0), GlyphGroup.HEAD_SPOT);
+        List<Glyph> spots = GlyphFactory.buildGlyphs(
+                headRuns,
+                new Point(0, 0),
+                GlyphGroup.HEAD_SPOT);
 
         // Dispose the runTable
         sheet.getPicture().removeTable(Picture.TableKey.HEAD_SPOTS);
@@ -93,9 +95,9 @@ public class HeadSpotsBuilder
      */
     private Map<SystemInfo, List<Glyph>> dispatchSheetSpots (List<Glyph> spots)
     {
-        Map<SystemInfo, List<Glyph>> spotMap = new TreeMap<SystemInfo, List<Glyph>>();
+        Map<SystemInfo, List<Glyph>> spotMap = new TreeMap<>();
 
-        List<SystemInfo> relevants = new ArrayList<SystemInfo>();
+        List<SystemInfo> relevants = new ArrayList<>();
         SystemManager systemManager = sheet.getSystemManager();
 
         for (Glyph spot : spots) {
@@ -108,7 +110,7 @@ public class HeadSpotsBuilder
                     List<Glyph> list = spotMap.get(system);
 
                     if (list == null) {
-                        spotMap.put(system, list = new ArrayList<Glyph>());
+                        spotMap.put(system, list = new ArrayList<>());
                     }
 
                     spot.addGroup(GlyphGroup.HEAD_SPOT); // Needed

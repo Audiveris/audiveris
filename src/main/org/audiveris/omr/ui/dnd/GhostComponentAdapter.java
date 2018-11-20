@@ -31,7 +31,6 @@ import java.awt.image.BufferedImage;
  * copied from the appearance of the component where the mouse is pressed.
  *
  * @param <A> The precise type of action carried by the drop
- *
  * @author Hervé Bitteur (from Romain Guy's demo)
  */
 public class GhostComponentAdapter<A>

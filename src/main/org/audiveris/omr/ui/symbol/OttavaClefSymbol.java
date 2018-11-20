@@ -33,6 +33,8 @@ import java.awt.geom.Rectangle2D;
 /**
  * Class {@code OttavaClefSymbol} displays a clef (bass or treble) with the addition of
  * an ottava (alta or bassa).
+ *
+ * @author Hervé Bitteur
  */
 public class OttavaClefSymbol
         extends ShapeSymbol
@@ -112,7 +114,7 @@ public class OttavaClefSymbol
 
         final Rectangle2D clefRect;
 
-        public MyParams (MusicFont font)
+        MyParams (MusicFont font)
         {
             ottavaLayout = Symbols.SYMBOL_OTTAVA.layout(font);
             ottavaRect = ottavaLayout.getBounds();
@@ -120,8 +122,9 @@ public class OttavaClefSymbol
             layout = font.layout(codes);
             clefRect = layout.getBounds();
 
-            rect = new Rectangle((int) Math.ceil(clefRect.getWidth()), (int) Math.ceil(ottavaRect
-                                 .getHeight() + clefRect.getHeight()));
+            rect = new Rectangle(
+                    (int) Math.ceil(clefRect.getWidth()),
+                    (int) Math.ceil(ottavaRect.getHeight() + clefRect.getHeight()));
         }
     }
 }

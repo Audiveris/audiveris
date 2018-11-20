@@ -56,7 +56,8 @@ public abstract class AbstractFlagInter
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractFlagInter.class);
 
-    /** Value of this flag (compound?) in terms of individual flags.
+    /**
+     * Value of this flag (compound?) in terms of individual flags.
      * (Lazily evaluated)
      */
     protected Integer value;
@@ -80,43 +81,6 @@ public abstract class AbstractFlagInter
                                  double grade)
     {
         super(glyph, null, shape, grade);
-    }
-
-    //------------------//
-    // createValidAdded //
-    //------------------//
-    /**
-     * (Try to) create and add a Flag inter (either standard FlagInter or SmallFlagInter).
-     * <p>
-     * At this time note heads have already been validated (with their attached stem).
-     * So, a flag is created only if it can be related to stems with consistent size head(s),
-     * and if it is correctly located WRT note heads on the stem.
-     *
-     * @param glyph       the flag glyph
-     * @param shape       flag shape
-     * @param grade       the interpretation quality
-     * @param system      the related system
-     * @param systemStems ordered collection of stems in system
-     * @return the created instance or null
-     */
-    public static AbstractFlagInter createValidAdded (Glyph glyph,
-                                                      Shape shape,
-                                                      double grade,
-                                                      SystemInfo system,
-                                                      List<Inter> systemStems)
-    {
-        AbstractFlagInter flag = new FlagInter(glyph, shape, grade);
-
-        Link link = flag.lookupLink(systemStems);
-
-        if (link != null) {
-            system.getSig().addVertex(flag);
-            link.applyTo(flag);
-
-            return flag;
-        }
-
-        return null;
     }
 
     //--------//
@@ -182,6 +146,151 @@ public abstract class AbstractFlagInter
         return Collections.singleton(link);
     }
 
+    //------------//
+    // lookupLink //
+    //------------//
+    /**
+     * Try to detect a link between this Flag instance and a stem nearby.
+     *
+     * @param systemStems ordered collection of stems in system
+     * @return the link found or null
+     */
+    private Link lookupLink (List<Inter> systemStems)
+    {
+        if (systemStems.isEmpty()) {
+            return null;
+        }
+
+        final SystemInfo system = systemStems.get(0).getSig().getSystem();
+        final Scale scale = system.getSheet().getScale();
+        final int maxStemFlagGapY = scale.toPixels(FlagStemRelation.getYGapMaximum(manual));
+
+        // Look for stems nearby, using the lowest (for up) or highest (for down) third of height
+        final boolean isFlagUp = FlagsUp.contains(shape);
+        final boolean isSmall = SmallFlags.contains(shape);
+        final int stemWidth = system.getSheet().getScale().getMaxStem();
+        final Rectangle flagBox = getBounds();
+        final int footHeight = (int) Math.rint(flagBox.height / 2.5);
+
+        // We need a flag ref point to compute x and y distances to stem
+        final Point refPt = new Point(
+                flagBox.x,
+                isFlagUp ? ((flagBox.y + flagBox.height) - footHeight) : (flagBox.y + footHeight));
+        final int y = isFlagUp ? ((flagBox.y + flagBox.height) - footHeight - maxStemFlagGapY)
+                : (flagBox.y + maxStemFlagGapY);
+        final int midFootY = isFlagUp ? (refPt.y + (footHeight / 2)) : (refPt.y - (footHeight / 2));
+
+        //TODO: -1 is used to cope with stem margin when erased (To be improved)
+        final Rectangle luBox = new Rectangle(
+                (flagBox.x - 1) - stemWidth,
+                y,
+                2 * stemWidth,
+                footHeight);
+
+        if (glyph != null) {
+            glyph.addAttachment("fs", luBox);
+        }
+
+        List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
+
+        for (Inter inter : stems) {
+            StemInter stem = (StemInter) inter;
+
+            // Make sure stem is linked to consistent head size (small flag w/ small head)
+            if (stem.isGraceStem() != isSmall) {
+                continue;
+            }
+
+            Point2D start = stem.getTop();
+            Point2D stop = stem.getBottom();
+            double crossX = LineUtil.xAtY(start, stop, refPt.getY());
+            final double xGap = refPt.getX() - crossX;
+            final double yGap;
+
+            if (refPt.getY() < start.getY()) {
+                yGap = start.getY() - refPt.getY();
+            } else if (refPt.getY() > stop.getY()) {
+                yGap = refPt.getY() - stop.getY();
+            } else {
+                yGap = 0;
+            }
+
+            FlagStemRelation fRel = new FlagStemRelation();
+            fRel.setInOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
+
+            if (fRel.getGrade() >= fRel.getMinGrade()) {
+                fRel.setExtensionPoint(
+                        LineUtil.intersectionAtY(
+                                start,
+                                stop,
+                                isFlagUp ? ((flagBox.y + flagBox.height) - 1) : flagBox.y));
+
+                // Check consistency between flag direction and vertical position on stem
+                // As well as stem direction as indicated by heads on stem
+                double midStemY = (start.getY() + stop.getY()) / 2;
+
+                if (isFlagUp) {
+                    if (midFootY <= midStemY) {
+                        continue;
+                    }
+
+                    if (stem.computeDirection() == -1) {
+                        continue;
+                    }
+                } else {
+                    if (midFootY >= midStemY) {
+                        continue;
+                    }
+
+                    if (stem.computeDirection() == 1) {
+                        continue;
+                    }
+                }
+
+                return new Link(stem, fRel, true);
+            }
+        }
+
+        return null;
+    }
+
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create and add a Flag inter (either standard FlagInter or SmallFlagInter).
+     * <p>
+     * At this time note heads have already been validated (with their attached stem).
+     * So, a flag is created only if it can be related to stems with consistent size head(s),
+     * and if it is correctly located WRT note heads on the stem.
+     *
+     * @param glyph       the flag glyph
+     * @param shape       flag shape
+     * @param grade       the interpretation quality
+     * @param system      the related system
+     * @param systemStems ordered collection of stems in system
+     * @return the created instance or null
+     */
+    public static AbstractFlagInter createValidAdded (Glyph glyph,
+                                                      Shape shape,
+                                                      double grade,
+                                                      SystemInfo system,
+                                                      List<Inter> systemStems)
+    {
+        AbstractFlagInter flag = new FlagInter(glyph, shape, grade);
+
+        Link link = flag.lookupLink(systemStems);
+
+        if (link != null) {
+            system.getSig().addVertex(flag);
+            link.applyTo(flag);
+
+            return flag;
+        }
+
+        return null;
+    }
+
     //--------------//
     // getFlagValue //
     //--------------//
@@ -220,109 +329,5 @@ public abstract class AbstractFlagInter
         logger.error("Illegal flag shape: {}", shape);
 
         return 0;
-    }
-
-    //------------//
-    // lookupLink //
-    //------------//
-    /**
-     * Try to detect a link between this Flag instance and a stem nearby.
-     *
-     * @param systemStems ordered collection of stems in system
-     * @return the link found or null
-     */
-    private Link lookupLink (List<Inter> systemStems)
-    {
-        if (systemStems.isEmpty()) {
-            return null;
-        }
-
-        final SystemInfo system = systemStems.get(0).getSig().getSystem();
-        final Scale scale = system.getSheet().getScale();
-        final int maxStemFlagGapY = scale.toPixels(FlagStemRelation.getYGapMaximum(manual));
-
-        // Look for stems nearby, using the lowest (for up) or highest (for down) third of height
-        final boolean isFlagUp = FlagsUp.contains(shape);
-        final boolean isSmall = SmallFlags.contains(shape);
-        final int stemWidth = system.getSheet().getScale().getMaxStem();
-        final Rectangle flagBox = getBounds();
-        final int footHeight = (int) Math.rint(flagBox.height / 2.5);
-
-        // We need a flag ref point to compute x and y distances to stem
-        final Point refPt = new Point(flagBox.x, isFlagUp ? ((flagBox.y + flagBox.height)
-                                                                     - footHeight)
-                                      : (flagBox.y + footHeight));
-        final int y = isFlagUp ? ((flagBox.y + flagBox.height) - footHeight - maxStemFlagGapY)
-                : (flagBox.y + maxStemFlagGapY);
-        final int midFootY = isFlagUp ? (refPt.y + (footHeight / 2)) : (refPt.y - (footHeight / 2));
-
-        //TODO: -1 is used to cope with stem margin when erased (To be improved)
-        final Rectangle luBox = new Rectangle((flagBox.x - 1) - stemWidth, y, 2 * stemWidth,
-                                              footHeight);
-
-        if (glyph != null) {
-            glyph.addAttachment("fs", luBox);
-        }
-
-        List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
-
-        for (Inter inter : stems) {
-            StemInter stem = (StemInter) inter;
-
-            // Make sure stem is linked to consistent head size (small flag w/ small head)
-            if (stem.isGraceStem() != isSmall) {
-                continue;
-            }
-
-            Point2D start = stem.getTop();
-            Point2D stop = stem.getBottom();
-            double crossX = LineUtil.xAtY(start, stop, refPt.getY());
-            final double xGap = refPt.getX() - crossX;
-            final double yGap;
-
-            if (refPt.getY() < start.getY()) {
-                yGap = start.getY() - refPt.getY();
-            } else if (refPt.getY() > stop.getY()) {
-                yGap = refPt.getY() - stop.getY();
-            } else {
-                yGap = 0;
-            }
-
-            FlagStemRelation fRel = new FlagStemRelation();
-            fRel.setInOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
-
-            if (fRel.getGrade() >= fRel.getMinGrade()) {
-                fRel.setExtensionPoint(LineUtil.intersectionAtY(start, stop, isFlagUp ? ((flagBox.y
-                                                                                                  + flagBox.height)
-                                                                                         - 1)
-                                                                : flagBox.y));
-
-                // Check consistency between flag direction and vertical position on stem
-                // As well as stem direction as indicated by heads on stem
-                double midStemY = (start.getY() + stop.getY()) / 2;
-
-                if (isFlagUp) {
-                    if (midFootY <= midStemY) {
-                        continue;
-                    }
-
-                    if (stem.computeDirection() == -1) {
-                        continue;
-                    }
-                } else {
-                    if (midFootY >= midStemY) {
-                        continue;
-                    }
-
-                    if (stem.computeDirection() == 1) {
-                        continue;
-                    }
-                }
-
-                return new Link(stem, fRel, true);
-            }
-        }
-
-        return null;
     }
 }

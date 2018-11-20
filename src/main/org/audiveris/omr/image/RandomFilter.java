@@ -66,7 +66,6 @@ public class RandomFilter
                 true);
     }
 
-    //
     //--------//
     // MyTile //
     //--------//
@@ -78,7 +77,7 @@ public class RandomFilter
             extends Tile
     {
 
-        public MyTile (boolean squared)
+        MyTile (boolean squared)
         {
             // Allocate a tile as big as the source
             super(source.getWidth(), source.getHeight(), squared);

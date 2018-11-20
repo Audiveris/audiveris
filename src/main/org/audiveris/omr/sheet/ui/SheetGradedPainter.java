@@ -72,8 +72,8 @@ public class SheetGradedPainter
         /** View parameters. */
         private final ViewParameters viewParams = ViewParameters.getInstance();
 
-        public GradedSigPainter (Graphics g,
-                                 Scale scale)
+        GradedSigPainter (Graphics g,
+                          Scale scale)
         {
             super(g, scale);
         }

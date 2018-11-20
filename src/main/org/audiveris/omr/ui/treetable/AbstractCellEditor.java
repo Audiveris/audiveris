@@ -75,7 +75,6 @@ public class AbstractCellEditor
      * DOCUMENT ME!
      *
      * @param e DOCUMENT ME!
-     *
      * @return DOCUMENT ME!
      */
     @Override
@@ -105,7 +104,6 @@ public class AbstractCellEditor
      * DOCUMENT ME!
      *
      * @param anEvent DOCUMENT ME!
-     *
      * @return DOCUMENT ME!
      */
     @Override
@@ -128,9 +126,10 @@ public class AbstractCellEditor
         return true;
     }
 
-    /*
+    /**
      * Notify all listeners that have registered interest for notification on
      * this event type.
+     *
      * @see EventListenerList
      */
     protected void fireEditingCanceled ()
@@ -147,9 +146,10 @@ public class AbstractCellEditor
         }
     }
 
-    /*
+    /**
      * Notify all listeners that have registered interest for
      * notification on this event type.
+     *
      * @see EventListenerList
      */
     protected void fireEditingStopped ()

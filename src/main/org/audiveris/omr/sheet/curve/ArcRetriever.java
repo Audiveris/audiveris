@@ -64,14 +64,13 @@ import java.util.List;
  * If a skeleton sequence of points share the same (long) vertical run, only two junction points are
  * set, one at the beginning and one at the end.
  * <pre>
- * - scanImage()              // Scan the whole image for arc starts
- *   + scanJunction()         // Scan all arcs leaving a junction point
- *   |   + scanArc()
- *   + scanArc()              // Scan one arc
- *       + walkAlong()        // Walk till arc end (forward or backward)
- *       |   + move()         // Move just one pixel
- *       + determineShape()   // Determine the global arc shape
- *       + storeShape()       // Store arc shape in its ending pixels
+ * -scanImage() // Scan the whole image for arc starts
+ *         + scanJunction() // Scan all arcs leaving a junction point
+ *         | +scanArc() + scanArc() // Scan one arc
+ *                 + walkAlong() // Walk till arc end (forward or backward)
+ *         | +move() // Move just one pixel
+ *                 + determineShape() // Determine the global arc shape
+ *                 + storeShape() // Store arc shape in its ending pixels
  * </pre>
  *
  * @author Hervé Bitteur
@@ -82,19 +81,6 @@ public class ArcRetriever
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ArcRetriever.class);
-
-    /**
-     * Status for current move along arc.
-     */
-    private static enum Status
-    {
-        /** One more point on arc. */
-        CONTINUE,
-        /** Arrived at a new junction point. */
-        SWITCH,
-        /** No more move possible. */
-        END;
-    }
 
     /** The related sheet. */
     @Navigable(false)
@@ -326,7 +312,8 @@ public class ArcRetriever
             minDy = min(minDy, dist);
         }
 
-        return (maxDist < params.minStaffLineDistance) && ((maxDy - minDy)
+        return (maxDist < params.minStaffLineDistance) && ((maxDy
+                                                                    - minDy)
                                                                    < params.minStaffLineDistance);
     }
 
@@ -504,29 +491,6 @@ public class ArcRetriever
         }
     }
 
-    //-------//
-    // sinSq //
-    //-------//
-    /** Sin**2 of angle between (p0,p1) & (p0,p2). */
-    private static double sinSq (int x0,
-                                 int y0,
-                                 int x1,
-                                 int y1,
-                                 int x2,
-                                 int y2)
-    {
-        x1 -= x0;
-        y1 -= y0;
-        x2 -= x0;
-        y2 -= y0;
-
-        double vect = (x1 * y2) - (x2 * y1);
-        double l1Sq = (x1 * x1) + (y1 * y1);
-        double l2Sq = (x2 * x2) + (y2 * y2);
-
-        return (vect * vect) / (l1Sq * l2Sq);
-    }
-
     //------------//
     // storeShape //
     //------------//
@@ -606,36 +570,82 @@ public class ArcRetriever
         }
     }
 
+    //-------//
+    // sinSq //
+    //-------//
+    /** Sin**2 of angle between (p0,p1) & (p0,p2). */
+    private static double sinSq (int x0,
+                                 int y0,
+                                 int x1,
+                                 int y1,
+                                 int x2,
+                                 int y2)
+    {
+        x1 -= x0;
+        y1 -= y0;
+        x2 -= x0;
+        y2 -= y0;
+
+        double vect = (x1 * y2) - (x2 * y1);
+        double l1Sq = (x1 * x1) + (y1 * y1);
+        double l2Sq = (x2 * x2) + (y2 * y2);
+
+        return (vect * vect) / (l1Sq * l2Sq);
+    }
+
+    /**
+     * Status for current move along arc.
+     */
+    private static enum Status
+    {
+        /** One more point on arc. */
+        CONTINUE,
+        /** Arrived at a new junction point. */
+        SWITCH,
+        /** No more move possible. */
+        END;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Double maxAlpha = new Constant.Double("degree", 4.0,
-                                                                     "Maximum angle (in degrees) for 3 points colinearity");
+        private final Constant.Double maxAlpha = new Constant.Double(
+                "degree",
+                4.0,
+                "Maximum angle (in degrees) for 3 points colinearity");
 
-        private final Scale.Fraction arcMinQuorum = new Scale.Fraction(1.75,
-                                                                       "Minimum arc length for quorum");
+        private final Scale.Fraction arcMinQuorum = new Scale.Fraction(
+                1.75,
+                "Minimum arc length for quorum");
 
-        private final Scale.Fraction maxLineDistance = new Scale.Fraction(0.1,
-                                                                          "Maximum distance from straight line");
+        private final Scale.Fraction maxLineDistance = new Scale.Fraction(
+                0.1,
+                "Maximum distance from straight line");
 
-        private final Scale.Fraction minStaffArcLength = new Scale.Fraction(0.5,
-                                                                            "Minimum length for a staff arc");
+        private final Scale.Fraction minStaffArcLength = new Scale.Fraction(
+                0.5,
+                "Minimum length for a staff arc");
 
-        private final Scale.Fraction maxStaffArcLength = new Scale.Fraction(5.0,
-                                                                            "Maximum length for a staff arc");
+        private final Scale.Fraction maxStaffArcLength = new Scale.Fraction(
+                5.0,
+                "Maximum length for a staff arc");
 
-        private final Scale.Fraction minStaffLineDistance = new Scale.Fraction(0.15,
-                                                                               "Minimum distance from staff line");
+        private final Scale.Fraction minStaffLineDistance = new Scale.Fraction(
+                0.15,
+                "Minimum distance from staff line");
 
-        private final Constant.Double minSlope = new Constant.Double("(co)tangent", 0.03,
-                                                                     "Minimum (inverted) slope, to detect vertical and horizontal lines");
+        private final Constant.Double minSlope = new Constant.Double(
+                "(co)tangent",
+                0.03,
+                "Minimum (inverted) slope, to detect vertical and horizontal lines");
 
-        private final Scale.Fraction maxRunLength = new Scale.Fraction(0.6,
-                                                                       "Maximum length for a vertical run");
+        private final Scale.Fraction maxRunLength = new Scale.Fraction(
+                0.6,
+                "Maximum length for a vertical run");
     }
 
     //------------//
@@ -668,7 +678,7 @@ public class ArcRetriever
          *
          * @param scale the scaling factor
          */
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             double maxSin = sin(toRadians(constants.maxAlpha.getValue()));
 

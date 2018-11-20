@@ -163,6 +163,12 @@ public abstract class AbstractStep
     //-------------//
     // clearErrors //
     //-------------//
+    /**
+     * Clear the errors window in editor (No longer used).
+     *
+     * @param step  step concerned
+     * @param sheet related sheet
+     */
     public void clearErrors (Step step,
                              Sheet sheet)
     {
@@ -174,6 +180,12 @@ public abstract class AbstractStep
     //-----------//
     // displayUI //
     //-----------//
+    /**
+     * Update UI at step completion.
+     *
+     * @param step  step just completed
+     * @param sheet related sheet
+     */
     public void displayUI (Step step,
                            Sheet sheet)
     {

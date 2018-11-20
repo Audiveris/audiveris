@@ -22,7 +22,7 @@
 package org.audiveris.omr.sheet.grid;
 
 import org.audiveris.omr.math.AreaUtil;
-import org.audiveris.omr.sig.BasicImpacts;
+import org.audiveris.omr.sig.GradeImpacts;
 
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
@@ -56,8 +56,16 @@ public class BarConnection
                           double gapImpact,
                           double whiteImpact)
     {
-        super(align.topPeak, align.bottomPeak, align.slope, align.dWidth, new Impacts(
-              (BarAlignment.Impacts) align.getImpacts(), gapImpact, whiteImpact));
+        super(
+                align.topPeak,
+                align.bottomPeak,
+                align.slope,
+                align.dWidth,
+                new Impacts(
+                        ((BarAlignment.Impacts) align.getImpacts()).getAlignImpact(),
+                        ((BarAlignment.Impacts) align.getImpacts()).getWidthImpact(),
+                        gapImpact,
+                        whiteImpact));
     }
 
     //--------//
@@ -76,6 +84,11 @@ public class BarConnection
     //---------//
     // getArea //
     //---------//
+    /**
+     * Report the underlying area.
+     *
+     * @return connector area
+     */
     public Area getArea ()
     {
         if (area == null) {
@@ -85,9 +98,14 @@ public class BarConnection
         return area;
     }
 
-    //-----------/
+    //------------/
     // getMedian //
-    //-----------/
+    //------------/
+    /**
+     * Report the defining line of this connection.
+     *
+     * @return connection line
+     */
     public Line2D getMedian ()
     {
         if (median == null) {
@@ -102,6 +120,11 @@ public class BarConnection
     //----------//
     // getWidth //
     //----------//
+    /**
+     * Report the average with of the connector.
+     *
+     * @return width in pixels
+     */
     public double getWidth ()
     {
         return (topPeak.getWidth() + bottomPeak.getWidth()) / 2d;
@@ -119,14 +142,25 @@ public class BarConnection
     //---------//
     // Impacts //
     //---------//
+    /**
+     * Evaluation details as a connector.
+     */
     public static class Impacts
-            extends BasicImpacts
+            extends GradeImpacts
     {
 
         private static final String[] NAMES = new String[]{"align", "dWidth", "gap", "white"};
 
         private static final double[] WEIGHTS = new double[]{2, 1, 2, 2};
 
+        /**
+         * Create Impacts.
+         *
+         * @param align  impact for alignment
+         * @param dWidth impact for width consistency
+         * @param gap    impact for maximum vertical gap
+         * @param white  impact for ratio of white
+         */
         public Impacts (double align,
                         double dWidth,
                         double gap,
@@ -137,13 +171,6 @@ public class BarConnection
             setImpact(1, dWidth);
             setImpact(2, gap);
             setImpact(3, white);
-        }
-
-        public Impacts (BarAlignment.Impacts alignImpacts,
-                        double gap,
-                        double white)
-        {
-            this(alignImpacts.getAlignImpact(), alignImpacts.getWidthImpact(), gap, white);
         }
     }
 }

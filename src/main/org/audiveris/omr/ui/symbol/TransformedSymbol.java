@@ -32,6 +32,8 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code TransformedSymbol} displays a baseShape symbol with AffineTransform.
+ *
+ * @author Hervé Bitteur
  */
 public class TransformedSymbol
         extends ShapeSymbol

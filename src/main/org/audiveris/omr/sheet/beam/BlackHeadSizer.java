@@ -92,8 +92,9 @@ public class BlackHeadSizer
     public void process (List<Glyph> spots)
     {
         final float radius = (float) (params.diameter - 1) / 2;
-        logger.info("Spots black-head retrieval diameter: {}", String
-                    .format("%.1f", params.diameter));
+        logger.info(
+                "Spots black-head retrieval diameter: {}",
+                String.format("%.1f", params.diameter));
 
         final int[] seOffset = {0, 0};
         final StructureElement se = new StructureElement(0, 1, radius, seOffset);
@@ -102,8 +103,8 @@ public class BlackHeadSizer
         // Filter the spots based on typical weight, width and height.
         // Then derive main width and main height.
         // For visual check, use group BLACK_HEAD_SPOT and BLACK_STACK_SPOT
-        final List<Glyph> singles = new ArrayList<Glyph>();
-        final List<Glyph> stacks = new ArrayList<Glyph>();
+        final List<Glyph> singles = new ArrayList<>();
+        final List<Glyph> stacks = new ArrayList<>();
 
         for (Glyph glyph : spots) {
             // First check on glyph
@@ -162,11 +163,7 @@ public class BlackHeadSizer
 
         final int height = glyph.getHeight();
 
-        if ((height < params.minHeight) || (height > params.maxStackHeight)) {
-            return false;
-        }
-
-        return true;
+        return !((height < params.minHeight) || (height > params.maxStackHeight));
     }
 
     //----------------//
@@ -237,10 +234,11 @@ public class BlackHeadSizer
             heights.includeValue(single.getHeight());
         }
 
-        final BlackHeadScale blackHeadScale = new BlackHeadScale(widths.getMeanValue(), widths
-                                                                 .getStandardDeviation(), heights
-                                                                         .getMeanValue(), heights
-                                                                         .getStandardDeviation());
+        final BlackHeadScale blackHeadScale = new BlackHeadScale(
+                widths.getMeanValue(),
+                widths.getStandardDeviation(),
+                heights.getMeanValue(),
+                heights.getStandardDeviation());
         sheet.getScale().setBlackHeadScale(blackHeadScale);
         logger.info("Core black head count: {} {}", core.size(), blackHeadScale);
 
@@ -253,48 +251,63 @@ public class BlackHeadSizer
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Scale.Fraction closingDiameter = new Scale.Fraction(0.9,
-                                                                          "Closing diameter for black head spot");
+        private final Scale.Fraction closingDiameter = new Scale.Fraction(
+                0.9,
+                "Closing diameter for black head spot");
 
-        private final Constant.Integer binarizationThreshold = new Constant.Integer("pixel", 110,
-                                                                                    "Global binarization threshold for heads");
+        private final Constant.Integer binarizationThreshold = new Constant.Integer(
+                "pixel",
+                110,
+                "Global binarization threshold for heads");
 
-        private final Scale.Fraction minWidth = new Scale.Fraction(1.0,
-                                                                   "Minimum width for black head spot");
+        private final Scale.Fraction minWidth = new Scale.Fraction(
+                1.0,
+                "Minimum width for black head spot");
 
-        private final Scale.Fraction maxWidth = new Scale.Fraction(2.0,
-                                                                   "Maximum width for black head spot");
+        private final Scale.Fraction maxWidth = new Scale.Fraction(
+                2.0,
+                "Maximum width for black head spot");
 
-        private final Scale.Fraction minHeight = new Scale.Fraction(0.9,
-                                                                    "Minimum height for black head spot");
+        private final Scale.Fraction minHeight = new Scale.Fraction(
+                0.9,
+                "Minimum height for black head spot");
 
-        private final Scale.Fraction maxHeight = new Scale.Fraction(1.5,
-                                                                    "Maximum height for black head spot");
+        private final Scale.Fraction maxHeight = new Scale.Fraction(
+                1.5,
+                "Maximum height for black head spot");
 
-        private final Scale.AreaFraction minWeight = new Scale.AreaFraction(0.8,
-                                                                            "Minimum weight for black head spot");
+        private final Scale.AreaFraction minWeight = new Scale.AreaFraction(
+                0.8,
+                "Minimum weight for black head spot");
 
-        private final Scale.AreaFraction maxWeight = new Scale.AreaFraction(1.5,
-                                                                            "Maximum weight for black head spot");
+        private final Scale.AreaFraction maxWeight = new Scale.AreaFraction(
+                1.5,
+                "Maximum weight for black head spot");
 
-        private final Scale.Fraction minStackHeight = new Scale.Fraction(2.0,
-                                                                         "Minimum height for vertical stack of black head spots");
+        private final Scale.Fraction minStackHeight = new Scale.Fraction(
+                2.0,
+                "Minimum height for vertical stack of black head spots");
 
-        private final Scale.Fraction maxStackHeight = new Scale.Fraction(4.0,
-                                                                         "Maximum height for vertical stack of black head spots");
+        private final Scale.Fraction maxStackHeight = new Scale.Fraction(
+                4.0,
+                "Maximum height for vertical stack of black head spots");
 
-        private final Scale.AreaFraction minStackWeight = new Scale.AreaFraction(2.0,
-                                                                                 "Maximum weight for vertical stack of black head spots");
+        private final Scale.AreaFraction minStackWeight = new Scale.AreaFraction(
+                2.0,
+                "Maximum weight for vertical stack of black head spots");
 
-        private final Scale.AreaFraction maxStackWeight = new Scale.AreaFraction(4.0,
-                                                                                 "Maximum weight for vertical stack of black head spots");
+        private final Scale.AreaFraction maxStackWeight = new Scale.AreaFraction(
+                4.0,
+                "Maximum weight for vertical stack of black head spots");
 
-        private final Constant.Integer singlesQuorum = new Constant.Integer("glyphs", 20,
-                                                                            "Quorum for usable singles");
+        private final Constant.Integer singlesQuorum = new Constant.Integer(
+                "glyphs",
+                20,
+                "Quorum for usable singles");
     }
 
     //------------//
@@ -337,7 +350,7 @@ public class BlackHeadSizer
          *
          * @param scale the scaling factor
          */
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             minWidth = scale.toPixels(constants.minWidth);
             maxWidth = scale.toPixels(constants.maxWidth);

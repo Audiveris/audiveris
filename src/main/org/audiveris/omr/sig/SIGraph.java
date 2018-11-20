@@ -176,11 +176,17 @@ public class SIGraph
     //------------------------//
     // computeContextualGrade //
     //------------------------//
+    /**
+     * Compute the contextual grade of provided inter.
+     *
+     * @param inter provided inter
+     * @return contextual grade value
+     */
     public double computeContextualGrade (Inter inter)
     {
         final List<Support> supports = getSupports(inter);
-        final double cg = supports.isEmpty() ? inter.getGrade() : computeContextualGrade(inter,
-                                                                                         supports);
+        final double cg = supports.isEmpty() ? inter.getGrade()
+                : computeContextualGrade(inter, supports);
         inter.setContextualGrade(cg);
 
         return cg;
@@ -198,7 +204,7 @@ public class SIGraph
      */
     public List<Inter> containedInters (Rectangle rect)
     {
-        List<Inter> found = new ArrayList<Inter>();
+        List<Inter> found = new ArrayList<>();
 
         for (Inter inter : vertexSet()) {
             final Rectangle box = inter.getBounds();
@@ -225,7 +231,7 @@ public class SIGraph
      */
     public List<Inter> containingInters (Point point)
     {
-        List<Inter> found = new ArrayList<Inter>();
+        List<Inter> found = new ArrayList<>();
 
         for (Inter inter : vertexSet()) {
             Rectangle bounds = inter.getBounds();
@@ -259,6 +265,11 @@ public class SIGraph
     //--------------//
     // deleteInters //
     //--------------//
+    /**
+     * Remove a collection of inters.
+     *
+     * @param inters to delete
+     */
     public void deleteInters (Collection<? extends Inter> inters)
     {
         for (Inter inter : inters) {
@@ -277,7 +288,7 @@ public class SIGraph
      */
     public Set<Inter> deleteWeakInters ()
     {
-        Set<Inter> removed = new LinkedHashSet<Inter>();
+        Set<Inter> removed = new LinkedHashSet<>();
 
         for (Inter inter : vertexSet()) {
             // Skip frozen inters
@@ -314,7 +325,7 @@ public class SIGraph
      */
     public Set<Relation> exclusions ()
     {
-        Set<Relation> exclusions = new LinkedHashSet<Relation>();
+        Set<Relation> exclusions = new LinkedHashSet<>();
 
         for (Relation rel : edgeSet()) {
             if (rel instanceof Exclusion) {
@@ -335,7 +346,7 @@ public class SIGraph
     public Set<Inter> getClosureOf (final List<? extends Inter> seeds,
                                     final Class... relationClasses)
     {
-        final Set<Inter> closure = new LinkedHashSet<Inter>();
+        final Set<Inter> closure = new LinkedHashSet<>();
 
         class ClosureBuilder
         {
@@ -437,15 +448,15 @@ public class SIGraph
 
         final int n = inters.size();
         final List<Inter> stems = (focus instanceof HeadInter) ? stemsOf(inters) : null;
-        final List<List<Inter>> result = new ArrayList<List<Inter>>();
+        final List<List<Inter>> result = new ArrayList<>();
 
         // Map inter -> concurrents of inter (that appear later within the provided list)
-        List<Set<Integer>> concurrentSets = new ArrayList<Set<Integer>>();
+        List<Set<Integer>> concurrentSets = new ArrayList<>();
         boolean conflictDetected = false;
 
         for (int i = 0; i < n; i++) {
             Inter inter = inters.get(i);
-            Set<Integer> concurrents = new LinkedHashSet<Integer>();
+            Set<Integer> concurrents = new LinkedHashSet<>();
             concurrentSets.add(concurrents);
 
             for (Relation rel : getExclusions(inter)) {
@@ -485,7 +496,7 @@ public class SIGraph
         }
 
         // Define all possible sequences
-        List<Sequence> seqs = new ArrayList<Sequence>();
+        List<Sequence> seqs = new ArrayList<>();
         seqs.add(new Sequence(n));
 
         for (int i = 0; i < n; i++) {
@@ -514,7 +525,7 @@ public class SIGraph
 
         // Build resulting partitions
         for (Sequence seq : seqs) {
-            List<Inter> list = new ArrayList<Inter>();
+            List<Inter> list = new ArrayList<>();
 
             for (int i = 0; i < n; i++) {
                 if (seq.line[i] == 1) {
@@ -566,7 +577,7 @@ public class SIGraph
     public Set<Relation> getRelations (Inter inter,
                                        Class... classes)
     {
-        Set<Relation> relations = new LinkedHashSet<Relation>();
+        Set<Relation> relations = new LinkedHashSet<>();
 
         for (Relation rel : edgesOf(inter)) {
             for (Class classe : classes) {
@@ -592,7 +603,7 @@ public class SIGraph
     public Set<Relation> getRelations (Inter inter,
                                        Class classe)
     {
-        Set<Relation> relations = new LinkedHashSet<Relation>();
+        Set<Relation> relations = new LinkedHashSet<>();
 
         for (Relation rel : edgesOf(inter)) {
             if (classe.isInstance(rel)) {
@@ -614,7 +625,7 @@ public class SIGraph
      */
     public List<Support> getSupports (Inter inter)
     {
-        List<Support> supports = new ArrayList<Support>();
+        List<Support> supports = new ArrayList<>();
 
         for (Relation rel : edgesOf(inter)) {
             if (rel instanceof Support) {
@@ -676,6 +687,12 @@ public class SIGraph
         }
     }
 
+    @Override
+    public Object clone ()
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
     //--------------//
     // getRelations //
     //--------------//
@@ -689,7 +706,7 @@ public class SIGraph
     public static Set<Relation> getRelations (Collection<? extends Relation> relations,
                                               Class classe)
     {
-        Set<Relation> found = new LinkedHashSet<Relation>();
+        Set<Relation> found = new LinkedHashSet<>();
 
         for (Relation rel : relations) {
             if (classe.isInstance(rel)) {
@@ -765,7 +782,7 @@ public class SIGraph
                                             Cause cause)
     {
         List<Inter> list = new ArrayList<Inter>(new LinkedHashSet<Inter>(inters));
-        List<Relation> exclusions = new ArrayList<Relation>();
+        List<Relation> exclusions = new ArrayList<>();
 
         for (int i = 0, iBreak = list.size(); i < iBreak; i++) {
             Inter inter = list.get(i);
@@ -826,7 +843,8 @@ public class SIGraph
             if (inter1.isVip() || inter2.isVip()) {
                 logger.info("VIP support {}", sup.toLongString(this));
             }
-        } catch (Exception ex) {
+        } catch (IllegalAccessException |
+                 InstantiationException ex) {
             logger.error("Could not instantiate {}", supportClass);
         }
 
@@ -944,7 +962,7 @@ public class SIGraph
      */
     public List<Inter> intersectedInters (Rectangle box)
     {
-        List<Inter> found = new ArrayList<Inter>();
+        List<Inter> found = new ArrayList<>();
 
         for (Inter inter : vertexSet()) {
             if (inter.isRemoved()) {
@@ -973,7 +991,7 @@ public class SIGraph
     public boolean noSupport (Inter one,
                               Inter two)
     {
-        Set<Relation> rels = new LinkedHashSet<Relation>();
+        Set<Relation> rels = new LinkedHashSet<>();
         rels.addAll(getAllEdges(one, two));
         rels.addAll(getAllEdges(two, one));
 
@@ -1006,7 +1024,8 @@ public class SIGraph
      * Reduce the provided exclusions as much as possible by removing the source or
      * target vertex of lower contextual grade.
      * <p>
-     * Strategy is as follows:<ol>
+     * Strategy is as follows:
+     * <ol>
      * <li>Pick up among all current exclusions the one whose high inter has the highest contextual
      * grade contribution among all exclusions,</li>
      * <li>Remove the weaker inter in this chosen exclusion relation,</li>
@@ -1019,7 +1038,7 @@ public class SIGraph
      */
     public Set<Inter> reduceExclusions (Collection<? extends Relation> exclusions)
     {
-        final Set<Inter> removed = new LinkedHashSet<Inter>();
+        final Set<Inter> removed = new LinkedHashSet<>();
         Relation bestRel;
 
         do {
@@ -1031,8 +1050,9 @@ public class SIGraph
                 Relation rel = it.next();
 
                 if (containsEdge(rel)) {
-                    final double cp = Math.max(getEdgeSource(rel).getBestGrade(), getEdgeTarget(rel)
-                                               .getBestGrade());
+                    final double cp = Math.max(
+                            getEdgeSource(rel).getBestGrade(),
+                            getEdgeTarget(rel).getBestGrade());
 
                     if (bestCP < cp) {
                         bestCP = cp;
@@ -1052,8 +1072,10 @@ public class SIGraph
                 final Inter weaker = (scp < tcp) ? source : target;
 
                 if (weaker.isVip()) {
-                    logger.info("VIP conflict {} deleting weaker {}", bestRel.toLongString(this),
-                                weaker);
+                    logger.info(
+                            "VIP conflict {} deleting weaker {}",
+                            bestRel.toLongString(this),
+                            weaker);
                 }
 
                 // Which inters were involved in some support relation with this weaker inter?
@@ -1130,20 +1152,18 @@ public class SIGraph
      */
     public void sortBySource (List<Relation> rels)
     {
-        Collections.sort(
-                rels,
-                new Comparator<Relation>()
-        {
-            @Override
-            public int compare (Relation r1,
-                                Relation r2)
-            {
-                Inter s1 = getEdgeSource(r1);
-                Inter s2 = getEdgeSource(r2);
+        Collections.sort(rels, new Comparator<Relation>()
+                 {
+                     @Override
+                     public int compare (Relation r1,
+                                         Relation r2)
+                     {
+                         Inter s1 = getEdgeSource(r1);
+                         Inter s2 = getEdgeSource(r2);
 
-                return Double.compare(s2.getBestGrade(), s1.getBestGrade());
-            }
-        });
+                         return Double.compare(s2.getBestGrade(), s1.getBestGrade());
+                     }
+                 });
     }
 
     //----------//
@@ -1184,10 +1204,10 @@ public class SIGraph
                                            Collection<? extends Support> supports)
     {
         /** Collection of partners. */
-        final List<Inter> partners = new ArrayList<Inter>();
+        final List<Inter> partners = new ArrayList<>();
 
         /** Map: partner -> contribution. */
-        final Map<Inter, Double> partnerContrib = new HashMap<Inter, Double>();
+        final Map<Inter, Double> partnerContrib = new HashMap<>();
 
         // Check inter involvement
         for (Support support : supports) {
@@ -1232,7 +1252,7 @@ public class SIGraph
     //----------------//
     private Set<Inter> involvedInters (Collection<? extends Relation> relations)
     {
-        Set<Inter> inters = new LinkedHashSet<Inter>();
+        Set<Inter> inters = new LinkedHashSet<>();
 
         for (Relation rel : relations) {
             inters.add(getEdgeSource(rel));
@@ -1247,7 +1267,7 @@ public class SIGraph
     //---------//
     private List<Inter> stemsOf (List<Inter> inters)
     {
-        List<Inter> stems = new ArrayList<Inter>();
+        List<Inter> stems = new ArrayList<>();
 
         for (Inter inter : inters) {
             if (inter instanceof StemInter) {
@@ -1289,7 +1309,8 @@ public class SIGraph
     /**
      * This class lists a sequence of interpretations statuses.
      * <p>
-     * Possible status values are:<ul>
+     * Possible status values are:
+     * <ul>
      * <li>-1: the related inter is forbidden (because of a conflict with an inter located before in
      * the sequence)</li>
      * <li>0: the related inter is not selected</li>
@@ -1303,7 +1324,7 @@ public class SIGraph
         // This line is parallel to the list of inters considered
         int[] line;
 
-        public Sequence (int n)
+        Sequence (int n)
         {
             line = new int[n];
             Arrays.fill(line, 0);
@@ -1327,7 +1348,7 @@ public class SIGraph
 
         private final Shape shape;
 
-        public ShapePredicate (Shape shape)
+        ShapePredicate (Shape shape)
         {
             this.shape = shape;
         }
@@ -1348,7 +1369,7 @@ public class SIGraph
 
         private final Collection<Shape> shapes;
 
-        public ShapesPredicate (Collection<Shape> shapes)
+        ShapesPredicate (Collection<Shape> shapes)
         {
             this.shapes = shapes;
         }
@@ -1371,8 +1392,8 @@ public class SIGraph
 
         private final Class classe;
 
-        public StaffClassPredicate (Staff staff,
-                                    Class classe)
+        StaffClassPredicate (Staff staff,
+                             Class classe)
         {
             this.staff = staff;
             this.classe = classe;

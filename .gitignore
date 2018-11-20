@@ -51,3 +51,8 @@ Thumb.db
 /bin/
 /build/
 /.gradle/
+
+# Eclipse added files
+.classpath
+.project
+.settings

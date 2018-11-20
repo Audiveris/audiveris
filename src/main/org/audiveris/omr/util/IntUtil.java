@@ -37,6 +37,11 @@ public abstract class IntUtil
 
     private static final Logger logger = LoggerFactory.getLogger(IntUtil.class);
 
+    /** Not meant to be instantiated. */
+    private IntUtil ()
+    {
+    }
+
     //-----------//
     // parseInts //
     //-----------//
@@ -48,7 +53,7 @@ public abstract class IntUtil
      */
     public static List<Integer> parseInts (String str)
     {
-        final List<Integer> intList = new ArrayList<Integer>();
+        final List<Integer> intList = new ArrayList<>();
         final String[] tokens = str.split("\\s*,\\s*");
 
         for (String token : tokens) {

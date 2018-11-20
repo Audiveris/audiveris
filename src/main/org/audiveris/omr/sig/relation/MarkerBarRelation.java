@@ -66,14 +66,22 @@ public class MarkerBarRelation
         return constants.markerSupportCoeff.getValue();
     }
 
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
-        private final Constant.Ratio markerSupportCoeff = new Constant.Ratio(3,
-                                                                             "Supporting coeff for (source) marker");
+        private final Constant.Ratio markerSupportCoeff = new Constant.Ratio(
+                3,
+                "Supporting coeff for (source) marker");
     }
 }

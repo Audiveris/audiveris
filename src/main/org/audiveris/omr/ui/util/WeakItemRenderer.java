@@ -33,6 +33,9 @@ public class WeakItemRenderer
         implements ItemRenderer
 {
 
+    /**
+     * Weak reference to the underlying renderer.
+     */
     protected final WeakReference<ItemRenderer> weakRenderer;
 
     /**
@@ -42,7 +45,7 @@ public class WeakItemRenderer
      */
     public WeakItemRenderer (ItemRenderer renderer)
     {
-        weakRenderer = new WeakReference<ItemRenderer>(renderer);
+        weakRenderer = new WeakReference<>(renderer);
     }
 
     //-------------//

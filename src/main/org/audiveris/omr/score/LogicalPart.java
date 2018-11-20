@@ -40,7 +40,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  * It can be "instantiated" in one or several SystemInfo by a {@link org.audiveris.omr.sheet.Part}.
  * <p>
  * There is an intermediate LogicalPart instance at Page level, which abstracts the system parts at
- * page level, and which is then used when abstracting the part information from pages to score.</p>
+ * page level, and which is then used when abstracting the part information from pages to score.
  *
  * @author Hervé Bitteur
  */
@@ -52,7 +52,6 @@ public class LogicalPart
 
     private static final Logger logger = LoggerFactory.getLogger(LogicalPart.class);
 
-    //
     // Persistent data
     //----------------
     //
@@ -119,9 +118,9 @@ public class LogicalPart
             return false;
         }
 
-        return Objects.deepEquals(midiProgram, that.midiProgram) && Objects.deepEquals(name,
-                                                                                       that.name)
-                       && Objects.deepEquals(abbreviation, that.abbreviation);
+        return Objects.deepEquals(midiProgram, that.midiProgram) && Objects.deepEquals(
+                name,
+                that.name) && Objects.deepEquals(abbreviation, that.abbreviation);
     }
 
     //-------//
@@ -139,6 +138,19 @@ public class LogicalPart
         }
     }
 
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the id of this part
+     *
+     * @return the part id
+     */
+    public int getId ()
+    {
+        return id;
+    }
+
     //-----------------//
     // getAbbreviation //
     //-----------------//
@@ -150,9 +162,25 @@ public class LogicalPart
         return abbreviation;
     }
 
+    //-----------------//
+    // setAbbreviation //
+    //-----------------//
+    /**
+     * @param abbreviation the abbreviation to set
+     */
+    public void setAbbreviation (String abbreviation)
+    {
+        this.abbreviation = abbreviation;
+    }
+
     //----------------//
     // getDefaultName //
     //----------------//
+    /**
+     * Report the default name for this part, based on staff count.
+     *
+     * @return inferred name
+     */
     public String getDefaultName ()
     {
         switch (staffCount) {
@@ -170,6 +198,11 @@ public class LogicalPart
     //-------------------//
     // getDefaultProgram //
     //-------------------//
+    /**
+     * Report the default midi program, based on staff count.
+     *
+     * @return inferred program
+     */
     public Integer getDefaultProgram ()
     {
         logger.debug("Part #{} count={}", getId(), staffCount);
@@ -186,25 +219,30 @@ public class LogicalPart
         }
     }
 
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Report the id of this part
-     *
-     * @return the part id
-     */
-    public int getId ()
-    {
-        return id;
-    }
-
     //----------------//
     // getMidiProgram //
     //----------------//
+    /**
+     * Report part midi program number, if any.
+     *
+     * @return program number or null
+     */
     public Integer getMidiProgram ()
     {
         return midiProgram;
+    }
+
+    //----------------//
+    // setMidiProgram //
+    //----------------//
+    /**
+     * Assign the part midi program.
+     *
+     * @param midiProgram the midi program number for this part
+     */
+    public void setMidiProgram (Integer midiProgram)
+    {
+        this.midiProgram = midiProgram;
     }
 
     //---------//
@@ -218,6 +256,19 @@ public class LogicalPart
     public String getName ()
     {
         return name;
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assign a name to this part
+     *
+     * @param name the new part name
+     */
+    public void setName (String name)
+    {
+        this.name = name;
     }
 
     //--------//
@@ -268,38 +319,6 @@ public class LogicalPart
     public boolean isMultiStaff ()
     {
         return staffCount > 1;
-    }
-
-    //-----------------//
-    // setAbbreviation //
-    //-----------------//
-    /**
-     * @param abbreviation the abbreviation to set
-     */
-    public void setAbbreviation (String abbreviation)
-    {
-        this.abbreviation = abbreviation;
-    }
-
-    //----------------//
-    // setMidiProgram //
-    //----------------//
-    public void setMidiProgram (Integer midiProgram)
-    {
-        this.midiProgram = midiProgram;
-    }
-
-    //---------//
-    // setName //
-    //---------//
-    /**
-     * Assign a name to this part
-     *
-     * @param name the new part name
-     */
-    public void setName (String name)
-    {
-        this.name = name;
     }
 
     //-------------//
@@ -354,28 +373,37 @@ public class LogicalPart
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 
         // Default Part names
-        private final Constant.String defaultSingleStaffPartName = new Constant.String("Voice",
-                                                                                       "Default name for a part with one staff");
+        private final Constant.String defaultSingleStaffPartName = new Constant.String(
+                "Voice",
+                "Default name for a part with one staff");
 
-        private final Constant.String defaultDoubleStaffPartName = new Constant.String("Piano",
-                                                                                       "Default name for a part with two staves");
+        private final Constant.String defaultDoubleStaffPartName = new Constant.String(
+                "Piano",
+                "Default name for a part with two staves");
 
-        private final Constant.String defaultPartName = new Constant.String("NoName",
-                                                                            "Default name for a part with more than two staves");
+        private final Constant.String defaultPartName = new Constant.String(
+                "NoName",
+                "Default name for a part with more than two staves");
 
         // Default Midi program numbers
         private final Constant.Integer defaultSingleStaffPartProgram = new Constant.Integer(
-                "MidiProgram", 54, "Default program number for a part with one staff");
+                "MidiProgram",
+                54,
+                "Default program number for a part with one staff");
 
         private final Constant.Integer defaultDoubleStaffPartProgram = new Constant.Integer(
-                "MidiProgram", 1, "Default program number for a part with two staves");
+                "MidiProgram",
+                1,
+                "Default program number for a part with two staves");
 
-        private final Constant.Integer defaultPartProgram = new Constant.Integer("MidiProgram", 1,
-                                                                                 "Default program number for a part with more than two staves");
+        private final Constant.Integer defaultPartProgram = new Constant.Integer(
+                "MidiProgram",
+                1,
+                "Default program number for a part with more than two staves");
     }
 }
