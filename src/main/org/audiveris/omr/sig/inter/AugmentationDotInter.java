@@ -342,8 +342,8 @@ public class AugmentationDotInter
                 HeadInter head = (HeadInter) ih;
 
                 // Check head is within reach and not yet augmented
-                if (GeoUtil.yEmbraces(luBox, head.getCenter().y) && (head
-                        .getFirstAugmentationDot() == null)) {
+                if (GeoUtil.yEmbraces(luBox, head.getCenter().y)
+                            && (head.getFirstAugmentationDot() == null)) {
                     Point refPt = head.getCenterRight();
                     double xGap = dotCenter.x - refPt.x;
 
@@ -353,6 +353,7 @@ public class AugmentationDotInter
                     }
 
                     // When this method is called, there is at most one stem per head
+                    // (including the case of shared heads)
                     for (Relation rel : system.getSig().getRelations(
                             head,
                             HeadStemRelation.class)) {

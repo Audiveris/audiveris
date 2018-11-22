@@ -475,7 +475,7 @@ public class SigReducer
     /**
      * Perform checks on augmentation dots.
      * <p>
-     * An augmentation dot needs a target to augment (note, rest or another augmentation dot).
+     * An augmentation dot needs a target to augment (note, rest or a first augmentation dot).
      *
      * @return the count of modifications done
      */

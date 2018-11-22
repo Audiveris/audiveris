@@ -726,21 +726,30 @@ public class DotFactory
             aug.setStaff(links.get(0).partner.getStaff());
 
             for (Link link : links) {
-                link.applyTo(aug);
-
-                // Specific case for mirrored head
+                // Very specific case for mirrored head
                 if (link.partner instanceof HeadInter) {
-                    Inter mirror = link.partner.getMirror();
+                    final HeadInter h1 = (HeadInter) link.partner;
+                    final HeadInter h2 = (HeadInter) h1.getMirror();
 
-                    if (mirror != null) {
+                    if (h2 != null) {
+                        // OMR engine assigns the aug dot ONLY to the head with longer duration
+                        // which means lower number of beams or flags.
+                        // See many examples in Dichterliebe01 case.
+                        final int bf1 = h1.getChord().getBeamsOrFlagsNumber();
+                        final int bf2 = h2.getChord().getBeamsOrFlagsNumber();
+                        HeadInter head = (bf1 < bf2) ? h1 : h2;
                         logger.debug(
-                                "Edge from {} to mirrored {} and {}",
+                                "Edge from {} to {} (not mirror {})",
                                 aug,
-                                link.partner,
-                                mirror);
-                        sig.addEdge(aug, mirror, link.relation.duplicate());
+                                head,
+                                head.getMirror());
+                        sig.addEdge(aug, head, link.relation);
+
+                        continue;
                     }
                 }
+
+                link.applyTo(aug);
             }
         }
     }

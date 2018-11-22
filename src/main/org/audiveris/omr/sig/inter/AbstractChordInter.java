@@ -293,7 +293,7 @@ public abstract class AbstractChordInter
      * Report the sequence of beams that are attached to this chord,
      * ordered from the tail to the head of the chord.
      *
-     * @return the attached beams
+     * @return the list of attached beams, perhaps empty
      */
     public List<AbstractBeamInter> getBeams ()
     {
@@ -327,6 +327,19 @@ public abstract class AbstractChordInter
         }
 
         return beams;
+    }
+
+    //-----------------------//
+    // getBeamsOrFlagsNumber //
+    //-----------------------//
+    /**
+     * Report the number of beams/flags that apply to this chord.
+     *
+     * @return beams count + flags count
+     */
+    public int getBeamsOrFlagsNumber ()
+    {
+        return getBeams().size() + getFlagsNumber();
     }
 
     //----------------//
@@ -473,8 +486,7 @@ public abstract class AbstractChordInter
             if (!noteShape.isWholeRest()) {
                 // Apply flags/beams for non-rests
                 if (!noteShape.isRest()) {
-                    final int beamNb = (getBeams() != null) ? getBeams().size() : 0;
-                    final int fbn = getFlagsNumber() + beamNb;
+                    final int fbn = getBeamsOrFlagsNumber();
 
                     if (fbn > 0) {
                         /*

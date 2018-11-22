@@ -32,8 +32,8 @@ import java.util.List;
  * Seen from an Inter instance, class {@code Link} describes a potential relation with
  * another Inter instance (the partner).
  * <p>
- * This is meant to deal with a potential relation between the inter instance and the partner,
- * before perhaps recording the relation as an edge within the SIG.
+ * This is meant to deal with a <b>potential</b> relation between the inter instance and the
+ * partner, before perhaps recording the relation as an edge within the SIG.
  *
  * @author Hervé Bitteur
  */

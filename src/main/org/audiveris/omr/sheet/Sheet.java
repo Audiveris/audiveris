@@ -1185,6 +1185,13 @@ public class Sheet
                             staff.getSpecificInterline(),
                             sampleSheet,
                             pitch);
+                } else {
+                    logger.debug(
+                            "No sample for {} shape:{} staff:{} glyph:{}",
+                            inter,
+                            shape,
+                            staff,
+                            glyph);
                 }
             }
         }

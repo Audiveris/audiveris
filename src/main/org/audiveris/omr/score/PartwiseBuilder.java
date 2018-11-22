@@ -1963,7 +1963,7 @@ public class PartwiseBuilder
 
             // For specific mirrored note
             if (note.getMirror() != null) {
-                int fbn = note.getChord().getFlagsNumber() + note.getChord().getBeams().size();
+                int fbn = note.getChord().getBeamsOrFlagsNumber();
 
                 if ((fbn > 0) && (note.getShape() == Shape.NOTEHEAD_VOID)) {
                     // Indicate that the head should not be filled

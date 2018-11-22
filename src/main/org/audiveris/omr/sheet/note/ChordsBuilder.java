@@ -407,6 +407,7 @@ public class ChordsBuilder
         final HeadInter rightHead;
 
         // TODO: perhaps duplicate void -> black when flag/beam involved
+        // But in this CHORDS step, the beams exist but not the flags yet
         rightHead = leftHead.duplicate();
 
         // Handle relations as well
@@ -446,7 +447,9 @@ public class ChordsBuilder
             } else if (rel instanceof AlterHeadRelation) {
                 // TODO
             } else if (rel instanceof AugmentationRelation) {
-                // TODO: to which head(s) does the dot apply?
+                // To which head(s) does the dot apply?
+                // This method runs in CHORDS step, and flags are not yet available (only beams are)
+                // So we must postpone the decision.
             }
         }
 

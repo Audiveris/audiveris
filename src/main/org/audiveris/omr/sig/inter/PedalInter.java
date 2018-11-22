@@ -23,6 +23,7 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.Relation;
 
@@ -88,6 +89,21 @@ public class PedalInter
         }
 
         return null;
+    }
+
+    //----------//
+    // getStaff //
+    //----------//
+    @Override
+    public Staff getStaff ()
+    {
+        if (staff == null) {
+            if (sig != null) {
+                staff = sig.getSystem().getStaffAtOrAbove(getCenter());
+            }
+        }
+
+        return staff;
     }
 
     //-----------//
