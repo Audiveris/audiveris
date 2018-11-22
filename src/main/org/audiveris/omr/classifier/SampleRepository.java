@@ -841,7 +841,10 @@ public class SampleRepository
         source.loadAllImages();
 
         for (SampleSheet sampleSheet : source.nameMap.values()) {
-            includeSampleSheet(sampleSheet);
+            // We process all but font-based samples
+            if (!isSymbols(sampleSheet.getDescriptor().getName())) {
+                includeSampleSheet(sampleSheet);
+            }
         }
     }
 
