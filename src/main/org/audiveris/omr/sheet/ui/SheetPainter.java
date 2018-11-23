@@ -27,6 +27,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.ui.SigPainter;
+import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.util.UIUtil;
@@ -76,6 +77,9 @@ public abstract class SheetPainter
 
     /** Sheet. */
     protected final Sheet sheet;
+
+    /** View parameters. */
+    protected final ViewParameters viewParams = ViewParameters.getInstance();
 
     /** Graphic context. */
     protected final Graphics2D g;

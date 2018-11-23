@@ -105,16 +105,17 @@ public class InterMenu
     {
         JMenuItem title = new JMenuItem("Relations:");
         title.setEnabled(false);
-        title.addMouseListener(
-                new AbstractMouseListener()
+        title.addMouseListener(new AbstractMouseListener()
         {
             @Override
             public void mouseEntered (MouseEvent e)
             {
-                sheet.getInterIndex().getEntityService().publish(new EntityListEvent<Inter>(this,
-                                                                                            SelectionHint.ENTITY_INIT,
-                                                                                            MouseMovement.PRESSING,
-                                                                                            inter));
+                sheet.getInterIndex().getEntityService().publish(
+                        new EntityListEvent<>(
+                                this,
+                                SelectionHint.ENTITY_INIT,
+                                MouseMovement.PRESSING,
+                                inter));
             }
         });
 

@@ -113,10 +113,12 @@ public class GlyphListMenu
             ShapeMenu shapeMenu = (ShapeMenu) e.getSource();
             Glyph glyph = shapeMenu.getGlyph();
 
-            sheet.getGlyphIndex().getEntityService().publish(new EntityListEvent<Glyph>(this,
-                                                                                        SelectionHint.ENTITY_INIT,
-                                                                                        MouseMovement.PRESSING,
-                                                                                        glyph));
+            sheet.getGlyphIndex().getEntityService().publish(
+                    new EntityListEvent<>(
+                            this,
+                            SelectionHint.ENTITY_INIT,
+                            MouseMovement.PRESSING,
+                            glyph));
         }
     }
 }

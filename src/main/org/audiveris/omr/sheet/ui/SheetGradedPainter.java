@@ -119,5 +119,11 @@ public class SheetGradedPainter
 
             g.setColor(color);
         }
+
+        @Override
+        protected boolean splitMirrors ()
+        {
+            return viewParams.isVoicePainting();
+        }
     }
 }

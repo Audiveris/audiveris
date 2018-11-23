@@ -89,6 +89,8 @@ import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -101,7 +103,8 @@ import javax.swing.JPanel;
  * <p>
  * Its life cycle ends with the painting of a sheet.
  * <p>
- * Remarks on no-op visit() for:<ul>
+ * Remarks on no-op visit() for:
+ * <ul>
  * <li>AbstractChordInter: Notes and stem are painted on their own
  * <li>KeyInter: Each key item is painted on its own
  * <li>WordInter: Painting is handled from sentence
@@ -134,8 +137,7 @@ public abstract class SigPainter
         /** 7 Pink */
         new Color(255, 150, 150, alpha),
         /** 8 BlueGreen */
-        new Color(0, 128, 128, alpha)
-    };
+        new Color(0, 128, 128, alpha)};
 
     /** Graphic context. */
     protected final Graphics2D g;
@@ -193,8 +195,10 @@ public abstract class SigPainter
         }
 
         // Determine lines parameters
-        lineStroke = new BasicStroke((scale != null) ? scale.getFore() : 2f, BasicStroke.CAP_ROUND,
-                                     BasicStroke.JOIN_ROUND);
+        lineStroke = new BasicStroke(
+                (scale != null) ? scale.getFore() : 2f,
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND);
         stemStroke = new BasicStroke(3f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
         ledgerStroke = new BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
     }
@@ -425,8 +429,9 @@ public abstract class SigPainter
         final Rectangle glyphBox = bracket.getGlyph().getBounds();
         final BracketInter.BracketKind kind = bracket.getKind();
         final double width = bracket.getWidth();
-        final Dimension dim = new Dimension((int) Math.rint(widthRatio * width), (int) Math.rint(
-                                            heightRatio * width));
+        final Dimension dim = new Dimension(
+                (int) Math.rint(widthRatio * width),
+                (int) Math.rint(heightRatio * width));
         final MusicFont font = getMusicFont(false);
 
         Integer top = null;
@@ -442,8 +447,9 @@ public abstract class SigPainter
 
         if ((kind == BracketInter.BracketKind.BOTTOM) || (kind == BracketInter.BracketKind.BOTH)) {
             // Draw lower symbol part
-            final Point left = new Point(box.x, (glyphBox.y + glyphBox.height) - (int) Math.rint(
-                                         barRatio * width));
+            final Point left = new Point(
+                    box.x,
+                    (glyphBox.y + glyphBox.height) - (int) Math.rint(barRatio * width));
             OmrFont.paint(g, font.layout(SYMBOL_BRACKET_LOWER_SERIF, dim), left, TOP_LEFT);
             bottom = left.y;
         }
@@ -509,17 +515,35 @@ public abstract class SigPainter
     @Override
     public void visit (HeadInter head)
     {
-        // Consider it as a plain inter
-        visit((Inter) head);
-
         if (head.getMirror() != null) {
+            if (splitMirrors()) {
+                // Draw head proper half
+                Line2D line = head.getMidLine();
+                int width = head.getBounds().width;
+                int xDir = line.getY2() > line.getY1() ? -1 : +1;
+
+                Path2D p = new Path2D.Double();
+                p.append(line, false);
+                p.lineTo(line.getX2() + xDir * width, line.getY2());
+                p.lineTo(line.getX1() + xDir * width, line.getY1());
+                p.closePath();
+
+                java.awt.Shape oldClip = g.getClip();
+                g.clip(p);
+                visit((Inter) head);
+                g.setClip(oldClip);
+            } else {
+                visit((Inter) head);
+            }
+
             // Draw a sign using complementary color of head
             Color compColor = UIUtil.complementaryColor(g.getColor());
             Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
-            Rectangle box = head.getBounds();
             g.setColor(compColor);
-            g.drawLine(box.x, box.y, box.x + box.width, box.y + box.height);
+            g.draw(head.getMidLine());
             g.setStroke(oldStroke);
+        } else {
+            visit((Inter) head);
         }
     }
 
@@ -594,8 +618,11 @@ public abstract class SigPainter
             final Glyph glyph = ledger.getGlyph();
 
             if (glyph != null) {
-                g.setStroke(new BasicStroke((float) Math.rint(glyph.getMeanThickness(
-                        Orientation.HORIZONTAL)), BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+                g.setStroke(
+                        new BasicStroke(
+                                (float) Math.rint(glyph.getMeanThickness(Orientation.HORIZONTAL)),
+                                BasicStroke.CAP_BUTT,
+                                BasicStroke.JOIN_ROUND));
                 glyph.renderLine(g);
             } else {
                 g.setStroke(ledgerStroke);
@@ -715,6 +742,16 @@ public abstract class SigPainter
      * @param inter the interpretation to colorize
      */
     protected abstract void setColor (Inter inter);
+
+    //--------------//
+    // splitMirrors //
+    //--------------//
+    /**
+     * Tell whether shared heads are split.
+     *
+     * @return true if so
+     */
+    protected abstract boolean splitMirrors ();
 
     //---------//
     // colorOf //

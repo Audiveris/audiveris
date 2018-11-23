@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.glyph.ui;
 
+import java.awt.Point;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.glyph.Glyphs;
@@ -73,7 +74,8 @@ public class GlyphService
     // getMostRelevant //
     //-----------------//
     @Override
-    protected Glyph getMostRelevant (List<Glyph> list)
+    protected Glyph getMostRelevant (List<Glyph> list,
+                                     Point location)
     {
         switch (list.size()) {
         case 0:
@@ -84,7 +86,7 @@ public class GlyphService
 
         default:
 
-            List<Glyph> copy = new ArrayList<Glyph>(list);
+            List<Glyph> copy = new ArrayList<>(list);
             Collections.sort(copy, Glyphs.byWeight);
 
             return copy.get(0);
@@ -110,7 +112,7 @@ public class GlyphService
                 // Build compound on-the-fly and publish it (no impact on basket)
                 Glyph compound = GlyphFactory.buildGlyph(basket);
                 publish(
-                        new EntityListEvent<Glyph>(
+                        new EntityListEvent<>(
                                 this,
                                 SelectionHint.ENTITY_TRANSIENT,
                                 locationEvent.movement,

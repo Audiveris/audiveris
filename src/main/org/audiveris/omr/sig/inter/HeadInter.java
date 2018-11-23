@@ -61,6 +61,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -318,6 +319,81 @@ public class HeadInter
         }
 
         return descriptor;
+    }
+
+    //------------//
+    // getMidLine //
+    //------------//
+    /**
+     * Report the separating line for shared heads.
+     * <p>
+     * The line is nearly vertical, oriented from head to stem.
+     * Thus, the relativeCCW is negative for points located on proper head half.
+     *
+     * @return oriented middle line or null if not mirrored
+     */
+    public Line2D getMidLine ()
+    {
+        if (getMirror() == null) {
+            return null;
+        }
+
+        final Rectangle box = getBounds();
+
+        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
+            final HeadStemRelation rel = (HeadStemRelation) relation;
+
+            if (rel.getHeadSide() == HorizontalSide.LEFT) {
+                return LineUtil.bisector(
+                        new Point(box.x, box.y + box.height),
+                        new Point(box.x + box.width, box.y));
+            } else {
+
+                return LineUtil.bisector(
+                        new Point(box.x + box.width, box.y),
+                        new Point(box.x, box.y + box.height));
+            }
+        }
+
+        return null;
+    }
+
+    //-------------------//
+    // getRelationCenter //
+    //-------------------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * For shared heads, the relation center is slightly shifted to the containing chord.
+     *
+     * @return the head relation center, shifted for a shared head
+     */
+    @Override
+    public Point getRelationCenter ()
+    {
+        final Point center = getCenter();
+
+        if (getMirror() == null) {
+            return center;
+        }
+
+        final Rectangle box = getBounds();
+        final int dx = box.width / 5;
+        final int dy = box.height / 5;
+
+        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
+            final HeadStemRelation rel = (HeadStemRelation) relation;
+
+            if (rel.getHeadSide() == HorizontalSide.LEFT) {
+                center.translate(-dx, +dy);
+            } else {
+                center.translate(+dx, -dy);
+            }
+
+            return center;
+        }
+
+        return center; // Should not occur...
     }
 
     //--------------//

@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.ui.selection;
 
+import java.awt.Point;
 import static org.audiveris.omr.ui.selection.SelectionHint.ENTITY_INIT;
 import org.audiveris.omr.util.Entity;
 import org.audiveris.omr.util.EntityIndex;
@@ -163,7 +164,7 @@ public class EntityService<E extends Entity>
     @SuppressWarnings("unchecked")
     public E getSelectedEntity ()
     {
-        return getMostRelevant(getSelectedEntityList());
+        return getMostRelevant(getSelectedEntityList(), null);
     }
 
     //-----------------------//
@@ -221,10 +222,12 @@ public class EntityService<E extends Entity>
     /**
      * Among the list of selected entities, report the most "relevant" one.
      *
-     * @param list the sequence of selected entities
+     * @param list     the sequence of selected entities
+     * @param location the selection point if any
      * @return the chosen entity
      */
-    protected E getMostRelevant (List<E> list)
+    protected E getMostRelevant (List<E> list,
+                                 Point location)
     {
         if (!list.isEmpty()) {
             return list.get(0); // Use first
@@ -303,7 +306,8 @@ public class EntityService<E extends Entity>
                 publish(new EntityListEvent<>(this, hint, movement, basket));
             } else {
                 // Just a point: look for most relevant entity
-                E entity = getMostRelevant(index.getContainingEntities(rect.getLocation()));
+                final Point loc = rect.getLocation();
+                final E entity = getMostRelevant(index.getContainingEntities(loc), loc);
 
                 // Update basket
                 switch (hint) {

@@ -996,7 +996,7 @@ public class InterController
 
         // Display closure staff barlines to user
         sheet.getInterIndex().getEntityService().publish(
-                new EntityListEvent<Inter>(
+                new EntityListEvent<>(
                         this,
                         SelectionHint.ENTITY_INIT,
                         MouseMovement.PRESSING,

@@ -24,6 +24,7 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.selection.EntityListEvent;
@@ -38,6 +39,8 @@ import org.audiveris.omr.util.EntityIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -54,8 +57,9 @@ public class InterService
     private static final Logger logger = LoggerFactory.getLogger(InterService.class);
 
     /** Events that can be published on inter service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]{EntityListEvent.class,
-                                                                   IdEvent.class};
+    private static final Class<?>[] eventsAllowed = new Class<?>[]{
+        EntityListEvent.class,
+        IdEvent.class};
 
     /**
      * Creates a new {@code InterService} object.
@@ -73,7 +77,8 @@ public class InterService
     // getMostRelevant //
     //-----------------//
     @Override
-    protected Inter getMostRelevant (List<Inter> list)
+    protected Inter getMostRelevant (List<Inter> list,
+                                     Point location)
     {
         switch (list.size()) {
         case 0:
@@ -83,11 +88,21 @@ public class InterService
             return list.get(0);
 
         default:
-
-            List<Inter> copy = new ArrayList<Inter>(list);
+            List<Inter> copy = new ArrayList<>(list);
             Collections.sort(copy, Inters.membersFirst);
 
-            return copy.get(0);
+            Inter selected = copy.get(0);
+
+            if (selected instanceof HeadInter && selected.getMirror() != null) {
+                HeadInter head = (HeadInter) selected;
+                Line2D line = head.getMidLine();
+
+                if (location != null && line.relativeCCW(location) > 0) {
+                    selected = selected.getMirror();
+                }
+            }
+
+            return selected;
         }
     }
 
@@ -134,8 +149,8 @@ public class InterService
     protected void handleLocationEvent (LocationEvent locationEvent)
     {
         // Search only when in MODE_INTER or MODE_GLYPH
-        if (ViewParameters.getInstance().getSelectionMode()
-                    != ViewParameters.SelectionMode.MODE_SECTION) {
+        if (ViewParameters.getInstance()
+                .getSelectionMode() != ViewParameters.SelectionMode.MODE_SECTION) {
             super.handleLocationEvent(locationEvent);
         }
     }

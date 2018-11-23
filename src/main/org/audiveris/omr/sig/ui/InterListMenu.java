@@ -94,33 +94,34 @@ public class InterListMenu
     private void insertDeletionItem (final SystemInfo system,
                                      final List<Inter> sysInters)
     {
-        JMenuItem item = new JMenuItem("Delete " + sysInters.size() + " inters for System #"
-                                               + system.getId() + ":");
+        JMenuItem item = new JMenuItem(
+                "Delete " + sysInters.size() + " inters for System #" + system.getId() + ":");
 
         // To delete all listed inters when item is clicked upon
-        item.addActionListener(
-                new ActionListener()
+        item.addActionListener(new ActionListener()
         {
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                if (OMR.gui.displayConfirmation("Do you confirm the removal of " + sysInters.size()
-                                                        + " inter(s)?")) {
+                if (OMR.gui.displayConfirmation(
+                        "Do you confirm the removal of " + sysInters.size() + " inter(s)?")) {
                     sheet.getInterController().removeInters(sysInters);
                 }
             }
         });
 
         // To (re)focus on all the listed inters when moving the mouse on the item
-        item.addMouseListener(
-                new AbstractMouseListener()
+        item.addMouseListener(new AbstractMouseListener()
         {
             @Override
             public void mouseEntered (MouseEvent e)
             {
                 system.getSheet().getInterIndex().getEntityService().publish(
-                        new EntityListEvent<Inter>(this, SelectionHint.ENTITY_INIT,
-                                                   MouseMovement.PRESSING, sysInters));
+                        new EntityListEvent<>(
+                                this,
+                                SelectionHint.ENTITY_INIT,
+                                MouseMovement.PRESSING,
+                                sysInters));
             }
         });
         this.add(item);

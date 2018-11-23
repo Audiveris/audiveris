@@ -168,5 +168,11 @@ public class SelectionPainter
             // Use complementary of inter color
             g.setColor(UIUtil.complementaryColor(inter.getColor()));
         }
+
+        @Override
+        protected boolean splitMirrors ()
+        {
+            return true;
+        }
     }
 }

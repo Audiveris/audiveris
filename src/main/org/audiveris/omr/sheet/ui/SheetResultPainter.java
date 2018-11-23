@@ -48,7 +48,6 @@ import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.SigPainter;
 import org.audiveris.omr.ui.Colors;
-import org.audiveris.omr.ui.ViewParameters;
 import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
 import org.audiveris.omr.ui.util.UIUtil;
@@ -90,9 +89,6 @@ public class SheetResultPainter
 
     /** Ordinate offset, in pixels, for annotation near staff or system. */
     protected static final int annotationDy = 15;
-
-    /** View parameters. */
-    protected static final ViewParameters viewParams = ViewParameters.getInstance();
 
     /** For staff lines. */
     protected Stroke lineStroke;
@@ -407,6 +403,12 @@ public class SheetResultPainter
             } else {
                 g.setColor(defaultColor);
             }
+        }
+
+        @Override
+        protected boolean splitMirrors ()
+        {
+            return coloredVoices;
         }
     }
 }

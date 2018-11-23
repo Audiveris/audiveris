@@ -91,10 +91,12 @@ public class GlyphAction
         if (glyphIndex == null) {
             logger.warn("No index for {}", glyph);
         } else {
-            glyphIndex.getEntityService().publish(new EntityListEvent<Glyph>(this,
-                                                                             SelectionHint.ENTITY_INIT,
-                                                                             MouseMovement.PRESSING,
-                                                                             glyph));
+            glyphIndex.getEntityService().publish(
+                    new EntityListEvent<>(
+                            this,
+                            SelectionHint.ENTITY_INIT,
+                            MouseMovement.PRESSING,
+                            glyph));
         }
     }
 
