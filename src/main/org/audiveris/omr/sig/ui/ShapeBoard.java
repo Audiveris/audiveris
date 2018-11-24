@@ -781,7 +781,7 @@ public class ShapeBoard
 
         public final void reset ()
         {
-            prevComponent = new WeakReference<Component>(null);
+            prevComponent = new WeakReference<>(null);
         }
 
         /**
@@ -826,7 +826,7 @@ public class ShapeBoard
                         glass.setReference(null);
                     }
 
-                    prevComponent = new WeakReference<Component>(component);
+                    prevComponent = new WeakReference<>(component);
                 }
 
                 if (shape.isDraggable()) {

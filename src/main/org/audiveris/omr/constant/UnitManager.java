@@ -192,7 +192,7 @@ public class UnitManager
         sb.append(String.format("UnitManager. All Units:%n"));
 
         // Use alphabetical order for easier reading
-        List<Node> nodes = new ArrayList<Node>(mapOfNodes.values());
+        List<Node> nodes = new ArrayList<>(mapOfNodes.values());
         Collections.sort(nodes, Node.nameComparator);
 
         for (Node node : nodes) {

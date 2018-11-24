@@ -62,7 +62,7 @@ public abstract class AbstractTimeInter
     private static final Logger logger = LoggerFactory.getLogger(AbstractTimeInter.class);
 
     /** Collection of default num/den combinations. */
-    private static final Set<TimeRational> defaultTimes = new LinkedHashSet<TimeRational>(
+    private static final Set<TimeRational> defaultTimes = new LinkedHashSet<>(
             Arrays.asList(
                     new TimeRational(2, 2), // Duple simple
                     new TimeRational(3, 2), // Triple simple

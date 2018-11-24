@@ -48,8 +48,8 @@ public class LogGuiAppender
     private static final int LOG_MBX_SIZE = 10_000;
 
     /** Temporary mail box for logged messages. */
-    private static final ArrayBlockingQueue<ILoggingEvent> logMbx
-            = new ArrayBlockingQueue<ILoggingEvent>(LOG_MBX_SIZE);
+    private static final ArrayBlockingQueue<ILoggingEvent> logMbx = new ArrayBlockingQueue<>(
+            LOG_MBX_SIZE);
 
     //--------//
     // append //

@@ -147,7 +147,7 @@ public class InterListMenu
                         List<Inter> list = interMap.get(system);
 
                         if (list == null) {
-                            interMap.put(system, list = new ArrayList<Inter>());
+                            interMap.put(system, list = new ArrayList<>());
                         }
 
                         list.add(inter);

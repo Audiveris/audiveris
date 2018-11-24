@@ -215,7 +215,7 @@ public class ConstantManager
      */
     public Collection<String> getAllProperties ()
     {
-        SortedSet<String> props = new TreeSet<String>(userHolder.getKeys());
+        SortedSet<String> props = new TreeSet<>(userHolder.getKeys());
 
         return props;
     }

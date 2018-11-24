@@ -781,7 +781,7 @@ public class SIGraph
     public List<Relation> insertExclusions (Collection<? extends Inter> inters,
                                             Cause cause)
     {
-        List<Inter> list = new ArrayList<Inter>(new LinkedHashSet<Inter>(inters));
+        List<Inter> list = new ArrayList<Inter>(new LinkedHashSet<>(inters));
         List<Relation> exclusions = new ArrayList<>();
 
         for (int i = 0, iBreak = list.size(); i < iBreak; i++) {
@@ -845,7 +845,7 @@ public class SIGraph
             }
         } catch (IllegalAccessException |
                  InstantiationException ex) {
-            logger.error("Could not instantiate {}", supportClass);
+            logger.error("Could not instantiate {} {}", supportClass, ex.toString(), ex);
         }
 
         return sup;

@@ -274,7 +274,7 @@ public abstract class SigPainter
         final int bracketGrowth = 2 * sig.getSystem().getSheet().getInterline();
 
         // Use a COPY of vertices, to reduce risks of concurrent modifications (but not all...)
-        Set<Inter> copy = new LinkedHashSet<Inter>(sig.vertexSet());
+        Set<Inter> copy = new LinkedHashSet<>(sig.vertexSet());
 
         for (Inter inter : copy) {
             if (!inter.isRemoved()) {
@@ -515,17 +515,17 @@ public abstract class SigPainter
     @Override
     public void visit (HeadInter head)
     {
-        if (head.getMirror() != null) {
+        final Line2D midLine = head.getMidLine();
+
+        if (midLine != null) {
             if (splitMirrors()) {
                 // Draw head proper half
-                Line2D line = head.getMidLine();
                 int width = head.getBounds().width;
-                int xDir = line.getY2() > line.getY1() ? -1 : +1;
-
+                int xDir = midLine.getY2() > midLine.getY1() ? -1 : +1;
                 Path2D p = new Path2D.Double();
-                p.append(line, false);
-                p.lineTo(line.getX2() + xDir * width, line.getY2());
-                p.lineTo(line.getX1() + xDir * width, line.getY1());
+                p.append(midLine, false);
+                p.lineTo(midLine.getX2() + xDir * width, midLine.getY2());
+                p.lineTo(midLine.getX1() + xDir * width, midLine.getY1());
                 p.closePath();
 
                 java.awt.Shape oldClip = g.getClip();
@@ -536,11 +536,11 @@ public abstract class SigPainter
                 visit((Inter) head);
             }
 
-            // Draw a sign using complementary color of head
+            // Draw midLine using complementary color of head
             Color compColor = UIUtil.complementaryColor(g.getColor());
             Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
             g.setColor(compColor);
-            g.draw(head.getMidLine());
+            g.draw(midLine);
             g.setStroke(oldStroke);
         } else {
             visit((Inter) head);

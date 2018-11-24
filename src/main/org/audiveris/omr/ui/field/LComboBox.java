@@ -48,7 +48,7 @@ public class LComboBox<E>
                       String tip,
                       E[] items)
     {
-        super(label, tip, new JComboBox<E>(items));
+        super(label, tip, new JComboBox<>(items));
     }
 
     //-------------------//

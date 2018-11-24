@@ -282,7 +282,7 @@ public class ShapeSet
     public static final ShapeSet Flags = new ShapeSet(
             FLAG_1,
             Colors.SCORE_NOTES,
-            shapesOf(new ArrayList<Shape>(FlagsDown), SmallFlags, FlagsUp));
+            shapesOf(new ArrayList<>(FlagsDown), SmallFlags, FlagsUp));
 
     public static final ShapeSet Holds = new ShapeSet(
             FERMATA,
@@ -292,7 +292,7 @@ public class ShapeSet
     public static final ShapeSet Keys = new ShapeSet(
             KEY_SHARP_3,
             Colors.SCORE_MODIFIERS,
-            shapesOf(new ArrayList<Shape>(FlatKeys), SharpKeys));
+            shapesOf(new ArrayList<>(FlatKeys), SharpKeys));
 
     public static final ShapeSet HeadsAndDot = new ShapeSet(
             NOTEHEAD_BLACK,

@@ -39,7 +39,7 @@ public class PackageNode
      * The children, composed of either other {@code PackageNode} or
      * {@code ConstantSet}.
      */
-    private final ConcurrentSkipListSet<Node> children = new ConcurrentSkipListSet<Node>(
+    private final ConcurrentSkipListSet<Node> children = new ConcurrentSkipListSet<>(
             Node.nameComparator);
 
     /**

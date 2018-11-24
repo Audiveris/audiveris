@@ -94,9 +94,10 @@ public class InterBoard
     //    private final LIntegerField timeDen;
     //
     /** ComboBox for text role. */
-    private final LComboBox<TextRole> roleCombo = new LComboBox<TextRole>("Role",
-                                                                          "Role of the Sentence",
-                                                                          TextRole.values());
+    private final LComboBox<TextRole> roleCombo = new LComboBox<>(
+            "Role",
+            "Role of the Sentence",
+            TextRole.values());
 
     /** Input/Output : textual content. */
     private final LTextField textField = new LTextField(true, "Text", "Content of textual item");
@@ -130,8 +131,9 @@ public class InterBoard
         this.sheet = sheet;
 
         // Force a constant height for the shapeIcon field, despite variation in size of the icon
-        Dimension dim = new Dimension(constants.shapeIconWidth.getValue(), constants.shapeIconHeight
-                                      .getValue());
+        Dimension dim = new Dimension(
+                constants.shapeIconWidth.getValue(),
+                constants.shapeIconHeight.getValue());
         shapeIcon.setPreferredSize(dim);
         shapeIcon.setMaximumSize(dim);
         shapeIcon.setMinimumSize(dim);
@@ -302,8 +304,9 @@ public class InterBoard
         builder.add(details, cst.xyw(1, r, 11));
 
         // Needed to process user input when RETURN/ENTER is pressed
-        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke
-                .getKeyStroke("ENTER"), "TextAction");
+        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke("ENTER"),
+                "TextAction");
         getComponent().getActionMap().put("TextAction", paramAction);
     }
 
@@ -314,11 +317,13 @@ public class InterBoard
             extends ConstantSet
     {
 
-        private final PixelCount shapeIconHeight = new PixelCount(70,
-                                                                  "Exact pixel height for the shape icon field");
+        private final PixelCount shapeIconHeight = new PixelCount(
+                70,
+                "Exact pixel height for the shape icon field");
 
-        private final PixelCount shapeIconWidth = new PixelCount(50,
-                                                                 "Exact pixel width for the shape icon field");
+        private final PixelCount shapeIconWidth = new PixelCount(
+                50,
+                "Exact pixel width for the shape icon field");
     }
 
     //----------------//
@@ -387,7 +392,10 @@ public class InterBoard
                     final TextRole newRole = roleCombo.getSelectedItem();
 
                     if (newRole != sentence.getRole()) {
-                        logger.debug("Sentence=\"{}\" Role={}", textField.getText().trim(), newRole);
+                        logger.debug(
+                                "Sentence=\"{}\" Role={}",
+                                textField.getText().trim(),
+                                newRole);
 
                         if (newRole == TextRole.Lyrics) {
                             logger.info("You cannot change role to lyrics");

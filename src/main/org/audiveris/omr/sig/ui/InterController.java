@@ -568,7 +568,7 @@ public class InterController
         if ((options == null) || !Arrays.asList(options).contains(Option.VALIDATED)) {
             if (sheet.getStub().getLatestStep().compareTo(Step.MEASURES) >= 0) {
                 // Now that measures exist, it's whole system height or nothing
-                List<Inter> staffBarlines = new ArrayList<Inter>(staffBarlinesOf(inters));
+                List<Inter> staffBarlines = new ArrayList<>(staffBarlinesOf(inters));
 
                 if (staffBarlines.isEmpty()) {
                     for (Inter inter : barlinesOf(inters)) {
@@ -1153,7 +1153,7 @@ public class InterController
 
         // Display closure staff barlines to user
         sheet.getInterIndex().getEntityService().publish(
-                new EntityListEvent<Inter>(
+                new EntityListEvent<>(
                         this,
                         SelectionHint.ENTITY_INIT,
                         MouseMovement.PRESSING,
@@ -1358,7 +1358,7 @@ public class InterController
         {
             // Examine watched ensembles
             for (InterEnsemble ens : watched) {
-                List<Inter> members = new ArrayList<Inter>(ens.getMembers());
+                List<Inter> members = new ArrayList<>(ens.getMembers());
                 members.removeAll(inters);
 
                 if (members.isEmpty()) {
