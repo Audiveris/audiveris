@@ -25,7 +25,6 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.Inters;
@@ -47,6 +46,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.audiveris.omr.sig.SIGraph;
 
 /**
  * Class {@code TupletsBuilder} tries to connect every tuplet symbol in a measure stack
@@ -93,17 +93,15 @@ public class TupletsBuilder
         final Set<TupletInter> tuplets = stack.getTuplets();
 
         for (TupletInter tuplet : tuplets) {
-            // Clear existing tuplet-chord relations, if any
+            // To preserve manual relations if any, we do NOT clear existing tuplet-chord relations
             final SIGraph sig = stack.getSystem().getSig();
-            sig.removeAllEdges(sig.getRelations(tuplet, ChordTupletRelation.class));
+            final Collection<Link> links = lookupLinks(tuplet);
 
-            Collection<Link> links = lookupLinks(tuplet);
+            for (Link link : links) {
+                link.applyTo(tuplet);
+            }
 
-            if (!links.isEmpty()) {
-                for (Link link : links) {
-                    link.applyTo(tuplet);
-                }
-            } else if (!tuplet.isManual()) {
+            if (!tuplet.isManual() && !sig.hasRelation(tuplet, ChordTupletRelation.class)) {
                 toDelete.add(tuplet);
             }
         }
@@ -162,17 +160,22 @@ public class TupletsBuilder
         Point center = tuplet.getCenter();
         List<Staff> stavesAround = stack.getSystem().getStavesAround(center);
         logger.trace("{} around:{}", tuplet, stavesAround);
+
         // Collect candidate chords (heads & rests based) within stack
         List<AbstractChordInter> chords = new ArrayList<>();
+
         for (AbstractChordInter chord : stack.getStandardChords()) {
             final List<Staff> chordStaves = new ArrayList<>(chord.getStaves());
             chordStaves.retainAll(stavesAround);
+
             if (!chordStaves.isEmpty()) {
                 chords.add(chord);
             }
         }
+
         Collections.sort(chords, new ByEuclidian(center));
         logger.trace("Chords: {}", Inters.ids(chords));
+
         return chords;
     }
 
