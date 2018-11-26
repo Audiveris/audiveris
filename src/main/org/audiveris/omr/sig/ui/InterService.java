@@ -43,6 +43,7 @@ import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -152,6 +153,20 @@ public class InterService
         if (ViewParameters.getInstance()
                 .getSelectionMode() != ViewParameters.SelectionMode.MODE_SECTION) {
             super.handleLocationEvent(locationEvent);
+        }
+    }
+
+    //-------------//
+    // purgeBasket //
+    //-------------//
+    @Override
+    protected void purgeBasket ()
+    {
+        // Purge basket of Inter instances that are flagged as removed
+        for (Iterator<Inter> it = basket.iterator(); it.hasNext();) {
+            if (it.next().isRemoved()) {
+                it.remove();
+            }
         }
     }
 }

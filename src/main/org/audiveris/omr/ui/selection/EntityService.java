@@ -296,6 +296,9 @@ public class EntityService<E extends Entity>
             return;
         }
 
+        // Keep only relevant entities in basket
+        purgeBasket();
+
         final List<E> selection = getSelectedEntityList();
 
         if (hint.isLocation() || (hint.isContext() && selection.isEmpty())) {
@@ -355,5 +358,16 @@ public class EntityService<E extends Entity>
                 publish(new EntityListEvent<>(this, null, movement, basket));
             }
         }
+    }
+
+    //-------------//
+    // purgeBasket //
+    //-------------//
+    /**
+     * Purge basket of no longer relevant entities.
+     */
+    protected void purgeBasket ()
+    {
+        // Void by default
     }
 }
