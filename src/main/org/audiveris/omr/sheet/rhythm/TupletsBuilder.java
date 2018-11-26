@@ -32,6 +32,7 @@ import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,12 +94,22 @@ public class TupletsBuilder
         final Set<TupletInter> tuplets = stack.getTuplets();
 
         for (TupletInter tuplet : tuplets) {
-            // To preserve manual relations if any, we do NOT clear existing tuplet-chord relations
+            // Purge existing tuplet-chord relations, except manual ones if any
             final SIGraph sig = stack.getSystem().getSig();
+            final Set<Relation> rels = sig.getRelations(tuplet, ChordTupletRelation.class);
+
+            for (Relation rel : rels) {
+                if (!rel.isManual()) {
+                    sig.removeEdge(rel);
+                }
+            }
+
             final Collection<Link> links = lookupLinks(tuplet);
 
             for (Link link : links) {
-                link.applyTo(tuplet);
+                if (null == sig.getRelation(link.partner, tuplet, ChordTupletRelation.class)) {
+                    link.applyTo(tuplet);
+                }
             }
 
             if (!tuplet.isManual() && !sig.hasRelation(tuplet, ChordTupletRelation.class)) {
