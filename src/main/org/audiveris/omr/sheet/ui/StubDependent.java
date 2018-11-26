@@ -66,8 +66,8 @@ public abstract class StubDependent
     /** Name of property linked to book lack of activity. */
     public static final String BOOK_IDLE = "bookIdle";
 
-    /** Name of property linked to book modified. */
-    public static final String BOOK_MODIFIED = "bookModified";
+    /** Name of property linked to book modified/upgraded. */
+    public static final String BOOK_MODIFIED_OR_UPGRADED = "bookModifiedOrUpgraded";
 
     /** Name of property linked to undoable. */
     public static final String UNDOABLE = "undoable";
@@ -93,8 +93,8 @@ public abstract class StubDependent
     /** Indicates whether current book is idle (all its sheets are idle). */
     protected boolean bookIdle = false;
 
-    /** Indicates whether current book has been modified. */
-    protected boolean bookModified = false;
+    /** Indicates whether current book has been modified/upgraded. */
+    protected boolean bookModifiedOrUpgraded = false;
 
     /** Indicates whether we can undo user action. */
     protected boolean undoable = false;
@@ -142,34 +142,34 @@ public abstract class StubDependent
         }
     }
 
-    //----------------//
-    // isBookModified //
-    //----------------//
+    //--------------------------//
+    // isBookModifiedOrUpgraded //
+    //--------------------------//
     /**
-     * Getter for bookModified property
+     * Getter for bookModifiedOrUpgraded property
      *
      * @return the current property value
      */
-    public boolean isBookModified ()
+    public boolean isBookModifiedOrUpgraded ()
     {
-        return bookModified;
+        return bookModifiedOrUpgraded;
     }
 
-    //-----------------//
-    // setBookModified //
-    //-----------------//
+    //---------------------------//
+    // setBookModifiedOrUpgraded //
+    //---------------------------//
     /**
-     * Setter for bookModified property
+     * Setter for bookModifiedOrUpgraded property
      *
-     * @param bookModified the new property value
+     * @param bookModifiedOrUpgraded the new property value
      */
-    public void setBookModified (boolean bookModified)
+    public void setBookModifiedOrUpgraded (boolean bookModifiedOrUpgraded)
     {
-        boolean oldValue = this.bookModified;
-        this.bookModified = bookModified;
+        boolean oldValue = this.bookModifiedOrUpgraded;
+        this.bookModifiedOrUpgraded = bookModifiedOrUpgraded;
 
-        if (bookModified != oldValue) {
-            firePropertyChange(BOOK_MODIFIED, oldValue, this.bookModified);
+        if (bookModifiedOrUpgraded != oldValue) {
+            firePropertyChange(BOOK_MODIFIED_OR_UPGRADED, oldValue, this.bookModifiedOrUpgraded);
         }
     }
 
@@ -412,7 +412,7 @@ public abstract class StubDependent
             //            logger.info(
             //                    "event: {} {}",
             //                    stubEvent,
-            //                    (stub != null) ? stub.getSheet().getId() : "no stub");
+            //                    (stub != null) ? stub.getId() : "no stub");
             //
             // Update stubAvailable
             setStubAvailable(stub != null);
@@ -441,11 +441,12 @@ public abstract class StubDependent
                 setBookTranscribable(false);
             }
 
-            // Update bookModified
+            // Update bookModifiedOrUpgraded
             if (stub != null) {
-                setBookModified(stub.isModified() || stub.getBook().isModified());
+                final Book book = stub.getBook();
+                setBookModifiedOrUpgraded(book.isModified() || book.isUpgraded());
             } else {
-                setBookModified(false);
+                setBookModifiedOrUpgraded(false);
             }
 
             // Update undoable/redoable

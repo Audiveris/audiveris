@@ -320,8 +320,6 @@ public class ChordsBuilder
             }
 
             if (mirrorHead != null) {
-                head.getChord().setMirror(mirrorHead.getChord());
-                mirrorHead.getChord().setMirror(head.getChord());
                 sig.addEdge(head, mirrorHead.getChord(), new NoExclusion());
                 sig.addEdge(head.getChord(), mirrorHead, new NoExclusion());
             }

@@ -142,15 +142,15 @@ public class SigReducer
     /** Shapes that can overlap with a slur. */
     private static final EnumSet<Shape> slurCompShapes = EnumSet.noneOf(Shape.class);
 
-    /** Shapes that can overlap with a stem. */
-    private static final EnumSet<Shape> stemCompShapes = EnumSet.copyOf(
-            Arrays.asList(Shape.SLUR, Shape.CRESCENDO, Shape.DIMINUENDO));
-
     static {
         slurCompShapes.addAll(Accidentals.getShapes());
         slurCompShapes.addAll(CoreBarlines);
         slurCompShapes.addAll(Flags.getShapes());
     }
+
+    /** Shapes that can overlap with a stem. */
+    private static final EnumSet<Shape> stemCompShapes = EnumSet.copyOf(
+            Arrays.asList(Shape.SLUR, Shape.CRESCENDO, Shape.DIMINUENDO));
 
     /** The dedicated system. */
     @Navigable(false)

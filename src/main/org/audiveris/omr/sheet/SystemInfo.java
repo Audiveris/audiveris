@@ -308,7 +308,7 @@ public class SystemInfo
                 }
 
                 if (upgraded) {
-                    sheet.getStub().setModified(true);
+                    sheet.getStub().setUpgraded(true);
                 }
             }
 

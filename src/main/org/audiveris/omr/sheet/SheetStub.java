@@ -211,8 +211,11 @@ public class SheetStub
     /** The step being performed on the sheet. */
     private volatile Step currentStep;
 
-    /** Has sheet been modified, WRT its book data. */
-    private boolean modified = false;
+    /** Has this sheet been modified, WRT its persisted data. */
+    private volatile boolean modified = false;
+
+    /** Has this sheet been upgraded, WRT its persisted data. */
+    private volatile boolean upgraded = false;
 
     /** Related assembly instance, if any. */
     private SheetAssembly assembly;
@@ -698,7 +701,7 @@ public class SheetStub
     // isModified //
     //------------//
     /**
-     * Has the sheet been modified with respect to its book data?.
+     * Has the sheet been modified with respect to its persisted data?.
      *
      * @return true if modified
      */
@@ -722,6 +725,48 @@ public class SheetStub
         if (modified) {
             book.setModified(true);
             book.setDirty(true);
+        }
+    }
+
+    //------------//
+    // isUpgraded //
+    //------------//
+    /**
+     * Has the sheet been upgraded with respect to its persisted data?.
+     *
+     * @return true if upgraded
+     */
+    public boolean isUpgraded ()
+    {
+        return upgraded;
+    }
+
+    //-------------//
+    // setUpgraded //
+    //-------------//
+    /**
+     * Set the upgraded flag.
+     *
+     * @param upgraded the new flag value
+     */
+    public void setUpgraded (boolean upgraded)
+    {
+        this.upgraded = upgraded;
+
+        if (OMR.gui != null) {
+            SwingUtilities.invokeLater(new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    final StubsController controller = StubsController.getInstance();
+                    final SheetStub stub = controller.getSelectedStub();
+
+                    if ((stub == SheetStub.this)) {
+                        controller.refresh();
+                    }
+                }
+            });
         }
     }
 

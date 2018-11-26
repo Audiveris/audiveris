@@ -313,30 +313,6 @@ public class StemInter
         return new Line2D.Double(extTop, extBottom);
     }
 
-    //-----------//
-    // duplicate //
-    //-----------//
-    /**
-     * Duplicate a Stem instance (used with mirrored heads).
-     *
-     * @return duplicate
-     */
-    public StemInter duplicate ()
-    {
-        StemInter clone = new StemInter(glyph, impacts);
-        clone.setGlyph(this.glyph);
-        clone.setMirror(this);
-
-        if (impacts == null) {
-            clone.setGrade(this.grade);
-        }
-
-        sig.addVertex(clone);
-        setMirror(clone);
-
-        return clone;
-    }
-
     //----------------//
     // extractSubStem //
     //----------------//
@@ -643,3 +619,27 @@ public class StemInter
         return AbstractInter.getMinGrade();
     }
 }
+//
+//    //-----------//
+//    // duplicate //
+//    //-----------//
+//    /**
+//     * Duplicate a Stem instance (used with mirrored heads).
+//     *
+//     * @return duplicate
+//     */
+//    public StemInter duplicate ()
+//    {
+//        StemInter clone = new StemInter(glyph, impacts);
+//        clone.setGlyph(this.glyph);
+//
+//        if (impacts == null) {
+//            clone.setGrade(this.grade);
+//        }
+//
+//        sig.addVertex(clone);
+//        setMirror(clone);
+//
+//        return clone;
+//    }
+//

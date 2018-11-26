@@ -35,6 +35,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.MirrorRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -77,7 +78,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * interface.
  * <p>
  * As a general policy, subclasses can provide convenient creation static methods, which should
- * be consistently named as follows: <ul>
+ * be consistently named as follows:
+ * <ul>
  * <li>{@code create} for just inter creation.
  * <li>{@code createValid} for inter creation and validation (if failed, inter is not created).
  * <li>{@code createAdded} for inter creation and addition to SIG.
@@ -116,10 +118,11 @@ public abstract class AbstractInter
     @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double3Adapter.class)
     protected double grade;
 
-    /** Mirror instance, if any. */
+    /** Deprecated. Old mirror instance, if any. */
+    @Deprecated
     @XmlIDREF
     @XmlAttribute(name = "mirror")
-    protected AbstractInter mirror;
+    private AbstractInter oldMirror;
 
     /** Is it abnormal?. */
     @XmlAttribute(name = "abnormal")
@@ -316,9 +319,12 @@ public abstract class AbstractInter
         StringBuilder sb = new StringBuilder();
 
         sb.append(
-                String.format("%s@%s%s%s%n", getClass().getSimpleName(), Integer.toHexString(this
-                              .hashCode()), (sig != null) ? (" System#" + sig.getSystem().getId())
-                                      : "", removed ? " REMOVED" : ""));
+                String.format(
+                        "%s@%s%s%s%n",
+                        getClass().getSimpleName(),
+                        Integer.toHexString(this.hashCode()),
+                        (sig != null) ? (" System#" + sig.getSystem().getId()) : "",
+                        removed ? " REMOVED" : ""));
         sb.append(String.format("   %s%n", this));
 
         if (!getDetails().isEmpty()) {
@@ -630,7 +636,11 @@ public abstract class AbstractInter
     @Override
     public Inter getMirror ()
     {
-        return mirror;
+        for (Relation rel : sig.getRelations(this, MirrorRelation.class)) {
+            return sig.getOppositeInter(this, rel);
+        }
+
+        return null;
     }
 
     //-----------//
@@ -639,7 +649,14 @@ public abstract class AbstractInter
     @Override
     public void setMirror (Inter mirror)
     {
-        this.mirror = (AbstractInter) mirror;
+        final boolean direct = this.getId() < mirror.getId();
+        final Inter source = direct ? this : mirror;
+        final Inter target = direct ? mirror : this;
+        Relation rel = sig.getRelation(source, target, MirrorRelation.class);
+
+        if (rel == null) {
+            sig.addEdge(source, target, new MirrorRelation());
+        }
     }
 
     //---------//
@@ -913,8 +930,8 @@ public abstract class AbstractInter
             }
 
             for (Inter thisMember : members) {
-                if (thisMember.overlaps(that) && that.overlaps(thisMember) && sig.noSupport(
-                        thisMember, that)) {
+                if (thisMember.overlaps(that) && that.overlaps(thisMember)
+                            && sig.noSupport(thisMember, that)) {
                     return true;
                 }
             }
@@ -1082,6 +1099,31 @@ public abstract class AbstractInter
         return shape.toString();
     }
 
+    //-----------------//
+    // upgradeOldStuff //
+    //-----------------//
+    /**
+     * Temporary method to upgrade from oldMirror field to MirrorRelation.
+     *
+     * @return true if really upgraded
+     */
+    @Deprecated
+    public boolean upgradeOldStuff ()
+    {
+        if (oldMirror != null) {
+            // We keep only Head mirrors (not HeadChord "mirrors" any more)
+            if (this instanceof HeadInter) {
+                setMirror(oldMirror);
+            }
+
+            oldMirror = null;
+
+            return true;
+        }
+
+        return false;
+    }
+
     //---------------//
     // beforeMarshal //
     //---------------//
@@ -1138,10 +1180,6 @@ public abstract class AbstractInter
         }
 
         sb.append(")");
-
-        if (mirror != null) {
-            sb.append(" mirror#").append(mirror.getId());
-        }
 
         if (staff != null) {
             sb.append(" s:").append(staff.getId());

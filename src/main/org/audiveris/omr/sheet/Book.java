@@ -678,7 +678,7 @@ public class Book
     /**
      * Report where the book is kept.
      *
-     * @return the book path
+     * @return the path to book .omr file
      */
     public Path getBookPath ()
     {
@@ -1120,7 +1120,7 @@ public class Book
     // isModified //
     //------------//
     /**
-     * Report whether the book has been modified with respect to its book data.
+     * Report whether the book has been modified with respect to its persisted data.
      *
      * @return true if modified
      */
@@ -1153,7 +1153,6 @@ public class Book
      */
     public void setModified (boolean modified)
     {
-        ///logger.info("{} setModified {}", this, modified);
         this.modified = modified;
 
         if (OMR.gui != null) {
@@ -1171,6 +1170,25 @@ public class Book
                 }
             });
         }
+    }
+
+    //------------//
+    // isUpgraded //
+    //------------//
+    /**
+     * Report whether the book has been upgraded with respect to its persisted data.
+     *
+     * @return true if upgraded
+     */
+    public boolean isUpgraded ()
+    {
+        for (SheetStub stub : stubs) {
+            if (stub.isUpgraded()) {
+                return true; // This sheet is upgraded
+            }
+        }
+
+        return false;
     }
 
     //--------------//
@@ -1548,7 +1566,7 @@ public class Book
 
                 // Contained sheets
                 for (SheetStub stub : stubs) {
-                    if (stub.isModified()) {
+                    if (stub.isModified() || stub.isUpgraded()) {
                         final Path sheetFolder = root.resolve(INTERNALS_RADIX + stub.getNumber());
                         stub.getSheet().store(sheetFolder, null);
                         diskWritten = true;
@@ -1579,7 +1597,7 @@ public class Book
                     }
 
                     // Update modified sheet files
-                    if (stub.isModified()) {
+                    if (stub.isModified() || stub.isUpgraded()) {
                         stub.getSheet().store(sheetFolder, oldSheetFolder);
                     }
                 }
@@ -1650,7 +1668,7 @@ public class Book
      */
     public void swapAllSheets ()
     {
-        if (isModified()) {
+        if (isModified() || isUpgraded()) {
             logger.info("{} storing", this);
             store();
         }

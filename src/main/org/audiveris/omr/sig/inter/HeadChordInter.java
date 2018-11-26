@@ -147,9 +147,7 @@ public class HeadChordInter
     {
         // Beams are not copied
         HeadChordInter clone = new HeadChordInter(getGrade());
-        clone.setMirror(this);
         sig.addVertex(clone);
-        setMirror(clone);
 
         clone.setStaff(staff);
 
@@ -392,6 +390,30 @@ public class HeadChordInter
 
             return null;
         }
+    }
+
+    //-----------//
+    // getMirror //
+    //-----------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * For a HeadChord, we check for a head member with a mirror.
+     *
+     * @return the "mirrored" chord if any
+     */
+    @Override
+    public Inter getMirror ()
+    {
+        for (Inter inter : getNotes()) {
+            HeadInter mirrorHead = (HeadInter) inter.getMirror();
+
+            if (mirrorHead != null) {
+                return mirrorHead.getChord();
+            }
+        }
+
+        return null;
     }
 
     //---------//

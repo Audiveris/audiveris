@@ -25,6 +25,7 @@ import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
@@ -168,6 +169,9 @@ public class SIGraph
 
             // SigValue is no longer useful and can be disposed of
             sigValue = null;
+
+            upgradeInters(); // Temporary upgrade stuff
+
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }
@@ -1182,6 +1186,27 @@ public class SIGraph
         return sb.toString();
     }
 
+    //---------------//
+    // upgradeInters //
+    //---------------//
+    /**
+     * All just loaded inters are checked and potentially upgraded.
+     */
+    @Deprecated
+    private void upgradeInters ()
+    {
+        boolean upgraded = false;
+
+        for (Inter inter : this.vertexSet()) {
+            AbstractInter abstractInter = (AbstractInter) inter;
+            upgraded |= abstractInter.upgradeOldStuff();
+        }
+
+        if (upgraded) {
+            system.getSheet().getStub().setUpgraded(true);
+        }
+    }
+
     //------------------------//
     // computeContextualGrade //
     //------------------------//
@@ -1402,8 +1427,8 @@ public class SIGraph
         @Override
         public boolean check (Inter inter)
         {
-            return !inter.isRemoved() && (inter.getStaff() == staff) && ((classe == null) || classe
-                    .isInstance(inter));
+            return !inter.isRemoved() && (inter.getStaff() == staff)
+                           && ((classe == null) || classe.isInstance(inter));
         }
     }
 }

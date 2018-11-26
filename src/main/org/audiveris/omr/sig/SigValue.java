@@ -108,6 +108,7 @@ import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.KeyAltersRelation;
 import org.audiveris.omr.sig.relation.MarkerBarRelation;
+import org.audiveris.omr.sig.relation.MirrorRelation;
 import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
@@ -377,6 +378,7 @@ public class SigValue
             @XmlElementRef(type = HeadStemRelation.class),
             @XmlElementRef(type = KeyAltersRelation.class),
             @XmlElementRef(type = MarkerBarRelation.class),
+            @XmlElementRef(type = MirrorRelation.class),
             @XmlElementRef(type = NoExclusion.class),
             @XmlElementRef(type = RepeatDotBarRelation.class),
             @XmlElementRef(type = RepeatDotPairRelation.class),

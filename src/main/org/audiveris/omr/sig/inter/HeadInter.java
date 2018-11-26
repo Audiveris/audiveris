@@ -235,7 +235,6 @@ public class HeadInter
     {
         HeadInter clone = new HeadInter(pivot, anchor, bounds, shape, impacts, staff, pitch);
         clone.setGlyph(this.glyph);
-        clone.setMirror(this);
 
         if (impacts == null) {
             clone.setGrade(this.grade);

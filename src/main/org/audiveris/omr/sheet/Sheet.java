@@ -1242,6 +1242,7 @@ public class Sheet
             }
 
             stub.setModified(false);
+            stub.setUpgraded(false);
             logger.info("Stored {}", structurePath);
         } catch (IOException |
                  JAXBException |

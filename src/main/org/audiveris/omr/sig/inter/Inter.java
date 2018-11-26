@@ -222,7 +222,7 @@ public interface Inter
     GradeImpacts getImpacts ();
 
     /**
-     * Report the inter, if any, this instance is a duplicate of.
+     * Report the inter, if any, this instance is a mirror of.
      *
      * @return the mirror instance or null
      */

@@ -286,8 +286,8 @@ public class BookActions
                 {
                     String prop = e.getPropertyName();
 
-                    if (dialog.isVisible() && (e.getSource() == optionPane) && (prop.equals(
-                            JOptionPane.VALUE_PROPERTY))) {
+                    if (dialog.isVisible() && (e.getSource() == optionPane)
+                                && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
                         Object obj = optionPane.getValue();
                         int value = (Integer) obj;
                         apply.set(value == JOptionPane.OK_OPTION);
@@ -947,7 +947,8 @@ public class BookActions
             int answer = JOptionPane.showConfirmDialog(
                     OMR.gui.getFrame(),
                     "About to reset all valid sheets of " + book.getRadix()
-                            + " to their initial state." + "\nDo you confirm?");
+                            + " to their initial state."
+                            + "\nDo you confirm?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 book.reset();
@@ -972,7 +973,8 @@ public class BookActions
             int answer = JOptionPane.showConfirmDialog(
                     OMR.gui.getFrame(),
                     "About to reset all valid sheets of " + book.getRadix()
-                            + " to their BINARY state." + "\nDo you confirm?");
+                            + " to their BINARY state."
+                            + "\nDo you confirm?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 book.resetToBinary();
@@ -996,7 +998,8 @@ public class BookActions
         if (stub != null) {
             int answer = JOptionPane.showConfirmDialog(
                     OMR.gui.getFrame(),
-                    "About to reset sheet " + stub.getId() + " to its initial state."
+                    "About to reset sheet " + stub.getId()
+                            + " to its initial state."
                             + "\nDo you confirm?");
 
             if (answer == JOptionPane.YES_OPTION) {
@@ -1021,7 +1024,8 @@ public class BookActions
         if (stub != null) {
             int answer = JOptionPane.showConfirmDialog(
                     OMR.gui.getFrame(),
-                    "About to reset sheet " + stub.getId() + " to its BINARY state."
+                    "About to reset sheet " + stub.getId()
+                            + " to its BINARY state."
                             + "\nDo you confirm?");
 
             if (answer == JOptionPane.YES_OPTION) {
@@ -1069,7 +1073,7 @@ public class BookActions
      * @param e the event that triggered this action
      * @return the UI task to perform
      */
-    @Action(enabledProperty = BOOK_MODIFIED)
+    @Action(enabledProperty = BOOK_MODIFIED_OR_UPGRADED)
     public Task<Void, Void> saveBook (ActionEvent e)
     {
         final Book book = StubsController.getCurrentBook();
@@ -1122,7 +1126,7 @@ public class BookActions
      * @param e the event that triggered this action
      * @return the UI task to perform
      */
-    @Action(enabledProperty = BOOK_MODIFIED)
+    @Action(enabledProperty = BOOK_MODIFIED_OR_UPGRADED)
     public Task<Void, Void> saveBookRepository (ActionEvent e)
     {
         final Book book = StubsController.getCurrentBook();
@@ -1382,10 +1386,13 @@ public class BookActions
      */
     public static boolean checkStored (Book book)
     {
-        if (book.isModified() && defaultPrompt.getValue()) {
+        final String bookStatus = book.isModified() ? "modified"
+                : (book.isUpgraded() ? "upgraded" : null);
+
+        if (bookStatus != null && defaultPrompt.getValue()) {
             int answer = JOptionPane.showConfirmDialog(
                     OMR.gui.getFrame(),
-                    "Save modified book " + book.getRadix() + "?");
+                    "Save " + bookStatus + " book " + book.getRadix() + "?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 Path bookPath;
@@ -1480,8 +1487,8 @@ public class BookActions
                 {
                     String prop = e.getPropertyName();
 
-                    if (dialog.isVisible() && (e.getSource() == optionPane) && (prop.equals(
-                            JOptionPane.VALUE_PROPERTY))) {
+                    if (dialog.isVisible() && (e.getSource() == optionPane)
+                                && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
                         Object obj = optionPane.getValue();
                         int value = (Integer) obj;
                         apply.set(value == JOptionPane.OK_OPTION);
@@ -2015,7 +2022,7 @@ public class BookActions
             try {
                 LogUtil.start(book);
                 book.store(bookPath, false);
-                BookActions.getInstance().setBookModified(false);
+                BookActions.getInstance().setBookModifiedOrUpgraded(false);
             } finally {
                 LogUtil.stopBook();
             }
