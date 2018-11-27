@@ -619,27 +619,3 @@ public class StemInter
         return AbstractInter.getMinGrade();
     }
 }
-//
-//    //-----------//
-//    // duplicate //
-//    //-----------//
-//    /**
-//     * Duplicate a Stem instance (used with mirrored heads).
-//     *
-//     * @return duplicate
-//     */
-//    public StemInter duplicate ()
-//    {
-//        StemInter clone = new StemInter(glyph, impacts);
-//        clone.setGlyph(this.glyph);
-//
-//        if (impacts == null) {
-//            clone.setGrade(this.grade);
-//        }
-//
-//        sig.addVertex(clone);
-//        setMirror(clone);
-//
-//        return clone;
-//    }
-//

@@ -159,11 +159,15 @@ public class HeadChordInter
             switch (head.getShape()) {
             case NOTEHEAD_BLACK:
                 newHead = head.duplicate();
+                sig.addVertex(newHead);
+                newHead.setMirror(head);
 
                 break;
 
             case NOTEHEAD_VOID:
                 newHead = toBlack ? head.duplicateAs(Shape.NOTEHEAD_BLACK) : head.duplicate();
+                sig.addVertex(newHead);
+                newHead.setMirror(head);
 
                 break;
 

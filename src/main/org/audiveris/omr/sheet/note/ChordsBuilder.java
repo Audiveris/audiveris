@@ -407,6 +407,8 @@ public class ChordsBuilder
         // TODO: perhaps duplicate void -> black when flag/beam involved
         // But in this CHORDS step, the beams exist but not the flags yet
         rightHead = leftHead.duplicate();
+        leftHead.getSig().addVertex(rightHead);
+        rightHead.setMirror(leftHead);
 
         // Handle relations as well
         Set<Relation> supports = sig.getRelations(leftHead, Support.class);

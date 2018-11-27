@@ -61,6 +61,7 @@ import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.MirrorRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
@@ -393,13 +394,13 @@ public class InterController
      * Add a relation between inters.
      *
      * @param sig      the containing SIG
-     * @param source   the source inter
+     * @param src      the source inter
      * @param target   the target inter
      * @param relation the relation to add
      */
     @UIThread
     public void link (final SIGraph sig,
-                      final Inter source,
+                      final Inter src,
                       final Inter target,
                       final Relation relation)
     {
@@ -408,53 +409,14 @@ public class InterController
             @Override
             protected Void doInBackground ()
             {
+                Inter source = src; // To allow use of a new source
+
                 try {
                     if (relation instanceof HeadStemRelation) {
                         HeadInter head = (HeadInter) source;
-                        StemInter stem = (StemInter) target;
-                        HeadChordInter headChord = (HeadChordInter) head.getChord();
 
-                        if (headChord != null) {
-                            List<HeadChordInter> stemChords = stem.getChords();
-                            HeadChordInter stemChord = (!stemChords.isEmpty()) ? stemChords.get(0)
-                                    : null;
-
-                            if ((stemChords.isEmpty() && (headChord.getStem() != null))
-                                        || (!stemChords.isEmpty() && !stemChords.contains(headChord))) {
-                                // Extract head from headChord
-                                seq.add(
-                                        new UnlinkTask(
-                                                sig,
-                                                sig.getRelation(
-                                                        headChord,
-                                                        head,
-                                                        Containment.class)));
-
-                                if (headChord.getNotes().size() <= 1) {
-                                    // Remove headChord getting empty
-                                    seq.add(new RemovalTask(headChord));
-                                }
-
-                                if (stemChord == null) {
-                                    // Create a HeadChord on the fly based on stem
-                                    stemChord = new HeadChordInter(-1);
-                                    seq.add(
-                                            new AdditionTask(
-                                                    sig,
-                                                    stemChord,
-                                                    stem.getBounds(),
-                                                    Collections.EMPTY_SET));
-                                    seq.add(
-                                            new LinkTask(
-                                                    sig,
-                                                    stemChord,
-                                                    stem,
-                                                    new ChordStemRelation()));
-                                }
-
-                                // Insert head to stem chord
-                                seq.add(new LinkTask(sig, stemChord, head, new Containment()));
-                            }
+                        if (head.getChord() != null) {
+                            source = preHeadStemLink(seq, head, (StemInter) target);
                         }
                     }
 
@@ -482,8 +444,10 @@ public class InterController
                     }
 
                     if (relation.isSingleTarget()) {
-                        for (Relation rel : sig.getRelations(source, relation.getClass())) {
-                            toRemove.add(rel);
+                        if (source == src) {
+                            for (Relation rel : sig.getRelations(source, relation.getClass())) {
+                                toRemove.add(rel);
+                            }
                         }
                     }
 
@@ -1197,6 +1161,105 @@ public class InterController
 
         // Now set the removal tasks
         removal.populateTaskList(seq);
+    }
+
+    //-----------------//
+    // preHeadStemLink //
+    //-----------------//
+    /**
+     * Specific actions before linking a head and a stem.
+     * <ul>
+     * <li>If head is not yet part of a chord, no specific preparation is needed.
+     * <li>If the link is to result in a canonical share (down stem + head + up stem) then the
+     * head must be "mirrored" between left and right chords.
+     * <li>Otherwise, if link is to result in a non compatible configuration between head, stem
+     * and existing chords, then the head must migrate away from its chord to incoming stem chord.
+     * </ul>
+     *
+     * @param seq  action sequence to populate
+     * @param head head inter being linked
+     * @param stem stem inter being linked
+     * @return the (perhaps new) head
+     */
+    private Inter preHeadStemLink (UITaskList seq,
+                                   HeadInter head,
+                                   StemInter stem)
+    {
+        final HeadChordInter headChord = head.getChord(); // Not null
+        final SIGraph sig = head.getSig();
+        final List<HeadChordInter> stemChords = stem.getChords();
+        HeadChordInter stemChord = (!stemChords.isEmpty()) ? stemChords.get(0) : null;
+
+        // Check for a canonical head share, to share head
+        final HorizontalSide headSide = (stem.getCenter().x < head.getCenter().x) ? LEFT : RIGHT;
+        final StemInter headStem = headChord.getStem();
+
+        final boolean sharing;
+        if (headSide == LEFT) {
+            sharing = HeadStemRelation.isCanonicalShare(stem, head, headStem);
+        } else {
+            sharing = HeadStemRelation.isCanonicalShare(headStem, head, stem);
+        }
+
+        if (sharing) {
+            // Duplicate head
+            HeadInter newHead = head.duplicate();
+            seq.add(new AdditionTask(sig, newHead, newHead.getBounds(), Collections.EMPTY_SET));
+
+            // Link mirrored heads
+            seq.add(new LinkTask(sig, head, newHead, new MirrorRelation()));
+
+            if (stemChord == null) {
+                stemChord = buildStemChord(seq, stem);
+            }
+
+            // Insert newHead to stem chord
+            seq.add(new LinkTask(sig, stemChord, newHead, new Containment()));
+
+            return newHead;
+        }
+
+        // If resulting chords are not compatible, move head to stemChord
+        if ((stemChords.isEmpty() && (headChord.getStem() != null))
+                    || (!stemChords.isEmpty() && !stemChords.contains(headChord))) {
+            // Extract head from headChord
+            seq.add(new UnlinkTask(sig, sig.getRelation(headChord, head, Containment.class)));
+
+            if (headChord.getNotes().size() <= 1) {
+                // Remove headChord getting empty
+                seq.add(new RemovalTask(headChord));
+            }
+
+            if (stemChord == null) {
+                stemChord = buildStemChord(seq, stem);
+            }
+
+            // Insert head to stem chord
+            seq.add(new LinkTask(sig, stemChord, head, new Containment()));
+        }
+
+        return head;
+    }
+
+    //----------------//
+    // buildStemChord //
+    //----------------//
+    /**
+     * Create a HeadChord on the fly based on provided stem.
+     *
+     * @param seq  action sequence to populate
+     * @param stem the provided stem
+     * @return a HeadChord around this stem
+     */
+    private HeadChordInter buildStemChord (UITaskList seq,
+                                           StemInter stem)
+    {
+        final SIGraph sig = stem.getSig();
+        final HeadChordInter stemChord = new HeadChordInter(-1);
+        seq.add(new AdditionTask(sig, stemChord, stem.getBounds(), Collections.EMPTY_SET));
+        seq.add(new LinkTask(sig, stemChord, stem, new ChordStemRelation()));
+
+        return stemChord;
     }
 
     //-----------//

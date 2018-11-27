@@ -57,8 +57,6 @@ import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.Exclusion.Cause;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
-import org.audiveris.omr.sig.relation.StemPortion;
-import static org.audiveris.omr.sig.relation.StemPortion.*;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Corner;
@@ -313,7 +311,7 @@ public class StemsBuilder
         watch.start("checkHeadStems");
 
         for (Inter head : systemHeads) {
-            checkHeadStems(head);
+            checkHeadStems((HeadInter) head);
         }
 
         // Discard heads with no stem link
@@ -421,7 +419,7 @@ public class StemsBuilder
      *
      * @param head the note head to check
      */
-    private void checkHeadStems (Inter head)
+    private void checkHeadStems (HeadInter head)
     {
         // Retrieve all stems connected to this head
         List<Inter> allStems = new ArrayList<>();
@@ -1777,11 +1775,11 @@ public class StemsBuilder
     private class ShareChecker
     {
 
-        private final Inter head;
+        private final HeadInter head;
 
         private final List<HeadStemRelation> rels = new ArrayList<>();
 
-        ShareChecker (Inter head)
+        ShareChecker (HeadInter head)
         {
             this.head = head;
         }
@@ -1901,46 +1899,33 @@ public class StemsBuilder
 
         /**
          * Check whether this is the canonical "shared" configuration.
-         * (STEM_TOP on head LEFT side and STEM_BOTTOM on head RIGHT side).
-         *
-         * <pre>
-         *    |
-         *    |
-         *  +O+
-         *  |
-         *  |
-         * </pre>
+         * <p>
+         * For this test, we cannot trust stem extensions and must stay with physical stem limits.
          *
          * @return true if canonical
          */
         private boolean isCanonicalShare ()
         {
-            boolean left = false;
-            boolean right = false;
+            StemInter leftStem = null;
+            StemInter rightStem = null;
 
             for (HeadStemRelation rel : rels) {
-                StemInter stem = (StemInter) sig.getOppositeInter(head, rel);
+                if (rel.getDy() > constants.yGapTiny.getValue()) {
+                    return false;
+                }
 
-                // For this test, we cannot trust stem extensions and must stay with physical stem
-                Line2D stemLine = new Line2D.Double(stem.getTop(), stem.getBottom());
-                StemPortion portion = rel.getStemPortion(head, stemLine, scale);
-                HorizontalSide side = rel.getHeadSide();
-                double yGap = rel.getDy();
-
-                if (yGap <= constants.yGapTiny.getValue()) {
-                    if (portion == STEM_TOP) {
-                        if (side == LEFT) {
-                            left = true;
-                        }
-                    } else if (portion == STEM_BOTTOM) {
-                        if (side == RIGHT) {
-                            right = true;
-                        }
-                    }
+                if (rel.getHeadSide() == LEFT) {
+                    leftStem = (StemInter) sig.getOppositeInter(head, rel);
+                } else {
+                    rightStem = (StemInter) sig.getOppositeInter(head, rel);
                 }
             }
 
-            return left && right;
+            if (leftStem == null || rightStem == null) {
+                return false;
+            }
+
+            return HeadStemRelation.isCanonicalShare(leftStem, head, rightStem);
         }
     }
 

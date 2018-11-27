@@ -164,7 +164,7 @@ public class EntityService<E extends Entity>
     @SuppressWarnings("unchecked")
     public E getSelectedEntity ()
     {
-        return getMostRelevant(getSelectedEntityList(), null);
+        return getMostRelevant(getSelectedEntityList());
     }
 
     //-----------------------//
@@ -222,12 +222,10 @@ public class EntityService<E extends Entity>
     /**
      * Among the list of selected entities, report the most "relevant" one.
      *
-     * @param list     the sequence of selected entities
-     * @param location the selection point if any
+     * @param list the sequence of selected entities
      * @return the chosen entity
      */
-    protected E getMostRelevant (List<E> list,
-                                 Point location)
+    protected E getMostRelevant (List<E> list)
     {
         if (!list.isEmpty()) {
             return list.get(0); // Use first
@@ -310,7 +308,7 @@ public class EntityService<E extends Entity>
             } else {
                 // Just a point: look for most relevant entity
                 final Point loc = rect.getLocation();
-                final E entity = getMostRelevant(index.getContainingEntities(loc), loc);
+                final E entity = getMostRelevant(index.getContainingEntities(loc));
 
                 // Update basket
                 switch (hint) {

@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.glyph.ui;
 
-import java.awt.Point;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.glyph.Glyphs;
@@ -74,8 +73,7 @@ public class GlyphService
     // getMostRelevant //
     //-----------------//
     @Override
-    protected Glyph getMostRelevant (List<Glyph> list,
-                                     Point location)
+    protected Glyph getMostRelevant (List<Glyph> list)
     {
         switch (list.size()) {
         case 0:

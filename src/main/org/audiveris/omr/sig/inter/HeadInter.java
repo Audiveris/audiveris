@@ -207,6 +207,25 @@ public class HeadInter
         return isAbnormal();
     }
 
+    //----------//
+    // contains //
+    //----------//
+    @Override
+    public boolean contains (Point point)
+    {
+        if (!super.contains(point)) {
+            return false;
+        }
+
+        Line2D midLine = getMidLine();
+
+        if (midLine != null) {
+            return midLine.relativeCCW(point) < 0;
+        }
+
+        return true;
+    }
+
     //-----------//
     // duplicate //
     //-----------//
@@ -234,14 +253,12 @@ public class HeadInter
     public HeadInter duplicateAs (Shape shape)
     {
         HeadInter clone = new HeadInter(pivot, anchor, bounds, shape, impacts, staff, pitch);
+
         clone.setGlyph(this.glyph);
 
         if (impacts == null) {
-            clone.setGrade(this.grade);
+            clone.setGrade(grade);
         }
-
-        sig.addVertex(clone);
-        setMirror(clone);
 
         return clone;
     }

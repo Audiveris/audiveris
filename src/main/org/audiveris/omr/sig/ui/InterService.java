@@ -24,7 +24,6 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.selection.EntityListEvent;
@@ -39,8 +38,6 @@ import org.audiveris.omr.util.EntityIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
-import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -78,8 +75,7 @@ public class InterService
     // getMostRelevant //
     //-----------------//
     @Override
-    protected Inter getMostRelevant (List<Inter> list,
-                                     Point location)
+    protected Inter getMostRelevant (List<Inter> list)
     {
         switch (list.size()) {
         case 0:
@@ -92,18 +88,7 @@ public class InterService
             List<Inter> copy = new ArrayList<>(list);
             Collections.sort(copy, Inters.membersFirst);
 
-            Inter selected = copy.get(0);
-
-            if (selected instanceof HeadInter && selected.getMirror() != null) {
-                HeadInter head = (HeadInter) selected;
-                Line2D line = head.getMidLine();
-
-                if (location != null && line.relativeCCW(location) > 0) {
-                    selected = selected.getMirror();
-                }
-            }
-
-            return selected;
+            return copy.get(0);
         }
     }
 
