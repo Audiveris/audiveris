@@ -56,7 +56,6 @@ import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.WordInter;
-import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
@@ -105,6 +104,7 @@ import javax.swing.AbstractAction;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
+import org.audiveris.omr.sig.relation.AugmentationRelation;
 
 /**
  * Class {@code InterController} is the UI in charge of dealing with Inter and
@@ -421,59 +421,10 @@ public class InterController
                     }
 
                     // Remove conflicting relations if any
-                    Set<Relation> toRemove = new LinkedHashSet<>();
-
-                    if (relation instanceof SlurHeadRelation) {
-                        // This relation is declared multi-source & multi-target
-                        // But is single target (head) for each given side
-                        SlurInter slur = (SlurInter) source;
-                        HeadInter head = (HeadInter) target;
-                        HorizontalSide side = (head.getCenter().x < slur.getCenter().x) ? LEFT
-                                : RIGHT;
-                        SlurHeadRelation existingRel = slur.getHeadRelation(side);
-
-                        if (existingRel != null) {
-                            toRemove.add(existingRel);
-                        }
-                    }
-
-                    if (relation.isSingleSource()) {
-                        for (Relation rel : sig.getRelations(target, relation.getClass())) {
-                            toRemove.add(rel);
-                        }
-                    }
-
-                    if (relation.isSingleTarget()) {
-                        if (source == src) {
-                            for (Relation rel : sig.getRelations(source, relation.getClass())) {
-                                toRemove.add(rel);
-                            }
-                        }
-                    }
-
-                    for (Relation rel : toRemove) {
-                        seq.add(new UnlinkTask(sig, rel));
-                    }
+                    removeConflictingRelations(seq, sig, src, source, target, relation);
 
                     // Finally, add relation
                     seq.add(new LinkTask(sig, source, target, relation));
-
-                    // Specific case for dot augmenting mirrored heads
-                    if (relation instanceof AugmentationRelation && target instanceof HeadInter) {
-                        Inter mirror = target.getMirror();
-
-                        if (mirror != null) {
-                            // Since the user is manually linking the dot to the (shared) head,
-                            // we can link the dot to each of the mirrored heads.
-                            // And the user can still delete one of the links if so desired later.
-                            logger.debug(
-                                    "LinkTask from {} to mirrored {} and {}",
-                                    source,
-                                    target,
-                                    mirror);
-                            seq.add(new LinkTask(sig, source, mirror, relation.duplicate()));
-                        }
-                    }
 
                     seq.performDo();
                     epilog(seq);
@@ -1220,8 +1171,9 @@ public class InterController
         }
 
         // If resulting chords are not compatible, move head to stemChord
-        if ((stemChords.isEmpty() && (headChord.getStem() != null))
-                    || (!stemChords.isEmpty() && !stemChords.contains(headChord))) {
+        if ((stemChords.isEmpty() && (headChord.getStem() != null)) || (!stemChords.isEmpty()
+                                                                                && !stemChords
+                        .contains(headChord))) {
             // Extract head from headChord
             seq.add(new UnlinkTask(sig, sig.getRelation(headChord, head, Containment.class)));
 
@@ -1308,6 +1260,66 @@ public class InterController
         }
 
         populateRemovals(competitors, seq);
+    }
+
+    //----------------------------//
+    // removeConflictingRelations //
+    //----------------------------//
+    private void removeConflictingRelations (UITaskList seq,
+                                             SIGraph sig,
+                                             Inter src,
+                                             Inter source,
+                                             Inter target,
+                                             Relation relation)
+    {
+        Set<Relation> toRemove = new LinkedHashSet<>();
+
+        if (relation instanceof SlurHeadRelation) {
+            // This relation is declared multi-source & multi-target
+            // But is single target (head) for each given side
+            SlurInter slur = (SlurInter) source;
+            HeadInter head = (HeadInter) target;
+            HorizontalSide side = (head.getCenter().x < slur.getCenter().x) ? LEFT : RIGHT;
+            SlurHeadRelation existingRel = slur.getHeadRelation(side);
+
+            if (existingRel != null) {
+                toRemove.add(existingRel);
+            }
+        }
+
+        // Conflict on sources
+        if (relation.isSingleSource()) {
+            for (Relation rel : sig.getRelations(target, relation.getClass())) {
+                toRemove.add(rel);
+            }
+        }
+
+        // Conflict on targets
+        if (relation.isSingleTarget()) {
+            if (source == src) {
+                for (Relation rel : sig.getRelations(source, relation.getClass())) {
+                    toRemove.add(rel);
+                }
+
+                // Specific case of (single target) augmentation dot to shared head:
+                // We allow a dot source to augment both mirrored head targets
+                if (relation instanceof AugmentationRelation && target instanceof HeadInter) {
+                    HeadInter mirror = (HeadInter) target.getMirror();
+
+                    if (mirror != null) {
+                        Relation mirrorRel = sig.getEdge(source, mirror);
+
+                        if (mirrorRel != null) {
+                            toRemove.remove(mirrorRel);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (Relation rel : toRemove) {
+            seq.add(new UnlinkTask(sig, rel));
+        }
     }
 
     //-----------------//
