@@ -226,16 +226,16 @@ public class PageRhythm
                 // Start of range?
                 if (stack.getIdValue() == range.startId) {
                     logger.debug("Starting {}", range);
-
-                    // Adjust time signature? (TODO: today we don't adjust anything in fact)
-                    if ((range.duration != null) && ((range.ts == null) || !range.ts
-                            .getTimeRational().getValue().equals(range.duration))) {
-                        logger.info(
-                                "{}{} should update to {}-based time sig?",
-                                stack.getSystem().getLogPrefix(),
-                                range,
-                                range.duration);
-                    }
+                    //
+                    //                    // Adjust time signature? (TODO: today we don't adjust anything in fact)
+                    //                    if ((range.duration != null) && ((range.ts == null) || !range.ts
+                    //                            .getTimeRational().getValue().equals(range.duration))) {
+                    //                        logger.info(
+                    //                                "{}{} should update to {}-based time sig?",
+                    //                                stack.getSystem().getLogPrefix(),
+                    //                                range,
+                    //                                range.duration);
+                    //                    }
                 }
 
                 try {

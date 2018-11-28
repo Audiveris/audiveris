@@ -351,6 +351,6 @@ public abstract class AbstractTimeInter
 
         private final Constant.String optionalTimes = new Constant.String(
                 "6/4, 7/8",
-                "Time sigs besides " + defaultTimes);
+                "Optional time sigs");
     }
 }
