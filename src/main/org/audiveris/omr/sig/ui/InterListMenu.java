@@ -27,6 +27,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
@@ -46,9 +47,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
@@ -172,17 +173,22 @@ public class InterListMenu
                         addSeparator();
                     }
 
-                    //                    UIUtil.insertTitle(
-                    //                            this,
-                    //                            sysInters.size() + " inters for System #" + system.getId() + ":");
                     List<Inter> sysInters = entry.getValue();
                     insertDeletionItem(system, sysInters);
 
                     for (Inter inter : sysInters) {
-                        // A menu dedicated to this inter instance
-                        JMenu relMenu = new InterMenu(inter).getMenu();
-                        relMenu.addMouseListener(interListener);
-                        add(relMenu);
+                        // A menu (or simple item) dedicated to this inter instance
+                        final JMenuItem item;
+                        final Set<Relation> relations = inter.getSig().edgesOf(inter);
+
+                        if (!relations.isEmpty()) {
+                            item = new InterMenu(inter, relations).getMenu();
+                        } else {
+                            item = new JMenuItem(new InterAction(inter, null));
+                        }
+
+                        item.addMouseListener(interListener);
+                        add(item);
                     }
                 }
 

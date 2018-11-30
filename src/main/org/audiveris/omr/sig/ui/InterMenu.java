@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.MouseEvent;
+import java.util.Set;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -56,14 +57,16 @@ public class InterMenu
 
     private final RelationListener relationListener = new RelationListener();
 
-    private final InterController interController;
+    private InterController interController;
 
     /**
      * Creates a new {@code InterMenu} object.
      *
-     * @param inter originating inter
+     * @param inter     originating inter
+     * @param relations (non empty) set of inter relations
      */
-    public InterMenu (final Inter inter)
+    public InterMenu (final Inter inter,
+                      final Set<Relation> relations)
     {
         this.inter = inter;
 
@@ -76,8 +79,7 @@ public class InterMenu
 
         interController = sheet.getInterController();
 
-        // Existing relations (available for unlinking)
-        for (Relation relation : inter.getSig().edgesOf(inter)) {
+        for (Relation relation : relations) {
             JMenuItem item = new JMenuItem(new RelationAction(inter, relation));
             item.addMouseListener(relationListener);
             menu.add(item);
