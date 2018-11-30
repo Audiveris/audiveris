@@ -15,7 +15,7 @@ ext.companyId       = "${programName}Ltd"
 ext.targetOSName   = System.getProperty('os.name').toLowerCase()\
                      .startsWith('mac os x') ? 'macosx' :\
                      System.getProperty('os.name').split(' ')[0].toLowerCase()
-ext.targetOSArch   = ["i386":"x86", "i486":"x86", "i586":"x86", "i686":"x86",
+ext.targetOSArch   = ["i386":"x86", "i486":"x86", "i586":"x86", "i686":"x86", "x86":"x86",
                       "amd64":"x86_64", "x86-64":"x86_64", "x86_64":"x86_64"]\
                      [System.getProperty('os.arch').toLowerCase()]
 ext.targetOS       = "${project.ext.targetOSName}-${project.ext.targetOSArch}"
