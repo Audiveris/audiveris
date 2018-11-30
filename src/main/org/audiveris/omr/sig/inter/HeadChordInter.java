@@ -456,7 +456,11 @@ public class HeadChordInter
     {
         Objects.requireNonNull(sig, "Chord not in SIG.");
 
-        sig.addEdge(this, stem, new ChordStemRelation());
+        Relation rel = sig.getRelation(this, stem, ChordStemRelation.class);
+
+        if (rel == null) {
+            sig.addEdge(this, stem, new ChordStemRelation());
+        }
     }
 
     //------------//

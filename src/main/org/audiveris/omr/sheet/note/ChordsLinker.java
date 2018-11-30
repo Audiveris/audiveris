@@ -117,10 +117,16 @@ public class ChordsLinker
                         logger.info("{} Overlapping {} {} vs {}", beam, ratio, prevChord, chord);
 
                         StemInter prevStem = prevChord.getStem();
-                        BeamStemRelation prevRel = (BeamStemRelation) sig.getEdge(beam, prevStem);
+                        BeamStemRelation prevRel = (BeamStemRelation) sig.getRelation(
+                                beam,
+                                prevStem,
+                                BeamStemRelation.class);
 
                         StemInter stem = chord.getStem();
-                        BeamStemRelation rel = (BeamStemRelation) sig.getEdge(beam, stem);
+                        BeamStemRelation rel = (BeamStemRelation) sig.getRelation(
+                                beam,
+                                stem,
+                                BeamStemRelation.class);
 
                         final BeamStemRelation guiltyRel;
 

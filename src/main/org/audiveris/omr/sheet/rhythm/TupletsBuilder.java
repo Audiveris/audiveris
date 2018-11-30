@@ -107,9 +107,7 @@ public class TupletsBuilder
             final Collection<Link> links = lookupLinks(tuplet);
 
             for (Link link : links) {
-                if (null == sig.getRelation(link.partner, tuplet, ChordTupletRelation.class)) {
-                    link.applyTo(tuplet);
-                }
+                link.applyTo(tuplet);
             }
 
             if (!tuplet.isManual() && !sig.hasRelation(tuplet, ChordTupletRelation.class)) {

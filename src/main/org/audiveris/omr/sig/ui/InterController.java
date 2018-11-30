@@ -1153,27 +1153,29 @@ public class InterController
         }
 
         if (sharing) {
-            // Duplicate head
+            // Duplicate head and link as mirror
             HeadInter newHead = head.duplicate();
-            seq.add(new AdditionTask(sig, newHead, newHead.getBounds(), Collections.EMPTY_SET));
+            newHead.setManual(true);
+            seq.add(
+                    new AdditionTask(
+                            sig,
+                            newHead,
+                            newHead.getBounds(),
+                            Arrays.asList(new Link(head, new MirrorRelation(), false))));
 
-            // Link mirrored heads
-            seq.add(new LinkTask(sig, head, newHead, new MirrorRelation()));
-
+            // Insert newHead to stem chord
             if (stemChord == null) {
                 stemChord = buildStemChord(seq, stem);
             }
 
-            // Insert newHead to stem chord
             seq.add(new LinkTask(sig, stemChord, newHead, new Containment()));
 
             return newHead;
         }
 
         // If resulting chords are not compatible, move head to stemChord
-        if ((stemChords.isEmpty() && (headChord.getStem() != null)) || (!stemChords.isEmpty()
-                                                                                && !stemChords
-                        .contains(headChord))) {
+        if ((stemChords.isEmpty() && (headChord.getStem() != null))
+                    || (!stemChords.isEmpty() && !stemChords.contains(headChord))) {
             // Extract head from headChord
             seq.add(new UnlinkTask(sig, sig.getRelation(headChord, head, Containment.class)));
 
@@ -1307,7 +1309,7 @@ public class InterController
                     HeadInter mirror = (HeadInter) target.getMirror();
 
                     if (mirror != null) {
-                        Relation mirrorRel = sig.getEdge(source, mirror);
+                        Relation mirrorRel = sig.getRelation(source, mirror, MirrorRelation.class);
 
                         if (mirrorRel != null) {
                             toRemove.remove(mirrorRel);

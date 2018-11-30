@@ -121,7 +121,17 @@ public class HeadStemRelation
             HeadChordInter ch = head.getChord();
 
             if (ch != null) {
-                ch.setStem(stem);
+                StemInter existingStem = ch.getStem();
+
+                if (existingStem != stem) {
+                    if (existingStem != null) {
+                        SIGraph sig = stem.getSig();
+                        Relation rel = sig.getRelation(ch, existingStem, ChordStemRelation.class);
+                        sig.removeEdge(rel);
+                    }
+
+                    ch.setStem(stem);
+                }
 
                 // Propagate to beam if any
                 Measure measure = ch.getMeasure();
@@ -381,10 +391,18 @@ public class HeadStemRelation
         final SIGraph sig = head.getSig();
 
         if (leftStem == null) {
+            if (leftRel == null) {
+                return false;
+            }
+
             leftStem = (StemInter) sig.getOppositeInter(head, leftRel);
         }
 
         if (rightStem == null) {
+            if (rightRel == null) {
+                return false;
+            }
+
             rightStem = (StemInter) sig.getOppositeInter(head, rightRel);
         }
 

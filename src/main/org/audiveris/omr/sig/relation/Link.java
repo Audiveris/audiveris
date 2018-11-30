@@ -85,7 +85,8 @@ public class Link
     // applyTo //
     //---------//
     /**
-     * Add the relation between the provided inter and the partner.
+     * Add the relation between the provided inter and the partner, unless an instance
+     * of the same relation class already exists between them.
      *
      * @param inter the provided inter
      */
@@ -95,7 +96,9 @@ public class Link
         final Inter source = outgoing ? inter : partner;
         final Inter target = outgoing ? partner : inter;
 
-        sig.addEdge(source, target, relation);
+        if (null == sig.getRelation(source, target, relation.getClass())) {
+            sig.addEdge(source, target, relation);
+        }
     }
 
     //----------//
