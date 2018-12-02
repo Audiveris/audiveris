@@ -1174,8 +1174,9 @@ public class InterController
         }
 
         // If resulting chords are not compatible, move head to stemChord
-        if ((stemChords.isEmpty() && (headChord.getStem() != null))
-                    || (!stemChords.isEmpty() && !stemChords.contains(headChord))) {
+        if ((stemChords.isEmpty() && (headChord.getStem() != null)) || (!stemChords.isEmpty()
+                                                                                && !stemChords
+                        .contains(headChord))) {
             // Extract head from headChord
             seq.add(new UnlinkTask(sig, sig.getRelation(headChord, head, Containment.class)));
 
@@ -1309,7 +1310,7 @@ public class InterController
                     HeadInter mirror = (HeadInter) target.getMirror();
 
                     if (mirror != null) {
-                        Relation mirrorRel = sig.getRelation(source, mirror, MirrorRelation.class);
+                        Relation mirrorRel = sig.getRelation(source, mirror, relation.getClass());
 
                         if (mirrorRel != null) {
                             toRemove.remove(mirrorRel);
