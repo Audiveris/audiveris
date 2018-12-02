@@ -2374,7 +2374,7 @@ public class BarsRetriever
                 final StaffProjector projector = projectorOf(staff);
 
                 for (StaffPeak peak : new ArrayList<>(projector.getPeaks())) {
-                    if (peakGraph.edgesOf(peak).isEmpty()) {
+                    if (peakGraph.containsVertex(peak) && peakGraph.edgesOf(peak).isEmpty()) {
                         if (peak.isVip()) {
                             logger.info("VIP unaligned {}", peak);
                         }
