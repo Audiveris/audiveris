@@ -317,6 +317,9 @@ public class Options
 
         Set<Object> matches = UnitManager.getInstance().searchUnits(searchString);
         rows = unitTreeTable.setNodesSelection(matches);
-        rowIndex = null;
+
+        if (rows == null) {
+            rowIndex = null;
+        }
     }
 }
