@@ -618,7 +618,6 @@ public class DotFactory
 
         double grade = Grades.intrinsicRatio * dot.getGrade();
         Glyph glyph = dot.getGlyph();
-        int annId = dot.getAnnotationId();
         AugmentationDotInter second = new AugmentationDotInter(glyph, grade);
         Link bestDotLink = Link.bestOf(second.lookupDotLinks(systemFirsts, system));
 
@@ -714,11 +713,7 @@ public class DotFactory
 
         List<Link> links = new ArrayList<>();
         Link headLink = aug.lookupHeadLink(interFactory.getSystemHeadChords(), system);
-
-        if (headLink != null) {
-            links.add(headLink);
-        }
-
+        links.addAll(aug.sharedHeadLinks(headLink));
         links.addAll(aug.lookupRestLinks(interFactory.getSystemRests(), system));
 
         if (!links.isEmpty()) {
@@ -726,29 +721,6 @@ public class DotFactory
             aug.setStaff(links.get(0).partner.getStaff());
 
             for (Link link : links) {
-                // Very specific case for mirrored head
-                if (link.partner instanceof HeadInter) {
-                    final HeadInter h1 = (HeadInter) link.partner;
-                    final HeadInter h2 = (HeadInter) h1.getMirror();
-
-                    if (h2 != null) {
-                        // OMR engine assigns the aug dot ONLY to the head with longer duration
-                        // which means lower number of beams or flags.
-                        // See many examples in Dichterliebe01 case.
-                        final int bf1 = h1.getChord().getBeamsOrFlagsNumber();
-                        final int bf2 = h2.getChord().getBeamsOrFlagsNumber();
-                        HeadInter head = (bf1 < bf2) ? h1 : h2;
-                        logger.debug(
-                                "Edge from {} to {} (not mirror {})",
-                                aug,
-                                head,
-                                head.getMirror());
-                        sig.addEdge(aug, head, link.relation);
-
-                        continue;
-                    }
-                }
-
                 link.applyTo(aug);
             }
         }

@@ -43,7 +43,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -51,7 +50,8 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code AugmentationDotInter} represent an augmentation dot for a note or a rest.
+ * Class {@code AugmentationDotInter} represents an augmentation dot for
+ * a note (head or rest) or another dot.
  *
  * @author Hervé Bitteur
  */
@@ -304,6 +304,8 @@ public class AugmentationDotInter
     /**
      * Look up for a possible link with a head.
      * <p>
+     * Even in the case of a shared head, at most one head link is returned.
+     * <p>
      * Assumption: System dots are already in place or they are processed top down.
      *
      * @param systemHeadChords system head chords, sorted by abscissa
@@ -477,10 +479,12 @@ public class AugmentationDotInter
     //-------------//
     /**
      * Try to find a link with a note or another dot on the left.
+     * <p>
+     * In case of a shared head, a pair of links can be returned.
      *
      * @param system containing system
      * @param doit   true to apply
-     * @return the link found or null
+     * @return a collection of 0, 1 or 2 best link(s) found
      */
     @Override
     public Collection<Link> searchLinks (SystemInfo system,
@@ -502,31 +506,95 @@ public class AugmentationDotInter
             return Collections.emptyList();
         }
 
-        // Specific case for mirrored head: build a separate link to mirror
-        Link linkMirror = null;
+        final Collection<Link> links;
 
         if (link.partner instanceof HeadInter) {
-            final Inter mirrorHead = link.partner.getMirror();
-
-            if (mirrorHead != null) {
-                logger.debug("Link from {} to mirrored {} and {}", this, link.partner, mirrorHead);
-                linkMirror = new Link(mirrorHead, link.relation.duplicate(), true);
-            }
+            links = sharedHeadLinks(link);
+        } else {
+            links = Collections.singleton(link);
         }
 
         if (doit) {
-            link.applyTo(this);
-
-            if (linkMirror != null) {
-                linkMirror.applyTo(this);
+            for (Link lnk : links) {
+                lnk.applyTo(this);
             }
         }
 
-        if (linkMirror != null) {
-            return Arrays.asList(link, linkMirror);
-        } else {
-            return Collections.singleton(link);
+        return links;
+    }
+
+    //-----------------//
+    // sharedHeadLinks //
+    //-----------------//
+    /**
+     * Modify the provided head link when the target head is a shared head.
+     * <p>
+     * There is a very specific case for shared heads.
+     * See some cases in Dichterliebe01 example.
+     * <ul>
+     * <li>If head is located <b>on</b> staff line or ledger, use dot relative location.
+     * <li>If head is located <b>between</b> staff lines or ledgers, check chords durations:
+     * <ul>
+     * <li>If durations are different, assign the dot only to the <b>longer</b>
+     * (which means lower number of beams or flags).
+     * <li>If they are identical, assign the dot to <b>both</b>.
+     * </ul>
+     * </ul>
+     *
+     * @param link the provided (head) link, perhaps null
+     * @return a collection of (head) links, the provided link for a non-shared head, but one or two
+     *         links for shared heads
+     */
+    public Collection<Link> sharedHeadLinks (Link link)
+    {
+        if (link == null) {
+            return Collections.EMPTY_LIST;
         }
+
+        final Collection<Link> links = new ArrayList<>();
+        final HeadInter h1 = (HeadInter) link.partner;
+        final HeadInter h2 = (HeadInter) h1.getMirror();
+
+        if (h2 == null) {
+            links.add(link);
+        } else {
+            // Head on or between line(s)?
+            final int p = h1.getIntegerPitch();
+
+            if (p % 2 == 0) {
+                // On line
+                final int yHead = h1.getCenter().y;
+                final int yAug = getCenter().y;
+                final int yCh1 = h1.getChord().getCenter().y;
+                final HeadInter head;
+
+                if (yAug < yHead) {
+                    // Link to upper
+                    head = yCh1 < yHead ? h1 : h2;
+                } else {
+                    // Link to lower
+                    head = yCh1 > yHead ? h1 : h2;
+                }
+
+                links.add(new Link(head, new AugmentationRelation(), true));
+            } else {
+                // Between lines
+                final int bf1 = h1.getChord().getBeamsOrFlagsNumber();
+                final int bf2 = h2.getChord().getBeamsOrFlagsNumber();
+
+                if (bf1 == bf2) {
+                    // Link to both
+                    links.add(new Link(h1, new AugmentationRelation(), true));
+                    links.add(new Link(h2, new AugmentationRelation(), true));
+                } else {
+                    // Link to longer
+                    HeadInter head = (bf1 < bf2) ? h1 : h2;
+                    links.add(new Link(head, new AugmentationRelation(), true));
+                }
+            }
+        }
+
+        return links;
     }
 
     //--------------//
@@ -569,6 +637,24 @@ public class AugmentationDotInter
         return getLuBox(dotCenter, maxDx, maxDy);
     }
 
+    //----------//
+    // getLuBox //
+    //----------//
+    /**
+     * Report proper lookup box based on provided dot center
+     *
+     * @param dotCenter center of dot candidate
+     * @param maxDx     maximum dx between entity left side and dot center
+     * @param maxDy     maximum dy between entity center and dot center
+     * @return proper lookup box
+     */
+    private static Rectangle getLuBox (Point dotCenter,
+                                       int maxDx,
+                                       int maxDy)
+    {
+        return new Rectangle(dotCenter.x - maxDx, dotCenter.y - maxDy, maxDx, 2 * maxDy);
+    }
+
     //------------//
     // lookupLink //
     //------------//
@@ -598,23 +684,5 @@ public class AugmentationDotInter
         links.addAll(lookupDotLinks(systemDots, system));
 
         return Link.bestOf(links);
-    }
-
-    //----------//
-    // getLuBox //
-    //----------//
-    /**
-     * Report proper lookup box based on provided dot center
-     *
-     * @param dotCenter center of dot candidate
-     * @param maxDx     maximum dx between entity left side and dot center
-     * @param maxDy     maximum dy between entity center and dot center
-     * @return proper lookup box
-     */
-    private static Rectangle getLuBox (Point dotCenter,
-                                       int maxDx,
-                                       int maxDy)
-    {
-        return new Rectangle(dotCenter.x - maxDx, dotCenter.y - maxDy, maxDx, 2 * maxDy);
     }
 }
