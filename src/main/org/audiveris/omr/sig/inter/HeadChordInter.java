@@ -29,6 +29,7 @@ import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.HorizontalSide;
 
@@ -298,6 +299,30 @@ public class HeadChordInter
         }
 
         return count;
+    }
+
+    //---------------//
+    // getGraceChord //
+    //---------------//
+    /**
+     * Report the grace chord, if any, which is linked on left side of this chord.
+     *
+     * @return the linked grace chord if any
+     */
+    public SmallChordInter getGraceChord ()
+    {
+        for (Inter interNote : getNotes()) {
+            for (Relation rel : sig.getRelations(interNote, SlurHeadRelation.class)) {
+                SlurInter slur = (SlurInter) sig.getOppositeInter(interNote, rel);
+                HeadInter head = slur.getHead(HorizontalSide.LEFT);
+
+                if ((head != null) && head.getShape().isSmall()) {
+                    return (SmallChordInter) head.getChord();
+                }
+            }
+        }
+
+        return null;
     }
 
     //----------------//

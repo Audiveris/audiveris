@@ -240,6 +240,31 @@ public class BeamGroup
         return beams;
     }
 
+    //-----------//
+    // getChords //
+    //-----------//
+    /**
+     * Report the x-ordered collection of chords that are grouped by this beam group.
+     *
+     * @return the (perhaps empty) collection of 'beamed' chords.
+     */
+    public List<AbstractChordInter> getChords ()
+    {
+        List<AbstractChordInter> chords = new ArrayList<>();
+
+        for (AbstractBeamInter beam : getBeams()) {
+            for (AbstractChordInter chord : beam.getChords()) {
+                if (!chords.contains(chord)) {
+                    chords.add(chord);
+                }
+            }
+        }
+
+        Collections.sort(chords, Inters.byAbscissa);
+
+        return chords;
+    }
+
     //-------------//
     // getDuration //
     //-------------//
@@ -567,31 +592,6 @@ public class BeamGroup
         if (staves.size() > 1) {
             multiStaff = Boolean.TRUE;
         }
-    }
-
-    //-----------//
-    // getChords //
-    //-----------//
-    /**
-     * Report the x-ordered collection of chords that are grouped by this beam group.
-     *
-     * @return the (perhaps empty) collection of 'beamed' chords.
-     */
-    private List<AbstractChordInter> getChords ()
-    {
-        List<AbstractChordInter> chords = new ArrayList<>();
-
-        for (AbstractBeamInter beam : getBeams()) {
-            for (AbstractChordInter chord : beam.getChords()) {
-                if (!chords.contains(chord)) {
-                    chords.add(chord);
-                }
-            }
-        }
-
-        Collections.sort(chords, Inters.byAbscissa);
-
-        return chords;
     }
 
     //-------//

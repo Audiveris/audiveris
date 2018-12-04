@@ -270,6 +270,8 @@ public abstract class Voices
      * See {@link Slot#buildVoices(java.util.List)} method.
      * <p>
      * Here we simply rename the IDs from top to bottom (roughly), within each staff.
+     * <p>
+     * We then extend each chord voice to its preceding cue chords.
      *
      * @param stack the stack to process
      */
@@ -279,6 +281,7 @@ public abstract class Voices
         for (Measure measure : stack.getMeasures()) {
             measure.sortVoices();
             measure.renameVoices();
+            measure.setCueVoices();
         }
     }
 

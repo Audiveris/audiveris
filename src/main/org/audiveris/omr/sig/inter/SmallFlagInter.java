@@ -23,6 +23,7 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sig.relation.FlagStemRelation;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -64,6 +65,29 @@ public class SmallFlagInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        setAbnormal(true); // No stem linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if flag is connected to a stem
+        setAbnormal(!sig.hasRelation(this, FlagStemRelation.class));
+
+        return isAbnormal();
     }
 
     //-----------//

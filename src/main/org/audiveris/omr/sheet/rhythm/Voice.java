@@ -369,110 +369,116 @@ public class Voice
     public TimeRational getInferredTimeSignature ()
     {
         if (inferredTimeSig == null) {
-            // Sequence of group (beamed or isolated chords) durations
-            List<Rational> durations = new ArrayList<>();
+            try {
+                // Sequence of group (beamed or isolated chords) durations
+                List<Rational> durations = new ArrayList<>();
 
-            // Voice time offset
-            Rational timeOffset = null;
+                // Voice time offset
+                Rational timeOffset = null;
 
-            // Start time of last note in group, if any
-            Rational groupLastTime = null;
+                // Start time of last note in group, if any
+                Rational groupLastTime = null;
 
-            if (slots != null) {
-                for (Map.Entry<Integer, SlotVoice> entry : slots.entrySet()) {
-                    SlotVoice info = entry.getValue();
+                if (slots != null) {
+                    for (Map.Entry<Integer, SlotVoice> entry : slots.entrySet()) {
+                        SlotVoice info = entry.getValue();
 
-                    if (info.status == Voice.Status.BEGIN) {
-                        AbstractChordInter chord = info.chord;
+                        if (info.status == Voice.Status.BEGIN) {
+                            AbstractChordInter chord = info.chord;
 
-                        // Skip the remaining parts of beam group, including embraced rests
-                        if ((groupLastTime != null) && (chord.getTimeOffset().compareTo(
-                                groupLastTime) <= 0)) {
-                            continue;
-                        }
+                            // Skip the remaining parts of beam group, including embraced rests
+                            if ((groupLastTime != null) && (chord.getTimeOffset().compareTo(
+                                    groupLastTime) <= 0)) {
+                                continue;
+                            }
 
-                        BeamGroup group = chord.getBeamGroup();
+                            BeamGroup group = chord.getBeamGroup();
 
-                        if (group == null) {
-                            // Isolated chord
-                            durations.add(chord.getDuration());
-                        } else {
-                            // Starting a new group
-                            durations.add(group.getDuration());
-                            groupLastTime = group.getLastChord().getTimeOffset();
-                        }
+                            if (group == null) {
+                                // Isolated chord
+                                durations.add(chord.getDuration());
+                            } else {
+                                // Starting a new group
+                                durations.add(group.getDuration());
+                                groupLastTime = group.getLastChord().getTimeOffset();
+                            }
 
-                        if (timeOffset == null) {
-                            Slot slot = measure.getStack().getSlots().get(entry.getKey() - 1);
-                            timeOffset = slot.getTimeOffset();
+                            if (timeOffset == null) {
+                                Slot slot = measure.getStack().getSlots().get(entry.getKey() - 1);
+                                timeOffset = slot.getTimeOffset();
+                            }
                         }
                     }
                 }
-            }
 
-            // Debug
-            if (logger.isDebugEnabled()) {
-                StringBuilder sb = new StringBuilder("[");
-                boolean started = false;
-                Rational total = null;
+                // Debug
+                if (logger.isDebugEnabled()) {
+                    StringBuilder sb = new StringBuilder("[");
+                    boolean started = false;
+                    Rational total = null;
+
+                    for (Rational dur : durations) {
+                        if (started) {
+                            sb.append(",");
+                        }
+
+                        started = true;
+
+                        if (dur == null) {
+                            sb.append("null");
+                        } else {
+                            sb.append(dur);
+
+                            if (total == null) {
+                                total = dur;
+                            } else {
+                                total = total.plus(dur);
+                            }
+                        }
+                    }
+
+                    sb.append("] total:");
+
+                    if (total != null) {
+                        sb.append(total);
+                    } else {
+                        sb.append("null");
+                    }
+
+                    logger.debug("{}: {}", this, sb);
+                }
+
+                // Check this voice fills the measure stack
+                if ((timeOffset == null) || !timeOffset.equals(Rational.ZERO)) {
+                    return null;
+                }
+
+                if ((termination == null) || !termination.equals(Rational.ZERO)) {
+                    return null;
+                }
+
+                // Do we have a regular pattern?
+                int count = 0;
+                Rational common = null;
 
                 for (Rational dur : durations) {
-                    if (started) {
-                        sb.append(",");
+                    if (common == null) {
+                        common = dur;
+                    } else if (!common.equals(dur)) {
+                        break;
                     }
 
-                    started = true;
-
-                    if (dur == null) {
-                        sb.append("null");
-                    } else {
-                        sb.append(dur);
-
-                        if (total == null) {
-                            total = dur;
-                        } else {
-                            total = total.plus(dur);
-                        }
-                    }
+                    count++;
                 }
 
-                sb.append("] total:");
-
-                if (total != null) {
-                    sb.append(total);
-                } else {
-                    sb.append("null");
+                if ((common != null) && (count == durations.size())) {
+                    // All the durations are equal
+                    inferredTimeSig = timeSigOf(count, common);
                 }
+            } catch (Exception ex) {
+                logger.warn("Could not guess time signature for {} {}", this, ex.toString(), ex);
 
-                logger.debug("{}: {}", this, sb);
-            }
-
-            // Check this voice fills the measure stack
-            if ((timeOffset == null) || !timeOffset.equals(Rational.ZERO)) {
                 return null;
-            }
-
-            if ((termination == null) || !termination.equals(Rational.ZERO)) {
-                return null;
-            }
-
-            // Do we have a regular pattern?
-            int count = 0;
-            Rational common = null;
-
-            for (Rational dur : durations) {
-                if (common == null) {
-                    common = dur;
-                } else if (!common.equals(dur)) {
-                    break;
-                }
-
-                count++;
-            }
-
-            if ((common != null) && (count == durations.size())) {
-                // All the durations are equal
-                inferredTimeSig = timeSigOf(count, common);
             }
         }
 

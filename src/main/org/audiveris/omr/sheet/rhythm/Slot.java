@@ -466,9 +466,7 @@ public class Slot
                 voice.updateSlotTable();
             }
         } else if (!this.timeOffset.equals(timeOffset)) {
-            logger.warn("Reassigning timeOffset from " + this.timeOffset + " to " + timeOffset
-                                + " in " + this);
-
+            logger.warn("TimeOffset set from {} to {} in {}", this.timeOffset, timeOffset, this);
             failed = true;
         }
 
@@ -556,12 +554,10 @@ public class Slot
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("slot#").append(getId()).append(" start=").append(String.format("%5s",
-                                                                                  getTimeOffset()))
-                .append(" [");
+        sb.append("slot#").append(getId()).append(" start=").append(
+                String.format("%5s", getTimeOffset())).append(" [");
 
-        SortedMap<Integer, AbstractChordInter> voiceChords
-                = new TreeMap<>();
+        SortedMap<Integer, AbstractChordInter> voiceChords = new TreeMap<>();
 
         for (AbstractChordInter chord : getChords()) {
             voiceChords.put(chord.getVoice().getId(), chord);
@@ -689,10 +685,10 @@ public class Slot
         // Try to map some free ending voices to some rookies
         if ((partFreeEndings != null) && !partFreeEndings.isEmpty()) {
             final Scale scale = stack.getSystem().getSheet().getScale();
-            final InjectionSolver solver = new InjectionSolver(partRookies.size(), partFreeEndings
-                                                               .size() + partRookies.size(),
-                                                               new MyDistance(partRookies,
-                                                                              partFreeEndings, scale));
+            final InjectionSolver solver = new InjectionSolver(
+                    partRookies.size(),
+                    partFreeEndings.size() + partRookies.size(),
+                    new MyDistance(partRookies, partFreeEndings, scale));
             final int[] links = solver.solve();
 
             for (int i = 0; i < links.length; i++) {
@@ -731,8 +727,7 @@ public class Slot
      */
     private Map<Part, List<AbstractChordInter>> buildPartMap (List<AbstractChordInter> stackChords)
     {
-        Map<Part, List<AbstractChordInter>> map
-                = new LinkedHashMap<>();
+        Map<Part, List<AbstractChordInter>> map = new LinkedHashMap<>();
 
         for (AbstractChordInter ch : stackChords) {
             Part part = ch.getPart();
@@ -825,8 +820,8 @@ public class Slot
             AbstractChordInter oldChord = olds.get(ip);
 
             // Different assigned voices?
-            if ((newChord.getVoice() != null) && (oldChord.getVoice() != null) && (newChord
-                    .getVoice() != oldChord.getVoice())) {
+            if ((newChord.getVoice() != null) && (oldChord.getVoice() != null)
+                        && (newChord.getVoice() != oldChord.getVoice())) {
                 return INCOMPATIBLE_VOICES;
             }
 

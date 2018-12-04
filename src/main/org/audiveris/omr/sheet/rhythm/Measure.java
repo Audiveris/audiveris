@@ -41,6 +41,7 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
+import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.HorizontalSide;
@@ -131,7 +132,7 @@ public class Measure
     @XmlElement(name = "times")
     private Set<AbstractTimeInter> timeSigs;
 
-    /** Head chords. Populated by CHORDS step. */
+    /** Head chords, both standard and small. Populated by CHORDS step. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "head-chords")
@@ -1185,7 +1186,8 @@ public class Measure
     // getStandardChords //
     //-------------------//
     /**
-     * Report the collection of standard chords (head chords, rest chords)
+     * Report the collection of standard chords (head chords, rest chords) but not the
+     * SmallChordInter instances.
      *
      * @return the set of all standard chords in this measure
      */
@@ -1194,6 +1196,13 @@ public class Measure
         final Set<AbstractChordInter> stdChords = new LinkedHashSet<>();
         stdChords.addAll(getHeadChords());
         stdChords.addAll(getRestChords());
+
+        // Remove small head chords if any
+        for (Iterator<AbstractChordInter> it = stdChords.iterator(); it.hasNext();) {
+            if (it.next() instanceof SmallChordInter) {
+                it.remove();
+            }
+        }
 
         return stdChords;
     }
@@ -1697,8 +1706,12 @@ public class Measure
             group.resetTiming();
         }
 
-        // Forward reset to every chord handled
-        for (AbstractChordInter chord : getStandardChords()) {
+        // Forward reset to every chord in measure (standard and small)
+        for (AbstractChordInter chord : getHeadChords()) {
+            chord.resetTiming();
+        }
+
+        for (AbstractChordInter chord : getRestChords()) {
             chord.resetTiming();
         }
     }
@@ -2046,6 +2059,34 @@ public class Measure
         }
 
         return restChords;
+    }
+
+    //--------------//
+    // setCueVoices //
+    //--------------//
+    /**
+     * Voice of every (standard) head chord is extended to its related preceding cue
+     * chord(s) if any.
+     */
+    public void setCueVoices ()
+    {
+        if (headChords == null) {
+            return;
+        }
+
+        for (HeadChordInter ch : headChords) {
+            if (!(ch instanceof SmallChordInter)) {
+                SmallChordInter small = ch.getGraceChord();
+
+                if (small != null) {
+                    final Voice voice = ch.getVoice();
+
+                    if (voice != null) {
+                        small.setVoice(voice);
+                    }
+                }
+            }
+        }
     }
 
     //----------//

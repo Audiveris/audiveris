@@ -976,10 +976,10 @@ public abstract class AbstractChordInter
             }
         } else if (this.voice != voice) {
             logger.warn(
-                    "{} Attempt to reassign voice from " + this.voice.getId()
-                            + " to "
-                            + voice.getId(),
-                    this);
+                    "{} Attempt to reassign voice from {} to {}",
+                    this,
+                    this.voice.getId(),
+                    voice.getId());
         } else if (!isWholeRest()) {
             if (slot != null) {
                 voice.startChord(slot, this);
@@ -1143,9 +1143,9 @@ public abstract class AbstractChordInter
         timeOffset = null;
     }
 
-    //----_----------//
+    //---------------//
     // setTimeOffset //
-    //------_--------//
+    //---------------//
     /**
      * Remember the time offset for this chord
      *

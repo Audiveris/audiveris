@@ -37,6 +37,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
@@ -562,33 +563,6 @@ public class PartwiseBuilder
         }
 
         return null; // No key found
-    }
-
-    //----------//
-    // getGrace //
-    //----------//
-    /**
-     * Report the grace chord, if any, which precedes the provided head-chord.
-     *
-     * @param chord the standard chord to check
-     * @return the linked grace chord if any
-     */
-    private SmallChordInter getGrace (HeadChordInter chord)
-    {
-        final SIGraph sig = chord.getSig();
-
-        for (Inter interNote : chord.getNotes()) {
-            for (Relation rel : sig.getRelations(interNote, SlurHeadRelation.class)) {
-                SlurInter slur = (SlurInter) sig.getOppositeInter(interNote, rel);
-                HeadInter head = slur.getHead(HorizontalSide.LEFT);
-
-                if ((head != null) && head.getShape().isSmall()) {
-                    return (SmallChordInter) head.getChord();
-                }
-            }
-        }
-
-        return null;
     }
 
     //--------------//
@@ -1313,9 +1287,9 @@ public class PartwiseBuilder
 
             // Everything is now OK
             if (pmBarline != null) {
-                pmBarline.getFermata().add(pmFermata); // Add to note
+                pmBarline.getFermata().add(pmFermata); // Add to barline
             } else {
-                getNotations().getTiedOrSlurOrTuplet().add(pmFermata); // Add to barline
+                getNotations().getTiedOrSlurOrTuplet().add(pmFermata); // Add to note
             }
         } catch (Exception ex) {
             logger.warn("Error visiting " + fermata, ex);
@@ -1705,12 +1679,21 @@ public class PartwiseBuilder
                                 timeCounter = timeOffset;
                             }
 
-                            // Grace note before this chord?
+                            // Grace chord(s) before this chord?
                             if (chord instanceof HeadChordInter) {
-                                SmallChordInter small = getGrace((HeadChordInter) chord);
+                                HeadChordInter headChord = (HeadChordInter) chord;
+                                SmallChordInter small = headChord.getGraceChord();
 
                                 if (small != null) {
-                                    processChord(small);
+                                    BeamGroup group = small.getBeamGroup();
+
+                                    if (group != null) {
+                                        for (AbstractChordInter ch : group.getChords()) {
+                                            processChord(ch);
+                                        }
+                                    } else {
+                                        processChord(small);
+                                    }
                                 }
                             }
 
@@ -1950,7 +1933,13 @@ public class PartwiseBuilder
             }
 
             // Voice
-            current.pmNote.setVoice("" + chord.getVoice().getId());
+            Voice voice = chord.getVoice();
+
+            if (voice != null) {
+                current.pmNote.setVoice("" + voice.getId());
+            } else {
+                logger.warn("No voice for {}", chord);
+            }
 
             // Type
             if (!current.measure.isDummy()) {

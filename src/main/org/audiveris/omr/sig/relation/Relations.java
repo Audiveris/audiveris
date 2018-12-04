@@ -47,6 +47,7 @@ import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.SmallFlagInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
@@ -279,6 +280,7 @@ public abstract class Relations
         map(FermataInter.class, FermataChordRelation.class, AbstractChordInter.class);
 
         map(FlagInter.class, FlagStemRelation.class, StemInter.class);
+        map(SmallFlagInter.class, FlagStemRelation.class, StemInter.class);
 
         map(HeadChordInter.class, ChordArpeggiatoRelation.class, ArpeggiatoInter.class);
         map(HeadChordInter.class, ChordArticulationRelation.class, ArticulationInter.class);

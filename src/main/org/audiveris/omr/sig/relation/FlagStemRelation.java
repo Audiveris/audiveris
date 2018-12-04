@@ -25,7 +25,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import static org.audiveris.omr.glyph.ShapeSet.FlagsUp;
 import org.audiveris.omr.sheet.Scale;
-import org.audiveris.omr.sig.inter.FlagInter;
+import org.audiveris.omr.sig.inter.AbstractFlagInter;
 import org.audiveris.omr.sig.inter.Inter;
 import static org.audiveris.omr.sig.relation.StemPortion.*;
 
@@ -59,7 +59,7 @@ public class FlagStemRelation
     @Override
     public void added (GraphEdgeChangeEvent<Inter, Relation> e)
     {
-        final FlagInter flag = (FlagInter) e.getEdgeSource();
+        final AbstractFlagInter flag = (AbstractFlagInter) e.getEdgeSource();
         flag.checkAbnormal();
     }
 
@@ -105,7 +105,7 @@ public class FlagStemRelation
     @Override
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
-        final FlagInter flag = (FlagInter) e.getEdgeSource();
+        final AbstractFlagInter flag = (AbstractFlagInter) e.getEdgeSource();
 
         if (!flag.isRemoved()) {
             flag.checkAbnormal();

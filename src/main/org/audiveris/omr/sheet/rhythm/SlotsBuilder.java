@@ -39,6 +39,7 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RestChordInter;
+import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
@@ -781,16 +782,23 @@ public class SlotsBuilder
     // inspectBeams //
     //--------------//
     /**
-     * Derive some inter-chord relationships from BeamGroup instances.
+     * Derive some inter-chord relationships from BeamGroup instances, excepting the
+     * cue beams of course.
+     * <p>
      * Within a single BeamGroup, there are strict relationships between the chords.
      */
     private void inspectBeams ()
     {
         for (Measure measure : stack.getMeasures()) {
+            GroupLoop:
             for (BeamGroup group : measure.getBeamGroups()) {
                 Set<AbstractChordInter> chordSet = new LinkedHashSet<>();
 
                 for (AbstractBeamInter beam : group.getBeams()) {
+                    if (beam instanceof SmallBeamInter) {
+                        continue GroupLoop; // Exclude cue beam group
+                    }
+
                     chordSet.addAll(beam.getChords());
                 }
 
