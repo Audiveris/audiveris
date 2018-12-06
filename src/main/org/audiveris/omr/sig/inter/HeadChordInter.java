@@ -432,7 +432,7 @@ public class HeadChordInter
      * @return the "mirrored" chord if any
      */
     @Override
-    public Inter getMirror ()
+    public HeadChordInter getMirror ()
     {
         for (Inter inter : getNotes()) {
             HeadInter mirrorHead = (HeadInter) inter.getMirror();

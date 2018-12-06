@@ -223,6 +223,8 @@ public interface Inter
 
     /**
      * Report the inter, if any, this instance is a mirror of.
+     * <p>
+     * This is used only for HeadInter and HeadChordInter classes.
      *
      * @return the mirror instance or null
      */

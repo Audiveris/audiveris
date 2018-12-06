@@ -39,6 +39,7 @@ import org.audiveris.omr.sheet.stem.StemsBuilder;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
+import org.audiveris.omr.sig.inter.AbstractPitchedInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
@@ -75,9 +76,7 @@ import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
-import static org.audiveris.omr.sig.relation.StemPortion.STEM_BOTTOM;
-import static org.audiveris.omr.sig.relation.StemPortion.STEM_MIDDLE;
-import static org.audiveris.omr.sig.relation.StemPortion.STEM_TOP;
+import static org.audiveris.omr.sig.relation.StemPortion.*;
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
@@ -102,7 +101,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import org.audiveris.omr.sig.inter.AbstractPitchedInter;
 
 /**
  * Class {@code SigReducer} deals with SIG reduction.
@@ -885,8 +883,8 @@ public class SigReducer
             Part part = staff.getPart();
             Measure measure = part.getMeasureAt(center);
 
-            if ((measure != null) && (measure == part.getLastMeasure()) && (measure
-                    .getPartBarlineOn(HorizontalSide.RIGHT) == null)) {
+            if ((measure != null) && (measure == part.getLastMeasure())
+                        && (measure.getPartBarlineOn(HorizontalSide.RIGHT) == null)) {
                 // Empty measure?
                 // Measure width?
                 continue;
@@ -980,8 +978,8 @@ public class SigReducer
             @Override
             public boolean check (Inter inter)
             {
-                return !inter.isRemoved() && (inter instanceof SlurInter) && (inter
-                        .getBounds().width <= maxSlurWidth);
+                return !inter.isRemoved() && (inter instanceof SlurInter)
+                               && (inter.getBounds().width <= maxSlurWidth);
             }
         });
 
@@ -990,8 +988,8 @@ public class SigReducer
             @Override
             public boolean check (Inter inter)
             {
-                return !inter.isRemoved() && (inter instanceof TupletInter) && (inter
-                        .isContextuallyGood());
+                return !inter.isRemoved() && (inter instanceof TupletInter)
+                               && (inter.isContextuallyGood());
             }
         });
 
@@ -1285,25 +1283,26 @@ public class SigReducer
             }
 
             final Rectangle leftBox = left.getBounds();
-            Set<Inter> mirrors = null;
+            final Set<Inter> mirrors = new LinkedHashSet<>();
 
-            final Inter leftMirror = left.getMirror();
+            if (left instanceof HeadInter) {
+                HeadInter headMirror = (HeadInter) left.getMirror();
 
-            if (leftMirror != null) {
-                mirrors = new LinkedHashSet<>();
-                mirrors.add(leftMirror);
+                if (headMirror != null) {
+                    mirrors.add(headMirror);
+                    HeadChordInter chordMirror = headMirror.getChord();
 
-                final AbstractChordInter leftChord = (AbstractChordInter) left.getEnsemble();
-
-                if (leftChord != null) {
-                    Inter leftChordMirror = leftChord.getMirror();
-
-                    if (leftChordMirror != null) {
-                        mirrors.add(leftChordMirror);
-                        mirrors.addAll(((AbstractChordInter) leftChordMirror).getNotes());
+                    if (chordMirror != null) {
+                        mirrors.add(chordMirror);
+                        mirrors.addAll(chordMirror.getNotes());
                     }
-                } else if (leftMirror instanceof AbstractChordInter) {
-                    mirrors.addAll(((AbstractChordInter) leftMirror).getNotes());
+                }
+            } else if (left instanceof AbstractChordInter) {
+                HeadChordInter chordMirror = (HeadChordInter) left.getMirror();
+
+                if (chordMirror != null) {
+                    mirrors.add(chordMirror);
+                    mirrors.addAll(chordMirror.getNotes());
                 }
             }
 
@@ -1315,7 +1314,7 @@ public class SigReducer
                 }
 
                 // Mirror entities do not exclude one another
-                if ((mirrors != null) && mirrors.contains(right)) {
+                if (mirrors.contains(right)) {
                     continue;
                 }
 
@@ -1363,10 +1362,10 @@ public class SigReducer
             }
         }
     }
-
     //---------//
     // exclude //
     //---------//
+
     /**
      * Insert exclusion between (the members of) the 2 sets.
      *
@@ -1391,8 +1390,8 @@ public class SigReducer
     {
         // Special overlap case between a stem and a standard-size note head
         if ((left instanceof StemInter && right instanceof HeadInter && !right.getShape().isSmall())
-                    || (right instanceof StemInter && left instanceof HeadInter && !left.getShape()
-                        .isSmall())) {
+                    || (right instanceof StemInter && left instanceof HeadInter
+                                && !left.getShape().isSmall())) {
             return;
         }
 
@@ -1455,6 +1454,7 @@ public class SigReducer
     {
         if (head.isVip()) {
             logger.info("VIP checkHeadHasStem for {}", head);
+
         }
 
         // Check if the head has a stem relation
@@ -1921,6 +1921,7 @@ public class SigReducer
         }
 
         return false;
+
     }
 
     //-----------------------//
