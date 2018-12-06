@@ -709,16 +709,15 @@ public class InterFactory
     private static Inter doCreateManual (Shape shape,
                                          Sheet sheet)
     {
-        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
         final double GRADE = 1.0; // Grade value for any manual shape
 
         switch (shape) {
         //
         // Ottava TODO ???
-        case OTTAVA_ALTA:
-        case OTTAVA_BASSA:
-            return null;
-
+        //        case OTTAVA_ALTA:
+        //        case OTTAVA_BASSA:
+        //            return null;
+        //
         // Brace, bracket TODO ???
         //
         // Barlines
@@ -739,7 +738,6 @@ public class InterFactory
         case BACK_TO_BACK_REPEAT_SIGN:
             return new StaffBarlineInter(shape, GRADE);
 
-        //
         // Beams
         case BEAM:
             return new BeamInter(GRADE);
@@ -888,10 +886,7 @@ public class InterFactory
         case STACCATO:
         case STACCATISSIMO:
         case STRONG_ACCENT:
-            return switches.getValue(Switch.articulations) ? new ArticulationInter(
-                    null,
-                    shape,
-                    GRADE) : null; // No visit
+            return new ArticulationInter(null, shape, GRADE); // No visit
 
         // Markers
         case CODA:
@@ -959,16 +954,14 @@ public class InterFactory
         case DIGIT_3:
         case DIGIT_4:
         case DIGIT_5:
-            return switches.getValue(Switch.fingerings) ? new FingeringInter(null, shape, GRADE)
-                    : null; // No visit
+            return new FingeringInter(null, shape, GRADE); // No visit
 
         // Plucking
         case PLUCK_P:
         case PLUCK_I:
         case PLUCK_M:
         case PLUCK_A:
-            return switches.getValue(Switch.pluckings) ? new PluckingInter(null, shape, GRADE)
-                    : null; // No visit
+            return new PluckingInter(null, shape, GRADE); // No visit
 
         // Romans
         case ROMAN_I:
@@ -983,7 +976,7 @@ public class InterFactory
         case ROMAN_X:
         case ROMAN_XI:
         case ROMAN_XII:
-            return switches.getValue(Switch.frets) ? new FretInter(null, shape, GRADE) : null; // No visit
+            return new FretInter(null, shape, GRADE); // No visit
 
         // Others
         default:
@@ -993,5 +986,4 @@ public class InterFactory
             throw new IllegalArgumentException(msg);
         }
     }
-
 }
