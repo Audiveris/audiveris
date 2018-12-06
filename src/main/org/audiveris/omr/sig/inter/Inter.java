@@ -428,7 +428,9 @@ public interface Inter
     void remove (boolean extensive);
 
     /**
-     * Look for partners around this inter instance.
+     * Look for potential partners around this inter instance.
+     * <p>
+     * NOTA: implementations cannot assume that Inter instance already has a related staff or sig.
      * <p>
      * Relationships that are searched for inters (which cannot survive without such link):
      * <ul>
@@ -442,6 +444,7 @@ public interface Inter
      * <li>For a dynamic: 1 chord (really?)
      * <li>For a slur: 1 or 2 heads (or connection across system/page break)
      * <li>For a tuplet: 3 or 6 chords (approximately)
+     * <li>For a fermata: 1 barline of 1 chord
      * </ul>
      * Manual inters survive but are displayed in red, to show they are not yet in normal status.
      *

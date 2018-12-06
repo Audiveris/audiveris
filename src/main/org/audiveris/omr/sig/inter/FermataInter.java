@@ -27,9 +27,11 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
@@ -38,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -218,24 +221,10 @@ public class FermataInter
      */
     public boolean linkWithBarline ()
     {
-        Point center = getCenter();
-        List<StaffBarlineInter> staffBars = getStaff().getStaffBarlines();
-        StaffBarlineInter staffBar = StaffBarlineInter.getClosestStaffBarline(staffBars, center);
+        Link link = lookupBarlineLink(sig.getSystem());
 
-        if ((staffBar != null) && (GeoUtil.xOverlap(getBounds(), staffBar.getBounds()) > 0)) {
-            // Check vertical distance to bar/staff
-            final Scale scale = sig.getSystem().getSheet().getScale();
-            final int maxDy = scale.toPixels(constants.maxFermataDy);
-            final int dyStaff = staff.distanceTo(center);
-
-            if (dyStaff > maxDy) {
-                logger.debug("{} too far from barline: {}", this, staffBar);
-
-                return false;
-            }
-
-            // For fermata & for staffbar
-            sig.addEdge(this, staffBar, new FermataBarRelation());
+        if (link != null) {
+            link.applyTo(this);
 
             return true;
         }
@@ -243,55 +232,20 @@ public class FermataInter
         return false;
     }
 
-    //----------------//
-    // linkWithChords //
-    //----------------//
+    //---------------//
+    // linkWithChord //
+    //---------------//
     /**
      * (Try to) connect this fermata with suitable chord.
      *
-     * @param chords the chords in fermata related staff, constrained by fermata x range
      * @return true if successful
      */
-    public boolean linkWithChords (Collection<AbstractChordInter> chords)
+    public boolean linkWithChord ()
     {
-        // Look for a suitable chord related to this fermata
-        Point center = getCenter();
-        AbstractChordInter chord = AbstractChordInter.getClosestChord(chords, center);
+        Link link = lookupChordLink(sig.getSystem());
 
-        if (chord != null) {
-            double dyChord = Math.sqrt(GeoUtil.ptDistanceSq(chord.getBounds(), center.x, center.y));
-
-            // If chord is mirrored, select the closest vertically
-            if (chord.getMirror() != null) {
-                double dyMirror = Math.sqrt(
-                        GeoUtil.ptDistanceSq(chord.getMirror().getBounds(), center.x, center.y));
-
-                if (dyMirror < dyChord) {
-                    dyChord = dyMirror;
-                    chord = (AbstractChordInter) chord.getMirror();
-                    logger.debug("{} selecting mirror {}", this, chord);
-                }
-            }
-
-            // Check vertical distance between fermata and chord
-            final Scale scale = sig.getSystem().getSheet().getScale();
-            final int maxDy = scale.toPixels(constants.maxFermataDy);
-
-            if (dyChord > maxDy) {
-                // Check vertical distance between fermata and staff
-                final Staff chordStaff = (shape == Shape.FERMATA) ? chord.getTopStaff()
-                        : chord.getBottomStaff();
-                final int dyStaff = chordStaff.distanceTo(center);
-
-                if (dyStaff > maxDy) {
-                    logger.debug("{} too far from staff/chord: {}", this, dyStaff);
-
-                    return false;
-                }
-            }
-
-            // For fermata & for chord
-            sig.addEdge(this, chord, new FermataChordRelation());
+        if (link != null) {
+            link.applyTo(this);
 
             return true;
         }
@@ -313,6 +267,34 @@ public class FermataInter
         EnsembleHelper.removeMember(this, member);
     }
 
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
+    {
+        // Not very optimized!
+        List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+        Collections.sort(systemHeadChords, Inters.byAbscissa);
+
+        Link link = lookupBarlineLink(system);
+
+        if (link == null) {
+            link = lookupChordLink(system);
+        }
+
+        if (link == null) {
+            return Collections.emptyList();
+        }
+
+        if (doit) {
+            link.applyTo(this);
+        }
+
+        return Collections.singleton(link);
+    }
+
     //-----------//
     // internals //
     //-----------//
@@ -320,6 +302,109 @@ public class FermataInter
     protected String internals ()
     {
         return super.internals() + " " + shape;
+    }
+
+    //-------------------//
+    // lookupBarlineLink //
+    //-------------------//
+    /**
+     * Look for a suitable link with a staff barline.
+     *
+     * @param system containing system
+     * @return suitable link or null
+     */
+    private Link lookupBarlineLink (SystemInfo system)
+    {
+        final Point center = getCenter();
+
+        if (staff == null) {
+            staff = (shape == Shape.FERMATA_BELOW) ? system.getStaffAtOrAbove(center)
+                    : system.getStaffAtOrBelow(center);
+        }
+
+        if (staff == null) {
+            return null;
+        }
+
+        List<StaffBarlineInter> staffBars = staff.getStaffBarlines();
+        StaffBarlineInter staffBar = StaffBarlineInter.getClosestStaffBarline(staffBars, center);
+
+        // Fermata and staff bar bounds must intersect horizontally
+        if (staffBar == null || GeoUtil.xOverlap(getBounds(), staffBar.getBounds()) <= 0) {
+            return null;
+        }
+
+        // Check vertical distance to bar/staff
+        final Scale scale = system.getSheet().getScale();
+        final int maxDy = scale.toPixels(constants.maxFermataDy);
+        final int dyStaff = staff.distanceTo(center);
+
+        if (dyStaff > maxDy) {
+            logger.debug("{} too far from barline: {}", this, staffBar);
+
+            return null;
+        }
+
+        return new Link(staffBar, new FermataBarRelation(), true);
+    }
+
+    //-----------------//
+    // lookupChordLink //
+    //-----------------//
+    /**
+     * Look for a suitable link with a standard chord (head or rest).
+     *
+     * @param system containing system
+     * @return suitable link or null
+     */
+    private Link lookupChordLink (SystemInfo system)
+    {
+        getBounds();
+        final Point center = getCenter();
+        final MeasureStack stack = system.getStackAt(center);
+        final Collection<AbstractChordInter> chords = (shape == Shape.FERMATA_BELOW) ? stack
+                .getStandardChordsAbove(center, bounds)
+                : stack.getStandardChordsBelow(center, bounds);
+
+        // Look for a suitable chord related to this fermata
+        AbstractChordInter chord = AbstractChordInter.getClosestChord(chords, center);
+
+        if (chord == null) {
+            return null;
+        }
+
+        double dyChord = Math.sqrt(GeoUtil.ptDistanceSq(chord.getBounds(), center.x, center.y));
+
+        // If chord is mirrored, select the closest vertically
+        if (chord.getMirror() != null) {
+            double dyMirror = Math.sqrt(
+                    GeoUtil.ptDistanceSq(chord.getMirror().getBounds(), center.x, center.y));
+
+            if (dyMirror < dyChord) {
+                dyChord = dyMirror;
+                chord = (AbstractChordInter) chord.getMirror();
+                logger.debug("{} selecting mirror {}", this, chord);
+            }
+        }
+
+        // Check vertical distance between fermata and chord
+        final Scale scale = system.getSheet().getScale();
+        final int maxDy = scale.toPixels(constants.maxFermataDy);
+
+        if (dyChord > maxDy) {
+            // Check vertical distance between fermata and staff
+            final Staff chordStaff = (shape == Shape.FERMATA) ? chord.getTopStaff()
+                    : chord.getBottomStaff();
+            final int dyStaff = chordStaff.distanceTo(center);
+
+            if (dyStaff > maxDy) {
+                logger.debug("{} too far from staff/chord: {}", this, dyStaff);
+
+                return null;
+            }
+        }
+
+        return new Link(chord, new FermataChordRelation(), true);
     }
 
     //-------------//

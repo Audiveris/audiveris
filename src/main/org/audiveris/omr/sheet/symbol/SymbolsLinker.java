@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.symbol;
 
-import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
@@ -61,7 +60,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -336,19 +334,9 @@ public class SymbolsLinker
                 // Look for a related barline
                 if (!fermata.linkWithBarline()) {
                     // Look for a chord (head or rest) related to this fermata
-                    final Point center = fermata.getCenter();
-                    final Rectangle bounds = arc.getBounds();
-                    final MeasureStack stack = system.getStackAt(center);
-                    final Collection<AbstractChordInter> chords = (fermata
-                            .getShape() == Shape.FERMATA_BELOW) ? stack.getStandardChordsAbove(
-                                            center,
-                                            bounds) : stack.getStandardChordsBelow(center, bounds);
-
-                    if (!fermata.linkWithChords(chords)) {
+                    if (!fermata.linkWithChord()) {
                         // No link to barline, no link to chord, discard it
-                        fermata.remove();
-                        arc.remove();
-                        dot.remove();
+                        fermata.remove(); // Which also removes arc and dot members
                     }
                 }
             } catch (Exception ex) {
