@@ -430,7 +430,8 @@ public interface Inter
     /**
      * Look for potential partners around this inter instance.
      * <p>
-     * NOTA: implementations cannot assume that Inter instance already has a related staff or sig.
+     * NOTA: Since this method can be used with a not-yet-settled candidate, implementations cannot
+     * assume that Inter instance already has a related staff or sig.
      * <p>
      * Relationships that are searched for inters (which cannot survive without such link):
      * <ul>
