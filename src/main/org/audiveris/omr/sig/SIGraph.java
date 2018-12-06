@@ -901,7 +901,7 @@ public class SIGraph
     // inters //
     //--------//
     /**
-     * Lookup for interpretations of the provided class.
+     * Lookup for interpretations of the provided class (or subclass thereof).
      *
      * @param classe the class to search for
      * @return the interpretations of desired class, perhaps empty but not null

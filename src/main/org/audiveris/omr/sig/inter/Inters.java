@@ -651,7 +651,7 @@ public abstract class Inters
     // ClassPredicate //
     //----------------//
     /**
-     * Predicate to filter Inter instance of a certain class.
+     * Predicate to filter Inter instance of a certain class (or subclass thereof).
      */
     public static class ClassPredicate
             implements Predicate<Inter>

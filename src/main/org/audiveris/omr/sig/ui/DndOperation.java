@@ -114,12 +114,15 @@ public class DndOperation
         // Bounds
         final int staffInterline = staff.getSpecificInterline();
         final MusicFont font = (ShapeSet.Heads.contains(ghost.getShape())) ? MusicFont.getHeadFont(
-                sheet.getScale(), staffInterline) : MusicFont.getBaseFont(staffInterline);
+                sheet.getScale(),
+                staffInterline) : MusicFont.getBaseFont(staffInterline);
         final ShapeSymbol symbol = Symbols.getSymbol(ghost.getShape());
         final Dimension dim = symbol.getDimension(font);
-        final Rectangle bounds = new Rectangle(center.x - (dim.width / 2), center.y - (dim.height
-                                                                                               / 2),
-                                               dim.width, dim.height);
+        final Rectangle bounds = new Rectangle(
+                center.x - (dim.width / 2),
+                center.y - (dim.height / 2),
+                dim.width,
+                dim.height);
         ghost.setBounds(bounds);
 
         sheet.getInterController().addInters(Arrays.asList(ghost));

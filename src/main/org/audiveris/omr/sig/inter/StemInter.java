@@ -30,6 +30,7 @@ import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.AbstractStemConnection;
@@ -604,6 +605,36 @@ public class StemInter
 
         top = glyph.getStartPoint(VERTICAL);
         bottom = glyph.getStopPoint(VERTICAL);
+    }
+
+    //----------//
+    // getStaff //
+    //----------//
+    @Override
+    public Staff getStaff ()
+    {
+        if (staff != null) {
+            return staff;
+        }
+
+        // Check related chord(s)
+        Staff stemStaff = null;
+
+        for (HeadChordInter chord : getChords()) {
+            Staff chordStaff = chord.getStaff();
+
+            if (chordStaff == null) {
+                return null;
+            }
+
+            if (stemStaff != null && stemStaff != chordStaff) {
+                return null;
+            }
+
+            stemStaff = chordStaff;
+        }
+
+        return staff = stemStaff;
     }
 
     //-------------//

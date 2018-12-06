@@ -157,7 +157,7 @@ public class InterController
     /**
      * Add one or several inters.
      *
-     * @param inters  the populated inters (staff &amp; bounds are already set)
+     * @param inters  the populated inters (staff and bounds are already set)
      * @param options additional options
      */
     @UIThread
@@ -252,7 +252,7 @@ public class InterController
         ghost.setBounds(glyph.getBounds());
         ghost.setGlyph(glyph);
 
-        // While interacting with user, make sure we have the target staff
+        // While we are still interacting with the user, make sure we have the target staff
         final Collection<Link> links = new ArrayList<>();
         final Staff staff = determineStaff(glyph, ghost, links);
 
