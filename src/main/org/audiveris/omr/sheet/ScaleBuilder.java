@@ -63,7 +63,7 @@ import java.util.List;
  * <li>If we cannot retrieve combo peak, we decide that the sheet does not contain regularly spaced
  * staff lines.</li>
  * <li>Method {@link #checkResolution} looks at combo peak.
- * If the main interline value is below a certain threshold (see constants.minResolution), then we
+ * If the main interline value is below a certain threshold (see constants.minInterline), then we
  * suspect that the picture is not a music sheet (it may rather be an image, a page of text, etc).
  * </li>
  * </ol>
@@ -166,20 +166,29 @@ public class ScaleBuilder
 
         if (interline == 0) {
             sheet.getStub().decideOnRemoval(
-                    sheet.getId() + LINE_SEPARATOR + "Interline value is zero." + LINE_SEPARATOR
+                    sheet.getId() + LINE_SEPARATOR
+                            + "Interline value is zero."
+                            + LINE_SEPARATOR
                             + "This sheet does not seem to contain staff lines.",
                     false);
-        } else if (interline < constants.minResolution.getValue()) {
+        } else if (interline < constants.minInterline.getValue()) {
             sheet.getStub().decideOnRemoval(
-                    sheet.getId() + LINE_SEPARATOR + "With an interline value of " + interline
-                            + " pixels," + LINE_SEPARATOR + "either this sheet contains no staves,"
+                    sheet.getId() + LINE_SEPARATOR
+                            + "With an interline value of "
+                            + interline
+                            + " pixels,"
+                            + LINE_SEPARATOR
+                            + "either this sheet contains no staves,"
                             + LINE_SEPARATOR
                             + "or the picture resolution is too low (try 300 DPI).",
                     false);
         } else if (interline > constants.maxInterline.getValue()) {
             sheet.getStub().decideOnRemoval(
-                    sheet.getId() + LINE_SEPARATOR + "Too large interline value: " + interline
-                            + " pixels" + LINE_SEPARATOR
+                    sheet.getId() + LINE_SEPARATOR
+                            + "Too large interline value: "
+                            + interline
+                            + " pixels"
+                            + LINE_SEPARATOR
                             + "This sheet does not seem to contain staff lines.",
                     false);
         }
@@ -206,11 +215,14 @@ public class ScaleBuilder
         }
 
         // Beam peak?
-        final double minBeamFraction = constants.minBeamFraction.getValue();
+        final int largerInterline = getLargerInterline();
         final int minHeight = Math.max(
                 blackPeak.max,
-                (int) Math.rint(minBeamFraction * comboPeak.main));
-        final int maxHeight = getMainWhite();
+                (int) Math.rint(constants.minBeamFraction.getValue() * largerInterline));
+        final int maxHeight = Math.max(
+                largerInterline - blackPeak.main,
+                (int) Math.rint(constants.maxBeamFraction.getValue() * largerInterline));
+
         beamKey = histoKeeper.retrieveBeamKey(minHeight, maxHeight);
 
         if (beamKey != null) {
@@ -317,15 +329,15 @@ public class ScaleBuilder
         return scale;
     }
 
-    //--------------//
-    // getMainWhite //
-    //--------------//
+    //--------------------//
+    // getLargerInterline //
+    //--------------------//
     /**
-     * Return the main white gap between (larger) staff lines.
+     * Report the larger of comboPeak.main (and comboPeak2.main if any)
      *
-     * @return (larger) mean white gap
+     * @return (larger) main interline
      */
-    private int getMainWhite ()
+    private int getLargerInterline ()
     {
         int mainCombo = comboPeak.main;
 
@@ -333,7 +345,7 @@ public class ScaleBuilder
             mainCombo = Math.max(mainCombo, comboPeak2.main);
         }
 
-        return mainCombo - blackPeak.main;
+        return mainCombo;
     }
 
     //-------------//
@@ -640,9 +652,11 @@ public class ScaleBuilder
 
             if (blackRatio < constants.minBlackRatio.getValue()) {
                 sheet.getStub().decideOnRemoval(
-                        sheet.getId() + LINE_SEPARATOR + "Too few black pixels: " + String.format(
-                        "%.4f%%",
-                        100 * blackRatio) + LINE_SEPARATOR + "This sheet is almost blank.",
+                        sheet.getId() + LINE_SEPARATOR
+                                + "Too few black pixels: "
+                                + String.format("%.4f%%", 100 * blackRatio)
+                                + LINE_SEPARATOR
+                                + "This sheet is almost blank.",
                         false);
             }
         }
@@ -678,10 +692,10 @@ public class ScaleBuilder
             extends ConstantSet
     {
 
-        private final Constant.Integer minResolution = new Constant.Integer(
+        private final Constant.Integer minInterline = new Constant.Integer(
                 "Pixels",
                 11,
-                "Minimum resolution, expressed as number of pixels per interline");
+                "Minimum interline value (in pixels)");
 
         private final Constant.Integer maxInterline = new Constant.Integer(
                 "Pixels",
@@ -701,8 +715,12 @@ public class ScaleBuilder
                 "Maximum ratio between second and first combined peak");
 
         private final Constant.Ratio minBeamFraction = new Constant.Ratio(
-                0.275, // 0.25,
+                0.275,
                 "Minimum ratio between beam thickness and interline");
+
+        private final Constant.Ratio maxBeamFraction = new Constant.Ratio(
+                0.9,
+                "Maximum ratio between beam thickness and interline");
 
         private final Constant.Ratio minBeamCountRatio = new Constant.Ratio(
                 0.02,
