@@ -280,9 +280,9 @@ public class HeadInter
         return null;
     }
 
-    //----------//
-    // getAlter //
-    //----------//
+    //---------------//
+    // getAlteration //
+    //---------------//
     /**
      * Report the actual alteration of this note, taking into account the accidental of
      * this note if any, the accidental of previous note with same step within the same
@@ -291,9 +291,120 @@ public class HeadInter
      * @param fifths fifths value for current key signature
      * @return the actual alteration
      */
-    public int getAlter (Integer fifths)
+    public int getAlteration (Integer fifths)
     {
-        return getAlter(fifths, true);
+        return HeadInter.this.getAlteration(fifths, true);
+    }
+
+    //---------------//
+    // getAlteration //
+    //---------------//
+    /**
+     * Report the actual alteration of this note, taking into account the accidental of
+     * this note if any, the accidental of previous note with same step within the same
+     * measure, a tie from previous measure and finally the current key signature.
+     *
+     * @param fifths fifths value for current key signature
+     * @param useTie true to use tie for check
+     * @return the actual alteration
+     */
+    public int getAlteration (Integer fifths,
+                              boolean useTie)
+    {
+        // Look for local/measure accidental
+        AlterInter accidental = getMeasureAccidental();
+
+        if (accidental != null) {
+            return AlterInter.alterationOf(accidental);
+        }
+
+        if (useTie) {
+            // Look for tie from previous measure (same system or previous system)
+            for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
+                SlurInter slur = (SlurInter) sig.getOppositeInter(this, rel);
+
+                if (slur.isTie() && (slur.getHead(HorizontalSide.RIGHT) == this)) {
+                    // Is the starting head in same system?
+                    HeadInter startHead = slur.getHead(HorizontalSide.LEFT);
+
+                    if (startHead != null) {
+                        // Use start head alter
+                        return startHead.getAlteration(fifths);
+                    }
+
+                    // Use slur extension to look into previous system
+                    SlurInter prevSlur = slur.getExtension(HorizontalSide.LEFT);
+
+                    if (prevSlur != null) {
+                        startHead = prevSlur.getHead(HorizontalSide.LEFT);
+
+                        if (startHead != null) {
+                            // Use start head alter
+                            return startHead.getAlteration(fifths);
+                        }
+                    }
+
+                    // TODO: Here we should look in previous sheet/page...
+                }
+            }
+        }
+
+        // Finally, use the current key signature
+        if (fifths != null) {
+            return KeyInter.getAlterFor(getStep(), fifths);
+        }
+
+        // Nothing found, so...
+        return 0;
+    }
+
+    //----------------------//
+    // getMeasureAccidental //
+    //----------------------//
+    /**
+     * Report the accidental (if any) which applies to this head or to a previous
+     * compatible one in the same measure.
+     *
+     * @return the measure scoped accidental found or null
+     */
+    public AlterInter getMeasureAccidental ()
+    {
+        // Look for local accidental
+        AlterInter accidental = getAccidental();
+
+        if (accidental != null) {
+            return accidental;
+        }
+
+        // Look for previous accidental with same note step in the same measure
+        // Let's avoid the use of time slots (which would require RHYTHMS step to be done!)
+        Measure measure = getChord().getMeasure();
+        List<Inter> heads = new ArrayList<>();
+
+        for (HeadChordInter headChord : measure.getHeadChords()) {
+            heads.addAll(headChord.getMembers());
+        }
+
+        boolean started = false;
+        Collections.sort(heads, Inters.byReverseCenterAbscissa);
+
+        for (Inter inter : heads) {
+            HeadInter head = (HeadInter) inter;
+
+            if (head == this) {
+                started = true;
+            } else if (started && (head.getStep() == getStep())
+                               && (head.getOctave() == getOctave())
+                               && (head.getStaff() == getStaff())) {
+                accidental = head.getAccidental();
+
+                if (accidental != null) {
+                    return accidental;
+                }
+            }
+        }
+
+        return null;
     }
 
     //----------//
@@ -655,43 +766,6 @@ public class HeadInter
         return super.internals() + " " + shape;
     }
 
-    //--------------//
-    // alterationOf //
-    //--------------//
-    /**
-     * Report the pitch alteration that corresponds to the provided accidental.
-     *
-     * @param accidental the provided accidental
-     * @return the pitch impact
-     */
-    private int alterationOf (AlterInter accidental)
-    {
-        switch (accidental.getShape()) {
-        case SHARP:
-            return 1;
-
-        case DOUBLE_SHARP:
-            return 2;
-
-        case FLAT:
-            return -1;
-
-        case DOUBLE_FLAT:
-            return -2;
-
-        case NATURAL:
-            return 0;
-
-        default:
-            logger.warn(
-                    "Weird shape {} for accidental {}",
-                    accidental.getShape(),
-                    accidental.getId());
-
-            return 0; // Should not happen
-        }
-    }
-
     //------------------//
     // fixDuplicateWith //
     //------------------//
@@ -723,96 +797,6 @@ public class HeadInter
 
         //TODO: What if we have no stem? It's a WHOLE_NOTE or SMALL_WHOLE_NOTE
         // Perhaps check for a weak ledger, tangent to the note towards staff
-    }
-
-    //----------//
-    // getAlter //
-    //----------//
-    /**
-     * Report the actual alteration of this note, taking into account the accidental of
-     * this note if any, the accidental of previous note with same step within the same
-     * measure, a tie from previous measure and finally the current key signature.
-     *
-     * @param fifths fifths value for current key signature
-     * @param useTie true to use tie for check
-     * @return the actual alteration
-     */
-    private int getAlter (Integer fifths,
-                          boolean useTie)
-    {
-        // Look for local accidental
-        AlterInter accidental = getAccidental();
-
-        if (accidental != null) {
-            return alterationOf(accidental);
-        }
-
-        // Look for previous accidental with same note step in the same measure
-        // Let's avoid the use of time slots (which would require RHYTHMS step to be done!)
-        Measure measure = getChord().getMeasure();
-        List<Inter> heads = new ArrayList<>();
-
-        for (HeadChordInter headChord : measure.getHeadChords()) {
-            heads.addAll(headChord.getMembers());
-        }
-
-        boolean started = false;
-        Collections.sort(heads, Inters.byReverseCenterAbscissa);
-
-        for (Inter inter : heads) {
-            HeadInter head = (HeadInter) inter;
-
-            if (head == this) {
-                started = true;
-            } else if (started && (head.getStep() == getStep())
-                               && (head.getOctave() == getOctave())
-                               && (head.getStaff() == getStaff())) {
-                AlterInter accid = head.getAccidental();
-
-                if (accid != null) {
-                    return alterationOf(accid);
-                }
-            }
-        }
-
-        if (useTie) {
-            // Look for tie from previous measure (same system or previous system)
-            for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
-                SlurInter slur = (SlurInter) sig.getOppositeInter(this, rel);
-
-                if (slur.isTie() && (slur.getHead(HorizontalSide.RIGHT) == this)) {
-                    // Is the starting head in same system?
-                    HeadInter startHead = slur.getHead(HorizontalSide.LEFT);
-
-                    if (startHead != null) {
-                        // Use start head alter
-                        return startHead.getAlter(fifths);
-                    }
-
-                    // Use slur extension to look into previous system
-                    SlurInter prevSlur = slur.getExtension(HorizontalSide.LEFT);
-
-                    if (prevSlur != null) {
-                        startHead = prevSlur.getHead(HorizontalSide.LEFT);
-
-                        if (startHead != null) {
-                            // Use start head alter
-                            return startHead.getAlter(fifths);
-                        }
-                    }
-
-                    // TODO: Here we should look in previous sheet/page...
-                }
-            }
-        }
-
-        // Finally, use the current key signature
-        if (fifths != null) {
-            return KeyInter.getAlterFor(getStep(), fifths);
-        }
-
-        // Nothing found, so...
-        return 0;
     }
 
     //------------//
@@ -908,56 +892,6 @@ public class HeadInter
     public static double getShrinkVertRatio ()
     {
         return constants.shrinkVertRatio.getValue();
-    }
-
-    //----------------//
-    // haveSameHeight //
-    //----------------//
-    /**
-     * Check whether two heads represent the same height
-     * (same octave, same step, same alteration).
-     *
-     * @param h1 first head
-     * @param h2 second head, down the score
-     * @return true if the heads are equivalent.
-     */
-    public static boolean haveSameHeight (HeadInter h1,
-                                          HeadInter h2)
-    {
-        if ((h1 == null) || (h2 == null)) {
-            return false;
-        }
-
-        // Step
-        if (h1.getStep() != h2.getStep()) {
-            return false;
-        }
-
-        // Octave
-        if (h1.getOctave() != h2.getOctave()) {
-            return false;
-        }
-
-        // Alteration
-        Staff s1 = h1.getStaff();
-        Measure m1 = s1.getPart().getMeasureAt(h1.getCenter());
-        KeyInter k1 = m1.getKeyBefore(s1);
-        int f1 = (k1 != null) ? k1.getFifths() : 0;
-
-        Staff s2 = h2.getStaff();
-        Measure m2 = s2.getPart().getMeasureAt(h2.getCenter());
-        KeyInter k2 = m2.getKeyBefore(s2);
-        int f2 = (k2 != null) ? k2.getFifths() : 0;
-
-        if (m1 == m2) {
-            // Both heads are in same measure
-            return (f1 == f2) && (h1.getStaff() == h2.staff);
-        } else {
-            int a1 = h1.getAlter(f1, false);
-            int a2 = h2.getAlter(f2, false);
-
-            return a1 == a2;
-        }
     }
 
     //--------//

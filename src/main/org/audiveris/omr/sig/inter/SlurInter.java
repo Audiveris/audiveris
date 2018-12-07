@@ -366,12 +366,26 @@ public class SlurInter
     //---------------//
     /**
      * Check whether the cross-system slur connection is a tie.
+     * <p>
+     * This method assumes that 'this' and 'prevSlur' belong to the same logical part but in
+     * separate systems.
      *
      * @param prevSlur slur at the end of previous system (perhaps in previous sheet)
      */
     public void checkCrossTie (SlurInter prevSlur)
     {
-        boolean result = HeadInter.haveSameHeight(prevSlur.getHead(LEFT), this.getHead(RIGHT));
+        final HeadInter h1 = prevSlur.getHead(LEFT);
+        final HeadInter h2 = prevSlur.getHead(RIGHT);
+        final boolean result;
+
+        if (!areTieCompatible(h1, h2)) {
+            result = false;
+        } else {
+            // Check staff continuity (we are within the same logical part)
+            Staff s1 = h1.getStaff();
+            Staff s2 = h2.getStaff();
+            result = s1.getIndexInPart() == s2.getIndexInPart();
+        }
 
         prevSlur.setTie(result);
         this.setTie(result);
@@ -400,7 +414,7 @@ public class SlurInter
         HeadInter h2 = getHead(RIGHT);
         boolean result = (h1 != null) && (h2 != null)
                                  && (h1.getStaff() == h2.getStaff())
-                                 && HeadInter.haveSameHeight(h1, h2)
+                                 && areTieCompatible(h1, h2)
                                  && isSpaceClear(h1, h2, systemHeadChords);
         setTie(result);
 
@@ -785,6 +799,53 @@ public class SlurInter
             above = info.above() > 0;
             curve = info.getCurve();
         }
+    }
+
+    //------------------//
+    // areTieCompatible //
+    //------------------//
+    /**
+     * Check whether two heads represent the same height
+     * (same octave, same step, same key fifths)
+     * but accidental alteration is <b>NOT</b> considered.
+     * <p>
+     * Potential accidental alterations must be taken care of by the caller, if so needed.
+     *
+     * @param h1 first head
+     * @param h2 second head, down the score
+     * @return true if the heads are equivalent.
+     */
+    private static boolean areTieCompatible (HeadInter h1,
+                                             HeadInter h2)
+    {
+        if ((h1 == null) || (h2 == null)) {
+            return false;
+        }
+
+        // Step
+        if (h1.getStep() != h2.getStep()) {
+            return false;
+        }
+
+        // Octave
+        if (h1.getOctave() != h2.getOctave()) {
+            return false;
+        }
+
+        // Accidental
+        AlterInter a1 = h1.getMeasureAccidental();
+        AlterInter a2 = h2.getMeasureAccidental();
+
+        if (a1 == null) {
+            if (a2 != null) {
+                return false;
+            }
+        } else if (a2 != null && a2.getShape() != a1.getShape()) {
+            return false;
+        }
+
+        // Let's caller handle staff / part / system compatibility
+        return true;
     }
 
     //-------------//

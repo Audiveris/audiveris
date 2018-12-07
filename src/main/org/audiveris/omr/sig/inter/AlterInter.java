@@ -139,6 +139,47 @@ public class AlterInter
         setAbnormal(true); // No head linked yet
     }
 
+    //--------------//
+    // alterationOf //
+    //--------------//
+    /**
+     * Report the pitch alteration that corresponds to the provided accidental.
+     *
+     * @param accidental the provided accidental, perhaps null
+     * @return the pitch impact
+     */
+    public static int alterationOf (AlterInter accidental)
+    {
+        if (accidental == null) {
+            return 0;
+        }
+
+        switch (accidental.getShape()) {
+        case SHARP:
+            return 1;
+
+        case DOUBLE_SHARP:
+            return 2;
+
+        case FLAT:
+            return -1;
+
+        case DOUBLE_FLAT:
+            return -2;
+
+        case NATURAL:
+            return 0;
+
+        default:
+            logger.warn(
+                    "Weird shape {} for accidental {}",
+                    accidental.getShape(),
+                    accidental.getId());
+
+            return 0; // Should not happen
+        }
+    }
+
     //---------------//
     // checkAbnormal //
     //---------------//

@@ -1868,7 +1868,7 @@ public class PartwiseBuilder
                 HeadInter head = (HeadInter) note;
                 Key key = current.keys.get(staff.getIndexInPart());
                 Integer fifths = (key != null) ? key.getFifths().intValue() : null;
-                int alter = head.getAlter(fifths);
+                int alter = head.getAlteration(fifths);
 
                 if (alter != 0) {
                     pitch.setAlter(new BigDecimal(alter));
