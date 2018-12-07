@@ -113,7 +113,12 @@ public class SpotsBuilder
             // Retrieve major spots
             watch.start("buildSpots");
 
-            int beam = sheet.getScale().getBeamThickness();
+            Integer beam = sheet.getScale().getBeamThickness();
+
+            if (beam == null) {
+                throw new RuntimeException("No scale information on beam thickness");
+            }
+
             List<Glyph> spots = buildSpots(buffer, null, beam, null);
 
             // Dispatch spots per system(s)

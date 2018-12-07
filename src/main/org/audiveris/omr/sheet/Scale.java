@@ -123,7 +123,7 @@ public class Scale
     private Scale smallScale;
 
     /**
-     * Create a scale entity, meant for a whole sheet.
+     * Create a Scale object, meant for a whole sheet.
      *
      * @param interlineScale scale of (large) interline
      * @param lineScale      scale of line thickness
@@ -142,7 +142,7 @@ public class Scale
     }
 
     /**
-     *
+     * Create an empty Scale object.
      */
     public Scale ()
     {
@@ -158,6 +158,10 @@ public class Scale
      */
     public Double getBeamMeanDistance ()
     {
+        if (beamScale == null) {
+            return null;
+        }
+
         return beamScale.getDistanceMean();
     }
 
@@ -184,6 +188,10 @@ public class Scale
      */
     public Double getBeamSigmaDistance ()
     {
+        if (beamScale == null) {
+            return null;
+        }
+
         return beamScale.getDistanceSigma();
     }
 
@@ -193,11 +201,13 @@ public class Scale
     /**
      * Report the main thickness for beams.
      *
-     * @return main beam thickness
+     * @return main beam thickness, perhaps null
      */
-    public int getBeamThickness ()
+    public Integer getBeamThickness ()
     {
-        Objects.requireNonNull(beamScale, "This scale instance has no beam information");
+        if (beamScale == null) {
+            return null;
+        }
 
         return beamScale.getMain();
     }
@@ -234,10 +244,14 @@ public class Scale
     /**
      * Report the line thickness this scale is based upon.
      *
-     * @return the number of black pixels in a staff line
+     * @return the number of black pixels in a staff line, perhaps null
      */
-    public int getFore ()
+    public Integer getFore ()
     {
+        if (lineScale == null) {
+            return null;
+        }
+
         return lineScale.main;
     }
 
@@ -247,37 +261,15 @@ public class Scale
     /**
      * Report the main interline value this scale is based upon.
      *
-     * @return the number of pixels (black + white) from one line to the other.
+     * @return the number of pixels (black + white) from one line to the other, perhaps null
      */
-    public int getInterline ()
+    public Integer getInterline ()
     {
-        return interlineScale.main;
-    }
-
-    //--------------//
-    // getInterline //
-    //--------------//
-    /**
-     * Report the main interline value within the small or large family
-     *
-     * @param size LARGE or SMALL
-     * @return the smaller interline value
-     */
-    public int getInterline (Size size)
-    {
-        switch (size) {
-        default:
-        case LARGE:
-            return interlineScale.main;
-
-        case SMALL:
-
-            if (smallScale != null) {
-                return smallScale.getInterline();
-            } else {
-                throw new IllegalArgumentException("No SMALL interline value");
-            }
+        if (interlineScale == null) {
+            return null;
         }
+
+        return interlineScale.main;
     }
 
     //-------------------//
@@ -291,32 +283,6 @@ public class Scale
     public InterlineScale getInterlineScale ()
     {
         return interlineScale;
-    }
-
-    //-------------------//
-    // getInterlineScale //
-    //-------------------//
-    /**
-     * Report the large or small scale, according to boolean value.
-     *
-     * @param size LARGE or SMALL
-     * @return the desired interlineScale, perhaps null if no small exists
-     */
-    public InterlineScale getInterlineScale (Size size)
-    {
-        switch (size) {
-        default:
-        case LARGE:
-            return interlineScale;
-
-        case SMALL:
-
-            if (smallScale != null) {
-                return smallScale.interlineScale;
-            } else {
-                return null;
-            }
-        }
     }
 
     //-------------------//
@@ -877,17 +843,6 @@ public class Scale
     private double fracToPixels (double val)
     {
         return interlineScale.main * val;
-    }
-
-    /**
-     * Kind of staff size.
-     */
-    public enum Size
-    {
-        /** Standard staff. */
-        LARGE,
-        /** Small staff. */
-        SMALL
     }
 
     /**

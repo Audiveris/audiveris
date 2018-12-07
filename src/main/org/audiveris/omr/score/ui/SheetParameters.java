@@ -159,7 +159,7 @@ public class SheetParameters
     // ScalingParam //
     //--------------//
     /**
-     * An integer param, backed by Scale structure.
+     * An integer {@code Param}, backed by Scale structure.
      */
     private class ScalingParam
             extends Param<Integer>
