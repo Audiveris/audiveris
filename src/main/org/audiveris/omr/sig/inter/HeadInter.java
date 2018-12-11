@@ -475,7 +475,6 @@ public class HeadInter
                         new Point(box.x, box.y + box.height),
                         new Point(box.x + box.width, box.y));
             } else {
-
                 return LineUtil.bisector(
                         new Point(box.x + box.width, box.y),
                         new Point(box.x, box.y + box.height));

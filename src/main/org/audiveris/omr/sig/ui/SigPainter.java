@@ -35,9 +35,12 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
+import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractFlagInter;
 import org.audiveris.omr.sig.inter.AbstractInterVisitor;
+import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
+import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BraceInter;
@@ -57,6 +60,8 @@ import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.sig.relation.AlterHeadRelation;
+import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.text.FontInfo;
@@ -66,11 +71,11 @@ import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
+import org.audiveris.omr.ui.symbol.TextFont;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
-import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
 
@@ -91,6 +96,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -342,6 +348,15 @@ public abstract class SigPainter
     // visit //
     //-------//
     @Override
+    public void visit (AlterInter inter)
+    {
+        paintHalf(inter, AlterHeadRelation.class);
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
     public void visit (ArpeggiatoInter arpeggiato)
     {
         setColor(arpeggiato);
@@ -364,6 +379,15 @@ public abstract class SigPainter
         }
 
         g.setClip(clip);
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (AugmentationDotInter inter)
+    {
+        paintHalf(inter, AugmentationRelation.class);
     }
 
     //-------//
@@ -859,6 +883,76 @@ public abstract class SigPainter
                           Alignment alignment)
     {
         OmrFont.paint(g, layout, location, alignment);
+    }
+
+    //-----------//
+    // paintHalf //
+    //-----------//
+    /**
+     * Paint upper and lower parts of a symbol, if it is linked to two shared heads.
+     * Otherwise, paint it normally as a whole.
+     *
+     * @param inter  the inter to paint
+     *               (AugmentationDotInter or AlterInter)
+     * @param classe the relation class to search between inter and head
+     *               (AugmentationRelation or AlterHeadRelation)
+     */
+    private void paintHalf (Inter inter,
+                            Class<? extends Relation> classe)
+    {
+        if (!splitMirrors()) {
+            visit(inter);
+
+            return;
+        }
+
+        final SIGraph sig = inter.getSig();
+        final List<HeadInter> heads = new ArrayList<>();
+
+        for (Relation rel : sig.getRelations(inter, classe)) {
+            Inter opposite = sig.getOppositeInter(inter, rel);
+
+            if (opposite instanceof HeadInter) {
+                heads.add((HeadInter) opposite);
+            }
+        }
+
+        if ((heads.size() != 2) || (heads.get(0).getMirror() != heads.get(1))) {
+            // Standard case where symbol is painted as a whole
+            visit(inter);
+        } else {
+            // Split according to linked shared heads
+            final Rectangle box = inter.getBounds();
+            final int height = box.height;
+            final Point center = inter.getCenter();
+            final Point ref = inter.getRelationCenter(); // Not always the area center
+            final Shape shape = inter.getShape();
+            final Staff staff = inter.getStaff();
+            final ShapeSymbol symbol = Symbols.getSymbol(shape);
+            final MusicFont font = getMusicFont(staff);
+            final Dimension dim = symbol.getDimension(font);
+            final int w = dim.width;
+            final Line2D line = new Line2D.Double(ref.x - w, ref.y, ref.x + w, ref.y);
+
+            // Draw each inter half
+            for (HeadInter h : heads) {
+                final AbstractChordInter ch = h.getChord();
+                final int yDir = ch.getCenter().y > h.getCenter().y ? +1 : -1;
+                final Path2D p = new Path2D.Double();
+                p.append(line, false);
+                p.lineTo(line.getX2(), line.getY2() + yDir * height);
+                p.lineTo(line.getX1(), line.getY1() + yDir * height);
+                p.closePath();
+
+                final java.awt.Shape oldClip = g.getClip();
+                g.clip(p);
+
+                setColor(ch);
+                symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
+
+                g.setClip(oldClip);
+            }
+        }
     }
 
     //-----------//
