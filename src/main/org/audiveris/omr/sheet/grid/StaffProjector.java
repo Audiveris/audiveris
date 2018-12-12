@@ -1352,7 +1352,7 @@ public class StaffProjector
                 "Minimum cumul value to detect brace peak");
 
         private final Scale.Fraction gapThreshold = new Scale.Fraction(
-                0.85,
+                0.6,
                 "Maximum vertical gap length in a bar");
 
         private final Scale.Fraction chunkThreshold = new Scale.Fraction(
