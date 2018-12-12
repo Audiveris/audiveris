@@ -206,9 +206,9 @@ public class InterController
                             }
                         }
 
-                        // If glyph used by another inter, delete this other inter
-                        ///removeCompetitors(inter, inter.getGlyph(), system, seq);
-                        //
+                        // If glyph is used by another inter, delete this other inter
+                        removeCompetitors(inter, inter.getGlyph(), system, seq);
+
                         lgs.add(new LinkedGhost(inter, inter.searchLinks(system, false)));
                     }
 
