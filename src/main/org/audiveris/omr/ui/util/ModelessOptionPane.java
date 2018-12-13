@@ -50,11 +50,9 @@ import javax.swing.JOptionPane;
 public class ModelessOptionPane
         extends JOptionPane
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ModelessOptionPane.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // showConfirmDialog //
     //-------------------//
@@ -80,13 +78,12 @@ public class ModelessOptionPane
                                                  int optionType)
             throws HeadlessException
     {
-        final Exchanger<Integer> exchanger = new Exchanger<Integer>();
+        final Exchanger<Integer> exchanger = new Exchanger<>();
 
         final JOptionPane pane = new JOptionPane(message, QUESTION_MESSAGE, optionType);
         Window window = getWindowForComponent(parentComponent);
 
-        final JDialog dialog = (window instanceof Frame)
-                ? new JDialog((Frame) window, title)
+        final JDialog dialog = (window instanceof Frame) ? new JDialog((Frame) window, title)
                 : new JDialog((Dialog) window, title);
 
         WindowAdapter adapter = new WindowAdapter()
@@ -118,8 +115,7 @@ public class ModelessOptionPane
 
         dialog.addWindowListener(adapter);
         dialog.addWindowFocusListener(adapter);
-        dialog.addComponentListener(
-                new ComponentAdapter()
+        dialog.addComponentListener(new ComponentAdapter()
         {
             @Override
             public void componentShown (ComponentEvent ce)
@@ -128,8 +124,7 @@ public class ModelessOptionPane
                 pane.setValue(JOptionPane.UNINITIALIZED_VALUE);
             }
         });
-        pane.addPropertyChangeListener(
-                new PropertyChangeListener()
+        pane.addPropertyChangeListener(new PropertyChangeListener()
         {
             @Override
             public void propertyChange (PropertyChangeEvent event)
@@ -137,11 +132,10 @@ public class ModelessOptionPane
                 // Let the defaultCloseOperation handle the closing
                 // if the user closed the window without selecting a button
                 // (newValue = null in that case).  Otherwise, close the dialog.
-                if (dialog.isVisible()
-                    && (event.getSource() == pane)
-                    && (event.getPropertyName().equals(VALUE_PROPERTY))
-                    && (event.getNewValue() != null)
-                    && (event.getNewValue() != JOptionPane.UNINITIALIZED_VALUE)) {
+                if (dialog.isVisible() && (event.getSource() == pane)
+                            && (event.getPropertyName().equals(VALUE_PROPERTY))
+                            && (event.getNewValue() != null)
+                            && (event.getNewValue() != JOptionPane.UNINITIALIZED_VALUE)) {
                     JOptionPane pane = (JOptionPane) event.getSource();
 
                     dialog.setVisible(false);
@@ -200,7 +194,7 @@ public class ModelessOptionPane
         if (selectedValue == null) {
             return JOptionPane.CLOSED_OPTION;
         } else if (selectedValue instanceof Integer) {
-            return ((Integer) selectedValue).intValue();
+            return ((Integer) selectedValue);
         } else {
             return JOptionPane.CLOSED_OPTION;
         }

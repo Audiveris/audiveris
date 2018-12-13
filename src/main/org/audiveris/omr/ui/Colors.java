@@ -24,18 +24,19 @@ package org.audiveris.omr.ui;
 import java.awt.Color;
 
 /**
- * Class {@code Colors} gathers alphabetically in one place the various colors used by
+ * Class {@code Colors} gathers in one place the various colors used by
  * Audiveris displays, in order to ensure consistency and compatibility.
  *
  * @author Hervé Bitteur
  */
-public class Colors
+public abstract class Colors
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Global alpha transparency (0..255). */
     private static final int alpha = 180;
 
+    // Color names below should better be listed alphabetically
+    //
     /** Annotations. */
     public static final Color ANNOTATION = Color.LIGHT_GRAY;
 
@@ -166,10 +167,9 @@ public class Colors
     /** Warping points. */
     public static final Color WARP_POINT = Color.RED;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Not meant to be instantiated.
-     * . */
+     */
     private Colors ()
     {
     }

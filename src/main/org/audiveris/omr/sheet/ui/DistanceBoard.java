@@ -41,15 +41,12 @@ import java.awt.Rectangle;
 public class DistanceBoard
         extends PixelBoard
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(DistanceBoard.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The distance table to browse. */
     private final DistanceTable table;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a {@code DistanceBoard} object.
      *
@@ -67,7 +64,6 @@ public class DistanceBoard
         level.getLabel().setToolTipText("Distance to foreground");
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------------//
     // handleLocationEvent //
     //---------------------//

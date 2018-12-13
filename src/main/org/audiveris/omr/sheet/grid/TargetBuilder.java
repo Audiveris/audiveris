@@ -69,13 +69,11 @@ import javax.imageio.ImageIO;
 public class TargetBuilder
         implements ItemRenderer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TargetBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet */
     @Navigable(false)
     private final Sheet sheet;
@@ -93,15 +91,14 @@ public class TargetBuilder
     private TargetPage targetPage;
 
     /** All target lines */
-    private final List<TargetLine> allTargetLines = new ArrayList<TargetLine>();
+    private final List<TargetLine> allTargetLines = new ArrayList<>();
 
     /** Source points */
-    private final List<Point2D> srcPoints = new ArrayList<Point2D>();
+    private final List<Point2D> srcPoints = new ArrayList<>();
 
     /** Destination points */
-    private final List<Point2D> dstPoints = new ArrayList<Point2D>();
+    private final List<Point2D> dstPoints = new ArrayList<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TargetBuilder object.
      *
@@ -112,10 +109,12 @@ public class TargetBuilder
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // buildInfo //
     //-----------//
+    /**
+     * Build a de-warped image according to target grid.
+     */
     public void buildInfo ()
     {
         buildTarget();
@@ -231,9 +230,8 @@ public class TargetBuilder
     // buildTarget //
     //-------------//
     /**
-     * Build a perfect definition of target page, systems, staves and
-     * lines.
-     *
+     * Build a perfect definition of target page, systems, staves and lines.
+     * <p>
      * We apply a rotation on every top-left corner
      */
     private void buildTarget ()
@@ -340,7 +338,7 @@ public class TargetBuilder
     /**
      * This key method provides the source point (in original sheet image)
      * that corresponds to a given destination point (in target dewarped image).
-     *
+     * <p>
      * The strategy is to stay consistent with the staff lines nearby which
      * are used as grid references.
      *
@@ -404,14 +402,38 @@ public class TargetBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------------//
+    // DewarpedView //
+    //--------------//
+    private class DewarpedView
+            extends ImageView
+    {
+
+        DewarpedView (RenderedImage image)
+        {
+            super(image);
+
+            //            setModelSize(new Dimension(image.getWidth(), image.getHeight()));
+            // Location service
+            setLocationService(sheet.getLocationService());
+
+            setName("DewarpedView");
+        }
+
+        @Override
+        protected void renderItems (Graphics2D g)
+        {
+            // Display the Destination Points
+            renderWarpGrid(g, false);
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean showDewarpGrid = new Constant.Boolean(
                 false,
@@ -432,33 +454,5 @@ public class TargetBuilder
         private final Constant.Boolean storeDewarp = new Constant.Boolean(
                 false,
                 "Should we store the dewarped image on disk?");
-    }
-
-    //--------------//
-    // DewarpedView //
-    //--------------//
-    private class DewarpedView
-            extends ImageView
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public DewarpedView (RenderedImage image)
-        {
-            super(image);
-
-            //            setModelSize(new Dimension(image.getWidth(), image.getHeight()));
-            // Location service
-            setLocationService(sheet.getLocationService());
-
-            setName("DewarpedView");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected void renderItems (Graphics2D g)
-        {
-            // Display the Destination Points
-            renderWarpGrid(g, false);
-        }
     }
 }

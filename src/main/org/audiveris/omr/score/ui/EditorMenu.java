@@ -67,11 +67,9 @@ import javax.swing.JMenuItem;
 public class EditorMenu
         extends SheetPopupMenu
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(EditorMenu.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the editor page menu.
      *
@@ -83,7 +81,6 @@ public class EditorMenu
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // defineLayout //
     //--------------//
@@ -134,14 +131,12 @@ public class EditorMenu
         return null;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // MeasureMenu //
     //-------------//
     private class MeasureMenu
             extends LocationDependentMenu
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Selected measure. */
         private MeasureStack stack;
@@ -150,8 +145,7 @@ public class EditorMenu
 
         private final MergeAction mergeAction = new MergeAction();
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public MeasureMenu ()
+        MeasureMenu ()
         {
             super("Measure");
             add(new JMenuItem(new DumpAction()));
@@ -159,7 +153,6 @@ public class EditorMenu
             add(new JMenuItem(mergeAction));
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void updateUserLocation (Rectangle rect)
         {
@@ -181,26 +174,30 @@ public class EditorMenu
             mergeAction.update();
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         /**
          * Dump the current measure.
          */
         private class DumpAction
                 extends AbstractAction
         {
-            //~ Constructors -----------------------------------------------------------------------
 
-            public DumpAction ()
+            DumpAction ()
             {
                 putValue(NAME, "Dump voices");
                 putValue(SHORT_DESCRIPTION, "Dump the voices of the selected measure");
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
                 stack.printVoices("\n");
+            }
+
+            @Override
+            public Object clone ()
+                    throws CloneNotSupportedException
+            {
+                return super.clone(); //To change body of generated methods, choose Tools | Templates.
             }
         }
 
@@ -210,15 +207,13 @@ public class EditorMenu
         private class MergeAction
                 extends AbstractAction
         {
-            //~ Constructors -----------------------------------------------------------------------
 
-            public MergeAction ()
+            MergeAction ()
             {
                 putValue(NAME, "Merge on right");
                 putValue(SHORT_DESCRIPTION, "Merge this measure stack with next one on right");
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -229,7 +224,7 @@ public class EditorMenu
                 final List<Measure> measures = stack.getMeasures();
 
                 // All the StaffBarline pieces
-                List<Inter> toRemove = new ArrayList<Inter>();
+                List<Inter> toRemove = new ArrayList<>();
 
                 for (int ip = 0; ip < parts.size(); ip++) {
                     Measure measure = measures.get(ip);
@@ -237,15 +232,24 @@ public class EditorMenu
                     toRemove.addAll(pb.getStaffBarlines());
                 }
 
-                sheet.getInterController()
-                        .removeInters(toRemove, Option.VALIDATED, Option.UPDATE_MEASURES);
+                sheet.getInterController().removeInters(
+                        toRemove,
+                        Option.VALIDATED,
+                        Option.UPDATE_MEASURES);
+            }
+
+            @Override
+            public Object clone ()
+                    throws CloneNotSupportedException
+            {
+                return super.clone(); //To change body of generated methods, choose Tools | Templates.
             }
 
             private void update ()
             {
                 setEnabled(
-                        (stack != null) && (stack != stack.getSystem().getLastStack())
-                        && (sheet.getStub().getLatestStep().compareTo(Step.MEASURES) >= 0));
+                        (stack != null) && (stack != stack.getSystem().getLastStack()) && (sheet
+                        .getStub().getLatestStep().compareTo(Step.MEASURES) >= 0));
             }
         }
 
@@ -255,19 +259,24 @@ public class EditorMenu
         private class RhythmAction
                 extends AbstractAction
         {
-            //~ Constructors -----------------------------------------------------------------------
 
-            public RhythmAction ()
+            RhythmAction ()
             {
                 putValue(NAME, "Reprocess rhythm");
                 putValue(SHORT_DESCRIPTION, "Reprocess rhythm on the selected measure");
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
                 sheet.getInterController().reprocessRhythm(stack);
+            }
+
+            @Override
+            public Object clone ()
+                    throws CloneNotSupportedException
+            {
+                return super.clone(); //To change body of generated methods, choose Tools | Templates.
             }
 
             private void update ()
@@ -288,20 +297,17 @@ public class EditorMenu
     private class SlotMenu
             extends LocationDependentMenu
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Selected slot. */
         private Slot slot;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public SlotMenu ()
+        SlotMenu ()
         {
             super("Slot");
             add(new JMenuItem(new DumpSlotChordsAction()));
             add(new JMenuItem(new DumpVoicesAction()));
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void updateUserLocation (Rectangle rect)
         {
@@ -320,26 +326,30 @@ public class EditorMenu
             }
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         /**
          * Dump the chords of the current slot
          */
         private class DumpSlotChordsAction
                 extends AbstractAction
         {
-            //~ Constructors -----------------------------------------------------------------------
 
-            public DumpSlotChordsAction ()
+            DumpSlotChordsAction ()
             {
                 putValue(NAME, "Dump chords");
                 putValue(SHORT_DESCRIPTION, "Dump the chords of the selected slot");
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
                 logger.info(slot.toChordString());
+            }
+
+            @Override
+            public Object clone ()
+                    throws CloneNotSupportedException
+            {
+                return super.clone(); //To change body of generated methods, choose Tools | Templates.
             }
         }
 
@@ -349,19 +359,24 @@ public class EditorMenu
         private class DumpVoicesAction
                 extends AbstractAction
         {
-            //~ Constructors -----------------------------------------------------------------------
 
-            public DumpVoicesAction ()
+            DumpVoicesAction ()
             {
                 putValue(NAME, "Dump voices");
                 putValue(SHORT_DESCRIPTION, "Dump the voices of the selected slot");
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
                 logger.info(slot.toVoiceString());
+            }
+
+            @Override
+            public Object clone ()
+                    throws CloneNotSupportedException
+            {
+                return super.clone(); //To change body of generated methods, choose Tools | Templates.
             }
         }
     }
@@ -372,22 +387,19 @@ public class EditorMenu
     private class StaffMenu
             extends LocationDependentMenu
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private Staff staff;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create the staff menu
          */
-        public StaffMenu ()
+        StaffMenu ()
         {
             super("Staff");
             add(new JMenuItem(new PlotAction()));
             add(new JMenuItem(new PlotHeaderAction()));
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void updateUserLocation (Rectangle rect)
         {
@@ -400,22 +412,19 @@ public class EditorMenu
             }
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         /**
          * Plot the x-axis projection of the current staff.
          */
         private class PlotAction
                 extends AbstractAction
         {
-            //~ Constructors -----------------------------------------------------------------------
 
-            public PlotAction ()
+            PlotAction ()
             {
                 putValue(NAME, "Staff projection");
                 putValue(SHORT_DESCRIPTION, "Display staff horizontal projection");
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -425,6 +434,13 @@ public class EditorMenu
                     logger.warn("StaffProjector error " + ex, ex);
                 }
             }
+
+            @Override
+            public Object clone ()
+                    throws CloneNotSupportedException
+            {
+                return super.clone(); //To change body of generated methods, choose Tools | Templates.
+            }
         }
 
         /**
@@ -433,15 +449,13 @@ public class EditorMenu
         private class PlotHeaderAction
                 extends AbstractAction
         {
-            //~ Constructors -----------------------------------------------------------------------
 
-            public PlotHeaderAction ()
+            PlotHeaderAction ()
             {
                 putValue(NAME, "Header projection");
                 putValue(SHORT_DESCRIPTION, "Display staff header horizontal projection");
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -453,6 +467,13 @@ public class EditorMenu
                         return;
                     }
                 }
+            }
+
+            @Override
+            public Object clone ()
+                    throws CloneNotSupportedException
+            {
+                return super.clone(); //To change body of generated methods, choose Tools | Templates.
             }
         }
     }

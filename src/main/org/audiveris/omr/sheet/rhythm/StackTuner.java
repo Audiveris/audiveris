@@ -49,18 +49,15 @@ import java.util.Set;
  */
 public class StackTuner
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StackTuner.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated measure stack. */
     private final MeasureStack stack;
 
     /** Fail-fast mode, just meant to guess expected duration. */
     private final boolean failFast;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StackTuner} object.
      *
@@ -74,7 +71,6 @@ public class StackTuner
         this.failFast = failFast;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//

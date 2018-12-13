@@ -33,16 +33,16 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code TurnSlashSymbol} displays a TURN symbol with a vertical slash.
+ *
+ * @author Hervé Bitteur
  */
 public class TurnSlashSymbol
         extends ShapeSymbol
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The turn symbol */
     private final ShapeSymbol turnSymbol = Symbols.getSymbol(Shape.TURN);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TurnSlashSymbol object.
      *
@@ -53,7 +53,6 @@ public class TurnSlashSymbol
         super(isIcon, Shape.TURN_SLASH, false);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -97,19 +96,18 @@ public class TurnSlashSymbol
 
         Stroke oldStroke = g.getStroke();
         g.setStroke(p.stroke);
+
         Point top = alignment.translatedPoint(TOP_CENTER, p.rect, location);
         g.drawLine(loc.x, top.y, loc.x, top.y + p.rect.height);
         g.setStroke(oldStroke);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     private class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         Stroke stroke;
     }

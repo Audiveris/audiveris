@@ -41,11 +41,9 @@ import org.slf4j.LoggerFactory;
 public class StemSeedsStep
         extends AbstractSystemStep<Void>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StemSeedsStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StemSeedsStep object.
      */
@@ -53,7 +51,6 @@ public class StemSeedsStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
@@ -86,11 +83,16 @@ public class StemSeedsStep
     protected Void doProlog (Sheet sheet)
             throws StepException
     {
-        // Retrieve typical stem width on global sheet
-        StemScale stemScale = new StemScaler(sheet).retrieveStemWidth();
+        StemScale stemScale = sheet.getScale().getStemScale();
 
-        logger.info("{}", stemScale);
-        sheet.getScale().setStemScale(stemScale);
+        // Respect user-assigned stem scale if any
+        if (stemScale == null) {
+            // Retrieve typical stem width on global sheet
+            stemScale = new StemScaler(sheet).retrieveStemWidth();
+
+            logger.info("{}", stemScale);
+            sheet.getScale().setStemScale(stemScale);
+        }
 
         return null;
     }

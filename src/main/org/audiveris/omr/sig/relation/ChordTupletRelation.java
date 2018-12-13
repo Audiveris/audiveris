@@ -39,17 +39,14 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "chord-tuplet")
 public class ChordTupletRelation
-        extends AbstractSupport
+        extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Assigned tuplet support coefficient. */
     private final double tupletCoeff;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TupletChordRelation} object.
      *
@@ -68,7 +65,6 @@ public class ChordTupletRelation
         this.tupletCoeff = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -104,7 +100,10 @@ public class ChordTupletRelation
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         final TupletInter tuplet = (TupletInter) e.getEdgeTarget();
-        tuplet.checkAbnormal();
+
+        if (!tuplet.isRemoved()) {
+            tuplet.checkAbnormal();
+        }
     }
 
     //----------------//
@@ -114,6 +113,13 @@ public class ChordTupletRelation
     protected double getTargetCoeff ()
     {
         return tupletCoeff;
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 
     //----------------//
@@ -133,14 +139,12 @@ public class ChordTupletRelation
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio tupletThreeSupportCoeff = new Constant.Ratio(
                 2 * 0.33,

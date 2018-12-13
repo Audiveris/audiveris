@@ -37,13 +37,11 @@ public class PluckingInter
         extends AbstractInter
         implements StringSymbolInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Letter for the finger. (p, i, m, a) */
     @XmlAttribute
     private final char letter;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PluckingInter} object.
      *
@@ -67,7 +65,6 @@ public class PluckingInter
         this.letter = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

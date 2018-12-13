@@ -37,7 +37,6 @@ import java.awt.geom.CubicCurve2D;
 public class SlurSymbol
         extends ShapeSymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create a SlurSymbol
@@ -57,7 +56,6 @@ public class SlurSymbol
         super(isIcon, Shape.SLUR, true); // Decorated
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//

@@ -40,7 +40,6 @@ import java.awt.geom.Rectangle2D;
 public class ArticulationSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** The head part. */
     private static final BasicSymbol head = Symbols.getSymbol(Shape.NOTEHEAD_BLACK);
@@ -51,7 +50,6 @@ public class ArticulationSymbol
     /** Offset ratio of articulation center WRT decorated rectangle height. */
     private static final double dyRatio = -0.25;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a {@code ArticulationSymbol} (with decoration?) standard size
      *
@@ -82,7 +80,6 @@ public class ArticulationSymbol
         super(isIcon, shape, decorated, codes);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -154,14 +151,12 @@ public class ArticulationSymbol
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // offset: if decorated, offset of symbol center vs decorated image center
         // layout: articulation layout

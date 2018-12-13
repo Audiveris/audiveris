@@ -40,17 +40,23 @@ import java.io.IOException;
  */
 public abstract class PoorManAlgebra
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PoorManAlgebra.class);
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
+    private PoorManAlgebra ()
+    {
+    }
+
+    private static String format (double val)
+    {
+        return String.format("%.2f", val);
+    }
+
     //----------//
     // INDArray //
     //----------//
     public static interface INDArray
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * in place addition of two NDArrays
@@ -124,19 +130,16 @@ public abstract class PoorManAlgebra
         INDArray subiRowVector (INDArray rowVector);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // DataSet //
     //---------//
     public static class DataSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final INDArray features;
 
         private final INDArray labels;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public DataSet (INDArray features,
                         INDArray labels,
                         INDArray featuresMask, // Unused
@@ -147,7 +150,6 @@ public abstract class PoorManAlgebra
             this.labels = labels;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public INDArray getFeatures ()
         {
             return features;
@@ -164,11 +166,9 @@ public abstract class PoorManAlgebra
     //------//
     public static class Nd4j
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
-        public static double EPS_THRESHOLD = 1e-5;
+        public static final double EPS_THRESHOLD = 1e-5;
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Create an INDArray based on the given data layout
          *
@@ -196,7 +196,7 @@ public abstract class PoorManAlgebra
          *
          * @param dis the data input stream to read from
          * @return the INDArray
-         * @throws IOException
+         * @throws IOException if anything goes wrong in Input
          */
         public static INDArray read (DataInputStream dis)
                 throws IOException
@@ -220,7 +220,7 @@ public abstract class PoorManAlgebra
          *
          * @param arr              the array to write
          * @param dataOutputStream the data output stream to write to
-         * @throws IOException
+         * @throws IOException if anything goes wrong in Output
          */
         public static void write (INDArray arr,
                                   DataOutputStream dataOutputStream)
@@ -228,17 +228,19 @@ public abstract class PoorManAlgebra
         {
             throw new UnsupportedOperationException("PoorManAlgebra.Nd4j.write() not supported.");
         }
+
+        private Nd4j ()
+        {
+        }
     }
 
     private static class Matrix
             implements INDArray
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final double[][] data;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Matrix (double[][] data)
+        Matrix (double[][] data)
         {
             final int rowNb = data.length;
             final int colNb = data[0].length;
@@ -253,12 +255,11 @@ public abstract class PoorManAlgebra
             }
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public INDArray addi (INDArray other)
         {
             if (other instanceof Scalar) {
-                final double val = ((Scalar) other).getDouble(0);
+                final double val = other.getDouble(0);
                 final int rowNb = rows();
                 final int colNb = columns();
 
@@ -399,17 +400,14 @@ public abstract class PoorManAlgebra
     private static class Scalar
             implements INDArray
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private double data;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Scalar (double data)
+        Scalar (double data)
         {
             this.data = data;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public INDArray addi (INDArray other)
         {
@@ -467,7 +465,6 @@ public abstract class PoorManAlgebra
         @Override
         public String toString ()
         {
-
             final StringBuilder sb = new StringBuilder("{");
 
             sb.append(format(data));
@@ -478,20 +475,13 @@ public abstract class PoorManAlgebra
         }
     }
 
-    private static String format (double val)
-    {
-        return String.format("%.2f", val);
-    }
-
     private static class Vector
             implements INDArray
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final double[] data;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Vector (double[] data)
+        Vector (double[] data)
         {
             this.data = new double[data.length];
             System.arraycopy(data, 0, this.data, 0, data.length);
@@ -503,13 +493,12 @@ public abstract class PoorManAlgebra
             data = null;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public INDArray addi (INDArray other)
         {
             if (other instanceof Scalar) {
                 final int colNb = data.length;
-                final double val = ((Scalar) other).getDouble(0);
+                final double val = other.getDouble(0);
 
                 for (int ic = 0; ic < colNb; ic++) {
                     data[ic] += val;
@@ -604,4 +593,5 @@ public abstract class PoorManAlgebra
             return sb.toString();
         }
     }
+
 }

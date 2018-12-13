@@ -62,11 +62,9 @@ import javax.swing.JProgressBar;
 public class ValidationPanel
         implements Observer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ValidationPanel.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Swing component. */
     private final Panel component;
 
@@ -107,7 +105,7 @@ public class ValidationPanel
             "Number of samples incorrectly recognized");
 
     /** Collection of samples leading to false positives. */
-    private final List<Sample> falsePositives = new ArrayList<Sample>();
+    private final List<Sample> falsePositives = new ArrayList<>();
 
     /** User action to investigate on false positives. */
     private final FalsePositiveAction falsePositiveAction = new FalsePositiveAction();
@@ -118,7 +116,7 @@ public class ValidationPanel
             "Number of samples weakly recognized");
 
     /** Collection of samples not recognized (false negatives). */
-    private final List<Sample> weakPositives = new ArrayList<Sample>();
+    private final List<Sample> weakPositives = new ArrayList<>();
 
     /** User action to investigate on weak positives. */
     private final WeakPositiveAction weakPositiveAction = new WeakPositiveAction();
@@ -129,12 +127,11 @@ public class ValidationPanel
             "Number of samples weakly negative");
 
     /** Collection of samples weakly negatives. */
-    private final List<Sample> weakNegatives = new ArrayList<Sample>();
+    private final List<Sample> weakNegatives = new ArrayList<>();
 
     /** User action to investigate on weak negatives. */
     private final WeakNegativeAction weakNegativeAction = new WeakNegativeAction();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ValidationPanel object.
      *
@@ -162,7 +159,6 @@ public class ValidationPanel
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getComponent //
     //--------------//
@@ -364,26 +360,30 @@ public class ValidationPanel
         //        }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------------//
     // FalsePositiveAction //
     //---------------------//
     private class FalsePositiveAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public FalsePositiveAction ()
+        FalsePositiveAction ()
         {
             super("View");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
             SampleBrowser.getInstance().displayAll(falsePositives);
             SampleBrowser.getInstance().setVisible();
+        }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 
@@ -393,19 +393,16 @@ public class ValidationPanel
     private class ValidateAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public ValidateAction ()
+        ValidateAction ()
         {
             super("Test");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            executor.execute(
-                    new Runnable()
+            executor.execute(new Runnable()
             {
                 @Override
                 public void run ()
@@ -430,6 +427,13 @@ public class ValidationPanel
                 }
             });
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     //--------------------//
@@ -438,19 +442,24 @@ public class ValidationPanel
     private class WeakNegativeAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public WeakNegativeAction ()
+        WeakNegativeAction ()
         {
             super("View");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
             SampleBrowser.getInstance().displayAll(weakNegatives);
             SampleBrowser.getInstance().setVisible();
+        }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 
@@ -460,19 +469,24 @@ public class ValidationPanel
     private class WeakPositiveAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public WeakPositiveAction ()
+        WeakPositiveAction ()
         {
             super("View");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
             SampleBrowser.getInstance().displayAll(weakPositives);
             SampleBrowser.getInstance().setVisible();
+        }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 }

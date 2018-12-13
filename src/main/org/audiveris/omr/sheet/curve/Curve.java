@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.curve;
 
-import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.Run;
@@ -58,7 +57,6 @@ public abstract class Curve
         extends Arc
         implements AttachmentHolder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Curve.class);
 
@@ -84,12 +82,8 @@ public abstract class Curve
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Unique id. (within containing sheet) */
     protected final int id;
-
-    /** Arcs that compose this curve. */
-    private final Set<Arc> parts = new LinkedHashSet<Arc>();
 
     /** Area for extension on first side. */
     protected Area firstExtArea;
@@ -97,16 +91,18 @@ public abstract class Curve
     /** Area for extension on last side. */
     protected Area lastExtArea;
 
-    /** Potential attachments, lazily allocated. */
-    private AttachmentHolder attachments;
-
     /** Underlying glyph made of relevant runs. (generally thicker than the curve line) */
     protected Glyph glyph;
 
     /** Bounds of points that compose the curve line. */
     protected Rectangle bounds;
 
-    //~ Constructors -------------------------------------------------------------------------------
+    /** Arcs that compose this curve. */
+    private final Set<Arc> parts = new LinkedHashSet<>();
+
+    /** Potential attachments, lazily allocated. */
+    private AttachmentHolder attachments;
+
     /**
      * Creates a new Curve object.
      *
@@ -127,29 +123,6 @@ public abstract class Curve
         super(firstJunction, lastJunction, points, model);
         this.id = id;
         this.parts.addAll(parts);
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //-----------------------//
-    // getAbscissaComparator //
-    //-----------------------//
-    /**
-     * Report a comparator on abscissa
-     *
-     * @param reverse which side is concerned
-     * @return the comparator ready for use
-     */
-    public static Comparator<Curve> getAbscissaComparator (final boolean reverse)
-    {
-        return new Comparator<Curve>()
-        {
-            @Override
-            public int compare (Curve a1,
-                                Curve a2)
-            {
-                return Integer.compare(a1.getEnd(reverse).x, a2.getEnd(reverse).x);
-            }
-        };
     }
 
     //---------------//
@@ -195,7 +168,7 @@ public abstract class Curve
     public List<Point> getAllPoints (ArcView arcView,
                                      boolean reverse)
     {
-        List<Point> pts = new ArrayList<Point>();
+        List<Point> pts = new ArrayList<>();
 
         if (reverse) {
             pts.addAll(arcView.getPoints());
@@ -282,6 +255,11 @@ public abstract class Curve
     //-----------//
     // getBounds //
     //-----------//
+    /**
+     * Report the bounding box for this curve.
+     *
+     * @return bounding box
+     */
     public Rectangle getBounds ()
     {
         if (bounds == null) {
@@ -321,6 +299,12 @@ public abstract class Curve
     //------------//
     // getExtArea //
     //------------//
+    /**
+     * Report the extension lookup area on provided side.
+     *
+     * @param reverse desired direction
+     * @return lookup area
+     */
     public Area getExtArea (boolean reverse)
     {
         if (reverse) {
@@ -341,6 +325,19 @@ public abstract class Curve
     public Glyph getGlyph ()
     {
         return glyph;
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    /**
+     * Assign the underlying glyph
+     *
+     * @param glyph the underlying glyph (with relevant runs only)
+     */
+    public void setGlyph (Glyph glyph)
+    {
+        this.glyph = glyph;
     }
 
     //-------//
@@ -447,9 +444,12 @@ public abstract class Curve
             final Point point = points.get(index); // Point of curve
             final Run run = sheetTable.getRunAt(point.x, point.y); // Containing run
 
-            if (isCloseToCurve(point.x, run.getStart(), maxRunDistance, index)
-                && ((run.getLength() <= 1)
-                    || isCloseToCurve(point.x, run.getStop(), maxRunDistance, index))) {
+            if (isCloseToCurve(point.x, run.getStart(), maxRunDistance, index) && ((run
+                    .getLength() <= 1) || isCloseToCurve(
+                            point.x,
+                            run.getStop(),
+                            maxRunDistance,
+                            index))) {
                 curveTable.addRun(point.x - fatBox.x, run.getStart() - fatBox.y, run.getLength());
             }
         }
@@ -457,7 +457,7 @@ public abstract class Curve
         // Build glyph (TODO: table a bit too high, should be trimmed?)
         if (curveTable.getSize() > 0) {
             Glyph curveGlyph = sheet.getGlyphIndex().registerOriginal(
-                    new BasicGlyph(fatBox.x, fatBox.y, curveTable));
+                    new Glyph(fatBox.x, fatBox.y, curveTable));
             setGlyph(curveGlyph);
             logger.debug("{} -> {}", this, curveGlyph);
 
@@ -488,51 +488,6 @@ public abstract class Curve
         }
     }
 
-    //----------//
-    // setGlyph //
-    //----------//
-    /**
-     * Assign the underlying glyph
-     *
-     * @param glyph the underlying glyph (with relevant runs only)
-     */
-    public void setGlyph (Glyph glyph)
-    {
-        this.glyph = glyph;
-    }
-
-    //
-    //    //----------//
-    //    // toString //
-    //    //----------//
-    //    @Override
-    //    public String toString ()
-    //    {
-    //        StringBuilder sb = new StringBuilder();
-    //        sb.append(getClass().getSimpleName());
-    //
-    //        boolean first = true;
-    //
-    //        for (Arc arc : parts) {
-    //            if (first) {
-    //                first = false;
-    //            } else {
-    //                Point j = arc.getJunction(true);
-    //
-    //                if (j != null) {
-    //                    sb.append(" <").append(j.x).append(",").append(j.y).append(">");
-    //                }
-    //            }
-    //
-    //            sb.append(" ").append(arc);
-    //        }
-    //
-    //        sb.append(internals());
-    //
-    //        sb.append("}");
-    //
-    //        return sb.toString();
-    //    }
     //-----------//
     // internals //
     //-----------//
@@ -603,11 +558,11 @@ public abstract class Curve
     private Point junctionOf (Arc a1,
                               Arc a2)
     {
-        List<Point> s1 = new ArrayList<Point>();
+        List<Point> s1 = new ArrayList<>();
         s1.add(a1.getJunction(true));
         s1.add(a1.getJunction(false));
 
-        List<Point> s2 = new ArrayList<Point>();
+        List<Point> s2 = new ArrayList<>();
         s2.add(a2.getJunction(true));
         s2.add(a2.getJunction(false));
         s1.retainAll(s2);
@@ -617,5 +572,27 @@ public abstract class Curve
         } else {
             return null;
         }
+    }
+
+    //-----------------------//
+    // getAbscissaComparator //
+    //-----------------------//
+    /**
+     * Report a comparator on abscissa
+     *
+     * @param reverse which side is concerned
+     * @return the comparator ready for use
+     */
+    public static Comparator<Curve> getAbscissaComparator (final boolean reverse)
+    {
+        return new Comparator<Curve>()
+        {
+            @Override
+            public int compare (Curve a1,
+                                Curve a2)
+            {
+                return Integer.compare(a1.getEnd(reverse).x, a2.getEnd(reverse).x);
+            }
+        };
     }
 }

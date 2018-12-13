@@ -37,11 +37,9 @@ import java.util.List;
  */
 public abstract class WordScanner
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(WordScanner.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The content string. */
     private final String content;
 
@@ -71,7 +69,6 @@ public abstract class WordScanner
 
     private int nextWordStop = -1;
 
-    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // WordScanner //
     //-------------//
@@ -94,8 +91,6 @@ public abstract class WordScanner
         this.chars = chars;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //
     //--------------//
     // getWordChars //
     //--------------//
@@ -232,7 +227,6 @@ public abstract class WordScanner
         nextWord = getNextWord();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // ManualScanner //
     //---------------//
@@ -243,12 +237,10 @@ public abstract class WordScanner
     public static class ManualScanner
             extends WordScanner
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Ratio of number of TextChar instances / content length. */
         private final double ratio;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new ManualScanner object.
          *
@@ -270,7 +262,6 @@ public abstract class WordScanner
             logger.debug("ManualScanner on ''{}''", content);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected int stringToDesc (int strIndex)
         {
@@ -291,7 +282,6 @@ public abstract class WordScanner
     public static class OcrScanner
             extends WordScanner
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Creates a new OcrScanner object.
@@ -312,7 +302,6 @@ public abstract class WordScanner
             logger.debug("OcrScanner on ''{}''", content);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected int stringToDesc (int strIndex)
         {

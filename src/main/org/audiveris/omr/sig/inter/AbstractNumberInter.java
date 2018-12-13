@@ -39,13 +39,11 @@ import javax.xml.bind.annotation.XmlAttribute;
 public abstract class AbstractNumberInter
         extends AbstractInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Integer value for the number. */
     @XmlAttribute
     protected final int value;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractNumberInter object.
      *
@@ -76,7 +74,6 @@ public abstract class AbstractNumberInter
         this.value = (shape != null) ? valueOf(shape) : (-1);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -99,9 +96,24 @@ public abstract class AbstractNumberInter
         return value;
     }
 
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + value;
+    }
+
     //---------//
     // valueOf //
     //---------//
+    /**
+     * Report the integer value for the provided shape
+     *
+     * @param shape shape to test
+     * @return supported integer value or IllegalArgumentException is thrown
+     */
     protected static int valueOf (Shape shape)
     {
         switch (shape) {
@@ -143,14 +155,5 @@ public abstract class AbstractNumberInter
         }
 
         throw new IllegalArgumentException("No integer value defined for " + shape);
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + value;
     }
 }

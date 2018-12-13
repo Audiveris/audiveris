@@ -23,27 +23,30 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.util.Jaxb;
 
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code AbstractStemConnection} is the basis for connections to a stem.
  *
  * @author Hervé Bitteur
  */
+
+
 public abstract class AbstractStemConnection
         extends AbstractConnection
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Logical extension point. */
     @XmlElement(name = "extension-point")
+    @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
     protected Point2D extensionPoint;
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getStemPortion //
     //----------------//
@@ -98,9 +101,19 @@ public abstract class AbstractStemConnection
 
         if (extensionPoint != null) {
             sb.append(
-                    String.format(" [x:%.0f,y:%.0f]", extensionPoint.getX(), extensionPoint.getY()));
+                    String.format(
+                            " [x:%.0f,y:%.0f]",
+                            extensionPoint.getX(),
+                            extensionPoint.getY()));
         }
 
         return sb.toString();
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 }

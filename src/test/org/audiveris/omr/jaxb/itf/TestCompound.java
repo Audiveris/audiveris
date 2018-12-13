@@ -96,7 +96,7 @@ public class TestCompound
     }
 
     private void unmarshall ()
-            throws JAXBException, FileNotFoundException
+            throws JAXBException, FileNotFoundException, IOException
     {
         System.out.println("=========================================================");
         System.out.println("Unmarshalling ...");
@@ -106,6 +106,7 @@ public class TestCompound
         InputStream is = new FileInputStream(source);
 
         MyCompound compound = (MyCompound) um.unmarshal(is);
+        is.close();
         System.out.println("Unmarshalled from " + source);
         new Dumping().dump(compound);
         System.out.println("compound.index: " + compound.index);

@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
@@ -53,18 +54,11 @@ import java.util.List;
  */
 public class ShapeChecker
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            ShapeChecker.class);
+    private static final Logger logger = LoggerFactory.getLogger(ShapeChecker.class);
 
-    /** Singleton */
-    private static ShapeChecker INSTANCE;
-
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     //    /** Small dynamics with no 'P' or 'F' */
     //    private static final EnumSet<Shape> SmallDynamics = EnumSet.copyOf(
     //            shapesOf(DYNAMICS_CHAR_M, DYNAMICS_CHAR_R, DYNAMICS_CHAR_S, DYNAMICS_CHAR_Z));
@@ -93,14 +87,12 @@ public class ShapeChecker
     /** Map of Shape => Sequence of checkers */
     private final EnumMap<Shape, Collection<Checker>> checkerMap;
 
-    //~ Constructors -------------------------------------------------------------------------------
     private ShapeChecker ()
     {
-        checkerMap = new EnumMap<Shape, Collection<Checker>>(Shape.class);
+        checkerMap = new EnumMap<>(Shape.class);
         registerChecks();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // annotate //
     //----------//
@@ -146,18 +138,6 @@ public class ShapeChecker
         }
     }
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    public static ShapeChecker getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new ShapeChecker();
-        }
-
-        return INSTANCE;
-    }
-
     //------------//
     // addChecker //
     //------------//
@@ -168,13 +148,13 @@ public class ShapeChecker
      * @param shapes  the shape(s) for which the check applies
      */
     private void addChecker (Checker checker,
-                             Shape... shapes)
+                             Collection<Shape> shapes)
     {
         for (Shape shape : shapes) {
             Collection<Checker> checks = checkerMap.get(shape);
 
             if (checks == null) {
-                checks = new ArrayList<Checker>();
+                checks = new ArrayList<>();
                 checkerMap.put(shape, checks);
             }
 
@@ -195,7 +175,7 @@ public class ShapeChecker
                              ShapeSet... shapeRanges)
     {
         for (ShapeSet range : shapeRanges) {
-            addChecker(checker, range.getShapes().toArray(new Shape[0]));
+            addChecker(checker, range.getShapes());
         }
     }
 
@@ -265,21 +245,15 @@ public class ShapeChecker
                 // Except a few shapes
                 Shape shape = eval.shape;
 
-                if ((shape == BRACKET)
-                    || (shape == BRACE)
-                    || (shape == TEXT)
-                    || (shape == CHARACTER)) {
+                if ((shape == BRACKET) || (shape == BRACE) || (shape == TEXT)
+                            || (shape == CHARACTER)) {
                     return true;
                 }
 
                 Rectangle glyphBox = glyph.getBounds();
 
-                if (((glyphBox.x + glyphBox.width) < system.getLeft())
-                    || (glyphBox.x > system.getRight())) {
-                    return false;
-                }
-
-                return true;
+                return !(((glyphBox.x + glyphBox.width) < system.getLeft()) || (glyphBox.x > system
+                        .getRight()));
             }
         };
 
@@ -295,7 +269,7 @@ public class ShapeChecker
                  * These half / whole rest signs are generally on standard pitch values:
                  * Standard pitch for whole: -1.5
                  * Standard pitch for half: -0.5
-                 *
+                 * <p>
                  * But because of other notes in the same staff-measure, they may appear
                  * on different pitch values, as they see fit. See Telemann example.
                  * Whole is always stuck to an upper line, half is always stuck to a lower line.
@@ -493,11 +467,7 @@ public class ShapeChecker
             }
         };
 
-        new Checker(
-                "StaffGap",
-                Rests.getShapes(),
-                Dynamics.getShapes(),
-                Articulations.getShapes())
+        new Checker("StaffGap", Rests.getShapes(), Dynamics.getShapes(), Articulations.getShapes())
         {
             @Override
             public boolean check (SystemInfo system,
@@ -700,7 +670,7 @@ public class ShapeChecker
             }
         };
 
-        new Checker("SystemTop", DAL_SEGNO, DA_CAPO, SEGNO, CODA, BREATH_MARK)
+        new Checker("SystemTop", Arrays.asList(DAL_SEGNO, DA_CAPO, SEGNO, CODA, BREATH_MARK))
         {
             @Override
             public boolean check (SystemInfo system,
@@ -709,9 +679,7 @@ public class ShapeChecker
             {
                 // Check that these markers are just above first system staff
                 Rectangle bounds = glyph.getBounds();
-                Point bottom = new Point(
-                        bounds.x + (bounds.width / 2),
-                        bounds.y + bounds.height);
+                Point bottom = new Point(bounds.x + (bounds.width / 2), bounds.y + bounds.height);
                 Staff staff = system.getClosestStaff(bottom);
 
                 if (staff != system.getFirstStaff()) {
@@ -720,13 +688,33 @@ public class ShapeChecker
 
                 double pitch = staff.pitchPositionOf(bottom);
 
-                return (constants.minDirectionPitchPosition.getValue() <= pitch)
-                       && (pitch <= -5);
+                return (constants.minDirectionPitchPosition.getValue() <= pitch) && (pitch <= -5);
             }
         };
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of ShapeChecker in the application.
+     *
+     * @return the instance
+     */
+    public static ShapeChecker getInstance ()
+    {
+        return LazySingleton.INSTANCE;
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final ShapeChecker INSTANCE = new ShapeChecker();
+    }
+
     //---------//
     // Checker //
     //---------//
@@ -736,74 +724,64 @@ public class ShapeChecker
      */
     private abstract class Checker
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Unique name for this check */
         public final String name;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Checker (String name,
-                        Shape... shapes)
+        Checker (String name,
+                 Collection<Shape> shapes)
         {
             this.name = name;
             addChecker(this, shapes);
         }
 
-        public Checker (String name,
-                        Collection<Shape> shapes)
-        {
-            this.name = name;
-            addChecker(this, shapes.toArray(new Shape[0]));
-        }
-
         @SuppressWarnings({"unchecked", "varargs"})
-        public Checker (String name,
-                        Collection<Shape>... shapes)
+        Checker (String name,
+                 Collection<Shape>... shapes)
         {
             this.name = name;
 
-            Collection<Shape> allShapes = new ArrayList<Shape>();
+            Collection<Shape> allShapes = new ArrayList<>();
 
             for (Collection<Shape> col : shapes) {
                 allShapes.addAll(col);
             }
 
-            addChecker(this, allShapes.toArray(new Shape[allShapes.size()]));
+            addChecker(this, allShapes);
         }
 
-        public Checker (String name,
-                        ShapeSet... shapeSets)
+        Checker (String name,
+                 ShapeSet... shapeSets)
         {
             this.name = name;
             addChecker(this, shapeSets);
         }
 
-        public Checker (String name,
-                        Shape shape,
-                        Collection<Shape> collection)
+        Checker (String name,
+                 Shape shape,
+                 Collection<Shape> collection)
         {
             this.name = name;
 
-            List<Shape> all = new ArrayList<Shape>();
+            List<Shape> all = new ArrayList<>();
             all.add(shape);
 
             all.addAll(collection);
 
-            addChecker(this, all.toArray(new Shape[0]));
+            addChecker(this, all);
         }
 
-        public Checker (String name,
-                        Shape shape)
+        Checker (String name,
+                 Shape shape)
         {
             this.name = name;
 
-            List<Shape> all = new ArrayList<Shape>();
+            List<Shape> all = new ArrayList<>();
             all.add(shape);
 
-            addChecker(this, all.toArray(new Shape[0]));
+            addChecker(this, all);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Run the specific test.
          *
@@ -827,10 +805,9 @@ public class ShapeChecker
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean applySpecificCheck = new Constant.Boolean(
                 true,

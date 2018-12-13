@@ -48,14 +48,10 @@ import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.SigPainter;
 import org.audiveris.omr.ui.Colors;
-import org.audiveris.omr.ui.ViewParameters;
-
 import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
-
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 
 import org.slf4j.Logger;
@@ -85,10 +81,8 @@ import java.awt.geom.Point2D;
 public class SheetResultPainter
         extends SheetPainter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SheetResultPainter.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetResultPainter.class);
 
     /** Abscissa offset, in pixels, for annotation near system. */
     protected static final int annotationDx = 15;
@@ -96,10 +90,6 @@ public class SheetResultPainter
     /** Ordinate offset, in pixels, for annotation near staff or system. */
     protected static final int annotationDy = 15;
 
-    /** View parameters. */
-    protected static final ViewParameters viewParams = ViewParameters.getInstance();
-
-    //~ Instance fields ----------------------------------------------------------------------------
     /** For staff lines. */
     protected Stroke lineStroke;
 
@@ -115,7 +105,6 @@ public class SheetResultPainter
     /** Should we draw annotations?. */
     protected final boolean annotated;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SheetResultPainter} object.
      *
@@ -143,7 +132,6 @@ public class SheetResultPainter
         g.setFont(basicFont);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // drawSlot //
     //----------//
@@ -301,7 +289,7 @@ public class SheetResultPainter
 
             if (scale != null) {
                 lineStroke = new BasicStroke(
-                        (float) sheet.getScale().getFore(),
+                        sheet.getScale().getFore(),
                         BasicStroke.CAP_ROUND,
                         BasicStroke.JOIN_ROUND);
                 g.setStroke(lineStroke);
@@ -357,19 +345,17 @@ public class SheetResultPainter
             // Write the score-based measure id, on first real part only
             String mid = stack.getPageId();
 
-            if (mid != null) {
-                g.setColor(Colors.ANNOTATION);
+            g.setColor(Colors.ANNOTATION);
 
-                // Work with top non-dummy staff & measure
-                SystemInfo system = stack.getSystem();
-                Staff staff = system.getFirstStaff();
-                Part topRealPart = staff.getPart();
-                int stackIndex = system.getStacks().indexOf(stack);
-                Measure topRealMeasure = topRealPart.getMeasures().get(stackIndex);
-                int left = topRealMeasure.getAbscissa(HorizontalSide.LEFT, staff);
-                Point loc = new Point(left, staff.getFirstLine().yAt(left) - annotationDy);
-                paint(basicLayout(mid, null), loc, BOTTOM_CENTER);
-            }
+            // Work with top non-dummy staff & measure
+            SystemInfo system = stack.getSystem();
+            Staff staff = system.getFirstStaff();
+            Part topRealPart = staff.getPart();
+            int stackIndex = system.getStacks().indexOf(stack);
+            Measure topRealMeasure = topRealPart.getMeasures().get(stackIndex);
+            int left = topRealMeasure.getAbscissa(HorizontalSide.LEFT, staff);
+            Point loc = new Point(left, staff.getFirstLine().yAt(left) - annotationDy);
+            paint(basicLayout(mid, null), loc, BOTTOM_CENTER);
 
             // Draw slot vertical lines ?
             if (viewParams.isSlotPainting() && (stack.getSlots() != null)) {
@@ -390,22 +376,19 @@ public class SheetResultPainter
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------//
     // ResultSigPainter //
     //------------------//
     private class ResultSigPainter
             extends SigPainter
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public ResultSigPainter (Graphics g,
-                                 Scale scale)
+        ResultSigPainter (Graphics g,
+                          Scale scale)
         {
             super(g, scale);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void setColor (Inter inter)
         {
@@ -420,6 +403,12 @@ public class SheetResultPainter
             } else {
                 g.setColor(defaultColor);
             }
+        }
+
+        @Override
+        protected boolean splitMirrors ()
+        {
+            return coloredVoices;
         }
     }
 }

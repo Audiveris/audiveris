@@ -32,7 +32,6 @@ import org.audiveris.omr.text.TextRole;
 public class SentenceRoleTask
         extends InterTask
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Old sentence role. */
     final TextRole oldRole;
@@ -40,7 +39,6 @@ public class SentenceRoleTask
     /** New sentence role. */
     final TextRole newRole;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SentenceTask} object.
      *
@@ -56,7 +54,6 @@ public class SentenceRoleTask
         oldRole = sentence.getRole();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public SentenceInter getInter ()
     {

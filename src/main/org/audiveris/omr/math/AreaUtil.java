@@ -36,7 +36,11 @@ import java.awt.geom.Point2D;
  */
 public abstract class AreaUtil
 {
-    //~ Methods ------------------------------------------------------------------------------------
+
+    // Not meant to be instantiated.
+    private AreaUtil ()
+    {
+    }
 
     //-------------------------//
     // horizontalParallelogram //
@@ -218,7 +222,6 @@ public abstract class AreaUtil
         return new Area(path);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // CoreData //
     //----------//
@@ -227,7 +230,6 @@ public abstract class AreaUtil
      */
     public static class CoreData
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Total area length. (height for vertical, width for horizontal) */
         public final int length;
@@ -238,7 +240,13 @@ public abstract class AreaUtil
         /** Ratio of white elements on total length. */
         public final double whiteRatio;
 
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create a CoreData object.
+         *
+         * @param length     area length to measure
+         * @param gap        longest gag found
+         * @param whiteRatio ratio of white on total length
+         */
         public CoreData (int length,
                          int gap,
                          double whiteRatio)
@@ -248,7 +256,6 @@ public abstract class AreaUtil
             this.whiteRatio = whiteRatio;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

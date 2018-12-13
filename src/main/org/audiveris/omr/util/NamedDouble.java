@@ -30,7 +30,6 @@ import org.audiveris.omr.constant.Constant;
  */
 public class NamedDouble
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private final String name;
 
@@ -40,7 +39,6 @@ public class NamedDouble
 
     private final String description;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BasicNamedDouble} object.
      *
@@ -70,7 +68,6 @@ public class NamedDouble
         this(cst.getName(), cst.getQuantityUnit(), cst.getValue(), cst.getDescription());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Get the description sentence recorded with the NamedDouble
      *

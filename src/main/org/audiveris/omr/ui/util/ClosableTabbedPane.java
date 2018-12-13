@@ -22,8 +22,10 @@
 package org.audiveris.omr.ui.util;
 
 import java.awt.Component;
+import java.awt.Container;
 
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JTabbedPane;
 
 /**
@@ -39,7 +41,6 @@ import javax.swing.JTabbedPane;
 public class ClosableTabbedPane
         extends JTabbedPane
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     //-----------//
     // insertTab //
@@ -61,6 +62,31 @@ public class ClosableTabbedPane
         // Use a ButtonTabComponent
         final int i = indexOfComponent(component);
         setTabComponentAt(i, new ButtonTabComponent(this));
+    }
+
+    //---------------------//
+    // removeClosingButton //
+    //---------------------//
+    /**
+     * Remove the closing button for the provided tab index.
+     *
+     * @param tabIndex index of tab in tabbed pane
+     */
+    public void removeClosingButton (int tabIndex)
+    {
+        Component tab = getTabComponentAt(tabIndex);
+
+        if (tab instanceof ButtonTabComponent) {
+            for (Component c : ((Container) tab).getComponents()) {
+                if (c instanceof JButton) {
+                    ((Container) tab).remove(c);
+                    tab.invalidate();
+                    tab.repaint();
+
+                    return;
+                }
+            }
+        }
     }
 
     //-----------------//

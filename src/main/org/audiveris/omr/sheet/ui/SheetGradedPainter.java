@@ -23,13 +23,13 @@ package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.ui.SigPainter;
 import org.audiveris.omr.ui.ViewParameters;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import org.audiveris.omr.sheet.rhythm.Voice;
 
 /**
  * Class {@code SheetGradedPainter} paints a sheet using shape-based colors and
@@ -40,7 +40,6 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 public class SheetGradedPainter
         extends SheetPainter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code SheetGradedPainter} object.
@@ -54,7 +53,6 @@ public class SheetGradedPainter
         super(sheet, g);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getSigPainter //
     //---------------//
@@ -64,26 +62,22 @@ public class SheetGradedPainter
         return new GradedSigPainter(g, sheet.getScale());
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------//
     // GradedSigPainter //
     //------------------//
-    private class GradedSigPainter
+    private static class GradedSigPainter
             extends SigPainter
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** View parameters. */
         private final ViewParameters viewParams = ViewParameters.getInstance();
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public GradedSigPainter (Graphics g,
-                                 Scale scale)
+        GradedSigPainter (Graphics g,
+                          Scale scale)
         {
             super(g, scale);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //----------//
         // setColor //
         //----------//
@@ -124,6 +118,12 @@ public class SheetGradedPainter
             }
 
             g.setColor(color);
+        }
+
+        @Override
+        protected boolean splitMirrors ()
+        {
+            return viewParams.isVoicePainting();
         }
     }
 }

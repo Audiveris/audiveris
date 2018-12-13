@@ -25,21 +25,36 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
  * Seen from an Inter instance, class {@code Link} describes a potential relation with
  * another Inter instance (the partner).
  * <p>
- * This is meant to deal with a potential relation between the inter instance and the partner,
- * before perhaps recording the relation as an edge within the SIG.
+ * This is meant to deal with a <b>potential</b> relation between the inter instance and the
+ * partner, before perhaps recording the relation as an edge within the SIG.
  *
  * @author Hervé Bitteur
  */
 public class Link
-        implements Comparable<Link>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+
+    /**
+     * For comparing Link instances by decreasing grade.
+     */
+    public static final Comparator<Link> byReverseGrade = new Comparator<Link>()
+    {
+        @Override
+        public int compare (Link l1,
+                            Link l2)
+        {
+            Support s1 = (Support) l1.relation;
+            Support s2 = (Support) l2.relation;
+
+            return Double.compare(s2.getGrade(), s1.getGrade());
+        }
+    };
 
     /** The other Inter instance, the one to be linked with. */
     public Inter partner;
@@ -50,7 +65,6 @@ public class Link
     /** True for Inter as source and Partner as target, false for the reverse. */
     public final boolean outgoing;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Link} object.
      *
@@ -67,9 +81,12 @@ public class Link
         this.outgoing = outgoing;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // applyTo //
+    //---------//
     /**
-     * Add the relation between the provided inter and the partner.
+     * Add the relation between the provided inter and the partner, unless an instance
+     * of the same relation class already exists between them.
      *
      * @param inter the provided inter
      */
@@ -79,30 +96,14 @@ public class Link
         final Inter source = outgoing ? inter : partner;
         final Inter target = outgoing ? partner : inter;
 
-        sig.addEdge(source, target, relation);
-    }
-
-    //--------//
-    // bestOf //
-    //--------//
-    public static Link bestOf (List<Link> links)
-    {
-        if (links.size() > 1) {
-            Collections.sort(links);
+        if (null == sig.getRelation(source, target, relation.getClass())) {
+            sig.addEdge(source, target, relation);
         }
-
-        return links.isEmpty() ? null : links.get(0);
     }
 
-    @Override
-    public int compareTo (Link that)
-    {
-        AbstractSupport s1 = (AbstractSupport) this.relation;
-        AbstractSupport s2 = (AbstractSupport) that.relation;
-
-        return Double.compare(s1.getGrade(), s2.getGrade());
-    }
-
+    //----------//
+    // toString //
+    //----------//
     @Override
     public String toString ()
     {
@@ -113,5 +114,23 @@ public class Link
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //--------//
+    // bestOf //
+    //--------//
+    /**
+     * Report the best of provided links.
+     *
+     * @param links provided links
+     * @return the best link or null if empty
+     */
+    public static Link bestOf (List<Link> links)
+    {
+        if (links.size() > 1) {
+            Collections.sort(links, byReverseGrade);
+        }
+
+        return links.isEmpty() ? null : links.get(0);
     }
 }

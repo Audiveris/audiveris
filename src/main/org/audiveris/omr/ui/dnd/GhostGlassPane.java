@@ -44,7 +44,6 @@ import javax.swing.JPanel;
 public class GhostGlassPane
         extends JPanel
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GhostGlassPane.class);
 
@@ -58,7 +57,6 @@ public class GhostGlassPane
             AlphaComposite.SRC_OVER,
             0.2f);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The image to be dragged. */
     protected BufferedImage draggedImage = null;
 
@@ -71,7 +69,6 @@ public class GhostGlassPane
     /** Are we over a droppable target?. */
     protected boolean overTarget = false;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new GhostGlassPane object
      */
@@ -81,7 +78,6 @@ public class GhostGlassPane
         setName("GhostGlassPane");
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // paintComponent //
     //----------------//
@@ -144,39 +140,6 @@ public class GhostGlassPane
         setLocalPoint(screenPoint.getLocalPoint(this));
     }
 
-    //---------------//
-    // setLocalPoint //
-    //---------------//
-    /**
-     * Assign the current point, where the dragged image is to be displayed,
-     * and repaint as few as possible of the glass pane.
-     *
-     * @param localPoint the current location (glasspane-based)
-     */
-    private void setLocalPoint (Point localPoint)
-    {
-        // Anything to repaint since last time the point was set?
-        if (draggedImage != null) {
-            Rectangle rect = getSceneBounds(localPoint);
-            Rectangle dirty = new Rectangle(rect);
-
-            if (prevRectangle != null) {
-                dirty.add(prevRectangle);
-            }
-
-            dirty.grow(1, 1); // To cope with rounding errors
-
-            // Set new values now, to avoid race condition with repaint
-            this.localPoint = localPoint;
-            prevRectangle = rect;
-
-            repaint(dirty.x, dirty.y, dirty.width, dirty.height);
-        } else {
-            this.localPoint = localPoint;
-            prevRectangle = null;
-        }
-    }
-
     //----------------//
     // getImageBounds //
     //----------------//
@@ -216,5 +179,38 @@ public class GhostGlassPane
     protected Rectangle getSceneBounds (Point center)
     {
         return getImageBounds(center); // By default
+    }
+
+    //---------------//
+    // setLocalPoint //
+    //---------------//
+    /**
+     * Assign the current point, where the dragged image is to be displayed,
+     * and repaint as few as possible of the glass pane.
+     *
+     * @param localPoint the current location (glasspane-based)
+     */
+    private void setLocalPoint (Point localPoint)
+    {
+        // Anything to repaint since last time the point was set?
+        if (draggedImage != null) {
+            Rectangle rect = getSceneBounds(localPoint);
+            Rectangle dirty = new Rectangle(rect);
+
+            if (prevRectangle != null) {
+                dirty.add(prevRectangle);
+            }
+
+            dirty.grow(1, 1); // To cope with rounding errors
+
+            // Set new values now, to avoid race condition with repaint
+            this.localPoint = localPoint;
+            prevRectangle = rect;
+
+            repaint(dirty.x, dirty.y, dirty.width, dirty.height);
+        } else {
+            this.localPoint = localPoint;
+            prevRectangle = null;
+        }
     }
 }

@@ -49,18 +49,15 @@ import javax.swing.SwingConstants;
 public class GlyphBoard
         extends EntityBoard<Glyph>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphBoard.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related glyph model. */
     protected final GlyphsController controller;
 
     /** Output : group info. */
     protected final JLabel groupField = new JLabel();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Basic constructor, to set common characteristics.
      *
@@ -101,7 +98,6 @@ public class GlyphBoard
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getFormLayout //
     //---------------//
@@ -109,23 +105,6 @@ public class GlyphBoard
     protected FormLayout getFormLayout ()
     {
         return Panel.makeFormLayout(3, 3);
-    }
-
-    //--------------//
-    // defineLayout //
-    //--------------//
-    /**
-     * Define the layout for common fields of all GlyphBoard classes.
-     */
-    private void defineLayout ()
-    {
-        final CellConstraints cst = new CellConstraints();
-
-        int r = 1; // --------------------------------
-
-        builder.add(groupField, cst.xyw(5, r, 3));
-
-        r += 2; // --------------------------------
     }
 
     //-----------------------//
@@ -157,5 +136,20 @@ public class GlyphBoard
             // Group
             groupField.setText("");
         }
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    /**
+     * Define the layout for common fields of all GlyphBoard classes.
+     */
+    private void defineLayout ()
+    {
+        final CellConstraints cst = new CellConstraints();
+
+        int r = 1; // --------------------------------
+
+        builder.add(groupField, cst.xyw(5, r, 3));
     }
 }

@@ -22,7 +22,6 @@
 package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.OMR;
-import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.PointUtil;
@@ -54,13 +53,9 @@ import java.util.Arrays;
  */
 public class DndOperation
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(DndOperation.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -78,7 +73,6 @@ public class DndOperation
     /** System currently related. */
     private SystemInfo system;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code DndOperation} object.
      *
@@ -95,7 +89,6 @@ public class DndOperation
         this.ghost = ghost;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // drop //
     //------//
@@ -120,9 +113,9 @@ public class DndOperation
 
         // Bounds
         final int staffInterline = staff.getSpecificInterline();
-        final MusicFont font = (ShapeSet.Heads.contains(ghost.getShape()))
-                ? MusicFont.getHeadFont(sheet.getScale(), staffInterline)
-                : MusicFont.getBaseFont(staffInterline);
+        final MusicFont font = (ShapeSet.Heads.contains(ghost.getShape())) ? MusicFont.getHeadFont(
+                sheet.getScale(),
+                staffInterline) : MusicFont.getBaseFont(staffInterline);
         final ShapeSymbol symbol = Symbols.getSymbol(ghost.getShape());
         final Dimension dim = symbol.getDimension(font);
         final Rectangle bounds = new Rectangle(
@@ -193,8 +186,8 @@ public class DndOperation
                     }
 
                     // Adjust image size WRT new interline
-                    if ((staff == null)
-                        || (staff.getSpecificInterline() != closestStaff.getSpecificInterline())) {
+                    if ((staff == null) || (staff.getSpecificInterline() != closestStaff
+                            .getSpecificInterline())) {
                         updateImage(closestStaff.getSpecificInterline());
                     }
 
@@ -260,14 +253,5 @@ public class DndOperation
         if (image != null) {
             glass.setImage(image);
         }
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
     }
 }

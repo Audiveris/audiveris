@@ -24,7 +24,6 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.AreaUtil;
-import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.util.Jaxb;
 
@@ -48,7 +47,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class AbstractVerticalInter
         extends AbstractInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Line width. */
     @XmlAttribute
@@ -57,9 +55,9 @@ public abstract class AbstractVerticalInter
 
     /** Median line. */
     @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     protected final Line2D median;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AbstractVerticalInter} object.
      *
@@ -108,7 +106,6 @@ public abstract class AbstractVerticalInter
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -167,20 +164,28 @@ public abstract class AbstractVerticalInter
         setBounds(getArea().getBounds());
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
+    /**
+     * Grade impacts.
+     */
     public static class Impacts
-            extends BasicImpacts
+            extends GradeImpacts
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{"core", "gap", "start", "stop"};
 
         private static final double[] WEIGHTS = new double[]{1, 1, 1, 1};
 
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create an Impacts object.
+         *
+         * @param core  value of black core impact
+         * @param gap   value of vertical gap impact
+         * @param start derivative impact at start abscissa
+         * @param stop  derivative impact at stop abscissa
+         */
         public Impacts (double core,
                         double gap,
                         double start,

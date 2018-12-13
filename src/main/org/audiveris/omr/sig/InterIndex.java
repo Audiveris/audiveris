@@ -51,13 +51,11 @@ import javax.swing.SwingUtilities;
 public class InterIndex
         extends BasicIndex<Inter>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(InterIndex.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new InterManager object.
      */
@@ -65,7 +63,6 @@ public class InterIndex
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // initTransients //
     //----------------//
@@ -129,14 +126,13 @@ public class InterIndex
         final EntityService<Inter> interService = this.getEntityService();
 
         if (interService != null) {
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
                 {
                     interService.publish(
-                            new EntityListEvent<Inter>(
+                            new EntityListEvent<>(
                                     this,
                                     SelectionHint.ENTITY_INIT,
                                     MouseMovement.PRESSING,
@@ -146,14 +142,12 @@ public class InterIndex
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.String vipInters = new Constant.String(
                 "",

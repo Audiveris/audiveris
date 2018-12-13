@@ -146,15 +146,11 @@ import java.util.TreeSet;
 public class BarsRetriever
         implements ItemRenderer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            BarsRetriever.class);
+    private static final Logger logger = LoggerFactory.getLogger(BarsRetriever.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -170,13 +166,13 @@ public class BarsRetriever
     private final StaffManager staffManager;
 
     /** Staff projectors. (sequence parallel to staves in sheet) */
-    private final List<StaffProjector> projectors = new ArrayList<StaffProjector>();
+    private final List<StaffProjector> projectors = new ArrayList<>();
 
     /** Graph of all peaks. */
     private final PeakGraph peakGraph;
 
     /** Columns of barlines, organized by system. */
-    private final SortedMap<SystemInfo, List<BarColumn>> columnMap = new TreeMap<SystemInfo, List<BarColumn>>();
+    private final SortedMap<SystemInfo, List<BarColumn>> columnMap = new TreeMap<>();
 
     /** Constructor for brace compound. */
     private final CompoundConstructor braceConstructor;
@@ -193,7 +189,6 @@ public class BarsRetriever
     /** All sections suitable for a brace. */
     private List<Section> allBraceSections;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Retrieve the bar lines of all staves.
      *
@@ -208,22 +203,10 @@ public class BarsRetriever
         params = new Parameters(scale);
 
         // Specific constructors
-        braceConstructor = new CompoundConstructor()
-        {
-            @Override
-            public SectionCompound newInstance ()
-            {
-                return new CurvedFilament(scale.getInterline(), params.braceSegmentLength);
-            }
-        };
-        serifConstructor = new CompoundConstructor()
-        {
-            @Override
-            public SectionCompound newInstance ()
-            {
-                return new StraightFilament(scale.getInterline());
-            }
-        };
+        braceConstructor = new CurvedFilament.Constructor(
+                scale.getInterline(),
+                params.braceSegmentLength);
+        serifConstructor = new StraightFilament.Constructor(scale.getInterline());
 
         // Companions
         staffManager = sheet.getStaffManager();
@@ -232,7 +215,6 @@ public class BarsRetriever
         peakGraph = new PeakGraph(sheet, projectors);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -421,7 +403,8 @@ public class BarsRetriever
         }
 
         // Right (bottom up)
-        for (ListIterator<StaffPeak> it = portions.listIterator(portions.size()); it.hasPrevious();) {
+        for (ListIterator<StaffPeak> it = portions.listIterator(portions.size()); it
+                .hasPrevious();) {
             StaffPeak peak = it.previous();
             path.lineTo(peak.getStart() - params.braceLeftMargin, peak.getBottom() + 1);
 
@@ -435,7 +418,7 @@ public class BarsRetriever
         final Area area = new Area(path);
 
         // Select sections that could be added to filaments
-        final List<Filament> filaments = new ArrayList<Filament>();
+        final List<Filament> filaments = new ArrayList<>();
         final List<Section> sections = getAreaSections(area, allBraceSections);
 
         for (StaffPeak peak : portions) {
@@ -499,7 +482,7 @@ public class BarsRetriever
                 }
 
                 if (bracePeak.isSet(BRACE_TOP)) {
-                    List<StaffPeak> portions = new ArrayList<StaffPeak>();
+                    List<StaffPeak> portions = new ArrayList<>();
                     portions.add(bracePeak);
 
                     // Look down for compatible brace portion(s):
@@ -573,13 +556,13 @@ public class BarsRetriever
      */
     private void buildColumns ()
     {
-        ConnectivityInspector<StaffPeak, BarAlignment> inspector = new ConnectivityInspector<StaffPeak, BarAlignment>(
+        ConnectivityInspector<StaffPeak, BarAlignment> inspector = new ConnectivityInspector<>(
                 peakGraph);
         List<Set<StaffPeak>> sets = inspector.connectedSets();
         logger.debug("sets: {}", sets.size());
 
         // Process system per system (we have already purged cross-system links)
-        final SortedMap<SystemInfo, List<Chain>> chainMap = new TreeMap<SystemInfo, List<Chain>>();
+        final SortedMap<SystemInfo, List<Chain>> chainMap = new TreeMap<>();
 
         for (Set<StaffPeak> set : sets) {
             Chain chain = new Chain(set);
@@ -587,15 +570,15 @@ public class BarsRetriever
             List<Chain> chainList = chainMap.get(system);
 
             if (chainList == null) {
-                chainMap.put(system, chainList = new ArrayList<Chain>());
+                chainMap.put(system, chainList = new ArrayList<>());
             }
 
             chainList.add(chain);
         }
 
-        // Sort all chains within each system
+        // Sort all chains by deskewed abscissa within each system
         for (List<Chain> chains : chainMap.values()) {
-            Collections.sort(chains);
+            Collections.sort(chains, Chain.byAbscissa);
         }
 
         // Try to aggregate chains into full-size columns
@@ -603,7 +586,7 @@ public class BarsRetriever
             List<BarColumn> columns = columnMap.get(system);
 
             if (columns == null) {
-                columnMap.put(system, columns = new ArrayList<BarColumn>());
+                columnMap.put(system, columns = new ArrayList<>());
             }
 
             final List<Chain> chains = chainMap.get(system);
@@ -676,22 +659,20 @@ public class BarsRetriever
         if (compounds.size() > 1) {
             // Sort filaments according to their distance from bar/roi vertex
             final Point vertex = new Point(roi.x, roi.y + ((side == TOP) ? (roi.height - 1) : 0));
-            Collections.sort(
-                    compounds,
-                    new Comparator<SectionCompound>()
-            {
-                @Override
-                public int compare (SectionCompound g1,
-                                    SectionCompound g2)
-                {
-                    double d1 = PointUtil.length(
-                            GeoUtil.vectorOf(g1.getCentroid(), vertex));
-                    double d2 = PointUtil.length(
-                            GeoUtil.vectorOf(g2.getCentroid(), vertex));
+            Collections.sort(compounds, new Comparator<SectionCompound>()
+                     {
+                         @Override
+                         public int compare (SectionCompound g1,
+                                             SectionCompound g2)
+                         {
+                             double d1 = PointUtil
+                                     .length(GeoUtil.vectorOf(g1.getCentroid(), vertex));
+                             double d2 = PointUtil
+                                     .length(GeoUtil.vectorOf(g2.getCentroid(), vertex));
 
-                    return Double.compare(d1, d2);
-                }
-            });
+                             return Double.compare(d1, d2);
+                         }
+                     });
 
             // Pickup the first ones and stop as soon as minimum weight is reached
             int totalWeight = 0;
@@ -755,7 +736,8 @@ public class BarsRetriever
                         sig.addVertex(
                                 connector = new BarConnectorInter(
                                         connection,
-                                        topPeak.isSet(THICK) ? Shape.THICK_CONNECTOR : Shape.THIN_CONNECTOR,
+                                        topPeak.isSet(THICK) ? Shape.THICK_CONNECTOR
+                                        : Shape.THIN_CONNECTOR,
                                         connection.getImpacts()));
                     }
 
@@ -803,7 +785,7 @@ public class BarsRetriever
             logger.debug("createGroups {}", system);
 
             final List<PartGroup> allGroups = system.getPartGroups(); // All groups in this system
-            final Map<Integer, PartGroup> activeGroups = new TreeMap<Integer, PartGroup>(); // Active groups
+            final Map<Integer, PartGroup> activeGroups = new TreeMap<>(); // Active groups
 
             for (Staff staff : system.getStaves()) {
                 logger.debug("  Staff#{}", staff.getId());
@@ -948,11 +930,7 @@ public class BarsRetriever
                     }
 
                     double x = (peak.getStart() + peak.getStop()) / 2d;
-                    Line2D median = new Line2D.Double(
-                            x,
-                            peak.getTop(),
-                            x,
-                            peak.getBottom());
+                    Line2D median = new Line2D.Double(x, peak.getTop(), x, peak.getBottom());
 
                     final Glyph glyph = sheet.getGlyphIndex().registerOriginal(
                             peak.getFilament().toGlyph(null));
@@ -1050,7 +1028,7 @@ public class BarsRetriever
             final List<PartGroup> allGroups = system.getPartGroups(); // All groups in this system
 
             // Look for "true" braced groups
-            TreeSet<PartGroup> bracedGroups = new TreeSet<PartGroup>(PartGroup.byFirstId);
+            TreeSet<PartGroup> bracedGroups = new TreeSet<>(PartGroup.byFirstId);
 
             for (PartGroup pg : allGroups) {
                 if (isTrueBraceGroup(pg)) {
@@ -1107,7 +1085,7 @@ public class BarsRetriever
         final List<BarColumn> columns = columnMap.get(system);
 
         if (columns != null) {
-            final Set<BarColumn> columnsToRemove = new LinkedHashSet<BarColumn>();
+            final Set<BarColumn> columnsToRemove = new LinkedHashSet<>();
 
             for (StaffPeak peak : removed) {
                 BarColumn column = peak.getColumn();
@@ -1192,7 +1170,8 @@ public class BarsRetriever
     /**
      * Detect the peaks that correspond to top or bottom end of brackets.
      * <p>
-     * Such bracket end is characterized as follows:<ul>
+     * Such bracket end is characterized as follows:
+     * <ul>
      * <li>It is located on left side of the start column.</li>
      * <li>It is a rather thick peak.</li>
      * <li>It sometimes (but not always) goes a bit beyond staff top or bottom line.</li>
@@ -1237,8 +1216,11 @@ public class BarsRetriever
                         // Check for serif shape
                         Filament serif;
 
-                        if ((ext <= params.maxBracketExtension)
-                            && (null != (serif = getSerif(staff, peak, rightPeak, side)))) {
+                        if ((ext <= params.maxBracketExtension) && (null != (serif = getSerif(
+                                staff,
+                                peak,
+                                rightPeak,
+                                side)))) {
                             logger.debug("Staff#{} {} bracket end", staff.getId(), side);
 
                             peak.setBracketEnd(side, serif);
@@ -1275,7 +1257,7 @@ public class BarsRetriever
 
                             for (BarAlignment align : aligns) {
                                 if (align instanceof BarConnection) {
-                                    next = ((BarConnection) align).bottomPeak;
+                                    next = align.bottomPeak;
 
                                     if (next.isBracketEnd(BOTTOM)) {
                                         continue PeakLoop;
@@ -1330,8 +1312,8 @@ public class BarsRetriever
 
                 if (column.isFull()) {
                     if (startColumn != null) {
-                        double gap = (column.getXDsk() - (column.getWidth() / 2))
-                                     - (startColumn.getXDsk() + (startColumn.getWidth() / 2));
+                        double gap = (column.getXDsk() - (column.getWidth() / 2)) - (startColumn
+                                .getXDsk() + (startColumn.getWidth() / 2));
                         int maxGap = (i == 1) ? params.maxBraceBarGap : params.maxDoubleBarGap;
 
                         if (gap > maxGap) {
@@ -1418,7 +1400,7 @@ public class BarsRetriever
         }
 
         // Build the column of peaks, recursively
-        final List<StaffPeak> list = new ArrayList<StaffPeak>();
+        final List<StaffPeak> list = new ArrayList<>();
         list.add(topPeak);
 
         for (int i = 0; i < list.size(); i++) {
@@ -1473,7 +1455,7 @@ public class BarsRetriever
     {
         final Rectangle areaBox = area.getBounds();
         final int xBreak = areaBox.x + areaBox.width;
-        final List<Section> sections = new ArrayList<Section>();
+        final List<Section> sections = new ArrayList<>();
 
         for (Section section : allSections) {
             final Rectangle sectionBox = section.getBounds();
@@ -1518,7 +1500,7 @@ public class BarsRetriever
     private List<BarConnection> getConnections (Staff staff,
                                                 VerticalSide side)
     {
-        final List<BarConnection> list = new ArrayList<BarConnection>();
+        final List<BarConnection> list = new ArrayList<>();
         final VerticalSide opposite = side.opposite();
         final StaffProjector projector = projectorOf(staff);
         final int iStart = projector.getStartPeakIndex();
@@ -1560,8 +1542,8 @@ public class BarsRetriever
      */
     private List<List<StaffPeak>> getGroups (List<StaffPeak> peaks)
     {
-        List<List<StaffPeak>> groups = new ArrayList<List<StaffPeak>>();
-        List<StaffPeak> group = new ArrayList<StaffPeak>();
+        List<List<StaffPeak>> groups = new ArrayList<>();
+        List<StaffPeak> group = new ArrayList<>();
 
         for (StaffPeak peak : peaks) {
             if (!group.isEmpty()) {
@@ -1569,7 +1551,7 @@ public class BarsRetriever
 
                 if (gap > params.maxDoubleBarGap) {
                     if (group.size() > 1) {
-                        groups.add(new ArrayList<StaffPeak>(group));
+                        groups.add(new ArrayList<>(group));
                     }
 
                     group.clear();
@@ -1581,7 +1563,7 @@ public class BarsRetriever
 
         // Last group?
         if (group.size() > 1) {
-            groups.add(new ArrayList<StaffPeak>(group));
+            groups.add(new ArrayList<>(group));
         }
 
         return groups;
@@ -1601,7 +1583,7 @@ public class BarsRetriever
      */
     private List<Section> getSectionsByWidth (int maxWidth)
     {
-        List<Section> sections = new ArrayList<Section>();
+        List<Section> sections = new ArrayList<>();
         Lag hLag = sheet.getLagManager().getLag(Lags.HLAG);
         Lag vLag = sheet.getLagManager().getLag(Lags.VLAG);
 
@@ -1741,7 +1723,7 @@ public class BarsRetriever
                             if (gap <= params.maxDoubleBarGap) {
                                 // We are in a group with previous peak
                                 if (group == null) {
-                                    groups.add(group = new ArrayList<StaffPeak>());
+                                    groups.add(group = new ArrayList<>());
                                     group.add(prevPeak);
                                 }
 
@@ -1873,8 +1855,8 @@ public class BarsRetriever
         final Staff lastStaff = staffManager.getStaff(lastId - 1);
 
         return !isPartConnected(firstStaff, TOP) // Not connected above
-               && isPartConnected(firstStaff, BOTTOM) // Internally connected
-               && !isPartConnected(lastStaff, BOTTOM); // Not connected below
+                       && isPartConnected(firstStaff, BOTTOM) // Internally connected
+                       && !isPartConnected(lastStaff, BOTTOM); // Not connected below
     }
 
     //------------------//
@@ -1982,8 +1964,8 @@ public class BarsRetriever
     private void partitionWidths ()
     {
         // Dispatch peaks into isolated peaks and groups of peaks
-        final List<StaffPeak> isolated = new ArrayList<StaffPeak>();
-        final List<List<StaffPeak>> groups = new ArrayList<List<StaffPeak>>();
+        final List<StaffPeak> isolated = new ArrayList<>();
+        final List<List<StaffPeak>> groups = new ArrayList<>();
         groupBarPeaks(isolated, groups);
 
         // Isolated peaks are considered thin
@@ -2058,7 +2040,7 @@ public class BarsRetriever
             final List<StaffPeak> peaks = projector.getPeaks();
             final int staffStart = staff.getAbscissa(LEFT);
             int measureStart = staffStart;
-            final List<StaffPeak> tails = new ArrayList<StaffPeak>();
+            final List<StaffPeak> tails = new ArrayList<>();
 
             for (int i = 0; i < peaks.size(); i++) {
                 final StaffPeak p1 = peaks.get(i);
@@ -2068,21 +2050,16 @@ public class BarsRetriever
                 }
 
                 // Look for a rather thick first peak
-                if (!p1.isStaffEnd(LEFT)
-                    && !p1.isStaffEnd(RIGHT)
-                    && !(p1.isBrace())
-                    && !p1.isBracket()
-                    && (p1.getWidth() >= params.minPeak1WidthForCClef)) {
+                if (!p1.isStaffEnd(LEFT) && !p1.isStaffEnd(RIGHT) && !(p1.isBrace()) && !p1
+                        .isBracket() && (p1.getWidth() >= params.minPeak1WidthForCClef)) {
                     // Check gap is larger than multi-bar gap but smaller than measure
                     int gap = p1.getStart() - measureStart;
 
                     // Gap is not relevant for first measure, thanks to !peak.isStaffEnd() test
                     int minGap = (measureStart == staffStart) ? 0 : params.maxDoubleBarGap;
 
-                    if ((gap > minGap)
-                        && (gap < params.minMeasureWidth)
-                        && !isConnected(p1, TOP)
-                        && !isConnected(p1, BOTTOM)) {
+                    if ((gap > minGap) && (gap < params.minMeasureWidth) && !isConnected(p1, TOP)
+                                && !isConnected(p1, BOTTOM)) {
                         if (logger.isDebugEnabled() || p1.isVip()) {
                             logger.info("VIP perhaps a C-Clef peak1 at {}", p1);
                         } else {
@@ -2095,9 +2072,8 @@ public class BarsRetriever
                             int gap2 = p2.getStart() - p1.getStop() - 1;
 
                             if ((p2.getWidth() <= params.maxPeak2WidthForCClef)
-                                && (gap2 <= params.maxDoubleBarGap)
-                                && !isConnected(p2, TOP)
-                                && !isConnected(p2, BOTTOM)) {
+                                        && (gap2 <= params.maxDoubleBarGap) && !isConnected(p2, TOP)
+                                        && !isConnected(p2, BOTTOM)) {
                                 boolean cancelled = false;
                                 tails.clear();
 
@@ -2144,7 +2120,7 @@ public class BarsRetriever
                                         t.set(CCLEF_TAIL);
                                     }
 
-                                    final List<StaffPeak> toRemove = new ArrayList<StaffPeak>();
+                                    final List<StaffPeak> toRemove = new ArrayList<>();
                                     toRemove.add(p1);
                                     toRemove.add(p2);
                                     toRemove.addAll(tails);
@@ -2189,12 +2165,11 @@ public class BarsRetriever
             }
 
             for (VerticalSide side : VerticalSide.values()) {
-                final Staff staff = (side == TOP) ? system.getFirstStaff()
-                        : system.getLastStaff();
+                final Staff staff = (side == TOP) ? system.getFirstStaff() : system.getLastStaff();
                 final StaffProjector projector = projectorOf(staff);
                 final List<StaffPeak> peaks = projector.getPeaks();
                 final int iStart = projector.getStartPeakIndex();
-                final Set<StaffPeak> toRemove = new LinkedHashSet<StaffPeak>();
+                final Set<StaffPeak> toRemove = new LinkedHashSet<>();
 
                 for (int i = iStart + 1; i < peaks.size(); i++) {
                     StaffPeak peak = peaks.get(i);
@@ -2241,7 +2216,7 @@ public class BarsRetriever
 
                 final List<StaffPeak> peaks = projector.getPeaks();
                 final int iStart = projector.getStartPeakIndex();
-                final Set<StaffPeak> toRemove = new LinkedHashSet<StaffPeak>();
+                final Set<StaffPeak> toRemove = new LinkedHashSet<>();
 
                 for (int i = iStart - 1; i >= 0; i--) {
                     final StaffPeak peak = peaks.get(i);
@@ -2276,7 +2251,7 @@ public class BarsRetriever
         for (SystemInfo system : sheet.getSystems()) {
             for (Staff staff : system.getStaves()) {
                 final StaffProjector projector = projectorOf(staff);
-                final Set<StaffPeak> toRemove = new LinkedHashSet<StaffPeak>();
+                final Set<StaffPeak> toRemove = new LinkedHashSet<>();
                 final int xLeft = staff.getAbscissa(LEFT);
 
                 for (StaffPeak peak : projector.getPeaks()) {
@@ -2355,7 +2330,7 @@ public class BarsRetriever
                 }
 
                 final List<StaffPeak> peaks = projector.getPeaks();
-                final Set<StaffPeak> toRemove = new LinkedHashSet<StaffPeak>();
+                final Set<StaffPeak> toRemove = new LinkedHashSet<>();
                 StaffPeak prevPeak = peaks.get(iStart);
 
                 for (int i = iStart - 1; i >= 0; i--) {
@@ -2398,8 +2373,8 @@ public class BarsRetriever
             for (Staff staff : system.getStaves()) {
                 final StaffProjector projector = projectorOf(staff);
 
-                for (StaffPeak peak : new ArrayList<StaffPeak>(projector.getPeaks())) {
-                    if (peakGraph.edgesOf(peak).isEmpty()) {
+                for (StaffPeak peak : new ArrayList<>(projector.getPeaks())) {
+                    if (peakGraph.containsVertex(peak) && peakGraph.edgesOf(peak).isEmpty()) {
                         if (peak.isVip()) {
                             logger.info("VIP unaligned {}", peak);
                         }
@@ -2419,7 +2394,7 @@ public class BarsRetriever
         for (SystemInfo system : sheet.getSystems()) {
             for (Staff staff : system.getStaves()) {
                 // All bars
-                List<BarlineInter> bars = new ArrayList<BarlineInter>();
+                List<BarlineInter> bars = new ArrayList<>();
 
                 for (StaffPeak peak : projectorOf(staff).getPeaks()) {
                     Inter inter = peak.getInter();
@@ -2457,12 +2432,12 @@ public class BarsRetriever
                               StaffPeak newPeak)
     {
         // PeakGraph
-        for (BarAlignment edge : new ArrayList<BarAlignment>(peakGraph.incomingEdgesOf(oldPeak))) {
+        for (BarAlignment edge : new ArrayList<>(peakGraph.incomingEdgesOf(oldPeak))) {
             StaffPeak source = peakGraph.getEdgeSource(edge);
             peakGraph.addEdge(source, newPeak, edge);
         }
 
-        for (BarAlignment edge : new ArrayList<BarAlignment>(peakGraph.outgoingEdgesOf(oldPeak))) {
+        for (BarAlignment edge : new ArrayList<>(peakGraph.outgoingEdgesOf(oldPeak))) {
             StaffPeak target = peakGraph.getEdgeTarget(edge);
             peakGraph.addEdge(newPeak, target, edge);
         }
@@ -2502,14 +2477,12 @@ public class BarsRetriever
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
@@ -2636,7 +2609,6 @@ public class BarsRetriever
     //------------//
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int largeSystemStaffCount;
 
@@ -2690,13 +2662,12 @@ public class BarsRetriever
 
         final int maxColumnDx;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
          *
          * @param scale the scaling factor
          */
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             largeSystemStaffCount = constants.largeSystemStaffCount.getValue();
             minNormedDeltaWidth = constants.minThinThickDelta.getValue();

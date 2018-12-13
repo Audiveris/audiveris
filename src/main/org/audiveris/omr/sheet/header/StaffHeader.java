@@ -45,13 +45,9 @@ import javax.xml.bind.annotation.XmlIDREF;
 @XmlAccessorType(XmlAccessType.NONE)
 public class StaffHeader
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            StaffHeader.class);
+    private static final Logger logger = LoggerFactory.getLogger(StaffHeader.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
@@ -96,7 +92,6 @@ public class StaffHeader
     /** Abscissa range for time. */
     public Range timeRange;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StaffHeader} object.
      *
@@ -116,7 +111,6 @@ public class StaffHeader
         this.start = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // freeze //
     //--------//
@@ -173,13 +167,14 @@ public class StaffHeader
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Range //
     //-------//
+    /**
+     * Abscissa range for a header component.
+     */
     public static class Range
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Was the item successfully retrieved?. */
         public boolean valid;
@@ -196,12 +191,31 @@ public class StaffHeader
         /** Precise end of item, if any. */
         private Integer stop;
 
-        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Report range start abscissa
+         *
+         * @return the precise abscissa of item left side if known, null otherwise
+         */
         public int getStart ()
         {
             return start;
         }
 
+        /**
+         * Set range start abscissa
+         *
+         * @param start the precise abscissa of item left side
+         */
+        public void setStart (int start)
+        {
+            this.start = start;
+        }
+
+        /**
+         * Report range stop abscissa
+         *
+         * @return the precise abscissa of item right side if known, otherwise the range stop
+         */
         public int getStop ()
         {
             if (stop != null) {
@@ -211,30 +225,40 @@ public class StaffHeader
             return browseStop;
         }
 
-        public int getWidth ()
-        {
-            return getStop() - getStart() + 1;
-        }
-
-        public boolean hasStart ()
-        {
-            return start != null;
-        }
-
-        public void setStart (int start)
-        {
-            this.start = start;
-        }
-
+        /**
+         * Set range stop abscissa
+         *
+         * @param stop the precise abscissa of item right side
+         */
         public void setStop (int stop)
         {
             this.stop = stop;
         }
 
         /**
+         * Report range width.
+         *
+         * @return the item (or range by default) width
+         */
+        public int getWidth ()
+        {
+            return getStop() - getStart() + 1;
+        }
+
+        /**
+         * Tell whether start is known
+         *
+         * @return true if precise start is known
+         */
+        public boolean hasStart ()
+        {
+            return start != null;
+        }
+
+        /**
          * Change stop value <b>ONLY IF</b> new value is smaller than the existing one.
          *
-         * @param stop new stop value
+         * @param stop the new stop value
          */
         public void shrinkStop (int stop)
         {

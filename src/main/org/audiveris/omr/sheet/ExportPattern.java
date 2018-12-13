@@ -38,7 +38,6 @@ import java.util.regex.Pattern;
  */
 public class ExportPattern
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final String OPUS = "opus";
 
@@ -58,11 +57,15 @@ public class ExportPattern
 
     private static final String doublePat = ".+" + "(" + opusPat + "|" + mvtPat + scorePat + ")";
 
-    private static Pattern simplePattern;
+    private static volatile Pattern simplePattern;
 
-    private static Pattern doublePattern;
+    private static volatile Pattern doublePattern;
 
-    //~ Methods ------------------------------------------------------------------------------------
+    /** Not meant to be instantiated. */
+    private ExportPattern ()
+    {
+    }
+
     //----------------//
     // getPathSansExt //
     //----------------//

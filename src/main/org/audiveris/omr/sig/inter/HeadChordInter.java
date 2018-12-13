@@ -22,11 +22,14 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
+import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
-import org.audiveris.omr.sig.relation.BasicContainment;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.HorizontalSide;
 
@@ -35,6 +38,8 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -46,7 +51,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Class {@code HeadChordInter} is a AbstractChordInter composed of heads and possibly
  * a stem.
  * <p>
- * Heads are linked via {@link BasicContainment} relation and stem via {@link ChordStemRelation}.
+ * Heads are linked via {@link Containment} relation and stem via {@link ChordStemRelation}.
  *
  * @author Hervé Bitteur
  */
@@ -54,14 +59,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class HeadChordInter
         extends AbstractChordInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            HeadChordInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(HeadChordInter.class);
 
     /**
-     * Compare two heads (assumed to be) of the same chord, ordered by
-     * increasing distance from chord head ordinate.
+     * Compare two heads (assumed to be) of the same chord, ordered by increasing
+     * distance from chord head ordinate.
+     * It implements total ordering.
      */
     public static final Comparator<HeadInter> headComparator = new Comparator<HeadInter>()
     {
@@ -73,13 +77,21 @@ public class HeadChordInter
                 return 0;
             }
 
-            AbstractChordInter c1 = n1.getChord();
+            final Point p1 = n1.getCenter();
+            final Point p2 = n2.getCenter();
+            final int yCmp = Integer.compare(p1.y, p2.y);
 
-            return c1.getStemDir() * (n1.getCenter().y - n2.getCenter().y);
+            if (yCmp != 0) {
+                final AbstractChordInter chord = n1.getChord();
+
+                return chord.getStemDir() * yCmp;
+            }
+
+            // Total ordering: use abscissa to separate heads with identical ordinates (rare case)
+            return Integer.compare(p1.x, p2.x);
         }
     };
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadChordInter} object.
      *
@@ -97,7 +109,6 @@ public class HeadChordInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -137,9 +148,7 @@ public class HeadChordInter
     {
         // Beams are not copied
         HeadChordInter clone = new HeadChordInter(getGrade());
-        clone.setMirror(this);
         sig.addVertex(clone);
-        setMirror(clone);
 
         clone.setStaff(staff);
 
@@ -151,11 +160,15 @@ public class HeadChordInter
             switch (head.getShape()) {
             case NOTEHEAD_BLACK:
                 newHead = head.duplicate();
+                sig.addVertex(newHead);
+                newHead.setMirror(head);
 
                 break;
 
             case NOTEHEAD_VOID:
                 newHead = toBlack ? head.duplicateAs(Shape.NOTEHEAD_BLACK) : head.duplicate();
+                sig.addVertex(newHead);
+                newHead.setMirror(head);
 
                 break;
 
@@ -171,6 +184,50 @@ public class HeadChordInter
         }
 
         return clone;
+    }
+
+    //---------------//
+    // getArpeggiato //
+    //---------------//
+    /**
+     * Report the chord arpeggiato if any.
+     *
+     * @return related arpeggiato or null
+     */
+    public ArpeggiatoInter getArpeggiato ()
+    {
+        for (Relation rel : sig.getRelations(this, ChordArpeggiatoRelation.class)) {
+            return ((ArpeggiatoInter) sig.getOppositeInter(this, rel));
+        }
+
+        return null;
+    }
+
+    //------------------//
+    // getArticulations //
+    //------------------//
+    /**
+     * Report the chord articulations if any.
+     *
+     * @return list of articulations, perhaps empty
+     */
+    public List<ArticulationInter> getArticulations ()
+    {
+        List<ArticulationInter> found = null;
+
+        for (Relation rel : sig.getRelations(this, ChordArticulationRelation.class)) {
+            if (found == null) {
+                found = new ArrayList<>();
+            }
+
+            found.add((ArticulationInter) sig.getOppositeInter(this, rel));
+        }
+
+        if (found == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return found;
     }
 
     //-----------//
@@ -242,6 +299,30 @@ public class HeadChordInter
         }
 
         return count;
+    }
+
+    //---------------//
+    // getGraceChord //
+    //---------------//
+    /**
+     * Report the grace chord, if any, which is linked on left side of this chord.
+     *
+     * @return the linked grace chord if any
+     */
+    public SmallChordInter getGraceChord ()
+    {
+        for (Inter interNote : getNotes()) {
+            for (Relation rel : sig.getRelations(interNote, SlurHeadRelation.class)) {
+                SlurInter slur = (SlurInter) sig.getOppositeInter(interNote, rel);
+                HeadInter head = slur.getHead(HorizontalSide.LEFT);
+
+                if ((head != null) && head.getShape().isSmall()) {
+                    return (SmallChordInter) head.getChord();
+                }
+            }
+        }
+
+        return null;
     }
 
     //----------------//
@@ -340,6 +421,30 @@ public class HeadChordInter
         }
     }
 
+    //-----------//
+    // getMirror //
+    //-----------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * For a HeadChord, we check for a head member with a mirror.
+     *
+     * @return the "mirrored" chord if any
+     */
+    @Override
+    public HeadChordInter getMirror ()
+    {
+        for (Inter inter : getNotes()) {
+            HeadInter mirrorHead = (HeadInter) inter.getMirror();
+
+            if (mirrorHead != null) {
+                return mirrorHead.getChord();
+            }
+        }
+
+        return null;
+    }
+
     //---------//
     // getStem //
     //---------//
@@ -364,6 +469,25 @@ public class HeadChordInter
         return null;
     }
 
+    //---------//
+    // setStem //
+    //---------//
+    /**
+     * Set the stem of this head chord.
+     *
+     * @param stem the stem to set
+     */
+    public final void setStem (StemInter stem)
+    {
+        Objects.requireNonNull(sig, "Chord not in SIG.");
+
+        Relation rel = sig.getRelation(this, stem, ChordStemRelation.class);
+
+        if (rel == null) {
+            sig.addEdge(this, stem, new ChordStemRelation());
+        }
+    }
+
     //------------//
     // getStemDir //
     //------------//
@@ -380,19 +504,6 @@ public class HeadChordInter
         } else {
             return Integer.signum(getTailLocation().y - getHeadLocation().y);
         }
-    }
-
-    //---------//
-    // setStem //
-    //---------//
-    /**
-     * @param stem the stem to set
-     */
-    public final void setStem (StemInter stem)
-    {
-        Objects.requireNonNull(sig, "Chord not in SIG.");
-
-        sig.addEdge(this, stem, new ChordStemRelation());
     }
 
     //-------------//

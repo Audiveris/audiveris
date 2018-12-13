@@ -91,7 +91,6 @@ class SampleListing
         extends JScrollPane
         implements ChangeListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleListing.class);
 
@@ -105,7 +104,6 @@ class SampleListing
 
     private static final Point SAMPLE_OFFSET = new Point(SAMPLE_MARGIN, SAMPLE_MARGIN);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final String title = "Samples";
 
     private final ScrollablePanel scrollablePanel = new ScrollablePanel();
@@ -119,22 +117,20 @@ class SampleListing
     /** Listener on all shape lists. */
     private final ListMouseListener listener = new ListMouseListener();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleListing} object.
      */
-    public SampleListing (SampleBrowser browser,
-                          SampleRepository repository)
+    SampleListing (SampleBrowser browser,
+                   SampleRepository repository)
     {
         this.browser = browser;
         this.repository = repository;
 
-        setBorder(
-                BorderFactory.createTitledBorder(
-                        new EmptyBorder(20, 5, 0, 0), // TLBR
-                        title,
-                        TitledBorder.LEFT,
-                        TitledBorder.TOP));
+        setBorder(BorderFactory.createTitledBorder(
+                new EmptyBorder(20, 5, 0, 0), // TLBR
+                title,
+                TitledBorder.LEFT,
+                TitledBorder.TOP));
 
         scrollablePanel.setLayout(new BoxLayout(scrollablePanel, BoxLayout.Y_AXIS));
         scrollablePanel.setComponentPopupMenu(new SamplePopup());
@@ -144,16 +140,15 @@ class SampleListing
         setAlignmentX(LEFT_ALIGNMENT);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void stateChanged (ChangeEvent e)
     {
         // Called from shapeSelector: Gather all samples of selected shapes in selected sheets
-        final List<Sample> allSamples = new ArrayList<Sample>();
+        final List<Sample> allSamples = new ArrayList<>();
         final List<SheetContainer.Descriptor> descriptors = browser.getSelectedSheets();
 
         for (Shape shape : browser.getSelectedShapes()) {
-            final ArrayList<Sample> shapeSamples = new ArrayList<Sample>();
+            final ArrayList<Sample> shapeSamples = new ArrayList<>();
 
             for (SheetContainer.Descriptor desc : descriptors) {
                 shapeSamples.addAll(repository.getSamples(desc.getName(), shape));
@@ -165,6 +160,44 @@ class SampleListing
         }
 
         populateWith(allSamples);
+    }
+
+    /**
+     * Report the ShapePane instance that relates to the provided shape.
+     *
+     * @param shape provided shape
+     * @return related ShapePane, or null
+     */
+    private ShapePane getShapePane (Shape shape)
+    {
+        for (Component comp : scrollablePanel.getComponents()) {
+            ShapePane shapePane = (ShapePane) comp;
+
+            if (shapePane.getShape() == shape) {
+                return shapePane;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Sort the ShapePane by the provided comparator
+     *
+     * @param comparator the provided sample comparator
+     */
+    private void sortBy (Comparator<Sample> comparator)
+    {
+        final Sample currentSample = (Sample) browser.getSampleController().getGlyphService()
+                .getSelectedEntity();
+        final ShapePane shapePane = getShapePane(currentSample.getShape());
+        final List<Sample> samples = Collections.list(shapePane.model.elements());
+        Collections.sort(samples, comparator);
+        shapePane.model.clear();
+
+        for (Sample sample : samples) {
+            shapePane.model.addElement(sample);
+        }
     }
 
     /**
@@ -194,7 +227,7 @@ class SampleListing
 
         // Rebuild ShapePane instances as needed
         Shape currentShape = null;
-        List<Sample> shapeSamples = new ArrayList<Sample>();
+        List<Sample> shapeSamples = new ArrayList<>();
 
         for (Sample sample : samples) {
             final Shape shape = sample.getShape();
@@ -241,45 +274,438 @@ class SampleListing
         }
     }
 
-    /**
-     * Report the ShapePane instance that relates to the provided shape.
-     *
-     * @param shape provided shape
-     * @return related ShapePane, or null
-     */
-    private ShapePane getShapePane (Shape shape)
+    //-------------------//
+    // ListMouseListener //
+    //-------------------//
+    /** Listener to avoid selection across lists and to detect Alt key pressed. */
+    private class ListMouseListener
+            extends MouseInputAdapter
+            implements ListSelectionListener
     {
-        for (Component comp : scrollablePanel.getComponents()) {
-            ShapePane shapePane = (ShapePane) comp;
 
-            if (shapePane.getShape() == shape) {
-                return shapePane;
+        boolean alt; // True if Alt key is pressed down
+
+        @Override
+        public void mousePressed (MouseEvent e)
+        {
+            //            {
+            //                JList<Sample> selectedList = (JList<Sample>) e.getSource();
+            //                Point point = e.getPoint();
+            //                int index = selectedList.locationToIndex(point);
+            //                logger.info("index:{}", index);
+            //            }
+            //
+            alt = e.isAltDown();
+
+            if (alt) {
+                JList<Sample> selectedList = (JList<Sample>) e.getSource();
+                Sample sample = selectedList.getSelectedValue();
+                checkAlternative(sample); // Look for good alternative
             }
         }
 
-        return null;
-    }
+        @Override
+        public void mouseReleased (MouseEvent e)
+        {
+            if (alt) {
+                JList<Sample> selectedList = (JList<Sample>) e.getSource();
+                Sample sample = selectedList.getSelectedValue();
+                browser.publishSample(sample);
+            }
 
-    /**
-     * Sort the ShapePane by the provided comparator
-     *
-     * @param comparator the provided sample comparator
-     */
-    private void sortBy (Comparator<Sample> comparator)
-    {
-        final Sample currentSample = (Sample) browser.getSampleController().getGlyphService()
-                .getSelectedEntity();
-        final ShapePane shapePane = getShapePane(currentSample.getShape());
-        final List<Sample> samples = Collections.list(shapePane.model.elements());
-        Collections.sort(samples, comparator);
-        shapePane.model.clear();
+            alt = false;
+        }
 
-        for (Sample sample : samples) {
-            shapePane.model.addElement(sample);
+        @Override
+        public void valueChanged (ListSelectionEvent e)
+        {
+            JList<Sample> selectedList = (JList<Sample>) e.getSource();
+            Sample sample = selectedList.getSelectedValue();
+
+            if (e.getValueIsAdjusting()) {
+                // Nullify selection in other lists
+                for (Component comp : scrollablePanel.getComponents()) {
+                    ShapePane shapePane = (ShapePane) comp;
+                    JList<Sample> list = shapePane.list;
+
+                    if (list != selectedList) {
+                        list.clearSelection();
+                    }
+                }
+
+                if (alt) {
+                    checkAlternative(sample); // Look for good alternative
+                }
+            } else if (sample != null) {
+                browser.publishSample(sample);
+            }
+        }
+
+        /**
+         * Try to find out and publish a "good alternative" to this (bad?) sample.
+         *
+         * @param sample the sample to check for related good sample
+         */
+        private void checkAlternative (Sample sample)
+        {
+            List<Sample> alternatives = new ArrayList<>();
+
+            if (sample.getShape() == Shape.CLUTTER) {
+                final Rectangle box = sample.getBounds();
+                final SampleSheet sampleSheet = repository.getSampleSheet(sample);
+
+                for (Shape shape : sampleSheet.getShapes()) {
+                    if (shape != Shape.CLUTTER) {
+                        for (Sample alternative : sampleSheet.getSamples(shape)) {
+                            Rectangle common = alternative.getBounds().intersection(box);
+
+                            if (!common.isEmpty() && (common.width >= (box.width / 2))
+                                        && (common.height >= (box.height / 2))) {
+                                logger.debug("alternative: {}", alternative);
+                                alternatives.add(alternative);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Pick up the most suitable alternative, using best weight similarity
+            if (!alternatives.isEmpty()) {
+                final int sampleWeight = sample.getWeight();
+                Sample bestAlternative = null;
+                Integer bestDiff = null;
+
+                for (Sample alternative : alternatives) {
+                    int diff = Math.abs(alternative.getWeight() - sampleWeight);
+
+                    if ((bestDiff == null) || (diff < bestDiff)) {
+                        bestDiff = diff;
+                        bestAlternative = alternative;
+                    }
+                }
+
+                browser.publishSample(bestAlternative);
+            }
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------//
+    // SamplePopup //
+    //-------------//
+    /**
+     * Popup menu to play with sample at hand (or with shape samples).
+     */
+    private class SamplePopup
+            extends JPopupMenu
+    {
+
+        SamplePopup ()
+        {
+            super("SamplePopup");
+
+            add(new JMenuItem(browser.getSampleController().getRemoveAction()));
+
+            add(browser.getSampleController().getAssignAction().getMenu());
+
+            final JMenu sortMenu = new JMenu("Sort by");
+            sortMenu.add(new JMenuItem(new SortByWidthAction()));
+            sortMenu.add(new JMenuItem(new SortByHeightAction()));
+            sortMenu.add(new JMenuItem(new SortByWeightAction()));
+            sortMenu.add(new JMenuItem(new SortByGradeAction()));
+            add(sortMenu);
+        }
+    }
+
+    //-----------//
+    // ShapePane //
+    //-----------//
+    /**
+     * Handles the display of a list of samples assigned to the same shape.
+     */
+    private class ShapePane
+            extends SampleBrowser.TitledPanel
+    {
+
+        private final Shape shape;
+
+        private final DefaultListModel<Sample> model = new DefaultListModel<>();
+
+        /** Underlying list of all samples for the shape. */
+        private final JList<Sample> list = new JList<>(model);
+
+        /**
+         * Build a ShapePane instance for the provided shape.
+         *
+         * @param shape   provided shape
+         * @param samples all samples (within selected sheets) for that shape
+         */
+        ShapePane (Shape shape,
+                   List<Sample> samples)
+        {
+            super(shape + " (" + samples.size() + ")");
+            this.shape = shape;
+            setLayout(new BorderLayout());
+
+            for (Sample sample : samples) {
+                model.addElement(sample);
+            }
+
+            list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+            list.setVisibleRowCount(0);
+            list.setSelectionMode(SINGLE_SELECTION);
+            list.addMouseListener(listener);
+            list.addListSelectionListener(listener);
+
+            // One renderer for all samples of same shape
+            list.setCellRenderer(new SampleRenderer(maxDimensionOf(samples)));
+
+            // Specific left/right keys to go through the whole list (and not only the current row)
+            list.addKeyListener(new KeyAdapter()
+            {
+                @Override
+                public void keyPressed (KeyEvent ke)
+                {
+                    final int size = list.getModel().getSize();
+                    final int index = list.getSelectedIndex();
+
+                    if ((ke.getKeyCode() == KeyEvent.VK_LEFT) && (index > 0)) {
+                        ke.consume();
+                        list.setSelectedIndex(index - 1);
+                        list.ensureIndexIsVisible(index - 1);
+                    }
+
+                    if ((ke.getKeyCode() == KeyEvent.VK_RIGHT) && (index < (size - 1))) {
+                        ke.consume();
+                        list.setSelectedIndex(index + 1);
+                        list.ensureIndexIsVisible(index + 1);
+                    }
+                }
+            });
+
+            add(list, BorderLayout.CENTER);
+
+            // Support for delete key
+            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                    KeyStroke.getKeyStroke("DELETE"),
+                    "RemoveAction");
+            getActionMap().put("RemoveAction", new RemoveAction());
+
+            // ShapePane popup inherited from scrollablePanel parent
+            this.setInheritsPopupMenu(true);
+            this.setComponentPopupMenu(null);
+
+            // list popup inherited from ShapePane parent
+            list.setInheritsPopupMenu(true);
+            list.setComponentPopupMenu(null);
+        }
+
+        public Shape getShape ()
+        {
+            return shape;
+        }
+
+        /**
+         * Remove the provided sample from this ShapePane.
+         *
+         * @param sample the sample to remove
+         */
+        public void removeSample (Sample sample)
+        {
+            int idx = model.indexOf(sample);
+
+            if (idx != -1) {
+                model.removeElementAt(idx);
+
+                if (model.isEmpty()) {
+                    scrollablePanel.remove(this);
+                    browser.publishSample(null); // Deselect any sample
+                } else if (idx <= (model.getSize() - 1)) {
+                    // Move selection to next item in shapePane
+                    list.setSelectedIndex(idx);
+                } else {
+                    // Move selection to previous item in shapePane
+                    list.setSelectedIndex(idx - 1);
+                }
+            }
+        }
+
+        /**
+         * Determine the maximum dimension to accommodate all samples for this shape,
+         * once they are scaled to the standard interline value.
+         *
+         * @param samples the population of samples (same shape)
+         * @return the largest dimension observed
+         */
+        private Dimension maxDimensionOf (List<Sample> samples)
+        {
+            double w = 0; // Max normalized width
+            double h = 0; // Max normalized height
+
+            for (Sample sample : samples) {
+                w = Math.max(w, sample.getNormalizedWidth());
+                h = Math.max(h, sample.getNormalizedHeight());
+            }
+
+            return new Dimension(
+                    (int) Math.ceil(w * STANDARD_INTERLINE),
+                    (int) Math.ceil(h * STANDARD_INTERLINE));
+        }
+
+        /**
+         * Action to remove the selected sample in this ShapePane.
+         */
+        private class RemoveAction
+                extends AbstractAction
+        {
+
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                final Sample sample = list.getSelectedValue();
+
+                if (sample != null) {
+                    repository.removeSample(sample);
+                }
+            }
+        }
+    }
+
+    /**
+     * Action to sort items in ShapePane by grade.
+     */
+    private class SortByGradeAction
+            extends AbstractAction
+    {
+
+        final Classifier classifier = ShapeClassifier.getInstance();
+
+        SortByGradeAction ()
+        {
+            super("Grade");
+            putValue(SHORT_DESCRIPTION, "Sort items by grade in this ShapePane");
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            // To avoid repetitive grade computing, we save grade into GradedSample entities
+            final Sample currentSample = (Sample) browser.getSampleController().getGlyphService()
+                    .getSelectedEntity();
+            final ShapePane shapePane = getShapePane(currentSample.getShape());
+            final List<GradedSample> list = new ArrayList<>();
+
+            logger.info("Computing grades...");
+
+            for (Enumeration<Sample> en = shapePane.model.elements(); en.hasMoreElements();) {
+                Sample sample = en.nextElement();
+                Evaluation[] evals = classifier.getNaturalEvaluations(
+                        sample,
+                        sample.getInterline());
+                double grade = evals[sample.getShape().ordinal()].grade;
+                list.add(new GradedSample(grade, sample));
+            }
+
+            logger.info("All grades computed.");
+
+            Collections.sort(list, GradedSample.byReverseGrade);
+            logger.info("Samples sorted.");
+
+            shapePane.model.clear();
+
+            for (GradedSample gradedSample : list) {
+                shapePane.model.addElement(gradedSample.sample);
+            }
+        }
+    }
+
+    /**
+     * Action to sort items in ShapePane by height.
+     */
+    private class SortByHeightAction
+            extends AbstractAction
+    {
+
+        SortByHeightAction ()
+        {
+            super("Height");
+            putValue(SHORT_DESCRIPTION, "Sort items by height in this ShapePane");
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            sortBy(Sample.byNormalizedHeight);
+        }
+    }
+
+    /**
+     * Action to sort items in ShapePane by weight.
+     */
+    private class SortByWeightAction
+            extends AbstractAction
+    {
+
+        SortByWeightAction ()
+        {
+            super("Weight");
+            putValue(SHORT_DESCRIPTION, "Sort items by weight in this ShapePane");
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            sortBy(Sample.byNormalizedWeight);
+        }
+    }
+
+    /**
+     * Action to sort items in ShapePane by width.
+     */
+    private class SortByWidthAction
+            extends AbstractAction
+    {
+
+        SortByWidthAction ()
+        {
+            super("Width");
+            putValue(SHORT_DESCRIPTION, "Sort items by width in this ShapePane");
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            sortBy(Sample.byNormalizedWidth);
+        }
+    }
+
+    //--------------//
+    // GradedSample //
+    //--------------//
+    private static class GradedSample
+    {
+
+        public static final Comparator<GradedSample> byReverseGrade = new Comparator<GradedSample>()
+        {
+            @Override
+            public int compare (GradedSample o1,
+                                GradedSample o2)
+            {
+                return Double.compare(o2.grade, o1.grade); // By decreasing grade
+            }
+        };
+
+        final double grade;
+
+        final Sample sample;
+
+        GradedSample (double grade,
+                      Sample sample)
+        {
+            this.grade = grade;
+            this.sample = sample;
+        }
+    }
+
     //----------------//
     // SampleRenderer //
     //----------------//
@@ -290,13 +716,11 @@ class SampleListing
             extends JPanel
             implements ListCellRenderer<Sample>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** The sample being rendered. */
         private Sample sample;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public SampleRenderer (Dimension maxDimension)
+        SampleRenderer (Dimension maxDimension)
         {
             setOpaque(true);
             setPreferredSize(
@@ -306,7 +730,6 @@ class SampleListing
             setBorder(SAMPLE_BORDER);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public Component getListCellRendererComponent (JList<? extends Sample> list,
                                                        Sample sample,
@@ -357,7 +780,6 @@ class SampleListing
             extends JPanel
             implements Scrollable
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Dimension getPreferredScrollableViewportSize ()
@@ -424,463 +846,6 @@ class SampleListing
                                                int direction)
         {
             return 40; // Minimum cell height. TODO: Could be improved.
-        }
-    }
-
-    //-------------------//
-    // ListMouseListener //
-    //-------------------//
-    /** Listener to avoid selection across lists and to detect Alt key pressed. */
-    private class ListMouseListener
-            extends MouseInputAdapter
-            implements ListSelectionListener
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        boolean alt; // True if Alt key is pressed down
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void mousePressed (MouseEvent e)
-        {
-            //            {
-            //                JList<Sample> selectedList = (JList<Sample>) e.getSource();
-            //                Point point = e.getPoint();
-            //                int index = selectedList.locationToIndex(point);
-            //                logger.info("index:{}", index);
-            //            }
-            //
-            alt = e.isAltDown();
-
-            if (alt) {
-                JList<Sample> selectedList = (JList<Sample>) e.getSource();
-                Sample sample = selectedList.getSelectedValue();
-                checkAlternative(sample); // Look for good alternative
-            }
-        }
-
-        @Override
-        public void mouseReleased (MouseEvent e)
-        {
-            if (alt) {
-                JList<Sample> selectedList = (JList<Sample>) e.getSource();
-                Sample sample = selectedList.getSelectedValue();
-                browser.publishSample(sample);
-            }
-
-            alt = false;
-        }
-
-        @Override
-        public void valueChanged (ListSelectionEvent e)
-        {
-            JList<Sample> selectedList = (JList<Sample>) e.getSource();
-            Sample sample = selectedList.getSelectedValue();
-
-            if (e.getValueIsAdjusting()) {
-                // Nullify selection in other lists
-                for (Component comp : scrollablePanel.getComponents()) {
-                    ShapePane shapePane = (ShapePane) comp;
-                    JList<Sample> list = shapePane.list;
-
-                    if (list != selectedList) {
-                        list.clearSelection();
-                    }
-                }
-
-                if (alt) {
-                    checkAlternative(sample); // Look for good alternative
-                }
-            } else if (sample != null) {
-                browser.publishSample(sample);
-            }
-        }
-
-        /**
-         * Try to find out and publish a "good alternative" to this (bad?) sample.
-         *
-         * @param sample the sample to check for related good sample
-         */
-        private void checkAlternative (Sample sample)
-        {
-            List<Sample> alternatives = new ArrayList<Sample>();
-
-            if (sample.getShape() == Shape.CLUTTER) {
-                final Rectangle box = sample.getBounds();
-                final SampleSheet sampleSheet = repository.getSampleSheet(sample);
-
-                for (Shape shape : sampleSheet.getShapes()) {
-                    if (shape != Shape.CLUTTER) {
-                        for (Sample alternative : sampleSheet.getSamples(shape)) {
-                            Rectangle common = alternative.getBounds().intersection(box);
-
-                            if (!common.isEmpty()
-                                && (common.width >= (box.width / 2))
-                                && (common.height >= (box.height / 2))) {
-                                logger.debug("alternative: {}", alternative);
-                                alternatives.add(alternative);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Pick up the most suitable alternative, using best weight similarity
-            if (!alternatives.isEmpty()) {
-                final int sampleWeight = sample.getWeight();
-                Sample bestAlternative = null;
-                Integer bestDiff = null;
-
-                for (Sample alternative : alternatives) {
-                    int diff = Math.abs(alternative.getWeight() - sampleWeight);
-
-                    if ((bestDiff == null) || (diff < bestDiff)) {
-                        bestDiff = diff;
-                        bestAlternative = alternative;
-                    }
-                }
-
-                browser.publishSample(bestAlternative);
-            }
-        }
-    }
-
-    //-------------//
-    // SamplePopup //
-    //-------------//
-    /**
-     * Popup menu to play with sample at hand (or with shape samples).
-     */
-    private class SamplePopup
-            extends JPopupMenu
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private JMenu assignMenu;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public SamplePopup ()
-        {
-            super("SamplePopup");
-
-            add(new JMenuItem(browser.getSampleController().getRemoveAction()));
-
-            add(assignMenu = browser.getSampleController().getAssignAction().getMenu());
-
-            final JMenu sortMenu = new JMenu("Sort by");
-            sortMenu.add(new JMenuItem(new SortByWidthAction()));
-            sortMenu.add(new JMenuItem(new SortByHeightAction()));
-            sortMenu.add(new JMenuItem(new SortByWeightAction()));
-            sortMenu.add(new JMenuItem(new SortByGradeAction()));
-            add(sortMenu);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public void setAssignEnabled (boolean bool)
-        {
-            assignMenu.setEnabled(bool);
-        }
-    }
-
-    //-----------//
-    // ShapePane //
-    //-----------//
-    /**
-     * Handles the display of a list of samples assigned to the same shape.
-     */
-    private class ShapePane
-            extends SampleBrowser.TitledPanel
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Shape shape;
-
-        private final DefaultListModel<Sample> model = new DefaultListModel<Sample>();
-
-        /** Underlying list of all samples for the shape. */
-        private final JList<Sample> list = new JList<Sample>(model);
-
-        //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Build a ShapePane instance for the provided shape.
-         *
-         * @param shape   provided shape
-         * @param samples all samples (within selected sheets) for that shape
-         */
-        public ShapePane (Shape shape,
-                          List<Sample> samples)
-        {
-            super(shape + " (" + samples.size() + ")");
-            this.shape = shape;
-            setLayout(new BorderLayout());
-
-            for (Sample sample : samples) {
-                model.addElement(sample);
-            }
-
-            list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-            list.setVisibleRowCount(0);
-            list.setSelectionMode(SINGLE_SELECTION);
-            list.addMouseListener(listener);
-            list.addListSelectionListener(listener);
-
-            // One renderer for all samples of same shape
-            list.setCellRenderer(new SampleRenderer(maxDimensionOf(samples)));
-
-            // Specific left/right keys to go through the whole list (and not only the current row)
-            list.addKeyListener(
-                    new KeyAdapter()
-            {
-                @Override
-                public void keyPressed (KeyEvent ke)
-                {
-                    final int size = list.getModel().getSize();
-                    final int index = list.getSelectedIndex();
-
-                    if ((ke.getKeyCode() == KeyEvent.VK_LEFT) && (index > 0)) {
-                        ke.consume();
-                        list.setSelectedIndex(index - 1);
-                        list.ensureIndexIsVisible(index - 1);
-                    }
-
-                    if ((ke.getKeyCode() == KeyEvent.VK_RIGHT) && (index < (size - 1))) {
-                        ke.consume();
-                        list.setSelectedIndex(index + 1);
-                        list.ensureIndexIsVisible(index + 1);
-                    }
-                }
-            });
-
-            add(list, BorderLayout.CENTER);
-
-            // Support for delete key
-            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-                    KeyStroke.getKeyStroke("DELETE"),
-                    "RemoveAction");
-            getActionMap().put("RemoveAction", new RemoveAction());
-
-            // ShapePane popup inherited from scrollablePanel parent
-            this.setInheritsPopupMenu(true);
-            this.setComponentPopupMenu(null);
-
-            // list popup inherited from ShapePane parent
-            list.setInheritsPopupMenu(true);
-            list.setComponentPopupMenu(null);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public Shape getShape ()
-        {
-            return shape;
-        }
-
-        /**
-         * Remove the provided sample from this ShapePane.
-         *
-         * @param sample the sample to remove
-         */
-        public void removeSample (Sample sample)
-        {
-            int idx = model.indexOf(sample);
-
-            if (idx != -1) {
-                model.removeElementAt(idx);
-
-                if (model.isEmpty()) {
-                    scrollablePanel.remove(this);
-                    browser.publishSample(null); // Deselect any sample
-                } else if (idx <= (model.getSize() - 1)) {
-                    // Move selection to next item in shapePane
-                    list.setSelectedIndex(idx);
-                } else {
-                    // Move selection to previous item in shapePane
-                    list.setSelectedIndex(idx - 1);
-                }
-            }
-        }
-
-        /**
-         * Determine the maximum dimension to accommodate all samples for this shape,
-         * once they are scaled to the standard interline value.
-         *
-         * @param samples the population of samples (same shape)
-         * @return the largest dimension observed
-         */
-        private Dimension maxDimensionOf (List<Sample> samples)
-        {
-            double w = 0; // Max normalized width
-            double h = 0; // Max normalized height
-
-            for (Sample sample : samples) {
-                w = Math.max(w, sample.getNormalizedWidth());
-                h = Math.max(h, sample.getNormalizedHeight());
-            }
-
-            return new Dimension(
-                    (int) Math.ceil(w * STANDARD_INTERLINE),
-                    (int) Math.ceil(h * STANDARD_INTERLINE));
-        }
-
-        //~ Inner Classes --------------------------------------------------------------------------
-        /**
-         * Action to remove the selected sample in this ShapePane.
-         */
-        private class RemoveAction
-                extends AbstractAction
-        {
-            //~ Methods ----------------------------------------------------------------------------
-
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                final Sample sample = list.getSelectedValue();
-
-                if (sample != null) {
-                    repository.removeSample(sample);
-                }
-            }
-        }
-    }
-
-    /**
-     * Action to sort items in ShapePane by grade.
-     */
-    private class SortByGradeAction
-            extends AbstractAction
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final Classifier classifier = ShapeClassifier.getInstance();
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public SortByGradeAction ()
-        {
-            super("Grade");
-            putValue(SHORT_DESCRIPTION, "Sort items by grade in this ShapePane");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            // To avoid repetitive grade computing, we save grade into GradedSample entities
-            final Sample currentSample = (Sample) browser.getSampleController()
-                    .getGlyphService()
-                    .getSelectedEntity();
-            final ShapePane shapePane = getShapePane(currentSample.getShape());
-            final List<GradedSample> list = new ArrayList<GradedSample>();
-
-            logger.info("Computing grades...");
-
-            for (Enumeration<Sample> en = shapePane.model.elements(); en.hasMoreElements();) {
-                Sample sample = en.nextElement();
-                Evaluation[] evals = classifier.getNaturalEvaluations(
-                        sample,
-                        sample.getInterline());
-                double grade = evals[sample.getShape().ordinal()].grade;
-                list.add(new GradedSample(grade, sample));
-            }
-
-            logger.info("All grades computed.");
-            Collections.sort(list);
-            logger.info("Samples sorted.");
-            shapePane.model.clear();
-
-            for (GradedSample gradedSample : list) {
-                shapePane.model.addElement(gradedSample.sample);
-            }
-        }
-
-        //~ Inner Classes --------------------------------------------------------------------------
-        private class GradedSample
-                implements Comparable<GradedSample>
-        {
-            //~ Instance fields --------------------------------------------------------------------
-
-            final double grade;
-
-            final Sample sample;
-
-            //~ Constructors -----------------------------------------------------------------------
-            public GradedSample (double grade,
-                                 Sample sample)
-            {
-                this.grade = grade;
-                this.sample = sample;
-            }
-
-            //~ Methods ----------------------------------------------------------------------------
-            @Override
-            public int compareTo (GradedSample that)
-            {
-                return Double.compare(that.grade, this.grade); // By decreasing grade
-            }
-        }
-    }
-
-    /**
-     * Action to sort items in ShapePane by height.
-     */
-    private class SortByHeightAction
-            extends AbstractAction
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public SortByHeightAction ()
-        {
-            super("Height");
-            putValue(SHORT_DESCRIPTION, "Sort items by height in this ShapePane");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            sortBy(Sample.byNormalizedHeight);
-        }
-    }
-
-    /**
-     * Action to sort items in ShapePane by weight.
-     */
-    private class SortByWeightAction
-            extends AbstractAction
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public SortByWeightAction ()
-        {
-            super("Weight");
-            putValue(SHORT_DESCRIPTION, "Sort items by weight in this ShapePane");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            sortBy(Sample.byNormalizedWeight);
-        }
-    }
-
-    /**
-     * Action to sort items in ShapePane by width.
-     */
-    private class SortByWidthAction
-            extends AbstractAction
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public SortByWidthAction ()
-        {
-            super("Width");
-            putValue(SHORT_DESCRIPTION, "Sort items by width in this ShapePane");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            sortBy(Sample.byNormalizedWidth);
         }
     }
 }

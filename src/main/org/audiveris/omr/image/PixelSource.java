@@ -33,7 +33,6 @@ package org.audiveris.omr.image;
  */
 public interface PixelSource
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Default value for background pixel. */
     public static final int BACKGROUND = 255;
@@ -41,13 +40,11 @@ public interface PixelSource
     /** Default value for foreground pixel. */
     public static final int FOREGROUND = 0;
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the pixel element, as read at location (x, y) in the source.
      *
      * @param x abscissa value
      * @param y ordinate value
-     *
      * @return the pixel value using range 0..255 (0/black for foreground,
      *         255/white for background)
      */

@@ -39,12 +39,10 @@ import java.awt.geom.Rectangle2D;
 public class RestSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    // The lines
+    /** Staff lines symbol. */
     protected static final BasicSymbol linesSymbol = Symbols.SYMBOL_STAFF_LINES;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a RestSymbol (with decoration?) standard size.
      *
@@ -75,7 +73,6 @@ public class RestSymbol
         super(isIcon, shape, decorated, codes);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -150,14 +147,12 @@ public class RestSymbol
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // offset: if decorated, offset of symbol center vs decorated image center
         // layout: rest layout

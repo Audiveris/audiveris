@@ -54,6 +54,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.TreeMap;
 
 /**
@@ -65,22 +66,18 @@ import java.util.TreeMap;
 @NotThreadSafe
 public class MeasuresBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            MeasuresBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(MeasuresBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
 
     /** Sequence of groups of barlines per staff. */
-    private final Map<Staff, List<Group>> staffMap = new TreeMap<Staff, List<Group>>(Staff.byId);
+    private final Map<Staff, List<Group>> staffMap = new TreeMap<>(Staff.byId);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MeasuresBuilder} object.
      *
@@ -91,7 +88,6 @@ public class MeasuresBuilder
         this.system = system;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // buildMeasures //
     //---------------//
@@ -101,7 +97,8 @@ public class MeasuresBuilder
      * Parts and physical BarlineInter's have been identified within the system.
      * Each staff has its BarlineInter's attached.
      * <p>
-     * To build the logical StaffBarlineInter's, PartBarline's and Measures, the strategy is: <ol>
+     * To build the logical StaffBarlineInter's, PartBarline's and Measures, the strategy is:
+     * <ol>
      * <li>Staff by staff, gather barlines into groups of closely located barlines
      * (StaffBarlineInter's).</li>
      * <li>Check and adjust consistency across all staves within the system</li>
@@ -109,7 +106,8 @@ public class MeasuresBuilder
      * allocate the corresponding PartBarline's and measures.</li>
      * </ol>
      * <p>
-     * Strategy for assigning barlines to measures:<ul>
+     * Strategy for assigning barlines to measures:
+     * <ul>
      * <li>A group of 2 physical barlines, whatever their thickness, gives a single logical
      * barline.</li>
      * <li>A group of 3 or 4 physical barlines (thin | thick | thin) or (thin | thick | thick |
@@ -150,7 +148,7 @@ public class MeasuresBuilder
     private List<Group> buildGroups (List<BarlineInter> barlines)
     {
         final SIGraph sig = system.getSig();
-        final List<Group> groups = new ArrayList<Group>();
+        final List<Group> groups = new ArrayList<>();
 
         for (int i = 0; i < barlines.size(); i++) {
             BarlineInter bLast = barlines.get(i);
@@ -166,7 +164,7 @@ public class MeasuresBuilder
             }
 
             int ibLast = barlines.indexOf(bLast);
-            groups.add(new Group(barlines.subList(i, ibLast + 1)));
+            groups.add(new Group(barlines.subList(i, ibLast + 1), system));
             i = ibLast;
         }
 
@@ -193,9 +191,8 @@ public class MeasuresBuilder
 
         for (int ig = 0; ig <= igMax; ig++) {
             Group topGroup = (ig < topGroups.size()) ? topGroups.get(ig) : null;
-            Measure measure = ((topGroup != null)
-                               && topGroup.get(0).isStaffEnd(HorizontalSide.LEFT)) ? null
-                    : new Measure(part);
+            Measure measure = ((topGroup != null) && topGroup.get(0).isStaffEnd(
+                    HorizontalSide.LEFT)) ? null : new Measure(part);
 
             if (measure != null) {
                 part.addMeasure(measure);
@@ -314,7 +311,7 @@ public class MeasuresBuilder
         final int maxShift = system.getSheet().getScale().toPixels(constants.maxShift);
 
         // Build list of columns, kept sorted on abscissa
-        final List<Column> columns = new ArrayList<Column>();
+        final List<Column> columns = new ArrayList<>();
 
         for (Staff staff : system.getStaves()) {
             List<Group> groups = staffMap.get(staff);
@@ -378,7 +375,6 @@ public class MeasuresBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Column //
     //--------//
@@ -389,15 +385,13 @@ public class MeasuresBuilder
     private class Column
             implements Comparable<Column>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** In theory, we should have exactly one group per staff. */
-        final Map<Staff, Group> groups = new TreeMap<Staff, Group>(Staff.byId);
+        final Map<Staff, Group> groups = new TreeMap<>(Staff.byId);
 
         /** De-skewed column mean abscissa. */
         Double xDsk;
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Populate the cell for provided staff by the provided group.
          *
@@ -434,6 +428,29 @@ public class MeasuresBuilder
         {
             // Sort by increasing (de-skewed) abscissa.
             return Double.compare(this.getDeskewedAbscissa(), that.getDeskewedAbscissa());
+        }
+
+        @Override
+        public boolean equals (Object obj)
+        {
+            if (this == obj) {
+                return true;
+            }
+
+            if (obj instanceof Column) {
+                return compareTo((Column) obj) == 0;
+            }
+
+            return false;
+        }
+
+        @Override
+        public int hashCode ()
+        {
+            int hash = 7;
+            hash = (23 * hash) + Objects.hashCode(this.getDeskewedAbscissa());
+
+            return hash;
         }
 
         @Override
@@ -509,8 +526,8 @@ public class MeasuresBuilder
                 Group group = groups.get(staff);
 
                 if (group == null) {
-                    double xStaffMiddle = (staff.getAbscissa(LEFT)
-                                           + staff.getAbscissa(RIGHT)) / 2.0;
+                    double xStaffMiddle = (staff.getAbscissa(LEFT) + staff.getAbscissa(RIGHT))
+                                                  / 2.0;
                     double yStaffMiddle = staff.getFirstLine().yAt(xStaffMiddle);
                     double x = line.xAtY(yStaffMiddle); // Roughly
                     double y1 = staff.getFirstLine().yAt(x);
@@ -522,7 +539,7 @@ public class MeasuresBuilder
                     barline.freeze();
 
                     List<Group> staffGroups = staffMap.get(staff);
-                    staffGroups.add(new Group(Collections.singletonList(barline)));
+                    staffGroups.add(new Group(Collections.singletonList(barline), system));
                     Collections.sort(staffGroups);
                     staff.addBarline(barline);
                 }
@@ -538,9 +555,7 @@ public class MeasuresBuilder
                     x += group.getDeskewedAbscissa();
                 }
 
-                if (!groups.isEmpty()) {
-                    xDsk = x / groups.size();
-                }
+                xDsk = x / groups.size();
             }
 
             return xDsk;
@@ -550,10 +565,9 @@ public class MeasuresBuilder
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction maxShift = new Scale.Fraction(
                 1.0,
@@ -570,11 +584,10 @@ public class MeasuresBuilder
     /**
      * A group of barlines in a staff.
      */
-    private class Group
+    private static class Group
             extends ArrayList<BarlineInter>
             implements Comparable<Group>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** (Skewed) group center. */
         final Point2D center;
@@ -582,8 +595,8 @@ public class MeasuresBuilder
         /** De-skewed group center. */
         final Point2D dsk;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Group (List<BarlineInter> barlines)
+        Group (List<BarlineInter> barlines,
+               SystemInfo system)
         {
             addAll(barlines);
 
@@ -591,7 +604,6 @@ public class MeasuresBuilder
             dsk = system.getSkew().deskewed(center);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int compareTo (Group that)
         {
@@ -612,6 +624,12 @@ public class MeasuresBuilder
         public String toString ()
         {
             return midString() + Inters.ids(this);
+        }
+
+        @Override
+        public Object clone ()
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
 
         private Point2D computeCenter ()

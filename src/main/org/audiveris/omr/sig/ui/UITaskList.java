@@ -43,30 +43,24 @@ import java.util.Set;
  */
 public class UITaskList
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(UITaskList.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
     /** Possible options. */
     public static enum Option
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /** User has validated the choice. */
         VALIDATED,
         /** Measures are to be updated. */
         UPDATE_MEASURES;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Sequence of related actions. */
-    private final List<UITask> list = new ArrayList<UITask>();
+    private final List<UITask> list = new ArrayList<>();
 
     /** Options for the actions list. */
-    private final Set<Option> options = new HashSet<Option>();
+    private final Set<Option> options = new HashSet<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code InterTaskList} object.
      *
@@ -87,7 +81,6 @@ public class UITaskList
         list.addAll(tasks);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // add //
     //-----//
@@ -112,7 +105,7 @@ public class UITaskList
      */
     public List<Inter> getInters (Class... classes)
     {
-        List<Inter> found = new ArrayList<Inter>();
+        List<Inter> found = new ArrayList<>();
 
         for (UITask task : list) {
             if (task instanceof InterTask) {
@@ -146,7 +139,7 @@ public class UITaskList
      */
     public List<Relation> getRelations (Class... classes)
     {
-        List<Relation> found = new ArrayList<Relation>();
+        List<Relation> found = new ArrayList<>();
 
         for (UITask task : list) {
             if (task instanceof RelationTask) {

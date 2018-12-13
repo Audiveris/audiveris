@@ -57,7 +57,6 @@ import java.util.Set;
  */
 public class Curves
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -65,7 +64,6 @@ public class Curves
 
     private static final List<Point> breakPoints = getBreakPoints();
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -77,15 +75,14 @@ public class Curves
     private final Skeleton skeleton;
 
     /** Line segments found. */
-    private final List<SegmentInter> segments = new ArrayList<SegmentInter>();
+    private final List<SegmentInter> segments = new ArrayList<>();
 
     /** Registered item renderers, if any. */
-    private final Set<ItemRenderer> itemRenderers = new LinkedHashSet<ItemRenderer>();
+    private final Set<ItemRenderer> itemRenderers = new LinkedHashSet<>();
 
     /** Builder for slurs (also used to evaluate arcs). */
     private SlursBuilder slursBuilder;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Curves object.
      *
@@ -110,7 +107,6 @@ public class Curves
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // buildCurves //
     //-------------//
@@ -196,6 +192,11 @@ public class Curves
     //----------//
     // getSheet //
     //----------//
+    /**
+     * Report the containing sheet
+     *
+     * @return the containing sheet
+     */
     public Sheet getSheet ()
     {
         return sheet;
@@ -215,6 +216,11 @@ public class Curves
     //-----------------//
     // getSlursBuilder //
     //-----------------//
+    /**
+     * Report the SlursBuilder companion.
+     *
+     * @return SlursBuilder instance
+     */
     public SlursBuilder getSlursBuilder ()
     {
         return slursBuilder;
@@ -243,7 +249,7 @@ public class Curves
      */
     private static List<Point> getBreakPoints ()
     {
-        List<Point> points = new ArrayList<Point>();
+        List<Point> points = new ArrayList<>();
 
         try {
             String str = constants.breakPointCoordinates.getValue();
@@ -267,14 +273,40 @@ public class Curves
         return points;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------//
+    // MyView //
+    //--------//
+    /**
+     * View dedicated to skeleton arcs.
+     */
+    private class MyView
+            extends ImageView
+    {
+
+        MyView (BufferedImage image)
+        {
+            super(image);
+        }
+
+        @Override
+        protected void renderItems (Graphics2D g)
+        {
+            // Global sheet renderers
+            sheet.renderItems(g);
+
+            // Curves renderers
+            for (ItemRenderer renderer : itemRenderers) {
+                renderer.renderItems(g);
+            }
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean displayCurves = new Constant.Boolean(
                 false,
@@ -287,35 +319,5 @@ public class Curves
         private final Constant.String breakPointCoordinates = new Constant.String(
                 "",
                 "(Debug) Comma-separated coordinates of curve break points if any");
-    }
-
-    //--------//
-    // MyView //
-    //--------//
-    /**
-     * View dedicated to skeleton arcs.
-     */
-    private class MyView
-            extends ImageView
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public MyView (BufferedImage image)
-        {
-            super(image);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected void renderItems (Graphics2D g)
-        {
-            // Global sheet renderers
-            sheet.renderItems(g);
-
-            // Curves renderers
-            for (ItemRenderer renderer : itemRenderers) {
-                renderer.renderItems(g);
-            }
-        }
     }
 }

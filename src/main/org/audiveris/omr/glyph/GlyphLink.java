@@ -29,7 +29,6 @@ package org.audiveris.omr.glyph;
  */
 public interface GlyphLink
 {
-    //~ Inner Classes ------------------------------------------------------------------------------
 
     /**
      * Neighborhood relationship.
@@ -37,12 +36,10 @@ public interface GlyphLink
     public static class Nearby
             implements GlyphLink
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Measured distance between the two glyph instances. */
         private final double distance;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Nearby object.
          *
@@ -53,7 +50,11 @@ public interface GlyphLink
             this.distance = distance;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Report the link distance
+         *
+         * @return distance
+         */
         public double getDistance ()
         {
             return distance;

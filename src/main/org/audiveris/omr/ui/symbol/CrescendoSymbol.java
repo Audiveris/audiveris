@@ -32,11 +32,12 @@ import java.awt.Stroke;
 
 /**
  * Class {@code CrescendoSymbol} displays a crescendo symbol: {@literal "<"}.
+ *
+ * @author Hervé Bitteur
  */
 public class CrescendoSymbol
         extends ShapeSymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new CrescendoSymbol object.
@@ -50,7 +51,6 @@ public class CrescendoSymbol
         super(isIcon, shape, false);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -97,14 +97,12 @@ public class CrescendoSymbol
         g.setStroke(oldStroke);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         Stroke stroke;
     }

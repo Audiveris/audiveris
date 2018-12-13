@@ -38,22 +38,17 @@ import org.slf4j.LoggerFactory;
  * information.
  *
  * @param <C> The {@link Checkable} entity type to be checked
- *
  * @author Hervé Bitteur
  */
 public class CheckBoard<C>
         extends Board
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CheckBoard.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
-    /** For display of check suite results */
+    /** For display of check suite results. */
     private final CheckPanel<C> checkPanel;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a Check Board.
      *
@@ -76,7 +71,7 @@ public class CheckBoard<C>
                 false, // Count
                 false, // Vip
                 false); // Dump
-        checkPanel = new CheckPanel<C>(suite);
+        checkPanel = new CheckPanel<>(suite);
 
         if (suite != null) {
             defineLayout(suite.getName());
@@ -86,7 +81,6 @@ public class CheckBoard<C>
         tellObject(null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // applySuite //
     //------------//
@@ -109,7 +103,6 @@ public class CheckBoard<C>
         tellObject(object);
     }
 
-    //
     //---------//
     // onEvent //
     //---------//

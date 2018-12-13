@@ -28,7 +28,8 @@ import org.audiveris.omr.sheet.SystemInfo;
  * Class {@code InterCleaner} is a workaround to purge containers of Inter instances
  * deleted from SIG but still referenced from some containers.
  * <p>
- * This accounts for:<ul>
+ * This accounts for:
+ * <ul>
  * <li>Part -> lyrics</li>
  * </ul>
  *
@@ -36,22 +37,19 @@ import org.audiveris.omr.sheet.SystemInfo;
  */
 class InterCleaner
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private final SystemInfo system;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code InterCleaner} object.
      *
      * @param system the system to be processed
      */
-    public InterCleaner (SystemInfo system)
+    InterCleaner (SystemInfo system)
     {
         this.system = system;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public void purgeContainers ()
     {
         // Parts

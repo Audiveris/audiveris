@@ -46,7 +46,6 @@ import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sig.GradeUtil;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.ClefInter;
@@ -90,7 +89,6 @@ import java.util.TreeMap;
  */
 public class ClefBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -109,7 +107,6 @@ public class ClefBuilder
             C_CLEF,
             PERCUSSION_CLEF);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Dedicated staff to analyze. */
     private final Staff staff;
 
@@ -143,9 +140,8 @@ public class ClefBuilder
     private final Classifier classifier = ShapeClassifier.getInstance();
 
     /** All glyphs submitted to classifier. */
-    private final Set<Glyph> glyphCandidates = new LinkedHashSet<Glyph>();
+    private final Set<Glyph> glyphCandidates = new LinkedHashSet<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ClefBuilder object.
      *
@@ -170,7 +166,6 @@ public class ClefBuilder
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // findClefs //
     //-----------//
@@ -238,11 +233,11 @@ public class ClefBuilder
 
         // Formalize parts relationships in a global graph
         SimpleGraph<Glyph, GlyphLink> graph = Glyphs.buildLinks(parts, params.maxPartGap);
-        List<Set<Glyph>> sets = new ConnectivityInspector<Glyph, GlyphLink>(graph).connectedSets();
+        List<Set<Glyph>> sets = new ConnectivityInspector<>(graph).connectedSets();
         logger.debug("Staff#{} sets: {}", staff.getId(), sets.size());
 
         // Best inter per clef kind
-        Map<ClefKind, ClefInter> bestMap = new EnumMap<ClefKind, ClefInter>(ClefKind.class);
+        Map<ClefKind, ClefInter> bestMap = new EnumMap<>(ClefKind.class);
 
         for (Set<Glyph> set : sets) {
             // Use only the subgraph for this set
@@ -368,7 +363,7 @@ public class ClefBuilder
     private void purgeClefs (Map<ClefKind, ClefInter> bestMap)
     {
         final double maxContrib = ClefKeyRelation.maxContributionForClef();
-        final List<ClefInter> inters = new ArrayList<ClefInter>(bestMap.values());
+        final List<ClefInter> inters = new ArrayList<>(bestMap.values());
         Collections.sort(inters, Inters.byReverseGrade);
 
         interLoop:
@@ -405,7 +400,7 @@ public class ClefBuilder
     private void purgeParts (List<Glyph> parts,
                              boolean isFirstPass)
     {
-        List<Glyph> toRemove = new ArrayList<Glyph>();
+        List<Glyph> toRemove = new ArrayList<>();
 
         for (Glyph part : parts) {
             if (part.getWeight() < params.minPartWeight) {
@@ -436,7 +431,7 @@ public class ClefBuilder
     private void registerClefs (Collection<ClefInter> clefSet)
     {
         // Sort clefs by decreasing grade
-        final List<ClefInter> clefList = new ArrayList<ClefInter>(clefSet);
+        final List<ClefInter> clefList = new ArrayList<>(clefSet);
         Collections.sort(clefList, Inters.byReverseGrade);
 
         for (int idx = 0; idx < clefList.size(); idx++) {
@@ -501,7 +496,77 @@ public class ClefBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------//
+    // ClefAdapter //
+    //-------------//
+    /**
+     * Handles the integration between glyph clustering class and clef environment.
+     * <p>
+     * For each clef kind, we keep the best result found if any.
+     */
+    private class ClefAdapter
+            extends GlyphCluster.AbstractAdapter
+    {
+
+        /** Best inter per clef kind. */
+        private final Map<ClefKind, ClefInter> bestMap;
+
+        ClefAdapter (SimpleGraph<Glyph, GlyphLink> graph,
+                     Map<ClefKind, ClefInter> bestMap)
+        {
+            super(graph);
+            this.bestMap = bestMap;
+        }
+
+        @Override
+        public void evaluateGlyph (Glyph glyph,
+                                   Set<Glyph> parts)
+        {
+            trials++;
+
+            if (glyph.getId() == 0) {
+                glyph = system.registerGlyph(glyph, null);
+            }
+
+            glyphCandidates.add(glyph);
+
+            logger.debug("ClefAdapter evaluateGlyph on {}", glyph);
+
+            Evaluation[] evals = classifier.evaluate(
+                    glyph,
+                    staff.getSpecificInterline(),
+                    params.maxEvalRank,
+                    Grades.clefMinGrade / Grades.intrinsicRatio,
+                    null);
+
+            for (Evaluation eval : evals) {
+                final Shape shape = eval.shape;
+
+                if (HEADER_CLEF_SHAPES.contains(shape)) {
+                    final double grade = Grades.intrinsicRatio * eval.grade;
+                    ClefKind kind = ClefInter.kindOf(glyph.getCenter(), shape, staff);
+                    ClefInter bestInter = bestMap.get(kind);
+
+                    if ((bestInter == null) || (bestInter.getGrade() < grade)) {
+                        bestMap.put(kind, ClefInter.create(glyph, shape, grade, staff));
+                    }
+                }
+            }
+        }
+
+        @Override
+        public boolean isTooLarge (Rectangle bounds)
+        {
+            return bounds.height > params.maxGlyphHeight;
+        }
+
+        @Override
+        public boolean isTooLight (int weight)
+        {
+            return weight < params.minGlyphWeight;
+        }
+    }
+
     //--------//
     // Column //
     //--------//
@@ -510,21 +575,22 @@ public class ClefBuilder
      */
     public static class Column
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final SystemInfo system;
 
         /** Map of clef builders. (one per staff) */
-        private final Map<Staff, ClefBuilder> builders = new TreeMap<Staff, ClefBuilder>(
-                Staff.byId);
+        private final Map<Staff, ClefBuilder> builders = new TreeMap<>(Staff.byId);
 
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create a Column.
+         *
+         * @param system the containing system
+         */
         public Column (SystemInfo system)
         {
             this.system = system;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //---------------//
         // retrieveClefs //
         //---------------//
@@ -579,7 +645,6 @@ public class ClefBuilder
     //------------//
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int maxPartCount;
 
@@ -611,9 +676,8 @@ public class ClefBuilder
 
         final int minGlyphWeight;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale,
-                           int staffSpecific)
+        Parameters (Scale scale,
+                    int staffSpecific)
         {
             maxPartCount = constants.maxPartCount.getValue();
             maxEvalRank = constants.maxEvalRank.getValue();
@@ -640,87 +704,12 @@ public class ClefBuilder
         }
     }
 
-    //-------------//
-    // ClefAdapter //
-    //-------------//
-    /**
-     * Handles the integration between glyph clustering class and clef environment.
-     * <p>
-     * For each clef kind, we keep the best result found if any.
-     */
-    private class ClefAdapter
-            extends GlyphCluster.AbstractAdapter
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Best inter per clef kind. */
-        private final Map<ClefKind, ClefInter> bestMap;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public ClefAdapter (SimpleGraph<Glyph, GlyphLink> graph,
-                            Map<ClefKind, ClefInter> bestMap)
-        {
-            super(graph);
-            this.bestMap = bestMap;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void evaluateGlyph (Glyph glyph,
-                                   Set<Glyph> parts)
-        {
-            trials++;
-
-            if (glyph.getId() == 0) {
-                glyph = system.registerGlyph(glyph, null);
-            }
-
-            glyphCandidates.add(glyph);
-
-            logger.debug("ClefAdapter evaluateGlyph on {}", glyph);
-
-            Evaluation[] evals = classifier.evaluate(
-                    glyph,
-                    staff.getSpecificInterline(),
-                    params.maxEvalRank,
-                    Grades.clefMinGrade / Grades.intrinsicRatio,
-                    null);
-
-            for (Evaluation eval : evals) {
-                final Shape shape = eval.shape;
-
-                if (HEADER_CLEF_SHAPES.contains(shape)) {
-                    final double grade = Grades.intrinsicRatio * eval.grade;
-                    ClefKind kind = ClefInter.kindOf(glyph, shape, staff);
-                    ClefInter bestInter = bestMap.get(kind);
-
-                    if ((bestInter == null) || (bestInter.getGrade() < grade)) {
-                        bestMap.put(kind, ClefInter.create(glyph, shape, grade, staff));
-                    }
-                }
-            }
-        }
-
-        @Override
-        public boolean isTooLarge (Rectangle bounds)
-        {
-            return bounds.height > params.maxGlyphHeight;
-        }
-
-        @Override
-        public boolean isTooLight (int weight)
-        {
-            return weight < params.minGlyphWeight;
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction maxClefEnd = new Scale.Fraction(
                 4.5,

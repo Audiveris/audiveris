@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                    S y m b o l F a c t o r y                                   //
+//                                     I n t e r F a c t o r y                                    //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -98,7 +98,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * Class {@code SymbolFactory} generates the inter instances corresponding to
+ * Class {@code InterFactory} generates the inter instances corresponding to
  * to an acceptable symbol evaluation in a given system.
  * <p>
  * (Generally there is one inter instance per evaluation, an exception is the case of full time
@@ -106,13 +106,11 @@ import java.util.TreeMap;
  *
  * @author Hervé Bitteur
  */
-public class SymbolFactory
+public class InterFactory
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(SymbolFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(InterFactory.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -144,13 +142,12 @@ public class SymbolFactory
     /** Processing switches. */
     private final ProcessingSwitches switches;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new SymbolsFactory object.
+     * Creates a new InterFactory object.
      *
      * @param system the dedicated system
      */
-    public SymbolFactory (SystemInfo system)
+    public InterFactory (SystemInfo system)
     {
         this.system = system;
 
@@ -170,7 +167,6 @@ public class SymbolFactory
         switches = system.getSheet().getStub().getProcessingSwitches();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // create //
     //--------//
@@ -193,31 +189,14 @@ public class SymbolFactory
         }
     }
 
-    //--------------//
-    // createManual //
-    //--------------//
-    /**
-     * Create a manual inter instance to handle the provided shape.
-     *
-     * @param shape provided shape
-     * @param sheet related sheet
-     * @return the created manual inter or null
-     */
-    public static Inter createManual (Shape shape,
-                                      Sheet sheet)
-    {
-        Inter ghost = doCreateManual(shape, sheet);
-
-        if (ghost != null) {
-            ghost.setManual(true);
-        }
-
-        return ghost;
-    }
-
     //---------------//
     // getSystemBars //
     //---------------//
+    /**
+     * Report all system barlines.
+     *
+     * @return all barlines in the containing system
+     */
     public List<Inter> getSystemBars ()
     {
         if (systemBars == null) {
@@ -231,6 +210,11 @@ public class SymbolFactory
     //----------------//
     // getSystemRests //
     //----------------//
+    /**
+     * Report all rests in system.
+     *
+     * @return all rests in the containing system
+     */
     public List<Inter> getSystemRests ()
     {
         if (systemRests == null) {
@@ -244,6 +228,9 @@ public class SymbolFactory
     //------------//
     // lateChecks //
     //------------//
+    /**
+     * Perform late checks.
+     */
     public void lateChecks ()
     {
         // Conflicting dot interpretations
@@ -256,37 +243,6 @@ public class SymbolFactory
         handleTimes();
     }
 
-    //---------------------//
-    // getSystemHeadChords //
-    //---------------------//
-    List<Inter> getSystemHeadChords ()
-    {
-        return systemHeadChords;
-    }
-
-    //----------------//
-    // getSystemHeads //
-    //----------------//
-    List<Inter> getSystemHeads ()
-    {
-        return systemHeads;
-    }
-
-    //----------------//
-    // getSystemNotes //
-    //----------------//
-    List<Inter> getSystemNotes ()
-    {
-        if (systemNotes == null) {
-            systemNotes = new ArrayList<Inter>(getSystemHeads().size() + getSystemRests().size());
-            systemNotes.addAll(getSystemHeads());
-            systemNotes.addAll(getSystemRests());
-            Collections.sort(systemNotes, Inters.byAbscissa);
-        }
-
-        return systemNotes;
-    }
-
     //----------//
     // doCreate //
     //----------//
@@ -294,7 +250,8 @@ public class SymbolFactory
      * Create proper inter instance(s) for provided evaluated glyph.
      * <p>
      * This method addresses only the symbols handled via a classifier.
-     * In current OMR design, this does not address: <ul>
+     * In current OMR design, this does not address:
+     * <ul>
      * <li>Brace
      * <li>Bracket
      * <li>Barline
@@ -338,7 +295,7 @@ public class SymbolFactory
         // - STACCATO_DOT
         // - AUGMENTATION_DOT
         case DOT_set:
-            dotFactory.instantDotChecks(eval, glyph);
+            dotFactory.instantDotChecks(eval, glyph, closestStaff);
 
             return null;
 
@@ -413,7 +370,7 @@ public class SymbolFactory
 
         case SMALL_FLAG:
         case SMALL_FLAG_SLASH:
-            return new SmallFlagInter(null, shape, grade);
+            return new SmallFlagInter(glyph, shape, grade);
 
         // Rests
         case LONG_REST:
@@ -453,13 +410,12 @@ public class SymbolFactory
         case STACCATO:
         case STACCATISSIMO:
         case STRONG_ACCENT:
-            return switches.getValue(Switch.articulations)
-                    ? ArticulationInter.createValidAdded(
-                            glyph,
-                            shape,
-                            grade,
-                            system,
-                            systemHeadChords) : null;
+            return switches.getValue(Switch.articulations) ? ArticulationInter.createValidAdded(
+                    glyph,
+                    shape,
+                    grade,
+                    system,
+                    systemHeadChords) : null;
 
         // Markers
         case CODA:
@@ -538,7 +494,8 @@ public class SymbolFactory
         case PLUCK_I:
         case PLUCK_M:
         case PLUCK_A:
-            return switches.getValue(Switch.pluckings) ? new PluckingInter(glyph, shape, grade) : null;
+            return switches.getValue(Switch.pluckings) ? new PluckingInter(glyph, shape, grade)
+                    : null;
 
         // Romans
         case ROMAN_I:
@@ -563,6 +520,180 @@ public class SymbolFactory
         }
     }
 
+    //-----------------------//
+    // handleComplexDynamics //
+    //-----------------------//
+    /**
+     * Handle competition between complex and shorter dynamics.
+     */
+    private void handleComplexDynamics ()
+    {
+        // All dynamics in system
+        final List<Inter> dynamics = sig.inters(DynamicsInter.class);
+        // Complex dynamics in system, sorted by decreasing length
+        final List<DynamicsInter> complexes = new ArrayList<>();
+        for (Inter inter : dynamics) {
+            DynamicsInter dyn = (DynamicsInter) inter;
+
+            if (dyn.getSymbolString().length() > 1) {
+                complexes.add(dyn);
+            }
+        }
+        Collections.sort(complexes, new Comparator<DynamicsInter>()
+                 {
+                     @Override
+                     public int compare (DynamicsInter d1,
+                                         DynamicsInter d2)
+                     {
+                         // Sort by decreasing length
+                         return Integer.compare(
+                                 d2.getSymbolString().length(),
+                                 d1.getSymbolString().length());
+                     }
+                 });
+        for (DynamicsInter complex : complexes) {
+            complex.swallowShorterDynamics(dynamics);
+        }
+    }
+
+    //-------------//
+    // handleTimes //
+    //-------------//
+    /**
+     * Handle time inters outside of system header.
+     * <p>
+     * Isolated time inters found outside of system header lead to the retrieval of a column of
+     * time signatures.
+     */
+    private void handleTimes ()
+    {
+        // Retrieve all time inters (outside staff headers)
+        List<Inter> systemTimes = sig.inters(new Class[]{
+            TimeWholeInter.class, // Whole symbol like C or 6/8
+            TimeNumberInter.class}); // Partial symbol like 6 or 8
+        List<Inter> headerTimes = new ArrayList<>();
+        for (Inter inter : systemTimes) {
+            Staff staff = inter.getStaff();
+
+            if (inter.getCenter().x < staff.getHeaderStop()) {
+                headerTimes.add(inter);
+            }
+        }
+        systemTimes.removeAll(headerTimes);
+        if (systemTimes.isEmpty()) {
+            return;
+        }
+        // Dispatch these time inters into their containing stack
+        Map<MeasureStack, Set<Inter>> timeMap = new TreeMap<>(new Comparator<MeasureStack>()
+        {
+            @Override
+            public int compare (MeasureStack s1,
+                                MeasureStack s2)
+            {
+                return Integer.compare(s1.getIdValue(), s2.getIdValue());
+            }
+        });
+        for (Inter inter : systemTimes) {
+            MeasureStack stack = system.getStackAt(inter.getCenter());
+            Set<Inter> stackSet = timeMap.get(stack);
+            if (stackSet == null) {
+                timeMap.put(stack, stackSet = new LinkedHashSet<>());
+            }
+            stackSet.add(inter);
+        }
+        // Finally, scan each stack populated with some time sig(s)
+        for (Entry<MeasureStack, Set<Inter>> entry : timeMap.entrySet()) {
+            MeasureStack stack = entry.getKey();
+            TimeBuilder.BasicColumn column = new TimeBuilder.BasicColumn(stack, entry.getValue());
+            int res = column.retrieveTime();
+
+            // If the stack does have a validated time sig, discard overlapping stuff right now!
+            if (res != -1) {
+                final Collection<AbstractTimeInter> times = column.getTimeInters().values();
+                final Rectangle columnBox = Inters.getBounds(times);
+                List<Inter> neighbors = sig.inters(new Predicate<Inter>()
+                {
+                    @Override
+                    public boolean check (Inter inter)
+                    {
+                        return inter.getBounds().intersects(columnBox)
+                                       && !(inter instanceof InterEnsemble);
+                    }
+                });
+
+                neighbors.removeAll(times);
+
+                for (AbstractTimeInter time : times) {
+                    for (Iterator<Inter> it = neighbors.iterator(); it.hasNext();) {
+                        Inter neighbor = it.next();
+
+                        try {
+                            if (neighbor.overlaps(time)) {
+                                logger.debug("Deleting time overlapping {}", neighbor);
+                                neighbor.remove();
+                                it.remove();
+                            }
+                        } catch (DeletedInterException ignored) {
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //---------------------//
+    // getSystemHeadChords //
+    //---------------------//
+    List<Inter> getSystemHeadChords ()
+    {
+        return systemHeadChords;
+    }
+
+    //----------------//
+    // getSystemHeads //
+    //----------------//
+    List<Inter> getSystemHeads ()
+    {
+        return systemHeads;
+    }
+
+    //----------------//
+    // getSystemNotes //
+    //----------------//
+    List<Inter> getSystemNotes ()
+    {
+        if (systemNotes == null) {
+            systemNotes = new ArrayList<>(getSystemHeads().size() + getSystemRests().size());
+            systemNotes.addAll(getSystemHeads());
+            systemNotes.addAll(getSystemRests());
+            Collections.sort(systemNotes, Inters.byAbscissa);
+        }
+
+        return systemNotes;
+    }
+
+    //--------------//
+    // createManual //
+    //--------------//
+    /**
+     * Create a manual inter instance to handle the provided shape.
+     *
+     * @param shape provided shape
+     * @param sheet related sheet
+     * @return the created manual inter or null
+     */
+    public static Inter createManual (Shape shape,
+                                      Sheet sheet)
+    {
+        Inter ghost = doCreateManual(shape, sheet);
+
+        if (ghost != null) {
+            ghost.setManual(true);
+        }
+
+        return ghost;
+    }
+
     //----------------//
     // doCreateManual //
     //----------------//
@@ -578,16 +709,15 @@ public class SymbolFactory
     private static Inter doCreateManual (Shape shape,
                                          Sheet sheet)
     {
-        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
         final double GRADE = 1.0; // Grade value for any manual shape
 
         switch (shape) {
         //
         // Ottava TODO ???
-        case OTTAVA_ALTA:
-        case OTTAVA_BASSA:
-            return null;
-
+        //        case OTTAVA_ALTA:
+        //        case OTTAVA_BASSA:
+        //            return null;
+        //
         // Brace, bracket TODO ???
         //
         // Barlines
@@ -608,7 +738,6 @@ public class SymbolFactory
         case BACK_TO_BACK_REPEAT_SIGN:
             return new StaffBarlineInter(shape, GRADE);
 
-        //
         // Beams
         case BEAM:
             return new BeamInter(GRADE);
@@ -757,8 +886,7 @@ public class SymbolFactory
         case STACCATO:
         case STACCATISSIMO:
         case STRONG_ACCENT:
-            return switches.getValue(Switch.articulations)
-                    ? new ArticulationInter(null, shape, GRADE) : null; // No visit
+            return new ArticulationInter(null, shape, GRADE); // No visit
 
         // Markers
         case CODA:
@@ -826,15 +954,14 @@ public class SymbolFactory
         case DIGIT_3:
         case DIGIT_4:
         case DIGIT_5:
-            return switches.getValue(Switch.fingerings) ? new FingeringInter(null, shape, GRADE)
-                    : null; // No visit
+            return new FingeringInter(null, shape, GRADE); // No visit
 
         // Plucking
         case PLUCK_P:
         case PLUCK_I:
         case PLUCK_M:
         case PLUCK_A:
-            return switches.getValue(Switch.pluckings) ? new PluckingInter(null, shape, GRADE) : null; // No visit
+            return new PluckingInter(null, shape, GRADE); // No visit
 
         // Romans
         case ROMAN_I:
@@ -849,7 +976,7 @@ public class SymbolFactory
         case ROMAN_X:
         case ROMAN_XI:
         case ROMAN_XII:
-            return switches.getValue(Switch.frets) ? new FretInter(null, shape, GRADE) : null; // No visit
+            return new FretInter(null, shape, GRADE); // No visit
 
         // Others
         default:
@@ -857,143 +984,6 @@ public class SymbolFactory
             String msg = "No ghost instance for " + shape;
             logger.error(msg);
             throw new IllegalArgumentException(msg);
-        }
-    }
-
-    //-----------------------//
-    // handleComplexDynamics //
-    //-----------------------//
-    /**
-     * Handle competition between complex and shorter dynamics.
-     */
-    private void handleComplexDynamics ()
-    {
-        // All dynamics in system
-        final List<Inter> dynamics = sig.inters(DynamicsInter.class);
-
-        // Complex dynamics in system, sorted by decreasing length
-        final List<DynamicsInter> complexes = new ArrayList<DynamicsInter>();
-
-        for (Inter inter : dynamics) {
-            DynamicsInter dyn = (DynamicsInter) inter;
-
-            if (dyn.getSymbolString().length() > 1) {
-                complexes.add(dyn);
-            }
-        }
-
-        Collections.sort(
-                complexes,
-                new Comparator<DynamicsInter>()
-        {
-            @Override
-            public int compare (DynamicsInter d1,
-                                DynamicsInter d2)
-            {
-                // Sort by decreasing length
-                return Integer.compare(
-                        d2.getSymbolString().length(),
-                        d1.getSymbolString().length());
-            }
-        });
-
-        for (DynamicsInter complex : complexes) {
-            complex.swallowShorterDynamics(dynamics);
-        }
-    }
-
-    //-------------//
-    // handleTimes //
-    //-------------//
-    /**
-     * Handle time symbols outside of system header.
-     * <p>
-     * Isolated time symbols found outside of system header lead to the retrieval of a column of
-     * time signatures.
-     */
-    private void handleTimes ()
-    {
-        // Retrieve all time symbols (outside staff headers)
-        List<Inter> systemTimes = sig.inters(
-                new Class[]{TimeWholeInter.class, // Whole symbol like C or 6/8
-                            TimeNumberInter.class}); // Partial symbol like 6 or 8
-        List<Inter> headerTimes = new ArrayList<Inter>();
-
-        for (Inter inter : systemTimes) {
-            Staff staff = inter.getStaff();
-
-            if (inter.getCenter().x < staff.getHeaderStop()) {
-                headerTimes.add(inter);
-            }
-        }
-
-        systemTimes.removeAll(headerTimes);
-
-        if (systemTimes.isEmpty()) {
-            return;
-        }
-
-        // Dispatch these time symbols into their containing stack
-        Map<MeasureStack, Set<Inter>> timeMap = new TreeMap<MeasureStack, Set<Inter>>(
-                new Comparator<MeasureStack>()
-        {
-            @Override
-            public int compare (MeasureStack s1,
-                                MeasureStack s2)
-            {
-                return Integer.compare(s1.getIdValue(), s2.getIdValue());
-            }
-        });
-
-        for (Inter inter : systemTimes) {
-            MeasureStack stack = system.getStackAt(inter.getCenter());
-            Set<Inter> stackSet = timeMap.get(stack);
-
-            if (stackSet == null) {
-                timeMap.put(stack, stackSet = new LinkedHashSet<Inter>());
-            }
-
-            stackSet.add(inter);
-        }
-
-        // Finally, scan each stack populated with some time sig(s)
-        for (Entry<MeasureStack, Set<Inter>> entry : timeMap.entrySet()) {
-            MeasureStack stack = entry.getKey();
-            TimeBuilder.BasicColumn column = new TimeBuilder.BasicColumn(stack, entry.getValue());
-            int res = column.retrieveTime();
-
-            // If the stack does have a validated time sig, discard overlapping stuff right now!
-            if (res != -1) {
-                final Collection<AbstractTimeInter> times = column.getTimeInters().values();
-                final Rectangle columnBox = Inters.getBounds(times);
-                List<Inter> neighbors = sig.inters(
-                        new Predicate<Inter>()
-                {
-                    @Override
-                    public boolean check (Inter inter)
-                    {
-                        return inter.getBounds().intersects(columnBox)
-                               && !(inter instanceof InterEnsemble);
-                    }
-                });
-
-                neighbors.removeAll(times);
-
-                for (AbstractTimeInter time : times) {
-                    for (Iterator<Inter> it = neighbors.iterator(); it.hasNext();) {
-                        Inter neighbor = it.next();
-
-                        try {
-                            if (neighbor.overlaps(time)) {
-                                logger.debug("Deleting time overlapping {}", neighbor);
-                                neighbor.remove();
-                                it.remove();
-                            }
-                        } catch (DeletedInterException ignored) {
-                        }
-                    }
-                }
-            }
         }
     }
 }

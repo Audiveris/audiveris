@@ -25,12 +25,11 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
-import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.dynamic.CompoundFactory;
-import org.audiveris.omr.glyph.dynamic.CompoundFactory.CompoundConstructor;
 import org.audiveris.omr.glyph.dynamic.SectionCompound;
 import org.audiveris.omr.glyph.dynamic.StraightFilament;
 import org.audiveris.omr.lag.Section;
@@ -38,11 +37,10 @@ import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.run.Orientation;
-
 import static org.audiveris.omr.run.Orientation.*;
-
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Scale.Fraction;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -59,23 +57,15 @@ import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.Exclusion.Cause;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
-import org.audiveris.omr.sig.relation.StemPortion;
-
-import static org.audiveris.omr.sig.relation.StemPortion.*;
-
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Corner;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
-
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
-
 import static org.audiveris.omr.util.VerticalSide.*;
-
 import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
@@ -115,7 +105,8 @@ import java.util.Set;
  * A stem can aggregate several items: stem seeds (built from long vertical sticks) and chunks
  * (built from suitable sections found in the corner), all being separated by vertical gaps.
  * Up to which point should we try to accept vertical gaps and increase a stem length starting from
- * a head?<ol>
+ * a head?
+ * <ol>
  * <li>If there is a beam in the corner, try a stem that at least reaches the beam.</li>
  * <li>Use a similar approach for the case of flag (if the flag is in the right direction), except
  * that we don't have identified flags yet!</li>
@@ -146,15 +137,11 @@ import java.util.Set;
  */
 public class StemsBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            StemsBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(StemsBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -183,14 +170,13 @@ public class StemsBuilder
     private List<Inter> systemBeams;
 
     /** Stems interpretations for this system. */
-    private List<StemInter> systemStems = new ArrayList<StemInter>();
+    private final List<StemInter> systemStems = new ArrayList<>();
 
     private VerticalsBuilder verticalsBuilder;
 
     /** Constructor for stem compound. */
     private final CompoundFactory.CompoundConstructor stemConstructor;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StemsBuilder object.
      *
@@ -209,17 +195,9 @@ public class StemsBuilder
         ShapeSymbol symbol = Shape.NOTEHEAD_BLACK.getSymbol();
         headSymbolDim = symbol.getDimension(MusicFont.getHeadFont(scale, scale.getInterline()));
 
-        stemConstructor = new CompoundConstructor()
-        {
-            @Override
-            public SectionCompound newInstance ()
-            {
-                return new StraightFilament(scale.getInterline());
-            }
-        };
+        stemConstructor = new StraightFilament.Constructor(scale.getInterline());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // linkCueBeams //
     //--------------//
@@ -251,6 +229,7 @@ public class StemsBuilder
     /**
      * Link stems to suitable heads and beams in the system.
      * Retrieval is driven by heads (since a stem always needs a head), and can use beams.
+     *
      * <pre>
      * Synopsis:
      *
@@ -297,7 +276,8 @@ public class StemsBuilder
         Collections.sort(systemBeams, Inters.byAbscissa);
 
         // The abscissa-sorted head interpretations for this system
-        final List<Inter> systemHeads = sig.inters(ShapeSet.getStemTemplateNotes(system.getSheet()));
+        final List<Inter> systemHeads = sig.inters(
+                ShapeSet.getStemTemplateNotes(system.getSheet()));
         Collections.sort(systemHeads, Inters.byAbscissa);
 
         // First phase, look around heads for stems (and beams if any)
@@ -331,7 +311,7 @@ public class StemsBuilder
         watch.start("checkHeadStems");
 
         for (Inter head : systemHeads) {
-            checkHeadStems(head);
+            checkHeadStems((HeadInter) head);
         }
 
         // Discard heads with no stem link
@@ -352,7 +332,7 @@ public class StemsBuilder
             return;
         }
 
-        List<BeamStemRelation> rels = new ArrayList<BeamStemRelation>();
+        List<BeamStemRelation> rels = new ArrayList<>();
 
         for (Relation rel : sig.edgesOf(beam)) {
             if (rel instanceof BeamStemRelation) {
@@ -383,7 +363,7 @@ public class StemsBuilder
             logger.info("VIP checkBeamStems? {}");
         }
 
-        List<BeamStemRelation> rels = new ArrayList<BeamStemRelation>();
+        List<BeamStemRelation> rels = new ArrayList<>();
 
         for (Relation rel : sig.edgesOf(beam)) {
             if (rel instanceof BeamStemRelation) {
@@ -392,19 +372,16 @@ public class StemsBuilder
         }
 
         // Sort by abscissae
-        Collections.sort(
-                rels,
-                new Comparator<BeamStemRelation>()
-        {
-            @Override
-            public int compare (BeamStemRelation o1,
-                                BeamStemRelation o2)
-            {
-                return Double.compare(
-                        o1.getExtensionPoint().getX(),
-                        o2.getExtensionPoint().getX());
-            }
-        });
+        Collections.sort(rels, new Comparator<BeamStemRelation>()
+                 {
+                     @Override
+                     public int compare (BeamStemRelation o1,
+                                         BeamStemRelation o2)
+                     {
+                         return Double.compare(o1.getExtensionPoint().getX(), o2.getExtensionPoint()
+                                               .getX());
+                     }
+                 });
 
         final int size = rels.size();
 
@@ -442,10 +419,10 @@ public class StemsBuilder
      *
      * @param head the note head to check
      */
-    private void checkHeadStems (Inter head)
+    private void checkHeadStems (HeadInter head)
     {
         // Retrieve all stems connected to this head
-        List<Inter> allStems = new ArrayList<Inter>();
+        List<Inter> allStems = new ArrayList<>();
 
         for (Relation rel : sig.getRelations(head, HeadStemRelation.class)) {
             allStems.add(sig.getEdgeTarget(rel));
@@ -529,65 +506,17 @@ public class StemsBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
+    //---------------------//
+    // getMinStemExtension //
+    //---------------------//
+    /**
+     * Report the minimum extension that goes from last head to end of stem.
+     *
+     * @return the defined constant
+     */
+    public static Fraction getMinStemExtension ()
     {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
-
-        private final Scale.Fraction vicinityMargin = new Scale.Fraction(
-                1.0,
-                "Rough abscissa margin when looking for neighbors");
-
-        private final Constant.Double slopeMargin = new Constant.Double(
-                "tangent",
-                0.02,
-                "Margin around slope to define corner lookup area");
-
-        private final Scale.Fraction minHeadSectionContribution = new Scale.Fraction(
-                0.2,
-                "Minimum stem contribution for a section near head");
-
-        private final Scale.Fraction minStemExtension = new Scale.Fraction(
-                0.8,
-                "Minimum vertical distance from head to end of stem");
-
-        private final Scale.Fraction minHeadBeamDistance = new Scale.Fraction(
-                0.125,
-                "Minimum vertical distance between head and beam");
-
-        private final Scale.Fraction maxBeamDistance = new Scale.Fraction(
-                1.5,
-                "Default maximum vertical distance between two consecutive grouped beams");
-
-        private final Scale.Fraction minBeamStemsGap = new Scale.Fraction(
-                1.0,
-                "Minimum x gap between two stems on the same beam");
-
-        private final Constant.Ratio maxSeedJitter = new Constant.Ratio(
-                2.0,
-                "Maximum distance from stem seed to theoretical line,"
-                + " as ratio of typical stem width");
-
-        private final Constant.Ratio maxSectionJitter = new Constant.Ratio(
-                1.0,
-                "Maximum distance from section center to target line,"
-                + " as ratio of typical stem width");
-
-        private final Scale.Fraction yGapTiny = new Scale.Fraction(
-                0.1,
-                "Maximum vertical tiny gap between stem & head");
-
-        private final Constant.Ratio sideStemBoost = new Constant.Ratio(
-                0.5,
-                "How much do we boost beam side stems");
+        return constants.minStemExtension;
     }
 
     //------------//
@@ -599,7 +528,6 @@ public class StemsBuilder
      */
     private class HeadLinker
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** The head interpretation being processed. */
         private final Inter head;
@@ -616,14 +544,12 @@ public class StemsBuilder
         /** All stems interpretations in head vicinity. */
         private List<Inter> neighborStems;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public HeadLinker (Inter head)
+        HeadLinker (Inter head)
         {
             this.head = head;
             headBox = head.getBounds();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //---------------//
         // linkCueCorner //
         //---------------//
@@ -715,7 +641,6 @@ public class StemsBuilder
             return Glyphs.intersectedGlyphs(systemSeeds, fatBox);
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         //
         //--------------//
         // CornerLinker //
@@ -725,7 +650,6 @@ public class StemsBuilder
          */
         protected class CornerLinker
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             /** The corner being processed. */
             private final Corner corner;
@@ -754,8 +678,7 @@ public class StemsBuilder
             /** Ordinate range between refPt & limit. */
             private Rectangle yRange;
 
-            //~ Constructors -----------------------------------------------------------------------
-            public CornerLinker (Corner corner)
+            CornerLinker (Corner corner)
             {
                 this.corner = corner;
 
@@ -764,7 +687,6 @@ public class StemsBuilder
                 refPt = getReferencePoint();
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             //------//
             // link //
             //------//
@@ -806,11 +728,11 @@ public class StemsBuilder
 
                 // Look for additional chunks built out of sections found.
                 // Assign special role to a fat section part of head (if any)
-                Wrapper<Section> fatHeadSection = new Wrapper<Section>(null);
+                Wrapper<Section> fatHeadSection = new Wrapper<>(null);
                 List<Glyph> chunks = lookupChunks(fatHeadSection);
 
                 // Aggregate seeds and chunks up to the limit
-                List<Glyph> items = new ArrayList<Glyph>(seeds);
+                List<Glyph> items = new ArrayList<>(seeds);
 
                 if (!chunks.isEmpty()) {
                     items.addAll(chunks);
@@ -946,8 +868,9 @@ public class StemsBuilder
                     double toRight = beamLimit.getX2() - crossPt.getX();
                     final double xGap;
 
-                    if (beam instanceof BeamInter
-                        && (Math.min(toLeft, toRight) > params.maxBeamInDx)) {
+                    if (beam instanceof BeamInter && (Math.min(
+                            toLeft,
+                            toRight) > params.maxBeamInDx)) {
                         // It's a beam center connection
                         bRel.setBeamPortion(BeamPortion.CENTER);
                         xGap = 0;
@@ -1040,7 +963,8 @@ public class StemsBuilder
                         hRel.setExtensionPoint(
                                 new Point2D.Double(
                                         xAnchor,
-                                        (yDir > 0) ? headBox.y : ((headBox.y + headBox.height) - 1)));
+                                        (yDir > 0) ? headBox.y
+                                                : ((headBox.y + headBox.height) - 1)));
                         sig.addEdge(head, stemInter, hRel);
 
                         if (stemInter.isVip()) {
@@ -1265,8 +1189,8 @@ public class StemsBuilder
              */
             private StemInter getStemInter (Glyph glyph)
             {
-                for (ListIterator<StemInter> it = systemStems.listIterator(systemStems.size());
-                        it.hasPrevious();) {
+                for (ListIterator<StemInter> it = systemStems.listIterator(systemStems.size()); it
+                        .hasPrevious();) {
                     StemInter inter = it.previous();
 
                     if (inter.getGlyph() == glyph) {
@@ -1294,7 +1218,7 @@ public class StemsBuilder
                 Line2D theory = new Line2D.Double(refPt, targetPt);
 
                 // Look for stems seeds
-                seeds = new ArrayList<Glyph>(Glyphs.intersectedGlyphs(neighborSeeds, area));
+                seeds = new ArrayList<>(Glyphs.intersectedGlyphs(neighborSeeds, area));
 
                 if (!seeds.isEmpty()) {
                     // Purge seeds that do not contribute to ordinate range
@@ -1318,7 +1242,7 @@ public class StemsBuilder
                     }
 
                     // In case of overlap, simply keep the most contributive
-                    List<Glyph> kept = new ArrayList<Glyph>();
+                    List<Glyph> kept = new ArrayList<>();
                     sortByContrib(seeds);
 
                     StemLoop:
@@ -1406,7 +1330,7 @@ public class StemsBuilder
                                                   Section fatHeadSection)
             {
                 double lastY = refY; // Current end of stem
-                List<StemInter> allStemInters = new ArrayList<StemInter>();
+                List<StemInter> allStemInters = new ArrayList<>();
 
                 for (int i = 0; i < items.size(); i++) {
                     Glyph item = items.get(i);
@@ -1418,8 +1342,7 @@ public class StemsBuilder
                     }
 
                     // Is gap with previous item acceptable?
-                    final int itemY = (yDir > 0) ? itemBox.y : ((itemBox.y + itemBox.height)
-                                                                - 1);
+                    final int itemY = (yDir > 0) ? itemBox.y : ((itemBox.y + itemBox.height) - 1);
                     final double itemStart = (yDir > 0) ? Math.max(itemY, refY)
                             : Math.min(itemY, refY);
                     final double yGap = yDir * (itemStart - lastY);
@@ -1479,7 +1402,10 @@ public class StemsBuilder
                             // Extend stem connection till end of current beam group, if relevant
                             if (firstBeam.isGood() && (group.size() > 1)) {
                                 for (AbstractBeamInter next : group.subList(1, group.size())) {
-                                    if (sig.getRelation(next, stem, BeamStemRelation.class) == null) {
+                                    if (sig.getRelation(
+                                            next,
+                                            stem,
+                                            BeamStemRelation.class) == null) {
                                         BeamStemRelation r = new BeamStemRelation();
                                         r.setBeamPortion(rel.getBeamPortion());
 
@@ -1487,7 +1413,8 @@ public class StemsBuilder
                                         r.setExtensionPoint(
                                                 new Point2D.Double(
                                                         crossPt.getX(),
-                                                        crossPt.getY() + (yDir * (next.getHeight() - 1))));
+                                                        crossPt.getY() + (yDir * (next.getHeight()
+                                                                                          - 1))));
                                         r.setGrade(rel.getGrade());
                                         sig.addEdge(next, stem, r);
                                     }
@@ -1520,25 +1447,23 @@ public class StemsBuilder
                 }
 
                 // Sort candidates by distance from head
-                Collections.sort(
-                        candidates,
-                        new Comparator<Inter>()
-                {
-                    @Override
-                    public int compare (Inter i1,
-                                        Inter i2)
-                    {
-                        AbstractBeamInter b1 = (AbstractBeamInter) i1;
-                        AbstractBeamInter b2 = (AbstractBeamInter) i2;
+                Collections.sort(candidates, new Comparator<Inter>()
+                         {
+                             @Override
+                             public int compare (Inter i1,
+                                                 Inter i2)
+                             {
+                                 AbstractBeamInter b1 = (AbstractBeamInter) i1;
+                                 AbstractBeamInter b2 = (AbstractBeamInter) i2;
 
-                        return Double.compare(
-                                yDir * (getTargetPt(getLimit(b1)).getY() - refPt.getY()),
-                                yDir * (getTargetPt(getLimit(b2)).getY() - refPt.getY()));
-                    }
-                });
+                                 return Double.compare(
+                                         yDir * (getTargetPt(getLimit(b1)).getY() - refPt.getY()),
+                                         yDir * (getTargetPt(getLimit(b2)).getY() - refPt.getY()));
+                             }
+                         });
 
                 // Build the list of (groups of) beams
-                List<List<AbstractBeamInter>> groups = new ArrayList<List<AbstractBeamInter>>();
+                List<List<AbstractBeamInter>> groups = new ArrayList<>();
                 List<AbstractBeamInter> group = null;
                 AbstractBeamInter prevBeam = null;
                 boolean groupIsGood = false;
@@ -1561,7 +1486,7 @@ public class StemsBuilder
                         group.add(beam);
                     } else {
                         // Start a brand new group
-                        groups.add(group = new ArrayList<AbstractBeamInter>());
+                        groups.add(group = new ArrayList<>());
                         group.add(beam);
                         groupIsGood = beam.isGood();
                     }
@@ -1593,7 +1518,7 @@ public class StemsBuilder
                         stemConstructor);
 
                 // Remove useless glyphs and put wide glyphs apart
-                List<SectionCompound> wides = new ArrayList<SectionCompound>();
+                List<SectionCompound> wides = new ArrayList<>();
 
                 for (Iterator<SectionCompound> it = chunks.iterator(); it.hasNext();) {
                     SectionCompound chunk = it.next();
@@ -1617,7 +1542,7 @@ public class StemsBuilder
                 // For too wide chunks we just keep the biggest section
                 if (!wides.isEmpty()) {
                     for (SectionCompound wide : wides) {
-                        List<Section> members = new ArrayList<Section>(wide.getMembers());
+                        List<Section> members = new ArrayList<>(wide.getMembers());
                         Collections.sort(members, Section.reverseWeightComparator);
 
                         SectionCompound compound = CompoundFactory.buildCompound(
@@ -1628,7 +1553,7 @@ public class StemsBuilder
                 }
 
                 // Convert section compounds to glyphs
-                List<Glyph> glyphs = new ArrayList<Glyph>(chunks.size());
+                List<Glyph> glyphs = new ArrayList<>(chunks.size());
 
                 for (SectionCompound chunk : chunks) {
                     glyphs.add(chunk.toGlyph(null));
@@ -1656,8 +1581,8 @@ public class StemsBuilder
                 final Line2D hLine = (corner.hSide == LEFT) ? new Line2D.Double(outPt, inPt)
                         : new Line2D.Double(inPt, outPt);
                 final int refY = (int) Math.rint(refPt.getY());
-                final List<Section> sections = new ArrayList<Section>();
-                final List<Section> headSections = new ArrayList<Section>();
+                final List<Section> sections = new ArrayList<>();
+                final List<Section> headSections = new ArrayList<>();
 
                 // Widen head box with max stem width
                 final Rectangle wideHeadBox = head.getBounds();
@@ -1677,15 +1602,16 @@ public class StemsBuilder
 
                         // Check intersection at least
                         if (!area.intersects(sectBox)) {
-                            continue SectionLoop;
+                            continue;
                         }
 
                         // Containment is mandatory except for a head section
                         // (a section that intersects head glyph)
                         if (!area.contains(sectBox)) {
-                            if (!sectBox.intersects(wideHeadBox)
-                                || !GeoUtil.yEmbraces(sectBox, refY)) {
-                                continue SectionLoop;
+                            if (!sectBox.intersects(wideHeadBox) || !GeoUtil.yEmbraces(
+                                    sectBox,
+                                    refY)) {
+                                continue;
                             }
 
                             // Section is likely to be part of head itself.
@@ -1717,7 +1643,7 @@ public class StemsBuilder
                                     }
                                 }
 
-                                continue SectionLoop;
+                                continue;
                             }
 
                             // A headSection must provide significant contribution
@@ -1727,7 +1653,7 @@ public class StemsBuilder
                             if (sectContrib < params.minHeadSectionContribution) {
                                 logger.debug("Discarding tiny headSection {}", section);
 
-                                continue SectionLoop;
+                                continue;
                             }
 
                             headSections.add(section);
@@ -1735,7 +1661,7 @@ public class StemsBuilder
 
                         // Contraint section width <= stem width
                         if (sectBox.width > params.maxStemThickness) {
-                            continue SectionLoop;
+                            continue;
                         }
 
                         // A section which intersects an existing seed is useless
@@ -1812,21 +1738,19 @@ public class StemsBuilder
              */
             private void sortByContrib (List<Glyph> glyphs)
             {
-                Collections.sort(
-                        glyphs,
-                        new Comparator<Glyph>()
-                {
-                    @Override
-                    public int compare (Glyph o1,
-                                        Glyph o2)
-                    {
-                        // Sort by decreasing contribution
-                        int c1 = getContrib(o1.getBounds());
-                        int c2 = getContrib(o2.getBounds());
+                Collections.sort(glyphs, new Comparator<Glyph>()
+                         {
+                             @Override
+                             public int compare (Glyph o1,
+                                                 Glyph o2)
+                             {
+                                 // Sort by decreasing contribution
+                                 int c1 = getContrib(o1.getBounds());
+                                 int c2 = getContrib(o2.getBounds());
 
-                        return Integer.signum(c2 - c1);
-                    }
-                });
+                                 return Integer.signum(c2 - c1);
+                             }
+                         });
             }
 
             //----------------//
@@ -1842,91 +1766,6 @@ public class StemsBuilder
         }
     }
 
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final double slopeMargin;
-
-        final int maxHeadOutDx;
-
-        final int maxBeamInDx;
-
-        final int maxHeadInDx;
-
-        final int vicinityMargin;
-
-        final int maxStemHeadGapY;
-
-        final int maxYGap;
-
-        final int maxStemThickness;
-
-        final int minChunkWeight;
-
-        final int minHeadSectionContribution;
-
-        final int minStemExtension;
-
-        final int minHeadBeamDistance;
-
-        final int minBeamStemsGap;
-
-        final double maxSeedJitter;
-
-        final double maxSectionJitter;
-
-        final int maxBeamDistance;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (SystemInfo system,
-                           Scale scale)
-        {
-            slopeMargin = constants.slopeMargin.getValue();
-            maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum(false));
-            maxBeamInDx = scale.toPixels(BeamStemRelation.getXInGapMaximum(false));
-            maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum(false));
-            vicinityMargin = scale.toPixels(constants.vicinityMargin);
-            maxStemHeadGapY = scale.toPixels(HeadStemRelation.getYGapMaximum(false));
-            maxYGap = scale.toPixels(VerticalsBuilder.getMaxYGap());
-            minHeadSectionContribution = scale.toPixels(constants.minHeadSectionContribution);
-            minStemExtension = scale.toPixels(constants.minStemExtension);
-            minHeadBeamDistance = scale.toPixels(constants.minHeadBeamDistance);
-            minBeamStemsGap = scale.toPixels(constants.minBeamStemsGap);
-
-            final int stemThickness = scale.getMaxStem();
-            maxStemThickness = stemThickness;
-            maxSeedJitter = constants.maxSeedJitter.getValue() * stemThickness;
-            maxSectionJitter = constants.maxSectionJitter.getValue() * stemThickness;
-
-            minChunkWeight = scale.getStemThickness(); // TODO: check this
-
-            Double beamDistance = scale.getBeamMeanDistance();
-
-            if (beamDistance != null) {
-                maxBeamDistance = (int) Math.ceil(
-                        beamDistance + (2 * scale.getBeamSigmaDistance()));
-            } else {
-                maxBeamDistance = scale.toPixels(constants.maxBeamDistance);
-            }
-
-            if (logger.isDebugEnabled()) {
-                new Dumping().dump(this);
-            }
-        }
-    }
-
     //--------------//
     // ShareChecker //
     //--------------//
@@ -1935,19 +1774,16 @@ public class StemsBuilder
      */
     private class ShareChecker
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Inter head;
+        private final HeadInter head;
 
-        private final List<HeadStemRelation> rels = new ArrayList<HeadStemRelation>();
+        private final List<HeadStemRelation> rels = new ArrayList<>();
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public ShareChecker (Inter head)
+        ShareChecker (HeadInter head)
         {
             this.head = head;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public void check (List<Inter> stems)
         {
             // Retrieve stem relations
@@ -2063,43 +1899,175 @@ public class StemsBuilder
 
         /**
          * Check whether this is the canonical "shared" configuration.
-         * (STEM_TOP on head LEFT side and STEM_BOTTOM on head RIGHT side).
-         * <pre>
-         *    |
-         *  +O+
-         *  |
-         * </pre>
+         * <p>
+         * For this test, we cannot trust stem extensions and must stay with physical stem limits.
          *
          * @return true if canonical
          */
         private boolean isCanonicalShare ()
         {
-            boolean left = false;
-            boolean right = false;
+            StemInter leftStem = null;
+            StemInter rightStem = null;
 
             for (HeadStemRelation rel : rels) {
-                StemInter stem = (StemInter) sig.getOppositeInter(head, rel);
+                if (rel.getDy() > constants.yGapTiny.getValue()) {
+                    return false;
+                }
 
-                // For this test, we cannot trust stem extensions and must stay with physical stem
-                Line2D stemLine = new Line2D.Double(stem.getTop(), stem.getBottom());
-                StemPortion portion = rel.getStemPortion(head, stemLine, scale);
-                HorizontalSide side = rel.getHeadSide();
-                double yGap = rel.getDy();
-
-                if (yGap <= constants.yGapTiny.getValue()) {
-                    if (portion == STEM_TOP) {
-                        if (side == LEFT) {
-                            left = true;
-                        }
-                    } else if (portion == STEM_BOTTOM) {
-                        if (side == RIGHT) {
-                            right = true;
-                        }
-                    }
+                if (rel.getHeadSide() == LEFT) {
+                    leftStem = (StemInter) sig.getOppositeInter(head, rel);
+                } else {
+                    rightStem = (StemInter) sig.getOppositeInter(head, rel);
                 }
             }
 
-            return left && right;
+            if (leftStem == null || rightStem == null) {
+                return false;
+            }
+
+            return HeadStemRelation.isCanonicalShare(leftStem, head, rightStem);
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        private final Scale.Fraction vicinityMargin = new Scale.Fraction(
+                1.0,
+                "Rough abscissa margin when looking for neighbors");
+
+        private final Constant.Double slopeMargin = new Constant.Double(
+                "tangent",
+                0.02,
+                "Margin around slope to define corner lookup area");
+
+        private final Scale.Fraction minHeadSectionContribution = new Scale.Fraction(
+                0.2,
+                "Minimum stem contribution for a section near head");
+
+        private final Scale.Fraction minStemExtension = new Scale.Fraction(
+                0.8,
+                "Minimum vertical distance from head to end of stem");
+
+        private final Scale.Fraction minHeadBeamDistance = new Scale.Fraction(
+                0.125,
+                "Minimum vertical distance between head and beam");
+
+        private final Scale.Fraction maxBeamDistance = new Scale.Fraction(
+                1.5,
+                "Default maximum vertical distance between two consecutive grouped beams");
+
+        private final Scale.Fraction minBeamStemsGap = new Scale.Fraction(
+                1.0,
+                "Minimum x gap between two stems on the same beam");
+
+        private final Constant.Ratio maxSeedJitter = new Constant.Ratio(
+                2.0,
+                "Maximum distance from stem seed to theoretical line,"
+                        + " as ratio of typical stem width");
+
+        private final Constant.Ratio maxSectionJitter = new Constant.Ratio(
+                1.0,
+                "Maximum distance from section center to target line,"
+                        + " as ratio of typical stem width");
+
+        private final Scale.Fraction yGapTiny = new Scale.Fraction(
+                0.1,
+                "Maximum vertical tiny gap between stem & head");
+
+        private final Constant.Ratio sideStemBoost = new Constant.Ratio(
+                0.5,
+                "How much do we boost beam side stems");
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+
+        final double slopeMargin;
+
+        final int maxHeadOutDx;
+
+        final int maxBeamInDx;
+
+        final int maxHeadInDx;
+
+        final int vicinityMargin;
+
+        final int maxStemHeadGapY;
+
+        final int maxYGap;
+
+        final int maxStemThickness;
+
+        final int minChunkWeight;
+
+        final int minHeadSectionContribution;
+
+        final int minStemExtension;
+
+        final int minHeadBeamDistance;
+
+        final int minBeamStemsGap;
+
+        final double maxSeedJitter;
+
+        final double maxSectionJitter;
+
+        final int maxBeamDistance;
+
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        Parameters (SystemInfo system,
+                    Scale scale)
+        {
+            slopeMargin = constants.slopeMargin.getValue();
+            maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum(false));
+            maxBeamInDx = scale.toPixels(BeamStemRelation.getXInGapMaximum(false));
+            maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum(false));
+            vicinityMargin = scale.toPixels(constants.vicinityMargin);
+            maxStemHeadGapY = scale.toPixels(HeadStemRelation.getYGapMaximum(false));
+            maxYGap = scale.toPixels(VerticalsBuilder.getMaxYGap());
+            minHeadSectionContribution = scale.toPixels(constants.minHeadSectionContribution);
+            minStemExtension = scale.toPixels(getMinStemExtension());
+            minHeadBeamDistance = scale.toPixels(constants.minHeadBeamDistance);
+            minBeamStemsGap = scale.toPixels(constants.minBeamStemsGap);
+
+            final int stemThickness = scale.getMaxStem();
+            maxStemThickness = stemThickness;
+            maxSeedJitter = constants.maxSeedJitter.getValue() * stemThickness;
+            maxSectionJitter = constants.maxSectionJitter.getValue() * stemThickness;
+
+            minChunkWeight = scale.getStemThickness(); // TODO: check this
+
+            Double beamDistance = scale.getBeamMeanDistance();
+
+            if (beamDistance != null) {
+                maxBeamDistance = (int) Math.ceil(
+                        beamDistance + (2 * scale.getBeamSigmaDistance()));
+            } else {
+                maxBeamDistance = scale.toPixels(constants.maxBeamDistance);
+            }
+
+            if (logger.isDebugEnabled()) {
+                new Dumping().dump(this);
+            }
         }
     }
 }

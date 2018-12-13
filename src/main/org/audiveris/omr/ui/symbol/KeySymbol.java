@@ -32,16 +32,16 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code KeySymbol} displays a Key Signature symbol.
+ *
+ * @author Hervé Bitteur
  */
 public abstract class KeySymbol
         extends ShapeSymbol
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The key to represent, -7..-1 for flats, 1..7 for sharps */
     protected final int key;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new KeySymbol object.
      *
@@ -59,7 +59,6 @@ public abstract class KeySymbol
         this.key = key;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getParams //
     //-----------//
@@ -68,7 +67,7 @@ public abstract class KeySymbol
     {
         MyParams p = new MyParams();
 
-        p.stepDy = font.getStaffInterline() / 2;
+        p.stepDy = font.getStaffInterline() / 2.0;
 
         // One item
         p.layout = layout(font);
@@ -128,14 +127,12 @@ public abstract class KeySymbol
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         double stepDy; // Dy from one step to the other
 

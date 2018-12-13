@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.ui.selection;
 
+import java.awt.Point;
 import static org.audiveris.omr.ui.selection.SelectionHint.ENTITY_INIT;
 import org.audiveris.omr.util.Entity;
 import org.audiveris.omr.util.EntityIndex;
@@ -47,18 +48,15 @@ import java.util.List;
  * {@link #disconnect} methods.
  *
  * @param <E> precise entity type
- *
  * @author Hervé Bitteur
  */
 public class EntityService<E extends Entity>
         extends SelectionService
         implements EventSubscriber<UserEvent>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(EntityService.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying entity index, if any. */
     protected final EntityIndex<E> index;
 
@@ -66,9 +64,8 @@ public class EntityService<E extends Entity>
     protected final SelectionService locationService;
 
     /** Basket of entities selected via location (rectangle/point). */
-    protected final List<E> basket = new ArrayList<E>();
+    protected final List<E> basket = new ArrayList<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code EntityService} object with no underlying index.
      *
@@ -103,7 +100,6 @@ public class EntityService<E extends Entity>
         this.locationService = locationService;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // connect //
     //---------//
@@ -223,6 +219,12 @@ public class EntityService<E extends Entity>
     //-----------------//
     // getMostRelevant //
     //-----------------//
+    /**
+     * Among the list of selected entities, report the most "relevant" one.
+     *
+     * @param list the sequence of selected entities
+     * @return the chosen entity
+     */
     protected E getMostRelevant (List<E> list)
     {
         if (!list.isEmpty()) {
@@ -271,7 +273,7 @@ public class EntityService<E extends Entity>
     protected void handleEvent (IdEvent idEvent)
     {
         final E entity = index.getEntity(idEvent.getData());
-        publish(new EntityListEvent<E>(this, idEvent.hint, idEvent.movement, entity));
+        publish(new EntityListEvent<>(this, idEvent.hint, idEvent.movement, entity));
     }
 
     //---------------------//
@@ -292,6 +294,9 @@ public class EntityService<E extends Entity>
             return;
         }
 
+        // Keep only relevant entities in basket
+        purgeBasket();
+
         final List<E> selection = getSelectedEntityList();
 
         if (hint.isLocation() || (hint.isContext() && selection.isEmpty())) {
@@ -299,10 +304,11 @@ public class EntityService<E extends Entity>
                 // Non-degenerated rectangle: look for contained entities
                 basket.clear();
                 basket.addAll(index.getContainedEntities(rect));
-                publish(new EntityListEvent<E>(this, hint, movement, basket));
+                publish(new EntityListEvent<>(this, hint, movement, basket));
             } else {
                 // Just a point: look for most relevant entity
-                E entity = getMostRelevant(index.getContainingEntities(rect.getLocation()));
+                final Point loc = rect.getLocation();
+                final E entity = getMostRelevant(index.getContainingEntities(loc));
 
                 // Update basket
                 switch (hint) {
@@ -347,8 +353,19 @@ public class EntityService<E extends Entity>
                 }
 
                 // Publish basket
-                publish(new EntityListEvent<E>(this, null, movement, basket));
+                publish(new EntityListEvent<>(this, null, movement, basket));
             }
         }
+    }
+
+    //-------------//
+    // purgeBasket //
+    //-------------//
+    /**
+     * Purge basket of no longer relevant entities.
+     */
+    protected void purgeBasket ()
+    {
+        // Void by default
     }
 }

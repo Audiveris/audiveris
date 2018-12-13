@@ -27,14 +27,14 @@ import javax.swing.JSeparator;
 /**
  * Class {@code SeparablePopupMenu} is a popup menu which is able to collapse unneeded
  * separators.
- * This is derived from {link SeparableMenu}.
+ * <p>
+ * This is derived from {@link SeparableMenu}.
  *
  * @author Hervé Bitteur
  */
 public class SeparablePopupMenu
         extends JPopupMenu
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new SeparablePopupMenu object.
@@ -54,12 +54,11 @@ public class SeparablePopupMenu
         super(s);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // addSeparator //
     //--------------//
     /**
-     * The separator will be inserted only if it is really necessary
+     * The separator will be inserted only if it is really necessary.
      */
     @Override
     public void addSeparator ()
@@ -75,7 +74,7 @@ public class SeparablePopupMenu
     // trimSeparator //
     //---------------//
     /**
-     * Remove any potential orphan separator at the end of the menu
+     * Remove any potential orphan separator at the end of the menu.
      */
     public void trimSeparator ()
     {

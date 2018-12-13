@@ -23,7 +23,7 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigListener;
-import org.audiveris.omr.sig.relation.BasicContainment;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
@@ -43,11 +43,14 @@ import java.util.List;
  */
 public abstract class EnsembleHelper
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(EnsembleHelper.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
+    /** Not meant to be instantiated. */
+    private EnsembleHelper ()
+    {
+    }
+
     //-----------//
     // addMember //
     //-----------//
@@ -67,7 +70,7 @@ public abstract class EnsembleHelper
                                   Inter member)
     {
         SIGraph sig = ensemble.getSig();
-        sig.addEdge(ensemble, member, new BasicContainment());
+        sig.addEdge(ensemble, member, new Containment());
     }
 
     //------------//
@@ -91,10 +94,10 @@ public abstract class EnsembleHelper
             return Collections.EMPTY_LIST;
         }
 
-        List<Inter> members = new ArrayList<Inter>();
+        List<Inter> members = new ArrayList<>();
 
         if (sig.containsVertex(ensemble)) {
-            for (Relation rel : sig.getRelations(ensemble, BasicContainment.class)) {
+            for (Relation rel : sig.getRelations(ensemble, Containment.class)) {
                 members.add(sig.getOppositeInter(ensemble, rel));
             }
 
@@ -111,7 +114,7 @@ public abstract class EnsembleHelper
     //----------------//
     /**
      * Convert old containment implementation (based on nesting) to new implementation
-     * based on explicit BasicContainment in SIG.
+     * based on explicit Containment in SIG.
      *
      * @param ensemble   the containing inter
      * @param oldMembers the (unmarshalled) old list of nested members

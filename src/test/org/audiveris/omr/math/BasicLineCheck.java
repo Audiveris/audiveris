@@ -84,7 +84,7 @@ public class BasicLineCheck
     public static void checkGetNoMeanDistance (BasicLine l)
     {
         try {
-            double md = l.getMeanDistance();
+            l.getMeanDistance();
             print(l);
             fail("Exception should be raised" + " when less than 2 points are known");
         } catch (Exception expected) {
@@ -196,7 +196,7 @@ public class BasicLineCheck
     public static void checkNoDistanceOf (BasicLine l)
     {
         try {
-            double d = l.distanceOf(0, 0);
+            l.distanceOf(0, 0);
             fail("Exception should be raised" + " when line parameters are not set");
         } catch (Exception expected) {
             checkException(expected);
@@ -252,7 +252,7 @@ public class BasicLineCheck
         try {
             print(l);
 
-            double d = l.distanceOf(0, 0);
+            l.distanceOf(0, 0);
             fail("Exception should be raised" + " when line parameters are not set");
         } catch (Exception expected) {
             checkException(expected);
@@ -483,21 +483,21 @@ public class BasicLineCheck
     protected static void assertParamsUndefined (BasicLine l)
     {
         try {
-            double a = l.getA();
+            l.getA();
             fail("Exception should be raised" + " when parameter A is undefined");
         } catch (Exception expected) {
             checkException(expected);
         }
 
         try {
-            double a = l.getB();
+            l.getB();
             fail("Exception should be raised" + " when parameter B is undefined");
         } catch (Exception expected) {
             checkException(expected);
         }
 
         try {
-            double a = l.getC();
+            l.getC();
             fail("Exception should be raised" + " when parameter C is undefined");
         } catch (Exception expected) {
             checkException(expected);

@@ -26,6 +26,7 @@ import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextWord;
+import org.audiveris.omr.util.Jaxb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,12 +47,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class WordInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            WordInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(WordInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Word text content. */
     @XmlAttribute
     protected String value;
@@ -63,9 +61,9 @@ public class WordInter
 
     /** Precise word starting point. */
     @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.PointAdapter.class)
     protected Point location;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code WordInter} object, with TEXT shape.
      *
@@ -118,7 +116,6 @@ public class WordInter
         this.fontInfo = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -164,18 +161,6 @@ public class WordInter
     }
 
     //----------//
-    // setGlyph //
-    //----------//
-    @Override
-    public void setGlyph (Glyph glyph)
-    {
-        super.setGlyph(glyph);
-
-        // Location?
-        // FontInfo?
-    }
-
-    //----------//
     // setValue //
     //----------//
     /**
@@ -186,6 +171,18 @@ public class WordInter
     public void setValue (String value)
     {
         this.value = value;
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        super.setGlyph(glyph);
+
+        // Location?
+        // FontInfo?
     }
 
     //-------------//

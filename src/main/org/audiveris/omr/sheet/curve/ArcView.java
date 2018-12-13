@@ -33,7 +33,6 @@ import java.util.List;
  */
 public class ArcView
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** True arc underneath. */
     private final Arc arc;
@@ -42,7 +41,6 @@ public class ArcView
 
     private List<Point> points;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ArcView object.
      *
@@ -56,27 +54,48 @@ public class ArcView
         this.reversed = reversed;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * Report the underlying arc.
+     *
+     * @return the arc
+     */
     public Arc getArc ()
     {
         return arc;
     }
 
+    /**
+     * Report the ending point at specified end.
+     *
+     * @param reverse desired direction
+     * @return ending point
+     */
     public Point getEnd (boolean reverse)
     {
         return arc.getEnd(reverse ^ reversed);
     }
 
+    /**
+     * Report junction, if any, at specified end.
+     *
+     * @param reverse desired direction
+     * @return junction or null
+     */
     public Point getJunction (boolean reverse)
     {
         return arc.getJunction(reverse ^ reversed);
     }
 
+    /**
+     * Report the sequence of points.
+     *
+     * @return the current sequence of defining points
+     */
     public List<Point> getPoints ()
     {
         if (points == null) {
             if (reversed) {
-                points = new ArrayList<Point>(arc.getPoints());
+                points = new ArrayList<>(arc.getPoints());
                 Collections.reverse(points);
             } else {
                 points = arc.getPoints();

@@ -36,14 +36,12 @@ import java.util.Collection;
  *
  * @author Hervé Bitteur
  */
-public class BasicLine
+public final class BasicLine
         implements Line
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BasicLine.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Flag to indicate that data needs to be recomputed. */
     private boolean dirty;
 
@@ -89,7 +87,6 @@ public class BasicLine
     /** Maximum ordinate among all defining points. */
     private double yMax = Double.MIN_VALUE;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a line, with no data.
      * The line is no yet usable, except for including further defining points.
@@ -157,7 +154,6 @@ public class BasicLine
         checkLineParameters();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------------//
     // checkLineParameters //
     //---------------------//
@@ -192,6 +188,12 @@ public class BasicLine
     //------------//
     // distanceOf //
     //------------//
+    /**
+     * Report the algebraic distance from the provided Point2D to the line.
+     *
+     * @param point the provided point
+     * @return the algebraic distance
+     */
     public double distanceOf (Point2D point)
     {
         return distanceOf(point.getX(), point.getY());
@@ -252,8 +254,10 @@ public class BasicLine
 
         checkLineParameters();
 
-        double distSq = ((a * a * sx2) + (b * b * sy2) + (c * c * n) + (2 * a * b * sxy)
-                         + (2 * a * c * sx) + (2 * b * c * sy)) / n;
+        double distSq = ((a * a * sx2) + (b * b * sy2) + (c * c * n) + (2 * a * b * sxy) + (2 * a
+                                                                                                    * c
+                                                                                            * sx)
+                                 + (2 * b * c * sy)) / n;
 
         if (distSq < 0) {
             distSq = 0;
@@ -336,6 +340,11 @@ public class BasicLine
     //--------------//
     // includePoint //
     //--------------//
+    /**
+     * Add a defining point to the line.
+     *
+     * @param point the point to include
+     */
     public void includePoint (Point2D point)
     {
         includePoint(point.getX(), point.getY());
@@ -415,12 +424,16 @@ public class BasicLine
      */
     public Line2D.Double toDouble ()
     {
-        checkLineParameters();
+        try {
+            checkLineParameters();
 
-        if (isRatherVertical) {
-            return new Line2D.Double(xAtY(yMin), yMin, xAtY(yMax), yMax);
-        } else {
-            return new Line2D.Double(xMin, yAtX(xMin), xMax, yAtX(xMax));
+            if (isRatherVertical) {
+                return new Line2D.Double(xAtY(yMin), yMin, xAtY(yMax), yMax);
+            } else {
+                return new Line2D.Double(xMin, yAtX(xMin), xMax, yAtX(xMax));
+            }
+        } catch (UndefinedLineException ulex) {
+            return null; // Not enough points
         }
     }
 
@@ -550,6 +563,56 @@ public class BasicLine
         return yAtX(x);
     }
 
+    //---------//
+    // compute //
+    //---------//
+    /**
+     * Compute the line equation, based on the cumulated number of points
+     */
+    private void compute ()
+    {
+        dirty = false;
+
+        if (n < 2) {
+            throw new UndefinedLineException("Not enough defining points : " + n);
+        }
+
+        // Make a choice between horizontal vs vertical
+        double hDen = (n * sx2) - (sx * sx);
+        double vDen = (n * sy2) - (sy * sy);
+        logger.trace("hDen={} vDen={}", hDen, vDen);
+
+        if (abs(hDen) >= abs(vDen)) {
+            // Use a rather horizontal orientation, y = mx +p
+            isRatherVertical = false;
+            a = ((n * sxy) - (sx * sy)) / hDen;
+            b = -1d;
+            c = ((sy * sx2) - (sx * sxy)) / hDen;
+        } else {
+            // Use a rather vertical orientation, x = my +p
+            isRatherVertical = true;
+            a = -1d;
+            b = ((n * sxy) - (sx * sy)) / vDen;
+            c = ((sx * sy2) - (sy * sxy)) / vDen;
+        }
+
+        normalize();
+    }
+
+    //-----------//
+    // normalize //
+    //-----------//
+    /**
+     * Compute the distance normalizing factor
+     */
+    private void normalize ()
+    {
+        double norm = hypot(a, b);
+        a /= norm;
+        b /= norm;
+        c /= norm;
+    }
+
     //------//
     // getA // Meant for test
     //------//
@@ -580,52 +643,4 @@ public class BasicLine
         return c;
     }
 
-    //---------//
-    // compute //
-    //---------//
-    /**
-     * Compute the line equation, based on the cumulated number of points
-     */
-    private void compute ()
-    {
-        if (n < 2) {
-            throw new UndefinedLineException("Not enough defining points : " + n);
-        }
-
-        // Make a choice between horizontal vs vertical
-        double hDen = (n * sx2) - (sx * sx);
-        double vDen = (n * sy2) - (sy * sy);
-        logger.trace("hDen={} vDen={}", hDen, vDen);
-
-        if (abs(hDen) >= abs(vDen)) {
-            // Use a rather horizontal orientation, y = mx +p
-            isRatherVertical = false;
-            a = ((n * sxy) - (sx * sy)) / hDen;
-            b = -1d;
-            c = ((sy * sx2) - (sx * sxy)) / hDen;
-        } else {
-            // Use a rather vertical orientation, x = my +p
-            isRatherVertical = true;
-            a = -1d;
-            b = ((n * sxy) - (sx * sy)) / vDen;
-            c = ((sx * sy2) - (sy * sxy)) / vDen;
-        }
-
-        normalize();
-        dirty = false;
-    }
-
-    //-----------//
-    // normalize //
-    //-----------//
-    /**
-     * Compute the distance normalizing factor
-     */
-    private void normalize ()
-    {
-        double norm = hypot(a, b);
-        a /= norm;
-        b /= norm;
-        c /= norm;
-    }
 }

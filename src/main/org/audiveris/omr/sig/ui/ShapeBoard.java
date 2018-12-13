@@ -33,7 +33,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.ui.SymbolsEditor;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.symbol.SymbolFactory;
+import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.OmrGlassPane;
 import org.audiveris.omr.ui.dnd.AbstractGhostDropListener;
@@ -70,11 +70,13 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.swing.JButton;
+import javax.swing.SwingUtilities;
 
 /**
  * Class {@code ShapeBoard} hosts a palette of shapes for insertion and assignment of
@@ -96,12 +98,10 @@ import javax.swing.JButton;
 public class ShapeBoard
         extends Board
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            ShapeBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(ShapeBoard.class);
 
     /** To force the width of the various panels. */
     private static final int BOARD_WIDTH = 317;
@@ -114,16 +114,15 @@ public class ShapeBoard
     private static final Map<ShapeSet, Integer> heights = buildHeightMap();
 
     /** Map first typed char to selected shape set. */
-    private static final Map<Character, ShapeSet> setMap = new HashMap<Character, ShapeSet>();
+    private static final Map<Character, ShapeSet> setMap = new HashMap<>();
 
     /** Map 2-char typed string to selected shape. */
-    private static final Map<String, Shape> shapeMap = new HashMap<String, Shape>();
+    private static final Map<String, Shape> shapeMap = new HashMap<>();
 
     static {
         populateCharMaps();
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -173,7 +172,6 @@ public class ShapeBoard
 
                 if (glyph != null) {
                     ShapeButton button = (ShapeButton) e.getSource();
-                    shapeHistory.add(button.shape);
                     assignGlyph(glyph, button.shape);
                 }
             }
@@ -184,7 +182,7 @@ public class ShapeBoard
     private final Panel setsPanel;
 
     /** Map of shape panels, indexed by shapeSet. */
-    private final Map<ShapeSet, Panel> shapesPanels = new HashMap<ShapeSet, Panel>();
+    private final Map<ShapeSet, Panel> shapesPanels = new HashMap<>();
 
     /** History of recently used shapes. */
     private final ShapeHistory shapeHistory;
@@ -204,9 +202,9 @@ public class ShapeBoard
     /** When mouse is pressed (start) and released (stop). */
     private final MyDropAdapter dropAdapter = new MyDropAdapter();
 
-    private MyKeyListener keyListener = new MyKeyListener();
+    /** To handle sequence of keys typed. */
+    private final MyKeyListener keyListener = new MyKeyListener();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new ShapeBoard object.
      *
@@ -232,7 +230,32 @@ public class ShapeBoard
         getComponent().addKeyListener(keyListener);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //--------------//
+    // addToHistory //
+    //--------------//
+    /**
+     * Add a shape to recent history.
+     *
+     * @param shape the shape just used
+     */
+    public void addToHistory (Shape shape)
+    {
+        shapeHistory.add(shape);
+    }
+
+    //------------//
+    // getHistory //
+    //------------//
+    /**
+     * Report the recent shapes.
+     *
+     * @return list of most recent shapes
+     */
+    public List<Shape> getHistory ()
+    {
+        return shapeHistory.getShapes();
+    }
+
     //---------//
     // onEvent //
     //---------//
@@ -299,7 +322,7 @@ public class ShapeBoard
                              List<Shape> shapes)
     {
         for (Shape shape : shapes) {
-            ShapeButton button = new ShapeButton(shape);
+            ShapeButton button = new ShapeButton(shape, keyListener);
             button.addMouseListener(mouseListener); // For double-click
             button.addMouseListener(dropAdapter); // For DnD transfer and double-click
             button.addMouseMotionListener(motionAdapter); // For dragging
@@ -323,7 +346,7 @@ public class ShapeBoard
     //----------------//
     private static Map<ShapeSet, Integer> buildHeightMap ()
     {
-        Map<ShapeSet, Integer> map = new HashMap<ShapeSet, Integer>();
+        Map<ShapeSet, Integer> map = new HashMap<>();
         map.put(ShapeSet.Accidentals, 40);
         map.put(ShapeSet.Articulations, 40);
         map.put(ShapeSet.Attributes, 60);
@@ -444,9 +467,7 @@ public class ShapeBoard
     private void defineLayout ()
     {
         CellConstraints cst = new CellConstraints();
-        FormLayout layout = new FormLayout(
-                "190dlu",
-                "pref," + Panel.getFieldInterline() + ",pref");
+        FormLayout layout = new FormLayout("190dlu", "pref," + Panel.getFieldInterline() + ",pref");
         PanelBuilder builder = new PanelBuilder(layout, getBody());
 
         builder.add(shapeHistory.panel, cst.xy(1, 1));
@@ -527,22 +548,20 @@ public class ShapeBoard
         shapesPanel.requestFocusInWindow();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ShapeButton //
     //-------------//
     /**
      * A button dedicated to a shape.
      */
-    public class ShapeButton
+    public static class ShapeButton
             extends JButton
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Shape shape;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public ShapeButton (Shape shape)
+        public ShapeButton (Shape shape,
+                            MyKeyListener keyListener)
         {
             this.shape = shape;
             setIcon(shape.getDecoratedSymbol());
@@ -557,10 +576,9 @@ public class ShapeBoard
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean publishLocationWhileDragging = new Constant.Boolean(
                 false,
@@ -581,14 +599,12 @@ public class ShapeBoard
     private class MyDropAdapter
             extends GhostDropAdapter<Shape>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public MyDropAdapter ()
         {
             super(ShapeBoard.this.glassPane, null);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public Shape getAction ()
         {
             return action;
@@ -639,7 +655,6 @@ public class ShapeBoard
     private class MyDropListener
             extends AbstractGhostDropListener<Shape>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public MyDropListener ()
         {
@@ -647,7 +662,6 @@ public class ShapeBoard
             super(null);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void dropped (GhostDropEvent<Shape> e)
         {
@@ -668,7 +682,7 @@ public class ShapeBoard
                         dndOperation.drop(localPt);
 
                         // Update history
-                        shapeHistory.add(dndOperation.getGhost().getShape());
+                        addToHistory(dndOperation.getGhost().getShape());
                     }
                 }
             }
@@ -686,11 +700,9 @@ public class ShapeBoard
     private class MyKeyListener
             implements KeyListener
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         Character c1 = null;
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void keyPressed (KeyEvent e)
         {
@@ -723,14 +735,13 @@ public class ShapeBoard
                 logger.debug("shape:{}", shape);
 
                 if (shape != null) {
-                    shapeHistory.add(shape);
-
                     Glyph glyph = sheet.getGlyphIndex().getSelectedGlyph();
 
                     if (glyph != null) {
                         assignGlyph(glyph, shape);
                     } else {
                         // Set focus on proper shape button
+                        addToHistory(shape);
                         shapeHistory.setFocus();
                     }
                 } else {
@@ -758,22 +769,19 @@ public class ShapeBoard
     private class MyMotionAdapter
             extends GhostMotionAdapter
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // Optimization: remember the latest component on target
         private WeakReference<Component> prevComponent;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public MyMotionAdapter ()
         {
             super(ShapeBoard.this.glassPane);
             reset();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public final void reset ()
         {
-            prevComponent = new WeakReference<Component>(null);
+            prevComponent = new WeakReference<>(null);
         }
 
         /**
@@ -809,7 +817,7 @@ public class ShapeBoard
                             dndOperation = new DndOperation(
                                     sheet,
                                     zoom,
-                                    SymbolFactory.createManual(shape, sheet));
+                                    InterFactory.createManual(shape, sheet));
                         }
 
                         dndOperation.enteringTarget();
@@ -818,14 +826,15 @@ public class ShapeBoard
                         glass.setReference(null);
                     }
 
-                    prevComponent = new WeakReference<Component>(component);
+                    prevComponent = new WeakReference<>(component);
                 }
 
                 if (shape.isDraggable()) {
                     // Update reference point
                     Point localRef = dndOperation.getReference(localPt);
                     glass.setReference(
-                            (localRef != null) ? new ScreenPoint(view, zoom.scaled(localRef)) : null);
+                            (localRef != null) ? new ScreenPoint(view, zoom.scaled(localRef))
+                                    : null);
                 }
             } else if (prevComponent.get() != null) {
                 // No longer on a droppable target, reuse initial image & size
@@ -848,18 +857,16 @@ public class ShapeBoard
      */
     private class ShapeHistory
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Shapes recently used, ordered from most to less recent. */
-        private final List<Shape> shapes = new ArrayList<Shape>();
+        private final List<Shape> shapes = new ArrayList<>();
 
         private final Panel panel = new Panel();
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ShapeHistory ()
         {
             panel.setNoInsets();
-            panel.setPreferredSize(new Dimension(BOARD_WIDTH, 55));
+            panel.setPreferredSize(new Dimension(BOARD_WIDTH, 80));
             panel.setVisible(false);
 
             FlowLayout layout = new FlowLayout();
@@ -867,23 +874,50 @@ public class ShapeBoard
             panel.setLayout(layout);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
-        public void add (Shape shape)
+        /**
+         * Insert a shape in history.
+         * <p>
+         * This dynamically modifies the display of recently used shapes, and thus must be performed
+         * from EDT (and not from a background thread).
+         *
+         * @param shape the most recent shape
+         */
+        public void add (final Shape shape)
         {
-            shapes.remove(shape); // Remove duplicate if any
-            shapes.add(0, shape); // Insert at beginning of the list
+            if (!SwingUtilities.isEventDispatchThread()) {
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable()
+                    {
+                        @Override
+                        public void run ()
+                        {
+                            add(shape);
+                        }
+                    });
+                } catch (Exception ex) {
+                    logger.warn("invokeAndWait error", ex);
+                }
+            } else {
+                shapes.remove(shape); // Remove duplicate if any
+                shapes.add(0, shape); // Insert at beginning of the list
 
-            // Check for maximum length
-            while (shapes.size() > constants.maxHistoryLength.getValue()) {
-                shapes.remove(shapes.size() - 1);
+                // Check for maximum length
+                while (shapes.size() > constants.maxHistoryLength.getValue()) {
+                    shapes.remove(shapes.size() - 1);
+                }
+
+                // Regenerate the buttons
+                panel.removeAll();
+                addButtons(panel, shapes);
+
+                panel.setVisible(true);
+                resizeBoard();
             }
+        }
 
-            // Regenerate the buttons
-            panel.removeAll();
-            addButtons(panel, shapes);
-
-            panel.setVisible(true);
-            resizeBoard();
+        public List<Shape> getShapes ()
+        {
+            return Collections.unmodifiableList(shapes);
         }
 
         /**

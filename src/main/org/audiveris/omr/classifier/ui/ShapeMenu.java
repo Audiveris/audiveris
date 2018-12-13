@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -44,34 +45,43 @@ import javax.swing.JMenuItem;
 public class ShapeMenu
         extends SeparableMenu
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ShapeMenu.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing sheet. */
     private final Sheet sheet;
 
     /** Selected glyph. */
     private final Glyph glyph;
 
-    //~ Constructors -------------------------------------------------------------------------------
+    private final ActionListener shapeListener;
+
     /**
      * Creates a new {@code ShapeMenu} object.
      *
      * @param glyph the selected glyph
      * @param sheet the containing sheet
      */
-    public ShapeMenu (Glyph glyph,
-                      Sheet sheet)
+    public ShapeMenu (final Glyph glyph,
+                      final Sheet sheet)
     {
         this.sheet = sheet;
         this.glyph = glyph;
 
+        shapeListener = new ActionListener()
+        {
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                JMenuItem source = (JMenuItem) e.getSource();
+                Shape shape = Shape.valueOf(source.getText());
+                sheet.getInterController().assignGlyph(glyph, shape);
+            }
+        };
+
         populateMenu();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getGlyph //
     //----------//
@@ -83,6 +93,25 @@ public class ShapeMenu
         return glyph;
     }
 
+    //-----------------//
+    // addRecentShapes //
+    //-----------------//
+    private void addRecentShapes ()
+    {
+        List<Shape> shapes = sheet.getSymbolsEditor().getShapeBoard().getHistory();
+
+        if (!shapes.isEmpty()) {
+            for (Shape shape : shapes) {
+                JMenuItem menuItem = new JMenuItem(shape.toString(), shape.getDecoratedSymbol());
+                menuItem.setToolTipText(shape.getDescription());
+                menuItem.addActionListener(shapeListener);
+                add(menuItem);
+            }
+
+            addSeparator();
+        }
+    }
+
     //--------------//
     // populateMenu //
     //--------------//
@@ -90,41 +119,30 @@ public class ShapeMenu
     {
         setText(Integer.toString(glyph.getId()));
 
+        // Convenient assignment to most recent shapes
+        addRecentShapes();
+
         // Manual shape selection
         add(new AssignMenu());
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // AssignMenu //
     //------------//
     private class AssignMenu
             extends JMenu
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public AssignMenu ()
+        AssignMenu ()
         {
             super("Assign");
 
             populate();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         private void populate ()
         {
-            ShapeSet.addAllShapes(
-                    this,
-                    new ActionListener()
-            {
-                @Override
-                public void actionPerformed (ActionEvent e)
-                {
-                    JMenuItem source = (JMenuItem) e.getSource();
-                    Shape shape = Shape.valueOf(source.getText());
-                    sheet.getInterController().assignGlyph(glyph, shape);
-                }
-            });
+            ShapeSet.addAllShapes(this, shapeListener);
         }
     }
 }

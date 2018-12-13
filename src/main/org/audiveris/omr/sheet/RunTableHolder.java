@@ -27,13 +27,8 @@ import org.audiveris.omr.sheet.Picture.TableKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
-import java.nio.file.Files;
+import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -47,12 +42,9 @@ import javax.xml.bind.annotation.XmlAttribute;
 @XmlAccessorType(value = XmlAccessType.NONE)
 public class RunTableHolder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            RunTableHolder.class);
+    private static final Logger logger = LoggerFactory.getLogger(RunTableHolder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Direct access to data, if any. */
     private RunTable data;
 
@@ -63,7 +55,6 @@ public class RunTableHolder
     /** To avoid useless marshalling to disk. */
     private boolean modified = false;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code RunTableHolder} object.
      *
@@ -80,7 +71,6 @@ public class RunTableHolder
         pathString = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//
@@ -97,24 +87,17 @@ public class RunTableHolder
                 stub.getBook().getLock().lock();
 
                 if (data == null) {
-                    JAXBContext jaxbContext = JAXBContext.newInstance(RunTable.class);
-                    Unmarshaller um = jaxbContext.createUnmarshaller();
-
                     // Open book file system
-                    Path dataFile = stub.getBook().openSheetFolder(stub.getNumber())
-                            .resolve(pathString);
-                    logger.debug("path: {}", dataFile);
-
-                    InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ);
-                    data = (RunTable) um.unmarshal(is);
-                    is.close();
-
+                    Path dataFolder = stub.getBook().openSheetFolder(stub.getNumber());
+                    Path dataFile = dataFolder.resolve(pathString);
+                    logger.debug("path to file: {}", dataFile);
+                    data = RunTable.unmarshal(dataFile);
                     dataFile.getFileSystem().close(); // Close book file system
                     modified = false;
                     logger.debug("Loaded {}", dataFile);
                 }
-            } catch (Exception ex) {
-                logger.warn("Error unmarshalling from " + pathString, ex);
+            } catch (IOException ex) {
+                logger.warn("Error unmarshalling from {}", pathString, ex);
             } finally {
                 stub.getBook().getLock().unlock();
             }
@@ -126,6 +109,11 @@ public class RunTableHolder
     //---------//
     // hasData //
     //---------//
+    /**
+     * Tell whether run table data is present.
+     *
+     * @return true if loaded
+     */
     public boolean hasData ()
     {
         return data != null;
@@ -134,14 +122,38 @@ public class RunTableHolder
     //------------//
     // isModified //
     //------------//
+    /**
+     * Tell whether it has been modified.
+     *
+     * @return true if modified
+     */
     public boolean isModified ()
     {
         return modified;
     }
 
+    //-------------//
+    // setModified //
+    //-------------//
+    /**
+     * Assign modified indicator.
+     *
+     * @param bool new value for modified
+     */
+    public void setModified (boolean bool)
+    {
+        modified = bool;
+    }
+
     //---------//
     // setData //
     //---------//
+    /**
+     * Assign the table data (table just created) and modified flag.
+     *
+     * @param data     the table data
+     * @param modified modified flag
+     */
     public void setData (RunTable data,
                          boolean modified)
     {
@@ -149,11 +161,21 @@ public class RunTableHolder
         setModified(modified);
     }
 
-    //-------------//
-    // setModified //
-    //-------------//
-    public void setModified (boolean bool)
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
     {
-        modified = bool;
+        final StringBuilder sb = new StringBuilder("RunTableHolder{");
+
+        if (pathString != null) {
+            sb.append(pathString);
+        }
+
+        sb.append('}');
+
+        return sb.toString();
     }
+
 }

@@ -39,26 +39,26 @@ import javax.swing.JMenuItem;
  * Class {@code AbstractActionMenu}
  * <p>
  * In a menu, actions are physically grouped by semantic tag and
- * separators are inserted between such groups.</p>
+ * separators are inserted between such groups.
+ * </p>
  * <p>
  * Actions are also organized according to their target menu level,
  * to allow actions to be dispatched into a hierarchy of menus.
- * Although currently all levels are set to 0.</p>
+ * Although currently all levels are set to 0.
+ * </p>
  *
  * @author Hervé Bitteur
  */
 public abstract class AbstractActionMenu
         extends AbstractGlyphMenu
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Map action -> tag to update according to context */
-    private final Map<DynAction, Integer> dynActions = new LinkedHashMap<DynAction, Integer>();
+    private final Map<DynAction, Integer> dynActions = new LinkedHashMap<>();
 
     /** Map action -> menu level */
-    private final Map<DynAction, Integer> levels = new LinkedHashMap<DynAction, Integer>();
+    private final Map<DynAction, Integer> levels = new LinkedHashMap<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractActionMenu object.
      *
@@ -71,7 +71,6 @@ public abstract class AbstractActionMenu
         super(sheet, text);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // updateMenu //
     //------------//
@@ -97,7 +96,7 @@ public abstract class AbstractActionMenu
         super.initMenu();
 
         // Sort actions on their tag
-        SortedSet<Integer> tags = new TreeSet<Integer>(dynActions.values());
+        SortedSet<Integer> tags = new TreeSet<>(dynActions.values());
 
         // Retrieve the highest menu level
         int maxLevel = 0;
@@ -110,7 +109,8 @@ public abstract class AbstractActionMenu
         JMenu prevMenu = getMenu();
 
         for (int level = 0; level <= maxLevel; level++) {
-            JMenu currentMenu = (level == 0) ? getMenu() : new SeparableMenu("Continued ...");
+            SeparableMenu currentMenu = (level == 0) ? getMenu()
+                    : new SeparableMenu("Continued ...");
 
             for (Integer tag : tags) {
                 for (Map.Entry<DynAction, Integer> entry : dynActions.entrySet()) {
@@ -126,9 +126,7 @@ public abstract class AbstractActionMenu
                 currentMenu.addSeparator();
             }
 
-            if (currentMenu instanceof SeparableMenu) {
-                ((SeparableMenu) currentMenu).trimSeparator();
-            }
+            currentMenu.trimSeparator();
 
             if ((level > 0) && (currentMenu.getMenuComponentCount() > 0)) {
                 // Insert this menu as a submenu of the previous one
@@ -155,7 +153,6 @@ public abstract class AbstractActionMenu
         dynActions.put(action, action.tag);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // DynAction //
     //-----------//
@@ -163,21 +160,23 @@ public abstract class AbstractActionMenu
      * Base implementation, to register the dynamic actions that need
      * to be updated according to the current glyph selection context.
      */
-    protected abstract class DynAction
+    protected abstract static class DynAction
             extends AbstractAction
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Semantic tag */
         protected final int tag;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public DynAction (int tag)
+        /**
+         * Create a DynAction instance.
+         *
+         * @param tag
+         */
+        DynAction (int tag)
         {
             this.tag = tag;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Report which item class should be used to the related menu item
          *
@@ -192,5 +191,12 @@ public abstract class AbstractActionMenu
          * Method to update the action according to the current context
          */
         public abstract void update ();
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 }

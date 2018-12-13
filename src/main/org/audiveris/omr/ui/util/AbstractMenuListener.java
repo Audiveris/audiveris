@@ -33,7 +33,6 @@ import javax.swing.event.MenuListener;
 public class AbstractMenuListener
         implements MenuListener
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     @Override
     public void menuCanceled (MenuEvent e)

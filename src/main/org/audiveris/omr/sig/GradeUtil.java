@@ -31,13 +31,16 @@ import java.util.Objects;
  *
  * @author Hervé Bitteur
  */
-public class GradeUtil
+public abstract class GradeUtil
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GradeUtil.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
+    /** Not meant to be instantiated. */
+    private GradeUtil ()
+    {
+    }
+
     //-------//
     // clamp //
     //-------//

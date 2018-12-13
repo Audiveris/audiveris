@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
  * It uses a vertical window which performs the computation in constant time, provided that the
  * vertical window always moves to the right. Instead of a whole table of integrals, this class uses
  * a vertical tile whose width equals the window size, and the height equals the picture height.
+ * <br>
  * <pre>
  *                                              +----------------+
  *                                              |   TILE_WIDTH   |
@@ -59,6 +60,7 @@ import org.slf4j.LoggerFactory;
  * |                                            c|              d|
  * +---------------------------------------------+---------------+
  * </pre>
+ * <p>
  * Since only the (1 + WINDOW_SIZE) last columns are relevant, a tile uses a circular buffer to
  * handle only those columns.
  * <p>
@@ -72,11 +74,9 @@ import org.slf4j.LoggerFactory;
 public class VerticalFilter
         extends AdaptiveFilter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(VerticalFilter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an adaptive wrapper on a raw pixel source.
      *
@@ -97,8 +97,6 @@ public class VerticalFilter
                 true);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //
     //--------//
     // MyTile //
     //--------//
@@ -108,14 +106,12 @@ public class VerticalFilter
     private class MyTile
             extends Tile
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public MyTile (boolean squared)
+        MyTile (boolean squared)
         {
             super(2 + (2 * HALF_WINDOW_SIZE), source.getHeight(), squared);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void shiftTile (int x2)
         {

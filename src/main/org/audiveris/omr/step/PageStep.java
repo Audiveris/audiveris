@@ -28,6 +28,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voices;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
@@ -48,7 +49,11 @@ import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
+import org.audiveris.omr.sig.relation.AugmentationRelation;
+import org.audiveris.omr.sig.relation.DoubleDotRelation;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.InterTask;
+import org.audiveris.omr.sig.ui.RelationTask;
 import org.audiveris.omr.sig.ui.StackTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
@@ -80,15 +85,29 @@ import java.util.Set;
 public class PageStep
         extends AbstractStep
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PageStep.class);
 
     /** Classes that may impact voices. */
     private static final Set<Class> forVoices;
 
+    /** Classes that may impact lyrics. */
+    private static final Set<Class> forLyrics;
+
+    /** Classes that may impact slurs. */
+    private static final Set<Class> forSlurs;
+
+    /** Classes that may impact parts. */
+    private static final Set<Class> forParts;
+
+    /** Classes that may impact measures. */
+    private static final Set<Class> forMeasures;
+
+    /** All impacting classes. */
+    private static final Set<Class> impactingClasses;
+
     static {
-        forVoices = new HashSet<Class>();
+        forVoices = new HashSet<>();
         forVoices.add(AugmentationDotInter.class);
         forVoices.add(BarlineInter.class);
         forVoices.add(BeamHookInter.class);
@@ -105,49 +124,35 @@ public class PageStep
         forVoices.add(TimePairInter.class);
         forVoices.add(TimeWholeInter.class);
         forVoices.add(TupletInter.class);
-
+        forVoices.add(AugmentationRelation.class);
+        forVoices.add(DoubleDotRelation.class);
         forVoices.add(MeasureStack.class);
     }
 
-    /** Classes that may impact lyrics. */
-    private static final Set<Class> forLyrics;
-
     static {
-        forLyrics = new HashSet<Class>();
+        forLyrics = new HashSet<>();
         forLyrics.add(LyricItemInter.class);
         forLyrics.add(LyricLineInter.class);
     }
 
-    /** Classes that may impact slurs. */
-    private static final Set<Class> forSlurs;
-
     static {
-        forSlurs = new HashSet<Class>();
+        forSlurs = new HashSet<>();
         forSlurs.add(SlurInter.class);
     }
 
-    /** Classes that may impact parts. */
-    private static final Set<Class> forParts;
-
     static {
-        forParts = new HashSet<Class>();
+        forParts = new HashSet<>();
         forParts.add(SentenceInter.class);
     }
 
-    /** Classes that may impact measures. */
-    private static final Set<Class> forMeasures;
-
     static {
-        forMeasures = new HashSet<Class>();
+        forMeasures = new HashSet<>();
         forMeasures.add(BarlineInter.class);
         forMeasures.add(StaffBarlineInter.class);
     }
 
-    /** All impacting classes. */
-    private static final Set<Class> impactingClasses;
-
     static {
-        impactingClasses = new HashSet<Class>();
+        impactingClasses = new HashSet<>();
         impactingClasses.addAll(forVoices);
         impactingClasses.addAll(forLyrics);
         impactingClasses.addAll(forSlurs);
@@ -155,7 +160,6 @@ public class PageStep
         impactingClasses.addAll(forMeasures);
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PageStep} object.
      */
@@ -163,7 +167,6 @@ public class PageStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // doit //
     //------//
@@ -198,8 +201,11 @@ public class PageStep
     {
         logger.debug("PAGE impact {} {}", opKind, seq);
 
+        final SIGraph sig = seq.getSig();
+        final SystemInfo system = sig.getSystem();
+
         // First, determine what will be impacted
-        Map<Page, Impact> map = new LinkedHashMap<Page, Impact>();
+        Map<Page, Impact> map = new LinkedHashMap<>();
 
         for (UITask task : seq.getTasks()) {
             if (task instanceof InterTask) {
@@ -236,8 +242,8 @@ public class PageStep
                     impact.onVoices = true;
                 }
 
-                if (isImpactedBy(classe, forMeasures)
-                    && seq.isOptionSet(UITaskList.Option.UPDATE_MEASURES)) {
+                if (isImpactedBy(classe, forMeasures) && seq.isOptionSet(
+                        UITaskList.Option.UPDATE_MEASURES)) {
                     impact.onMeasures = true;
                 }
             } else if (task instanceof StackTask) {
@@ -251,6 +257,23 @@ public class PageStep
                 }
 
                 if (isImpactedBy(classe, forVoices)) {
+                    impact.onVoices = true;
+                }
+            } else if (task instanceof RelationTask) {
+                RelationTask relationTask = (RelationTask) task;
+                Relation relation = relationTask.getRelation();
+                Class classe = relation.getClass();
+
+                if (isImpactedBy(classe, forVoices)) {
+                    Inter source = relationTask.getSource();
+                    MeasureStack stack = system.getStackAt(source.getCenter());
+                    Page page = stack.getSystem().getPage();
+                    Impact impact = map.get(page);
+
+                    if (impact == null) {
+                        map.put(page, impact = new Impact());
+                    }
+
                     impact.onVoices = true;
                 }
             }
@@ -312,13 +335,11 @@ public class PageStep
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Impact //
     //--------//
     private static class Impact
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         boolean onParts = false;
 
@@ -330,7 +351,6 @@ public class PageStep
 
         boolean onMeasures = false;
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

@@ -21,11 +21,71 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.InterEnsemble;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
- * Interface {@code Containment} defines ensemble - member relation.
+ * Class {@code Containment} represents an ensemble - member relation.
  *
  * @author Hervé Bitteur
  */
-public interface Containment
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "containment")
+public class Containment
+        extends Relation
 {
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        InterEnsemble ensemble = (InterEnsemble) e.getEdgeSource();
+        ensemble.invalidateCache();
+    }
+
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return true;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return false;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        InterEnsemble ensemble = (InterEnsemble) e.getEdgeSource();
+
+        if (!ensemble.isRemoved()) {
+            ensemble.invalidateCache();
+        }
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
 }

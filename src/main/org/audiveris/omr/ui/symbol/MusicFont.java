@@ -45,7 +45,8 @@ import java.util.Map;
  * when rendering score views.
  * <p>
  * The strategy is to use a properly scaled instance of this class to carry out the drawing of music
- * symbols with the correct size. The scaling should address:<ul>
+ * symbols with the correct size. The scaling should address:
+ * <ul>
  * <li>An interline value adapted to current sheet (or even staff) scaling,</li>
  * <li>A specific font size meant for heads rendering, which may significantly differ from pure
  * interline-based scaling.</li>
@@ -53,21 +54,21 @@ import java.util.Map;
  * To get properly scaled instances, use the convenient methods {@link #getBaseFont(int)} and
  * {@link #getHeadFont(Scale, int)}.
  * <p>
- * There are two well-known pre-scaled instances of this class:<ul>
+ * There are two well-known pre-scaled instances of this class:
+ * <ul>
  * <li>{@link #baseMusicFont} for standard symbols (scale = 1)</li>
  * <li>{@link #iconMusicFont} for icon symbols (scale = 1/2)</li>
  * </ul>
  * The current underlying font is <b>MusicalSymbols</b>.
  *
  * @see
- * <a href="http://fonts.simplythebest.net/font/108/musical_symbols-font.font">http://fonts.simplythebest.net/font/108/musical_symbols-font.font</a>
- *
+ * <a href=
+ *      "http://fonts.simplythebest.net/font/108/musical_symbols-font.font">http://fonts.simplythebest.net/font/108/musical_symbols-font.font</a>
  * @author Hervé Bitteur
  */
 public class MusicFont
         extends OmrFont
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -87,7 +88,7 @@ public class MusicFont
     public static final int CODE_OFFSET = 0xf000;
 
     /** Cache of font according to scaling value (pointSize, staffInterline). */
-    private static final Map<Scaling, MusicFont> scalingMap = new HashMap<Scaling, MusicFont>();
+    private static final Map<Scaling, MusicFont> scalingMap = new HashMap<>();
 
     /** Default interline value, consistent with base font: {@value}. */
     public static final int DEFAULT_INTERLINE = 16;
@@ -102,11 +103,9 @@ public class MusicFont
             getPointSize(DEFAULT_INTERLINE) / 2,
             DEFAULT_INTERLINE / 2);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Interline value of the staves where this font is used. */
     private final int staffInterline;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new MusicFont object.
      *
@@ -120,7 +119,181 @@ public class MusicFont
         this.staffInterline = staffInterline;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // buildImage //
+    //------------//
+    /**
+     * Build an image from the shape definition in MusicFont, using the
+     * intrinsic scaling of this font.
+     *
+     * @param shape     the desired shape
+     * @param decorated true if shape display must use decorations
+     * @return the image built with proper scaling, or null
+     */
+    public BufferedImage buildImage (Shape shape,
+                                     boolean decorated)
+    {
+        ShapeSymbol symbol = Symbols.getSymbol(shape, decorated);
+
+        if (symbol == null) {
+            return null;
+        } else {
+            return symbol.buildImage(this);
+        }
+    }
+
+    //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (obj == this) {
+            return true;
+        }
+
+        if (obj instanceof MusicFont) {
+            MusicFont that = (MusicFont) obj;
+
+            if (this.staffInterline != that.staffInterline) {
+                return false;
+            }
+
+            return super.equals(obj);
+        }
+
+        return false;
+    }
+
+    //----------//
+    // hashCode //
+    //----------//
+    @Override
+    public int hashCode ()
+    {
+        int hash = 7;
+        hash = (71 * hash) + this.staffInterline;
+
+        return hash;
+    }
+
+    //--------//
+    // layout //
+    //--------//
+    /**
+     * Build a TextLayout from a Shape, using its related String of MusicFont characters,
+     * and potentially sized by an AffineTransform instance.
+     *
+     * @param shape the shape to be drawn with MusicFont chars
+     * @param fat   potential affine transformation
+     * @return the (sized) TextLayout ready to be drawn
+     */
+    public TextLayout layout (Shape shape,
+                              AffineTransform fat)
+    {
+        ShapeSymbol symbol = Symbols.getSymbol(shape);
+
+        if (symbol == null) {
+            logger.debug("No MusicFont symbol for {}", shape);
+
+            return null;
+        }
+
+        return layout(symbol.getString(), fat);
+    }
+
+    //--------//
+    // layout //
+    //--------//
+    /**
+     * Build a TextLayout from a Shape, using its related String of
+     * MusicFont characters, and sized to fit the provided dimension.
+     *
+     * @param shape     the shape to be drawn with MusicFont chars
+     * @param dimension the dim to fit as much as possible
+     * @return the adjusted TextLayout ready to be drawn
+     */
+    public TextLayout layout (Shape shape,
+                              Dimension dimension)
+    {
+        ShapeSymbol symbol = Symbols.getSymbol(shape);
+
+        if (symbol != null) {
+            return layout(symbol, dimension);
+        } else {
+            return null;
+        }
+    }
+
+    //--------//
+    // layout //
+    //--------//
+    /**
+     * Build a TextLayout from a symbol, using its related String of
+     * MusicFont characters, and sized to fit the provided dimension.
+     *
+     * @param symbol    the symbol to be drawn with MusicFont chars
+     * @param dimension the dim to fit as much as possible
+     * @return the adjusted TextLayout ready to be drawn
+     */
+    public TextLayout layout (BasicSymbol symbol,
+                              Dimension dimension)
+    {
+        String str = symbol.getString();
+        TextLayout layout = new TextLayout(str, this, frc);
+
+        // Compute proper affine transformation
+        Rectangle2D rect = layout.getBounds();
+        AffineTransform fat = AffineTransform.getScaleInstance(
+                dimension.width / rect.getWidth(),
+                dimension.height / rect.getHeight());
+
+        return layout(str, fat);
+    }
+
+    //--------//
+    // layout //
+    //--------//
+    /**
+     * Build a TextLayout from a Shape, using its related String of
+     * MusicFont character codes.
+     *
+     * @param shape the shape to be drawn with MusicFont chars
+     * @return the TextLayout ready to be drawn
+     */
+    public TextLayout layout (Shape shape)
+    {
+        return layout(shape, (AffineTransform) null);
+    }
+
+    //--------//
+    // layout //
+    //--------//
+    /**
+     * Build a TextLayout from a String of MusicFont character codes.
+     *
+     * @param codes the MusicFont codes
+     * @return the TextLayout ready to be drawn
+     */
+    public TextLayout layout (int... codes)
+    {
+        return layout(new String(codes, 0, codes.length));
+    }
+
+    //-------------------//
+    // getStaffInterline //
+    //-------------------//
+    /**
+     * Report the number of pixels of the interline that corresponds to the staves
+     * where this font is used.
+     *
+     * @return the scaled interline of the related staff size.
+     */
+    protected int getStaffInterline ()
+    {
+        return staffInterline;
+    }
+
     //------------//
     // buildImage //
     //------------//
@@ -265,8 +438,8 @@ public class MusicFont
     {
         final Scale.MusicFontScale musicFontScale = scale.getMusicFontScale();
         final Scale smallScale = scale.getSmallScale();
-        final boolean isSmallStaff = (smallScale != null)
-                                     && (smallScale.getInterline() == staffInterline);
+        final boolean isSmallStaff = (smallScale != null) && (smallScale
+                .getInterline() == staffInterline);
 
         if (musicFontScale != null) {
             if (isSmallStaff) {
@@ -294,6 +467,11 @@ public class MusicFont
     //--------------//
     // getHeadRatio //
     //--------------//
+    /**
+     * Report an increase in head size, a trick for better head rendering.
+     *
+     * @return ratio slightly over 1.0
+     */
     public static double getHeadRatio ()
     {
         return constants.headRatio.getValue();
@@ -337,154 +515,12 @@ public class MusicFont
         return 4 * staffInterline;
     }
 
-    //------------//
-    // buildImage //
-    //------------//
-    /**
-     * Build an image from the shape definition in MusicFont, using the
-     * intrinsic scaling of this font.
-     *
-     * @param shape     the desired shape
-     * @param decorated true if shape display must use decorations
-     * @return the image built with proper scaling, or null
-     */
-    public BufferedImage buildImage (Shape shape,
-                                     boolean decorated)
-    {
-        ShapeSymbol symbol = Symbols.getSymbol(shape, decorated);
-
-        if (symbol == null) {
-            return null;
-        } else {
-            return symbol.buildImage(this);
-        }
-    }
-
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a Shape, using its related String of MusicFont characters,
-     * and potentially sized by an AffineTransform instance.
-     *
-     * @param shape the shape to be drawn with MusicFont chars
-     * @param fat   potential affine transformation
-     * @return the (sized) TextLayout ready to be drawn
-     */
-    public TextLayout layout (Shape shape,
-                              AffineTransform fat)
-    {
-        ShapeSymbol symbol = Symbols.getSymbol(shape);
-
-        if (symbol == null) {
-            logger.debug("No MusicFont symbol for {}", shape);
-
-            return null;
-        }
-
-        return layout(symbol.getString(), fat);
-    }
-
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a Shape, using its related String of
-     * MusicFont characters, and sized to fit the provided dimension.
-     *
-     * @param shape     the shape to be drawn with MusicFont chars
-     * @param dimension the dim to fit as much as possible
-     * @return the adjusted TextLayout ready to be drawn
-     */
-    public TextLayout layout (Shape shape,
-                              Dimension dimension)
-    {
-        ShapeSymbol symbol = Symbols.getSymbol(shape);
-
-        if (symbol != null) {
-            return layout(symbol, dimension);
-        } else {
-            return null;
-        }
-    }
-
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a symbol, using its related String of
-     * MusicFont characters, and sized to fit the provided dimension.
-     *
-     * @param symbol    the symbol to be drawn with MusicFont chars
-     * @param dimension the dim to fit as much as possible
-     * @return the adjusted TextLayout ready to be drawn
-     */
-    public TextLayout layout (BasicSymbol symbol,
-                              Dimension dimension)
-    {
-        String str = symbol.getString();
-        TextLayout layout = new TextLayout(str, this, frc);
-
-        // Compute proper affine transformation
-        Rectangle2D rect = layout.getBounds();
-        AffineTransform fat = AffineTransform.getScaleInstance(
-                dimension.width / rect.getWidth(),
-                dimension.height / rect.getHeight());
-
-        return layout(str, fat);
-    }
-
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a Shape, using its related String of
-     * MusicFont character codes.
-     *
-     * @param shape the shape to be drawn with MusicFont chars
-     * @return the TextLayout ready to be drawn
-     */
-    public TextLayout layout (Shape shape)
-    {
-        return layout(shape, (AffineTransform) null);
-    }
-
-    //--------//
-    // layout //
-    //--------//
-    /**
-     * Build a TextLayout from a String of MusicFont character codes.
-     *
-     * @param codes the MusicFont codes
-     * @return the TextLayout ready to be drawn
-     */
-    public TextLayout layout (int... codes)
-    {
-        return layout(new String(codes, 0, codes.length));
-    }
-
-    //-------------------//
-    // getStaffInterline //
-    //-------------------//
-    /**
-     * Report the number of pixels of the interline that corresponds to the staves
-     * where this font is used.
-     *
-     * @return the scaled interline of the related staff size.
-     */
-    protected int getStaffInterline ()
-    {
-        return staffInterline;
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio headRatio = new Constant.Ratio(
                 1.1,
@@ -496,21 +532,18 @@ public class MusicFont
     //---------//
     private static class Scaling
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public int pointSize;
 
         public int staffInterline;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Scaling (int pointSize,
-                        int staffInterline)
+        Scaling (int pointSize,
+                 int staffInterline)
         {
             this.pointSize = pointSize;
             this.staffInterline = staffInterline;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean equals (Object obj)
         {
@@ -521,7 +554,7 @@ public class MusicFont
             Scaling that = (Scaling) obj;
 
             return (this.pointSize == that.pointSize)
-                   && (this.staffInterline == that.staffInterline);
+                           && (this.staffInterline == that.staffInterline);
         }
 
         @Override

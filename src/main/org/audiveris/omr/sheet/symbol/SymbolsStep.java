@@ -51,13 +51,11 @@ import java.util.TreeMap;
 public class SymbolsStep
         extends AbstractSystemStep<SymbolsStep.Context>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolsStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolsStep object.
      */
@@ -65,7 +63,6 @@ public class SymbolsStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
@@ -96,7 +93,7 @@ public class SymbolsStep
         StopWatch watch = new StopWatch("SymbolsStep doSystem #" + system.getId());
         watch.start("factory");
 
-        final SymbolFactory factory = new SymbolFactory(system);
+        final InterFactory factory = new InterFactory(system);
 
         // Retrieve symbols inters
         watch.start("buildSymbols");
@@ -132,25 +129,25 @@ public class SymbolsStep
         return context;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Context //
     //---------//
+    /**
+     * Context for step processing.
+     */
     protected static class Context
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Map of optional (weak) glyphs per system. */
-        public final Map<SystemInfo, List<Glyph>> optionalsMap = new TreeMap<SystemInfo, List<Glyph>>();
+        public final Map<SystemInfo, List<Glyph>> optionalsMap = new TreeMap<>();
     }
 
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,

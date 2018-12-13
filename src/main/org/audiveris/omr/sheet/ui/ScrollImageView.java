@@ -32,7 +32,6 @@ import org.audiveris.omr.ui.view.ScrollView;
 public class ScrollImageView
         extends ScrollView
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new ScrollImageView object.

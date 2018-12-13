@@ -49,11 +49,9 @@ import java.util.TreeMap;
  */
 public class HiLoPeakFinder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(HiLoPeakFinder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Entity title. */
     public final String name;
 
@@ -72,8 +70,8 @@ public class HiLoPeakFinder
     /** Threshold for y values. */
     private int minValue;
 
-    /** Threshold for peak top y value, if any. */
-    private Integer minTopValue;
+    /** Quorum on y value, if any. */
+    private Quorum quorum;
 
     /** Threshold for y derivatives. */
     private int minDerivative;
@@ -95,7 +93,6 @@ public class HiLoPeakFinder
         }
     };
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HiLoPeakFinder} object on (sub-)domain of provided function.
      *
@@ -140,7 +137,6 @@ public class HiLoPeakFinder
         xMax = function.getXMax();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // findPeaks //
     //-----------//
@@ -149,36 +145,31 @@ public class HiLoPeakFinder
      * A peak can extend from HiLo.min -1 to HiLo.max, unless there is a HiLo or even a peak nearby.
      *
      * @param minValue      minimum value to be part of a peak
-     * @param minTopValue   peak top value threshold or null
      * @param minDerivative peak derivative threshold
      * @param minGainRatio  value gain ratio for peak widening
      * @return the (perhaps empty but not null) collection of peaks, sorted by decreasing count
      */
     public List<Range> findPeaks (int minValue,
-                                  Integer minTopValue,
                                   int minDerivative,
                                   double minGainRatio)
     {
         this.minValue = minValue;
-        this.minTopValue = minTopValue;
         this.minDerivative = minDerivative;
         this.minGainRatio = minGainRatio;
 
-        final List<Range> peaks = new ArrayList<Range>();
+        final List<Range> peaks = new ArrayList<>();
         retrieveHiLos();
 
         // Map: originating hilo -> corresponding peak
-        Map<Range, Range> hiloToPeak = new HashMap<Range, Range>();
+        Map<Range, Range> hiloToPeak = new HashMap<>();
 
         // Process hilos by decreasing main value
-        List<Range> decreasing = new ArrayList<Range>(hilos);
+        List<Range> decreasing = new ArrayList<>(hilos);
         Collections.sort(decreasing, byReverseMainValue);
 
         // Convert each hilo to a peak with adjusted limits
         for (Range hilo : decreasing) {
             int i = hilos.indexOf(hilo);
-
-            ///int pMin = Math.max(hilo.min - 2, 1);
             int pMin = Math.max(hilo.min - 1, 1);
 
             if (i > 0) {
@@ -187,15 +178,8 @@ public class HiLoPeakFinder
                 pMin = Math.max(pMin, (prevPeak != null) ? (prevPeak.max + 1) : (prevHiLo.max + 1));
             }
 
-            ///int pMax = Math.min(hilo.max + 1, counts.length - 1);
             int pMax = hilo.max;
 
-            //
-            // if (i < (hilos.size() - 1)) {
-            //     Range nextHiLo = hilos.get(i + 1);
-            //     Range nextPeak = hiloToPeak.get(nextHiLo);
-            //     pMax = Math.min(pMax, (nextPeak != null) ? (nextPeak.min - 1) : (nextHiLo.min - 1));
-            // }
             Range peak = createPeak(pMin, hilo.main, pMax);
             hiloToPeak.put(hilo, peak);
             peaks.add(peak);
@@ -205,11 +189,11 @@ public class HiLoPeakFinder
             Collections.sort(peaks, byReverseMainValue);
 
             // Is there a min top value to check?
-            if (minTopValue != null) {
+            if (quorum != null) {
                 for (int i = 0; i < peaks.size(); i++) {
                     Range peak = peaks.get(i);
 
-                    if (function.getValue(peak.main) < minTopValue) {
+                    if (function.getValue(peak.main) < quorum.minTop) {
                         peaks.retainAll(peaks.subList(0, i));
                     }
                 }
@@ -308,9 +292,9 @@ public class HiLoPeakFinder
                 for (int x = hilo.min; x <= hilo.max; x++) {
                     hiloSeries.add(x, function.getDerivative(x));
                 }
-            }
 
-            hiloSeries.add(hilo.max, null); // No line between hilos
+                hiloSeries.add(hilo.max, null); // No line between hilos
+            }
         }
 
         return hiloSeries;
@@ -412,10 +396,20 @@ public class HiLoPeakFinder
         // Function values
         XYSeries valueSeries = function.getValueSeries(x1, x2);
 
-        if (minTopValue != null) {
+        if (quorum != null) {
             valueSeries.add(x1, null); // Cut link with function values
-            valueSeries.add(x1, minTopValue);
-            valueSeries.add(x2, minTopValue);
+
+            if (quorum.xMin != null) {
+                x1 = quorum.xMin;
+            }
+
+            valueSeries.add(x1, quorum.minTop);
+
+            if (quorum.xMax != null) {
+                x2 = quorum.xMax;
+            }
+
+            valueSeries.add(x2, quorum.minTop);
         }
 
         return valueSeries;
@@ -458,12 +452,12 @@ public class HiLoPeakFinder
     {
         // Peaks
         if ((getPeaks() != null) && !peaks.isEmpty()) {
-            plotter.add(getPeakSeries(), Colors.CHART_PEAK);
+            plotter.add(getPeakSeries(x1, x2), Colors.CHART_PEAK);
         }
 
         // HiLos
         if (hilos != null) {
-            plotter.add(getHiloSeries(), Colors.CHART_HILO, true); // With shapes
+            plotter.add(getHiloSeries(x1, x2), Colors.CHART_HILO, true); // With shapes
         }
 
         // Values (w/ threshold?)
@@ -477,6 +471,19 @@ public class HiLoPeakFinder
         }
 
         return plotter;
+    }
+
+    //-----------//
+    // setQuorum //
+    //-----------//
+    /**
+     * Assign quorum information.
+     *
+     * @param quorum quorum level and perhaps range
+     */
+    public void setQuorum (Quorum quorum)
+    {
+        this.quorum = quorum;
     }
 
     //------------//
@@ -534,14 +541,14 @@ public class HiLoPeakFinder
 
     private TreeMap<Integer, Double> replay (Range peak)
     {
-        TreeMap<Integer, Double> thresholds = new TreeMap<Integer, Double>();
+        TreeMap<Integer, Double> thresholds = new TreeMap<>();
         final int main = peak.main; // argMax(peak.min, peak.max); // for merged peak?
         final int pMin = peak.min;
         final int pMax = peak.max;
         int total = function.getValue(main);
         int start = main;
         int stop = main;
-        thresholds.put(main, new Double(0));
+        thresholds.put(main, 0.0);
 
         do {
             int before = (start == pMin) ? 0 : function.getValue(start - 1);
@@ -577,7 +584,7 @@ public class HiLoPeakFinder
     {
         logger.debug("Retrieving {} hilos", name);
 
-        hilos = new ArrayList<Range>();
+        hilos = new ArrayList<>();
 
         DerPeak hiPeak = null;
         DerPeak loPeak = null;
@@ -633,7 +640,57 @@ public class HiLoPeakFinder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------//
+    // Quorum //
+    //--------//
+    /**
+     * Defines a quorum level, with optional x range.
+     */
+    public static class Quorum
+    {
+
+        /**
+         * Quorum minimum value.
+         */
+        public final int minTop;
+
+        /**
+         * Range start if any.
+         */
+        public final Integer xMin;
+
+        /**
+         * Range stop if any.
+         */
+        public final Integer xMax;
+
+        /**
+         * Create a Quorum object, with specified range.
+         *
+         * @param minTop the minimum count
+         * @param xMin   range starting x value
+         * @param xMax   range stopping x value
+         */
+        public Quorum (int minTop,
+                       Integer xMin,
+                       Integer xMax)
+        {
+            this.minTop = minTop;
+            this.xMin = xMin;
+            this.xMax = xMax;
+        }
+
+        /**
+         * Create a Quorum object.
+         *
+         * @param minTop the minimum count
+         */
+        public Quorum (int minTop)
+        {
+            this(minTop, null, null);
+        }
+    }
+
     //---------//
     // DerPeak //
     //---------//
@@ -642,7 +699,6 @@ public class HiLoPeakFinder
      */
     private static class DerPeak
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** x at beginning of range. */
         public final int min;
@@ -653,15 +709,13 @@ public class HiLoPeakFinder
         /** True when peak cannot be extended anymore. */
         private boolean finished;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public DerPeak (int min,
-                        int max)
+        DerPeak (int min,
+                 int max)
         {
             this.min = min;
             this.max = max;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

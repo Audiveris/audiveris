@@ -52,16 +52,12 @@ import javax.swing.event.MenuEvent;
  */
 public class StepMenu
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StepMenu.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** The concrete UI menu. */
     private final JMenu menu;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Generates the menu to be inserted in the application pull-down menus.
      *
@@ -82,7 +78,6 @@ public class StepMenu
         menu.addMenuListener(new MyMenuListener());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getMenu //
     //---------//
@@ -112,30 +107,50 @@ public class StepMenu
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //------------//
-    // StepAction //
-    //------------//
+    //----------------//
+    // MyMenuListener //
+    //----------------//
     /**
-     * Action to be performed when the related step item is selected.
+     * Class {@code MyMenuListener} is triggered when the whole sub-menu is entered.
+     * This is done with respect to currently displayed sheet.
+     * The steps already done are flagged as such.
      */
+    private class MyMenuListener
+            extends AbstractMenuListener
+    {
+
+        @Override
+        public void menuSelected (MenuEvent e)
+        {
+            SheetStub stub = StubsController.getCurrentStub();
+            boolean isIdle = (stub != null) && (stub.getCurrentStep() == null);
+
+            for (int i = 0; i < menu.getItemCount(); i++) {
+                JMenuItem menuItem = menu.getItem(i);
+
+                // Adjust the status for each step
+                if (menuItem instanceof StepItem) {
+                    StepItem item = (StepItem) menuItem;
+                    item.displayState(stub, isIdle);
+                }
+            }
+        }
+    }
+
     private static class StepAction
             extends AbstractAction
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // The related step
         final Step step;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public StepAction (Step step)
+        StepAction (Step step)
         {
             super(step.toString());
             this.step = step;
             putValue(SHORT_DESCRIPTION, step.getDescription());
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -149,11 +164,12 @@ public class StepMenu
                     try {
                         Step sofar = stub.getLatestStep();
 
-                        if ((sofar != null) & (sofar.compareTo(step) >= 0)) {
+                        if ((sofar != null) && (sofar.compareTo(step) >= 0)) {
                             int answer = JOptionPane.showConfirmDialog(
                                     OMR.gui.getFrame(),
-                                    "About to re-perform step " + step + " from scratch."
-                                    + "\nDo you confirm?",
+                                    "About to re-perform step " + step
+                                            + " from scratch."
+                                            + "\nDo you confirm?",
                                     "Redo confirmation",
                                     JOptionPane.YES_NO_OPTION,
                                     JOptionPane.WARNING_MESSAGE);
@@ -187,6 +203,13 @@ public class StepMenu
                 }
             }.execute();
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     //----------//
@@ -198,14 +221,12 @@ public class StepMenu
     private static class StepItem
             extends JCheckBoxMenuItem
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public StepItem (Step step)
+        StepItem (Step step)
         {
             super(new StepAction(step));
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public void displayState (SheetStub stub,
                                   boolean isIdle)
         {
@@ -222,37 +243,6 @@ public class StepMenu
 
                 if (!isIdle) {
                     action.setEnabled(false);
-                }
-            }
-        }
-    }
-
-    //----------------//
-    // MyMenuListener //
-    //----------------//
-    /**
-     * Class {@code MyMenuListener} is triggered when the whole sub-menu is entered.
-     * This is done with respect to currently displayed sheet.
-     * The steps already done are flagged as such.
-     */
-    private class MyMenuListener
-            extends AbstractMenuListener
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public void menuSelected (MenuEvent e)
-        {
-            SheetStub stub = StubsController.getCurrentStub();
-            boolean isIdle = (stub != null) && (stub.getCurrentStep() == null);
-
-            for (int i = 0; i < menu.getItemCount(); i++) {
-                JMenuItem menuItem = menu.getItem(i);
-
-                // Adjust the status for each step
-                if (menuItem instanceof StepItem) {
-                    StepItem item = (StepItem) menuItem;
-                    item.displayState(stub, isIdle);
                 }
             }
         }

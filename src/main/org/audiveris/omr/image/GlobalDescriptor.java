@@ -41,16 +41,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class GlobalDescriptor
         extends FilterDescriptor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The threshold value for the whole pixel source. */
     @XmlAttribute(name = "threshold")
     public final int threshold;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new GlobalDescriptor object.
      *
@@ -65,55 +62,6 @@ public class GlobalDescriptor
     private GlobalDescriptor ()
     {
         threshold = 0;
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //-------------------//
-    // defaultIsSpecific //
-    //-------------------//
-    public static boolean defaultIsSpecific ()
-    {
-        return !constants.defaultThreshold.isSourceValue();
-    }
-
-    //------------//
-    // getDefault //
-    //------------//
-    public static GlobalDescriptor getDefault ()
-    {
-        return new GlobalDescriptor(getDefaultThreshold());
-    }
-
-    //---------------------//
-    // getDefaultThreshold //
-    //---------------------//
-    public static int getDefaultThreshold ()
-    {
-        return constants.defaultThreshold.getValue();
-    }
-
-    //----------------//
-    // getSourceValue //
-    //----------------//
-    public static GlobalDescriptor getSourceValue ()
-    {
-        return new GlobalDescriptor(constants.defaultThreshold.getSourceValue());
-    }
-
-    //---------------//
-    // resetToSource //
-    //---------------//
-    public static void resetToSource ()
-    {
-        constants.defaultThreshold.resetToSource();
-    }
-
-    //---------------------//
-    // setDefaultThreshold //
-    //---------------------//
-    public static void setDefaultThreshold (int threshold)
-    {
-        constants.defaultThreshold.setValue(threshold);
     }
 
     //--------//
@@ -140,7 +88,6 @@ public class GlobalDescriptor
         return new GlobalFilter(source, threshold);
     }
 
-    //
     //---------//
     // getKind //
     //---------//
@@ -174,14 +121,60 @@ public class GlobalDescriptor
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------------//
+    // defaultIsSpecific //
+    //-------------------//
+    public static boolean defaultIsSpecific ()
+    {
+        return !constants.defaultThreshold.isSourceValue();
+    }
+
+    //------------//
+    // getDefault //
+    //------------//
+    public static GlobalDescriptor getDefault ()
+    {
+        return new GlobalDescriptor(getDefaultThreshold());
+    }
+
+    //---------------------//
+    // getDefaultThreshold //
+    //---------------------//
+    public static int getDefaultThreshold ()
+    {
+        return constants.defaultThreshold.getValue();
+    }
+
+    //---------------------//
+    // setDefaultThreshold //
+    //---------------------//
+    public static void setDefaultThreshold (int threshold)
+    {
+        constants.defaultThreshold.setValue(threshold);
+    }
+
+    //----------------//
+    // getSourceValue //
+    //----------------//
+    public static GlobalDescriptor getSourceValue ()
+    {
+        return new GlobalDescriptor(constants.defaultThreshold.getSourceValue());
+    }
+
+    //---------------//
+    // resetToSource //
+    //---------------//
+    public static void resetToSource ()
+    {
+        constants.defaultThreshold.resetToSource();
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Integer defaultThreshold = new Constant.Integer(
                 "GrayLevel",

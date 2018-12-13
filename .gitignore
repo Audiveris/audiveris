@@ -48,3 +48,11 @@ target/*
 # Ignore system files
 .DS_Store
 Thumb.db
+/bin/
+/build/
+/.gradle/
+
+# Eclipse added files
+.classpath
+.project
+.settings

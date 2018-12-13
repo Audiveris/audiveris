@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -61,10 +62,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Class {@code Slot} represents a roughly defined time slot within a measure stack,
  * to gather all chords that start at the same time.
  * <p>
- * On the diagram shown, slots are indicated by vertical blue lines.</p>
+ * On the diagram shown, slots are indicated by vertical blue lines.
  * <p>
- * The slot embraces all the staves of the system.
- *
+ * NOTA: The slot embraces all the staves in the system.
  * <div style="float: right;">
  * <img src="doc-files/Slot.png" alt="diagram">
  * </div>
@@ -76,12 +76,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class Slot
         implements Comparable<Slot>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Slot.class);
+    private static final Logger logger = LoggerFactory.getLogger(Slot.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -113,7 +110,6 @@ public class Slot
     /** Chords incoming into this slot, sorted by ordinate. */
     private List<AbstractChordInter> incomings;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Slot object.
      *
@@ -127,7 +123,7 @@ public class Slot
     {
         this.id = id;
         this.stack = stack;
-        this.incomings = new ArrayList<AbstractChordInter>(incomings);
+        this.incomings = new ArrayList<>(incomings);
 
         for (AbstractChordInter chord : incomings) {
             chord.setSlot(this);
@@ -144,15 +140,17 @@ public class Slot
         this.id = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // afterReload //
     //-------------//
+    /**
+     * To be called right after unmarshalling.
+     */
     public void afterReload ()
     {
         try {
             // Populate incomings
-            incomings = new ArrayList<AbstractChordInter>();
+            incomings = new ArrayList<>();
 
             final SystemInfo system = stack.getSystem();
 
@@ -216,6 +214,20 @@ public class Slot
     public int compareTo (Slot other)
     {
         return Double.compare(xOffset, other.xOffset);
+    }
+
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj instanceof Slot) {
+            return compareTo((Slot) obj) == 0;
+        }
+
+        return false;
     }
 
     //-------------------//
@@ -307,7 +319,7 @@ public class Slot
     public List<AbstractChordInter> getEmbracedChords (Point top,
                                                        Point bottom)
     {
-        List<AbstractChordInter> embracedChords = new ArrayList<AbstractChordInter>();
+        List<AbstractChordInter> embracedChords = new ArrayList<>();
 
         for (AbstractChordInter chord : getChords()) {
             if (chord.isEmbracedBy(top, bottom)) {
@@ -344,6 +356,20 @@ public class Slot
         return stack;
     }
 
+    //----------//
+    // setStack //
+    //----------//
+    /**
+     * Set the containing stack for this slot.
+     *
+     * @param stack containing stack
+     */
+    public void setStack (MeasureStack stack)
+    {
+        this.stack = stack;
+        computeXOffset();
+    }
+
     //---------------//
     // getTimeOffset //
     //---------------//
@@ -370,6 +396,15 @@ public class Slot
         return xOffset;
     }
 
+    @Override
+    public int hashCode ()
+    {
+        int hash = 7;
+        hash = (59 * hash) + this.xOffset;
+
+        return hash;
+    }
+
     //--------------//
     // isSuspicious //
     //--------------//
@@ -381,15 +416,6 @@ public class Slot
         return suspicious;
     }
 
-    //----------//
-    // setStack //
-    //----------//
-    public void setStack (MeasureStack stack)
-    {
-        this.stack = stack;
-        computeXOffset();
-    }
-
     //---------------//
     // setSuspicious //
     //---------------//
@@ -398,7 +424,7 @@ public class Slot
      */
     public void setSuspicious (boolean suspicious)
     {
-        this.suspicious = suspicious ? true : null;
+        this.suspicious = suspicious;
     }
 
     //---------------//
@@ -440,10 +466,7 @@ public class Slot
                 voice.updateSlotTable();
             }
         } else if (!this.timeOffset.equals(timeOffset)) {
-            logger.warn(
-                    "Reassigning timeOffset from " + this.timeOffset + " to " + timeOffset + " in "
-                    + this);
-
+            logger.warn("TimeOffset set from {} to {} in {}", this.timeOffset, timeOffset, this);
             failed = true;
         }
 
@@ -491,7 +514,7 @@ public class Slot
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append("Slot{#").append(id);
 
         sb.append(" xOffset=").append(xOffset);
@@ -500,13 +523,15 @@ public class Slot
             sb.append(" timeOffset=").append(timeOffset);
         }
 
-        sb.append(" incomings=[");
+        if (incomings != null) {
+            sb.append(" incomings=[");
 
-        for (AbstractChordInter chord : incomings) {
-            sb.append("#").append(chord.getId());
+            for (AbstractChordInter chord : incomings) {
+                sb.append("#").append(chord.getId());
+            }
+
+            sb.append("]");
         }
-
-        sb.append("]");
 
         if (isSuspicious()) {
             sb.append(" SUSPICIOUS");
@@ -529,26 +554,25 @@ public class Slot
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("slot#").append(getId()).append(" start=")
-                .append(String.format("%5s", getTimeOffset())).append(" [");
+        sb.append("slot#").append(getId()).append(" start=").append(
+                String.format("%5s", getTimeOffset())).append(" [");
 
-        SortedMap<Integer, AbstractChordInter> voiceChords = new TreeMap<Integer, AbstractChordInter>();
+        SortedMap<Integer, AbstractChordInter> voiceChords = new TreeMap<>();
 
         for (AbstractChordInter chord : getChords()) {
             voiceChords.put(chord.getVoice().getId(), chord);
         }
 
-        final int voiceMax = stack.getVoices().size();
         boolean started = false;
 
-        for (int iv = 1; iv <= voiceMax; iv++) {
+        for (Entry<Integer, AbstractChordInter> entry : voiceChords.entrySet()) {
             if (started) {
                 sb.append(", ");
             } else {
                 started = true;
             }
 
-            AbstractChordInter chord = voiceChords.get(iv);
+            final AbstractChordInter chord = entry.getValue();
 
             if (chord != null) {
                 sb.append("V").append(chord.getVoice().getId());
@@ -604,7 +628,7 @@ public class Slot
 
             // Try to reuse an existing voice in same part
             for (Voice voice : measure.getVoices()) {
-                if (voice.isFree(this) && voice.getStartingStaff() == chord.getTopStaff()) {
+                if (voice.isFree(this) && (voice.getStartingStaff() == chord.getTopStaff())) {
                     chord.setVoice(voice);
 
                     break;
@@ -641,7 +665,7 @@ public class Slot
             return;
         }
 
-        List<AbstractChordInter> partRookies = new ArrayList<AbstractChordInter>();
+        List<AbstractChordInter> partRookies = new ArrayList<>();
 
         // Some chords already have their voice assigned
         for (AbstractChordInter ch : partIncomings) {
@@ -703,14 +727,14 @@ public class Slot
      */
     private Map<Part, List<AbstractChordInter>> buildPartMap (List<AbstractChordInter> stackChords)
     {
-        Map<Part, List<AbstractChordInter>> map = new LinkedHashMap<Part, List<AbstractChordInter>>();
+        Map<Part, List<AbstractChordInter>> map = new LinkedHashMap<>();
 
         for (AbstractChordInter ch : stackChords) {
             Part part = ch.getPart();
             List<AbstractChordInter> partChords = map.get(part);
 
             if (partChords == null) {
-                map.put(part, partChords = new ArrayList<AbstractChordInter>());
+                map.put(part, partChords = new ArrayList<>());
             }
 
             partChords.add(ch);
@@ -740,8 +764,6 @@ public class Slot
         xOffset = (int) Math.rint(stack.getXOffset(ref));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //
     //------------//
     // MyDistance //
     //------------//
@@ -749,10 +771,9 @@ public class Slot
      * Implementation of a 'distance' between an old chord and a new chord to be
      * potentially linked in the same voice.
      */
-    private static final class MyDistance
+    private static class MyDistance
             implements InjectionSolver.Distance
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final int NOT_A_REST = 5;
 
@@ -762,26 +783,23 @@ public class Slot
 
         private static final int STAFF_DIFF = 50; // 40;
 
-        private static final int INCOMPATIBLE_VOICES = 10000; // Forbidden
+        private static final int INCOMPATIBLE_VOICES = 10_000; // Forbidden
 
-        //~ Instance fields ------------------------------------------------------------------------
         private final List<AbstractChordInter> news;
 
         private final List<AbstractChordInter> olds;
 
         private final Scale scale;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public MyDistance (List<AbstractChordInter> news,
-                           List<AbstractChordInter> olds,
-                           Scale scale)
+        MyDistance (List<AbstractChordInter> news,
+                    List<AbstractChordInter> olds,
+                    Scale scale)
         {
             this.news = news;
             this.olds = olds;
             this.scale = scale;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Distance between newChord (index 'in') and oldChord (index 'ip').
          *
@@ -802,9 +820,8 @@ public class Slot
             AbstractChordInter oldChord = olds.get(ip);
 
             // Different assigned voices?
-            if ((newChord.getVoice() != null)
-                && (oldChord.getVoice() != null)
-                && (newChord.getVoice() != oldChord.getVoice())) {
+            if ((newChord.getVoice() != null) && (oldChord.getVoice() != null)
+                        && (newChord.getVoice() != oldChord.getVoice())) {
                 return INCOMPATIBLE_VOICES;
             }
 
@@ -832,7 +849,8 @@ public class Slot
             }
 
             // Pitch difference
-            int dy = Math.abs(newChord.getHeadLocation().y - oldChord.getHeadLocation().y) / scale.getInterline();
+            int dy = Math.abs(newChord.getHeadLocation().y - oldChord.getHeadLocation().y) / scale
+                    .getInterline();
 
             // Stem direction difference
             int dStem = Math.abs(newChord.getStemDir() - oldChord.getStemDir());

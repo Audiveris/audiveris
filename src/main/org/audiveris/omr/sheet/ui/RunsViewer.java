@@ -40,12 +40,10 @@ import java.awt.Graphics2D;
  */
 public class RunsViewer
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The related sheet */
     private final Sheet sheet;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new RunsViewer object.
      *
@@ -56,7 +54,6 @@ public class RunsViewer
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // display //
     //---------//
@@ -85,7 +82,6 @@ public class RunsViewer
         sheet.getStub().getAssembly().addViewTab(name, new ScrollView(view), boards);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------------//
     // MyRunsTableView //
     //-----------------//
@@ -96,15 +92,13 @@ public class RunsViewer
     private class MyRunsTableView
             extends RunTableView
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public MyRunsTableView (String name,
-                                RunTable table)
+        MyRunsTableView (String name,
+                         RunTable table)
         {
             super(name, table, sheet.getLocationService());
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void renderItems (Graphics2D g)
         {

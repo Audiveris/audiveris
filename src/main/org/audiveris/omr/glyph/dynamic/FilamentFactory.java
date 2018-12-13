@@ -44,13 +44,14 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,7 +68,8 @@ import java.util.Set;
  * The factory aims at a given filaments orientation, though the collection of input sections may
  * exhibit mixed orientations.
  * <p>
- * The factory works in two phases:<ol>
+ * The factory works in two phases:
+ * <ol>
  * <li>The first phase, by default, discovers skeletons lines using the long input sections and
  * merges them as much as possible.
  * This strategy fits well the case of a population of sections with no organization known a priori.
@@ -75,26 +77,23 @@ import java.util.Set;
  * focus on them only.
  * </li>
  * <li>The second phase completes these skeletons whenever possible by short sections left over, and
- * merges them again.</li></ol>
+ * merges them again.</li>
+ * </ol>
  * <p>
  * Customization: Default parameters values are defined via a ConstantSet.
  * Before launching filaments retrieval by {@link #retrieveFilaments}, parameters can be modified
  * individually by calling proper setXXX() methods.
  *
  * @param <F> precise filament type
- *
  * @author Hervé Bitteur
  */
 public class FilamentFactory<F extends Filament>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(FilamentFactory.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** Related scale. */
     private final Scale scale;
 
@@ -111,12 +110,11 @@ public class FilamentFactory<F extends Filament>
     private final Parameters params;
 
     /** Processed sections. true/false */
-    private final Set<Section> processedSections = new LinkedHashSet<Section>();
+    private final Set<Section> processedSections = new LinkedHashSet<>();
 
     /** Fat sections. unknown/true/false */
-    private final Map<Section, Boolean> fatSections = new HashMap<Section, Boolean>();
+    private final Map<Section, Boolean> fatSections = new HashMap<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a factory of filaments.
      *
@@ -138,7 +136,8 @@ public class FilamentFactory<F extends Filament>
 
         try {
             filamentConstructor = filamentClass.getConstructor(int.class);
-        } catch (Exception ex) {
+        } catch (NoSuchMethodException |
+                 SecurityException ex) {
             logger.error(null, ex);
         }
 
@@ -146,10 +145,14 @@ public class FilamentFactory<F extends Filament>
         params.initialize();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // dump //
     //------//
+    /**
+     * Dump the factory parameters.
+     *
+     * @param title optional title
+     */
     public void dump (String title)
     {
         if (constants.printParameters.isSet()) {
@@ -216,7 +219,7 @@ public class FilamentFactory<F extends Filament>
                 return setFat(
                         section,
                         (startThickness > params.maxThickness)
-                        || (stopThickness > params.maxThickness));
+                                || (stopThickness > params.maxThickness));
             } else {
                 return setFat(section, bounds.height > params.maxThickness);
             }
@@ -239,7 +242,7 @@ public class FilamentFactory<F extends Filament>
     public List<F> retrieveFilaments (Collection<Section> source)
     {
         StopWatch watch = new StopWatch("FilamentsFactory " + orientation);
-        List<F> filaments = new ArrayList<F>();
+        List<F> filaments = new ArrayList<>();
 
         try {
             // Create a filament for each section long & slim
@@ -550,7 +553,7 @@ public class FilamentFactory<F extends Filament>
 
                     // Check thickness consistency
                     if ((-coordGap <= params.maxInvolvingLength)
-                        && (thickness > maxConsistentThickness)) {
+                                && (thickness > maxConsistentThickness)) {
                         if (logger.isDebugEnabled() || areVips) {
                             logger.info(
                                     "{}Non consistent thickness: {} vs {} {} {}",
@@ -565,9 +568,11 @@ public class FilamentFactory<F extends Filament>
                     }
 
                     // Check space between overlapped filaments
-                    double space = thickness
-                                   - (Compounds.getThicknessAt(midCoord, orientation, scale, one)
-                                      + Compounds.getThicknessAt(midCoord, orientation, scale, two));
+                    double space = thickness - (Compounds.getThicknessAt(
+                            midCoord,
+                            orientation,
+                            scale,
+                            one) + Compounds.getThicknessAt(midCoord, orientation, scale, two));
 
                     if (space > maxSpace) {
                         if (logger.isDebugEnabled() || areVips) {
@@ -608,8 +613,8 @@ public class FilamentFactory<F extends Filament>
                 }
 
                 // Compute position gap, taking thickness into account
-                double oneThickness = one.getWeight() / one.getLength(orientation);
-                double twoThickness = two.getWeight() / two.getLength(orientation);
+                double oneThickness = (double) one.getWeight() / one.getLength(orientation);
+                double twoThickness = (double) two.getWeight() / two.getLength(orientation);
                 int posMargin = (int) Math.rint(Math.max(oneThickness, twoThickness) / 2);
                 double posGap = Math.abs(gapStop.getY() - gapStart.getY()) - posMargin;
 
@@ -648,7 +653,7 @@ public class FilamentFactory<F extends Filament>
             double twoLength = twoStop.getX() - twoStart.getX() + 1;
 
             if ((oneLength >= params.minLengthForDeltaSlope)
-                && (twoLength >= params.minLengthForDeltaSlope)) {
+                        && (twoLength >= params.minLengthForDeltaSlope)) {
                 double oneSlope = LineUtil.getSlope(oneStart, oneStop);
                 double twoSlope = LineUtil.getSlope(twoStart, twoStop);
                 double deltaSlope = Math.abs(twoSlope - oneSlope);
@@ -716,7 +721,10 @@ public class FilamentFactory<F extends Filament>
             }
 
             return fil;
-        } catch (Exception ex) {
+        } catch (IllegalAccessException |
+                 IllegalArgumentException |
+                 InstantiationException |
+                 InvocationTargetException ex) {
             logger.error(null, ex);
 
             return null;
@@ -781,7 +789,7 @@ public class FilamentFactory<F extends Filament>
     {
         try {
             // Sort sections by first position
-            List<Section> sections = new ArrayList<Section>();
+            List<Section> sections = new ArrayList<>();
 
             for (Section section : source) {
                 if (!isProcessed(section) && !isSectionFat(section)) {
@@ -795,7 +803,7 @@ public class FilamentFactory<F extends Filament>
 
             // We allocate one glyph per candidate section
             // (simply to be able to reuse the canMerge() method !!!!!!!)
-            List<Filament> sectionGlyphs = new ArrayList<Filament>(sections.size());
+            List<Filament> sectionGlyphs = new ArrayList<>(sections.size());
 
             for (Section section : sections) {
                 Filament sectionFil = createFilament(section);
@@ -924,7 +932,7 @@ public class FilamentFactory<F extends Filament>
                                 head.stealSections(candidate);
                                 candidate = head; // This is the new candidate
 
-                                break HeadsLoop;
+                                break;
                             }
                         } else if (head.isVip() && candidate.isVip()) {
                             logger.info(
@@ -976,9 +984,9 @@ public class FilamentFactory<F extends Filament>
                     }
                 } else {
                     Point centroid = section.getCentroid();
-                    double gap = (orientation == HORIZONTAL)
-                            ? (line.yAtXExt(centroid.x) - centroid.y)
-                            : (line.xAtYExt(centroid.y) - centroid.x);
+                    double gap = (orientation == HORIZONTAL) ? (line.yAtXExt(centroid.x)
+                                                                        - centroid.y) : (line
+                                    .xAtYExt(centroid.y) - centroid.x);
 
                     if (Math.abs(gap) <= params.maxPosGap) {
                         fil.addSection(section);
@@ -1028,14 +1036,94 @@ public class FilamentFactory<F extends Filament>
         processedSections.add(section);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all scale-dependent parameters.
+     */
+    private class Parameters
+    {
+
+        /** Maximum thickness for filaments */
+        public int maxThickness;
+
+        /** Minimum length for core sections */
+        public int minCoreSectionLength;
+
+        /** Maximum delta coordinate for real gap */
+        public int maxCoordGap;
+
+        /** Maximum delta position for real gaps */
+        public int maxPosGap;
+
+        /** Maximum delta position between overlapping filaments */
+        public int maxOverlapDeltaPos;
+
+        /** Maximum space between overlapping filaments */
+        public int maxOverlapSpace;
+
+        /** Maximum space for expansion */
+        public int maxExpansionSpace;
+
+        /** Maximum filament length to apply thickness test */
+        public int maxInvolvingLength;
+
+        /** Maximum dy for slope check on real gap */
+        public int maxPosGapForSlope;
+
+        /** Minimum aspect for sections */
+        public double minSectionAspect;
+
+        /** Maximum slope for real gaps */
+        public double maxGapSlope;
+
+        /** Probe width */
+        public int probeWidth;
+
+        public int minLengthForDeltaSlope;
+
+        public double maxDeltaSlope;
+
+        public void dump (String title)
+        {
+            new Dumping().dump(this, title);
+        }
+
+        /**
+         * Initialize with default values
+         */
+        public void initialize ()
+        {
+            setMaxThickness(constants.maxFilamentThickness);
+            setMinCoreSectionLength(constants.minCoreSectionLength);
+            setMaxCoordGap(constants.maxCoordGap);
+            setMaxPosGap(constants.maxPosGap);
+            setMaxOverlapSpace(constants.maxOverlapSpace);
+            setMaxExpansionSpace(constants.maxExpansionSpace);
+            setMaxInvolvingLength(constants.maxInvolvingLength);
+            setMaxPosGapForSlope(constants.maxPosGapForSlope);
+            setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
+            setMaxGapSlope(constants.maxGapSlope.getValue());
+            setMinSectionAspect(constants.minSectionAspect.getValue());
+
+            minLengthForDeltaSlope = scale.toPixels(constants.minLengthForDeltaSlope);
+            maxDeltaSlope = constants.maxDeltaSlope.getValue();
+
+            probeWidth = scale.toPixels(Filament.getProbeWidth());
+
+            if (logger.isDebugEnabled()) {
+                dump(null);
+            }
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
@@ -1107,128 +1195,5 @@ public class FilamentFactory<F extends Filament>
         private final Scale.Fraction minLengthForDeltaSlope = new Scale.Fraction(
                 10,
                 "Minimum filament length to apply delta slope test");
-    }
-
-    //----------------//
-    // DistantSection //
-    //----------------//
-    /**
-     * Meant to ease sorting of sections according to their distance to line.
-     */
-    private static class DistantSection
-            implements Comparable<DistantSection>
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Underlying section. */
-        final Section section;
-
-        /** Distance to line. */
-        final double dist;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public DistantSection (Section section,
-                               double dist)
-        {
-            this.section = section;
-            this.dist = dist;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public int compareTo (DistantSection that)
-        {
-            return Double.compare(dist, that.dist);
-        }
-
-        @Override
-        public String toString ()
-        {
-            return dist + "/" + section;
-        }
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@code Parameters} gathers all scale-dependent parameters.
-     */
-    private class Parameters
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Maximum thickness for filaments */
-        public int maxThickness;
-
-        /** Minimum length for core sections */
-        public int minCoreSectionLength;
-
-        /** Maximum delta coordinate for real gap */
-        public int maxCoordGap;
-
-        /** Maximum delta position for real gaps */
-        public int maxPosGap;
-
-        /** Maximum delta position between overlapping filaments */
-        public int maxOverlapDeltaPos;
-
-        /** Maximum space between overlapping filaments */
-        public int maxOverlapSpace;
-
-        /** Maximum space for expansion */
-        public int maxExpansionSpace;
-
-        /** Maximum filament length to apply thickness test */
-        public int maxInvolvingLength;
-
-        /** Maximum dy for slope check on real gap */
-        public int maxPosGapForSlope;
-
-        /** Minimum aspect for sections */
-        public double minSectionAspect;
-
-        /** Maximum slope for real gaps */
-        public double maxGapSlope;
-
-        /** Probe width */
-        public int probeWidth;
-
-        public int minLengthForDeltaSlope;
-
-        public double maxDeltaSlope;
-
-        //~ Methods --------------------------------------------------------------------------------
-        public void dump (String title)
-        {
-            new Dumping().dump(this, title);
-        }
-
-        /**
-         * Initialize with default values
-         */
-        public void initialize ()
-        {
-            setMaxThickness(constants.maxFilamentThickness);
-            setMinCoreSectionLength(constants.minCoreSectionLength);
-            setMaxCoordGap(constants.maxCoordGap);
-            setMaxPosGap(constants.maxPosGap);
-            setMaxOverlapSpace(constants.maxOverlapSpace);
-            setMaxExpansionSpace(constants.maxExpansionSpace);
-            setMaxInvolvingLength(constants.maxInvolvingLength);
-            setMaxPosGapForSlope(constants.maxPosGapForSlope);
-            setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
-            setMaxGapSlope(constants.maxGapSlope.getValue());
-            setMinSectionAspect(constants.minSectionAspect.getValue());
-
-            minLengthForDeltaSlope = scale.toPixels(constants.minLengthForDeltaSlope);
-            maxDeltaSlope = constants.maxDeltaSlope.getValue();
-
-            probeWidth = scale.toPixels(Filament.getProbeWidth());
-
-            if (logger.isDebugEnabled()) {
-                dump(null);
-            }
-        }
     }
 }

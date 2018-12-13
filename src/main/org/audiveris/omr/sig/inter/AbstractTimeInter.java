@@ -56,15 +56,13 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class AbstractTimeInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractTimeInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractTimeInter.class);
 
     /** Collection of default num/den combinations. */
-    private static final Set<TimeRational> defaultTimes = new LinkedHashSet<TimeRational>(
+    private static final Set<TimeRational> defaultTimes = new LinkedHashSet<>(
             Arrays.asList(
                     new TimeRational(2, 2), // Duple simple
                     new TimeRational(3, 2), // Triple simple
@@ -84,8 +82,7 @@ public abstract class AbstractTimeInter
             constants.optionalTimes.getValue());
 
     /** Rational value of each (full) time sig shape. */
-    private static final Map<Shape, TimeRational> rationals = new EnumMap<Shape, TimeRational>(
-            Shape.class);
+    private static final Map<Shape, TimeRational> rationals = new EnumMap<>(Shape.class);
 
     static {
         for (Shape s : ShapeSet.WholeTimes) {
@@ -99,8 +96,6 @@ public abstract class AbstractTimeInter
         }
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
@@ -109,7 +104,6 @@ public abstract class AbstractTimeInter
     @XmlJavaTypeAdapter(TimeRational.Adapter.class)
     protected TimeRational timeRational;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TimeInter object.
      *
@@ -150,7 +144,6 @@ public abstract class AbstractTimeInter
         super(null, null, null, null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // replicate //
     //-----------//
@@ -162,50 +155,6 @@ public abstract class AbstractTimeInter
      * @return the duplicate (not inserted in sig)
      */
     public abstract AbstractTimeInter replicate (Staff targetStaff);
-
-    //------------//
-    // rationalOf //
-    //------------//
-    /**
-     * Report the num/den pair of predefined time signature shapes.
-     *
-     * @param shape the queried shape
-     * @return the related num/den or null
-     */
-    public static TimeRational rationalOf (Shape shape)
-    {
-        if (shape == null) {
-            return null;
-        }
-
-        switch (shape) {
-        case COMMON_TIME:
-        case TIME_FOUR_FOUR:
-            return new TimeRational(4, 4);
-
-        case CUT_TIME:
-        case TIME_TWO_TWO:
-            return new TimeRational(2, 2);
-
-        case TIME_TWO_FOUR:
-            return new TimeRational(2, 4);
-
-        case TIME_THREE_FOUR:
-            return new TimeRational(3, 4);
-
-        case TIME_FIVE_FOUR:
-            return new TimeRational(5, 4);
-
-        case TIME_THREE_EIGHT:
-            return new TimeRational(3, 8);
-
-        case TIME_SIX_EIGHT:
-            return new TimeRational(6, 8);
-
-        default:
-            return null;
-        }
-    }
 
     //----------------//
     // getDenominator //
@@ -268,14 +217,6 @@ public abstract class AbstractTimeInter
         }
     }
 
-    //-------------//
-    // isSupported //
-    //-------------//
-    public static boolean isSupported (TimeRational tr)
-    {
-        return defaultTimes.contains(tr) || optionalTimes.contains(tr);
-    }
-
     //--------//
     // modify //
     //--------//
@@ -317,6 +258,64 @@ public abstract class AbstractTimeInter
         }
     }
 
+    //------------//
+    // rationalOf //
+    //------------//
+    /**
+     * Report the num/den pair of predefined time signature shapes.
+     *
+     * @param shape the queried shape
+     * @return the related num/den or null
+     */
+    public static TimeRational rationalOf (Shape shape)
+    {
+        if (shape == null) {
+            return null;
+        }
+
+        switch (shape) {
+        case COMMON_TIME:
+        case TIME_FOUR_FOUR:
+            return new TimeRational(4, 4);
+
+        case CUT_TIME:
+        case TIME_TWO_TWO:
+            return new TimeRational(2, 2);
+
+        case TIME_TWO_FOUR:
+            return new TimeRational(2, 4);
+
+        case TIME_THREE_FOUR:
+            return new TimeRational(3, 4);
+
+        case TIME_FIVE_FOUR:
+            return new TimeRational(5, 4);
+
+        case TIME_THREE_EIGHT:
+            return new TimeRational(3, 8);
+
+        case TIME_SIX_EIGHT:
+            return new TimeRational(6, 8);
+
+        default:
+            return null;
+        }
+    }
+
+    //-------------//
+    // isSupported //
+    //-------------//
+    /**
+     * Tell whether the provided TimeRational value is among the supported ones.
+     *
+     * @param tr provided value to check
+     * @return true if so
+     */
+    public static boolean isSupported (TimeRational tr)
+    {
+        return defaultTimes.contains(tr) || optionalTimes.contains(tr);
+    }
+
     //-----------------//
     // predefinedShape //
     //-----------------//
@@ -343,17 +342,15 @@ public abstract class AbstractTimeInter
         return null;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.String optionalTimes = new Constant.String(
                 "6/4, 7/8",
-                "Time sigs besides " + defaultTimes);
+                "Optional time sigs");
     }
 }

@@ -37,7 +37,6 @@ import java.util.concurrent.Future;
  */
 public abstract class ShapeClassifier
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -65,13 +64,11 @@ public abstract class ShapeClassifier
         }
     });
 
-    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private ShapeClassifier ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the classifier instance in use.
      *
@@ -87,7 +84,6 @@ public abstract class ShapeClassifier
         //        }
     }
 
-    //
     //    /**
     //     * Report the second classifier instance in use.
     //     *
@@ -112,8 +108,6 @@ public abstract class ShapeClassifier
     {
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //
     //    /**
     //     * Tell whether we are using DeepClassifier (rather than old BasicClassifier).
     //     *
@@ -127,7 +121,7 @@ public abstract class ShapeClassifier
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
         //

@@ -36,13 +36,18 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.SmallBeamInter;
+import org.audiveris.omr.sig.inter.SmallChordInter;
+import org.audiveris.omr.sig.inter.SmallFlagInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
+import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.AdditionTask;
@@ -73,15 +78,20 @@ import java.util.Set;
 public class RhythmsStep
         extends AbstractStep
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RhythmsStep.class);
 
     /** Classes that impact just a measure stack. */
     private static final Set<Class> forStack;
 
+    /** Classes that impact a whole page. */
+    private static final Set<Class> forPage;
+
+    /** All impacting classes. */
+    private static final Set<Class> impactingClasses;
+
     static {
-        forStack = new HashSet<Class>();
+        forStack = new HashSet<>();
         forStack.add(AugmentationDotInter.class);
         forStack.add(BarlineInter.class);
         forStack.add(BeamHookInter.class);
@@ -91,38 +101,34 @@ public class RhythmsStep
         forStack.add(HeadInter.class);
         forStack.add(RestChordInter.class);
         forStack.add(RestInter.class);
+        forStack.add(SmallBeamInter.class);
+        forStack.add(SmallChordInter.class);
+        forStack.add(SmallFlagInter.class);
         forStack.add(StaffBarlineInter.class);
         forStack.add(StemInter.class);
         forStack.add(TupletInter.class);
-
         forStack.add(MeasureStack.class);
-
         // Relations
+        forStack.add(AugmentationRelation.class);
         forStack.add(BeamStemRelation.class);
+        forStack.add(DoubleDotRelation.class);
         forStack.add(HeadStemRelation.class);
     }
 
-    /** Classes that impact a whole page. */
-    private static final Set<Class> forPage;
-
     static {
-        forPage = new HashSet<Class>();
+        forPage = new HashSet<>();
         forPage.add(SlurInter.class); // Because of possibility of ties
         forPage.add(TimeNumberInter.class);
         forPage.add(TimePairInter.class);
         forPage.add(TimeWholeInter.class);
     }
 
-    /** All impacting classes. */
-    private static final Set<Class> impactingClasses;
-
     static {
-        impactingClasses = new HashSet<Class>();
+        impactingClasses = new HashSet<>();
         impactingClasses.addAll(forStack);
         impactingClasses.addAll(forPage);
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code RhythmsStep} object.
      */
@@ -130,7 +136,6 @@ public class RhythmsStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // doit //
     //------//
@@ -179,7 +184,7 @@ public class RhythmsStep
 
                         if (inter instanceof BarlineInter || inter instanceof StaffBarlineInter) {
                             if ((task instanceof RemovalTask && (opKind == OpKind.UNDO))
-                                || (task instanceof AdditionTask && (opKind != OpKind.UNDO))) {
+                                        || (task instanceof AdditionTask && (opKind != OpKind.UNDO))) {
                                 // Add next stack as well
                                 impact.onStacks.add(stack.getNextSibling());
                             }
@@ -200,11 +205,9 @@ public class RhythmsStep
                 Class classe = relation.getClass();
 
                 if (isImpactedBy(classe, forStack)) {
-                    if (sig.containsEdge(relation)) {
-                        Inter source = sig.getEdgeSource(relation);
-                        MeasureStack stack = system.getStackAt(source.getCenter());
-                        impact.onStacks.add(stack);
-                    }
+                    Inter source = relationTask.getSource();
+                    MeasureStack stack = system.getStackAt(source.getCenter());
+                    impact.onStacks.add(stack);
                 }
             }
         }
@@ -228,19 +231,16 @@ public class RhythmsStep
         return isImpactedBy(classe, impactingClasses);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Impact //
     //--------//
     private static class Impact
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         boolean onPage = false;
 
-        Set<MeasureStack> onStacks = new LinkedHashSet<MeasureStack>();
+        Set<MeasureStack> onStacks = new LinkedHashSet<>();
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

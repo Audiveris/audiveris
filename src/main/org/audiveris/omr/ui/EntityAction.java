@@ -47,12 +47,10 @@ import javax.swing.KeyStroke;
 public class EntityAction
         extends AbstractAction
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Delegation to an existing action, if any */
     private Action delegate = null;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates an action, and registers the action in the provided menu as
      * well as in the toolbar (if so desired)
@@ -92,7 +90,7 @@ public class EntityAction
         if (key != null) {
             item.setAccelerator(
                     KeyStroke.getKeyStroke(
-                            (int) key.charAt(0),
+                            key.charAt(0),
                             Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         }
 
@@ -110,9 +108,9 @@ public class EntityAction
      * Wraps an existing action, used as a delegate.
      *
      * @param entityActions collection of actions
-     * @param menu the menu where the related item is to be inserted
-     * @param toolBar the toolBar for icon insertion
-     * @param delegate the existing action
+     * @param menu          the menu where the related item is to be inserted
+     * @param toolBar       the toolBar for icon insertion
+     * @param delegate      the existing action
      */
     protected EntityAction (Collection<Action> entityActions,
                             JMenu menu,
@@ -153,7 +151,6 @@ public class EntityAction
         this(entityActions, menu, toolBar, label, tip, null, icon);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//
@@ -163,5 +160,12 @@ public class EntityAction
         if (delegate != null) {
             delegate.actionPerformed(e);
         }
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 }

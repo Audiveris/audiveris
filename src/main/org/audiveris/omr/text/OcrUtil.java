@@ -37,18 +37,15 @@ import java.util.List;
  */
 public abstract class OcrUtil
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** The related OCR. */
     private static final OCR ocr = TesseractOCR.getInstance();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private OcrUtil ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // getOcr //
     //--------//

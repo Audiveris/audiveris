@@ -35,7 +35,6 @@ import java.util.Comparator;
  */
 public abstract class IdUtil
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(IdUtil.class);
 
@@ -50,7 +49,10 @@ public abstract class IdUtil
         }
     };
 
-    //~ Methods ------------------------------------------------------------------------------------
+    private IdUtil ()
+    {
+    }
+
     /**
      * Compare the integer values of two provided IDs, checking that they share the
      * same prefix.

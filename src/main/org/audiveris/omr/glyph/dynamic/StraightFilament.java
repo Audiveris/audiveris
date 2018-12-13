@@ -46,11 +46,10 @@ public class StraightFilament
         extends Filament
         implements NearLine
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
+    /** The approximating line. */
     protected BasicLine line;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StraightFilament} object.
      *
@@ -61,7 +60,6 @@ public class StraightFilament
         super(interline);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // computeLine //
     //-------------//
@@ -110,6 +108,11 @@ public class StraightFilament
     //--------------//
     // getBasicLine //
     //--------------//
+    /**
+     * Return the approximating line as a BasicLine
+     *
+     * @return the BasicLine instance
+     */
     public BasicLine getBasicLine ()
     {
         checkLine();
@@ -269,6 +272,40 @@ public class StraightFilament
     {
         if (line == null) {
             computeLine();
+        }
+    }
+
+    //-------------//
+    // Constructor //
+    //-------------//
+    /**
+     * Kind of 'constructor' for a StraightFilament.
+     */
+    public static class Constructor
+            implements CompoundFactory.CompoundConstructor
+    {
+
+        private final int interline;
+
+        /**
+         * Create the constructor.
+         *
+         * @param interline the related interline
+         */
+        public Constructor (int interline)
+        {
+            this.interline = interline;
+        }
+
+        /**
+         * Create a new instance of StraightFilament.
+         *
+         * @return the new instance
+         */
+        @Override
+        public SectionCompound newInstance ()
+        {
+            return new StraightFilament(interline);
         }
     }
 }

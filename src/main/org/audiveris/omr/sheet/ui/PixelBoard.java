@@ -56,16 +56,17 @@ import javax.swing.KeyStroke;
 public class PixelBoard
         extends Board
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PixelBoard.class);
 
     /** Events this board is interested in. */
     private static final Class<?>[] eventsRead = new Class<?>[]{
-        LocationEvent.class, PixelEvent.class
-    };
+        LocationEvent.class,
+        PixelEvent.class};
 
-    //~ Instance fields ----------------------------------------------------------------------------
+    /** Pixel level. */
+    protected final LIntegerField level = new LIntegerField(false, "Level", "Pixel level");
+
     /** Abscissa of upper Left point. */
     private final LIntegerField x = new LIntegerField("X", "Abscissa of upper left corner");
 
@@ -78,10 +79,6 @@ public class PixelBoard
     /** Height of rectangle. */
     private final LIntegerField height = new LIntegerField("Height", "Height of rectangle");
 
-    /** Pixel level. */
-    protected final LIntegerField level = new LIntegerField(false, "Level", "Pixel level");
-
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a PixelBoard, pre-selected by default
      *
@@ -112,7 +109,6 @@ public class PixelBoard
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // onEvent //
     //---------//
@@ -223,14 +219,9 @@ public class PixelBoard
         builder.add(height.getField(), cst.xy(11, r));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-------------//
-    // ParamAction //
-    //-------------//
     private class ParamAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         // Method run whenever user presses Return/Enter in one of the parameter fields
         @Override
@@ -242,7 +233,18 @@ public class PixelBoard
                             PixelBoard.this,
                             SelectionHint.LOCATION_INIT,
                             MouseMovement.PRESSING,
-                            new Rectangle(x.getValue(), y.getValue(), width.getValue(), height.getValue())));
+                            new Rectangle(
+                                    x.getValue(),
+                                    y.getValue(),
+                                    width.getValue(),
+                                    height.getValue())));
+        }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 }

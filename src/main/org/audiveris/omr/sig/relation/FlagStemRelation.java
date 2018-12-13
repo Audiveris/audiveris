@@ -25,7 +25,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import static org.audiveris.omr.glyph.ShapeSet.FlagsUp;
 import org.audiveris.omr.sheet.Scale;
-import org.audiveris.omr.sig.inter.FlagInter;
+import org.audiveris.omr.sig.inter.AbstractFlagInter;
 import org.audiveris.omr.sig.inter.Inter;
 import static org.audiveris.omr.sig.relation.StemPortion.*;
 
@@ -48,20 +48,18 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class FlagStemRelation
         extends AbstractStemConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(FlagStemRelation.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
     @Override
     public void added (GraphEdgeChangeEvent<Inter, Relation> e)
     {
-        final FlagInter flag = (FlagInter) e.getEdgeSource();
+        final AbstractFlagInter flag = (AbstractFlagInter) e.getEdgeSource();
         flag.checkAbnormal();
     }
 
@@ -76,34 +74,11 @@ public class FlagStemRelation
         final double margin = scale.getInterline(); // TODO: use a constant instead?
 
         if (FlagsUp.contains(source.getShape())) {
-            return (extensionPoint.getY() > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;
+            return (extensionPoint.getY() > (stemLine.getY2() - margin)) ? STEM_BOTTOM
+                    : STEM_MIDDLE;
         } else {
             return (extensionPoint.getY() < (stemLine.getY1() + margin)) ? STEM_TOP : STEM_MIDDLE;
         }
-    }
-
-    //------------------//
-    // getXInGapMaximum //
-    //------------------//
-    public static Scale.Fraction getXInGapMaximum (boolean manual)
-    {
-        return manual ? constants.xInGapMaxManual : constants.xInGapMax;
-    }
-
-    //-------------------//
-    // getXOutGapMaximum //
-    //-------------------//
-    public static Scale.Fraction getXOutGapMaximum (boolean manual)
-    {
-        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
-    }
-
-    //----------------//
-    // getYGapMaximum //
-    //----------------//
-    public static Scale.Fraction getYGapMaximum (boolean manual)
-    {
-        return manual ? constants.yGapMaxManual : constants.yGapMax;
     }
 
     //----------------//
@@ -130,8 +105,11 @@ public class FlagStemRelation
     @Override
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
-        final FlagInter flag = (FlagInter) e.getEdgeSource();
-        flag.checkAbnormal();
+        final AbstractFlagInter flag = (AbstractFlagInter) e.getEdgeSource();
+
+        if (!flag.isRemoved()) {
+            flag.checkAbnormal();
+        }
     }
 
     //----------------//
@@ -179,14 +157,36 @@ public class FlagStemRelation
         return getYGapMaximum(manual);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //------------------//
+    // getXInGapMaximum //
+    //------------------//
+    public static Scale.Fraction getXInGapMaximum (boolean manual)
+    {
+        return manual ? constants.xInGapMaxManual : constants.xInGapMax;
+    }
+
+    //-------------------//
+    // getXOutGapMaximum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMaximum (boolean manual)
+    {
+        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
+    }
+
+    //----------------//
+    // getYGapMaximum //
+    //----------------//
+    public static Scale.Fraction getYGapMaximum (boolean manual)
+    {
+        return manual ? constants.yGapMaxManual : constants.yGapMax;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio flagSupportCoeff = new Constant.Ratio(
                 3,

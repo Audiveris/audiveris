@@ -93,10 +93,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 public class Part
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Part.class);
+    private static final Logger logger = LoggerFactory.getLogger(Part.class);
 
     /** For comparing Part instances according to their id. */
     public static final Comparator<Part> byId = new Comparator<Part>()
@@ -109,8 +107,6 @@ public class Part
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
@@ -133,7 +129,7 @@ public class Part
 
     /** Staves in this part. */
     @XmlElement(name = "staff")
-    private final List<Staff> staves = new ArrayList<Staff>();
+    private final List<Staff> staves = new ArrayList<>();
 
     /** Starting barline, if any. (the others are linked to measures) */
     @XmlElement(name = "left-barline")
@@ -141,7 +137,7 @@ public class Part
 
     /** Measures in this part. */
     @XmlElement(name = "measure")
-    private final List<Measure> measures = new ArrayList<Measure>();
+    private final List<Measure> measures = new ArrayList<>();
 
     /** Lyric lines in this part. To be kept sorted vertically. */
     @XmlList
@@ -162,7 +158,6 @@ public class Part
     @Navigable(false)
     private SystemInfo system;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of {@code Part}.
      *
@@ -180,14 +175,18 @@ public class Part
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addLyric //
     //----------//
+    /**
+     * Add a lyric line.
+     *
+     * @param lyric the lyric line to add
+     */
     public void addLyric (LyricLineInter lyric)
     {
         if (lyrics == null) {
-            lyrics = new ArrayList<LyricLineInter>();
+            lyrics = new ArrayList<>();
         }
 
         lyrics.add(lyric);
@@ -196,6 +195,11 @@ public class Part
     //------------//
     // addmeasure //
     //------------//
+    /**
+     * Append a measure.
+     *
+     * @param measure the measure to append
+     */
     public void addMeasure (Measure measure)
     {
         measures.add(measure);
@@ -204,6 +208,12 @@ public class Part
     //------------//
     // addmeasure //
     //------------//
+    /**
+     * Insert a measure at specified index.
+     *
+     * @param index   the specified index
+     * @param measure the measure to insert
+     */
     public void addMeasure (int index,
                             Measure measure)
     {
@@ -213,10 +223,15 @@ public class Part
     //---------//
     // addSlur //
     //---------//
+    /**
+     * Add a slur.
+     *
+     * @param slur the slur to add to this part
+     */
     public void addSlur (SlurInter slur)
     {
         if (slurs == null) {
-            slurs = new ArrayList<SlurInter>();
+            slurs = new ArrayList<>();
         }
 
         slurs.add(slur);
@@ -225,6 +240,11 @@ public class Part
     //----------//
     // addStaff //
     //----------//
+    /**
+     * Append a staff.
+     *
+     * @param staff the staff to append to this staff
+     */
     public void addStaff (Staff staff)
     {
         staves.add(staff);
@@ -234,6 +254,9 @@ public class Part
     //-------------//
     // afterReload //
     //-------------//
+    /**
+     * To be called right after unmarshalling.
+     */
     public void afterReload ()
     {
         try {
@@ -270,7 +293,7 @@ public class Part
      * <li>The created inters (clef, key, time, rests) are <b>not</b> inserted in sig, only in the
      * (dummy) measures of the (dummy) part.</li>
      * <li>The created dummy part is <b>not</b> inserted in system list of parts.</li>
-     * <li> Similarly, the (dummy) measures of this dummy part are <b>not</b> inserted in
+     * <li>Similarly, the (dummy) measures of this dummy part are <b>not</b> inserted in
      * MeasureStack instances that play only with real measures.</li>
      * </ul>
      * <p>
@@ -358,7 +381,8 @@ public class Part
      * <p>
      * Important: Nothing is written in slurs yet, only in links map.
      * <p>
-     * This method is called in two contexts:<ol>
+     * This method is called in two contexts:
+     * <ol>
      * <li>Within a page: it processes slur connections between systems of the page.
      * <li>Within a score: it processes slur connections between pages of a score.
      * </ol>
@@ -372,7 +396,7 @@ public class Part
         Objects.requireNonNull(precedingPart, "Null part to connect Slurs with");
 
         // Links: Slur -> prevSlur
-        Map<SlurInter, SlurInter> links = new LinkedHashMap<SlurInter, SlurInter>();
+        Map<SlurInter, SlurInter> links = new LinkedHashMap<>();
 
         // Orphans slurs at the beginning of the current system part
         List<SlurInter> orphans = getSlurs(SlurInter.isBeginningOrphan);
@@ -471,6 +495,25 @@ public class Part
         return id;
     }
 
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Set the part id.
+     *
+     * @param id the new id value
+     */
+    public void setId (int id)
+    {
+        if (this.id != id) {
+            this.id = id;
+
+            if (!isDummy()) {
+                getSystem().getSheet().getStub().setModified(true);
+            }
+        }
+    }
+
     //----------------//
     // getLastMeasure //
     //----------------//
@@ -512,9 +555,27 @@ public class Part
         return leftBarline;
     }
 
+    //--------------------//
+    // setLeftPartBarline //
+    //--------------------//
+    /**
+     * Set the PartBarline that starts the part.
+     *
+     * @param leftBarline the starting PartBarline
+     */
+    public void setLeftPartBarline (PartBarline leftBarline)
+    {
+        this.leftBarline = leftBarline;
+    }
+
     //----------------//
     // getLogicalPart //
     //----------------//
+    /**
+     * Report the LogicalPart this (physical) part implements.
+     *
+     * @return the logical part.
+     */
     public LogicalPart getLogicalPart ()
     {
         return system.getPage().getLogicalPartById(id);
@@ -523,6 +584,11 @@ public class Part
     //-----------//
     // getLyrics //
     //-----------//
+    /**
+     * Report the sequence of lyric lines in this part.
+     *
+     * @return list of lyrics, perhaps empty
+     */
     public List<LyricLineInter> getLyrics ()
     {
         return (lyrics != null) ? Collections.unmodifiableList(lyrics) : Collections.EMPTY_LIST;
@@ -583,6 +649,19 @@ public class Part
         return (name != null) ? name.getValue() : null;
     }
 
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assign a name to this part.
+     *
+     * @param name the name to set
+     */
+    public void setName (SentenceInter name)
+    {
+        this.name = name;
+    }
+
     //--------//
     // getPid //
     //--------//
@@ -626,7 +705,7 @@ public class Part
      */
     public List<SlurInter> getSlurs (Predicate<SlurInter> predicate)
     {
-        List<SlurInter> selectedSlurs = new ArrayList<SlurInter>();
+        List<SlurInter> selectedSlurs = new ArrayList<>();
 
         if (slurs != null) {
             for (SlurInter slur : slurs) {
@@ -700,6 +779,11 @@ public class Part
     //-----------//
     // getStaves //
     //-----------//
+    /**
+     * Report the sequence of staves in this part.
+     *
+     * @return list of staves
+     */
     public List<Staff> getStaves ()
     {
         return staves;
@@ -708,14 +792,37 @@ public class Part
     //-----------//
     // getSystem //
     //-----------//
+    /**
+     * Report the containing system
+     *
+     * @return containing system
+     */
     public SystemInfo getSystem ()
     {
         return system;
     }
 
+    //-----------//
+    // setSystem //
+    //-----------//
+    /**
+     * Assign the containing system.
+     *
+     * @param system the containing system
+     */
+    public void setSystem (SystemInfo system)
+    {
+        this.system = system;
+    }
+
     //---------//
     // isDummy //
     //---------//
+    /**
+     * Tell whether this part is a dummy (that lives only for the duration of an export)
+     *
+     * @return true if so
+     */
     public boolean isDummy ()
     {
         return dummy;
@@ -724,6 +831,9 @@ public class Part
     //-----------------//
     // purgeContainers //
     //-----------------//
+    /**
+     * Update the internal collection of lyrics, by removing the deleted ones.
+     */
     public void purgeContainers ()
     {
         // Lyrics
@@ -741,20 +851,30 @@ public class Part
     //-------------//
     // removeLyric //
     //-------------//
+    /**
+     * Remove a lyric line.
+     *
+     * @param lyric the lyric line to remove
+     */
     public void removeLyric (LyricLineInter lyric)
     {
         if (lyrics != null) {
             lyrics.remove(lyric);
-        }
 
-        if (lyrics.isEmpty()) {
-            lyrics = null;
+            if (lyrics.isEmpty()) {
+                lyrics = null;
+            }
         }
     }
 
     //---------------//
     // removeMeasure //
     //---------------//
+    /**
+     * Remove a measure.
+     *
+     * @param measure the measure to remove from this part
+     */
     public void removeMeasure (Measure measure)
     {
         measures.remove(measure);
@@ -787,60 +907,12 @@ public class Part
     //----------//
     // setDummy //
     //----------//
+    /**
+     * Assign this part as being dummy.
+     */
     public void setDummy ()
     {
         dummy = Boolean.TRUE;
-    }
-
-    //-------//
-    // setId //
-    //-------//
-    /**
-     * Set the part id.
-     *
-     * @param id the new id value
-     */
-    public void setId (int id)
-    {
-        if (this.id != id) {
-            this.id = id;
-
-            if (!isDummy()) {
-                getSystem().getSheet().getStub().setModified(true);
-            }
-        }
-    }
-
-    //--------------------//
-    // setLeftPartBarline //
-    //--------------------//
-    /**
-     * Set the PartBarline that starts the part.
-     *
-     * @param leftBarline the starting PartBarline
-     */
-    public void setLeftPartBarline (PartBarline leftBarline)
-    {
-        this.leftBarline = leftBarline;
-    }
-
-    //---------//
-    // setName //
-    //---------//
-    /**
-     * @param name the name to set
-     */
-    public void setName (SentenceInter name)
-    {
-        this.name = name;
-    }
-
-    //-----------//
-    // setSystem //
-    //-----------//
-    public void setSystem (SystemInfo system)
-    {
-        this.system = system;
     }
 
     //----------------//

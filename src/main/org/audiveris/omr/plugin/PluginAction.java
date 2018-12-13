@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-
 import static javax.swing.Action.SHORT_DESCRIPTION;
 
 /**
@@ -42,28 +41,24 @@ import static javax.swing.Action.SHORT_DESCRIPTION;
 class PluginAction
         extends AbstractAction
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PluginAction.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related plugin. */
     private final Plugin plugin;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new PluginAction object.
      *
      * @param plugin the underlying scripting plugin
      */
-    public PluginAction (Plugin plugin)
+    PluginAction (Plugin plugin)
     {
         super(plugin.getId());
         this.plugin = plugin;
         putValue(SHORT_DESCRIPTION, plugin.getDescription());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//
@@ -83,5 +78,12 @@ class PluginAction
     public Plugin getPlugin ()
     {
         return plugin;
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 }

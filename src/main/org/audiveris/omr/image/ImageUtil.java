@@ -48,11 +48,9 @@ import javax.media.jai.JAI;
  */
 public abstract class ImageUtil
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ImageUtil.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // invert //
     //--------//
@@ -161,9 +159,7 @@ public abstract class ImageUtil
         logger.info("Converting RGB to gray ...");
 
         // We use luminance value based on standard RGB combination
-        double[][] matrix = {
-            {0.114d, 0.587d, 0.299d, 0.0d}
-        };
+        double[][] matrix = {{0.114d, 0.587d, 0.299d, 0.0d}};
 
         return JAI.create("bandcombine", new ParameterBlock().addSource(rgb).add(matrix), null)
                 .getAsBufferedImage();
@@ -289,5 +285,9 @@ public abstract class ImageUtil
         default:
             return "?";
         }
+    }
+
+    private ImageUtil ()
+    {
     }
 }

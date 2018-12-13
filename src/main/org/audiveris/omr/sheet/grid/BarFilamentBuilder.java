@@ -38,7 +38,6 @@ import java.util.List;
  */
 public class BarFilamentBuilder
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Related sheet. */
     @Navigable(false)
@@ -47,7 +46,6 @@ public class BarFilamentBuilder
     /** Specific factory for peak-based filaments. */
     private final BarFilamentFactory factory;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BarFilamentBuilder} object.
      *
@@ -60,7 +58,6 @@ public class BarFilamentBuilder
         factory = new BarFilamentFactory(sheet.getScale());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // buildFilament //
     //---------------//
@@ -82,7 +79,7 @@ public class BarFilamentBuilder
         peakBox.grow(0, verticalExtension);
 
         final int xBreak = peakBox.x + peakBox.width;
-        final List<Section> sections = new ArrayList<Section>();
+        final List<Section> sections = new ArrayList<>();
         final int maxSectionWidth = peak.getWidth(); // Width of this particular peak
 
         for (Section section : allSections) {

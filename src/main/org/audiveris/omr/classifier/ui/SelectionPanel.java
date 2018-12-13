@@ -34,7 +34,6 @@ import org.audiveris.omr.classifier.SampleSheet;
 import org.audiveris.omr.classifier.SampleSource;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.util.Panel;
@@ -69,13 +68,11 @@ import javax.swing.event.ChangeListener;
 class SelectionPanel
         implements SampleSource, SampleRepository.LoadListener, ChangeListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SelectionPanel.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Swing component. */
     private final Panel component;
 
@@ -109,11 +106,10 @@ class SelectionPanel
     /** Sample collection for testing. */
     private List<Sample> tests;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SelectionPanel object.
      */
-    public SelectionPanel ()
+    SelectionPanel ()
     {
         component = new Panel();
         component.setNoInsets();
@@ -132,15 +128,6 @@ class SelectionPanel
         if (repository.isLoaded()) {
             setTotalSamples(repository.getAllSamples().size());
         }
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //------------------------//
-    // getMinShapeSampleCount //
-    //------------------------//
-    public static int getMinShapeSampleCount ()
-    {
-        return constants.minShapeSampleCount.getValue();
     }
 
     //--------------//
@@ -187,8 +174,8 @@ class SelectionPanel
     {
         if (trains == null) {
             progressBar.setValue(0);
-            trains = new ArrayList<Sample>();
-            tests = new ArrayList<Sample>();
+            trains = new ArrayList<>();
+            tests = new ArrayList<>();
 
             if (!repository.isLoaded()) {
                 repository.loadRepository(this);
@@ -304,14 +291,106 @@ class SelectionPanel
         nbRepoSamples.setText(Integer.toString(total));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //------------------------//
+    // getMinShapeSampleCount //
+    //------------------------//
+    public static int getMinShapeSampleCount ()
+    {
+        return constants.minShapeSampleCount.getValue();
+    }
+
+    private class ParamAction
+            extends AbstractAction
+    {
+
+        // Purpose is just to read and remember the data from the various input fields.
+        // Triggered when user presses Enter in one of these fields.
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            inputParams();
+            displayParams();
+        }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
+    }
+
+    private class SelectAction
+            extends AbstractAction
+    {
+
+        SelectAction ()
+        {
+            super("Select");
+            putValue(Action.SHORT_DESCRIPTION, "Build samples selection");
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            executor.execute(new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    trains = null;
+                    tests = null;
+
+                    // Get a fresh collection
+                    getTrainSamples();
+                }
+            });
+        }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
+    }
+
+    private class StoreAction
+            extends AbstractAction
+    {
+
+        StoreAction ()
+        {
+            super("Store");
+            putValue(Action.SHORT_DESCRIPTION, "Store train/test selections as .csv files");
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            GlyphDescriptor imgDesc = new ImgGlyphDescriptor();
+            imgDesc.export("train", getTrainSamples(), true);
+            imgDesc.export("test", getTestSamples(), false);
+
+            GlyphDescriptor mixDesc = new MixGlyphDescriptor();
+            mixDesc.export("train", getTrainSamples(), true);
+            mixDesc.export("test", getTestSamples(), false);
+        }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Integer maxShapeSampleCount = new Constant.Integer(
                 "samples",
@@ -332,10 +411,10 @@ class SelectionPanel
      */
     private static class GradedSample
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         /** For comparing GradedSample instances in reverse grade order. */
-        static final Comparator<GradedSample> reverseGradeComparator = new Comparator<GradedSample>()
+        static final Comparator<GradedSample> reverseGradeComparator
+                = new Comparator<GradedSample>()
         {
             @Override
             public int compare (GradedSample gs1,
@@ -345,20 +424,17 @@ class SelectionPanel
             }
         };
 
-        //~ Instance fields ------------------------------------------------------------------------
         final Sample sample;
 
         final double grade;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public GradedSample (Sample sample,
-                             double grade)
+        GradedSample (Sample sample,
+                      double grade)
         {
             this.sample = sample;
             this.grade = grade;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -366,85 +442,4 @@ class SelectionPanel
         }
     }
 
-    //-------------//
-    // ParamAction //
-    //-------------//
-    private class ParamAction
-            extends AbstractAction
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        // Purpose is just to read and remember the data from the various input fields.
-        // Triggered when user presses Enter in one of these fields.
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            inputParams();
-            displayParams();
-        }
-    }
-
-    //--------------//
-    // SelectAction //
-    //--------------//
-    private class SelectAction
-            extends AbstractAction
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public SelectAction ()
-        {
-            super("Select");
-            putValue(Action.SHORT_DESCRIPTION, "Build samples selection");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            executor.execute(
-                    new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    trains = null;
-                    tests = null;
-
-                    // Get a fresh collection
-                    getTrainSamples();
-                }
-            });
-        }
-    }
-
-    //-------------//
-    // StoreAction //
-    //-------------//
-    private class StoreAction
-            extends AbstractAction
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public StoreAction ()
-        {
-            super("Store");
-            putValue(Action.SHORT_DESCRIPTION, "Store train/test selections as .csv files");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            System.out.println(ShapeSet.getPhysicalShapeNamesString());
-
-            GlyphDescriptor imgDesc = new ImgGlyphDescriptor();
-            imgDesc.export("train", getTrainSamples(), true);
-            imgDesc.export("test", getTestSamples(), false);
-
-            GlyphDescriptor mixDesc = new MixGlyphDescriptor();
-            mixDesc.export("train", getTrainSamples(), true);
-            mixDesc.export("test", getTestSamples(), false);
-        }
-    }
 }

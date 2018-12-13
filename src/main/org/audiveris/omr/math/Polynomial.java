@@ -30,15 +30,16 @@ package org.audiveris.omr.math;
  */
 public class Polynomial
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The degree of polynomial */
+    /** Epsilon value meant for equality testing: {@value}. */
+    private static final double EPSILON = 1E-5;
+
+    /** The degree of polynomial. */
     protected int degree;
 
-    /** Polynomial coefficient vector, from low to high order */
+    /** Polynomial coefficient vector, from low to high order. */
     protected double[] coefficients;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Polynomial object (actually just a monomial).
      * Example new Polynomial(3,2) = 3x^2
@@ -56,44 +57,6 @@ public class Polynomial
         coefficients = new double[degree + 1];
         coefficients[degree] = c;
         this.degree = degree();
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //------//
-    // main //
-    //------//
-    // test client
-    public static void main (String[] args)
-    {
-        Polynomial zero = new Polynomial(0, 0);
-
-        Polynomial p1 = new Polynomial(4, 3); // 4x^3
-        Polynomial p2 = new Polynomial(3, 2); // 3x^2
-        Polynomial p3 = new Polynomial(1, 0); // 1
-        Polynomial p4 = new Polynomial(2, 1); // 2x
-        Polynomial p = p1.plus(p2).plus(p3).plus(p4); // 4x^3 + 3x^2 + 2x + 1
-
-        Polynomial q1 = new Polynomial(3, 2); // 3x^2
-        Polynomial q2 = new Polynomial(5, 0); // 5
-        Polynomial q = q1.plus(q2); // 3x^2 + 5
-
-        Polynomial r = p.plus(q);
-        Polynomial s = p.times(q);
-        Polynomial t = p.compose(q);
-
-        System.out.println("zero(x) =     " + zero);
-        System.out.println("p(x) =        " + p);
-        System.out.println("q(x) =        " + q);
-        System.out.println("p(x) + q(x) = " + r);
-        System.out.println("p(x) * q(x) = " + s);
-        System.out.println("p(q(x))     = " + t);
-        System.out.println("0 - p(x)    = " + zero.minus(p));
-        System.out.println("p(3)        = " + p.evaluate(3));
-        System.out.println("p'(x)       = " + p.derivative());
-        System.out.println("p''(x)      = " + p.derivative().derivative());
-        System.out.println("p'''(x)     = " + p.derivative().derivative().derivative());
-        System.out.println(
-                "p''''(x)    = " + p.derivative().derivative().derivative().derivative());
     }
 
     //--------//
@@ -176,7 +139,7 @@ public class Polynomial
         }
 
         for (int i = degree; i >= 0; i--) {
-            if (coefficients[i] != that.coefficients[i]) {
+            if (Math.abs(coefficients[i] - that.coefficients[i]) > EPSILON) {
                 return false;
             }
         }
@@ -322,24 +285,65 @@ public class Polynomial
             return coefficients[1] + "x + " + coefficients[0];
         }
 
-        String s = coefficients[degree] + "x^" + degree;
+        StringBuilder sb = new StringBuilder(coefficients[degree] + "x^" + degree);
 
         for (int i = degree - 1; i >= 0; i--) {
             if (coefficients[i] == 0) {
                 continue;
             } else if (coefficients[i] > 0) {
-                s = s + " + " + (coefficients[i]);
+                sb.append(" + ").append(coefficients[i]);
             } else if (coefficients[i] < 0) {
-                s = s + " - " + (-coefficients[i]);
+                sb.append(" - ").append(-coefficients[i]);
             }
 
             if (i == 1) {
-                s += "x";
+                sb.append("x");
             } else if (i > 1) {
-                s = s + "x^" + i;
+                sb.append("x^").append(i);
             }
         }
 
-        return s;
+        return sb.toString();
     }
+    //
+    //    //------//
+    //    // main //
+    //    //------//
+    //    /**
+    //     * A main entry, just meant for a few tests
+    //     *
+    //     * @param args not used
+    //     */
+    //    public static void main (String[] args)
+    //    {
+    //        Polynomial zero = new Polynomial(0, 0);
+    //
+    //        Polynomial p1 = new Polynomial(4, 3); // 4x^3
+    //        Polynomial p2 = new Polynomial(3, 2); // 3x^2
+    //        Polynomial p3 = new Polynomial(1, 0); // 1
+    //        Polynomial p4 = new Polynomial(2, 1); // 2x
+    //        Polynomial p = p1.plus(p2).plus(p3).plus(p4); // 4x^3 + 3x^2 + 2x + 1
+    //
+    //        Polynomial q1 = new Polynomial(3, 2); // 3x^2
+    //        Polynomial q2 = new Polynomial(5, 0); // 5
+    //        Polynomial q = q1.plus(q2); // 3x^2 + 5
+    //
+    //        Polynomial r = p.plus(q);
+    //        Polynomial s = p.times(q);
+    //        Polynomial t = p.compose(q);
+    //
+    //        System.out.println("zero(x) =     " + zero);
+    //        System.out.println("p(x) =        " + p);
+    //        System.out.println("q(x) =        " + q);
+    //        System.out.println("p(x) + q(x) = " + r);
+    //        System.out.println("p(x) * q(x) = " + s);
+    //        System.out.println("p(q(x))     = " + t);
+    //        System.out.println("0 - p(x)    = " + zero.minus(p));
+    //        System.out.println("p(3)        = " + p.evaluate(3));
+    //        System.out.println("p'(x)       = " + p.derivative());
+    //        System.out.println("p''(x)      = " + p.derivative().derivative());
+    //        System.out.println("p'''(x)     = " + p.derivative().derivative().derivative());
+    //        System.out.println(
+    //                "p''''(x)    = " + p.derivative().derivative().derivative().derivative());
+    //    }
 }

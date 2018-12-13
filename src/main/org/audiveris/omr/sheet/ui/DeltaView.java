@@ -54,18 +54,15 @@ public class DeltaView
         extends ScrollView
         implements PropertyChangeListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(DeltaView.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying sheet. */
     private final Sheet sheet;
 
     /** View parameters. */
     private final ViewParameters viewParams = ViewParameters.getInstance();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new {@code DeltaView} instance, dedicated to a sheet.
      *
@@ -90,7 +87,6 @@ public class DeltaView
         setView(view);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // propertyChange //
     //----------------//
@@ -100,21 +96,18 @@ public class DeltaView
         view.repaint();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyView //
     //--------//
     private class MyView
             extends RubberPanel
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public MyView ()
+        MyView ()
         {
             setModelSize(new Dimension(sheet.getWidth(), sheet.getHeight()));
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //--------//
         // render //
         //--------//

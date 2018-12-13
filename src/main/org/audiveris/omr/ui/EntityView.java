@@ -44,25 +44,21 @@ import java.util.List;
  * Class {@code EntityView} is a basic graphical view for an entity type.
  *
  * @param <E> precise entity type
- *
  * @author Hervé Bitteur
  */
 public class EntityView<E extends Entity>
         extends RubberPanel
         implements PropertyChangeListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(EntityView.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying entity service. */
     protected final EntityService<E> entityService;
 
     /** Underlying entity index. */
     protected final EntityIndex<E> entityIndex;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code EntityView} object.
      *
@@ -83,7 +79,6 @@ public class EntityView<E extends Entity>
         entityService.subscribeStrongly(EntityListEvent.class, this);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // onEvent //
     //---------//

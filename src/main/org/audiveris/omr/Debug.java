@@ -37,6 +37,7 @@ import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Convenient class meant to temporarily inject some debugging.
@@ -47,11 +48,9 @@ import java.io.PrintWriter;
 public class Debug
         extends StubDependent
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Debug.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // checkSources //
     //--------------//
@@ -153,7 +152,7 @@ public class Debug
                     new OutputStreamWriter(os, WellKnowns.FILE_ENCODING));
 
             return new PrintWriter(bw);
-        } catch (Exception ex) {
+        } catch (UnsupportedEncodingException ex) {
             logger.warn("Error creating PrintWriter " + ex, ex);
 
             return null;

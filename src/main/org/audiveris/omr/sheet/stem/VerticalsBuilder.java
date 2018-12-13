@@ -22,6 +22,7 @@
 package org.audiveris.omr.sheet.stem;
 
 import ij.process.ByteProcessor;
+import java.awt.Point;
 
 import org.audiveris.omr.check.Check;
 import org.audiveris.omr.check.CheckBoard;
@@ -30,17 +31,15 @@ import org.audiveris.omr.check.Failure;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.NearLine;
-import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.dynamic.StickFactory;
 import org.audiveris.omr.glyph.dynamic.StraightFilament;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.run.Orientation;
-
 import static org.audiveris.omr.run.Orientation.*;
-
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
@@ -58,7 +57,6 @@ import org.audiveris.omr.ui.selection.UserEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -76,7 +74,6 @@ import java.util.List;
  */
 public class VerticalsBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -106,7 +103,6 @@ public class VerticalsBuilder
     /** Seed is not straight enough. */
     private static final Failure NON_STRAIGHT = new Failure("Stem-NonStraight");
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The system to process. */
     private final SystemInfo system;
 
@@ -122,7 +118,6 @@ public class VerticalsBuilder
     /** Suite of checks for a vertical seed. */
     private final SeedCheckSuite suite = new SeedCheckSuite();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new VerticalsBuilder object.
      *
@@ -138,7 +133,6 @@ public class VerticalsBuilder
         pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // addCheckBoard //
     //---------------//
@@ -184,17 +178,14 @@ public class VerticalsBuilder
         return suite.getImpacts(new StickContext(stick));
     }
 
-    //------------//
-    // getMaxYGap //
-    //------------//
-    public static Scale.Fraction getMaxYGap ()
-    {
-        return constants.gapHigh;
-    }
-
     //----------//
     // getSuite //
     //----------//
+    /**
+     * Report the check suite for vertical candidates.
+     *
+     * @return the CheckSuite for candidates
+     */
     public CheckSuite getSuite ()
     {
         return suite;
@@ -269,7 +260,7 @@ public class VerticalsBuilder
     {
         // Select suitable (vertical) sections
         // Since we are looking for major seeds, we'll use only vertical sections
-        List<Section> vSections = new ArrayList<Section>();
+        List<Section> vSections = new ArrayList<>();
 
         for (Section section : system.getVerticalSections()) {
             // Check section is within system left and right boundaries
@@ -281,7 +272,7 @@ public class VerticalsBuilder
         }
 
         // Horizontal sections (to contribute to stickers)
-        List<Section> hSections = new ArrayList<Section>();
+        List<Section> hSections = new ArrayList<>();
 
         for (Section section : system.getHorizontalSections()) {
             // Limit width to 1 pixel
@@ -307,7 +298,19 @@ public class VerticalsBuilder
         return factory.retrieveSticks(vSections, hSections);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //------------//
+    // getMaxYGap //
+    //------------//
+    /**
+     * Report the maximum vertical gap between chunks.
+     *
+     * @return the maximum acceptable vertical gap between chunks;
+     */
+    public static Scale.Fraction getMaxYGap ()
+    {
+        return constants.gapHigh;
+    }
+
     //------------//
     // BlackCheck //
     //------------//
@@ -317,7 +320,6 @@ public class VerticalsBuilder
     private class BlackCheck
             extends Check<StickContext>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         protected BlackCheck ()
         {
@@ -330,7 +332,6 @@ public class VerticalsBuilder
                     TOO_SHORT);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         // Retrieve the length data
         @Override
         protected double getValue (StickContext context)
@@ -350,7 +351,6 @@ public class VerticalsBuilder
     private class CleanCheck
             extends Check<StickContext>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         protected CleanCheck ()
         {
@@ -363,7 +363,6 @@ public class VerticalsBuilder
                     TOO_HIGH_ADJACENCY);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected double getValue (StickContext context)
         {
@@ -377,9 +376,8 @@ public class VerticalsBuilder
                 // Sanity check
                 double invSlope = LineUtil.getInvertedSlope(start, stop);
 
-                if (Double.isNaN(invSlope)
-                    || Double.isInfinite(invSlope)
-                    || (Math.abs(invSlope) > 0.5)) {
+                if (Double.isNaN(invSlope) || Double.isInfinite(invSlope) || (Math.abs(
+                        invSlope) > 0.5)) {
                     if (stick.isVip()) {
                         logger.info("VIP too far from vertical {}", stick);
                     }
@@ -501,13 +499,146 @@ public class VerticalsBuilder
         }
     }
 
+    //----------//
+    // GapCheck //
+    //----------//
+    /**
+     * Check largest gap in stick.
+     */
+    private class GapCheck
+            extends Check<StickContext>
+    {
+
+        protected GapCheck ()
+        {
+            super(
+                    "Gap",
+                    "Check size of largest hole in stick",
+                    Scale.Fraction.ZERO,
+                    constants.gapHigh,
+                    false,
+                    TOO_HOLLOW);
+        }
+
+        // Retrieve the length data
+        @Override
+        protected double getValue (StickContext context)
+        {
+            return scale.pixelsToFrac(context.gap);
+        }
+    }
+
+    //----------------//
+    // SeedCheckSuite //
+    //----------------//
+    /**
+     * The whole suite of checks meant for vertical seed candidates.
+     */
+    private class SeedCheckSuite
+            extends CheckSuite<StickContext>
+    {
+
+        /**
+         * Create a new instance
+         */
+        SeedCheckSuite ()
+        {
+            super(
+                    "Seed",
+                    constants.minCheckResult.getValue(),
+                    constants.goodCheckResult.getValue());
+
+            add(1, new SlopeCheck());
+            add(1, new StraightCheck());
+            add(2, new CleanCheck());
+            add(1, new BlackCheck()); // Needs CleanCheck side output
+            add(5, new GapCheck()); // Needs CleanCheck side output
+
+            if (logger.isDebugEnabled() && (system.getId() == 1)) {
+                dump();
+            }
+        }
+
+        @Override
+        protected void dumpSpecific (StringBuilder sb)
+        {
+            sb.append(String.format("%s%n", system));
+        }
+    }
+
+    //------------//
+    // SlopeCheck //
+    //------------//
+    /**
+     * Check if stick is aligned with vertical.
+     * (taking global sheet slope into account)
+     */
+    private class SlopeCheck
+            extends Check<StickContext>
+    {
+
+        protected SlopeCheck ()
+        {
+            super(
+                    "Slope",
+                    "Check that stick is vertical, according to global slope",
+                    Constant.Double.ZERO,
+                    constants.slopeHigh,
+                    false,
+                    NON_VERTICAL);
+        }
+
+        // Retrieve the difference between stick slope and global slope
+        @Override
+        protected double getValue (StickContext context)
+        {
+            final NearLine stick = context.stick;
+            Point2D start = stick.getStartPoint(VERTICAL);
+            Point2D stop = stick.getStopPoint(VERTICAL);
+
+            // Beware of sign of stickSlope (it is the opposite of globalSlope)
+            double stickSlope = -(stop.getX() - start.getX()) / (stop.getY() - start.getY());
+
+            return Math.abs(stickSlope - sheet.getSkew().getSlope());
+        }
+    }
+
+    //---------------//
+    // StraightCheck //
+    //---------------//
+    /**
+     * Check if stick is straight.
+     */
+    private class StraightCheck
+            extends Check<StickContext>
+    {
+
+        protected StraightCheck ()
+        {
+            super(
+                    "Straight",
+                    "Check that stick is straight",
+                    Scale.Fraction.ZERO,
+                    constants.straightHigh,
+                    false,
+                    NON_STRAIGHT);
+        }
+
+        @Override
+        protected double getValue (StickContext context)
+        {
+            final NearLine stick = context.stick;
+
+            return scale.pixelsToFrac(stick.getMeanDistance());
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio minSideRatio = new Constant.Ratio(
                 0.4,
@@ -564,122 +695,11 @@ public class VerticalsBuilder
                 "Maximum cotangent for visual check");
     }
 
-    //----------//
-    // GapCheck //
-    //----------//
-    /**
-     * Check largest gap in stick.
-     */
-    private class GapCheck
-            extends Check<StickContext>
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        protected GapCheck ()
-        {
-            super(
-                    "Gap",
-                    "Check size of largest hole in stick",
-                    Scale.Fraction.ZERO,
-                    constants.gapHigh,
-                    false,
-                    TOO_HOLLOW);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        // Retrieve the length data
-        @Override
-        protected double getValue (StickContext context)
-        {
-            return scale.pixelsToFrac(context.gap);
-        }
-    }
-
-    //----------------//
-    // SeedCheckSuite //
-    //----------------//
-    /**
-     * The whole suite of checks meant for vertical seed candidates.
-     */
-    private class SeedCheckSuite
-            extends CheckSuite<StickContext>
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        /**
-         * Create a new instance
-         */
-        public SeedCheckSuite ()
-        {
-            super(
-                    "Seed",
-                    constants.minCheckResult.getValue(),
-                    constants.goodCheckResult.getValue());
-
-            add(1, new SlopeCheck());
-            add(1, new StraightCheck());
-            add(2, new CleanCheck());
-            add(1, new BlackCheck()); // Needs CleanCheck side output
-            add(5, new GapCheck()); // Needs CleanCheck side output
-
-            if (logger.isDebugEnabled() && (system.getId() == 1)) {
-                dump();
-            }
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected void dumpSpecific (StringBuilder sb)
-        {
-            sb.append(String.format("%s%n", system));
-        }
-    }
-
-    //------------//
-    // SlopeCheck //
-    //------------//
-    /**
-     * Check if stick is aligned with vertical.
-     * (taking global sheet slope into account)
-     */
-    private class SlopeCheck
-            extends Check<StickContext>
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        protected SlopeCheck ()
-        {
-            super(
-                    "Slope",
-                    "Check that stick is vertical, according to global slope",
-                    Constant.Double.ZERO,
-                    constants.slopeHigh,
-                    false,
-                    NON_VERTICAL);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        // Retrieve the difference between stick slope and global slope
-        @Override
-        protected double getValue (StickContext context)
-        {
-            final NearLine stick = context.stick;
-            Point2D start = stick.getStartPoint(VERTICAL);
-            Point2D stop = stick.getStopPoint(VERTICAL);
-
-            // Beware of sign of stickSlope (it is the opposite of globalSlope)
-            double stickSlope = -(stop.getX() - start.getX()) / (stop.getY() - start.getY());
-
-            return Math.abs(stickSlope - sheet.getSkew().getSlope());
-        }
-    }
-
     //--------------//
     // StickContext //
     //--------------//
     private static class StickContext
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** The stick being checked. */
         NearLine stick;
@@ -693,49 +713,15 @@ public class VerticalsBuilder
         /** Total length of white portions of stem. */
         int white;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public StickContext (NearLine stick)
+        StickContext (NearLine stick)
         {
             this.stick = stick;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
             return "stick#" + stick.getId();
-        }
-    }
-
-    //---------------//
-    // StraightCheck //
-    //---------------//
-    /**
-     * Check if stick is straight.
-     */
-    private class StraightCheck
-            extends Check<StickContext>
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        protected StraightCheck ()
-        {
-            super(
-                    "Straight",
-                    "Check that stick is straight",
-                    Scale.Fraction.ZERO,
-                    constants.straightHigh,
-                    false,
-                    NON_STRAIGHT);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected double getValue (StickContext context)
-        {
-            final NearLine stick = context.stick;
-
-            return scale.pixelsToFrac(stick.getMeanDistance());
         }
     }
 
@@ -749,20 +735,17 @@ public class VerticalsBuilder
     private static class VertCheckBoard
             extends CheckBoard<StickContext>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Sheet sheet;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public VertCheckBoard (Sheet sheet,
-                               SelectionService eventService,
-                               Class[] eventList)
+        VertCheckBoard (Sheet sheet,
+                        SelectionService eventService,
+                        Class[] eventList)
         {
             super("SeedCheck", null, eventService, eventList);
             this.sheet = sheet;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void onEvent (UserEvent event)
         {
@@ -778,7 +761,8 @@ public class VerticalsBuilder
 
                     if (glyph != null) {
                         // Make sure this is a rather vertical stick
-                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.getValue()) {
+                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck
+                                .getValue()) {
                             // Apply the check suite
                             SystemManager systemManager = sheet.getSystemManager();
 

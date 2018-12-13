@@ -57,18 +57,15 @@ import javax.swing.JPopupMenu;
 public class SampleController
         extends GlyphsController
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleController.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final SampleRepository repository;
 
     private final ApplicationAction removeAction;
 
     private final AssignAction assignAction;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleController} object.
      *
@@ -84,7 +81,12 @@ public class SampleController
         assignAction = new AssignAction();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * Assign a new shape to a sample.
+     *
+     * @param sample   sample at hand
+     * @param newShape new sample shape
+     */
     public void assignSample (Sample sample,
                               Shape newShape)
     {
@@ -92,14 +94,9 @@ public class SampleController
         final SampleSheet sampleSheet = repository.getSampleSheet(sample);
 
         // Add new sample
-        Sample newSample = new Sample(
-                sample.getLeft(),
-                sample.getTop(),
-                sample.getRunTable(),
-                sample.getInterline(),
-                sample.getId(),
-                newShape,
-                sample.getPitch());
+        Sample newSample = new Sample(sample.getLeft(), sample.getTop(), sample.getRunTable(),
+                                      sample.getInterline(), sample.getId(), newShape, sample
+                                      .getPitch());
         sampleModel.addSample(newSample, sampleSheet);
 
         // Remove old sample
@@ -116,6 +113,11 @@ public class SampleController
         return null;
     }
 
+    /**
+     * Report the Assign action.
+     *
+     * @return the Assign action
+     */
     public AssignAction getAssignAction ()
     {
         return assignAction;
@@ -127,11 +129,21 @@ public class SampleController
         return null;
     }
 
+    /**
+     * Report the Remove action
+     *
+     * @return the Remove action
+     */
     public ApplicationAction getRemoveAction ()
     {
         return removeAction;
     }
 
+    /**
+     * Remove the provided sample
+     *
+     * @param sample sample to remove
+     */
     public void removeSample (Sample sample)
     {
         final SampleModel sampleModel = (SampleModel) model;
@@ -141,6 +153,11 @@ public class SampleController
     //--------------//
     // RemoveSample //
     //--------------//
+    /**
+     * Action to remove current sample
+     *
+     * @param e triggering event
+     */
     @Action
     public void removeSample (ActionEvent e)
     {
@@ -149,16 +166,27 @@ public class SampleController
         SampleController.this.removeSample(sample);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // AssignAction //
     //--------------//
+    /**
+     * Action to assign a new shape for a given sample.
+     * <p>
+     * This action can be accessed by different ways:<ul>
+     * <li>By pressing the assignButton in {@link SampleBoard},
+     * <li>By selecting the assign item in the private class SamplePopup menu, triggered by a
+     * right-click in {@link SampleListing}.
+     * </ul>
+     */
     public class AssignAction
             extends AbstractAction
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
+        /** Popup used by assign button in SampleBoard. */
         public JPopupMenu popup = new JPopupMenu();
+
+        /** Menu used by context popup in SampleListing. */
+        private final JMenu menu;
 
         ActionListener actionListener = new ActionListener()
         {
@@ -173,16 +201,21 @@ public class SampleController
             }
         };
 
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create an {@code AssignAction} object.
+         */
         public AssignAction ()
         {
             super("Assign to...");
             putValue(javax.swing.Action.SHORT_DESCRIPTION, "Assign a new shape");
-
             ShapeSet.addAllShapes(popup, actionListener);
+
+            // Build menu for SamplePopup
+            menu = new JMenu("Assign to");
+            ShapeSet.addAllShapes(menu, actionListener);
+            menu.setToolTipText("Assign a new shape");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -194,14 +227,23 @@ public class SampleController
             }
         }
 
+        /**
+         * Context popup menu.
+         *
+         * @return related menu
+         */
         public JMenu getMenu ()
         {
-            JMenu menu = new JMenu("Assign to");
-
-            ShapeSet.addAllShapes(menu, actionListener);
-            menu.setToolTipText("Assign a new shape");
-
             return menu;
+        }
+
+        @Override
+        public void setEnabled (boolean newValue)
+        {
+            super.setEnabled(newValue);
+
+            // Forward new value to containing menu in popup
+            menu.setEnabled(newValue);
         }
     }
 }

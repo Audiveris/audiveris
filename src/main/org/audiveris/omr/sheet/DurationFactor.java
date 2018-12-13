@@ -24,15 +24,18 @@ package org.audiveris.omr.sheet;
 import org.audiveris.omr.math.Rational;
 
 /**
- * Class {@code DurationFactor} handles a rational representation of
- * duration modification
+ * Class {@code DurationFactor} handles a rational representation of duration
+ * modification, such as those triggered by a tuplet.
+ * <p>
+ * Since in {@link Rational} super class, 'num' and 'den' are reduced by their GCD, in this class
+ * we add fields 'actualNum' and 'actualDen' which are not reduced.
+ * Therefore, DurationFactor 2/3 and 4/6 are not equal, even though their rational values are.
  *
  * @author Hervé Bitteur
  */
 public class DurationFactor
         extends Rational
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Actual numerator value, generally 2 or 4. */
     public final int actualNum;
@@ -40,7 +43,6 @@ public class DurationFactor
     /** Actual denominator value, generally 3 or 6. */
     public final int actualDen;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of DurationFactor
      *
@@ -56,7 +58,38 @@ public class DurationFactor
         actualDen = den;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (obj instanceof DurationFactor) {
+            DurationFactor that = (DurationFactor) obj;
+
+            if ((this.actualNum != that.actualNum) || (this.actualDen != that.actualDen)) {
+                return false;
+            }
+
+            return super.equals(obj);
+        }
+
+        return false;
+    }
+
+    //----------//
+    // hashCode //
+    //----------//
+    @Override
+    public int hashCode ()
+    {
+        int hash = 5;
+        hash = (97 * hash) + this.actualNum;
+        hash = (97 * hash) + this.actualDen;
+
+        return hash;
+    }
+
     //----------//
     // toString //
     //----------//

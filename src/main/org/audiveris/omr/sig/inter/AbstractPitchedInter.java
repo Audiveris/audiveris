@@ -43,10 +43,10 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class AbstractPitchedInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To order from bottom to top. */
-    public static Comparator<AbstractPitchedInter> bottomUp = new Comparator<AbstractPitchedInter>()
+    public static final Comparator<AbstractPitchedInter> bottomUp
+            = new Comparator<AbstractPitchedInter>()
     {
         @Override
         public int compare (AbstractPitchedInter p1,
@@ -62,13 +62,11 @@ public abstract class AbstractPitchedInter
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The assigned pitch. */
     @XmlAttribute
     @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
     protected Double pitch;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractPitchedInter object.
      *
@@ -120,7 +118,6 @@ public abstract class AbstractPitchedInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // getIntegerPitch //
     //-----------------//
@@ -147,6 +144,19 @@ public abstract class AbstractPitchedInter
         return pitch;
     }
 
+    //----------//
+    // setPitch //
+    //----------//
+    /**
+     * Set pitch value.
+     *
+     * @param pitch the pitch to set
+     */
+    public void setPitch (double pitch)
+    {
+        this.pitch = pitch;
+    }
+
     //-----------//
     // setBounds //
     //-----------//
@@ -155,20 +165,9 @@ public abstract class AbstractPitchedInter
     {
         super.setBounds(bounds);
 
-        if (pitch == null && staff != null) {
+        if ((pitch == null) && (staff != null)) {
             setPitch(staff.pitchPositionOf(GeoUtil.centerOf(bounds)));
         }
-    }
-
-    //----------//
-    // setPitch //
-    //----------//
-    /**
-     * @param pitch the pitch to set
-     */
-    public void setPitch (double pitch)
-    {
-        this.pitch = pitch;
     }
 
     //----------//

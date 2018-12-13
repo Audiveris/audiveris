@@ -28,6 +28,7 @@ import org.audiveris.omr.step.Step;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -48,11 +49,9 @@ import javax.swing.event.ListSelectionListener;
  */
 public class ErrorsEditor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ErrorsEditor.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet */
     private final Sheet sheet;
 
@@ -66,12 +65,11 @@ public class ErrorsEditor
     private final ListSelectionListener listener = new MyListener();
 
     /** Set of error records */
-    private final SortedSet<Record> recordSet = new TreeSet<Record>();
+    private final SortedSet<Record> recordSet = new TreeSet<>();
 
     /** Facade model for the JList */
-    private final DefaultListModel<Record> model = new DefaultListModel<Record>();
+    private final DefaultListModel<Record> model = new DefaultListModel<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of ErrorsEditor (one per sheet / score).
      *
@@ -80,14 +78,13 @@ public class ErrorsEditor
     public ErrorsEditor (Sheet sheet)
     {
         this.sheet = sheet;
-        list = new JList<Record>(model);
+        list = new JList<>(model);
         scrollPane = new JScrollPane(list);
         scrollPane.setBorder(null);
         list.addListSelectionListener(listener);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //    //----------//
     //    // addError //
     //    //----------//
@@ -251,8 +248,6 @@ public class ErrorsEditor
         return scrollPane;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //
     //    //----------------//
     //    // getCurrentStep //
     //    //----------------//
@@ -277,7 +272,6 @@ public class ErrorsEditor
     private class MyListener
             implements ListSelectionListener
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void valueChanged (ListSelectionEvent e)
@@ -337,7 +331,6 @@ public class ErrorsEditor
     private static class Record
             implements Comparable<Record>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Step step;
 
@@ -348,11 +341,10 @@ public class ErrorsEditor
 
         final String text;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Record (Step step,
-                       //                       OldSystemNode node,
-                       Glyph glyph,
-                       String text)
+        Record (Step step,
+                //                       OldSystemNode node,
+                Glyph glyph,
+                String text)
         {
             this.step = step;
             //            this.node = node;
@@ -360,12 +352,36 @@ public class ErrorsEditor
             this.text = text;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int compareTo (Record other)
         {
             // Very basic indeed !!!
             return toString().compareTo(other.toString());
+        }
+
+        @Override
+        public boolean equals (Object obj)
+        {
+            if (this == obj) {
+                return true;
+            }
+
+            if (obj instanceof Record) {
+                return compareTo((Record) obj) == 0;
+            }
+
+            return false;
+        }
+
+        @Override
+        public int hashCode ()
+        {
+            int hash = 7;
+            hash = (37 * hash) + Objects.hashCode(this.step);
+            hash = (37 * hash) + Objects.hashCode(this.glyph);
+            hash = (37 * hash) + Objects.hashCode(this.text);
+
+            return hash;
         }
 
         @Override

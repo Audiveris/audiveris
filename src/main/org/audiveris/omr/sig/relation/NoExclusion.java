@@ -32,9 +32,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "no-exclusion")
 public class NoExclusion
-        extends AbstractSupport
+        extends Support
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     //----------------//
     // isSingleSource //
@@ -52,5 +51,12 @@ public class NoExclusion
     public boolean isSingleTarget ()
     {
         return false;
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -25,11 +25,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -39,25 +41,22 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class {@code DataHolder} is a place holder for sheet internal data.
  * <p>
- * It handles: <ul>
+ * It handles:
+ * <ul>
  * <li>The data itself, if any.</li>
  * <li>A path to disk where data can be unmarshalled from.</li>
  * </ul>
  *
  * @param <T> specific type for data handled
- *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "holder")
 public class DataHolder<T>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            DataHolder.class);
+    private static final Logger logger = LoggerFactory.getLogger(DataHolder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing sheet. */
     protected Sheet sheet;
 
@@ -71,7 +70,6 @@ public class DataHolder<T>
     @XmlAttribute(name = "path")
     private final String pathString;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code DataHolder} object.
      */
@@ -98,7 +96,6 @@ public class DataHolder<T>
         this.pathString = pathString;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Return the handled data.
      *
@@ -117,18 +114,20 @@ public class DataHolder<T>
                     Unmarshaller um = jaxbContext.createUnmarshaller();
 
                     // Open book file system
-                    Path dataFile = book.openSheetFolder(sheet.getStub().getNumber())
-                            .resolve(pathString);
+                    Path dataFile = book.openSheetFolder(sheet.getStub().getNumber()).resolve(
+                            pathString);
                     logger.debug("path: {}", dataFile);
 
-                    InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ);
-                    data = (T) um.unmarshal(is);
-                    is.close();
+                    try (InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ)) {
+                        data = (T) um.unmarshal(is);
+                    }
+
                     logger.info("Loaded {}", dataFile);
                     dataFile.getFileSystem().close(); // Close book file system
                 }
-            } catch (Exception ex) {
-                logger.warn("Error unmarshalling from " + pathString, ex);
+            } catch (IOException |
+                     JAXBException ex) {
+                logger.warn("Error unmarshalling from {}", pathString, ex);
             } finally {
                 book.getLock().unlock();
             }
@@ -137,13 +136,23 @@ public class DataHolder<T>
         return data;
     }
 
-    public boolean hasData ()
-    {
-        return data != null;
-    }
-
+    /**
+     * Assign the data.
+     *
+     * @param data the data to be hold
+     */
     public void setData (T data)
     {
         this.data = data;
+    }
+
+    /**
+     * Tell whether data is available.
+     *
+     * @return true if available
+     */
+    public boolean hasData ()
+    {
+        return data != null;
     }
 }

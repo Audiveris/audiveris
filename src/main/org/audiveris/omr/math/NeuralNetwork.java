@@ -64,16 +64,12 @@ import javax.xml.stream.XMLStreamException;
 @XmlRootElement(name = "neural-network")
 public class NeuralNetwork
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            NeuralNetwork.class);
+    private static final Logger logger = LoggerFactory.getLogger(NeuralNetwork.class);
 
-    /** Un/marshalling context for use with JAXB */
+    /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** Size of input layer. */
     @XmlAttribute(name = "input-size")
     private final int inputSize;
@@ -116,7 +112,6 @@ public class NeuralNetwork
     /** To trigger training stop. */
     private transient volatile boolean stopping = false;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a neural network, with specified number of cells in each
      * layer, and default values.
@@ -125,8 +120,8 @@ public class NeuralNetwork
      * @param hiddenSize   number of cells in hidden layer
      * @param outputSize   number of cells in output layer
      * @param amplitude    amplitude (less than or = 1.0) for initial random values
-     * @param inputLabels  array of labels for input cells, or null
-     * @param outputLabels array of labels for output cells, or null
+     * @param inputLabels  array of labels for input cells, perhaps empty
+     * @param outputLabels array of labels for output cells, perhaps empty
      */
     public NeuralNetwork (int inputSize,
                           int hiddenSize,
@@ -151,17 +146,17 @@ public class NeuralNetwork
         // Labels for input, if any
         this.inputLabels = new StringArray(inputLabels);
 
-        if ((inputLabels != null) && (inputLabels.length != inputSize)) {
+        if (inputLabels.length != inputSize) {
             throw new IllegalArgumentException(
-                    "Inconsistent input labels " + inputLabels + " vs " + inputSize);
+                    "Inconsistent input labels size " + inputLabels.length + " vs " + inputSize);
         }
 
         // Labels for output, if any
         this.outputLabels = new StringArray(outputLabels);
 
-        if ((outputLabels != null) && (outputLabels.length != outputSize)) {
+        if (outputLabels.length != outputSize) {
             throw new IllegalArgumentException(
-                    "Inconsistent output labels " + outputLabels + " vs " + outputSize);
+                    "Inconsistent output labels size " + outputLabels.length + " vs " + outputSize);
         }
 
         logger.debug("Network created");
@@ -175,8 +170,8 @@ public class NeuralNetwork
      * @param hiddenSize   number of cells in hidden layer
      * @param outputSize   number of cells in output layer
      * @param amplitude    amplitude (less than or = 1.0) for initial random values
-     * @param inputLabels  array of labels for input cells, or null
-     * @param outputLabels array of labels for output cells, or null
+     * @param inputLabels  array of labels for input cells, perhaps empty
+     * @param outputLabels array of labels for output cells, perhaps empty
      * @param learningRate learning rate factor
      * @param momentum     momentum from last adjustment
      * @param epochs       number of epochs in training
@@ -209,8 +204,6 @@ public class NeuralNetwork
         outputLabels = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //
     //--------//
     // backup //
     //--------//
@@ -328,12 +321,14 @@ public class NeuralNetwork
      * Marshal the NeuralNetwork to its XML file
      *
      * @param os the XML output stream, which is not closed by this method
-     * @throws JAXBException if a XML serialization error occurred
+     * @throws JAXBException      if a XML serialization error occurred
      * @throws XMLStreamException if there are any problems writing to the stream
-     * @throws IOException if something goes wrong during IO operations
+     * @throws IOException        if something goes wrong during IO operations
      */
     public void marshal (OutputStream os)
-            throws JAXBException, XMLStreamException, IOException
+            throws JAXBException,
+                   XMLStreamException,
+                   IOException
     {
         Jaxb.marshal(this, os, getJaxbContext());
         logger.debug("Network marshalled");
@@ -358,9 +353,9 @@ public class NeuralNetwork
 
         // Make sure backup is compatible with this neural network
         if ((backup.hiddenWeights.length != hiddenSize)
-            || (backup.hiddenWeights[0].length != (inputSize + 1))
-            || (backup.outputWeights.length != outputSize)
-            || (backup.outputWeights[0].length != (hiddenSize + 1))) {
+                    || (backup.hiddenWeights[0].length != (inputSize + 1))
+                    || (backup.outputWeights.length != outputSize)
+                    || (backup.outputWeights[0].length != (hiddenSize + 1))) {
             throw new IllegalArgumentException("Incompatible backup");
         }
 
@@ -381,7 +376,6 @@ public class NeuralNetwork
      * @param hiddens provided buffer for hidden values, or null
      * @param outputs preallocated array for the computed output values, or null if not already
      *                allocated
-     *
      * @return the computed output values
      */
     public double[] run (double[] inputs,
@@ -465,6 +459,9 @@ public class NeuralNetwork
     //------//
     // stop //
     //------//
+    /**
+     *
+     */
     public void stop ()
     {
         stopping = true;
@@ -542,15 +539,15 @@ public class NeuralNetwork
                 // Update the output weights
                 for (int io = outputSize - 1; io >= 0; io--) {
                     for (int ih = hiddenSize - 1; ih >= 0; ih--) {
-                        double dw = (learningRate * outputGrads[io] * hiddens[ih])
-                                    + (momentum * outputDeltas[io][ih + 1]);
+                        double dw = (learningRate * outputGrads[io] * hiddens[ih]) + (momentum
+                                                                                              * outputDeltas[io][ih
+                                                                                                                 + 1]);
                         outputWeights[io][ih + 1] += dw;
                         outputDeltas[io][ih + 1] = dw;
                     }
 
                     // Bias
-                    double dw = (learningRate * outputGrads[io])
-                                + (momentum * outputDeltas[io][0]);
+                    double dw = (learningRate * outputGrads[io]) + (momentum * outputDeltas[io][0]);
                     outputWeights[io][0] += dw;
                     outputDeltas[io][0] = dw;
                 }
@@ -558,15 +555,15 @@ public class NeuralNetwork
                 // Update the hidden weights
                 for (int ih = hiddenSize - 1; ih >= 0; ih--) {
                     for (int i = inputSize - 1; i >= 0; i--) {
-                        double dw = (learningRate * hiddenGrads[ih] * inputs[ip][i])
-                                    + (momentum * hiddenDeltas[ih][i + 1]);
+                        double dw = (learningRate * hiddenGrads[ih] * inputs[ip][i]) + (momentum
+                                                                                                * hiddenDeltas[ih][i
+                                                                                                                   + 1]);
                         hiddenWeights[ih][i + 1] += dw;
                         hiddenDeltas[ih][i + 1] = dw;
                     }
 
                     // Bias
-                    double dw = (learningRate * hiddenGrads[ih])
-                                + (momentum * hiddenDeltas[ih][0]);
+                    double dw = (learningRate * hiddenGrads[ih]) + (momentum * hiddenDeltas[ih][0]);
                     hiddenWeights[ih][0] += dw;
                     hiddenDeltas[ih][0] = dw;
                 }
@@ -601,103 +598,9 @@ public class NeuralNetwork
         }
 
         final long dur = System.currentTimeMillis() - startTime;
-        logger.info(
-                String.format(
-                        "Duration %,d seconds, %d iterations on %d patterns",
-                        dur / 1000,
-                        epochs,
-                        patterns));
+        logger.info(String.format("Duration %,d seconds, %d iterations on %d patterns", dur / 1_000,
+                                  epochs, patterns));
         stopping = false;
-    }
-
-    //-----------//
-    // unmarshal //
-    //-----------//
-    /**
-     * Unmarshal the provided XML stream to allocate the corresponding NeuralNetwork.
-     *
-     * @param in the input stream that contains the network definition in XML format.
-     *           The stream is not closed by this method
-     *
-     * @return the allocated network.
-     * @exception JAXBException raised when unmarshalling goes wrong
-     */
-    public static NeuralNetwork unmarshal (InputStream in)
-            throws JAXBException
-    {
-        Unmarshaller um = getJaxbContext().createUnmarshaller();
-        NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
-        logger.debug("Network unmarshalled");
-
-        return nn;
-    }
-
-    //-------------//
-    // cloneMatrix //
-    //-------------//
-    /**
-     * Create a clone of the provided matrix.
-     *
-     * @param matrix the matrix to clone
-     * @return the clone
-     */
-    private static double[][] cloneMatrix (double[][] matrix)
-    {
-        final int rowNb = matrix.length;
-        final int colNb = matrix[0].length;
-
-        double[][] clone = new double[rowNb][];
-
-        for (int row = rowNb - 1; row >= 0; row--) {
-            clone[row] = new double[colNb];
-            System.arraycopy(matrix[row], 0, clone[row], 0, colNb);
-        }
-
-        return clone;
-    }
-
-    //--------------//
-    // createMatrix //
-    //--------------//
-    /**
-     * Create and initialize a matrix, with random values.
-     * Random values are between -amplitude and +amplitude
-     *
-     * @param rowNb number of rows
-     * @param colNb number of columns
-     *
-     * @return the properly initialized matrix
-     */
-    private static double[][] createMatrix (int rowNb,
-                                            int colNb,
-                                            double amplitude)
-    {
-        double[][] matrix = new double[rowNb][];
-
-        for (int row = rowNb - 1; row >= 0; row--) {
-            double[] vector = new double[colNb];
-            matrix[row] = vector;
-
-            for (int col = colNb - 1; col >= 0; col--) {
-                vector[col] = amplitude * (1.0 - (2 * Math.random()));
-            }
-        }
-
-        return matrix;
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(NeuralNetwork.class);
-        }
-
-        return jaxbContext;
     }
 
     //------------//
@@ -796,8 +699,94 @@ public class NeuralNetwork
         return val * (1 - val);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal the provided XML stream to allocate the corresponding NeuralNetwork.
+     *
+     * @param in the input stream that contains the network definition in XML format.
+     *           The stream is not closed by this method
+     * @return the allocated network.
+     * @exception JAXBException raised when unmarshalling goes wrong
+     */
+    public static NeuralNetwork unmarshal (InputStream in)
+            throws JAXBException
+    {
+        Unmarshaller um = getJaxbContext().createUnmarshaller();
+        NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
+        logger.debug("Network unmarshalled");
+
+        return nn;
+    }
+
+    //-------------//
+    // cloneMatrix //
+    //-------------//
+    /**
+     * Create a clone of the provided matrix.
+     *
+     * @param matrix the matrix to clone
+     * @return the clone
+     */
+    private static double[][] cloneMatrix (double[][] matrix)
+    {
+        final int rowNb = matrix.length;
+        final int colNb = matrix[0].length;
+
+        double[][] clone = new double[rowNb][];
+
+        for (int row = rowNb - 1; row >= 0; row--) {
+            clone[row] = new double[colNb];
+            System.arraycopy(matrix[row], 0, clone[row], 0, colNb);
+        }
+
+        return clone;
+    }
+
+    //--------------//
+    // createMatrix //
+    //--------------//
+    /**
+     * Create and initialize a matrix, with random values.
+     * Random values are between -amplitude and +amplitude
+     *
+     * @param rowNb number of rows
+     * @param colNb number of columns
+     * @return the properly initialized matrix
+     */
+    private static double[][] createMatrix (int rowNb,
+                                            int colNb,
+                                            double amplitude)
+    {
+        double[][] matrix = new double[rowNb][];
+
+        for (int row = rowNb - 1; row >= 0; row--) {
+            double[] vector = new double[colNb];
+            matrix[row] = vector;
+
+            for (int col = colNb - 1; col >= 0; col--) {
+                vector[col] = amplitude * (1.0 - (2 * Math.random()));
+            }
+        }
+
+        return matrix;
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(NeuralNetwork.class);
+        }
+
+        return jaxbContext;
+    }
+
     //--------//
     // Backup //
     //--------//
@@ -810,13 +799,11 @@ public class NeuralNetwork
      */
     public static class Backup
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private double[][] hiddenWeights;
 
         private double[][] outputWeights;
 
-        //~ Constructors ---------------------------------------------------------------------------
         // Private constructor
         private Backup (double[][] hiddenWeights,
                         double[][] outputWeights)
@@ -831,17 +818,15 @@ public class NeuralNetwork
     //-------------//
     private static class StringArray
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlValue
         String[] strings;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public StringArray ()
+        StringArray ()
         {
         }
 
-        public StringArray (String[] strings)
+        StringArray (String[] strings)
         {
             this.strings = strings;
         }

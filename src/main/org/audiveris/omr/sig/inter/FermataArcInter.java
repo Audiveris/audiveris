@@ -42,7 +42,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class FermataArcInter
         extends AbstractInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code FermataArcInter} object.
@@ -65,7 +64,6 @@ public class FermataArcInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

@@ -44,11 +44,10 @@ import javax.xml.bind.annotation.XmlValue;
 @XmlAccessorType(XmlAccessType.NONE)
 public class OldStaffBarline
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Abscissa-ordered sequence of physical barlines. */
     @XmlList
     @XmlIDREF
     @XmlValue
-    public final ArrayList<BarlineInter> bars = new ArrayList<BarlineInter>();
+    public final ArrayList<BarlineInter> bars = new ArrayList<>();
 }

@@ -32,21 +32,19 @@ import java.util.List;
  */
 public class StopWatch
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Name for this watch instance */
+    /** Name for this watch instance. */
     private final String name;
 
-    /** Sequence of all tasks so far */
-    private final List<Task> tasks = new ArrayList<Task>(128);
+    /** Sequence of all tasks so far. */
+    private final List<Task> tasks = new ArrayList<>(128);
 
-    /** Current task (null if not running) */
+    /** Current task (null if not running). */
     private Task task;
 
-    /** Current sum of tasks times */
+    /** Current sum of tasks durations. */
     private long total;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StopWatch object.
      *
@@ -57,10 +55,12 @@ public class StopWatch
         this.name = name;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // print //
     //-------//
+    /**
+     * Print watch on default stream.
+     */
     public void print ()
     {
         print(System.out);
@@ -69,6 +69,11 @@ public class StopWatch
     //-------//
     // print //
     //-------//
+    /**
+     * Print watch on provided stream.
+     *
+     * @param out provided stream
+     */
     public void print (PrintStream out)
     {
         stop();
@@ -99,6 +104,13 @@ public class StopWatch
     //-------//
     // start //
     //-------//
+    /**
+     * Start measurement of a new task.
+     * <p>
+     * Beforehand, this stops duration measurement of current task if any.
+     *
+     * @param label task name
+     */
     public void start (String label)
     {
         if (task != null) {
@@ -111,6 +123,9 @@ public class StopWatch
     //------//
     // stop //
     //------//
+    /**
+     * Stop duration measurement for current task.
+     */
     public void stop ()
     {
         if (task != null) {
@@ -142,25 +157,22 @@ public class StopWatch
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Task //
     //------//
     private static class Task
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        /** Label for this task */
+        /** Label for this task. */
         private final String label;
 
-        /** Start time */
+        /** Start time. */
         private final long start;
 
-        /** Elapsed time */
+        /** Elapsed time. */
         private long elapsed;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Task (String label)
+        Task (String label)
         {
             this.label = label;
             start = System.currentTimeMillis();

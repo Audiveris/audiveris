@@ -32,7 +32,6 @@ import org.audiveris.omr.ui.OmrGui;
  */
 public abstract class OMR
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** The extension used for compressed score output files: {@value}. */
     public static final String COMPRESSED_SCORE_EXTENSION = ".mxl";
@@ -43,8 +42,8 @@ public abstract class OMR
     /** The (double) extension used for opus output files: {@value}. */
     public static final String OPUS_EXTENSION = ".opus.mxl";
 
-    /** The extension used for compressed score print files: {@value}. */
-    public static final String PDF_EXTENSION = ".pdf";
+    /** The extension used for score print files: {@value}. */
+    public static final String PRINT_EXTENSION = "-print.pdf";
 
     /** The extension used for Audiveris book files: {@value}. */
     public static final String BOOK_EXTENSION = ".omr";
@@ -61,7 +60,6 @@ public abstract class OMR
     /** Master view, if any. */
     public static OmrGui gui;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /** Do not instantiate. */
     private OMR ()
     {

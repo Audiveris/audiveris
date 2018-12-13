@@ -38,7 +38,6 @@ import java.awt.font.TextLayout;
 public class StemSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     // The head+stem part
     private static final BasicSymbol quarter = Symbols.SYMBOL_QUARTER;
@@ -46,7 +45,6 @@ public class StemSymbol
     // The stem part
     private static final BasicSymbol stem = Symbols.SYMBOL_STEM;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a {@code StemSymbol} (with decoration?) standard size
      *
@@ -69,7 +67,6 @@ public class StemSymbol
         super(isIcon, Shape.STEM, decorated);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -136,14 +133,12 @@ public class StemSymbol
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // offset: if decorated, offset of symbol center vs decorated image center
         // layout: stem layout

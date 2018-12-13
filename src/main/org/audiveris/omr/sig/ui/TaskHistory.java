@@ -37,18 +37,15 @@ import java.util.List;
  */
 class TaskHistory
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TaskHistory.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** History of action sequences. */
-    private final List<UITaskList> sequences = new ArrayList<UITaskList>();
+    private final List<UITaskList> sequences = new ArrayList<>();
 
     /** Current position in history, always pointing to sequence just done. */
     private int cursor = -1;
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Register an action sequence.
      *

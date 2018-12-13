@@ -31,6 +31,7 @@ import org.audiveris.omr.step.StepException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -41,11 +42,9 @@ import java.util.List;
 public class TextsStep
         extends AbstractSystemStep<TextsStep.Context>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TextsStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a TextsStep instance.
      */
@@ -53,7 +52,6 @@ public class TextsStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -73,29 +71,44 @@ public class TextsStep
     protected Context doProlog (Sheet sheet)
             throws StepException
     {
+        List<TextLine> lines = new ArrayList<>();
+
         // Launch OCR on the whole sheet
         SheetScanner scanner = new SheetScanner(sheet);
-        List<TextLine> lines = scanner.scanSheet();
+
+        if (OcrUtil.getOcr().isAvailable()) {
+            lines.addAll(scanner.scanSheet());
+        } else {
+            logger.warn("TEXTS step: {}", OCR.NO_OCR);
+        }
 
         // Make all this available for system-level processing
         return new Context(scanner.getBuffer(), lines);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Context //
     //---------//
+    /**
+     * Context data for this step.
+     */
     protected static class Context
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
+        /** The sheet buffer handed to OCR. */
         public final ByteProcessor buffer;
 
+        /** The raw text lines OCR'ed. */
         public final List<TextLine> textLines;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Context (ByteProcessor buffer,
-                        List<TextLine> textLines)
+        /**
+         * Create a Context object.
+         *
+         * @param buffer
+         * @param textLines
+         */
+        Context (ByteProcessor buffer,
+                 List<TextLine> textLines)
         {
             this.buffer = buffer;
             this.textLines = textLines;

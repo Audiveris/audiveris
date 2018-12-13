@@ -40,7 +40,6 @@ import java.awt.geom.Rectangle2D;
 public class AugmentationSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** The head part. */
     private static final BasicSymbol head = Symbols.getSymbol(Shape.NOTEHEAD_BLACK);
@@ -48,7 +47,6 @@ public class AugmentationSymbol
     /** Offset ratio of dot center WRT decorated rectangle width. */
     private static final double dxRatio = +0.25;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a {@code AugmentationSymbol} (with decoration?) standard size
      *
@@ -71,7 +69,6 @@ public class AugmentationSymbol
         super(isIcon, Shape.AUGMENTATION_DOT, decorated, 46);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -142,14 +139,12 @@ public class AugmentationSymbol
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends BasicSymbol.Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // offset: if decorated, offset of symbol center vs decorated image center
         // layout: dot layout

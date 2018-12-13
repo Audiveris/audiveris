@@ -25,7 +25,6 @@ import ij.process.ByteProcessor;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
@@ -44,7 +43,6 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
-import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
@@ -56,12 +54,14 @@ import org.audiveris.omr.util.Corner;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import static org.audiveris.omr.util.VerticalSide.*;
+import org.audiveris.omr.util.Jaxb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -78,6 +78,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code HeadInter} represents a note head, that is any head shape including
@@ -92,19 +93,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class HeadInter
         extends AbstractNoteInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Logger logger = LoggerFactory.getLogger(HeadInter.class);
 
     private static final Constants constants = new Constants();
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
+    private static final Logger logger = LoggerFactory.getLogger(HeadInter.class);
+
     // Persistent data
     //----------------
     //
     /** Absolute location of head template pivot. */
     @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.PointAdapter.class)
     private final Point pivot;
 
     /** Relative pivot position WRT head. */
@@ -117,7 +116,6 @@ public class HeadInter
     /** Shape template descriptor. */
     private ShapeDescriptor descriptor;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadInter} object.
      *
@@ -173,7 +171,6 @@ public class HeadInter
         this.anchor = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -210,9 +207,33 @@ public class HeadInter
         return isAbnormal();
     }
 
+    //----------//
+    // contains //
+    //----------//
+    @Override
+    public boolean contains (Point point)
+    {
+        if (!super.contains(point)) {
+            return false;
+        }
+
+        Line2D midLine = getMidLine();
+
+        if (midLine != null) {
+            return midLine.relativeCCW(point) < 0;
+        }
+
+        return true;
+    }
+
     //-----------//
     // duplicate //
     //-----------//
+    /**
+     * Duplicate this head, keeping the same head shape (black vs void).
+     *
+     * @return a duplicate head
+     */
     public HeadInter duplicate ()
     {
         return duplicateAs(shape);
@@ -221,18 +242,23 @@ public class HeadInter
     //-------------//
     // duplicateAs //
     //-------------//
+    /**
+     * Build a duplicate of this head, perhaps with a different shape.
+     * <p>
+     * Used when say a half head is shared, with flag/beam on one side.
+     *
+     * @param shape precise shape for the duplicate
+     * @return duplicate
+     */
     public HeadInter duplicateAs (Shape shape)
     {
         HeadInter clone = new HeadInter(pivot, anchor, bounds, shape, impacts, staff, pitch);
+
         clone.setGlyph(this.glyph);
-        clone.setMirror(this);
 
         if (impacts == null) {
-            clone.setGrade(this.grade);
+            clone.setGrade(grade);
         }
-
-        sig.addVertex(clone);
-        setMirror(clone);
 
         return clone;
     }
@@ -254,9 +280,9 @@ public class HeadInter
         return null;
     }
 
-    //----------//
-    // getAlter //
-    //----------//
+    //---------------//
+    // getAlteration //
+    //---------------//
     /**
      * Report the actual alteration of this note, taking into account the accidental of
      * this note if any, the accidental of previous note with same step within the same
@@ -265,14 +291,130 @@ public class HeadInter
      * @param fifths fifths value for current key signature
      * @return the actual alteration
      */
-    public int getAlter (Integer fifths)
+    public int getAlteration (Integer fifths)
     {
-        return getAlter(fifths, true);
+        return HeadInter.this.getAlteration(fifths, true);
+    }
+
+    //---------------//
+    // getAlteration //
+    //---------------//
+    /**
+     * Report the actual alteration of this note, taking into account the accidental of
+     * this note if any, the accidental of previous note with same step within the same
+     * measure, a tie from previous measure and finally the current key signature.
+     *
+     * @param fifths fifths value for current key signature
+     * @param useTie true to use tie for check
+     * @return the actual alteration
+     */
+    public int getAlteration (Integer fifths,
+                              boolean useTie)
+    {
+        // Look for local/measure accidental
+        AlterInter accidental = getMeasureAccidental();
+
+        if (accidental != null) {
+            return AlterInter.alterationOf(accidental);
+        }
+
+        if (useTie) {
+            // Look for tie from previous measure (same system or previous system)
+            for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
+                SlurInter slur = (SlurInter) sig.getOppositeInter(this, rel);
+
+                if (slur.isTie() && (slur.getHead(HorizontalSide.RIGHT) == this)) {
+                    // Is the starting head in same system?
+                    HeadInter startHead = slur.getHead(HorizontalSide.LEFT);
+
+                    if (startHead != null) {
+                        // Use start head alter
+                        return startHead.getAlteration(fifths);
+                    }
+
+                    // Use slur extension to look into previous system
+                    SlurInter prevSlur = slur.getExtension(HorizontalSide.LEFT);
+
+                    if (prevSlur != null) {
+                        startHead = prevSlur.getHead(HorizontalSide.LEFT);
+
+                        if (startHead != null) {
+                            // Use start head alter
+                            return startHead.getAlteration(fifths);
+                        }
+                    }
+
+                    // TODO: Here we should look in previous sheet/page...
+                }
+            }
+        }
+
+        // Finally, use the current key signature
+        if (fifths != null) {
+            return KeyInter.getAlterFor(getStep(), fifths);
+        }
+
+        // Nothing found, so...
+        return 0;
+    }
+
+    //----------------------//
+    // getMeasureAccidental //
+    //----------------------//
+    /**
+     * Report the accidental (if any) which applies to this head or to a previous
+     * compatible one in the same measure.
+     *
+     * @return the measure scoped accidental found or null
+     */
+    public AlterInter getMeasureAccidental ()
+    {
+        // Look for local accidental
+        AlterInter accidental = getAccidental();
+
+        if (accidental != null) {
+            return accidental;
+        }
+
+        // Look for previous accidental with same note step in the same measure
+        // Let's avoid the use of time slots (which would require RHYTHMS step to be done!)
+        Measure measure = getChord().getMeasure();
+        List<Inter> heads = new ArrayList<>();
+
+        for (HeadChordInter headChord : measure.getHeadChords()) {
+            heads.addAll(headChord.getMembers());
+        }
+
+        boolean started = false;
+        Collections.sort(heads, Inters.byReverseCenterAbscissa);
+
+        for (Inter inter : heads) {
+            HeadInter head = (HeadInter) inter;
+
+            if (head == this) {
+                started = true;
+            } else if (started && (head.getStep() == getStep())
+                               && (head.getOctave() == getOctave())
+                               && (head.getStaff() == getStaff())) {
+                accidental = head.getAccidental();
+
+                if (accidental != null) {
+                    return accidental;
+                }
+            }
+        }
+
+        return null;
     }
 
     //----------//
     // getChord //
     //----------//
+    /**
+     * Report the containing (head) chord, if any.
+     *
+     * @return containing chord or null
+     */
     @Override
     public HeadChordInter getChord ()
     {
@@ -291,6 +433,11 @@ public class HeadInter
     //---------------//
     // getDescriptor //
     //---------------//
+    /**
+     * Report the descriptor used to generate this head shape with proper size.
+     *
+     * @return related template descriptor
+     */
     public ShapeDescriptor getDescriptor ()
     {
         if (descriptor == null) {
@@ -301,20 +448,78 @@ public class HeadInter
         return descriptor;
     }
 
-    //--------------------//
-    // getShrinkHoriRatio //
-    //--------------------//
-    public static double getShrinkHoriRatio ()
+    //------------//
+    // getMidLine //
+    //------------//
+    /**
+     * Report the separating line for shared heads.
+     * <p>
+     * The line is nearly vertical, oriented from head to stem.
+     * Thus, the relativeCCW is negative for points located on proper head half.
+     *
+     * @return oriented middle line or null if not mirrored
+     */
+    public Line2D getMidLine ()
     {
-        return constants.shrinkHoriRatio.getValue();
+        if (getMirror() == null) {
+            return null;
+        }
+
+        final Rectangle box = getBounds();
+
+        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
+            final HeadStemRelation rel = (HeadStemRelation) relation;
+
+            if (rel.getHeadSide() == HorizontalSide.LEFT) {
+                return LineUtil.bisector(
+                        new Point(box.x, box.y + box.height),
+                        new Point(box.x + box.width, box.y));
+            } else {
+                return LineUtil.bisector(
+                        new Point(box.x + box.width, box.y),
+                        new Point(box.x, box.y + box.height));
+            }
+        }
+
+        return null;
     }
 
-    //--------------------//
-    // getShrinkVertRatio //
-    //--------------------//
-    public static double getShrinkVertRatio ()
+    //-------------------//
+    // getRelationCenter //
+    //-------------------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * For shared heads, the relation center is slightly shifted to the containing chord.
+     *
+     * @return the head relation center, shifted for a shared head
+     */
+    @Override
+    public Point getRelationCenter ()
     {
-        return constants.shrinkVertRatio.getValue();
+        final Point center = getCenter();
+
+        if (getMirror() == null) {
+            return center;
+        }
+
+        final Rectangle box = getBounds();
+        final int dx = box.width / 5;
+        final int dy = box.height / 5;
+
+        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
+            final HeadStemRelation rel = (HeadStemRelation) relation;
+
+            if (rel.getHeadSide() == HorizontalSide.LEFT) {
+                center.translate(-dx, +dy);
+            } else {
+                center.translate(+dx, -dy);
+            }
+
+            return center;
+        }
+
+        return center; // Should not occur...
     }
 
     //--------------//
@@ -329,8 +534,7 @@ public class HeadInter
     public Map<HorizontalSide, Set<StemInter>> getSideStems ()
     {
         // Split connected stems into left and right sides
-        final Map<HorizontalSide, Set<StemInter>> map = new EnumMap<HorizontalSide, Set<StemInter>>(
-                HorizontalSide.class);
+        final Map<HorizontalSide, Set<StemInter>> map = new EnumMap<>(HorizontalSide.class);
 
         for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
             HeadStemRelation rel = (HeadStemRelation) relation;
@@ -338,7 +542,7 @@ public class HeadInter
             Set<StemInter> set = map.get(side);
 
             if (set == null) {
-                map.put(side, set = new LinkedHashSet<StemInter>());
+                map.put(side, set = new LinkedHashSet<>());
             }
 
             set.add((StemInter) sig.getEdgeTarget(rel));
@@ -380,63 +584,13 @@ public class HeadInter
      */
     public Set<StemInter> getStems ()
     {
-        final Set<StemInter> set = new LinkedHashSet<StemInter>();
+        final Set<StemInter> set = new LinkedHashSet<>();
 
         for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
             set.add((StemInter) sig.getEdgeTarget(relation));
         }
 
         return set;
-    }
-
-    //----------------//
-    // haveSameHeight //
-    //----------------//
-    /**
-     * Check whether two heads represent the same height
-     * (same octave, same step, same alteration).
-     *
-     * @param h1 first head
-     * @param h2 second head, down the score
-     * @return true if the heads are equivalent.
-     */
-    public static boolean haveSameHeight (HeadInter h1,
-                                          HeadInter h2)
-    {
-        if ((h1 == null) || (h2 == null)) {
-            return false;
-        }
-
-        // Step
-        if (h1.getStep() != h2.getStep()) {
-            return false;
-        }
-
-        // Octave
-        if (h1.getOctave() != h2.getOctave()) {
-            return false;
-        }
-
-        // Alteration
-        Staff s1 = h1.getStaff();
-        Measure m1 = s1.getPart().getMeasureAt(h1.getCenter());
-        KeyInter k1 = m1.getKeyBefore(s1);
-        int f1 = (k1 != null) ? k1.getFifths() : 0;
-
-        Staff s2 = h2.getStaff();
-        Measure m2 = s2.getPart().getMeasureAt(h2.getCenter());
-        KeyInter k2 = m2.getKeyBefore(s2);
-        int f2 = (k2 != null) ? k2.getFifths() : 0;
-
-        if (m1 == m2) {
-            // Both heads are in same measure
-            return (f1 == f2) && (h1.getStaff() == h2.staff);
-        } else {
-            int a1 = h1.getAlter(f1, false);
-            int a2 = h2.getAlter(f2, false);
-
-            return a1 == a2;
-        }
     }
 
     //----------//
@@ -459,7 +613,7 @@ public class HeadInter
         // Specific between notes
         if (that instanceof HeadInter) {
             if (this.isVip() && ((HeadInter) that).isVip()) {
-                //logger.info("AbstractHeadInter checking overlaps between {} and {}", this, that);
+                logger.info("HeadInter checking overlaps between {} and {}", this, that);
             }
 
             HeadInter thatHead = (HeadInter) that;
@@ -490,8 +644,10 @@ public class HeadInter
             int minArea = Math.min(thisArea, thatArea);
             int commonArea = common.width * common.height;
             double areaRatio = (double) commonArea / minArea;
-            boolean res = (common.width > (constants.maxOverlapDxRatio.getValue() * thisBounds.width))
-                          && (areaRatio > constants.maxOverlapAreaRatio.getValue());
+            boolean res = (common.width > (constants.maxOverlapDxRatio.getValue()
+                                                   * thisBounds.width)) && (areaRatio
+                                                                                    > constants.maxOverlapAreaRatio
+                            .getValue());
 
             return res;
 
@@ -559,7 +715,7 @@ public class HeadInter
 
         // Glyph
         glyph = sheet.getGlyphIndex().registerOriginal(
-                new BasicGlyph(descBox.x + foreBox.x, descBox.y + foreBox.y, runTable));
+                new Glyph(descBox.x + foreBox.x, descBox.y + foreBox.y, runTable));
 
         // Use glyph bounds as inter bounds
         bounds = glyph.getBounds();
@@ -600,27 +756,6 @@ public class HeadInter
         return Collections.emptyList();
     }
 
-    //--------//
-    // shrink //
-    //--------//
-    /**
-     * Shrink a bit a bounding bounds when checking for note overlap.
-     *
-     * @param box the bounding bounds
-     * @return the shrunk bounds
-     */
-    public static Rectangle2D shrink (Rectangle box)
-    {
-        double newWidth = constants.shrinkHoriRatio.getValue() * box.width;
-        double newHeight = constants.shrinkVertRatio.getValue() * box.height;
-
-        return new Rectangle2D.Double(
-                box.getCenterX() - (newWidth / 2.0),
-                box.getCenterY() - (newHeight / 2.0),
-                newWidth,
-                newHeight);
-    }
-
     //-----------//
     // internals //
     //-----------//
@@ -628,43 +763,6 @@ public class HeadInter
     protected String internals ()
     {
         return super.internals() + " " + shape;
-    }
-
-    //--------------//
-    // alterationOf //
-    //--------------//
-    /**
-     * Report the pitch alteration that corresponds to the provided accidental.
-     *
-     * @param accidental the provided accidental
-     * @return the pitch impact
-     */
-    private int alterationOf (AlterInter accidental)
-    {
-        switch (accidental.getShape()) {
-        case SHARP:
-            return 1;
-
-        case DOUBLE_SHARP:
-            return 2;
-
-        case FLAT:
-            return -1;
-
-        case DOUBLE_FLAT:
-            return -2;
-
-        case NATURAL:
-            return 0;
-
-        default:
-            logger.warn(
-                    "Weird shape {} for accidental {}",
-                    accidental.getShape(),
-                    accidental.getId());
-
-            return 0; // Should not happen
-        }
     }
 
     //------------------//
@@ -700,97 +798,6 @@ public class HeadInter
         // Perhaps check for a weak ledger, tangent to the note towards staff
     }
 
-    //----------//
-    // getAlter //
-    //----------//
-    /**
-     * Report the actual alteration of this note, taking into account the accidental of
-     * this note if any, the accidental of previous note with same step within the same
-     * measure, a tie from previous measure and finally the current key signature.
-     *
-     * @param fifths fifths value for current key signature
-     * @param useTie true to use tie for check
-     * @return the actual alteration
-     */
-    private int getAlter (Integer fifths,
-                          boolean useTie)
-    {
-        // Look for local accidental
-        AlterInter accidental = getAccidental();
-
-        if (accidental != null) {
-            return alterationOf(accidental);
-        }
-
-        // Look for previous accidental with same note step in the same measure
-        // Let's avoid the use of time slots (which would require RHYTHMS step to be done!)
-        Measure measure = getChord().getMeasure();
-        List<Inter> heads = new ArrayList<Inter>();
-
-        for (HeadChordInter headChord : measure.getHeadChords()) {
-            heads.addAll(headChord.getMembers());
-        }
-
-        boolean started = false;
-        Collections.sort(heads, Inters.byReverseCenterAbscissa);
-
-        for (Inter inter : heads) {
-            HeadInter head = (HeadInter) inter;
-
-            if (head == this) {
-                started = true;
-            } else if (started
-                       && (head.getStep() == getStep())
-                       && (head.getOctave() == getOctave())
-                       && (head.getStaff() == getStaff())) {
-                AlterInter accid = head.getAccidental();
-
-                if (accid != null) {
-                    return alterationOf(accid);
-                }
-            }
-        }
-
-        if (useTie) {
-            // Look for tie from previous measure (same system or previous system)
-            for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
-                SlurInter slur = (SlurInter) sig.getOppositeInter(this, rel);
-
-                if (slur.isTie() && (slur.getHead(HorizontalSide.RIGHT) == this)) {
-                    // Is the starting head in same system?
-                    HeadInter startHead = slur.getHead(HorizontalSide.LEFT);
-
-                    if (startHead != null) {
-                        // Use start head alter
-                        return startHead.getAlter(fifths);
-                    }
-
-                    // Use slur extension to look into previous system
-                    SlurInter prevSlur = slur.getExtension(HorizontalSide.LEFT);
-
-                    if (prevSlur != null) {
-                        startHead = prevSlur.getHead(HorizontalSide.LEFT);
-
-                        if (startHead != null) {
-                            // Use start head alter
-                            return startHead.getAlter(fifths);
-                        }
-                    }
-
-                    // TODO: Here we should look in previous sheet/page...
-                }
-            }
-        }
-
-        // Finally, use the current key signature
-        if (fifths != null) {
-            return KeyInter.getAlterFor(getStep(), fifths);
-        }
-
-        // Nothing found, so...
-        return 0;
-    }
-
     //------------//
     // lookupLink //
     //------------//
@@ -820,8 +827,7 @@ public class HeadInter
         double bestGrade = 0;
 
         for (Corner corner : Corner.values) {
-            Point refPt = PointUtil.rounded(
-                    getStemReferencePoint(corner.stemAnchor(), interline));
+            Point refPt = PointUtil.rounded(getStemReferencePoint(corner.stemAnchor(), interline));
             int xMin = refPt.x - ((corner.hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
             int yMin = refPt.y - ((corner.vSide == TOP) ? maxYGap : 0);
             Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
@@ -861,20 +867,64 @@ public class HeadInter
         return bestLink;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------------------//
+    // getShrinkHoriRatio //
+    //--------------------//
+    /**
+     * Report horizontal ratio to check overlap
+     *
+     * @return horizontal ratio
+     */
+    public static double getShrinkHoriRatio ()
+    {
+        return constants.shrinkHoriRatio.getValue();
+    }
+
+    //--------------------//
+    // getShrinkVertRatio //
+    //--------------------//
+    /**
+     * Report vertical ratio to check overlap
+     *
+     * @return vertical ratio
+     */
+    public static double getShrinkVertRatio ()
+    {
+        return constants.shrinkVertRatio.getValue();
+    }
+
+    //--------//
+    // shrink //
+    //--------//
+    /**
+     * Shrink a bit a bounding bounds when checking for note overlap.
+     *
+     * @param box the bounding bounds
+     * @return the shrunk bounds
+     */
+    public static Rectangle2D shrink (Rectangle box)
+    {
+        double newWidth = constants.shrinkHoriRatio.getValue() * box.width;
+        double newHeight = constants.shrinkVertRatio.getValue() * box.height;
+
+        return new Rectangle2D.Double(
+                box.getCenterX() - (newWidth / 2.0),
+                box.getCenterY() - (newHeight / 2.0),
+                newWidth,
+                newHeight);
+    }
+
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
-            extends BasicImpacts
+            extends GradeImpacts
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{"dist"};
 
         private static final double[] WEIGHTS = new double[]{1};
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double dist)
         {
             super(NAMES, WEIGHTS);
@@ -885,10 +935,9 @@ public class HeadInter
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(
                 0.5,

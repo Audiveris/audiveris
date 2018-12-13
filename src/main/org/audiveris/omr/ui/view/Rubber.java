@@ -53,7 +53,7 @@ import javax.swing.event.MouseInputAdapter;
 /**
  * Class {@code Rubber} keeps track of nothing more than a rectangle,
  * to define an area of interest.
- *
+ * <p>
  * The rectangle can be degenerated to a simple point, when both its width and height are zero.
  * Moreover, the display can be moved or resized (see the precise triggers below).
  * <p>
@@ -64,31 +64,30 @@ import javax.swing.event.MouseInputAdapter;
  * can also be modified programmatically, thanks to the {@link #resetOrigin} and
  * {@link #resetRectangle} methods.
  * <p>
- * Basic mouse handling is provided in the following way : <ul>
- * <li> Define the point of interest. Default trigger is to click with the <b>Left</b> button. </li>
- * <li> Define the rectangle of interest. Default trigger is to keep <b>Shift</b> pressed when mouse
- * is moved. </li>
- * <li> Zoom the display to the area delimited by the rubber. Default trigger is <b>Shift +
- * Control</b> when mouse is released. </li>
- * <li> Drag the component itself. Default trigger is when both <b>Left + Right</b> buttons are
- * dragged. </li> </ul>
- * <p>
+ * Basic mouse handling is provided in the following way :
+ * <ul>
+ * <li>Define the point of interest. Default trigger is to click with the <b>Left</b> button.</li>
+ * <li>Define the rectangle of interest. Default trigger is to keep <b>Shift</b> pressed when mouse
+ * is moved.</li>
+ * <li>Zoom the display to the area delimited by the rubber. Default trigger is <b>Shift +
+ * Control</b> when mouse is released.</li>
+ * <li>Drag the component itself. Default trigger is when both <b>Left + Right</b> buttons are
+ * dragged.</li>
+ * </ul>
  * Note: Actual triggers are defined by protected predicate methods that can be redefined in a
  * subclass.
  * <p>
- * Mouse Events are handled in the following way: <ul>
- *
- * <li> <b>Low-level events</b> originate from a JComponent, where the Rubber is registered as a
+ * Mouse Events are handled in the following way:
+ * <ul>
+ * <li><b>Low-level events</b> originate from a JComponent, where the Rubber is registered as a
  * MouseListener and a MouseMotionListener. The component can be linked by the Rubber constructor,
  * or later by using the {@link #connectComponent} method. Rubber is then called on its
  * <i>mouseDragged, mousePressed, mouseReleased</i> methods.
- *
- * <li> <b>High-level events</b>, as computed by Rubber from low-level mouse events, are forwarded
+ * <li><b>High-level events</b>, as computed by Rubber from low-level mouse events, are forwarded
  * to a connected {@link MouseMonitor} if any, which is then called on its <i>pointSelected,
  * pointAdded, contextSelected, rectangleSelected, rectangleZoomed</i> methods. Generally, this
  * MouseMonitor is the originating JComponent, but this is not mandatory.
  * </ul>
- * <p>
  * The Rubber can be linked to a {@link Zoom} to cope with display factor of the related component,
  * but this is not mandatory: If no zoom is connected, a display factor of 1.0 is assumed.
  *
@@ -97,7 +96,6 @@ import javax.swing.event.MouseInputAdapter;
 public class Rubber
         extends MouseInputAdapter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -112,7 +110,6 @@ public class Rubber
 
     private static final double factor = Math.pow(base, 1d / intervals);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** View from which the rubber will receive physical mouse events. */
     protected JComponent component;
 
@@ -137,7 +134,6 @@ public class Rubber
     // To ease debugging
     private final int id;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a rubber, with no predefined parameter (zoom, component) which are meant
      * to be provided later.
@@ -174,7 +170,6 @@ public class Rubber
         setZoom(zoom);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // connectComponent //
     //------------------//
@@ -183,7 +178,7 @@ public class Rubber
      *
      * @param component the related component
      */
-    public void connectComponent (JComponent component)
+    public final void connectComponent (JComponent component)
     {
         // Clean up if needed
         disconnectComponent(this.component);
@@ -262,8 +257,7 @@ public class Rubber
                     (vr.y + rawRect.y) - e.getY(),
                     vr.width,
                     vr.height);
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
@@ -489,7 +483,7 @@ public class Rubber
                     zoom.scale(v);
                 }
 
-                final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+                UIUtil.setAbsoluteStroke(g, 1f);
                 g.setColor(Color.BLACK);
                 g.draw(v);
             }
@@ -561,11 +555,11 @@ public class Rubber
     /**
      * Allows to specify that a zoom is attached to the displayed
      * component, and thus the reported rectangle or center must be
-     * dezoomed on the fly.
+     * de-zoomed on the fly.
      *
      * @param zoom the component related zoom
      */
-    public void setZoom (Zoom zoom)
+    public final void setZoom (Zoom zoom)
     {
         this.zoom = zoom;
     }
@@ -737,14 +731,12 @@ public class Rubber
         component.repaint();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean showCross = new Constant.Boolean(
                 true,

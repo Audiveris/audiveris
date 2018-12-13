@@ -31,12 +31,10 @@ import org.audiveris.omr.run.Run;
 public class RunEvent
         extends UserEvent
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The selected run, which may be null */
     private final Run run;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new RunEvent object.
      *
@@ -54,7 +52,6 @@ public class RunEvent
         this.run = run;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//

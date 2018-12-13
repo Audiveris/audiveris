@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                     S y s t e m B a c k u p                                    //
+//                                   M i r r o r R e l a t i o n                                  //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -19,36 +19,45 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sheet.rhythm;
+package org.audiveris.omr.sig.relation;
 
-import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sig.SigBackup;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code SystemBackup} manages the saving of selected inters in a system.
+ * Class {@code MirrorRelation} formalizes the relation between two mirrored inters.
  * <p>
- * It gathers the rhythm data that has been discarded by symbol reduction, but may be reconsidered
- * for rhythm tunings.
+ * This relation replaced the deprecated mirror field member in {@link AbstractInter}
  *
  * @author Hervé Bitteur
  */
-public class SystemBackup
-        extends SigBackup
+@XmlRootElement(name = "mirror")
+public class MirrorRelation
+        extends Support
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Dedicated system. */
-    private final SystemInfo system;
-
-    //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new {@code SystemBackup} object.
-     *
-     * @param system the dedicated system
-     */
-    public SystemBackup (SystemInfo system)
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
     {
-        super(system.getSig());
-        this.system = system;
+        return true;
     }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

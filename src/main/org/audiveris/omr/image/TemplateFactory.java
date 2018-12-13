@@ -39,34 +39,21 @@ import java.util.Map;
  */
 public class TemplateFactory
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TemplateFactory.class);
 
     /** Singleton. */
     private static final TemplateFactory INSTANCE = new TemplateFactory();
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** Catalog of all templates already allocated, mapped by point size. */
     private final Map<Integer, Catalog> allSizes;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * (Private) Creates the singleton object.
      */
     private TemplateFactory ()
     {
-        allSizes = new HashMap<Integer, Catalog>();
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // getInstance //
-    //-------------//
-    public static TemplateFactory getInstance ()
-    {
-        return INSTANCE;
+        allSizes = new HashMap<>();
     }
 
     //------------//
@@ -95,35 +82,54 @@ public class TemplateFactory
         return catalog;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report this singleton instance.
+     *
+     * @return the TemplateFactory single instance
+     */
+    public static TemplateFactory getInstance ()
+    {
+        return INSTANCE;
+    }
+
     //---------//
     // Catalog //
     //---------//
     /**
-     * Handles all templates for a given interline value.
+     * Handles all templates for a given pointSize value.
      */
     public static class Catalog
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Point size value for this catalog. */
         final int pointSize;
 
         /** Map of all descriptors for this catalog. */
-        final Map<Shape, ShapeDescriptor> descriptors = new EnumMap<Shape, ShapeDescriptor>(
-                Shape.class);
+        final Map<Shape, ShapeDescriptor> descriptors = new EnumMap<>(Shape.class);
 
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create a {@code Catalog} object.
+         *
+         * @param pointSize provided pointSize value
+         */
         public Catalog (int pointSize)
         {
             this.pointSize = pointSize;
             buildAllTemplates();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //---------------//
         // getDescriptor //
         //---------------//
+        /**
+         * Report the descriptor for a given shape.
+         *
+         * @param shape given shape
+         * @return corresponding descriptor (not null, since all have been constructed)
+         */
         public ShapeDescriptor getDescriptor (Shape shape)
         {
             return descriptors.get(shape);
@@ -132,6 +138,12 @@ public class TemplateFactory
         //-------------//
         // getTemplate //
         //-------------//
+        /**
+         * Report the template for the desired shape
+         *
+         * @param shape desired shape
+         * @return the template
+         */
         public Template getTemplate (Shape shape)
         {
             ShapeDescriptor descriptor = descriptors.get(shape);

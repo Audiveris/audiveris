@@ -39,7 +39,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class CaesuraInter
         extends AbstractInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code CaesuraInter} object.
@@ -60,7 +59,6 @@ public class CaesuraInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

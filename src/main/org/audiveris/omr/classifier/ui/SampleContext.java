@@ -58,7 +58,6 @@ import java.awt.Rectangle;
 public class SampleContext
         extends ZoomAssembly
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleContext.class);
 
@@ -66,7 +65,6 @@ public class SampleContext
 
     private static final Point NO_OFFSET = new Point(0, 0);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final SampleRepository repository;
 
     private final ContextView contextView;
@@ -77,7 +75,6 @@ public class SampleContext
 
     private EntityService<Sample> sampleService;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleContext} object.
      *
@@ -92,10 +89,14 @@ public class SampleContext
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // connect //
     //---------//
+    /**
+     * Connect to the provided SampleService
+     *
+     * @param sampleService the SampleService to connect to
+     */
     public void connect (EntityService<Sample> sampleService)
     {
         this.sampleService = sampleService;
@@ -106,6 +107,9 @@ public class SampleContext
     //---------//
     // refresh //
     //---------//
+    /**
+     * Update the context view with the current sample.
+     */
     public void refresh ()
     {
         Sample sample = sampleService.getSelectedEntity();
@@ -123,14 +127,12 @@ public class SampleContext
         component.add(new ScrollView(contextView).getComponent(), BorderLayout.CENTER);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ContextView //
     //-------------//
     private class ContextView
             extends RubberPanel
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Current sample, if any. */
         private Sample sample;
@@ -138,17 +140,12 @@ public class SampleContext
         /** RunTable of sheet image, if any. */
         private RunTable sheetTable;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public ContextView (Zoom zoom,
-                            Rubber rubber)
+        ContextView (Zoom zoom,
+                     Rubber rubber)
         {
             super(zoom, rubber);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
-        //---------//
-        // onEvent //
-        //---------//
         @Override
         public void onEvent (UserEvent event)
         {
@@ -168,9 +165,6 @@ public class SampleContext
             }
         }
 
-        //-----------------------//
-        // handleEntityListEvent //
-        //-----------------------//
         /**
          * Interest in EntityList
          *
@@ -182,9 +176,6 @@ public class SampleContext
             display(listEvent.getEntity());
         }
 
-        //---------------------//
-        // handleLocationEvent //
-        //---------------------//
         @Override
         protected void handleLocationEvent (LocationEvent locationEvent)
         {
@@ -206,14 +197,12 @@ public class SampleContext
         {
             if (sample != null) {
                 g.setColor(Color.BLUE);
-                sample.getRunTable()
-                        .render(g, (sheetTable != null) ? sample.getTopLeft() : NO_OFFSET);
+                sample.getRunTable().render(
+                        g,
+                        (sheetTable != null) ? sample.getTopLeft() : NO_OFFSET);
             }
         }
 
-        //---------//
-        // display //
-        //---------//
         private void display (Sample newSample)
         {
             sample = newSample;

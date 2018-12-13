@@ -35,21 +35,7 @@ import java.awt.Point;
  */
 public class Mark
 {
-    //~ Enumerations -------------------------------------------------------------------------------
 
-    /** Position relative to an entity */
-    public static enum Position
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        /** Mark should be horizontally located <b>before</b> the entity */
-        BEFORE,
-        /** Mark
-         * should be horizontally located <b>after</b> the entity */
-        AFTER;
-    }
-
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing system */
     @Navigable(false)
     private final SystemInfo system;
@@ -66,7 +52,6 @@ public class Mark
     /** Additional data, perhaps depending on shape for example */
     private final Object data;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of Mark
      *
@@ -89,7 +74,6 @@ public class Mark
         this.data = data;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//
@@ -153,5 +137,14 @@ public class Mark
     public SystemInfo getSystem ()
     {
         return system;
+    }
+
+    /** Position relative to an entity. */
+    public static enum Position
+    {
+        /** Mark should be horizontally located <b>before</b> the entity */
+        BEFORE,
+        /** Mark should be horizontally located <b>after</b> the entity */
+        AFTER;
     }
 }

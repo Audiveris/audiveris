@@ -30,13 +30,11 @@ import javax.swing.JComboBox;
  * a "Labeled Combo", where the label describes the dynamic content of the combo.
  *
  * @param <E> type of combo entity
- *
  * @author Hervé Bitteur
  */
 public class LComboBox<E>
         extends LField<JComboBox<E>>
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create an editable labeled combo with provided
@@ -50,10 +48,9 @@ public class LComboBox<E>
                       String tip,
                       E[] items)
     {
-        super(label, tip, new JComboBox<E>(items));
+        super(label, tip, new JComboBox<>(items));
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // addActionListener //
     //-------------------//
@@ -70,6 +67,11 @@ public class LComboBox<E>
     //-----------------//
     // getSelectedItem //
     //-----------------//
+    /**
+     * Report the selected item.
+     *
+     * @return selected item
+     */
     @SuppressWarnings("unchecked")
     public E getSelectedItem ()
     {
@@ -79,6 +81,11 @@ public class LComboBox<E>
     //-----------------//
     // setSelectedItem //
     //-----------------//
+    /**
+     * Select the provided item.
+     *
+     * @param item provided item
+     */
     public void setSelectedItem (E item)
     {
         getField().setSelectedItem(item);

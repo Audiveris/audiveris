@@ -52,18 +52,34 @@ public class KeyInter
         extends AbstractInter
         implements InterEnsemble
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(KeyInter.class);
 
+    /** Sharp pitches per clef kind. */
+    public static final Map<ClefKind, int[]> SHARP_PITCHES_MAP = new EnumMap<>(ClefKind.class);
+
+    /** Flat pitches per clef kind. */
+    public static final Map<ClefKind, int[]> FLAT_PITCHES_MAP = new EnumMap<>(ClefKind.class);
+
     /** Sharp keys note steps. */
     private static final AbstractNoteInter.Step[] SHARP_STEPS = new AbstractNoteInter.Step[]{
-        F, C, G, D, A, E, B
-    };
+        F,
+        C,
+        G,
+        D,
+        A,
+        E,
+        B};
 
-    /** Sharp pitches per clef kind. */
-    public static final Map<ClefKind, int[]> SHARP_PITCHES_MAP = new EnumMap<ClefKind, int[]>(
-            ClefKind.class);
+    /** Flat keys note steps. */
+    private static final AbstractNoteInter.Step[] FLAT_STEPS = new AbstractNoteInter.Step[]{
+        B,
+        E,
+        A,
+        D,
+        G,
+        C,
+        F};
 
     static {
         SHARP_PITCHES_MAP.put(TREBLE, new int[]{-4, -1, -5, -2, 1, -3, 0});
@@ -72,15 +88,6 @@ public class KeyInter
         SHARP_PITCHES_MAP.put(TENOR, new int[]{2, -2, 1, -3, 0, -4, -1});
     }
 
-    /** Flat keys note steps. */
-    private static final AbstractNoteInter.Step[] FLAT_STEPS = new AbstractNoteInter.Step[]{
-        B, E, A, D, G, C, F
-    };
-
-    /** Flat pitches per clef kind. */
-    public static final Map<ClefKind, int[]> FLAT_PITCHES_MAP = new EnumMap<ClefKind, int[]>(
-            ClefKind.class);
-
     static {
         FLAT_PITCHES_MAP.put(TREBLE, new int[]{0, -3, 1, -2, 2, -1, 3});
         FLAT_PITCHES_MAP.put(ALTO, new int[]{1, -2, 2, -1, 3, 0, 4});
@@ -88,12 +95,10 @@ public class KeyInter
         FLAT_PITCHES_MAP.put(TENOR, new int[]{-1, -4, 0, -3, 1, -2, 2});
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Numerical value for signature. */
     @XmlAttribute
     private int fifths;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new KeyInter object.
      *
@@ -129,7 +134,6 @@ public class KeyInter
         super(null, null, null, null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -156,70 +160,6 @@ public class KeyInter
         }
 
         EnsembleHelper.addMember(this, member);
-    }
-
-    //-------------//
-    // createAdded //
-    //-------------//
-    /**
-     * Create and add a new KeyInter object.
-     *
-     * @param staff  the containing staff
-     * @param alters sequence of alteration inters
-     * @return the created KeyInter
-     */
-    public static KeyInter createAdded (Staff staff,
-                                        List<KeyAlterInter> alters)
-    {
-        SIGraph sig = staff.getSystem().getSig();
-        double grade = 0;
-
-        for (KeyAlterInter alter : alters) {
-            grade += sig.computeContextualGrade(alter);
-        }
-
-        grade /= alters.size();
-
-        KeyInter keyInter = new KeyInter(grade, 0);
-        keyInter.setStaff(staff);
-        sig.addVertex(keyInter);
-
-        for (Inter member : alters) {
-            keyInter.addMember(member);
-        }
-
-        return keyInter;
-    }
-
-    //-------------//
-    // getAlterFor //
-    //-------------//
-    /**
-     * Report the alteration to apply to the provided note step, under the provided
-     * active key signature.
-     *
-     * @param step      note step
-     * @param signature key signature
-     * @return the key-based alteration (either -1, 0 or +1)
-     */
-    public static int getAlterFor (AbstractNoteInter.Step step,
-                                   int signature)
-    {
-        if (signature > 0) {
-            for (int k = 0; k < signature; k++) {
-                if (step == SHARP_STEPS[k]) {
-                    return 1;
-                }
-            }
-        } else {
-            for (int k = 0; k < -signature; k++) {
-                if (step == FLAT_STEPS[k]) {
-                    return -1;
-                }
-            }
-        }
-
-        return 0;
     }
 
     //-------------//
@@ -304,6 +244,168 @@ public class KeyInter
         return fifths;
     }
 
+    //-----------//
+    // setFifths //
+    //-----------//
+    /**
+     * (method currently not used) Adjust the signature integer value.
+     *
+     * @param fifths the fifths to set
+     */
+    public void setFifths (int fifths)
+    {
+        this.fifths = fifths;
+    }
+
+    //------------//
+    // getMembers //
+    //------------//
+    @Override
+    public List<Inter> getMembers ()
+    {
+        return EnsembleHelper.getMembers(this, Inters.byCenterAbscissa);
+    }
+
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    @Override
+    public void invalidateCache ()
+    {
+        bounds = null;
+        fifths = 0;
+    }
+
+    //--------------//
+    // removeMember //
+    //--------------//
+    @Override
+    public void removeMember (Inter member)
+    {
+        if (!(member instanceof KeyAlterInter)) {
+            throw new IllegalArgumentException("Only KeyAlterInter can be removed from Key");
+        }
+
+        EnsembleHelper.removeMember(this, member);
+    }
+
+    //-----------//
+    // replicate //
+    //-----------//
+    /**
+     * Replicate this key in a target staff.
+     *
+     * @param targetStaff the target staff
+     * @return the replicated key, whose bounds may need an update
+     */
+    public KeyInter replicate (Staff targetStaff)
+    {
+        KeyInter inter = new KeyInter(0, getFifths());
+        inter.setStaff(targetStaff);
+
+        return inter;
+    }
+
+    //-------------//
+    // shapeString //
+    //-------------//
+    @Override
+    public String shapeString ()
+    {
+        return "KEY_SIG:" + getFifths();
+    }
+
+    //--------//
+    // shrink //
+    //--------//
+    /**
+     * Discard the last alter item in this key.
+     */
+    public void shrink ()
+    {
+        final List<Inter> alters = getMembers();
+
+        // Discard last alter
+        Inter lastAlter = alters.get(alters.size() - 1);
+        lastAlter.remove();
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+        sb.append(" fifths:").append(getFifths());
+
+        return sb.toString();
+    }
+
+    //-------------//
+    // createAdded //
+    //-------------//
+    /**
+     * Create and add a new KeyInter object.
+     *
+     * @param staff  the containing staff
+     * @param alters sequence of alteration inters
+     * @return the created KeyInter
+     */
+    public static KeyInter createAdded (Staff staff,
+                                        List<KeyAlterInter> alters)
+    {
+        SIGraph sig = staff.getSystem().getSig();
+        double grade = 0;
+
+        for (KeyAlterInter alter : alters) {
+            grade += sig.computeContextualGrade(alter);
+        }
+
+        grade /= alters.size();
+
+        KeyInter keyInter = new KeyInter(grade, 0);
+        keyInter.setStaff(staff);
+        sig.addVertex(keyInter);
+
+        for (Inter member : alters) {
+            keyInter.addMember(member);
+        }
+
+        return keyInter;
+    }
+
+    //-------------//
+    // getAlterFor //
+    //-------------//
+    /**
+     * Report the alteration to apply to the provided note step, under the provided
+     * active key signature.
+     *
+     * @param step      note step
+     * @param signature key signature
+     * @return the key-based alteration (either -1, 0 or +1)
+     */
+    public static int getAlterFor (AbstractNoteInter.Step step,
+                                   int signature)
+    {
+        if (signature > 0) {
+            for (int k = 0; k < signature; k++) {
+                if (step == SHARP_STEPS[k]) {
+                    return 1;
+                }
+            }
+        } else {
+            for (int k = 0; k < -signature; k++) {
+                if (step == FLAT_STEPS[k]) {
+                    return -1;
+                }
+            }
+        }
+
+        return 0;
+    }
+
     //--------------//
     // getItemPitch //
     //--------------//
@@ -330,15 +432,6 @@ public class KeyInter
         int[] pitches = map.get(kind);
 
         return pitches[Math.abs(n) - 1];
-    }
-
-    //------------//
-    // getMembers //
-    //------------//
-    @Override
-    public List<Inter> getMembers ()
-    {
-        return EnsembleHelper.getMembers(this, Inters.byCenterAbscissa);
     }
 
     //------------//
@@ -415,8 +508,18 @@ public class KeyInter
     }
 
     //-----------//
-    // guessKind // Not used!
+    // guessKind //
     //-----------//
+    /**
+     * Try to guess the clef kind, based only on key shape and pitches.
+     * <p>
+     * This method is not used.
+     *
+     * @param shape           the shape of key alter signs (FLAT vs SHARP)
+     * @param measuredPitches precise pitches of the alter signs
+     * @param results         (output) map to receive results per clef kind. Allocated if null.
+     * @return the guessed clef kind
+     */
     public static ClefKind guessKind (Shape shape,
                                       Double[] measuredPitches,
                                       Map<ClefKind, Double> results)
@@ -424,7 +527,7 @@ public class KeyInter
         Map<ClefKind, int[]> map = (shape == Shape.FLAT) ? FLAT_PITCHES_MAP : SHARP_PITCHES_MAP;
 
         if (results == null) {
-            results = new EnumMap<ClefKind, Double>(ClefKind.class);
+            results = new EnumMap<>(ClefKind.class);
         }
 
         ClefKind bestKind = null;
@@ -462,95 +565,6 @@ public class KeyInter
         logger.debug("{} results:{}", bestKind, results);
 
         return bestKind;
-    }
-
-    //-----------------//
-    // invalidateCache //
-    //-----------------//
-    @Override
-    public void invalidateCache ()
-    {
-        bounds = null;
-        fifths = 0;
-    }
-
-    //--------------//
-    // removeMember //
-    //--------------//
-    @Override
-    public void removeMember (Inter member)
-    {
-        if (!(member instanceof KeyAlterInter)) {
-            throw new IllegalArgumentException("Only KeyAlterInter can be removed from Key");
-        }
-
-        EnsembleHelper.removeMember(this, member);
-    }
-
-    //-----------//
-    // replicate //
-    //-----------//
-    /**
-     * Replicate this key in a target staff.
-     *
-     * @param targetStaff the target staff
-     * @return the replicated key, whose bounds may need an update
-     */
-    public KeyInter replicate (Staff targetStaff)
-    {
-        KeyInter inter = new KeyInter(0, getFifths());
-        inter.setStaff(targetStaff);
-
-        return inter;
-    }
-
-    //-----------//
-    // setFifths //
-    //-----------//
-    /**
-     * (method currently not used) Adjust the signature integer value.
-     *
-     * @param fifths the fifths to set
-     */
-    public void setFifths (int fifths)
-    {
-        this.fifths = fifths;
-    }
-
-    //-------------//
-    // shapeString //
-    //-------------//
-    @Override
-    public String shapeString ()
-    {
-        return "KEY_SIG:" + getFifths();
-    }
-
-    //--------//
-    // shrink //
-    //--------//
-    /**
-     * Discard the last alter item in this key.
-     */
-    public void shrink ()
-    {
-        final List<Inter> alters = getMembers();
-
-        // Discard last alter
-        Inter lastAlter = alters.get(alters.size() - 1);
-        lastAlter.remove();
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(" fifths:").append(getFifths());
-
-        return sb.toString();
     }
 
     //---------//

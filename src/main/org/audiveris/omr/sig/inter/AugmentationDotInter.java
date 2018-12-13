@@ -50,7 +50,8 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code AugmentationDotInter} represent an augmentation dot for a note or a rest.
+ * Class {@code AugmentationDotInter} represents an augmentation dot for
+ * a note (head or rest) or another dot.
  *
  * @author Hervé Bitteur
  */
@@ -58,11 +59,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AugmentationDotInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AugmentationDotInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AugmentationDotInter} object.
      *
@@ -82,7 +81,6 @@ public class AugmentationDotInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -153,7 +151,7 @@ public class AugmentationDotInter
 
         for (Relation rel : sig.getRelations(this, AugmentationRelation.class)) {
             if (notes == null) {
-                notes = new ArrayList<AbstractNoteInter>();
+                notes = new ArrayList<>();
             }
 
             notes.add((AbstractNoteInter) sig.getEdgeTarget(rel));
@@ -255,7 +253,7 @@ public class AugmentationDotInter
                                       SystemInfo system)
     {
         // Need getCenter()
-        final List<Link> links = new ArrayList<Link>();
+        final List<Link> links = new ArrayList<>();
         final Scale scale = system.getSheet().getScale();
         final Point dotCenter = getCenter();
         final MeasureStack dotStack = system.getStackAt(dotCenter);
@@ -306,7 +304,9 @@ public class AugmentationDotInter
     /**
      * Look up for a possible link with a head.
      * <p>
-     * Assumption: System dots are already in place or they are processed bottom up.
+     * Even in the case of a shared head, at most one head link is returned.
+     * <p>
+     * Assumption: System dots are already in place or they are processed top down.
      *
      * @param systemHeadChords system head chords, sorted by abscissa
      * @param system           containing system
@@ -316,7 +316,7 @@ public class AugmentationDotInter
                                 SystemInfo system)
     {
         // Need sig and getCenter()
-        final List<Link> links = new ArrayList<Link>();
+        final List<Link> links = new ArrayList<>();
         final Scale scale = system.getSheet().getScale();
         final Point dotCenter = getCenter();
         final MeasureStack dotStack = system.getStackAt(dotCenter);
@@ -335,13 +335,17 @@ public class AugmentationDotInter
         for (Inter ic : chords) {
             HeadChordInter chord = (HeadChordInter) ic;
 
-            // Heads are processed bottom up within their chord
-            for (Inter ih : chord.getNotes()) {
+            // Heads are reported bottom up within their chord
+            // So, we need to sort the list top down
+            List<? extends Inter> chordHeads = chord.getNotes();
+            Collections.sort(chordHeads, Inters.byCenterOrdinate);
+
+            for (Inter ih : chordHeads) {
                 HeadInter head = (HeadInter) ih;
 
                 // Check head is within reach and not yet augmented
                 if (GeoUtil.yEmbraces(luBox, head.getCenter().y)
-                    && (head.getFirstAugmentationDot() == null)) {
+                            && (head.getFirstAugmentationDot() == null)) {
                     Point refPt = head.getCenterRight();
                     double xGap = dotCenter.x - refPt.x;
 
@@ -351,7 +355,10 @@ public class AugmentationDotInter
                     }
 
                     // When this method is called, there is at most one stem per head
-                    for (Relation rel : system.getSig().getRelations(head, HeadStemRelation.class)) {
+                    // (including the case of shared heads)
+                    for (Relation rel : system.getSig().getRelations(
+                            head,
+                            HeadStemRelation.class)) {
                         HeadStemRelation hsRel = (HeadStemRelation) rel;
 
                         if (hsRel.getHeadSide() == RIGHT) {
@@ -388,7 +395,7 @@ public class AugmentationDotInter
         for (Link link : links) {
             HeadInter head = (HeadInter) link.partner;
 
-            if ((head.getIntegerPitch() % 2) == 1) {
+            if ((head.getIntegerPitch() % 2) != 0) {
                 return link;
             }
         }
@@ -410,7 +417,7 @@ public class AugmentationDotInter
                                        SystemInfo system)
     {
         // Need getCenter()
-        final List<Link> links = new ArrayList<Link>();
+        final List<Link> links = new ArrayList<>();
         final Scale scale = system.getSheet().getScale();
         final Point dotCenter = getCenter();
         final MeasureStack dotStack = system.getStackAt(dotCenter);
@@ -472,10 +479,12 @@ public class AugmentationDotInter
     //-------------//
     /**
      * Try to find a link with a note or another dot on the left.
+     * <p>
+     * In case of a shared head, a pair of links can be returned.
      *
      * @param system containing system
      * @param doit   true to apply
-     * @return the link found or null
+     * @return a collection of 0, 1 or 2 best link(s) found
      */
     @Override
     public Collection<Link> searchLinks (SystemInfo system,
@@ -497,11 +506,95 @@ public class AugmentationDotInter
             return Collections.emptyList();
         }
 
-        if (doit) {
-            link.applyTo(this);
+        final Collection<Link> links;
+
+        if (link.partner instanceof HeadInter) {
+            links = sharedHeadLinks(link);
+        } else {
+            links = Collections.singleton(link);
         }
 
-        return Collections.singleton(link);
+        if (doit) {
+            for (Link lnk : links) {
+                lnk.applyTo(this);
+            }
+        }
+
+        return links;
+    }
+
+    //-----------------//
+    // sharedHeadLinks //
+    //-----------------//
+    /**
+     * Modify the provided head link when the target head is a shared head.
+     * <p>
+     * There is a very specific case for shared heads.
+     * See some cases in Dichterliebe01 example.
+     * <ul>
+     * <li>If head is located <b>on</b> staff line or ledger, use dot relative location.
+     * <li>If head is located <b>between</b> staff lines or ledgers, check chords durations:
+     * <ul>
+     * <li>If durations are different, assign the dot only to the <b>longer</b>
+     * (which means lower number of beams or flags).
+     * <li>If they are identical, assign the dot to <b>both</b>.
+     * </ul>
+     * </ul>
+     *
+     * @param link the provided (head) link, perhaps null
+     * @return a collection of (head) links, the provided link for a non-shared head, but one or two
+     *         links for shared heads
+     */
+    public Collection<Link> sharedHeadLinks (Link link)
+    {
+        if (link == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        final Collection<Link> links = new ArrayList<>();
+        final HeadInter h1 = (HeadInter) link.partner;
+        final HeadInter h2 = (HeadInter) h1.getMirror();
+
+        if (h2 == null) {
+            links.add(link);
+        } else {
+            // Head on or between line(s)?
+            final int p = h1.getIntegerPitch();
+
+            if (p % 2 == 0) {
+                // On line
+                final int yHead = h1.getCenter().y;
+                final int yAug = getCenter().y;
+                final int yCh1 = h1.getChord().getCenter().y;
+                final HeadInter head;
+
+                if (yAug < yHead) {
+                    // Link to upper
+                    head = yCh1 < yHead ? h1 : h2;
+                } else {
+                    // Link to lower
+                    head = yCh1 > yHead ? h1 : h2;
+                }
+
+                links.add(new Link(head, new AugmentationRelation(), true));
+            } else {
+                // Between lines
+                final int bf1 = h1.getChord().getBeamsOrFlagsNumber();
+                final int bf2 = h2.getChord().getBeamsOrFlagsNumber();
+
+                if (bf1 == bf2) {
+                    // Link to both
+                    links.add(new Link(h1, new AugmentationRelation(), true));
+                    links.add(new Link(h2, new AugmentationRelation(), true));
+                } else {
+                    // Link to longer
+                    HeadInter head = (bf1 < bf2) ? h1 : h2;
+                    links.add(new Link(head, new AugmentationRelation(), true));
+                }
+            }
+        }
+
+        return links;
     }
 
     //--------------//
@@ -524,24 +617,6 @@ public class AugmentationDotInter
         return getLuBox(dotCenter, maxDx, maxDy);
     }
 
-    //----------//
-    // getLuBox //
-    //----------//
-    /**
-     * Report proper lookup box based on provided dot center
-     *
-     * @param dotCenter center of dot candidate
-     * @param maxDx     maximum dx between entity left side and dot center
-     * @param maxDy     maximum dy between entity center and dot center
-     * @return proper lookup box
-     */
-    private static Rectangle getLuBox (Point dotCenter,
-                                       int maxDx,
-                                       int maxDy)
-    {
-        return new Rectangle(dotCenter.x - maxDx, dotCenter.y - maxDy, maxDx, 2 * maxDy);
-    }
-
     //---------------//
     // getNotesLuBox //
     //---------------//
@@ -562,6 +637,24 @@ public class AugmentationDotInter
         return getLuBox(dotCenter, maxDx, maxDy);
     }
 
+    //----------//
+    // getLuBox //
+    //----------//
+    /**
+     * Report proper lookup box based on provided dot center
+     *
+     * @param dotCenter center of dot candidate
+     * @param maxDx     maximum dx between entity left side and dot center
+     * @param maxDy     maximum dy between entity center and dot center
+     * @return proper lookup box
+     */
+    private static Rectangle getLuBox (Point dotCenter,
+                                       int maxDx,
+                                       int maxDy)
+    {
+        return new Rectangle(dotCenter.x - maxDx, dotCenter.y - maxDy, maxDx, 2 * maxDy);
+    }
+
     //------------//
     // lookupLink //
     //------------//
@@ -580,7 +673,7 @@ public class AugmentationDotInter
                              List<Inter> systemDots,
                              SystemInfo system)
     {
-        List<Link> links = new ArrayList<Link>();
+        List<Link> links = new ArrayList<>();
         Link headLink = lookupHeadLink(systemHeadChords, system);
 
         if (headLink != null) {

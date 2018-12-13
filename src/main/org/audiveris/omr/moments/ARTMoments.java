@@ -32,7 +32,6 @@ package org.audiveris.omr.moments;
 public interface ARTMoments
         extends OrthogonalMoments<ARTMoments>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Number of angular indices. */
     public static final int ANGULAR = 20; //16; //12;
@@ -43,7 +42,6 @@ public interface ARTMoments
     /** Number of ART moments. */
     public static final int MOMENT_COUNT = -1 + (ANGULAR * RADIAL);
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the argument value for provided phase and radius indices.
      *

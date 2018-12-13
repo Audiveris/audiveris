@@ -36,7 +36,6 @@ import java.awt.Rectangle;
 public class EndingSymbol
         extends ShapeSymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create an EndingSymbol
@@ -56,7 +55,6 @@ public class EndingSymbol
         super(isIcon, Shape.ENDING, true); // Decorated
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//

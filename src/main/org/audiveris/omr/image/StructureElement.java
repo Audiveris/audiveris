@@ -29,18 +29,23 @@ import java.util.StringTokenizer;
 /**
  * Class {@code StructureElement}
  *
- * @author Hervé Bitteur
+ * @author ?
  */
 public class StructureElement
         implements MorphoConstants
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StructureElement.class);
 
+    /** Epsilon value meant for equality testing: {@value}. */
+    private static final double EPSILON = 1E-5;
+
     static final String EOL = System.getProperty("line.separator");
 
-    //~ Instance fields ----------------------------------------------------------------------------
+    public int type = FREE;
+
+    public boolean offsetmodified = false;
+
     private int[] mask;
 
     private int width = 1;
@@ -49,17 +54,12 @@ public class StructureElement
 
     private double radius = 0;
 
-    private int[][] vect;
+    private final int[][] vect;
 
     private int[] offset = OFFSET0;
 
     private int shift = 1;
 
-    public int type = FREE;
-
-    public boolean offsetmodified = false;
-
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StructureElement object.
      *
@@ -181,7 +181,6 @@ public class StructureElement
         vect = calcVect(mask, width);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public int[] Delta (int[] offset)
     {
         int[] astrel = this.T(offset);
@@ -367,7 +366,7 @@ public class StructureElement
         }
 
         case DIAMOND: {
-            d = (double) (Math.abs(X[0]) + Math.abs(X[1]));
+            d = (Math.abs(X[0]) + Math.abs(X[1]));
 
             break;
         }
@@ -393,6 +392,11 @@ public class StructureElement
     public int[] getMask ()
     {
         return mask;
+    }
+
+    public void setMask (int[] amask)
+    {
+        this.mask = amask;
     }
 
     public int getMaskAt (int index)
@@ -437,6 +441,12 @@ public class StructureElement
         return this.offset;
     }
 
+    public void setOffset (int[] offset)
+    {
+        this.offset = offset;
+        offsetmodified = true;
+    }
+
     public double getR ()
     {
         return radius;
@@ -452,6 +462,11 @@ public class StructureElement
         return type;
     }
 
+    public void setType (int type)
+    {
+        this.type = type;
+    }
+
     public int[][] getVect ()
     {
         return vect; //calcVect(this.mask , this.width);
@@ -460,40 +475,6 @@ public class StructureElement
     public int getWidth ()
     {
         return width;
-    }
-
-    public void setMask (int[] amask)
-    {
-        this.mask = amask;
-    }
-
-    public void setOffset (int[] offset)
-    {
-        this.offset = offset;
-        offsetmodified = true;
-    }
-
-    public void setType (int type)
-    {
-        this.type = type;
-    }
-
-    double getNum (StringTokenizer st)
-    {
-        Double d;
-        String token = st.nextToken();
-
-        try {
-            d = new Double(token);
-        } catch (NumberFormatException e) {
-            d = null;
-        }
-
-        if (d != null) {
-            return (d.doubleValue());
-        } else {
-            return 0.0;
-        }
     }
 
     private int[] createDiamondMask (int shift,
@@ -548,13 +529,13 @@ public class StructureElement
         int sz = this.width * this.height;
         int[] mask = new int[sz];
 
-        if ((alpha == 0) || (alpha == Math.PI)) {
+        if ((Math.abs(alpha) < EPSILON) || (Math.abs(alpha - Math.PI) < EPSILON)) {
             //for (int i=0;i<height-1;i++)
             // IJ.log("shift "+shift);
             for (int j = shift; j < (width - shift); j++) {
                 mask[j] = 255;
             }
-        } else if (alpha == (Math.PI / 2)) {
+        } else if (Math.abs(alpha - (Math.PI / 2)) < EPSILON) {
             for (int i = shift; i < (height - shift); i++) {
                 //for (int j=0;j<width;j++)
                 mask[i] = 255;
@@ -638,19 +619,6 @@ public class StructureElement
         return k;
     }
 
-    private static boolean validate (float var,
-                                     int k)
-    {
-        float a = k * var;
-        int b = (int) (k * var);
-
-        if (((a - b) == 0) || (var < 0)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     private int[][] calcVect (int[] perim,
                               int w)
     {
@@ -665,8 +633,8 @@ public class StructureElement
 
         //System.out.println("nnz: "+N);
         int h = sz / w;
-        int p = (int) Math.floor(h / 2);
-        int q = (int) Math.floor(w / 2);
+        int p = (int) Math.floor(h / 2.0);
+        int q = (int) Math.floor(w / 2.0);
 
         // System.out.println("p: "+p);
         //  System.out.println("q: "+q);
@@ -732,7 +700,9 @@ public class StructureElement
             for (double y = -r; y <= r; y++) {
                 //int index= (int)(r+x+width*(r+y));
                 //   if (x*x+y*y<r2){
-                if ((((x - offset[0]) * (x - offset[0])) + ((y - offset[1]) * (y - offset[1]))) < r2) {
+                if ((((x - offset[0]) * (x - offset[0])) + ((y - offset[1]) * (y
+                                                                                       - offset[1])))
+                    < r2) {
                     mask[index] = 255;
                 }
 
@@ -742,5 +712,31 @@ public class StructureElement
 
         // return mask;
         return mask;
+    }
+
+    double getNum (StringTokenizer st)
+    {
+        Double d;
+        String token = st.nextToken();
+
+        try {
+            d = Double.valueOf(token);
+        } catch (NumberFormatException e) {
+            d = null;
+        }
+
+        if (d != null) {
+            return d;
+        } else {
+            return 0.0;
+        }
+    }
+
+    private static boolean validate (float var,
+                                     int k)
+    {
+        float a = k * var;
+        int b = (int) (k * var);
+        return ((a - b) == 0) || (var < 0);
     }
 }

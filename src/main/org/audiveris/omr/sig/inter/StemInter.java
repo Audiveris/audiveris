@@ -23,7 +23,6 @@ package org.audiveris.omr.sig.inter;
 
 import ij.process.ByteProcessor;
 
-import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
@@ -31,6 +30,7 @@ import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.AbstractStemConnection;
@@ -46,6 +46,7 @@ import static org.audiveris.omr.sig.relation.StemPortion.STEM_TOP;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import org.audiveris.omr.util.Jaxb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,7 @@ import java.util.Set;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code StemInter} represents Stem interpretations.
@@ -72,27 +74,25 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class StemInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StemInter.class);
 
     /** Anchor vertical margin, relative to head height. */
     private static final double ANCHOR_MARGIN_RATIO = 0.67;
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
     /** Top point. */
     @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
     private Point2D top;
 
     /** Bottom point. */
     @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
     private Point2D bottom;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StemInter object.
      *
@@ -132,7 +132,6 @@ public class StemInter
         super(null, null, null, null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -238,7 +237,7 @@ public class StemInter
     {
         Scale scale = sig.getSystem().getSheet().getScale();
         final Line2D stemLine = computeExtendedLine();
-        final List<Relation> links = new ArrayList<Relation>(
+        final List<Relation> links = new ArrayList<>(
                 sig.getRelations(this, AbstractStemConnection.class));
         sig.sortBySource(links);
 
@@ -315,25 +314,6 @@ public class StemInter
         return new Line2D.Double(extTop, extBottom);
     }
 
-    //-----------//
-    // duplicate //
-    //-----------//
-    public StemInter duplicate ()
-    {
-        StemInter clone = new StemInter(glyph, impacts);
-        clone.setGlyph(this.glyph);
-        clone.setMirror(this);
-
-        if (impacts == null) {
-            clone.setGrade(this.grade);
-        }
-
-        sig.addVertex(clone);
-        setMirror(clone);
-
-        return clone;
-    }
-
     //----------------//
     // extractSubStem //
     //----------------//
@@ -367,8 +347,7 @@ public class StemInter
         final RunTable table = factory.createTable(buffer, roi).trim(stemOffset);
         final int x = glyph.getLeft() + stemOffset.x;
         final int y = glyph.getTop() + roi.y + stemOffset.y;
-        final Glyph g = sheet.getGlyphIndex().registerOriginal(
-                new BasicGlyph(x, y, table));
+        final Glyph g = sheet.getGlyphIndex().registerOriginal(new Glyph(x, y, table));
 
         // Create sub-stem
         final StemInter subStem = new StemInter(g, getGrade());
@@ -388,7 +367,7 @@ public class StemInter
      */
     public Set<AbstractBeamInter> getBeams ()
     {
-        final Set<AbstractBeamInter> set = new LinkedHashSet<AbstractBeamInter>();
+        final Set<AbstractBeamInter> set = new LinkedHashSet<>();
 
         for (Relation relation : sig.getRelations(this, BeamStemRelation.class)) {
             set.add((AbstractBeamInter) sig.getEdgeSource(relation));
@@ -414,7 +393,8 @@ public class StemInter
     /**
      * Report the chord(s) currently attached to the provided stem.
      * <p>
-     * We can have: <ul>
+     * We can have:
+     * <ul>
      * <li>No chord found, simply because this stem has not yet been processed.</li>
      * <li>One chord found, this is the normal case.</li>
      * <li>Two chords found, when the same stem is "shared" by two chords (as in complex structures
@@ -429,7 +409,7 @@ public class StemInter
 
         for (Relation rel : sig.getRelations(this, ChordStemRelation.class)) {
             if (chords == null) {
-                chords = new ArrayList<HeadChordInter>();
+                chords = new ArrayList<>();
             }
 
             chords.add((HeadChordInter) sig.getOppositeInter(this, rel));
@@ -452,7 +432,7 @@ public class StemInter
      */
     public Set<HeadInter> getHeads ()
     {
-        final Set<HeadInter> set = new LinkedHashSet<HeadInter>();
+        final Set<HeadInter> set = new LinkedHashSet<>();
 
         for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
             set.add((HeadInter) sig.getEdgeSource(relation));
@@ -472,14 +452,6 @@ public class StemInter
     public Line2D getMedian ()
     {
         return new Line2D.Double(top, bottom);
-    }
-
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    public static double getMinGrade ()
-    {
-        return AbstractInter.getMinGrade();
     }
 
     //--------//
@@ -521,7 +493,7 @@ public class StemInter
 
             // First head tested is enough.
             return (headShape == Shape.NOTEHEAD_BLACK_SMALL)
-                   || (headShape == Shape.NOTEHEAD_VOID_SMALL);
+                           || (headShape == Shape.NOTEHEAD_VOID_SMALL);
         }
 
         return false;
@@ -633,5 +605,48 @@ public class StemInter
 
         top = glyph.getStartPoint(VERTICAL);
         bottom = glyph.getStopPoint(VERTICAL);
+    }
+
+    //----------//
+    // getStaff //
+    //----------//
+    @Override
+    public Staff getStaff ()
+    {
+        if (staff != null) {
+            return staff;
+        }
+
+        // Check related chord(s)
+        Staff stemStaff = null;
+
+        for (HeadChordInter chord : getChords()) {
+            Staff chordStaff = chord.getStaff();
+
+            if (chordStaff == null) {
+                return null;
+            }
+
+            if (stemStaff != null && stemStaff != chordStaff) {
+                return null;
+            }
+
+            stemStaff = chordStaff;
+        }
+
+        return staff = stemStaff;
+    }
+
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    /**
+     * Report the minimum acceptable grade
+     *
+     * @return minimum grade
+     */
+    public static double getMinGrade ()
+    {
+        return AbstractInter.getMinGrade();
     }
 }

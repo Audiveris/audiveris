@@ -39,7 +39,6 @@ import java.awt.geom.Rectangle2D;
 public class BackToBackSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     // Total width, computed from width of RIGHT_REPEAT_SIGN symbol
     private static final double WIDTH_RATIO = 1.6;
@@ -47,7 +46,6 @@ public class BackToBackSymbol
     // Abscissa of thin barline, computed from width of RIGHT_REPEAT_SIGN symbol
     private static final double DX_RATIO = 1.15;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     // The RIGHT_REPEAT_SIGN symbol
     private final ShapeSymbol rightSymbol = Symbols.getSymbol(RIGHT_REPEAT_SIGN);
 
@@ -57,7 +55,6 @@ public class BackToBackSymbol
     // The REPEAT_DOT_PAIR symbol
     private final ShapeSymbol dotsSymbol = Symbols.getSymbol(REPEAT_DOT_PAIR);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a BackToBackSymbol
      *
@@ -68,7 +65,6 @@ public class BackToBackSymbol
         super(isIcon, Shape.DOUBLE_BARLINE, false);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -120,14 +116,12 @@ public class BackToBackSymbol
         MusicFont.paint(g, p.dotsLayout, loc, MIDDLE_RIGHT);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         TextLayout thinLayout;
 

@@ -38,14 +38,12 @@ import javax.swing.SwingUtilities;
  */
 public abstract class StepMonitoring
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StepMonitoring.class);
 
     /** Related progress monitor when used in interactive mode. */
     private static volatile StepMonitor monitor;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Not meant to be instantiated.
      */
@@ -53,7 +51,6 @@ public abstract class StepMonitoring
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // animate //
     //---------//
@@ -126,8 +123,7 @@ public abstract class StepMonitoring
     {
         if (monitor != null) {
             final boolean finished = stub.getCurrentStep() == null;
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()

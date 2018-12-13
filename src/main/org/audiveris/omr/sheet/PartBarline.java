@@ -60,33 +60,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "part-barline")
 public class PartBarline
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PartBarline.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /**
-     * Barline style.
-     * Identical to (or subset of) MusicXML BarStyle, to avoid strict dependency on MusicXML.
-     */
-    public static enum Style
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        REGULAR,
-        DOTTED,
-        DASHED,
-        HEAVY,
-        LIGHT_LIGHT,
-        LIGHT_HEAVY,
-        HEAVY_LIGHT,
-        HEAVY_HEAVY,
-        TICK,
-        SHORT,
-        NONE;
-    }
-
-    //~ Instance fields ----------------------------------------------------------------------------
     /** <b>OLD</b> underlying {@link StaffBarlineInter} instances. */
     @Deprecated
     @XmlElement(name = "staff-barline")
@@ -96,9 +72,8 @@ public class PartBarline
     @XmlList
     @XmlIDREF
     @XmlElement(name = "staff-barlines")
-    private final List<StaffBarlineInter> staffBarlines = new ArrayList<StaffBarlineInter>();
+    private final List<StaffBarlineInter> staffBarlines = new ArrayList<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PartBarline} object.
      */
@@ -106,10 +81,14 @@ public class PartBarline
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // addStaffBarline //
     //-----------------//
+    /**
+     * Include a staff barline into this PartBarline.
+     *
+     * @param staffBarline the StaffBarlineInter to include
+     */
     public void addStaffBarline (StaffBarlineInter staffBarline)
     {
         Objects.requireNonNull(staffBarline, "Trying to add a null StaffBarline");
@@ -120,6 +99,12 @@ public class PartBarline
     //----------//
     // contains //
     //----------//
+    /**
+     * Report whether this PartBarline contains the provided StaffBarline.
+     *
+     * @param staffBarline the StaffBarlineInter to check
+     * @return true if contained
+     */
     public boolean contains (StaffBarlineInter staffBarline)
     {
         return staffBarlines.contains(staffBarline);
@@ -151,14 +136,14 @@ public class PartBarline
      */
     public List<FermataInter> getFermatas ()
     {
-        Set<FermataInter> fermatas = new LinkedHashSet<FermataInter>();
+        Set<FermataInter> fermatas = new LinkedHashSet<>();
 
         for (StaffBarlineInter sb : staffBarlines) {
             fermatas.addAll(sb.getFermatas());
         }
 
         if (!fermatas.isEmpty()) {
-            List<FermataInter> list = new ArrayList<FermataInter>(fermatas);
+            List<FermataInter> list = new ArrayList<>(fermatas);
             Collections.sort(list, Inters.byCenterOrdinate);
 
             return list;
@@ -214,6 +199,13 @@ public class PartBarline
     //-----------------//
     // getStaffBarline //
     //-----------------//
+    /**
+     * Report the StaffBarline at crossing of part with provided staff.
+     *
+     * @param part  containing part
+     * @param staff desired staff
+     * @return the StaffBarline found or null
+     */
     public StaffBarlineInter getStaffBarline (Part part,
                                               Staff staff)
     {
@@ -229,6 +221,11 @@ public class PartBarline
     //------------------//
     // getStaffBarlines //
     //------------------//
+    /**
+     * Report the vertical sequence of StaffBarlineInter instances.
+     *
+     * @return list of StaffBarline instances
+     */
     public List<StaffBarlineInter> getStaffBarlines ()
     {
         return Collections.unmodifiableList(staffBarlines);
@@ -237,6 +234,11 @@ public class PartBarline
     //----------//
     // getStyle //
     //----------//
+    /**
+     * Report the (part) barline style.
+     *
+     * @return barline style, or null if no StaffBarline is contained.
+     */
     public Style getStyle ()
     {
         if (staffBarlines.isEmpty()) {
@@ -249,6 +251,11 @@ public class PartBarline
     //--------------//
     // isLeftRepeat //
     //--------------//
+    /**
+     * Report whether this is a left repeat barline.
+     *
+     * @return true if so
+     */
     public boolean isLeftRepeat ()
     {
         for (StaffBarlineInter sb : staffBarlines) {
@@ -263,6 +270,11 @@ public class PartBarline
     //---------------//
     // isRightRepeat //
     //---------------//
+    /**
+     * Report whether this is a right repeat barline.
+     *
+     * @return true if so
+     */
     public boolean isRightRepeat ()
     {
         for (StaffBarlineInter sb : staffBarlines) {
@@ -280,17 +292,21 @@ public class PartBarline
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{PartBarline");
-        StaffBarlineInter first = staffBarlines.get(0);
-        StaffBarlineInter last = staffBarlines.get(staffBarlines.size() - 1);
+        final StringBuilder sb = new StringBuilder("{PartBarline");
 
-        Style style = first.getStyle();
-        sb.append(" ").append(style);
+        if (!staffBarlines.isEmpty()) {
+            StaffBarlineInter first = staffBarlines.get(0);
+            StaffBarlineInter last = staffBarlines.get(staffBarlines.size() - 1);
 
-        Rectangle box = new Rectangle(first.getCenter());
-        box.add(last.getCenter());
-        sb.append(" ").append(PointUtil.toString(GeoUtil.centerOf(box)));
-        sb.append("}");
+            Style style = first.getStyle();
+            sb.append(' ').append(style);
+
+            Rectangle box = new Rectangle(first.getCenter());
+            box.add(last.getCenter());
+            sb.append(' ').append(PointUtil.toString(GeoUtil.centerOf(box)));
+        }
+
+        sb.append('}');
 
         return sb.toString();
     }
@@ -303,6 +319,7 @@ public class PartBarline
      *
      * @return true if really upgraded
      */
+    @Deprecated
     public boolean upgradeOldStuff ()
     {
         if (oldStaffBarlines != null) {
@@ -318,5 +335,29 @@ public class PartBarline
         }
 
         return false;
+    }
+
+    /**
+     * Barline style.
+     * <p>
+     * Identical to (or subset of) MusicXML BarStyle, to avoid strict dependency on MusicXML with
+     * the addition of LIGHT_HEAVY_LIGHT to handle back-to-back configuration.
+     */
+    public static enum Style
+    {
+        REGULAR,
+        DOTTED,
+        DASHED,
+        HEAVY,
+        LIGHT_LIGHT,
+        LIGHT_HEAVY,
+        HEAVY_LIGHT,
+        HEAVY_HEAVY,
+        TICK,
+        SHORT,
+        NONE,
+
+        /** LIGHT_HEAVY_LIGHT is not part of MusicXML. */
+        LIGHT_HEAVY_LIGHT;
     }
 }

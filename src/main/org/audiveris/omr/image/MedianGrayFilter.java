@@ -34,12 +34,10 @@ import java.util.Arrays;
 public class MedianGrayFilter
         extends AbstractGrayFilter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Desired radius for the filter. */
     private final int radius;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new MedianGrayFilter object.
      *
@@ -50,7 +48,6 @@ public class MedianGrayFilter
         this.radius = radius;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // filter //
     //--------//

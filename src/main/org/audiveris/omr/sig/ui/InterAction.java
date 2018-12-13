@@ -41,15 +41,12 @@ import static javax.swing.Action.SHORT_DESCRIPTION;
 public class InterAction
         extends AbstractAction
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterAction.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying interpretation. */
     private final Inter inter;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new InterAction object.
      *
@@ -85,7 +82,6 @@ public class InterAction
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//

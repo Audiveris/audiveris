@@ -21,9 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.ui.selection;
 
-import java.util.ArrayList;
 import org.audiveris.omr.util.Entity;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -36,18 +36,15 @@ import java.util.List;
  * convenient to use a list than a true set.
  *
  * @param <E> precise type for entities handled
- *
  * @author Hervé Bitteur
  */
 public class EntityListEvent<E extends Entity>
         extends UserEvent
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The selected entity list, which may be empty but not null. */
     private final List<E> entities;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code EntityListEvent} object.
      *
@@ -64,7 +61,7 @@ public class EntityListEvent<E extends Entity>
         super(source, hint, movement);
 
         if (entities != null) {
-            this.entities = Collections.unmodifiableList(new ArrayList<E>(entities));
+            this.entities = Collections.unmodifiableList(new ArrayList<>(entities));
         } else {
             this.entities = Collections.emptyList();
         }
@@ -86,13 +83,12 @@ public class EntityListEvent<E extends Entity>
         super(source, hint, movement);
 
         if ((entities != null) && (entities.length > 0) && (entities[0] != null)) {
-            this.entities = new ArrayList<E>(Arrays.asList(entities));
+            this.entities = new ArrayList<>(Arrays.asList(entities));
         } else {
             this.entities = Collections.emptyList();
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//

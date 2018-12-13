@@ -22,17 +22,18 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.EndingSentenceRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.text.TextRole;
+import org.audiveris.omr.util.Jaxb;
 
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code EndingInter} represents an ending.
@@ -49,23 +50,30 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class EndingInter
         extends AbstractInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
+    // Persistent Data
+    //----------------
+    //
     /** Mandatory left leg. */
     @XmlElement(name = "left-leg")
+    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private final Line2D leftLeg;
 
     /** Horizontal line. */
     @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private final Line2D line;
 
     /** Optional right leg, if any. */
     @XmlElement(name = "right-leg")
+    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     private final Line2D rightLeg;
 
+    // Transient Data
+    //---------------
+    //
     private final SegmentInter segment;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new EndingInter object.
      *
@@ -101,7 +109,6 @@ public class EndingInter
         this.rightLeg = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -188,6 +195,11 @@ public class EndingInter
     //-----------//
     // getNumber //
     //-----------//
+    /**
+     * Report the ending number clause, if any.
+     *
+     * @return ending number clause or null
+     */
     public String getNumber ()
     {
         for (Relation r : sig.getRelations(this, EndingSentenceRelation.class)) {
@@ -217,6 +229,13 @@ public class EndingInter
     //----------//
     // getValue //
     //----------//
+    /**
+     * The raw ending text, only if different from normalized number.
+     * <p>
+     * For instance, the actual text could be: "1., 2." and the normalized number: "1, 2"
+     *
+     * @return the raw ending text or null
+     */
     public String getValue ()
     {
         final String number = getNumber();
@@ -233,23 +252,22 @@ public class EndingInter
         return null;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
-            extends BasicImpacts
+            extends GradeImpacts
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{
-            "straight", "slope", "length", "leftBar",
-            "rightBar"
-        };
+            "straight",
+            "slope",
+            "length",
+            "leftBar",
+            "rightBar"};
 
         private static final double[] WEIGHTS = new double[]{1, 1, 1, 1, 1};
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double straight,
                         double slope,
                         double length,

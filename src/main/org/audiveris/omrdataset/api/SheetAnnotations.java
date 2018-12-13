@@ -21,13 +21,14 @@
 // </editor-fold>
 package org.audiveris.omrdataset.api;
 
+import org.audiveris.omr.util.Jaxb;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,13 +39,11 @@ import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
@@ -57,15 +56,12 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "Annotations")
 public class SheetAnnotations
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SheetAnnotations.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetAnnotations.class);
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     @XmlAttribute(name = "version")
     private String version;
 
@@ -79,9 +75,8 @@ public class SheetAnnotations
     private SheetInfo sheetInfo;
 
     @XmlElement(name = "Symbol")
-    private ArrayList<SymbolInfo> symbols = new ArrayList<SymbolInfo>();
+    private ArrayList<SymbolInfo> symbols = new ArrayList<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SheetAnnotations} object.
      */
@@ -89,7 +84,6 @@ public class SheetAnnotations
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Add a symbol to the annotations
      *
@@ -157,14 +151,15 @@ public class SheetAnnotations
      * @throws JAXBException in case of marshalling problem
      */
     public void marshall (Path path)
-            throws IOException, JAXBException
+            throws IOException,
+                   JAXBException
     {
         if (!Files.exists(path.getParent())) {
             Files.createDirectories(path.getParent());
         }
 
-        OutputStream os = new BufferedOutputStream(
-                Files.newOutputStream(path, StandardOpenOption.CREATE));
+        OutputStream os = new BufferedOutputStream(Files.newOutputStream(path,
+                                                                         StandardOpenOption.CREATE));
         Marshaller m = getJaxbContext().createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         m.marshal(this, os);
@@ -243,11 +238,8 @@ public class SheetAnnotations
         logger.debug("SheetAnnotations unmarshalling {}", path);
 
         try {
-            InputStream is = Files.newInputStream(path, StandardOpenOption.READ);
-            Unmarshaller um = getJaxbContext().createUnmarshaller();
-            SheetAnnotations sheetInfo = (SheetAnnotations) um.unmarshal(is);
+            SheetAnnotations sheetInfo = (SheetAnnotations) Jaxb.unmarshal(path, getJaxbContext());
             logger.debug("Unmarshalled {}", sheetInfo);
-            is.close();
 
             return sheetInfo;
         } catch (JAXBException ex) {
@@ -271,22 +263,19 @@ public class SheetAnnotations
         return jaxbContext;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // SheetInfo //
     //-----------//
     public static class SheetInfo
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlElement(name = "Image")
         public final String imageFileName;
 
         @XmlElement(name = "Size")
-        @XmlJavaTypeAdapter(DimensionAdapter.class)
+        @XmlJavaTypeAdapter(Jaxb.DimensionAdapter.class)
         public final Dimension dim;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public SheetInfo (String imageFileName,
                           Dimension dim)
         {
@@ -301,61 +290,10 @@ public class SheetAnnotations
             this.dim = null;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
             return "{" + imageFileName + " [width=" + dim.width + ",height=" + dim.height + "]}";
-        }
-
-        //~ Inner Classes --------------------------------------------------------------------------
-        public static class DimensionAdapter
-                extends XmlAdapter<DimensionAdapter.DimensionFacade, Dimension>
-        {
-            //~ Methods ----------------------------------------------------------------------------
-
-            @Override
-            public DimensionFacade marshal (Dimension dim)
-                    throws Exception
-            {
-                return new DimensionFacade(dim);
-            }
-
-            @Override
-            public Dimension unmarshal (DimensionFacade facade)
-                    throws Exception
-            {
-                return facade.getDimension();
-            }
-
-            //~ Inner Classes ----------------------------------------------------------------------
-            private static class DimensionFacade
-            {
-                //~ Instance fields ----------------------------------------------------------------
-
-                @XmlAttribute(name = "w")
-                public int width;
-
-                @XmlAttribute(name = "h")
-                public int height;
-
-                //~ Constructors -------------------------------------------------------------------
-                public DimensionFacade (Dimension dimension)
-                {
-                    width = dimension.width;
-                    height = dimension.height;
-                }
-
-                private DimensionFacade ()
-                {
-                }
-
-                //~ Methods ------------------------------------------------------------------------
-                public Dimension getDimension ()
-                {
-                    return new Dimension(width, height);
-                }
-            }
         }
     }
 }

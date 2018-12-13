@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.TreeSet;
 
 /**
@@ -52,11 +53,9 @@ import java.util.TreeSet;
  */
 public class BarColumn
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BarColumn.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The sheet graph of peaks. */
     private final PeakGraph peakGraph;
 
@@ -72,7 +71,6 @@ public class BarColumn
     /** Mean width. */
     private Double width;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BarColumn} object.
      *
@@ -87,10 +85,14 @@ public class BarColumn
         peaks = new StaffPeak[system.getStaves().size()];
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addChain //
     //----------//
+    /**
+     * Include all the peaks of a chain into column.
+     *
+     * @param chain the provided chain of peaks
+     */
     public void addChain (Chain chain)
     {
         for (StaffPeak peak : chain) {
@@ -101,6 +103,11 @@ public class BarColumn
     //---------//
     // addPeak //
     //---------//
+    /**
+     * Include a peak.
+     *
+     * @param peak the peak to include
+     */
     public void addPeak (StaffPeak peak)
     {
         int idx = peak.getStaff().getId() - system.getFirstStaff().getId();
@@ -115,6 +122,12 @@ public class BarColumn
     //------------//
     // canInclude //
     //------------//
+    /**
+     * Report whether chain would be compatible with this column.
+     *
+     * @param chain the chain to check for compatibility
+     * @return true if OK
+     */
     public boolean canInclude (Chain chain)
     {
         // Make sure we have room for the provided chain candidate
@@ -134,6 +147,11 @@ public class BarColumn
     //----------//
     // getPeaks //
     //----------//
+    /**
+     * Report the array of peaks.
+     *
+     * @return the peaks
+     */
     public StaffPeak[] getPeaks ()
     {
         return peaks;
@@ -142,6 +160,11 @@ public class BarColumn
     //----------//
     // getWidth //
     //----------//
+    /**
+     * Report average barline width within the column.
+     *
+     * @return the mean width of column barlines
+     */
     public double getWidth ()
     {
         if (width == null) {
@@ -164,6 +187,11 @@ public class BarColumn
     //---------//
     // getXDsk //
     //---------//
+    /**
+     * Report the average de-skewed abscissa.
+     *
+     * @return mean (de-skewed) abscissa on all column peaks.
+     */
     public double getXDsk ()
     {
         if (xDsk == null) {
@@ -186,6 +214,11 @@ public class BarColumn
     //--------//
     // isFull //
     //--------//
+    /**
+     * Tell whether the column has no void room.
+     *
+     * @return true if full
+     */
     public boolean isFull ()
     {
         return computeStatus();
@@ -256,7 +289,7 @@ public class BarColumn
 
             if (i > 0) {
                 // Print link if any
-                BarAlignment link = (BarAlignment) peakGraph.getEdge(peaks[i - 1], peak);
+                BarAlignment link = peakGraph.getEdge(peaks[i - 1], peak);
 
                 if (link == null) {
                     sb.append(" X ");
@@ -289,31 +322,43 @@ public class BarColumn
         return nb == peaks.length;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Chain //
     //-------//
     /**
-     * A chain represent a vertical sequence of peaks linked by alignment or connection.
+     * A chain represents a vertical sequence of peaks linked by alignment or connection.
      */
     public static class Chain
             extends TreeSet<StaffPeak>
-            implements Comparable<Chain>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
+        /** To sort by (de-skewed) abscissa. */
+        public static final Comparator<Chain> byAbscissa = new Comparator<Chain>()
+        {
+            @Override
+            public int compare (Chain c1,
+                                Chain c2)
+            {
+                return Double.compare(
+                        c1.first().getDeskewedAbscissa(),
+                        c2.first().getDeskewedAbscissa());
+            }
+        };
+
+        /**
+         * Create a Chain out of peaks.
+         *
+         * @param peaks the peaks that compose a chain
+         */
         public Chain (Collection<StaffPeak> peaks)
         {
             addAll(peaks);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
-        public int compareTo (Chain that)
+        public Object clone ()
         {
-            return Double.compare(
-                    this.first().getDeskewedAbscissa(),
-                    that.first().getDeskewedAbscissa());
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 }

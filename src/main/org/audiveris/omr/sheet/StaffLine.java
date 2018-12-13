@@ -56,18 +56,15 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class StaffLine
         implements LineInfo
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            StaffLine.class);
+    private static final Logger logger = LoggerFactory.getLogger(StaffLine.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
-    /** Absolute defining points (including start &amp; stop points). */
+    /** Absolute defining points (including start and stop points). */
     @XmlElement(name = "point")
+    @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
     protected final List<Point2D> points;
 
     /** Mean line thickness. */
@@ -89,7 +86,6 @@ public class StaffLine
     /** Bounding box. */
     protected Rectangle bounds;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StaffLine} object.
      *
@@ -112,7 +108,6 @@ public class StaffLine
         this.thickness = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getBounds //
     //-----------//
@@ -161,6 +156,19 @@ public class StaffLine
         return glyph;
     }
 
+    //----------//
+    // setGlyph //
+    //----------//
+    /**
+     * Assign the underlying glyph for the whole staff line
+     *
+     * @param glyph the staff line glyph
+     */
+    public void setGlyph (Glyph glyph)
+    {
+        this.glyph = glyph;
+    }
+
     //-----------//
     // getSpline //
     //-----------//
@@ -195,11 +203,20 @@ public class StaffLine
     }
 
     //----------//
-    // setGlyph //
+    // toString //
     //----------//
-    public void setGlyph (Glyph glyph)
+    @Override
+    public String toString ()
     {
-        this.glyph = glyph;
+        final StringBuilder sb = new StringBuilder("StaffLine{");
+
+        if (points != null) {
+            sb.append("points:").append(points.size());
+        }
+
+        sb.append('}');
+
+        return sb.toString();
     }
 
     //-----//
@@ -230,7 +247,6 @@ public class StaffLine
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
@@ -240,7 +256,6 @@ public class StaffLine
     public static class Adapter
             extends XmlAdapter<StaffLine, LineInfo>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public StaffLine marshal (LineInfo lineInfo)

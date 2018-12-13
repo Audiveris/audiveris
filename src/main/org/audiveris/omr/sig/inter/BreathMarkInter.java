@@ -39,7 +39,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BreathMarkInter
         extends AbstractInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code BreathMarkInter} object.
@@ -60,7 +59,6 @@ public class BreathMarkInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

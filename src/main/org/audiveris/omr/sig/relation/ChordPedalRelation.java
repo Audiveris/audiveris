@@ -31,9 +31,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "chord-pedal")
 public class ChordPedalRelation
-        extends AbstractSupport
+        extends Support
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     //----------------//
     // isSingleSource //
@@ -51,5 +50,12 @@ public class ChordPedalRelation
     public boolean isSingleTarget ()
     {
         return true;
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 }

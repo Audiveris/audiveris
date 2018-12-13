@@ -43,11 +43,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BraceInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BraceInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BraceInter object.
      *
@@ -68,7 +66,6 @@ public class BraceInter
         super(null, null, null, null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

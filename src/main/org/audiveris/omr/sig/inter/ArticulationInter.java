@@ -53,11 +53,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ArticulationInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ArticulationInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ArticulationInter object.
      *
@@ -79,7 +77,6 @@ public class ArticulationInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -110,42 +107,6 @@ public class ArticulationInter
         setAbnormal(!sig.hasRelation(this, ChordArticulationRelation.class));
 
         return isAbnormal();
-    }
-
-    //------------------//
-    // createValidAdded //
-    //------------------//
-    /**
-     * (Try to) create an ArticulationInter.
-     *
-     * @param glyph            underlying glyph
-     * @param shape            detected shape
-     * @param grade            assigned grade
-     * @param system           containing system
-     * @param systemHeadChords system head chords, ordered by abscissa
-     * @return the created articulation or null
-     */
-    public static ArticulationInter createValidAdded (Glyph glyph,
-                                                      Shape shape,
-                                                      double grade,
-                                                      SystemInfo system,
-                                                      List<Inter> systemHeadChords)
-    {
-        if (glyph.isVip()) {
-            logger.info("VIP ArticulationInter create {} as {}", glyph, shape);
-        }
-
-        ArticulationInter artic = new ArticulationInter(glyph, shape, grade);
-        Link link = artic.lookupLink(systemHeadChords);
-
-        if (link != null) {
-            system.getSig().addVertex(artic);
-            link.applyTo(artic);
-
-            return artic;
-        }
-
-        return null;
     }
 
     //----------//
@@ -228,8 +189,7 @@ public class ArticulationInter
 
         final SystemInfo system = systemHeadChords.get(0).getSig().getSystem();
         final Scale scale = system.getSheet().getScale();
-        final int maxDx = scale.toPixels(
-                ChordArticulationRelation.getXOutGapMaximum(manual));
+        final int maxDx = scale.toPixels(ChordArticulationRelation.getXOutGapMaximum(manual));
         final int maxDy = scale.toPixels(ChordArticulationRelation.getYGapMaximum(manual));
         final int minDy = scale.toPixels(ChordArticulationRelation.getYGapMinimum(manual));
         final Rectangle articBox = getBounds();
@@ -285,6 +245,42 @@ public class ArticulationInter
 
         if (bestRel != null) {
             return new Link(bestChord, bestRel, false);
+        }
+
+        return null;
+    }
+
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create an ArticulationInter.
+     *
+     * @param glyph            underlying glyph
+     * @param shape            detected shape
+     * @param grade            assigned grade
+     * @param system           containing system
+     * @param systemHeadChords system head chords, ordered by abscissa
+     * @return the created articulation or null
+     */
+    public static ArticulationInter createValidAdded (Glyph glyph,
+                                                      Shape shape,
+                                                      double grade,
+                                                      SystemInfo system,
+                                                      List<Inter> systemHeadChords)
+    {
+        if (glyph.isVip()) {
+            logger.info("VIP ArticulationInter create {} as {}", glyph, shape);
+        }
+
+        ArticulationInter artic = new ArticulationInter(glyph, shape, grade);
+        Link link = artic.lookupLink(systemHeadChords);
+
+        if (link != null) {
+            system.getSig().addVertex(artic);
+            link.applyTo(artic);
+
+            return artic;
         }
 
         return null;

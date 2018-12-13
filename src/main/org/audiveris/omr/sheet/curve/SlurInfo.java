@@ -49,11 +49,9 @@ import java.util.List;
 public class SlurInfo
         extends Curve
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SlurInfo.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Approximating first side model. */
     protected Model firstModel;
 
@@ -63,7 +61,8 @@ public class SlurInfo
     /** Number of points for side circles. */
     protected final int sideLength;
 
-    /** Is the slur: above heads, below heads or flat.
+    /**
+     * Is the slur: above heads, below heads or flat.
      * 1 for above, -1 for below, 0 for flat
      */
     protected int above;
@@ -77,7 +76,6 @@ public class SlurInfo
     /** Global Bézier curve for the slur. */
     protected CubicCurve2D curve;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SlurInfo object.
      *
@@ -101,7 +99,6 @@ public class SlurInfo
         this.sideLength = sideLength;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // isAbove //
     //---------//
@@ -259,6 +256,11 @@ public class SlurInfo
     //-------------//
     // getMidPoint //
     //-------------//
+    /**
+     * Report slur middle point
+     *
+     * @return mid point
+     */
     public Point2D getMidPoint ()
     {
         return model.getMidPoint();
@@ -391,9 +393,15 @@ public class SlurInfo
         }
     }
 
-    //---------------//
+    //--------------//
     // setSideModel //
-    //---------------//
+    //--------------//
+    /**
+     * Assign model to provided side of the slur.
+     *
+     * @param model   chosen model
+     * @param reverse desired direction
+     */
     public void setSideModel (Model model,
                               boolean reverse)
     {

@@ -31,7 +31,6 @@ import ij.process.ByteProcessor;
 public interface PixelFilter
         extends PixelSource
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Run the filter on source image and report the filtered image.
@@ -65,19 +64,21 @@ public interface PixelFilter
     boolean isFore (int x,
                     int y);
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     /**
      * Structure used to report precise context of the source.
      * It can be extended for more specialized data.
      */
     class Context
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Threshold used on pixel value. */
         public final double threshold;
 
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create Context object.
+         *
+         * @param threshold value
+         */
         public Context (double threshold)
         {
             this.threshold = threshold;

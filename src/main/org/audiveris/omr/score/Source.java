@@ -78,7 +78,6 @@ import java.util.List;
  */
 public class Source
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Source.class);
 
@@ -86,7 +85,6 @@ public class Source
 
     private static final String SHEET_PREFIX = "sheet-";
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Path to source image file, if any. */
     private String file;
 
@@ -97,12 +95,183 @@ public class Source
     private URI uri;
 
     /** Systems processed in each image sheet. */
-    private final List<SheetSystems> sheets = new ArrayList<SheetSystems>();
+    private final List<SheetSystems> sheets = new ArrayList<>();
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // encodePage //
+    //------------//
+    /**
+     * Encode provided page in target ScorePartwise.
+     *
+     * @param page          input
+     * @param scorePartwise output
+     */
+    public void encodePage (Page page,
+                            ScorePartwise scorePartwise)
+    {
+        final ObjectFactory factory = new ObjectFactory();
+        Identification identification = scorePartwise.getIdentification();
+
+        if (identification == null) {
+            identification = factory.createIdentification();
+            scorePartwise.setIdentification(identification);
+        }
+
+        Miscellaneous misc = identification.getMiscellaneous();
+
+        if (misc == null) {
+            misc = factory.createMiscellaneous();
+            identification.setMiscellaneous(misc);
+        }
+
+        Source.SheetSystems sheetSystems = new Source.SheetSystems(
+                page.getSheet().getStub().getNumber());
+        sheets.add(sheetSystems);
+
+        for (SystemInfo system : page.getSystems()) {
+            sheetSystems.getSystems().add(system.getId());
+        }
+
+        MiscellaneousField field = factory.createMiscellaneousField();
+        misc.getMiscellaneousField().add(field);
+        field.setName(SOURCE_PREFIX + SHEET_PREFIX + sheetSystems.sheetNumber);
+        field.setValue(packInts(sheetSystems.getSystems()));
+    }
+
+    //-------------//
+    // encodeScore //
+    //-------------//
+    /**
+     * Encode score source, by filling the MusicXML Miscellaneous element.
+     *
+     * @param scorePartwise the ScorePartwise to encode.
+     */
+    public void encodeScore (ScorePartwise scorePartwise)
+    {
+        final ObjectFactory factory = new ObjectFactory();
+        Identification identification = scorePartwise.getIdentification();
+
+        if (identification == null) {
+            identification = factory.createIdentification();
+            scorePartwise.setIdentification(identification);
+        }
+
+        Miscellaneous misc = identification.getMiscellaneous();
+
+        if (misc == null) {
+            misc = factory.createMiscellaneous();
+            identification.setMiscellaneous(misc);
+        }
+
+        MiscellaneousField field;
+
+        if (file != null) {
+            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
+            field.setName(SOURCE_PREFIX + "file");
+            field.setValue(file);
+        } else if (uri != null) {
+            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
+            field.setName(SOURCE_PREFIX + "uri");
+            field.setValue(uri.toString());
+        }
+
+        if (offset != 0) {
+            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
+            field.setName(SOURCE_PREFIX + "offset");
+            field.setValue("" + offset);
+        }
+    }
+
+    /**
+     * @return the file
+     */
+    public String getFile ()
+    {
+        return file;
+    }
+
+    /**
+     * @param file the file to set
+     */
+    public void setFile (String file)
+    {
+        this.file = file;
+    }
+
+    /**
+     * @return the offset
+     */
+    public int getOffset ()
+    {
+        return offset;
+    }
+
+    /**
+     * @param offset the offset to set
+     */
+    public void setOffset (int offset)
+    {
+        this.offset = offset;
+    }
+
+    /**
+     * @return the sheetSystems
+     */
+    public List<SheetSystems> getSheets ()
+    {
+        return sheets;
+    }
+
+    /**
+     * @return the uri
+     */
+    public URI getUri ()
+    {
+        return uri;
+    }
+
+    /**
+     * @param uri the uri to set
+     */
+    public void setUri (URI uri)
+    {
+        this.uri = uri;
+    }
+
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
+
+        if (file != null) {
+            sb.append("file='").append(file).append("'");
+        } else if (uri != null) {
+            sb.append("uri=").append(uri);
+        }
+
+        if (offset != 0) {
+            sb.append(" offset=").append(offset);
+        }
+
+        for (SheetSystems sheet : sheets) {
+            sb.append(" ").append(sheet);
+        }
+
+        sb.append("}");
+
+        return sb.toString();
+    }
+
     //--------//
     // decode //
     //--------//
+    /**
+     * Decode the Source information from MusicXML Miscellaneous element.
+     *
+     * @param scorePartwise the ScorePartwise to process
+     * @return Source information or null if not found
+     */
     public static Source decode (ScorePartwise scorePartwise)
     {
         Identification identification = scorePartwise.getIdentification();
@@ -146,207 +315,6 @@ public class Source
         return source;
     }
 
-    //------------//
-    // encodePage //
-    //------------//
-    public void encodePage (Page page,
-                            ScorePartwise scorePartwise)
-    {
-        final ObjectFactory factory = new ObjectFactory();
-        Identification identification = scorePartwise.getIdentification();
-
-        if (identification == null) {
-            identification = factory.createIdentification();
-            scorePartwise.setIdentification(identification);
-        }
-
-        Miscellaneous misc = identification.getMiscellaneous();
-
-        if (misc == null) {
-            misc = factory.createMiscellaneous();
-            identification.setMiscellaneous(misc);
-        }
-
-        Source.SheetSystems sheetSystems = new Source.SheetSystems(
-                page.getSheet().getStub().getNumber());
-        sheets.add(sheetSystems);
-
-        for (SystemInfo system : page.getSystems()) {
-            sheetSystems.getSystems().add(system.getId());
-        }
-
-        MiscellaneousField field = factory.createMiscellaneousField();
-        misc.getMiscellaneousField().add(field);
-        field.setName(SOURCE_PREFIX + SHEET_PREFIX + sheetSystems.sheetNumber);
-        field.setValue(packInts(sheetSystems.getSystems()));
-    }
-
-    //-------------//
-    // encodeScore //
-    //-------------//
-    public void encodeScore (ScorePartwise scorePartwise)
-    {
-        final ObjectFactory factory = new ObjectFactory();
-        Identification identification = scorePartwise.getIdentification();
-
-        if (identification == null) {
-            identification = factory.createIdentification();
-            scorePartwise.setIdentification(identification);
-        }
-
-        Miscellaneous misc = identification.getMiscellaneous();
-
-        if (misc == null) {
-            misc = factory.createMiscellaneous();
-            identification.setMiscellaneous(misc);
-        }
-
-        MiscellaneousField field;
-
-        if (file != null) {
-            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
-            field.setName(SOURCE_PREFIX + "file");
-            field.setValue(file);
-        } else if (uri != null) {
-            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
-            field.setName(SOURCE_PREFIX + "uri");
-            field.setValue(uri.toString());
-        }
-
-        if (offset != 0) {
-            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
-            field.setName(SOURCE_PREFIX + "offset");
-            field.setValue("" + offset);
-        }
-    }
-
-    //
-    //    //--------//
-    //    // encode //
-    //    //--------//
-    //    public void encode (ScorePartwise scorePartwise)
-    //    {
-    //        final ObjectFactory factory = new ObjectFactory();
-    //        Identification identification = scorePartwise.getIdentification();
-    //
-    //        if (identification == null) {
-    //            identification = factory.createIdentification();
-    //            scorePartwise.setIdentification(identification);
-    //        }
-    //
-    //        Miscellaneous misc = identification.getMiscellaneous();
-    //
-    //        if (misc == null) {
-    //            misc = factory.createMiscellaneous();
-    //            identification.setMiscellaneous(misc);
-    //        }
-    //
-    //        MiscellaneousField field;
-    //
-    //        if (file != null) {
-    //            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
-    //            field.setName(SOURCE_PREFIX + "file");
-    //            field.setValue(file);
-    //        } else if (uri != null) {
-    //            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
-    //            field.setName(SOURCE_PREFIX + "uri");
-    //            field.setValue(uri.toString());
-    //        }
-    //
-    //        if (offset != 0) {
-    //            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
-    //            field.setName(SOURCE_PREFIX + "offset");
-    //            field.setValue("" + offset);
-    //        }
-    //
-    //        for (SheetSystems sheet : sheets) {
-    //            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
-    //            field.setName(SOURCE_PREFIX + SHEET_PREFIX + sheet.sheetNumber);
-    //            field.setValue(packInts(sheet.getSystems()));
-    //        }
-    //    }
-    //
-    /**
-     * @return the file
-     */
-    public String getFile ()
-    {
-        return file;
-    }
-
-    /**
-     * @return the offset
-     */
-    public int getOffset ()
-    {
-        return offset;
-    }
-
-    /**
-     * @return the sheetSystems
-     */
-    public List<SheetSystems> getSheets ()
-    {
-        return sheets;
-    }
-
-    /**
-     * @return the uri
-     */
-    public URI getUri ()
-    {
-        return uri;
-    }
-
-    /**
-     * @param file the file to set
-     */
-    public void setFile (String file)
-    {
-        this.file = file;
-    }
-
-    /**
-     * @param offset the offset to set
-     */
-    public void setOffset (int offset)
-    {
-        this.offset = offset;
-    }
-
-    /**
-     * @param uri the uri to set
-     */
-    public void setUri (URI uri)
-    {
-        this.uri = uri;
-    }
-
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append("{");
-
-        if (file != null) {
-            sb.append("file='").append(file).append("'");
-        } else if (uri != null) {
-            sb.append("uri=").append(uri);
-        }
-
-        if (offset != 0) {
-            sb.append(" offset=").append(offset);
-        }
-
-        for (SheetSystems sheet : sheets) {
-            sb.append(" ").append(sheet);
-        }
-
-        sb.append("}");
-
-        return sb.toString();
-    }
-
     //----------//
     // packInts //
     //----------//
@@ -382,7 +350,7 @@ public class Source
      */
     private static List<Integer> parseInts (String str)
     {
-        final List<Integer> intList = new ArrayList<Integer>();
+        final List<Integer> intList = new ArrayList<>();
         final String[] tokens = str.split("\\s+");
 
         for (String token : tokens) {
@@ -400,31 +368,34 @@ public class Source
         return intList;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // SheetSystems //
     //--------------//
     /**
-     * Describes which systems were processed in this sheet.
+     * Describes which systems have been processed in this sheet.
      */
     public static class SheetSystems
     {
-        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Sequence of systems processed, starting from 1. */
+        private final List<Integer> systems = new ArrayList<>();
 
         /** Sheet number within source file, starting from 1. */
         final int sheetNumber;
 
-        /** Sequence of systems processed, starting from 1. */
-        private final List<Integer> systems = new ArrayList<Integer>();
-
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create a SheetSystems object.
+         *
+         * @param sheetNumber starting sheet number in file
+         */
         public SheetSystems (int sheetNumber)
         {
             this.sheetNumber = sheetNumber;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
+         * Report the IDs of the processed systems
+         *
          * @return the systems
          */
         public List<Integer> getSystems ()

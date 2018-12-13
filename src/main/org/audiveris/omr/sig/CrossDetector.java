@@ -54,17 +54,14 @@ import java.util.List;
  */
 public class CrossDetector
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(CrossDetector.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code CrossDetector} object.
      *
@@ -75,10 +72,12 @@ public class CrossDetector
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
+    /**
+     * Resolve conflicts between overlapping inters from different systems.
+     */
     public void process ()
     {
         final SystemManager manager = sheet.getSystemManager();
@@ -278,14 +277,12 @@ public class CrossDetector
         return staff.distanceTo(center);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Evaluation.Grade minGradeDiff = new Evaluation.Grade(
                 0.1,

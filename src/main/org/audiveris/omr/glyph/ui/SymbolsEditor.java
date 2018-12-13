@@ -42,6 +42,7 @@ import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.ui.PixelBoard;
 import org.audiveris.omr.sheet.ui.SelectionPainter;
+import org.audiveris.omr.sheet.ui.SheetAssembly;
 import org.audiveris.omr.sheet.ui.SheetGradedPainter;
 import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.SheetTab;
@@ -57,7 +58,6 @@ import org.audiveris.omr.sig.ui.ShapeBoard;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.Colors;
-import org.audiveris.omr.ui.PixelCount;
 import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.ViewParameters.SelectionMode;
 import org.audiveris.omr.ui.selection.EntityListEvent;
@@ -98,13 +98,11 @@ import javax.swing.SwingUtilities;
 public class SymbolsEditor
         implements PropertyChangeListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolsEditor.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -120,7 +118,6 @@ public class SymbolsEditor
     /** View parameters. */
     private final ViewParameters viewParams = ViewParameters.getInstance();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the DATA_TAB view in the sheet assembly tabs, dedicated to the display and
      * handling of glyphs and inters.
@@ -140,7 +137,7 @@ public class SymbolsEditor
         view = new MyView(sheet.getGlyphIndex());
         view.setLocationService(sheet.getLocationService());
 
-        List<Board> boards = new ArrayList<Board>();
+        List<Board> boards = new ArrayList<>();
         boards.add(new PixelBoard(sheet, constants.selectPixelBoard.isSet()));
 
         Lag hLag = sheet.getLagManager().getLag(Lags.HLAG);
@@ -206,11 +203,11 @@ public class SymbolsEditor
         BoardsPane boardsPane = new BoardsPane(boards);
 
         // Create a hosting pane for the view
-        ScrollView slv = new ScrollView(view);
-        sheet.getStub().getAssembly().addViewTab(SheetTab.DATA_TAB, slv, boardsPane);
+        final SheetAssembly assembly = sheet.getStub().getAssembly();
+        assembly.addViewTab(SheetTab.DATA_TAB, new ScrollView(view), boardsPane);
+        assembly.lockViewTab(SheetTab.DATA_TAB);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getShapeBoard //
     //---------------//
@@ -307,8 +304,7 @@ public class SymbolsEditor
      */
     public void highLight (final Slot slot)
     {
-        SwingUtilities.invokeLater(
-                new Runnable()
+        SwingUtilities.invokeLater(new Runnable()
         {
             @Override
             public void run ()
@@ -339,18 +335,12 @@ public class SymbolsEditor
         view.repaint();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final PixelCount measureMargin = new PixelCount(
-                10,
-                "Number of pixels as margin when highlighting a measure");
 
         private final Constant.Boolean selectPixelBoard = new Constant.Boolean(
                 false,
@@ -379,10 +369,6 @@ public class SymbolsEditor
         private final Constant.Boolean selectBasicClassifierBoard = new Constant.Boolean(
                 true,
                 "Should we select Basic Classifier board by default?");
-
-        private final Constant.Boolean selectDeepClassifierBoard = new Constant.Boolean(
-                false,
-                "Should we select Deep Classifier board by default?");
     }
 
     //--------//
@@ -391,7 +377,6 @@ public class SymbolsEditor
     private final class MyView
             extends NestView
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Currently highlighted slot, if any. */
         private Slot highlightedSlot;
@@ -399,7 +384,6 @@ public class SymbolsEditor
         /** Current vector. */
         private RelationVector vector;
 
-        //~ Constructors ---------------------------------------------------------------------------
         private MyView (GlyphIndex glyphIndex)
         {
             super(
@@ -418,7 +402,6 @@ public class SymbolsEditor
             sheet.getInterIndex().getEntityService().subscribeStrongly(EntityListEvent.class, this);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //--------------//
         // contextAdded //
         //--------------//
@@ -596,7 +579,8 @@ public class SymbolsEditor
 
             if (viewParams.isInputPainting()) {
                 // Sections
-                final boolean drawBorders = viewParams.getSelectionMode() == SelectionMode.MODE_SECTION;
+                final boolean drawBorders = viewParams
+                        .getSelectionMode() == SelectionMode.MODE_SECTION;
                 final Stroke oldStroke = (drawBorders) ? UIUtil.setAbsoluteStroke(g, 1f) : null;
 
                 for (Lag lag : lags) {

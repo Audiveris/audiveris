@@ -28,6 +28,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.math.HiLoPeakFinder;
+import org.audiveris.omr.math.HiLoPeakFinder.Quorum;
 import org.audiveris.omr.math.IntegerFunction;
 import org.audiveris.omr.math.Range;
 import org.audiveris.omr.run.Orientation;
@@ -68,14 +69,11 @@ import java.util.List;
  */
 public class StemScaler
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StemScaler.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -85,7 +83,6 @@ public class StemScaler
     /** Most frequent length of horizontal foreground runs found, if any. */
     private Range peak;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StemScaler object.
      *
@@ -96,7 +93,6 @@ public class StemScaler
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // displayChart //
     //--------------//
@@ -155,9 +151,11 @@ public class StemScaler
     private StemScale computeStem ()
     {
         final int area = histoKeeper.function.getArea();
+        histoKeeper.peakFinder.setQuorum(
+                new Quorum((int) Math.rint(area * constants.minValueRatio.getValue())));
+
         final List<Range> stemPeaks = histoKeeper.peakFinder.findPeaks(
                 1,
-                (int) Math.rint(area * constants.minValueRatio.getValue()),
                 (int) Math.rint(area * constants.minDerivativeRatio.getValue()),
                 constants.minGainRatio.getValue());
 
@@ -208,14 +206,69 @@ public class StemScaler
         return buf;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------//
+    // HistoKeeper //
+    //-------------//
+    /**
+     * Handles the histogram of horizontal foreground runs.
+     */
+    private class HistoKeeper
+    {
+
+        private final IntegerFunction function;
+
+        private final HiLoPeakFinder peakFinder;
+
+        /**
+         * Create an instance of histoKeeper.
+         *
+         * @param maxLength the maximum possible horizontal run length value
+         */
+        HistoKeeper (RunTable horiTable,
+                     int maxLength)
+        {
+            function = new IntegerFunction(0, maxLength);
+            populateFunction(horiTable);
+            peakFinder = new HiLoPeakFinder("stem", function);
+        }
+
+        //-----------//
+        // writePlot //
+        //-----------//
+        public void writePlot ()
+        {
+            final String title = sheet.getId() + " " + peakFinder.name;
+            ChartPlotter plotter = new ChartPlotter(title, "Stem thickness", "Counts");
+            peakFinder.plot(plotter, true);
+            plotter.display(new Point(80, 80));
+        }
+
+        private void populateFunction (RunTable horiTable)
+        {
+            final int height = horiTable.getHeight();
+            final int maxLength = function.getXMax();
+
+            for (int y = 0; y < height; y++) {
+                for (Iterator<Run> it = horiTable.iterator(y); it.hasNext();) {
+                    final int blackLength = it.next().getLength();
+
+                    if (blackLength <= maxLength) {
+                        function.addValue(blackLength, 1);
+                    }
+                }
+            }
+
+            if (logger.isDebugEnabled()) {
+            }
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
@@ -250,83 +303,20 @@ public class StemScaler
                 "Default stem thickness defined as ratio of foreground peak");
     }
 
-    //-------------//
-    // HistoKeeper //
-    //-------------//
-    /**
-     * Handles the histogram of horizontal foreground runs.
-     */
-    private class HistoKeeper
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final IntegerFunction function;
-
-        private final HiLoPeakFinder peakFinder;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Create an instance of histoKeeper.
-         *
-         * @param maxLength the maximum possible horizontal run length value
-         */
-        public HistoKeeper (RunTable horiTable,
-                            int maxLength)
-        {
-            function = new IntegerFunction(0, maxLength);
-            populateFunction(horiTable);
-            peakFinder = new HiLoPeakFinder("stem", function);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        //-----------//
-        // writePlot //
-        //-----------//
-        public void writePlot ()
-        {
-            final String title = sheet.getId() + " " + peakFinder.name;
-            ChartPlotter plotter = new ChartPlotter(title, "Stem thickness", "Counts");
-            peakFinder.plot(plotter, true);
-            plotter.display(new Point(80, 80));
-        }
-
-        private void populateFunction (RunTable horiTable)
-        {
-            final int height = horiTable.getHeight();
-            final int maxLength = function.getXMax();
-
-            for (int y = 0; y < height; y++) {
-                for (Iterator<Run> it = horiTable.iterator(y); it.hasNext();) {
-                    final int blackLength = it.next().getLength();
-
-                    if (blackLength <= maxLength) {
-                        function.addValue(blackLength, 1);
-                    }
-                }
-            }
-
-            if (logger.isDebugEnabled()) {
-                function.print(System.out);
-            }
-        }
-    }
-
     //--------------//
     // StemsCleaner //
     //--------------//
-    private class StemsCleaner
+    private static class StemsCleaner
             extends PageCleaner
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public StemsCleaner (ByteProcessor buffer,
-                             Graphics2D g,
-                             Sheet sheet)
+        StemsCleaner (ByteProcessor buffer,
+                      Graphics2D g,
+                      Sheet sheet)
         {
             super(buffer, g, sheet);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //-------------//
         // eraseShapes //
         //-------------//
@@ -339,7 +329,7 @@ public class StemScaler
         {
             for (SystemInfo system : sheet.getSystems()) {
                 final SIGraph sig = system.getSig();
-                final List<Inter> erased = new ArrayList<Inter>();
+                final List<Inter> erased = new ArrayList<>();
 
                 for (Inter inter : sig.vertexSet()) {
                     if (!inter.isRemoved() && shapes.contains(inter.getShape())) {

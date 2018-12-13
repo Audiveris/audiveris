@@ -28,7 +28,6 @@ package org.audiveris.omr.image;
  */
 public interface MorphoConstants
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     public static final int FREE = -1;
 

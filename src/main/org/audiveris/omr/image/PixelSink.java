@@ -29,7 +29,6 @@ package org.audiveris.omr.image;
  */
 public interface PixelSink
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report the height of the rectangular sink

@@ -44,10 +44,12 @@ import javax.swing.KeyStroke;
  * Class {@code ScrollView} contains a JScrollPane, which provides a comprehensive
  * combination of the following entities.
  * <dl>
- * <dt> <b>view:</b> </dt> <dd>the display of a {@link RubberPanel}, a component potentially
+ * <dt><b>view:</b></dt>
+ * <dd>the display of a {@link RubberPanel}, a component potentially
  * wired to a {@link Zoom} and a mouse adapter {@link Rubber}</dd>
- * <dt> <b>zoom:</b> </dt> <dd>the {@link Zoom} whose ratio is to be used when the component is
- * rendered </dd>
+ * <dt><b>zoom:</b></dt>
+ * <dd>the {@link Zoom} whose ratio is to be used when the component is
+ * rendered</dd>
  * </dl>
  *
  * @author Hervé Bitteur
@@ -55,20 +57,17 @@ import javax.swing.KeyStroke;
  */
 public class ScrollView
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ScrollView.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Current view inside the scrolled pane. */
     protected RubberPanel view;
 
     /** The concrete UI component. */
     private final JScrollPane component = new JScrollPane();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a bare view pane.
      * Other related entities, such as view, pixel monitor or zoom, can be added later
@@ -99,7 +98,6 @@ public class ScrollView
         setView(view);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // fitHeight //
     //-----------//
@@ -247,7 +245,7 @@ public class ScrollView
      *
      * @param view the pre-built panel
      */
-    public void setView (RubberPanel view)
+    public final void setView (RubberPanel view)
     {
         // Display the view in the scrollpane
         component.setViewportView(view);
@@ -313,25 +311,9 @@ public class ScrollView
         actionMap.put("ShiftRightAction", new ShiftRightAction());
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Integer unitIncrement = new Constant.Integer(
-                "Pixels",
-                20,
-                "Size of mouse wheel increment for ScrollView");
-    }
-
     private class DownAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -339,12 +321,18 @@ public class ScrollView
             final JScrollBar vertical = component.getVerticalScrollBar();
             vertical.setValue(vertical.getValue() + vertical.getUnitIncrement());
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private class LeftAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -352,12 +340,18 @@ public class ScrollView
             final JScrollBar horizontal = component.getHorizontalScrollBar();
             horizontal.setValue(horizontal.getValue() - horizontal.getUnitIncrement());
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private class RightAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -365,12 +359,18 @@ public class ScrollView
             final JScrollBar horizontal = component.getHorizontalScrollBar();
             horizontal.setValue(horizontal.getValue() + horizontal.getUnitIncrement());
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private class ShiftDownAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -378,12 +378,18 @@ public class ScrollView
             final JScrollBar vertical = component.getVerticalScrollBar();
             vertical.setValue(vertical.getValue() + 1);
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private class ShiftLeftAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -391,12 +397,18 @@ public class ScrollView
             final JScrollBar horizontal = component.getHorizontalScrollBar();
             horizontal.setValue(horizontal.getValue() - 1);
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private class ShiftRightAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -404,12 +416,18 @@ public class ScrollView
             final JScrollBar horizontal = component.getHorizontalScrollBar();
             horizontal.setValue(horizontal.getValue() + 1);
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private class ShiftUpAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -417,12 +435,18 @@ public class ScrollView
             final JScrollBar vertical = component.getVerticalScrollBar();
             vertical.setValue(vertical.getValue() - 1);
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private class UpAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -430,5 +454,25 @@ public class ScrollView
             final JScrollBar vertical = component.getVerticalScrollBar();
             vertical.setValue(vertical.getValue() - vertical.getUnitIncrement());
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer unitIncrement = new Constant.Integer(
+                "Pixels",
+                20,
+                "Size of mouse wheel increment for ScrollView");
     }
 }

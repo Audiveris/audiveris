@@ -37,7 +37,6 @@ import javax.swing.text.DefaultFormatterFactory;
 public class LHexaSpinner
         extends LIntegerSpinner
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create an editable labeled hexa spinner with provided
@@ -53,14 +52,12 @@ public class LHexaSpinner
         spinner.setEditor(new HexaEditor(spinner));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // HexaEditor //
     //------------//
     private static class HexaEditor
             extends JSpinner.NumberEditor
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         HexaEditor (JSpinner spinner)
         {
@@ -71,7 +68,6 @@ public class LHexaSpinner
             ftf.setFormatterFactory(new HexaFormatterFactory());
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void stateChanged (ChangeEvent e)
         {
@@ -86,7 +82,6 @@ public class LHexaSpinner
     private static class HexaFormatter
             extends DefaultFormatter
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Object stringToValue (String string)
@@ -119,6 +114,13 @@ public class LHexaSpinner
 
             return Long.toHexString(((Number) value).longValue());
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     //----------------------//
@@ -127,9 +129,8 @@ public class LHexaSpinner
     private static class HexaFormatterFactory
             extends DefaultFormatterFactory
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public HexaFormatterFactory ()
+        HexaFormatterFactory ()
         {
             super(new HexaFormatter());
         }

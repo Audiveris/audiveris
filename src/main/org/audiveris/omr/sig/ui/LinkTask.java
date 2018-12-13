@@ -33,7 +33,6 @@ import org.audiveris.omr.sig.relation.Relation;
 public class LinkTask
         extends RelationTask
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code LinkTask} object.
@@ -53,7 +52,6 @@ public class LinkTask
         this.target = target;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void performDo ()
     {
@@ -67,10 +65,10 @@ public class LinkTask
     {
         sig.removeEdge(getRelation());
 
-//        // Source inter may have been removed when publication is seen on UI...
-//        if (!source.isRemoved()) {
-//            sheet.getInterIndex().publish(source);
-//        }
+        //        // Source inter may have been removed when publication is seen on UI...
+        //        if (!source.isRemoved()) {
+        //            sheet.getInterIndex().publish(source);
+        //        }
     }
 
     @Override

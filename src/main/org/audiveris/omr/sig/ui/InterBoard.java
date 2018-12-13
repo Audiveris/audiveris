@@ -64,13 +64,11 @@ import javax.swing.SwingConstants;
 public class InterBoard
         extends EntityBoard<Inter>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(InterBoard.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -89,7 +87,6 @@ public class InterBoard
     /** To delete/deassign. */
     private final DeassignAction deassignAction = new DeassignAction();
 
-    //
     //    /** Numerator of time signature */
     //    private final LIntegerField timeNum;
     //
@@ -97,9 +94,9 @@ public class InterBoard
     //    private final LIntegerField timeDen;
     //
     /** ComboBox for text role. */
-    private final LComboBox<TextRole> roleCombo = new LComboBox<TextRole>(
+    private final LComboBox<TextRole> roleCombo = new LComboBox<>(
             "Role",
-            "Role of the Text",
+            "Role of the Sentence",
             TextRole.values());
 
     /** Input/Output : textual content. */
@@ -111,7 +108,6 @@ public class InterBoard
     /** To avoid unwanted events. */
     private boolean selfUpdatingText;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new InterBoard object, pre-selected by default.
      *
@@ -154,7 +150,6 @@ public class InterBoard
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------------//
     // dumpActionPerformed //
     //---------------------//
@@ -315,14 +310,12 @@ public class InterBoard
         getComponent().getActionMap().put("TextAction", paramAction);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final PixelCount shapeIconHeight = new PixelCount(
                 70,
@@ -339,7 +332,6 @@ public class InterBoard
     private class DeassignAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public DeassignAction ()
         {
@@ -347,7 +339,6 @@ public class InterBoard
             this.putValue(Action.SHORT_DESCRIPTION, "Deassign inter");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -365,7 +356,6 @@ public class InterBoard
     private class ParamAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Method run whenever user presses Return/Enter in one of the parameter fields

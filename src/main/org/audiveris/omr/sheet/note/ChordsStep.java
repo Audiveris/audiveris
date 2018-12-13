@@ -55,7 +55,6 @@ import java.util.Set;
 public class ChordsStep
         extends AbstractSystemStep<Void>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ChordsStep.class);
 
@@ -64,7 +63,7 @@ public class ChordsStep
 
     static {
         // Inters
-        impactingClasses = new HashSet<Class>();
+        impactingClasses = new HashSet<>();
         impactingClasses.add(AbstractBeamInter.class);
         impactingClasses.add(HeadInter.class);
         impactingClasses.add(StemInter.class);
@@ -74,7 +73,6 @@ public class ChordsStep
         impactingClasses.add(HeadStemRelation.class);
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ChordsStep object.
      */
@@ -82,7 +80,6 @@ public class ChordsStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -108,7 +105,8 @@ public class ChordsStep
     /**
      * {@inheritDoc}.
      * <p>
-     * For CHORDS step, in seq argument, we can have either: <ul>
+     * For CHORDS step, in seq argument, we can have either:
+     * <ul>
      * <li>Beam created/removed or linked with stem
      * <li>Head created/removed or linked with stem
      * <li>Stem created/removed

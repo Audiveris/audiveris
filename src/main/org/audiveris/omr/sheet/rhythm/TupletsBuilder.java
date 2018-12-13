@@ -25,7 +25,6 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.Inters;
@@ -33,6 +32,7 @@ import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.audiveris.omr.sig.SIGraph;
 
 /**
  * Class {@code TupletsBuilder} tries to connect every tuplet symbol in a measure stack
@@ -56,15 +57,12 @@ import java.util.TreeSet;
  */
 public class TupletsBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TupletsBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated measure stack. */
     private final MeasureStack stack;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TupletsBuilder} object.
      *
@@ -75,7 +73,121 @@ public class TupletsBuilder
         this.stack = stack;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //------------------//
+    // linkStackTuplets //
+    //------------------//
+    /**
+     * Try to link all tuplet signs in stack.
+     * <p>
+     * This method is used by RHYTHMS step, when these tuplets signs are not certain at all.
+     * <p>
+     * A tuplet sign embraces a specific number of notes (heads / rests).
+     * <p>
+     * Its neighborhood is limited in its part, vertically to staff above and staff below and
+     * horizontally to its containing measure stack.
+     *
+     * @return a set, perhaps empty, of wrong tuplet instances to delete
+     */
+    public Set<TupletInter> linkStackTuplets ()
+    {
+        final Set<TupletInter> toDelete = new LinkedHashSet<>();
+        final Set<TupletInter> tuplets = stack.getTuplets();
+
+        for (TupletInter tuplet : tuplets) {
+            // Purge existing tuplet-chord relations, except manual ones if any
+            final SIGraph sig = stack.getSystem().getSig();
+            final Set<Relation> rels = sig.getRelations(tuplet, ChordTupletRelation.class);
+
+            for (Relation rel : rels) {
+                if (!rel.isManual()) {
+                    sig.removeEdge(rel);
+                }
+            }
+
+            final Collection<Link> links = lookupLinks(tuplet);
+
+            for (Link link : links) {
+                link.applyTo(tuplet);
+            }
+
+            if (!tuplet.isManual() && !sig.hasRelation(tuplet, ChordTupletRelation.class)) {
+                toDelete.add(tuplet);
+            }
+        }
+
+        return toDelete;
+    }
+
+    //-------------//
+    // lookupLinks //
+    //-------------//
+    /**
+     * Look up for tuplet relevant chords.
+     *
+     * @param tuplet the tuplet sign
+     * @return the collection of links found, perhaps empty
+     */
+    public Collection<Link> lookupLinks (TupletInter tuplet)
+    {
+        // Try to link tuplet with proper chords found in measure stack
+        // (just staff above and staff below)
+        List<AbstractChordInter> chordcandidates = getChordsAround(tuplet);
+
+        // Now, get the properly embraced chords
+        SortedSet<AbstractChordInter> chords = getEmbracedChords(tuplet, chordcandidates);
+
+        if (chords == null) {
+            return Collections.emptySet();
+        }
+
+        logger.trace("{} connectable to {}", tuplet, chords);
+
+        List<Link> links = new ArrayList<>();
+
+        for (AbstractChordInter chord : chords) {
+            links.add(new Link(chord, new ChordTupletRelation(tuplet.getShape()), false));
+        }
+
+        return links;
+    }
+
+    //-----------------//
+    // getChordsAround //
+    //-----------------//
+    /**
+     * Report the list of AbstractChordInter instances (rests & heads) in the
+     * neighborhood of the specified Inter.
+     * <p>
+     * Neighborhood is limited horizontally by the measure sides and vertically by the staves above
+     * and below.
+     *
+     * @param tuplet the inter of interest
+     * @return the list of neighbors, sorted by euclidian distance to tuplet sign
+     */
+    private List<AbstractChordInter> getChordsAround (TupletInter tuplet)
+    {
+        Point center = tuplet.getCenter();
+        List<Staff> stavesAround = stack.getSystem().getStavesAround(center);
+        logger.trace("{} around:{}", tuplet, stavesAround);
+
+        // Collect candidate chords (heads & rests based) within stack
+        List<AbstractChordInter> chords = new ArrayList<>();
+
+        for (AbstractChordInter chord : stack.getStandardChords()) {
+            final List<Staff> chordStaves = new ArrayList<>(chord.getStaves());
+            chordStaves.retainAll(stavesAround);
+
+            if (!chordStaves.isEmpty()) {
+                chords.add(chord);
+            }
+        }
+
+        Collections.sort(chords, new ByEuclidian(center));
+        logger.trace("Chords: {}", Inters.ids(chords));
+
+        return chords;
+    }
+
     //-------------------//
     // getEmbracedChords //
     //-------------------//
@@ -131,78 +243,6 @@ public class TupletsBuilder
         return null;
     }
 
-    //------------------//
-    // linkStackTuplets //
-    //------------------//
-    /**
-     * Try to link all tuplet signs in stack.
-     * <p>
-     * This method is used by RHYTHMS step, when these tuplets signs are not certain at all.
-     * <p>
-     * A tuplet sign embraces a specific number of notes (heads / rests).
-     * <p>
-     * Its neighborhood is limited in its part, vertically to staff above and staff below and
-     * horizontally to its containing measure stack.
-     *
-     * @return a set, perhaps empty, of wrong tuplet instances to delete
-     */
-    public Set<TupletInter> linkStackTuplets ()
-    {
-        final Set<TupletInter> toDelete = new LinkedHashSet<TupletInter>();
-        final Set<TupletInter> tuplets = stack.getTuplets();
-
-        for (TupletInter tuplet : tuplets) {
-            // Clear existing tuplet-chord relations, if any
-            final SIGraph sig = stack.getSystem().getSig();
-            sig.removeAllEdges(sig.getRelations(tuplet, ChordTupletRelation.class));
-
-            Collection<Link> links = lookupLinks(tuplet);
-
-            if (!links.isEmpty()) {
-                for (Link link : links) {
-                    link.applyTo(tuplet);
-                }
-            } else if (!tuplet.isManual()) {
-                toDelete.add(tuplet);
-            }
-        }
-
-        return toDelete;
-    }
-
-    //-------------//
-    // lookupLinks //
-    //-------------//
-    /**
-     * Look up for tuplet relevant chords.
-     *
-     * @param tuplet the tuplet sign
-     * @return the collection of links found, perhaps empty
-     */
-    public Collection<Link> lookupLinks (TupletInter tuplet)
-    {
-        // Try to link tuplet with proper chords found in measure stack
-        // (just staff above and staff below)
-        List<AbstractChordInter> chordcandidates = getChordsAround(tuplet);
-
-        // Now, get the properly embraced chords
-        SortedSet<AbstractChordInter> chords = getEmbracedChords(tuplet, chordcandidates);
-
-        if (chords == null) {
-            return Collections.emptySet();
-        }
-
-        logger.trace("{} connectable to {}", tuplet, chords);
-
-        List<Link> links = new ArrayList<Link>();
-
-        for (AbstractChordInter chord : chords) {
-            links.add(new Link(chord, new ChordTupletRelation(tuplet.getShape()), false));
-        }
-
-        return links;
-    }
-
     //---------------//
     // expectedCount //
     //---------------//
@@ -249,62 +289,21 @@ public class TupletsBuilder
         return null;
     }
 
-    //-----------------//
-    // getChordsAround //
-    //-----------------//
-    /**
-     * Report the list of AbstractChordInter instances (rests & heads) in the
-     * neighborhood of the specified Inter.
-     * <p>
-     * Neighborhood is limited horizontally by the measure sides and vertically by the staves above
-     * and below.
-     *
-     * @param tuplet the inter of interest
-     * @return the list of neighbors, sorted by euclidian distance to tuplet sign
-     */
-    private List<AbstractChordInter> getChordsAround (TupletInter tuplet)
-    {
-        Point center = tuplet.getCenter();
-        List<Staff> stavesAround = stack.getSystem().getStavesAround(center);
-        logger.trace("{} around:{}", tuplet, stavesAround);
-
-        // Collect candidate chords (heads & rests based) within stack
-        List<AbstractChordInter> chords = new ArrayList<AbstractChordInter>();
-
-        for (AbstractChordInter chord : stack.getStandardChords()) {
-            final List<Staff> chordStaves = new ArrayList<Staff>(chord.getStaves());
-            chordStaves.retainAll(stavesAround);
-
-            if (!chordStaves.isEmpty()) {
-                chords.add(chord);
-            }
-        }
-
-        Collections.sort(chords, new ByEuclidian(center));
-        logger.trace("Chords: {}", Inters.ids(chords));
-
-        return chords;
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ByEuclidian //
     //-------------//
     private static class ByEuclidian
             implements Comparator<AbstractChordInter>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** The location of the tuplet sign */
         private final Point signPoint;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public ByEuclidian (Point signPoint)
+        ByEuclidian (Point signPoint)
         {
             this.signPoint = signPoint;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /** Compare their euclidian distance from the signPoint reference */
         @Override
         public int compare (AbstractChordInter c1,
@@ -317,35 +316,9 @@ public class TupletsBuilder
         }
     }
 
-    //-----------------//
-    // TupletCollector //
-    //-----------------//
-    /**
-     * In charge of incrementally collecting the chords for a given tuplet sign.
-     * <p>
-     * If some of its embraced heads are linked to a beam, then the whole beam of heads must be
-     * embraced by the tuplet. If not, this is not a true tuplet.
-     * <p>
-     * The tuplet must be located close to the middle abscissa of the embraced notes.
-     * Vertically, it should be away from the middle chord(s).
-     */
     private static class TupletCollector
     {
-        //~ Enumerations ---------------------------------------------------------------------------
 
-        /** Describe the current status of the tuplet collector */
-        public enum Status
-        {
-            //~ Enumeration constant initializers --------------------------------------------------
-
-            TOO_SHORT,
-            OK,
-            TOO_LONG,
-            TOO_MANY,
-            OUTSIDE;
-        }
-
-        //~ Instance fields ------------------------------------------------------------------------
         /** Underlying sign. */
         private final TupletInter tuplet;
 
@@ -367,16 +340,14 @@ public class TupletsBuilder
         /** Current status. */
         private Status status;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public TupletCollector (TupletInter tuplet,
-                                SortedSet<AbstractChordInter> chords)
+        TupletCollector (TupletInter tuplet,
+                         SortedSet<AbstractChordInter> chords)
         {
             this.tuplet = tuplet;
             expectedCount = expectedCount(tuplet.getShape());
             this.chords = chords;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public void dump ()
         {
             StringBuilder sb = new StringBuilder();
@@ -406,8 +377,8 @@ public class TupletsBuilder
         public String getStatusMessage ()
         {
             StringBuilder sb = new StringBuilder();
-            sb.append(status).append(" sequence in ").append(tuplet.getShape()).append(": ")
-                    .append(total);
+            sb.append(status).append(" sequence in ").append(tuplet.getShape()).append(": ").append(
+                    total);
 
             if (expectedTotal != Rational.MAX_VALUE) {
                 sb.append(" vs ").append(expectedTotal);
@@ -467,7 +438,7 @@ public class TupletsBuilder
          */
         protected Set<AbstractChordInter> getBeamSiblings (AbstractChordInter chord)
         {
-            final Set<AbstractChordInter> set = new LinkedHashSet<AbstractChordInter>();
+            final Set<AbstractChordInter> set = new LinkedHashSet<>();
             set.add(chord);
 
             StemInter stem = chord.getStem();
@@ -504,8 +475,18 @@ public class TupletsBuilder
         {
             int signX = tuplet.getCenter().x;
 
-            return (signX >= chords.first().getTailLocation().x)
-                   && (signX <= chords.last().getTailLocation().x);
+            return (signX >= chords.first().getTailLocation().x) && (signX <= chords.last()
+                    .getTailLocation().x);
+        }
+
+        /** Describe the current status of the tuplet collector */
+        public enum Status
+        {
+            TOO_SHORT,
+            OK,
+            TOO_LONG,
+            TOO_MANY,
+            OUTSIDE;
         }
     }
 }

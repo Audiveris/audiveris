@@ -45,8 +45,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code OrnamentInter} represents an ornament interpretation.
- * (TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT, MORDENT_INVERTED, GRACE_NOTE_SLASH,
- * GRACE_NOTE)
+ * (TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT, MORDENT_INVERTED)
+ * and perhaps GRACE_NOTE_SLASH, GRACE_NOTE
  *
  * @author Hervé Bitteur
  */
@@ -54,17 +54,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class OrnamentInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(OrnamentInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new OrnamentInter object.
      *
      * @param glyph underlying glyph
      * @param shape precise shape (TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT,
-     *              MORDENT_INVERTED, GRACE_NOTE_SLASH, GRACE_NOTE)
+     *              MORDENT_INVERTED) and perhaps GRACE_NOTE_SLASH, GRACE_NOTE
      * @param grade evaluation value
      */
     public OrnamentInter (Glyph glyph,
@@ -81,7 +79,6 @@ public class OrnamentInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -91,42 +88,16 @@ public class OrnamentInter
         visitor.visit(this);
     }
 
-    //------------------//
-    // createValidAdded //
-    //------------------//
-    /**
-     * (Try to) create and add a valid OrnamentInter.
-     * <p>
-     * TODO: this is to be refined for GRACE ornaments which are located on left side of chord.
-     *
-     * @param glyph            underlying glyph
-     * @param shape            detected shape
-     * @param grade            assigned grade
-     * @param system           containing system
-     * @param systemHeadChords system head chords, ordered by abscissa
-     * @return the created articulation or null
-     */
-    public static OrnamentInter createValidAdded (Glyph glyph,
-                                                  Shape shape,
-                                                  double grade,
-                                                  SystemInfo system,
-                                                  List<Inter> systemHeadChords)
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
     {
-        if (glyph.isVip()) {
-            logger.info("VIP OrnamentInter create {} as {}", glyph, shape);
-        }
+        // Check if a chord is connected
+        setAbnormal(!sig.hasRelation(this, ChordOrnamentRelation.class));
 
-        OrnamentInter orn = new OrnamentInter(glyph, shape, grade);
-        Link link = orn.lookupLink(systemHeadChords);
-
-        if (link != null) {
-            system.getSig().addVertex(orn);
-            link.applyTo(orn);
-
-            return orn;
-        }
-
-        return null;
+        return isAbnormal();
     }
 
     //----------//
@@ -240,8 +211,7 @@ public class OrnamentInter
             Point center = chord.getCenter();
 
             // Select proper chord reference point (top or bottom)
-            int yRef = (ornamentCenter.y > center.y)
-                    ? (chordBox.y + chordBox.height) : chordBox.y;
+            int yRef = (ornamentCenter.y > center.y) ? (chordBox.y + chordBox.height) : chordBox.y;
             double xGap = Math.abs(center.x - ornamentCenter.x);
             double yGap = Math.abs(yRef - ornamentCenter.y);
             ChordOrnamentRelation rel = new ChordOrnamentRelation();
@@ -258,6 +228,44 @@ public class OrnamentInter
 
         if (bestRel != null) {
             return new Link(bestChord, bestRel, false);
+        }
+
+        return null;
+    }
+
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create and add a valid OrnamentInter.
+     * <p>
+     * TODO: this is to be refined for GRACE ornaments which are located on left side of chord.
+     *
+     * @param glyph            underlying glyph
+     * @param shape            detected shape
+     * @param grade            assigned grade
+     * @param system           containing system
+     * @param systemHeadChords system head chords, ordered by abscissa
+     * @return the created articulation or null
+     */
+    public static OrnamentInter createValidAdded (Glyph glyph,
+                                                  Shape shape,
+                                                  double grade,
+                                                  SystemInfo system,
+                                                  List<Inter> systemHeadChords)
+    {
+        if (glyph.isVip()) {
+            logger.info("VIP OrnamentInter create {} as {}", glyph, shape);
+        }
+
+        OrnamentInter orn = new OrnamentInter(glyph, shape, grade);
+        Link link = orn.lookupLink(systemHeadChords);
+
+        if (link != null) {
+            system.getSig().addVertex(orn);
+            link.applyTo(orn);
+
+            return orn;
         }
 
         return null;

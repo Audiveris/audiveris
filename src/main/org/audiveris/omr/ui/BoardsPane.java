@@ -53,7 +53,6 @@ import javax.swing.SwingConstants;
  * Class {@code BoardsPane} defines a view on a set of user {@link
  * Board} instances, where data related to current point, run, section,
  * glyph, etc can be displayed in dedicated boards.
- *
  * <p>
  * There is one BoardsPane instance for each view of the same sheet,
  * each with its own collection of board instances.
@@ -62,16 +61,14 @@ import javax.swing.SwingConstants;
  */
 public class BoardsPane
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BoardsPane.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The concrete UI component */
     private final Panel component;
 
     /** Sequence of current boards, kept ordered by board preferred position */
-    private final List<Board> boards = new ArrayList<Board>();
+    private final List<Board> boards = new ArrayList<>();
 
     /** Unique (application-wide) name for this pane. */
     private String name;
@@ -79,7 +76,6 @@ public class BoardsPane
     /** Mouse listener */
     private final MouseAdapter mouseAdapter = new MyMouseAdapter();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a BoardsPane, with initial boards.
      *
@@ -94,7 +90,7 @@ public class BoardsPane
             board.setParent(this);
         }
 
-        Collections.sort(this.boards);
+        Collections.sort(this.boards, Board.byPosition);
 
         component = new Panel();
         component.setNoInsets();
@@ -115,7 +111,6 @@ public class BoardsPane
         this(Arrays.asList(boards));
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addBoard //
     //----------//
@@ -136,7 +131,7 @@ public class BoardsPane
 
         boards.add(board);
         board.setParent(this);
-        Collections.sort(this.boards);
+        Collections.sort(this.boards, Board.byPosition);
         update();
 
         if (board.isSelected()) {
@@ -203,6 +198,20 @@ public class BoardsPane
         return name;
     }
 
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assign the unique name for this boards pane.
+     *
+     * @param name the assigned name
+     */
+    public void setName (String name)
+    {
+        this.name = name;
+        component.setName(name);
+    }
+
     //-------------//
     // removeBoard //
     //-------------//
@@ -219,20 +228,6 @@ public class BoardsPane
 
         boards.remove(board);
         update();
-    }
-
-    //---------//
-    // setName //
-    //---------//
-    /**
-     * Assign the unique name for this boards pane.
-     *
-     * @param name the assigned name
-     */
-    public void setName (String name)
-    {
-        this.name = name;
-        component.setName(name);
     }
 
     //----------//
@@ -265,22 +260,6 @@ public class BoardsPane
         sb.append("]}");
 
         return sb.toString();
-    }
-
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Modify the BoardsPane component composition.
-     */
-    void update ()
-    {
-        int count = component.getComponentCount();
-        Component comp = component.getComponent(count - 1);
-        component.remove(comp);
-        component.add(defineLayout());
-        component.revalidate();
-        component.repaint();
     }
 
     //--------------//
@@ -345,7 +324,22 @@ public class BoardsPane
         return null;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Modify the BoardsPane component composition.
+     */
+    void update ()
+    {
+        int count = component.getComponentCount();
+        Component comp = component.getComponent(count - 1);
+        component.remove(comp);
+        component.add(defineLayout());
+        component.revalidate();
+        component.repaint();
+    }
+
     //----------------//
     // MyMouseAdapter //
     //----------------//
@@ -356,7 +350,6 @@ public class BoardsPane
             extends MouseAdapter
             implements ItemListener
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         //------------------//
         // itemStateChanged //

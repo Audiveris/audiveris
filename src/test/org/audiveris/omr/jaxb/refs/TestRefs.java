@@ -123,7 +123,7 @@ public class TestRefs
     }
 
     private void unmarshall ()
-            throws JAXBException, FileNotFoundException
+            throws JAXBException, FileNotFoundException, IOException
     {
         System.out.println("=========================================================");
         System.out.println("Unmarshalling ...");
@@ -136,6 +136,7 @@ public class TestRefs
         //        um.setProperty(IDResolver.class.getName(), resolver);
         //        um.setListener(resolver.createListener());
         Universe universe = (Universe) um.unmarshal(is);
+        is.close();
         System.out.println("Unmarshalled from " + source);
 
         new Dumping().dump(universe);

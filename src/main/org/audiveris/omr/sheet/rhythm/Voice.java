@@ -52,7 +52,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 /**
  * Class {@code Voice} gathers all informations related to a voice within a measure.
  * <p>
- * We now assign voice ID according to the part staff where this voice starts:<ol>
+ * We now assign voice ID according to the part staff where this voice starts:
+ * <ol>
  * <li>If starting on first staff, we use IDs: 1..4
  * <li>If starting on second staff, we use IDs: 5..8
  * </ol>
@@ -63,22 +64,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "voice")
 public class Voice
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Voice.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    public static enum Status
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        /** A chord begins at this slot. */
-        BEGIN,
-        /** A chord is still active at this slot. */
-        CONTINUE;
-    }
-
-    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -132,7 +120,6 @@ public class Voice
     /** Inferred time signature based on this voice content. */
     private TimeRational inferredTimeSig;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Voice object.
      *
@@ -163,10 +150,14 @@ public class Voice
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // afterReload //
     //-------------//
+    /**
+     * To be called right after unmarshalling.
+     *
+     * @param measure the containing measure
+     */
     public void afterReload (Measure measure)
     {
         try {
@@ -191,27 +182,6 @@ public class Voice
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }
-    }
-
-    //------------------//
-    // createWholeVoice //
-    //------------------//
-    /**
-     * Factory method to create a voice made of just one whole/multi rest.
-     *
-     * @param wholeChord the whole/multi rest chord
-     * @param measure    the containing measure
-     * @return the created voice instance
-     */
-    public static Voice createWholeVoice (RestChordInter wholeChord,
-                                          Measure measure)
-    {
-        logger.debug("createWholeVoice for {} in {}", wholeChord, measure);
-
-        Voice voice = new Voice(wholeChord, measure);
-        voice.wholeRestChord = wholeChord;
-
-        return voice;
     }
 
     //---------------//
@@ -374,6 +344,20 @@ public class Voice
         return id;
     }
 
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Change the voice id (to rename voices)
+     *
+     * @param id the new id value
+     */
+    public void setId (int id)
+    {
+        ///logger.debug("measure#{} {} renamed as {}", measure.getIdValue(), this, id);
+        this.id = id;
+    }
+
     //--------------------------//
     // getInferredTimeSignature //
     //--------------------------//
@@ -385,110 +369,116 @@ public class Voice
     public TimeRational getInferredTimeSignature ()
     {
         if (inferredTimeSig == null) {
-            // Sequence of group (beamed or isolated chords) durations
-            List<Rational> durations = new ArrayList<Rational>();
+            try {
+                // Sequence of group (beamed or isolated chords) durations
+                List<Rational> durations = new ArrayList<>();
 
-            // Voice time offset
-            Rational timeOffset = null;
+                // Voice time offset
+                Rational timeOffset = null;
 
-            // Start time of last note in group, if any
-            Rational groupLastTime = null;
+                // Start time of last note in group, if any
+                Rational groupLastTime = null;
 
-            if (slots != null) {
-                for (Map.Entry<Integer, SlotVoice> entry : slots.entrySet()) {
-                    SlotVoice info = entry.getValue();
+                if (slots != null) {
+                    for (Map.Entry<Integer, SlotVoice> entry : slots.entrySet()) {
+                        SlotVoice info = entry.getValue();
 
-                    if (info.status == Voice.Status.BEGIN) {
-                        AbstractChordInter chord = info.chord;
+                        if (info.status == Voice.Status.BEGIN) {
+                            AbstractChordInter chord = info.chord;
 
-                        // Skip the remaining parts of beam group, including embraced rests
-                        if ((groupLastTime != null)
-                            && (chord.getTimeOffset().compareTo(groupLastTime) <= 0)) {
-                            continue;
-                        }
+                            // Skip the remaining parts of beam group, including embraced rests
+                            if ((groupLastTime != null) && (chord.getTimeOffset().compareTo(
+                                    groupLastTime) <= 0)) {
+                                continue;
+                            }
 
-                        BeamGroup group = chord.getBeamGroup();
+                            BeamGroup group = chord.getBeamGroup();
 
-                        if (group == null) {
-                            // Isolated chord
-                            durations.add(chord.getDuration());
-                        } else {
-                            // Starting a new group
-                            durations.add(group.getDuration());
-                            groupLastTime = group.getLastChord().getTimeOffset();
-                        }
+                            if (group == null) {
+                                // Isolated chord
+                                durations.add(chord.getDuration());
+                            } else {
+                                // Starting a new group
+                                durations.add(group.getDuration());
+                                groupLastTime = group.getLastChord().getTimeOffset();
+                            }
 
-                        if (timeOffset == null) {
-                            Slot slot = measure.getStack().getSlots().get(entry.getKey() - 1);
-                            timeOffset = slot.getTimeOffset();
+                            if (timeOffset == null) {
+                                Slot slot = measure.getStack().getSlots().get(entry.getKey() - 1);
+                                timeOffset = slot.getTimeOffset();
+                            }
                         }
                     }
                 }
-            }
 
-            // Debug
-            if (logger.isDebugEnabled()) {
-                StringBuilder sb = new StringBuilder("[");
-                boolean started = false;
-                Rational total = null;
+                // Debug
+                if (logger.isDebugEnabled()) {
+                    StringBuilder sb = new StringBuilder("[");
+                    boolean started = false;
+                    Rational total = null;
+
+                    for (Rational dur : durations) {
+                        if (started) {
+                            sb.append(",");
+                        }
+
+                        started = true;
+
+                        if (dur == null) {
+                            sb.append("null");
+                        } else {
+                            sb.append(dur);
+
+                            if (total == null) {
+                                total = dur;
+                            } else {
+                                total = total.plus(dur);
+                            }
+                        }
+                    }
+
+                    sb.append("] total:");
+
+                    if (total != null) {
+                        sb.append(total);
+                    } else {
+                        sb.append("null");
+                    }
+
+                    logger.debug("{}: {}", this, sb);
+                }
+
+                // Check this voice fills the measure stack
+                if ((timeOffset == null) || !timeOffset.equals(Rational.ZERO)) {
+                    return null;
+                }
+
+                if ((termination == null) || !termination.equals(Rational.ZERO)) {
+                    return null;
+                }
+
+                // Do we have a regular pattern?
+                int count = 0;
+                Rational common = null;
 
                 for (Rational dur : durations) {
-                    if (started) {
-                        sb.append(",");
+                    if (common == null) {
+                        common = dur;
+                    } else if (!common.equals(dur)) {
+                        break;
                     }
 
-                    started = true;
-
-                    if (dur == null) {
-                        sb.append("null");
-                    } else {
-                        sb.append(dur);
-
-                        if (total == null) {
-                            total = dur;
-                        } else {
-                            total = total.plus(dur);
-                        }
-                    }
+                    count++;
                 }
 
-                sb.append("] total:");
-
-                if (total != null) {
-                    sb.append(total);
-                } else {
-                    sb.append("null");
+                if ((common != null) && (count == durations.size())) {
+                    // All the durations are equal
+                    inferredTimeSig = timeSigOf(count, common);
                 }
+            } catch (Exception ex) {
+                logger.warn("Could not guess time signature for {} {}", this, ex.toString(), ex);
 
-                logger.debug("{}: {}", this, sb);
-            }
-
-            // Check this voice fills the measure stack
-            if ((timeOffset == null) || !timeOffset.equals(Rational.ZERO)) {
                 return null;
-            }
-
-            if ((termination == null) || !termination.equals(Rational.ZERO)) {
-                return null;
-            }
-
-            // Do we have a regular pattern?
-            int count = 0;
-            Rational common = null;
-
-            for (Rational dur : durations) {
-                if (common == null) {
-                    common = dur;
-                } else if (!common.equals(dur)) {
-                    break;
-                }
-
-                count++;
-            }
-
-            if ((common != null) && (count == durations.size())) {
-                // All the durations are equal
-                inferredTimeSig = timeSigOf(count, common);
             }
         }
 
@@ -528,6 +518,17 @@ public class Voice
         return measure;
     }
 
+    //------------//
+    // setMeasure //
+    //------------//
+    /**
+     * @param measure the measure to set
+     */
+    public void setMeasure (Measure measure)
+    {
+        this.measure = measure;
+    }
+
     //----------//
     // getRests //
     //----------//
@@ -538,7 +539,7 @@ public class Voice
      */
     public List<AbstractChordInter> getRests ()
     {
-        List<AbstractChordInter> rests = new ArrayList<AbstractChordInter>();
+        List<AbstractChordInter> rests = new ArrayList<>();
 
         if (isWhole()) {
             rests.add(wholeRestChord);
@@ -588,6 +589,19 @@ public class Voice
         return startingStaff;
     }
 
+    //------------------//
+    // setStartingStaff //
+    //------------------//
+    /**
+     * Set voice starting staff.
+     *
+     * @param startingStaff the startingStaff to set
+     */
+    public void setStartingStaff (Staff startingStaff)
+    {
+        this.startingStaff = startingStaff;
+    }
+
     //----------------//
     // getTermination //
     //----------------//
@@ -599,6 +613,14 @@ public class Voice
     public Rational getTermination ()
     {
         return termination;
+    }
+
+    //----------------//
+    // setTermination //
+    //----------------//
+    private void setTermination (Rational termination)
+    {
+        this.termination = termination;
     }
 
     //---------------//
@@ -617,6 +639,9 @@ public class Voice
     //---------------//
     // initTransient //
     //---------------//
+    /**
+     * @param measure the containing measure
+     */
     public final void initTransient (Measure measure)
     {
         this.measure = measure;
@@ -649,31 +674,6 @@ public class Voice
         return wholeRestChord != null;
     }
 
-    //-------//
-    // setId //
-    //-------//
-    /**
-     * Change the voice id (to rename voices)
-     *
-     * @param id the new id value
-     */
-    public void setId (int id)
-    {
-        ///logger.debug("measure#{} {} renamed as {}", measure.getIdValue(), this, id);
-        this.id = id;
-    }
-
-    //------------//
-    // setMeasure //
-    //------------//
-    /**
-     * @param measure the measure to set
-     */
-    public void setMeasure (Measure measure)
-    {
-        this.measure = measure;
-    }
-
     //-------------//
     // setSlotInfo //
     //-------------//
@@ -693,25 +693,12 @@ public class Voice
         }
 
         if (slots == null) {
-            slots = new TreeMap<Integer, SlotVoice>();
+            slots = new TreeMap<>();
         }
 
         slots.put(slot.getId(), chordInfo);
         updateSlotTable();
         logger.debug("setSlotInfo slot#{} {}", slot.getId(), this);
-    }
-
-    //------------------//
-    // setStartingStaff //
-    //------------------//
-    /**
-     * Set voice starting staff.
-     *
-     * @param startingStaff the startingStaff to set
-     */
-    public void setStartingStaff (Staff startingStaff)
-    {
-        this.startingStaff = startingStaff;
     }
 
     //------------//
@@ -826,8 +813,8 @@ public class Voice
                 SlotVoice info = getSlotInfo(slot);
 
                 if (info == null) {
-                    if ((lastChord != null)
-                        && (lastChord.getEndTime().compareTo(slot.getTimeOffset()) > 0)) {
+                    if ((lastChord != null) && (lastChord.getEndTime().compareTo(
+                            slot.getTimeOffset()) > 0)) {
                         setSlotInfo(slot, new SlotVoice(lastChord, Status.CONTINUE));
                     }
                 } else {
@@ -857,14 +844,6 @@ public class Voice
         //        Mark mark = new Mark(chord.getSystem(), point, position, Symbols.SYMBOL_MARK, duration);
         //
         //        chord.addMark(mark);
-    }
-
-    //----------------//
-    // setTermination //
-    //----------------//
-    private void setTermination (Rational termination)
-    {
-        this.termination = termination;
     }
 
     //-----------//
@@ -903,7 +882,38 @@ public class Voice
         return timeRational;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //------------------//
+    // createWholeVoice //
+    //------------------//
+    /**
+     * Factory method to create a voice made of just one whole/multi rest.
+     *
+     * @param wholeChord the whole/multi rest chord
+     * @param measure    the containing measure
+     * @return the created voice instance
+     */
+    public static Voice createWholeVoice (RestChordInter wholeChord,
+                                          Measure measure)
+    {
+        logger.debug("createWholeVoice for {} in {}", wholeChord, measure);
+
+        Voice voice = new Voice(wholeChord, measure);
+        voice.wholeRestChord = wholeChord;
+
+        return voice;
+    }
+
+    /**
+     * Voice status with respect to a slot.
+     */
+    public static enum Status
+    {
+        /** A chord begins at this slot. */
+        BEGIN,
+        /** A chord is still active at this slot. */
+        CONTINUE
+    }
+
     //-----------//
     // SlotVoice //
     //-----------//
@@ -914,7 +924,6 @@ public class Voice
     @XmlRootElement(name = "slot-voice")
     public static class SlotVoice
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Related chord. */
         @XmlIDREF
@@ -925,7 +934,12 @@ public class Voice
         @XmlAttribute
         public final Status status;
 
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create a SlotVoice object.
+         *
+         * @param chord  implementing chord at this slot
+         * @param status tell if the chord is starting or continuing at this slot
+         */
         public SlotVoice (AbstractChordInter chord,
                           Status status)
         {
@@ -940,15 +954,21 @@ public class Voice
             this.status = null;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder();
-            sb.append("{Info");
-            sb.append(" Ch#").append(chord.getId());
-            sb.append(" ").append(status);
-            sb.append("}");
+            final StringBuilder sb = new StringBuilder();
+            sb.append("{SlotVoice");
+
+            if (chord != null) {
+                sb.append(" Ch#").append(chord.getId());
+            }
+
+            if (status != null) {
+                sb.append(' ').append(status);
+            }
+
+            sb.append('}');
 
             return sb.toString();
         }

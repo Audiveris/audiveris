@@ -44,11 +44,9 @@ import java.util.Map;
 public class HeadsStep
         extends AbstractSystemStep<HeadsStep.Context>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(HeadsStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadsStep} object.
      */
@@ -56,7 +54,6 @@ public class HeadsStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -85,21 +82,33 @@ public class HeadsStep
         return new Context(distances, sheetSpots);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Context //
     //---------//
+    /**
+     * COntext for step processing.
+     */
     protected static class Context
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
+        /**
+         * Table of distances.
+         */
         public final DistanceTable distanceTable;
 
+        /**
+         * Spots per system.
+         */
         public final Map<SystemInfo, List<Glyph>> sheetSpots;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Context (DistanceTable distanceTable,
-                        Map<SystemInfo, List<Glyph>> sheetSpots)
+        /**
+         * Create a Context.
+         *
+         * @param distanceTable
+         * @param sheetSpots
+         */
+        Context (DistanceTable distanceTable,
+                 Map<SystemInfo, List<Glyph>> sheetSpots)
         {
             this.distanceTable = distanceTable;
             this.sheetSpots = sheetSpots;

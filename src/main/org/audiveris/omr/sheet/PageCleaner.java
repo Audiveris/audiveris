@@ -73,13 +73,14 @@ import java.util.List;
  * Class {@code PageCleaner} erases selected inter instances on the provided graphics
  * environment by painting them using white background color.
  * <p>
- * Painting uses various techniques:<ul>
+ * Painting uses various techniques:
+ * <ul>
  * <li>Default is to use inter shape to paint the shape symbol with a thicker
  * {@link #musicFont}.</li>
  * <li>For an area-based inter, area is filled exactly and area contour is drawn with
  * {@link #marginStroke}.</li>
- * <li>For a glyph-based inter, all glyph runs are painted with no margin. </li>
- * <li>For a line-based inter, the line is drawn with a thicker {@link #lineStroke}. </li>
+ * <li>For a glyph-based inter, all glyph runs are painted with no margin.</li>
+ * <li>For a line-based inter, the line is drawn with a thicker {@link #lineStroke}.</li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -87,13 +88,11 @@ import java.util.List;
 public abstract class PageCleaner
         extends AbstractInterVisitor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(PageCleaner.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Sheet buffer. */
     protected final ByteProcessor buffer;
 
@@ -118,7 +117,6 @@ public abstract class PageCleaner
     /** Slightly thicker stroke for lines. (endings, wedges, slurs) */
     private final Stroke lineStroke;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PageCleaner} object.
      *
@@ -167,7 +165,6 @@ public abstract class PageCleaner
         g.setColor(Color.WHITE);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void visit (AbstractBeamInter inter)
     {
@@ -238,8 +235,7 @@ public abstract class PageCleaner
     {
         ShapeSymbol symbol = Symbols.getSymbol(head.getShape());
         Glyph glyph = head.getGlyph();
-        Point center = (glyph != null) ? glyph.getCenter() : GeoUtil.centerOf(
-                head.getBounds());
+        Point center = (glyph != null) ? glyph.getCenter() : GeoUtil.centerOf(head.getBounds());
         MusicFont font = head.getStaff().isSmall() ? smallHeadMusicFont : headMusicFont;
         symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
     }
@@ -254,8 +250,7 @@ public abstract class PageCleaner
     {
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
         Glyph glyph = inter.getGlyph();
-        Point center = (glyph != null) ? glyph.getCenter() : GeoUtil.centerOf(
-                inter.getBounds());
+        Point center = (glyph != null) ? glyph.getCenter() : GeoUtil.centerOf(inter.getBounds());
         boolean isSmall = (inter.getStaff() != null) && inter.getStaff().isSmall();
         MusicFont font = isSmall ? smallMusicFont : musicFont;
         symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
@@ -459,14 +454,12 @@ public abstract class PageCleaner
         return (int) Math.rint(pointSize * constants.dilationRatio.getValue());
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio dilationRatio = new Constant.Ratio(
                 1.1,

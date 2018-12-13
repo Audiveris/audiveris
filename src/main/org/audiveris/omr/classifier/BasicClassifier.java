@@ -68,14 +68,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BasicClassifier
         extends AbstractClassifier<NeuralNetwork>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BasicClassifier.class);
-
-    /** The singleton. */
-    private static volatile BasicClassifier INSTANCE;
 
     /** Classifier file name. */
     public static final String FILE_NAME = "basic-classifier.zip";
@@ -83,14 +79,12 @@ public class BasicClassifier
     /** Model entry name. */
     public static final String MODEL_ENTRY_NAME = "model.xml";
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying (old) neural network. */
     private NeuralNetwork model;
 
     /** Training listener, if any. */
     private TrainingMonitor listener;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Private constructor, to create a glyph neural network.
      */
@@ -106,28 +100,6 @@ public class BasicClassifier
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of BasicClassifier in the application.
-     *
-     * @return the instance
-     */
-    public static BasicClassifier getInstance ()
-    {
-        if (INSTANCE == null) {
-            synchronized (BasicClassifier.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new BasicClassifier();
-                }
-            }
-        }
-
-        return INSTANCE;
-    }
-
     //--------------//
     // getMaxEpochs //
     //--------------//
@@ -140,6 +112,21 @@ public class BasicClassifier
     public int getMaxEpochs ()
     {
         return constants.maxEpochs.getValue();
+    }
+
+    //--------------//
+    // setMaxEpochs //
+    //--------------//
+    /**
+     * Modify the upper limit on the number of epochs for the training process.
+     *
+     * @param maxEpochs new value for epochs limit
+     */
+    @Override
+    public void setMaxEpochs (int maxEpochs)
+    {
+        model.setEpochs(maxEpochs);
+        constants.maxEpochs.setValue(maxEpochs);
     }
 
     //---------//
@@ -197,21 +184,6 @@ public class BasicClassifier
         model = createNetwork();
     }
 
-    //--------------//
-    // setMaxEpochs //
-    //--------------//
-    /**
-     * Modify the upper limit on the number of epochs for the training process.
-     *
-     * @param maxEpochs new value for epochs limit
-     */
-    @Override
-    public void setMaxEpochs (int maxEpochs)
-    {
-        model.setEpochs(maxEpochs);
-        constants.maxEpochs.setValue(maxEpochs);
-    }
-
     //------//
     // stop //
     //------//
@@ -240,7 +212,7 @@ public class BasicClassifier
         watch.start("shuffle");
 
         // Shuffle the collection of samples
-        final List<Sample> newSamples = new ArrayList<Sample>(samples);
+        final List<Sample> newSamples = new ArrayList<>(samples);
         Collections.shuffle(newSamples);
 
         // Build raw dataset
@@ -336,11 +308,10 @@ public class BasicClassifier
             throws Exception
     {
         Path modelPath = root.resolve(MODEL_ENTRY_NAME);
-        InputStream is = Files.newInputStream(modelPath);
-        NeuralNetwork nn = NeuralNetwork.unmarshal(is);
-        is.close();
 
-        return nn;
+        try (InputStream is = Files.newInputStream(modelPath)) {
+            return NeuralNetwork.unmarshal(is);
+        }
     }
 
     //-----------//
@@ -353,7 +324,7 @@ public class BasicClassifier
      *
      * @param root the root path to file system
      * @return the loaded Norms instance, or exception is thrown
-     * @throws Exception
+     * @throws Exception if anything goes wrong
      */
     @Override
     protected Norms loadNorms (Path root)
@@ -368,23 +339,23 @@ public class BasicClassifier
         final Path meansEntry = root.resolve(MEANS_XML_ENTRY_NAME);
 
         if (meansEntry != null) {
-            InputStream is = Files.newInputStream(meansEntry); // READ by default
-            BufferedInputStream bis = new BufferedInputStream(is);
-            MyVector vector = (MyVector) um.unmarshal(bis);
-            means = Nd4j.create(vector.data);
-            logger.debug("means:{}", means);
-            bis.close();
+            try (InputStream is = Files.newInputStream(meansEntry); // READ by default
+                 BufferedInputStream bis = new BufferedInputStream(is)) {
+                MyVector vector = (MyVector) um.unmarshal(bis);
+                means = Nd4j.create(vector.data);
+                logger.debug("means:{}", means);
+            }
         }
 
         final Path stdsEntry = root.resolve(STDS_XML_ENTRY_NAME);
 
         if (stdsEntry != null) {
-            InputStream is = Files.newInputStream(stdsEntry); // READ by default
-            BufferedInputStream bis = new BufferedInputStream(is);
-            MyVector vector = (MyVector) um.unmarshal(bis);
-            stds = Nd4j.create(vector.data);
-            logger.debug("stds:{}", stds);
-            bis.close();
+            try (InputStream is = Files.newInputStream(stdsEntry); // READ by default
+                 BufferedInputStream bis = new BufferedInputStream(is)) {
+                MyVector vector = (MyVector) um.unmarshal(bis);
+                stds = Nd4j.create(vector.data);
+                logger.debug("stds:{}", stds);
+            }
         }
 
         if ((means != null) && (stds != null)) {
@@ -404,10 +375,13 @@ public class BasicClassifier
             throws Exception
     {
         Path modelPath = root.resolve(MODEL_ENTRY_NAME);
-        OutputStream bos = new BufferedOutputStream(Files.newOutputStream(modelPath, CREATE));
-        model.marshal(bos);
-        bos.flush();
-        bos.close();
+
+        try (OutputStream bos = new BufferedOutputStream(
+                Files.newOutputStream(modelPath, CREATE))) {
+            model.marshal(bos);
+            bos.flush();
+        }
+
         logger.info("Engine marshalled to {}", modelPath);
     }
 
@@ -419,30 +393,26 @@ public class BasicClassifier
      * <p>
      * Rather than binary, we use XML format.
      *
-     * @throws Exception
+     * @throws Exception if anything goes wrong
      */
     @Override
     protected void storeNorms (Path root)
             throws Exception
     {
         final JAXBContext jaxbContext = JAXBContext.newInstance(MyVector.class);
+        final Path means = root.resolve(MEANS_XML_ENTRY_NAME);
+        final Path stds = root.resolve(STDS_XML_ENTRY_NAME);
 
-        {
-            Path means = root.resolve(MEANS_XML_ENTRY_NAME);
-            OutputStream bos = new BufferedOutputStream(Files.newOutputStream(means, CREATE));
+        try (OutputStream bos = new BufferedOutputStream(Files.newOutputStream(means, CREATE))) {
             MyVector vector = new MyVector(norms.means);
             Jaxb.marshal(vector, bos, jaxbContext);
             bos.flush();
-            bos.close();
         }
 
-        {
-            Path stds = root.resolve(STDS_XML_ENTRY_NAME);
-            OutputStream bos = new BufferedOutputStream(Files.newOutputStream(stds, CREATE));
+        try (OutputStream bos = new BufferedOutputStream(Files.newOutputStream(stds, CREATE))) {
             MyVector vector = new MyVector(norms.stds);
             Jaxb.marshal(vector, bos, jaxbContext);
             bos.flush();
-            bos.close();
         }
     }
 
@@ -481,14 +451,34 @@ public class BasicClassifier
         features.diviRowVector(norms.stds);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of BasicClassifier in the application.
+     *
+     * @return the instance
+     */
+    public static BasicClassifier getInstance ()
+    {
+        return LazySingleton.INSTANCE;
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final BasicClassifier INSTANCE = new BasicClassifier();
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
@@ -518,13 +508,11 @@ public class BasicClassifier
     @XmlRootElement(name = "vector")
     private static class MyVector
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlElement(name = "value")
         public double[] data;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public MyVector (INDArray features)
+        MyVector (INDArray features)
         {
             int cols = features.columns();
 

@@ -34,12 +34,10 @@ import org.audiveris.omr.moments.GeometricMoments;
 public class ArtGlyphDescriptor
         extends GlyphDescriptor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Use the ART moments + 3 GEO + weight + aspect. */
     private static final int LENGTH = ARTMoments.MOMENT_COUNT + 5;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ArtGlyphDescriptor} object.
      */
@@ -48,7 +46,6 @@ public class ArtGlyphDescriptor
         super("art");
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public String[] getFeatureLabels ()
     {
@@ -91,18 +88,16 @@ public class ArtGlyphDescriptor
         return LENGTH;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // LabelsHolder //
     //--------------//
     /**
      * Descriptive strings for glyph characteristics.
-     *
+     * <p>
      * NOTA: To be kept in sync method {@link #getFeatures}
      */
     private static class LabelsHolder
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         /** Index -> Label */
         public static final String[] labels = new String[LENGTH];
@@ -129,7 +124,6 @@ public class ArtGlyphDescriptor
             labels[i++] = "aspect";
         }
 
-        //~ Constructors ---------------------------------------------------------------------------
         private LabelsHolder ()
         {
         }

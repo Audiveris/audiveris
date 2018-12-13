@@ -82,15 +82,14 @@ public enum Shape
      * won't detect this and you'll have to retrain them on your own.
      * =============================================================================================
      */
-
     //
-    // Sets --------------------------------------------------------------------
+    // Sets ---
     //
     DOT_set("Dot set"),
     HW_REST_set("Half & Whole Rest set"),
 
     //
-    // Bars --------------------------------------------------------------------
+    // Bars ---
     //
     DAL_SEGNO("D.S.: Repeat from the sign"),
     DA_CAPO("D.C.: Repeat from the beginning"),
@@ -102,7 +101,7 @@ public enum Shape
     FERMATA_ARC_BELOW("Fermata arc below, without dot"),
 
     //
-    // Clefs -------------------------------------------------------------------
+    // Clefs ---
     //
     G_CLEF("Treble Clef"),
     G_CLEF_SMALL("Small Treble Clef"),
@@ -116,7 +115,7 @@ public enum Shape
     PERCUSSION_CLEF("Percussion Clef"),
 
     //
-    // Accidentals -------------------------------------------------------------
+    // Accidentals ---
     //
     FLAT("Minus one half step"),
     NATURAL("Natural value"),
@@ -125,7 +124,7 @@ public enum Shape
     DOUBLE_FLAT("Double Flat"),
 
     //
-    // Time --------------------------------------------------------------------
+    // Time ---
     //
     TIME_ZERO("Time digit 0"),
     TIME_ONE("Time digit 1"),
@@ -143,6 +142,7 @@ public enum Shape
     // Whole time sigs
     COMMON_TIME("Alpha = 4/4"),
     CUT_TIME("Semi-Alpha = 2/2"),
+
     // Predefined time combos
     TIME_FOUR_FOUR("Rational 4/4"),
     TIME_TWO_TWO("Rational 2/2"),
@@ -152,11 +152,14 @@ public enum Shape
     TIME_THREE_EIGHT("Rational 3/8"),
     TIME_SIX_EIGHT("Rational 6/8"),
 
-    // Octave shifts
+    //
+    // Octave shifts ---
+    //
     OTTAVA_ALTA("8 va"),
     OTTAVA_BASSA("8 vb"),
+
     //
-    // Rests -------------------------------------------------------------------
+    // Rests ---
     //
     LONG_REST("Rest for 4 measures"),
     BREVE_REST("Rest for 2 measures"),
@@ -168,7 +171,7 @@ public enum Shape
     ONE_128TH_REST("Rest for a 1/128"),
 
     //
-    // Flags -------------------------------------------------------------------
+    // Flags ---
     //
     FLAG_1("Single flag down"),
     FLAG_1_UP("Single flag up"),
@@ -188,11 +191,12 @@ public enum Shape
     SMALL_FLAG_SLASH("Flag for slashed grace note"),
 
     //
-    // StemLessHeads -----------------------------------------------------------
+    // StemLessHeads ---
     //
     BREVE("Double Whole"),
+
     //
-    // Articulation ------------------------------------------------------------
+    // Articulations ---
     //
     ACCENT,
     TENUTO,
@@ -201,7 +205,7 @@ public enum Shape
     ARPEGGIATO,
 
     //
-    // Dynamics ----------------------------------------------------------------
+    // Dynamics ---
     //
     //    DYNAMICS_CHAR_M("m character"),
     //    DYNAMICS_CHAR_R("r character"),
@@ -226,7 +230,7 @@ public enum Shape
     DYNAMICS_SFZ("Sforzando"),
 
     //
-    // Ornaments ---------------------------------------------------------------
+    // Ornaments ---
     //
     TR("Trill"),
     TURN("Turn"),
@@ -237,7 +241,7 @@ public enum Shape
     MORDENT_INVERTED("Mordent with a Slash"),
 
     //
-    // Tuplets -----------------------------------------------------------------
+    // Tuplets ---
     //
     TUPLET_THREE("3"),
     TUPLET_SIX("6"),
@@ -245,7 +249,7 @@ public enum Shape
     PEDAL_UP_MARK("Pedal downup"),
 
     //
-    // Small digits ------------------------------------------------------------
+    // Small digits ---
     //
     DIGIT_0("Digit 0"),
     DIGIT_1("Digit 1"),
@@ -253,13 +257,13 @@ public enum Shape
     DIGIT_3("Digit 3"),
     DIGIT_4("Digit 4"),
     DIGIT_5("Digit 5"),
-
     //    DIGIT_6("Digit 6"),
     //    DIGIT_7("Digit 7"),
     //    DIGIT_8("Digit 8"),
     //    DIGIT_9("Digit 9"),
+
     //
-    // Roman numerals ----------------------------------------------------------
+    // Roman numerals ---
     //
     ROMAN_I("Roman number 1"),
     ROMAN_II("Roman number 2"),
@@ -275,7 +279,7 @@ public enum Shape
     ROMAN_XII("Roman number 12"),
 
     //
-    // Plucking ----------------------------------------------------------------
+    // Plucking ---
     //
     PLUCK_P("Plucking pouce/pulgar/thumb"),
     PLUCK_I("Plucking index/indicio/index"),
@@ -283,7 +287,7 @@ public enum Shape
     PLUCK_A("Plucking annulaire/anular/ring"),
 
     //
-    // Miscellaneous -----------------------------------------------------------
+    // Miscellaneous ---
     //
     CLUTTER("Pure clutter", Colors.SHAPE_UNKNOWN),
     /**
@@ -295,7 +299,7 @@ public enum Shape
     CHARACTER("Any letter"),
 
     //
-    // Shapes from shape sets --------------------------------------------------
+    // Shapes from DOT_set ---
     //
     REPEAT_DOT("Repeat dot", DOT_set),
     AUGMENTATION_DOT("Augmentation Dot", DOT_set),
@@ -303,11 +307,13 @@ public enum Shape
     STACCATO("Staccato dot", DOT_set),
 
     //
+    // Shapes from HW_REST_set ---
+    //
     WHOLE_REST("Rest for whole measure", HW_REST_set),
     HALF_REST("Rest for a 1/2", HW_REST_set),
 
     //
-    // Noteheads ---------------------------------------------------------------
+    // Noteheads ---
     //
     NOTEHEAD_BLACK("Filled node head for quarters and less"),
     NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue"),
@@ -315,13 +321,13 @@ public enum Shape
     NOTEHEAD_VOID_SMALL("Small hollow note head for grace or cue"),
 
     //
-    // StemLessHeads -----------------------------------------------------------
+    // StemLessHeads ---
     //
     WHOLE_NOTE("Hollow node head for wholes"),
     WHOLE_NOTE_SMALL("Small hollow node head for grace or cue wholes"),
 
     //
-    // Beams and slurs ---------------------------------------------------------
+    // Beams and slurs ---
     //
     BEAM("Beam between two stems"),
     BEAM_SMALL("Small beam for cue notes"),
@@ -330,7 +336,7 @@ public enum Shape
     SLUR("Slur tying notes"),
 
     //
-    // Key signatures ----------------------------------------------------------
+    // Key signatures ---
     //
     KEY_FLAT_7("Seven Flats"),
     KEY_FLAT_6("Six Flats"),
@@ -348,7 +354,7 @@ public enum Shape
     KEY_SHARP_7("Seven Sharps"),
 
     //
-    // Bars --------------------------------------------------------------------
+    // Bars ---
     //
     THIN_BARLINE("Thin bar line"),
     THIN_CONNECTOR("Connector between thin barlines", Colors.SCORE_FRAME),
@@ -362,13 +368,15 @@ public enum Shape
     RIGHT_REPEAT_SIGN("Repeat dots + Thin / Thick bar line"),
     BACK_TO_BACK_REPEAT_SIGN("Repeat dots + Thin / Thick / Thin + REPEAT_DOTS"),
     ENDING("Alternate ending"),
+
     //
-    // Wedges ------------------------------------------------------------------
+    // Wedges ---
     //
     CRESCENDO("Crescendo"),
     DIMINUENDO("Diminuendo"),
+
     //
-    // Miscellaneous
+    // Miscellaneous ---
     //
     BRACE("Brace"),
     BRACKET("Bracket"),
@@ -381,23 +389,24 @@ public enum Shape
     LYRICS("Lyrics", Colors.SCORE_LYRICS),
 
     //
-    // Stems
+    // Stems ---
     //
     STEM("Stem"),
+
     //
-    // Ornaments ---------------------------------------------------------------
+    // Ornaments ---
     //
     GRACE_NOTE_SLASH("Grace Note with a Slash"),
     GRACE_NOTE("Grace Note with no slash"),
 
     //
-    // Full fermatas -----------------------------------------------------------
+    // Full fermatas ---
     //
     FERMATA("Fermata with dot"),
     FERMATA_BELOW("Fermata below with dot"),
 
     //
-    // Other stuff -------------------------------------------------------------
+    // Other stuff ---
     //
     FORWARD("To indicate a forward"),
     NON_DRAGGABLE("Non draggable shape"),
@@ -405,18 +414,17 @@ public enum Shape
     CUSTOM_TIME("Time signature defined by user"),
     NO_LEGAL_TIME("No Legal Time Shape");
 
-    //
     // =============================================================================================
     // This is the end of shape enumeration
     // =============================================================================================
     //
     private static final Logger logger = LoggerFactory.getLogger(Shape.class);
 
-    /** Last physical shape */
+    /** Last physical shape. */
     public static final Shape LAST_PHYSICAL_SHAPE = CLUTTER;
 
-    /** A comparator based on shape name */
-    public static Comparator<Shape> alphaComparator = new Comparator<Shape>()
+    /** A comparator based on shape name. */
+    public static final Comparator<Shape> alphaComparator = new Comparator<Shape>()
     {
         @Override
         public int compare (Shape o1,
@@ -426,33 +434,30 @@ public enum Shape
         }
     };
 
-    //
-    /** Explanation of the glyph shape */
+    /** Explanation of the glyph shape. */
     private final String description;
 
-    /** Potential related symbol */
+    /** Potential related symbol. */
     private ShapeSymbol symbol;
 
-    /** Potential related decorated symbol for menus */
+    /** Potential related decorated symbol for menus. */
     private ShapeSymbol decoratedSymbol;
 
-    /** Remember the fact that this shape has no related symbol */
+    /** Remember the fact that this shape has no related symbol. */
     private boolean hasNoSymbol;
 
-    /** Remember the fact that this shape has no related decorated symbol */
+    /** Remember the fact that this shape has no related decorated symbol. */
     private boolean hasNoDecoratedSymbol;
 
-    /** Potential related physical shape */
+    /** Potential related physical shape. */
     private Shape physicalShape;
 
-    /** Related color */
+    /** Related color. */
     private Color color;
 
-    /** Related color constant */
+    /** Related color constant. */
     private Constant.Color constantColor;
 
-    //--------------------------------------------------------------------------
-    //
     //-------//
     // Shape //
     //-------//
@@ -560,7 +565,7 @@ public enum Shape
     public boolean isPersistent ()
     {
         return ShapeSet.Clefs.contains(this) || ShapeSet.Times.contains(this)
-               || ShapeSet.Accidentals.contains(this);
+                       || ShapeSet.Accidentals.contains(this);
     }
 
     //--------//
@@ -817,7 +822,7 @@ public enum Shape
      */
     public static void dumpShapeColors ()
     {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 
         for (Shape shape : Shape.values()) {
             names.add(shape + " " + Constant.Color.encodeColor(shape.getColor()));

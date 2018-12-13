@@ -30,7 +30,6 @@ package org.audiveris.omr.step;
 public class ProcessingCancellationException
         extends RuntimeException
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Construct an {@code ProcessingCancellationException} with no detail

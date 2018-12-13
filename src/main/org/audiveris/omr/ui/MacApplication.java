@@ -31,10 +31,13 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Image;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.Paths;
+
 import javax.swing.ImageIcon;
 
 /**
@@ -47,7 +50,6 @@ import javax.swing.ImageIcon;
 public class MacApplication
         implements InvocationHandler
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MacApplication.class);
 
@@ -57,12 +59,11 @@ public class MacApplication
     static {
         try {
             eventClass = Class.forName("com.apple.eawt.ApplicationEvent");
-        } catch (Exception e) {
+        } catch (ClassNotFoundException e) {
             eventClass = null;
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Invocation handler for
      * <code>
@@ -113,6 +114,10 @@ public class MacApplication
             Book book = OMR.engine.loadInput(Paths.get(filename));
             book.createStubs(null);
             book.createStubsTabs(null); // Tabs are now accessible
+
+            break;
+
+        default:
             break;
         }
 
@@ -138,7 +143,9 @@ public class MacApplication
             Object app = appClass.newInstance();
 
             //Enable the about menu item and the preferences menu item
-            for (String methodName : new String[]{"setEnabledAboutMenu", "setEnabledPreferencesMenu"}) {
+            for (String methodName : new String[]{
+                "setEnabledAboutMenu",
+                "setEnabledPreferencesMenu"}) {
                 Method method = appClass.getMethod(methodName, boolean.class);
                 method.invoke(app, true);
             }
@@ -169,7 +176,14 @@ public class MacApplication
             setDockImage.invoke(application, icon);
 
             return true;
-        } catch (Exception ex) {
+        } catch (ClassNotFoundException |
+                 IllegalAccessException |
+                 IllegalArgumentException |
+                 InstantiationException |
+                 NoSuchMethodException |
+                 SecurityException |
+                 InvocationTargetException |
+                 MalformedURLException ex) {
             logger.warn("Unable to setup Mac OS X GUI integration", ex);
 
             return false;
@@ -205,7 +219,11 @@ public class MacApplication
             } else {
                 return (String) rval;
             }
-        } catch (Exception e) {
+        } catch (IllegalAccessException |
+                 IllegalArgumentException |
+                 NoSuchMethodException |
+                 SecurityException |
+                 InvocationTargetException e) {
             return null;
         }
     }
@@ -215,7 +233,11 @@ public class MacApplication
         try {
             Method handled = eventClass.getMethod("setHandled", boolean.class);
             handled.invoke(event, true);
-        } catch (Exception e) {
+        } catch (IllegalAccessException |
+                 IllegalArgumentException |
+                 NoSuchMethodException |
+                 SecurityException |
+                 InvocationTargetException e) {
         }
     }
 }

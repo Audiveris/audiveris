@@ -36,11 +36,12 @@ import java.awt.Point;
  */
 public class GeometricMoments
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GeometricMoments.class);
 
-    // Hu coefficients are optional
+    /**
+     * Hu coefficients are optional.
+     */
     public static final boolean useHuCoefficients = false;
 
     /** Number of features handled: {@value} */
@@ -81,12 +82,9 @@ public class GeometricMoments
         "h7", // 18
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** The various moments, implemented as an array of double's. */
     private final double[] k = new double[size];
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new GeometricMoments object.
      *
@@ -125,7 +123,7 @@ public class GeometricMoments
         int yMax = Integer.MIN_VALUE;
 
         // Normalized GeometricMoments
-        double n00 = (double) dim / (double) (unit * unit);
+        double n00 = dim / (double) (unit * unit);
         double n01 = 0d;
         double n02 = 0d;
         double n03 = 0d;
@@ -223,22 +221,24 @@ public class GeometricMoments
             k[i++] = ((n20 - n02) * (n20 - n02)) + (4 * n11 * n11);
             //
             k[i++] = ((n30 - (3 * n12)) * (n30 - (3 * n12)))
-                     + ((n03 - (3 * n21)) * (n03 - (3 * n21)));
+                             + ((n03 - (3 * n21)) * (n03 - (3 * n21)));
             //
             k[i++] = ((n30 + n12) * (n30 + n12)) + ((n03 + n21) * (n03 + n21));
             //
             k[i++] = ((n30 - (3 * n12)) * (n30 + n12) * (((n30 + n12) * (n30 + n12))
-                                                         - (3 * (n21 + n03) * (n21 + n03))))
-                     + ((n03 - (3 * n21)) * (n03 + n21) * (((n03 + n21) * (n03 + n21))
-                                                           - (3 * (n12 + n30) * (n12 + n30))));
+                                                                 - (3 * (n21 + n03) * (n21 + n03))))
+                             + ((n03 - (3 * n21)) * (n03 + n21)
+                                        * (((n03 + n21) * (n03 + n21))
+                                                   - (3 * (n12 + n30) * (n12 + n30))));
             //
             k[i++] = ((n20 - n02) * (((n30 + n12) * (n30 + n12)) - ((n03 + n21) * (n03 + n21))))
-                     + (4 * n11 * (n30 + n12) * (n03 + n21));
+                             + (4 * n11 * (n30 + n12) * (n03 + n21));
             //
             k[i++] = (((3 * n21) - n03) * (n30 + n12) * (((n30 + n12) * (n30 + n12))
-                                                         - (3 * (n21 + n03) * (n21 + n03))))
-                     - (((3 * n12) - n30) * (n03 + n21) * (((n03 + n21) * (n03 + n21))
-                                                           - (3 * (n12 + n30) * (n12 + n30))));
+                                                                 - (3 * (n21 + n03) * (n21 + n03))))
+                             - (((3 * n12) - n30)
+                                        * (n03 + n21) * (((n03 + n21) * (n03 + n21))
+                                                                 - (3 * (n12 + n30) * (n12 + n30))));
         }
     }
 
@@ -252,7 +252,6 @@ public class GeometricMoments
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getCentroid //
     //-------------//
@@ -277,20 +276,6 @@ public class GeometricMoments
     public double getHeight ()
     {
         return k[2];
-    }
-
-    //----------//
-    // getLabel //
-    //----------//
-    /**
-     * Report the label related to moment at specified index.
-     *
-     * @param index the moment index
-     * @return the related index
-     */
-    public static String getLabel (int index)
-    {
-        return labels[index];
     }
 
     //--------//
@@ -387,5 +372,19 @@ public class GeometricMoments
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //----------//
+    // getLabel //
+    //----------//
+    /**
+     * Report the label related to moment at specified index.
+     *
+     * @param index the moment index
+     * @return the related index
+     */
+    public static String getLabel (int index)
+    {
+        return labels[index];
     }
 }

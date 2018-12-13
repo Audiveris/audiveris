@@ -43,10 +43,10 @@ import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.Iterator;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -65,16 +65,17 @@ import javax.swing.border.Border;
  */
 public abstract class UIUtil
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(UIUtil.class);
 
     /**
-     * Customized border for tool buttons, to use consistently in all UI
-     * components.
+     * Customized border for tool buttons, to use consistently in all UI components.
      */
     private static Border toolBorder;
 
+    /**
+     * Listener which disposes a window being closed.
+     */
     public static final WindowListener closeWindow = new WindowAdapter()
     {
         @Override
@@ -84,7 +85,6 @@ public abstract class UIUtil
         }
     };
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // complementaryColor //
     //--------------------//
@@ -167,13 +167,11 @@ public abstract class UIUtil
     public static void enableActions (Collection<?> actions,
                                       boolean bool)
     {
-        for (Iterator<?> it = actions.iterator(); it.hasNext();) {
-            Object next = it.next();
-
+        for (Object next : actions) {
             if (next instanceof AbstractAction) {
-                ((AbstractAction) next).setEnabled(bool);
+                ((Action) next).setEnabled(bool);
             } else if (next instanceof AbstractButton) {
-                ((AbstractButton) next).setEnabled(bool);
+                ((Component) next).setEnabled(bool);
             } else {
                 logger.warn("Neither Button nor Action : {}", next);
             }
@@ -230,8 +228,10 @@ public abstract class UIUtil
 
             Component parentFrame = parent;
 
-            while (parentFrame.getParent() != null) {
-                parentFrame = parentFrame.getParent();
+            if (parentFrame != null) {
+                while (parentFrame.getParent() != null) {
+                    parentFrame = parentFrame.getParent();
+                }
             }
 
             try {
@@ -266,16 +266,15 @@ public abstract class UIUtil
         } else {
             final JFileChooser fc = new JFileChooser();
             // see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6317789
-//            final JFileChooser fc = new JFileChooser()
-//            {
-//                @Override
-//                public void updateUI ()
-//                {
-//                    putClientProperty("FileChooser.useShellFolder", false);
-//                    super.updateUI();
-//                }
-//            };
-
+            //            final JFileChooser fc = new JFileChooser()
+            //            {
+            //                @Override
+            //                public void updateUI ()
+            //                {
+            //                    putClientProperty("FileChooser.useShellFolder", false);
+            //                    super.updateUI();
+            //                }
+            //            };
             fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
             // Pre-select the directory, and potentially the file to save to
@@ -354,7 +353,7 @@ public abstract class UIUtil
     public static void minimize (JFrame frame)
     {
         int state = frame.getExtendedState();
-        state = state & ICONIFIED;
+        state &= ICONIFIED;
         frame.setExtendedState(state);
     }
 
@@ -512,12 +511,16 @@ public abstract class UIUtil
         int state = frame.getExtendedState();
 
         if ((state & ICONIFIED) != 0) {
-            state = state & ~ICONIFIED;
+            state &= ~ICONIFIED;
         }
 
         frame.setExtendedState(state);
 
         frame.setVisible(true);
         frame.toFront();
+    }
+
+    private UIUtil ()
+    {
     }
 }

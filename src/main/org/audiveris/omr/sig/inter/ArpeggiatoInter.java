@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
@@ -53,13 +52,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ArpeggiatoInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ArpeggiatoInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ArpeggiatoInter} object.
      *
@@ -79,7 +74,6 @@ public class ArpeggiatoInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -110,37 +104,6 @@ public class ArpeggiatoInter
         setAbnormal(!sig.hasRelation(this, ChordArpeggiatoRelation.class));
 
         return isAbnormal();
-    }
-
-    //------------------//
-    // createValidAdded //
-    //------------------//
-    /**
-     * (Try to) create and add an arpeggiato inter.
-     *
-     * @param glyph            the arpeggiato glyph
-     * @param grade            the interpretation quality
-     * @param system           the related system
-     * @param systemHeadChords abscissa-ordered list of head-chords in this system
-     * @return the created arpeggiato or null
-     */
-    public static ArpeggiatoInter createValidAdded (Glyph glyph,
-                                                    double grade,
-                                                    SystemInfo system,
-                                                    List<Inter> systemHeadChords)
-    {
-        ArpeggiatoInter arpeggiato = new ArpeggiatoInter(glyph, grade);
-
-        Link link = arpeggiato.lookupLink(systemHeadChords, system);
-
-        if (link != null) {
-            system.getSig().addVertex(arpeggiato);
-            link.applyTo(arpeggiato);
-
-            return arpeggiato;
-        }
-
-        return null;
     }
 
     //----------//
@@ -195,9 +158,10 @@ public class ArpeggiatoInter
         // Look for a head-chord on right side of this symbol
         // Use a lookup box (glyph height, predefined width)
         // For intersected head-chords, measure y overlap WRT glyph height
-        Rectangle luBox = getBounds();
+        final Scale scale = system.getSheet().getScale();
+        final Rectangle luBox = getBounds();
         luBox.x += luBox.width;
-        luBox.width = system.getSheet().getScale().toPixels(constants.areaDx);
+        luBox.width = scale.toPixels(ChordArpeggiatoRelation.getXGapMaximum(manual));
 
         final List<Inter> chords = Inters.intersectedInters(
                 systemHeadChords,
@@ -235,15 +199,34 @@ public class ArpeggiatoInter
         return new Link(bestChord, rel, false);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create and add an arpeggiato inter.
+     *
+     * @param glyph            the arpeggiato glyph
+     * @param grade            the interpretation quality
+     * @param system           the related system
+     * @param systemHeadChords abscissa-ordered list of head-chords in this system
+     * @return the created arpeggiato or null
+     */
+    public static ArpeggiatoInter createValidAdded (Glyph glyph,
+                                                    double grade,
+                                                    SystemInfo system,
+                                                    List<Inter> systemHeadChords)
     {
-        //~ Instance fields ------------------------------------------------------------------------
+        ArpeggiatoInter arpeggiato = new ArpeggiatoInter(glyph, grade);
 
-        Scale.Fraction areaDx = new Scale.Fraction(1.5, "Width of lookup area for embraced notes");
+        Link link = arpeggiato.lookupLink(systemHeadChords, system);
+
+        if (link != null) {
+            system.getSig().addVertex(arpeggiato);
+            link.applyTo(arpeggiato);
+
+            return arpeggiato;
+        }
+
+        return null;
     }
 }

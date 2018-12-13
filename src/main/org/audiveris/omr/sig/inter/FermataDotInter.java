@@ -23,6 +23,7 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sheet.Staff;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -38,7 +39,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class FermataDotInter
         extends AbstractInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code FermataDotInter} object.
@@ -59,7 +59,6 @@ public class FermataDotInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -67,5 +66,23 @@ public class FermataDotInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //----------//
+    // getStaff //
+    //----------//
+    @Override
+    public Staff getStaff ()
+    {
+        if (staff == null) {
+            // Use staff information of containing FermataInter ensemble
+            InterEnsemble ens = getEnsemble();
+
+            if (ens != null) {
+                staff = ens.getStaff();
+            }
+        }
+
+        return staff;
     }
 }

@@ -45,15 +45,12 @@ import java.util.Objects;
  */
 public class ScoreExporter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ScoreExporter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related score. */
     private final Score score;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new {@code ScoreExporter} object, on a related score instance.
      *
@@ -68,7 +65,6 @@ public class ScoreExporter
         this.score = score;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // export //
     //--------//
@@ -87,10 +83,10 @@ public class ScoreExporter
                         boolean compressed)
             throws Exception
     {
-        final OutputStream os = new FileOutputStream(path.toString());
-        export(os, signed, scoreName, compressed);
-        os.close();
-        logger.info("Score {} exported to {}", scoreName, path);
+        try (OutputStream os = new FileOutputStream(path.toString())) {
+            export(os, signed, scoreName, compressed);
+            logger.info("Score {} exported to {}", scoreName, path);
+        }
     }
 
     //--------//

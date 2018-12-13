@@ -48,6 +48,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -81,7 +82,6 @@ import javax.swing.tree.TreeSelectionModel;
  */
 public class BookBrowser
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -90,7 +90,6 @@ public class BookBrowser
     /** The filter for relevant classes and fields. */
     private static final Relevance filter = new PackageRelevance(Main.class.getPackage());
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Concrete UI component. */
     private final JPanel component;
 
@@ -101,7 +100,7 @@ public class BookBrowser
     private final Book book;
 
     /** Cache to avoid recomputing sets of children. */
-    private final HashMap<Object, List<Object>> nodeMap = new HashMap<Object, List<Object>>();
+    private final HashMap<Object, List<Object>> nodeMap = new HashMap<>();
 
     /** The tree model. */
     private final Model model;
@@ -109,7 +108,6 @@ public class BookBrowser
     /** The enclosing frame. */
     private JFrame frame;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BookBrowser} object.
      *
@@ -162,10 +160,12 @@ public class BookBrowser
         component.add("Center", splitPane);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // close //
     //-------//
+    /**
+     * Close the browser.
+     */
     public void close ()
     {
         if (frame != null) {
@@ -195,8 +195,7 @@ public class BookBrowser
             frame.getContentPane().add(toolBar, BorderLayout.NORTH);
 
             // Set up the views, and display it all
-            JButton refreshButton = new JButton(
-                    new AbstractAction()
+            JButton refreshButton = new JButton(new AbstractAction()
             {
                 @Override
                 public void actionPerformed (ActionEvent e)
@@ -228,74 +227,6 @@ public class BookBrowser
         model.refreshAll();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Boolean hideEmptyDummies = new Constant.Boolean(
-                false,
-                "Should we hide empty dummy containers");
-    }
-
-    //-----------------//
-    // NamedCollection //
-    //-----------------//
-    private static class NamedCollection
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final String name;
-
-        private final Collection<?> collection;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public NamedCollection (String name,
-                                Collection<?> collection)
-        {
-            this.name = name;
-            this.collection = collection;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String toString ()
-        {
-            return name;
-        }
-    }
-
-    //-----------//
-    // NamedData //
-    //-----------//
-    private static class NamedData
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final String name;
-
-        private final Object data;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public NamedData (String name,
-                          Object data)
-        {
-            this.name = name;
-            this.data = data;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String toString ()
-        {
-            return name + ":" + data;
-        }
-    }
-
     //-------//
     // Model //
     //-------//
@@ -303,19 +234,16 @@ public class BookBrowser
     private class Model
             implements TreeModel
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final List<TreeModelListener> listeners = new ArrayList<TreeModelListener>();
+        private final List<TreeModelListener> listeners = new ArrayList<>();
 
         private final Book book;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Model (Book book)
+        Model (Book book)
         {
             this.book = book;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //----------------------//
         // addTreeModelListener //
         //----------------------//
@@ -441,35 +369,27 @@ public class BookBrowser
         {
             // First check the cache
             List<Object> relevants = nodeMap.get(node);
-
             if (relevants != null) {
                 return relevants;
             }
-
             // Not found, so let's build it
             logger.debug("Retrieving relevants of {} {}", node, node.getClass());
-
             // Case of Named Collection
             if (node instanceof NamedCollection) {
                 logger.debug("named collection: " + node);
-
                 NamedCollection nc = (NamedCollection) node;
-                relevants = new ArrayList<Object>();
+                relevants = new ArrayList<>();
                 nodeMap.put(node, relevants);
-
                 for (Object n : nc.collection) {
                     if (isRelevant(n)) {
                         relevants.add(n);
                     }
                 }
-
                 if (logger.isDebugEnabled()) {
                     logger.debug("{} nb={}", node, relevants.size());
                 }
-
                 return relevants;
             }
-
             // Case of Named Data
             if (node instanceof NamedData) {
                 logger.debug("named data: " + node);
@@ -482,19 +402,16 @@ public class BookBrowser
 
                 return relevants;
             }
-
             ///logger.info("standard node: " + node);
             Class<?> classe = node.getClass();
-            relevants = new ArrayList<Object>();
+            relevants = new ArrayList<>();
             nodeMap.put(node, relevants);
-
             // Walk up the inheritance tree
             do {
                 // Browse the declared fields of the class at hand
                 for (Field field : classe.getDeclaredFields()) {
                     // Skip field if annotated as non navigable
                     Navigable navigable = field.getAnnotation(Navigable.class);
-
                     if ((navigable != null) && (navigable.value() == false)) {
                         if (logger.isDebugEnabled()) {
                             logger.debug("skipping {}", field);
@@ -502,7 +419,6 @@ public class BookBrowser
 
                         continue;
                     }
-
                     ///logger.info("fieldName:" + field.getName());
                     try {
                         // No static or inner class
@@ -547,19 +463,18 @@ public class BookBrowser
 
                         ///System.out.println(" ...OK");
                         relevants.add(new NamedData(field.getName(), object));
-                    } catch (Exception ex) {
+                    } catch (IllegalAccessException |
+                             IllegalArgumentException |
+                             SecurityException ex) {
                         logger.warn("Error in accessing field", ex);
                     }
                 }
-
                 // Walk up the inheritance tree
                 classe = classe.getSuperclass();
             } while (filter.isClassRelevant(classe));
-
             if (logger.isDebugEnabled()) {
                 logger.debug("{} nb={}", node, relevants.size());
             }
-
             return relevants;
         }
 
@@ -589,22 +504,18 @@ public class BookBrowser
     private class SelectionListener
             implements TreeSelectionListener
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void valueChanged (TreeSelectionEvent e)
         {
             try {
                 TreePath p = e.getNewLeadSelectionPath();
-
                 if (p != null) {
                     Object obj = p.getLastPathComponent();
-
                     if (obj instanceof NamedData) {
                         NamedData nd = (NamedData) obj;
                         obj = nd.data;
                     }
-
                     // Publish selection?
                     if (obj instanceof Inter) {
                         Inter inter = (Inter) obj;
@@ -642,9 +553,8 @@ public class BookBrowser
                                             null));
                         }
                     }
-
                     if (obj instanceof WeakReference) {
-                        Object o = ((WeakReference) obj).get();
+                        Object o = ((Reference) obj).get();
                         htmlPane.setText(new Dumper.Html(filter, o).toString());
                     } else {
                         htmlPane.setText(new Dumper.Html(filter, obj).toString());
@@ -655,4 +565,65 @@ public class BookBrowser
             }
         }
     }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean hideEmptyDummies = new Constant.Boolean(
+                false,
+                "Should we hide empty dummy containers");
+    }
+
+    //-----------------//
+    // NamedCollection //
+    //-----------------//
+    private static class NamedCollection
+    {
+
+        private final String name;
+
+        private final Collection<?> collection;
+
+        NamedCollection (String name,
+                         Collection<?> collection)
+        {
+            this.name = name;
+            this.collection = collection;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return name;
+        }
+    }
+
+    //-----------//
+    // NamedData //
+    //-----------//
+    private static class NamedData
+    {
+
+        private final String name;
+
+        private final Object data;
+
+        NamedData (String name,
+                   Object data)
+        {
+            this.name = name;
+            this.data = data;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return name + ":" + data;
+        }
+    }
+
 }

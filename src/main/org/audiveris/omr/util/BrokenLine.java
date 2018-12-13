@@ -43,11 +43,11 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code BrokenLine} handles the broken line defined by a sequence of points
  * which can be modified at any time.
- *
  * <p>
  * This class make use of several distance parameters, presented here from smaller to larger:
  * <dl>
@@ -66,7 +66,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  * <p>
  * <b>Nota:</b> Internal reference points data can still be modified at any time, since the
  * BrokenLine, just like a List, merely handles points pointers.
- * For example, to move a point, just call point.setLocation() method.</p>
+ * For example, to move a point, just call point.setLocation() method.
+ * </p>
  * <p>
  * This ability of dynamic modification is the main reason why this class is not simply implemented
  * as a Path2D. If a Path2D instance is needed, use the {@link #toGeoPath()} conversion method.
@@ -78,20 +79,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "broken-line")
 public class BrokenLine
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            BrokenLine.class);
+    private static final Logger logger = LoggerFactory.getLogger(BrokenLine.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
-    /** The ordered sequence of points */
+    /** The ordered sequence of points. */
     @XmlElement(name = "point")
-    private final List<Point> points = new ArrayList<Point>();
+    @XmlJavaTypeAdapter(Jaxb.PointAdapter.class)
+    private final List<Point> points = new ArrayList<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BrokenLine object with an initially empty sequence of points.
      */
@@ -117,33 +114,6 @@ public class BrokenLine
     public BrokenLine (Collection<Point> points)
     {
         resetPoints(points);
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //---------------------//
-    // getDraggingDistance //
-    //---------------------//
-    /**
-     * Report the dragging distance.
-     *
-     * @return the dragging distance, specified in pixels
-     */
-    public static int getDraggingDistance ()
-    {
-        return constants.draggingDistance.getValue();
-    }
-
-    //-------------------//
-    // getStickyDistance //
-    //-------------------//
-    /**
-     * Report the maximum distance (from a point, from a segment).
-     *
-     * @return the maximum distance, specified in pixels
-     */
-    public static int getStickyDistance ()
-    {
-        return constants.stickyDistance.getValue();
     }
 
     //----------//
@@ -370,7 +340,6 @@ public class BrokenLine
         points.remove(point);
     }
 
-    //
     //-------------//
     // resetPoints //
     //-------------//
@@ -437,14 +406,38 @@ public class BrokenLine
         return "{BrokenLine " + getSequenceString() + "}";
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------------------//
+    // getDraggingDistance //
+    //---------------------//
+    /**
+     * Report the dragging distance.
+     *
+     * @return the dragging distance, specified in pixels
+     */
+    public static int getDraggingDistance ()
+    {
+        return constants.draggingDistance.getValue();
+    }
+
+    //-------------------//
+    // getStickyDistance //
+    //-------------------//
+    /**
+     * Report the maximum distance (from a point, from a segment).
+     *
+     * @return the maximum distance, specified in pixels
+     */
+    public static int getStickyDistance ()
+    {
+        return constants.stickyDistance.getValue();
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Integer colinearDistance = new Constant.Integer(
                 "Pixels",

@@ -26,6 +26,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.ui.InterController;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
 
@@ -37,6 +38,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class {@code AugmentationRelation} represents the relation between an augmentation
  * dot and the related note (head or rest) instance.
+ * <p>
+ * NOTA: An augmentation can be considered as linked to at most one note (<b>single target</b>)
+ * since the case of pair of mirrored heads (which can indeed be targeted by the same dot)
+ * is addressed specifically within {@link InterController#link} method.
  *
  * @author Hervé Bitteur
  */
@@ -44,7 +49,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AugmentationRelation
         extends AbstractConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -52,10 +56,8 @@ public class AugmentationRelation
 
     private static final double[] OUT_WEIGHTS = new double[]{
         constants.xOutWeight.getValue(),
-        constants.yWeight.getValue()
-    };
+        constants.yWeight.getValue()};
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -64,6 +66,13 @@ public class AugmentationRelation
     {
         final AugmentationDotInter dot = (AugmentationDotInter) e.getEdgeSource();
         dot.checkAbnormal();
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 
     //-------------------//
@@ -105,7 +114,7 @@ public class AugmentationRelation
     @Override
     public boolean isSingleTarget ()
     {
-        return true;
+        return true; // See explanation in class header
     }
 
     //---------//
@@ -115,7 +124,10 @@ public class AugmentationRelation
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         final AugmentationDotInter dot = (AugmentationDotInter) e.getEdgeSource();
-        dot.checkAbnormal();
+
+        if (!dot.isRemoved()) {
+            dot.checkAbnormal();
+        }
     }
 
     //---------------//
@@ -151,14 +163,12 @@ public class AugmentationRelation
         return getYGapMaximum(manual);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio dotSupportCoeff = new Constant.Ratio(
                 0.5,

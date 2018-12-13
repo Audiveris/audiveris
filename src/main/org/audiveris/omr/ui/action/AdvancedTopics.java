@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
@@ -58,7 +59,6 @@ import javax.swing.WindowConstants;
  */
 public abstract class AdvancedTopics
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -70,47 +70,11 @@ public abstract class AdvancedTopics
     /** Layout for 3 items. */
     private static final FormLayout layout3 = new FormLayout("12dlu,1dlu,65dlu,2dlu,pref", "pref");
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    public static enum Topic
+    /** Not meant to be instantiated. */
+    private AdvancedTopics ()
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        SAMPLES(constants.useSamples),
-        ANNOTATIONS(constants.useAnnotations),
-        PLOTS(constants.usePlots),
-        SPECIFIC_VIEWS(constants.useSpecificViews),
-        SPECIFIC_ITEMS(constants.useSpecificItems),
-        WINDOW_LAYOUT(constants.useWindowLayout),
-        DEBUG(constants.useDebug);
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Underlying constant. */
-        private final Constant.Boolean constant;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        Topic (Constant.Boolean constant)
-        {
-            this.constant = constant;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public String getDescription ()
-        {
-            return constant.getDescription();
-        }
-
-        public boolean isSet ()
-        {
-            return constant.isSet();
-        }
-
-        public void set (boolean val)
-        {
-            constant.setValue(val);
-        }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getComponent //
     //--------------//
@@ -143,26 +107,61 @@ public abstract class AdvancedTopics
         framePane.add(panel);
 
         // Resources injection
-        ResourceMap resource = Application.getInstance().getContext()
-                .getResourceMap(AdvancedTopics.class);
+        ResourceMap resource = Application.getInstance().getContext().getResourceMap(
+                AdvancedTopics.class);
         resource.injectComponents(frame);
 
         return frame;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    /**
+     * All advanced topics.
+     */
+    public static enum Topic
+    {
+        SAMPLES(constants.useSamples),
+        ANNOTATIONS(constants.useAnnotations),
+        PLOTS(constants.usePlots),
+        SPECIFIC_VIEWS(constants.useSpecificViews),
+        SPECIFIC_ITEMS(constants.useSpecificItems),
+        WINDOW_LAYOUT(constants.useWindowLayout),
+        DEBUG(constants.useDebug);
+
+        /** Underlying constant. */
+        private final Constant.Boolean constant;
+
+        Topic (Constant.Boolean constant)
+        {
+            this.constant = constant;
+        }
+
+        public String getDescription ()
+        {
+            return constant.getDescription();
+        }
+
+        public boolean isSet ()
+        {
+            return constant.isSet();
+        }
+
+        public void set (boolean val)
+        {
+            constant.setValue(val);
+        }
+    }
+
     //---------------//
     // AllTopicsPane //
     //---------------//
     /**
      * Pane for the advanced topic switches.
      */
-    private static final class AllTopicsPane
+    private static class AllTopicsPane
             extends JPanel
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public AllTopicsPane ()
+        AllTopicsPane ()
         {
             setBorder(BorderFactory.createTitledBorder("These switches require a restart"));
 
@@ -181,10 +180,9 @@ public abstract class AdvancedTopics
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean useSamples = new Constant.Boolean(
                 false,
@@ -225,14 +223,13 @@ public abstract class AdvancedTopics
             extends Panel
             implements ActionListener
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final JComboBox<Step> box; // ComboBox for desired step
+        // ComboBox for desired step
+        private final JComboBox<Step> box;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public EarlyPane ()
+        EarlyPane ()
         {
-            box = new JComboBox<Step>(Step.values());
+            box = new JComboBox<>(Step.values());
             box.setToolTipText("Which step to trigger on any image input");
             box.setSelectedItem(StubsController.getEarlyStep());
             box.addActionListener(this);
@@ -245,7 +242,6 @@ public abstract class AdvancedTopics
             builder.add(new JLabel("Step triggered on image input"), cst.xy(3, r));
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -264,16 +260,14 @@ public abstract class AdvancedTopics
             extends Panel
             implements ActionListener
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final JComboBox<String> box; // ComboBox for registered plugins
+        // ComboBox for registered plugins
+        private final JComboBox<String> box;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public PluginPane ()
+        PluginPane ()
         {
-            // ComboBox for triggered step
-            box = new JComboBox<String>(
-                    PluginsManager.getInstance().getPluginIds().toArray(new String[0]));
+            final Collection<String> ids = PluginsManager.getInstance().getPluginIds();
+            box = new JComboBox<>(ids.toArray(new String[ids.size()]));
             box.setToolTipText("Default plugin to be launched");
             box.setSelectedItem(PluginsManager.defaultPluginId.getValue());
 
@@ -285,7 +279,6 @@ public abstract class AdvancedTopics
             builder.add(new JLabel("Plugin launched on MusicXML output"), cst.xy(3, r));
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -299,16 +292,15 @@ public abstract class AdvancedTopics
     /**
      * Handling of one topic switch.
      */
-    private static final class TopicPane
+    private static class TopicPane
             extends Panel
             implements ActionListener
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        final Topic topic; // Handled topic
+        // Handled topic
+        final Topic topic;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public TopicPane (Topic topic)
+        TopicPane (Topic topic)
         {
             this.topic = topic;
 
@@ -325,7 +317,6 @@ public abstract class AdvancedTopics
             builder.add(new JLabel(topic.getDescription()), cst.xy(5, r));
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {

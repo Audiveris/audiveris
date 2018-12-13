@@ -51,18 +51,14 @@ import javax.swing.JOptionPane;
 public class UnitModel
         extends AbstractTreeTableModel
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(UnitModel.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
     /**
      * Enumeration type to describe each column of the JTreeTable
      */
     public static enum Column
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /**
          * The left column, assigned to tree structure, allows expansion
          * and collapsing of sub-tree portions.
@@ -99,7 +95,6 @@ public class UnitModel
          * Column dedicated to constant description.
          */
         DESC("Description", false, 350, String.class);
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Java class to handle column content. */
         private final Class<?> type;
@@ -113,7 +108,6 @@ public class UnitModel
         /** Width for column display. */
         private final int width;
 
-        //~ Constructors ---------------------------------------------------------------------------
         Column (String header,
                 boolean editable,
                 int width,
@@ -125,7 +119,6 @@ public class UnitModel
             this.type = type;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //----------//
         // getWidth //
         //----------//
@@ -135,7 +128,6 @@ public class UnitModel
         }
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Builds the model.
      */
@@ -144,7 +136,6 @@ public class UnitModel
         super(UnitManager.getInstance().getRoot());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getChild //
     //----------//
@@ -175,8 +166,8 @@ public class UnitModel
             }
         }
 
-        System.err.println(
-                "*** getChild. Unexpected node " + parent + ", type=" + parent.getClass().getName());
+        System.err.println("*** getChild. Unexpected node " + parent + ", type=" + parent.getClass()
+                .getName());
 
         return null;
     }
@@ -208,9 +199,8 @@ public class UnitModel
             return 0;
         }
 
-        System.err.println(
-                "*** getChildCount. Unexpected node " + parent + ", type="
-                + parent.getClass().getName());
+        System.err.println("*** getChildCount. Unexpected node " + parent + ", type=" + parent
+                .getClass().getName());
 
         return 0;
     }
@@ -329,9 +319,8 @@ public class UnitModel
             if (node instanceof Constant) {
                 Constant constant = (Constant) node;
 
-                if (constant instanceof Scale.Fraction
-                    || constant instanceof Scale.LineFraction
-                    || constant instanceof Scale.AreaFraction) {
+                if (constant instanceof Scale.Fraction || constant instanceof Scale.LineFraction
+                            || constant instanceof Scale.AreaFraction) {
                     // Compute the equivalent in pixels of this interline-based
                     // fraction, line or area fraction, provided that we have a
                     // current sheet and its scale is available.
@@ -342,15 +331,14 @@ public class UnitModel
 
                         if (scale != null) {
                             if (constant instanceof Scale.Fraction) {
-                                return String.format(
-                                        "%.1f",
-                                        scale.toPixelsDouble((Scale.Fraction) constant));
+                                return String.format("%.1f", scale.toPixelsDouble(
+                                                     (Scale.Fraction) constant));
                             } else if (constant instanceof Scale.LineFraction) {
-                                return Integer.valueOf(
-                                        scale.toPixels((Scale.LineFraction) constant));
+                                return Integer
+                                        .valueOf(scale.toPixels((Scale.LineFraction) constant));
                             } else if (constant instanceof Scale.AreaFraction) {
-                                return Integer.valueOf(
-                                        scale.toPixels((Scale.AreaFraction) constant));
+                                return Integer
+                                        .valueOf(scale.toPixels((Scale.AreaFraction) constant));
                             }
                         }
                     } else {

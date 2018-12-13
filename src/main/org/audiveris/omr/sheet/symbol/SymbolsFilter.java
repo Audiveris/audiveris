@@ -28,8 +28,8 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
-import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.GlyphGroup;
+import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.image.ShapeDescriptor;
 import org.audiveris.omr.image.Template;
@@ -82,7 +82,6 @@ import java.util.Set;
  */
 public class SymbolsFilter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -91,11 +90,9 @@ public class SymbolsFilter
     /** Orientation chosen for symbol runs. */
     public static final Orientation SYMBOL_ORIENTATION = Orientation.VERTICAL;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolsFilter object.
      *
@@ -106,7 +103,6 @@ public class SymbolsFilter
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -185,7 +181,7 @@ public class SymbolsFilter
     private void dispatchPageSymbols (List<Glyph> glyphs)
     {
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
-        final List<SystemInfo> relevants = new ArrayList<SystemInfo>();
+        final List<SystemInfo> relevants = new ArrayList<>();
         final SystemManager systemManager = sheet.getSystemManager();
 
         for (Glyph glyph : glyphs) {
@@ -201,33 +197,6 @@ public class SymbolsFilter
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Boolean displaySymbols = new Constant.Boolean(
-                false,
-                "Should we display the symbols image?");
-
-        private final Constant.Boolean keepSymbolsBuffer = new Constant.Boolean(
-                false,
-                "Should we store symbols image on disk?");
-
-        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
-                0.5,
-                "Margin erased above & below staff header area");
-
-        private final Constant.Integer minWordLength = new Constant.Integer(
-                "letter count",
-                4,
-                "Minimum number of chars in a sentence word");
-    }
-
     //--------//
     // MyView //
     //--------//
@@ -237,25 +206,22 @@ public class SymbolsFilter
     private class MyView
             extends ImageView
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // All optional glyphs. */
         private final Set<Glyph> optionals;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public MyView (BufferedImage image,
-                       Map<SystemInfo, List<Glyph>> optionalMap)
+        MyView (BufferedImage image,
+                Map<SystemInfo, List<Glyph>> optionalMap)
         {
             super(image);
 
-            optionals = new LinkedHashSet<Glyph>();
+            optionals = new LinkedHashSet<>();
 
             for (List<Glyph> glyphs : optionalMap.values()) {
                 optionals.addAll(glyphs);
             }
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void renderItems (Graphics2D g)
         {
@@ -281,6 +247,31 @@ public class SymbolsFilter
         }
     }
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean displaySymbols = new Constant.Boolean(
+                false,
+                "Should we display the symbols image?");
+
+        private final Constant.Boolean keepSymbolsBuffer = new Constant.Boolean(
+                false,
+                "Should we store symbols image on disk?");
+
+        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
+                0.5,
+                "Margin erased above & below staff header area");
+
+        private final Constant.Integer minWordLength = new Constant.Integer(
+                "letter count",
+                4,
+                "Minimum number of chars in a sentence word");
+    }
+
     //----------------//
     // SymbolsCleaner //
     //----------------//
@@ -302,7 +293,6 @@ public class SymbolsFilter
     private static class SymbolsCleaner
             extends PageCleaner
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /**
          * Current system list of weak glyphs.
@@ -310,7 +300,6 @@ public class SymbolsFilter
          */
         private List<Glyph> systemWeaks;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new {@code SymbolsEraser} object.
          *
@@ -318,14 +307,13 @@ public class SymbolsFilter
          * @param g      graphics context on buffer
          * @param sheet  related sheet
          */
-        public SymbolsCleaner (ByteProcessor buffer,
-                               Graphics2D g,
-                               Sheet sheet)
+        SymbolsCleaner (ByteProcessor buffer,
+                        Graphics2D g,
+                        Sheet sheet)
         {
             super(buffer, g, sheet);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //-------------//
         // eraseInters //
         //-------------//
@@ -348,8 +336,8 @@ public class SymbolsFilter
                 eraseStavesHeader(system, constants.staffVerticalMargin);
 
                 // Partition inters into strongs and weaks
-                final List<Inter> strongs = new ArrayList<Inter>();
-                final List<Inter> weaks = new ArrayList<Inter>();
+                final List<Inter> strongs = new ArrayList<>();
+                final List<Inter> weaks = new ArrayList<>();
                 systemWeaks = null;
 
                 for (Inter inter : sig.vertexSet()) {
@@ -391,7 +379,7 @@ public class SymbolsFilter
                 }
 
                 // Save the weaks apart and erase them
-                systemWeaks = new ArrayList<Glyph>();
+                systemWeaks = new ArrayList<>();
                 weaksMap.put(system, systemWeaks);
 
                 for (Inter inter : weaks) {
@@ -485,7 +473,8 @@ public class SymbolsFilter
             // Save the glyph?
             if (systemWeaks != null) {
                 // The glyph may be made of several parts, so it's safer to restart from pixels
-                List<Glyph> glyphs = GlyphFactory.buildGlyphs(glyph.getRunTable(),
+                List<Glyph> glyphs = GlyphFactory.buildGlyphs(
+                        glyph.getRunTable(),
                         glyph.getTopLeft(),
                         GlyphGroup.SYMBOL);
                 systemWeaks.addAll(glyphs);
@@ -516,7 +505,8 @@ public class SymbolsFilter
             RunTable runTable = factory.createTable(buf);
 
             // Glyphs
-            List<Glyph> glyphs = GlyphFactory.buildGlyphs(runTable,
+            List<Glyph> glyphs = GlyphFactory.buildGlyphs(
+                    runTable,
                     new Point(0, 0),
                     GlyphGroup.SYMBOL);
 

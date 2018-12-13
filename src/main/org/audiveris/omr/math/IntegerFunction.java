@@ -44,11 +44,9 @@ import java.util.List;
  */
 public class IntegerFunction
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(IntegerFunction.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Minimum x value. */
     protected final int xMin;
 
@@ -58,7 +56,6 @@ public class IntegerFunction
     /** Array of y value for each x. */
     private final int[] values;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates an instance of {@code IntegerFunction}.
      *
@@ -73,7 +70,6 @@ public class IntegerFunction
         values = new int[xMax - xMin + 1];
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addValue //
     //----------//
@@ -234,7 +230,7 @@ public class IntegerFunction
         x1 = Math.max(x1, xMin);
         x2 = Math.min(x2, xMax);
 
-        final List<Integer> maxima = new ArrayList<Integer>();
+        final List<Integer> maxima = new ArrayList<>();
         Integer prevX = null;
         int prevY = 0;
         boolean growing = false;
@@ -259,17 +255,15 @@ public class IntegerFunction
         }
 
         // Sort by decreasing y values
-        Collections.sort(
-                maxima,
-                new Comparator<Integer>()
-        {
-            @Override
-            public int compare (Integer x1,
-                                Integer x2)
-            {
-                return Integer.compare(getValue(x2), getValue(x1)); // Reverse
-            }
-        });
+        Collections.sort(maxima, new Comparator<Integer>()
+                 {
+                     @Override
+                     public int compare (Integer x1,
+                                         Integer x2)
+                     {
+                         return Integer.compare(getValue(x2), getValue(x1)); // Reverse
+                     }
+                 });
 
         return maxima;
     }
@@ -424,7 +418,7 @@ public class IntegerFunction
 
         for (int x = xMin + 1; x <= xMax; x++) {
             int der = getDerivative(x);
-            stream.format(" %d:%d/%+d\n", x, getValue(x), der);
+            stream.format(" %d:%d/%+d%n", x, getValue(x), der);
         }
 
         stream.println("]");

@@ -65,20 +65,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class GlyphIndex
         implements EntityIndex<Glyph>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            GlyphIndex.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlyphIndex.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     /**
-     * See getEntities()/setEntities() methods which are called by
-     * BasicSheet#getGlyphIndexContent() and BasicSheet#setGlyphIndexContent()
+     * See {@link #getEntities()} and {@link #setEntities(java.util.ArrayList)} methods
+     * which are called by private methods
+     * Sheet#getGlyphIndexContent() and Sheet#setGlyphIndexContent()
      * triggered by JAXB (un)marshalling.
      */
     //
@@ -89,12 +86,11 @@ public class GlyphIndex
     private final WeakGlyphIndex weakIndex = new WeakGlyphIndex();
 
     /** Collection of original glyph instances, non sorted. */
-    private final ConcurrentHashMap<WeakGlyph, WeakGlyph> originals = new ConcurrentHashMap<WeakGlyph, WeakGlyph>();
+    private final ConcurrentHashMap<WeakGlyph, WeakGlyph> originals = new ConcurrentHashMap<>();
 
     /** Selection service, if any. */
-    private EntityService<Glyph> glyphService;
+    private GlyphService glyphService;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code GlyphIndex} object.
      */
@@ -102,7 +98,6 @@ public class GlyphIndex
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------------//
     // getContainedEntities //
     //----------------------//
@@ -128,7 +123,7 @@ public class GlyphIndex
     public ArrayList<Glyph> getEntities ()
     {
         Collection<WeakGlyph> weaks = weakIndex.getEntities();
-        ArrayList<Glyph> glyphs = new ArrayList<Glyph>();
+        ArrayList<Glyph> glyphs = new ArrayList<>();
 
         for (WeakGlyph weak : weaks) {
             final Glyph glyph = weak.get();
@@ -139,6 +134,23 @@ public class GlyphIndex
         }
 
         return glyphs;
+    }
+
+    //-------------//
+    // setEntities //
+    //-------------//
+    /**
+     * Populate the weak index.
+     *
+     * @param glyphs populating glyphs
+     */
+    public void setEntities (ArrayList<Glyph> glyphs)
+    {
+        for (Glyph glyph : glyphs) {
+            WeakGlyph weak = new WeakGlyph(glyph);
+            weakIndex.insert(weak);
+            originals.putIfAbsent(weak, weak);
+        }
     }
 
     @Override
@@ -154,9 +166,19 @@ public class GlyphIndex
     }
 
     @Override
-    public EntityService<Glyph> getEntityService ()
+    public GlyphService getEntityService ()
     {
         return glyphService;
+    }
+
+    //------------------//
+    // setEntityService //
+    //------------------//
+    @Override
+    public void setEntityService (EntityService<Glyph> entityService)
+    {
+        this.glyphService = (GlyphService) entityService;
+        entityService.connect();
     }
 
     @Override
@@ -175,6 +197,15 @@ public class GlyphIndex
     public int getLastId ()
     {
         return weakIndex.getLastId();
+    }
+
+    //-----------//
+    // setLastId //
+    //-----------//
+    @Override
+    public void setLastId (int lastId)
+    {
+        weakIndex.setLastId(lastId);
     }
 
     //---------//
@@ -228,6 +259,11 @@ public class GlyphIndex
     //----------------//
     // initTransients //
     //----------------//
+    /**
+     * Initialize the transient members of the class.
+     *
+     * @param sheet containing sheet
+     */
     public final void initTransients (Sheet sheet)
     {
         // ID generator
@@ -289,14 +325,13 @@ public class GlyphIndex
     public void publish (final Glyph glyph)
     {
         if (glyphService != null) {
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
                 {
                     glyphService.publish(
-                            new EntityListEvent<Glyph>(
+                            new EntityListEvent<>(
                                     this,
                                     SelectionHint.ENTITY_INIT,
                                     MouseMovement.PRESSING,
@@ -370,37 +405,6 @@ public class GlyphIndex
         originals.clear();
     }
 
-    //-------------//
-    // setEntities //
-    //-------------//
-    public void setEntities (ArrayList<Glyph> glyphs)
-    {
-        for (Glyph glyph : glyphs) {
-            WeakGlyph weak = new WeakGlyph(glyph);
-            weakIndex.insert(weak);
-            originals.putIfAbsent(weak, weak);
-        }
-    }
-
-    //------------------//
-    // setEntityService //
-    //------------------//
-    @Override
-    public void setEntityService (EntityService<Glyph> entityService)
-    {
-        this.glyphService = entityService;
-        entityService.connect();
-    }
-
-    //-----------//
-    // setLastId //
-    //-----------//
-    @Override
-    public void setLastId (int lastId)
-    {
-        weakIndex.setLastId(lastId);
-    }
-
     //-----------------//
     // privateRegister //
     //-----------------//
@@ -427,44 +431,16 @@ public class GlyphIndex
         return id;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.String vipGlyphs = new Constant.String(
                 "",
                 "(Debug) Comma-separated values of VIP glyphs IDs");
-    }
-
-    //----------------//
-    // WeakGlyphIndex //
-    //----------------//
-    private static class WeakGlyphIndex
-            extends BasicIndex<WeakGlyph>
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public void insert (WeakGlyph weak)
-        {
-            super.insert(weak);
-        }
-
-        @Override
-        protected boolean isValid (WeakGlyph weak)
-        {
-            return (weak != null) && (weak.get() != null);
-        }
-
-        void setIdGenerator (AtomicInteger lastId)
-        {
-            this.lastId = lastId;
-        }
     }
 
     //------------------//
@@ -473,23 +449,20 @@ public class GlyphIndex
     /**
      * This iterator skips the weak references that are no longer valid.
      */
-    private class SkippingIterator
+    private static class SkippingIterator
             implements Iterator<Glyph>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Iterator<WeakGlyph> weakIt; // Underlying iterator on all weak references
 
         private Glyph nextGlyph = null; // Concrete glyph to be returned by next()
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public SkippingIterator (Iterator<WeakGlyph> weakIt)
+        SkippingIterator (Iterator<WeakGlyph> weakIt)
         {
             this.weakIt = weakIt;
             nextGlyph = findNextGlyph();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean hasNext ()
         {
@@ -527,6 +500,31 @@ public class GlyphIndex
             }
 
             return null;
+        }
+    }
+
+    //----------------//
+    // WeakGlyphIndex //
+    //----------------//
+    private static class WeakGlyphIndex
+            extends BasicIndex<WeakGlyph>
+    {
+
+        @Override
+        public void insert (WeakGlyph weak)
+        {
+            super.insert(weak);
+        }
+
+        @Override
+        protected boolean isValid (WeakGlyph weak)
+        {
+            return (weak != null) && (weak.get() != null);
+        }
+
+        void setIdGenerator (AtomicInteger lastId)
+        {
+            this.lastId = lastId;
         }
     }
 }

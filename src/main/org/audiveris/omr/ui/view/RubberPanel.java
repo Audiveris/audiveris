@@ -26,9 +26,7 @@ import org.audiveris.omr.ui.PixelCount;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
-
 import static org.audiveris.omr.ui.selection.SelectionHint.*;
-
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.util.ClassUtil;
@@ -75,13 +73,11 @@ public class RubberPanel
         extends JPanel
         implements ChangeListener, MouseMonitor, EventSubscriber<UserEvent>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(RubberPanel.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Current display zoom, if any. */
     protected Zoom zoom;
 
@@ -94,7 +90,6 @@ public class RubberPanel
     /** Location Service if any (for Location event). */
     protected SelectionService locationService;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a bare RubberPanel, assuming zoom and rubber will be assigned later.
      */
@@ -120,7 +115,6 @@ public class RubberPanel
         logger.debug("new RubberPanel zoom={} rubber={}", zoom, rubber);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // contextAdded //
     //--------------//
@@ -156,6 +150,19 @@ public class RubberPanel
         } else {
             return null;
         }
+    }
+
+    //--------------//
+    // setModelSize //
+    //--------------//
+    /**
+     * Assign the size of the model object, that is the un-scaled size.
+     *
+     * @param modelSize the model size to use
+     */
+    public void setModelSize (Dimension modelSize)
+    {
+        this.modelSize = new Dimension(modelSize);
     }
 
     //----------------//
@@ -246,6 +253,27 @@ public class RubberPanel
     }
 
     //---------//
+    // setZoom //
+    //---------//
+    /**
+     * Assign a zoom to this panel
+     *
+     * @param zoom the zoom assigned
+     */
+    public final void setZoom (final Zoom zoom)
+    {
+        // Clean up if needed
+        unsetZoom(this.zoom);
+
+        this.zoom = zoom;
+
+        if (zoom != null) {
+            // Add a listener on this zoom
+            zoom.addChangeListener(this);
+        }
+    }
+
+    //---------//
     // onEvent //
     //---------//
     /**
@@ -295,6 +323,11 @@ public class RubberPanel
     //---------//
     // publish //
     //---------//
+    /**
+     * Publish the provided location event on the proper service.
+     *
+     * @param locationEvent the provided location event
+     */
     public void publish (LocationEvent locationEvent)
     {
         locationService.publish(locationEvent);
@@ -325,15 +358,14 @@ public class RubberPanel
             showFocusLocation(rect, true);
 
             // Then, adjust zoom ratio to fit the rectangle size
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
                 {
                     Rectangle vr = getVisibleRect();
-                    double zoomX = (double) vr.width / (double) rect.width;
-                    double zoomY = (double) vr.height / (double) rect.height;
+                    double zoomX = vr.width / (double) rect.width;
+                    double zoomY = vr.height / (double) rect.height;
                     zoom.setRatio(Math.min(zoomX, zoomY));
                 }
             });
@@ -384,19 +416,6 @@ public class RubberPanel
         this.locationService = locationService;
     }
 
-    //--------------//
-    // setModelSize //
-    //--------------//
-    /**
-     * Assign the size of the model object, that is the un-scaled size.
-     *
-     * @param modelSize the model size to use
-     */
-    public void setModelSize (Dimension modelSize)
-    {
-        this.modelSize = new Dimension(modelSize);
-    }
-
     //-----------//
     // setRubber //
     //-----------//
@@ -415,33 +434,12 @@ public class RubberPanel
         rubber.setMouseMonitor(this);
     }
 
-    //---------//
-    // setZoom //
-    //---------//
-    /**
-     * Assign a zoom to this panel
-     *
-     * @param zoom the zoom assigned
-     */
-    public final void setZoom (final Zoom zoom)
-    {
-        // Clean up if needed
-        unsetZoom(this.zoom);
-
-        this.zoom = zoom;
-
-        if (zoom != null) {
-            // Add a listener on this zoom
-            zoom.addChangeListener(this);
-        }
-    }
-
     //-------------------//
     // showFocusLocation //
     //-------------------//
     /**
      * Update the display, so that the location rectangle gets visible.
-     *
+     * <p>
      * <b>NOTA</b>: Subclasses that override this method should call this
      * super implementation or the display will not be updated by default.
      *
@@ -628,6 +626,11 @@ public class RubberPanel
     //---------------------//
     // handleLocationEvent //
     //---------------------//
+    /**
+     * Handle the provided location event
+     *
+     * @param locationEvent the location event to process
+     */
     protected void handleLocationEvent (LocationEvent locationEvent)
     {
         // Location => move view focus on this location w/ markers
@@ -706,14 +709,12 @@ public class RubberPanel
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final PixelCount focusMargin = new PixelCount(20, "Margin visible around a focus");
     }

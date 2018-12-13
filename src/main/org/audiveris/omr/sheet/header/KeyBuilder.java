@@ -28,6 +28,7 @@ import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.FLAT;
 import static org.audiveris.omr.glyph.Shape.SHARP;
 import org.audiveris.omr.math.HiLoPeakFinder;
+import org.audiveris.omr.math.HiLoPeakFinder.Quorum;
 import org.audiveris.omr.math.IntegerFunction;
 import org.audiveris.omr.math.Range;
 import org.audiveris.omr.sheet.Scale;
@@ -101,7 +102,8 @@ import java.util.Set;
  * from a time signature.
  * A space, if any, between two key signature items is very narrow.
  * <p>
- * Strategy:<ol>
+ * Strategy:
+ * <ol>
  * <li>Find first significant space right after clef, it's the space that separates the clef from
  * next item (key signature or time signature or first note/rest, etc).
  * This space may not be detected in the projection when the first key signature item is very close
@@ -134,13 +136,11 @@ import java.util.Set;
  */
 public class KeyBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(KeyBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing system KeyColumn. */
     private final KeyColumn column;
 
@@ -175,7 +175,7 @@ public class KeyBuilder
     private final int browseStart;
 
     /** (Competing) active clef(s) in staff, just before key signature. */
-    private final List<ClefInter> clefs = new ArrayList<ClefInter>();
+    private final List<ClefInter> clefs = new ArrayList<>();
 
     /** Projection of foreground pixels, indexed by abscissa. */
     private final IntegerFunction projection;
@@ -187,10 +187,8 @@ public class KeyBuilder
     private final HiLoPeakFinder peakFinder;
 
     /** Builders per shape. */
-    private final Map<Shape, ShapeBuilder> shapeBuilders = new EnumMap<Shape, ShapeBuilder>(
-            Shape.class);
+    private final Map<Shape, ShapeBuilder> shapeBuilders = new EnumMap<>(Shape.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code KeyBuilder} object.
      *
@@ -230,7 +228,6 @@ public class KeyBuilder
         shapeBuilders.put(FLAT, new ShapeBuilder(FLAT, browseRect));
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // addPlot //
     //---------//
@@ -303,8 +300,7 @@ public class KeyBuilder
             XYSeries series = new XYSeries("KeyArea", false); // No autosort
             int start = ((range != null) && range.hasStart()) ? range.getStart()
                     : staff.getKeyStart();
-            int stop = ((range != null) && range.hasStart()) ? range.getStop()
-                    : staff.getKeyStop();
+            int stop = ((range != null) && range.hasStart()) ? range.getStop() : staff.getKeyStop();
             series.add(start, 0);
             series.add(start, staff.getHeight());
             series.add(stop, staff.getHeight());
@@ -397,6 +393,11 @@ public class KeyBuilder
     //-------//
     // getId //
     //-------//
+    /**
+     * Report builder id.
+     *
+     * @return id of unerlying staff
+     */
     public int getId ()
     {
         return staff.getId();
@@ -503,37 +504,6 @@ public class KeyBuilder
         return "KeyBuilder#" + getId();
     }
 
-    //----------------//
-    // checkReplicate //
-    //----------------//
-    /**
-     * Override local key with the one from the "best source" staff in part.
-     *
-     * @param sourceBuilder ShapeBuilder of source staff
-     * @return proper PartStatus value
-     */
-    PartStatus checkReplicate (ShapeBuilder sourceBuilder)
-    {
-        final int fifths = sourceBuilder.getFifths();
-        getShapeBuilder(-fifths).destroy();
-
-        return getShapeBuilder(fifths).checkReplicate(sourceBuilder);
-    }
-
-    //-----------------//
-    // getShapeBuilder //
-    //-----------------//
-    ShapeBuilder getShapeBuilder (int fifths)
-    {
-        if (fifths == 0) {
-            return null;
-        } else if (fifths > 0) {
-            return shapeBuilders.get(SHARP);
-        } else {
-            return shapeBuilders.get(FLAT);
-        }
-    }
-
     //--------//
     // dumpOf //
     //--------//
@@ -612,9 +582,10 @@ public class KeyBuilder
     //-------------------//
     private List<Range> retrieveHiLoPeaks ()
     {
+        peakFinder.setQuorum(new Quorum(params.minPeakCumul));
+
         final List<Range> hiloPeaks = peakFinder.findPeaks(
                 params.maxSpaceCumul + 1, // minValue
-                params.minPeakCumul, // minTopValue
                 params.minPeakDerivative, // minDerivative
                 params.minGainRatio); // minGainRatio
         Collections.sort(hiloPeaks, Range.byMain);
@@ -662,7 +633,37 @@ public class KeyBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //----------------//
+    // checkReplicate //
+    //----------------//
+    /**
+     * Override local key with the one from the "best source" staff in part.
+     *
+     * @param sourceBuilder ShapeBuilder of source staff
+     * @return proper PartStatus value
+     */
+    PartStatus checkReplicate (ShapeBuilder sourceBuilder)
+    {
+        final int fifths = sourceBuilder.getFifths();
+        getShapeBuilder(-fifths).destroy();
+
+        return getShapeBuilder(fifths).checkReplicate(sourceBuilder);
+    }
+
+    //-----------------//
+    // getShapeBuilder //
+    //-----------------//
+    ShapeBuilder getShapeBuilder (int fifths)
+    {
+        if (fifths == 0) {
+            return null;
+        } else if (fifths > 0) {
+            return shapeBuilders.get(SHARP);
+        } else {
+            return shapeBuilders.get(FLAT);
+        }
+    }
+
     //--------------//
     // ShapeBuilder //
     //--------------//
@@ -672,7 +673,6 @@ public class KeyBuilder
      */
     class ShapeBuilder
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Shape used for key signature. */
         private final Shape keyShape;
@@ -680,7 +680,7 @@ public class KeyBuilder
         private final StaffHeader.Range range;
 
         /** Sequence of valid peaks found, ordered by abscissa. */
-        private final List<KeyPeak> peaks = new ArrayList<KeyPeak>();
+        private final List<KeyPeak> peaks = new ArrayList<>();
 
         /** ROI with slices for key search. */
         private final KeyRoi roi;
@@ -688,9 +688,8 @@ public class KeyBuilder
         /** Resulting key inter, if any. */
         private KeyInter keyInter;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public ShapeBuilder (Shape keyShape,
-                             Rectangle browseRect)
+        ShapeBuilder (Shape keyShape,
+                      Rectangle browseRect)
         {
             this.keyShape = keyShape;
             roi = new KeyRoi(
@@ -704,7 +703,6 @@ public class KeyBuilder
             range.browseStop = (browseRect.x + browseRect.width) - 1;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //---------------//
         // adjustPitches //
         //---------------//
@@ -716,8 +714,7 @@ public class KeyBuilder
             // Use pitches for chosen clef, if any
             if (!clefs.isEmpty()) {
                 final ClefInter bestClef = clefs.get(0);
-                final int[] stdPitches = KeyInter.getPitchesMap(keyShape).get(
-                        bestClef.getKind());
+                final int[] stdPitches = KeyInter.getPitchesMap(keyShape).get(bestClef.getKind());
 
                 for (int i = 0; i < roi.size(); i++) {
                     KeySlice slice = roi.get(i);
@@ -821,8 +818,8 @@ public class KeyBuilder
                     final int sStart = sourceSlice.getStart();
                     final int sWidth = sourceSlice.getWidth();
 
-                    if ((Math.abs(sStart - slice.getStart()) > params.maxSliceDeltaX)
-                        || (Math.abs(sWidth - slice.getWidth()) > params.maxSliceDeltaWidth)) {
+                    if ((Math.abs(sStart - slice.getStart()) > params.maxSliceDeltaX) || (Math.abs(
+                            sWidth - slice.getWidth()) > params.maxSliceDeltaWidth)) {
                         it.remove();
 
                         while (it.hasNext()) {
@@ -849,13 +846,11 @@ public class KeyBuilder
                 if (localSlice == null) {
                     // Choose start & stop values for the slice to be created
                     final KeySlice prevSlice = roi.getStopSlice(targetStart);
-                    final int start = (prevSlice != null) ? (prevSlice.getStop() + 1)
-                            : targetStart;
+                    final int start = (prevSlice != null) ? (prevSlice.getStop() + 1) : targetStart;
 
                     int targetStop = (start + sourceSlice.getWidth()) - 1;
                     KeySlice nextSlice = roi.getStartSlice(targetStop + 1);
-                    final int stop = (nextSlice != null) ? (nextSlice.getStart() - 1)
-                            : targetStop;
+                    final int stop = (nextSlice != null) ? (nextSlice.getStart() - 1) : targetStop;
 
                     localSlice = roi.createSlice(start, stop);
                     localSlice.setPitchRect(
@@ -1501,9 +1496,8 @@ public class KeyBuilder
 
             // Define dPitch threshold based on alters.length
             final double maxDeltaPitch = (n >= 4) ? params.maxDeltaPitch_4
-                    : (params.maxDeltaPitch_1
-                       + (((params.maxDeltaPitch_4 - params.maxDeltaPitch_1) * (n
-                                                                                - 1)) / 3));
+                    : (params.maxDeltaPitch_1 + (((params.maxDeltaPitch_4 - params.maxDeltaPitch_1)
+                                                          * (n - 1)) / 3));
 
             final int[] clefPitches = KeyInter.getPitches(clefKind, keyShape);
             int alterCount = 0;
@@ -1550,7 +1544,7 @@ public class KeyBuilder
          */
         private List<Integer> computeStarts (int signature)
         {
-            List<Integer> starts = new ArrayList<Integer>();
+            List<Integer> starts = new ArrayList<>();
 
             if (signature > 0) {
                 // Sharps
@@ -1593,13 +1587,13 @@ public class KeyBuilder
         //----------------//
         private void createKeyInter ()
         {
-            List<KeyAlterInter> alters = new ArrayList<KeyAlterInter>();
+            List<KeyAlterInter> alters = new ArrayList<>();
             Rectangle box = null;
 
             for (KeySlice slice : roi) {
                 KeyAlterInter alter = slice.getAlter();
 
-                if (alter != null) {
+                if ((alter != null) && !alter.isRemoved()) {
                     alters.add(alter);
 
                     if (box == null) {
@@ -1965,7 +1959,7 @@ public class KeyBuilder
             }
 
             // Compute area quorum on all peaks but the smallest one
-            List<KeyPeak> sortedPeaks = new ArrayList<KeyPeak>(peaks);
+            List<KeyPeak> sortedPeaks = new ArrayList<>(peaks);
             Collections.sort(sortedPeaks, KeyPeak.byArea);
 
             int totalArea = 0; // Sum of peaks areas
@@ -2015,14 +2009,9 @@ public class KeyBuilder
 
             final int xMin = range.getStart();
             final int xMax = peaks.get(0).min - 1;
-            final int yMin = staff.getFirstLine().yAt(xMin)
-                             - staff.getSpecificInterline();
+            final int yMin = staff.getFirstLine().yAt(xMin) - staff.getSpecificInterline();
             final int yMax = staff.getLastLine().yAt(xMin);
-            final Rectangle rect = new Rectangle(
-                    xMin,
-                    yMin,
-                    xMax - xMin + 1,
-                    yMax - yMin + 1);
+            final Rectangle rect = new Rectangle(xMin, yMin, xMax - xMin + 1, yMax - yMin + 1);
             final IntegerFunction staffProj = extractor.getProjection(xMin, rect);
             int start = xMax + 1;
 
@@ -2126,10 +2115,9 @@ public class KeyBuilder
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.String vipStaves = new Constant.String(
                 "",
@@ -2282,7 +2270,6 @@ public class KeyBuilder
     //------------//
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final double minGainRatio;
 
@@ -2358,9 +2345,8 @@ public class KeyBuilder
 
         final int maxTrailingCumul;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale,
-                           int staffSpecific)
+        Parameters (Scale scale,
+                    int staffSpecific)
         {
             minGainRatio = constants.minGainRatio.getValue();
             minBlackRatio = constants.minBlackRatio.getValue();

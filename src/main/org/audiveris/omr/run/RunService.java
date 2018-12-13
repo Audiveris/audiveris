@@ -44,21 +44,18 @@ public class RunService
         extends SelectionService
         implements EventSubscriber<LocationEvent>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RunService.class);
 
     /** Events allowed to be published on this run service. */
-    public static final Class<?>[] eventsWritten = new Class<?>[]{RunEvent.class};
+    private static final Class<?>[] eventsWritten = new Class<?>[]{RunEvent.class};
 
     /** Events observed on location service. */
-    public static final Class<?>[] locEventsRead = new Class<?>[]{LocationEvent.class};
+    private static final Class<?>[] locEventsRead = new Class<?>[]{LocationEvent.class};
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying run table. */
     private final RunTable table;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code RunService} object.
      *
@@ -72,7 +69,6 @@ public class RunService
         this.table = table;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // cutLocationService //
     //--------------------//
@@ -106,10 +102,7 @@ public class RunService
             }
 
             logger.debug("RunsTable {}: {}", getName(), locationEvent);
-
-            if (locationEvent instanceof LocationEvent) {
-                handleLocationEvent(locationEvent); // Location => Run
-            }
+            handleLocationEvent(locationEvent); // Location => Run
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }

@@ -31,7 +31,6 @@ import java.awt.Graphics2D;
  */
 public interface ItemRenderer
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Render items on the provided graphics

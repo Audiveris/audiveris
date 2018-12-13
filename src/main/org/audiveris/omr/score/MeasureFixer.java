@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * <li>Detect implicit measures (as pickup measures)</li>
  * <li>Detect first half repeat measures</li>
  * <li>Detect implicit measures (as second half repeats)</li>
- * <li>Detect inside barlines (empty measures) </li>
+ * <li>Detect inside barlines (empty measures)</li>
  * <li>Detect cautionary measures (CKT changes at end of staff)</li>
  * <li>Assign final page-based measure IDs</li>
  * </ul>
@@ -47,11 +47,9 @@ import org.slf4j.LoggerFactory;
  */
 public class MeasureFixer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MeasureFixer.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Current stack of measures in current system. */
     private MeasureStack stack;
 
@@ -70,7 +68,6 @@ public class MeasureFixer
     /** The latest id assigned to a measure stack. (in the current system) */
     private Integer lastId;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new MeasureFixer object.
      */
@@ -78,10 +75,14 @@ public class MeasureFixer
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // process Page //
     //--------------//
+    /**
+     * Process the provided page.
+     *
+     * @param page the page to process
+     */
     public void process (Page page)
     {
         logger.debug("{} Visiting {}", getClass().getSimpleName(), page);
@@ -98,8 +99,15 @@ public class MeasureFixer
     }
 
     //---------------//
-    // process Score // Currently not used
+    // process Score //
     //---------------//
+    /**
+     * Process the provided score.
+     * <p>
+     * Currently not used.
+     *
+     * @param score the score to process
+     */
     public void process (Score score)
     {
         logger.debug("{} Visiting {}", getClass().getSimpleName(), score);
@@ -162,7 +170,8 @@ public class MeasureFixer
         final SystemInfo system = stack.getSystem();
 
         return (system.getIndexInPage() == 0) && (stack == system.getFirstStack())
-               && (stackTermination != null) && (stackTermination.compareTo(Rational.ZERO) < 0);
+                       && (stackTermination != null) && (stackTermination.compareTo(Rational.ZERO)
+                                                                 < 0);
     }
 
     //-------------//
@@ -192,7 +201,8 @@ public class MeasureFixer
     private boolean isSecondRepeatHalf ()
     {
         // Check for partial first half
-        if ((prevStackTermination == null) || (prevStackTermination.compareTo(Rational.ZERO) >= 0)) {
+        if ((prevStackTermination == null) || (prevStackTermination.compareTo(
+                Rational.ZERO) >= 0)) {
             return false;
         }
 
@@ -210,8 +220,8 @@ public class MeasureFixer
         }
 
         // Check for an exact duration sum (TODO: is this too strict?)
-        return prevStackTermination.plus(stackTermination).abs()
-                .equals(prevStack.getExpectedDuration());
+        return prevStackTermination.plus(stackTermination).abs().equals(
+                prevStack.getExpectedDuration());
     }
 
     //----------------//
@@ -247,8 +257,7 @@ public class MeasureFixer
                 if (stack != system.getLastStack()) {
                     setId(
                             (lastId != null) ? (lastId + 1)
-                                    : ((prevSystemLastId != null)
-                                            ? (prevSystemLastId + 1) : 1));
+                                    : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
                 } else {
                     // This is just a cautionary stack at right end of system
                     logger.debug("cautionary");

@@ -44,9 +44,11 @@ import org.kohsuke.args4j.spi.StopOptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -72,11 +74,9 @@ import java.util.concurrent.Callable;
  */
 public class CLI
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CLI.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Name of the program. */
     private final String toolName;
 
@@ -89,7 +89,6 @@ public class CLI
     /** CLI parser. */
     private final CmdLineParser parser = new CmdLineParser(params);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new CLI object.
      *
@@ -100,7 +99,6 @@ public class CLI
         this.toolName = toolName;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getCliTasks //
     //-------------//
@@ -111,7 +109,7 @@ public class CLI
      */
     public List<CliTask> getCliTasks ()
     {
-        List<CliTask> tasks = new ArrayList<CliTask>();
+        List<CliTask> tasks = new ArrayList<>();
 
         // Task kind is fully determined by argument extension
         for (Path argument : params.arguments) {
@@ -190,6 +188,19 @@ public class CLI
         return params.helpMode;
     }
 
+    //--------//
+    // isSave //
+    //--------//
+    /**
+     * Report whether we save every step result.
+     *
+     * @return true for saving every step
+     */
+    public boolean isSave ()
+    {
+        return params.save;
+    }
+
     //-----------------//
     // parseParameters //
     //-----------------//
@@ -237,7 +248,7 @@ public class CLI
             sb.append(toolName).append(" ");
         }
 
-        sb.append(trimmedArgs);
+        sb.append(Arrays.toString(trimmedArgs));
         logger.info(sb.toString());
     }
 
@@ -295,7 +306,7 @@ public class CLI
         if (params.transcribe) {
             if ((params.step != null) && (params.step != Step.last())) {
                 String msg = "'-transcribe' option not compatible with '-step " + params.step
-                             + "' option";
+                                     + "' option";
                 throw new CmdLineException(parser, msg);
             }
 
@@ -303,7 +314,182 @@ public class CLI
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //----------//
+    // BookTask //
+    //----------//
+    /**
+     * CLI task to process a book file.
+     */
+    private class BookTask
+            extends ProcessingTask
+    {
+
+        BookTask (Path path)
+        {
+            super(path);
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "Book \"" + path + "\"";
+        }
+
+        @Override
+        protected Book loadBook (Path path)
+        {
+            return OMR.engine.loadBook(path);
+        }
+    }
+
+    //-----------//
+    // InputTask //
+    //-----------//
+    /**
+     * CLI task to process an input (image) file.
+     */
+    private class InputTask
+            extends ProcessingTask
+    {
+
+        InputTask (Path path)
+        {
+            super(path);
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "Input \"" + path + "\"";
+        }
+
+        @Override
+        protected Book loadBook (Path path)
+        {
+            return OMR.engine.loadInput(path);
+        }
+    }
+
+    //----------------//
+    // ProcessingTask //
+    //----------------//
+    /**
+     * Processing common to both input (images) and books.
+     */
+    private abstract class ProcessingTask
+            extends CliTask
+    {
+
+        ProcessingTask (Path path)
+        {
+            super(path);
+        }
+
+        @Override
+        protected void processBook (Book book)
+        {
+            final Path folder = BookManager.getDefaultBookFolder(book);
+            boolean cancelled = false;
+            try {
+                if (!Files.exists(folder)) {
+                    Files.createDirectories(folder);
+                }
+                // In batch, log into specific log file within book folder
+                if (OMR.gui == null) {
+                    LogUtil.addAppender(book.getRadix(), folder);
+                }
+                LogUtil.start(book);
+                // Specific sheets to process?
+                final SortedSet<Integer> sheetIds = params.getSheetIds();
+                // Make sure stubs are available
+                if (book.getStubs().isEmpty()) {
+                    book.createStubs(sheetIds);
+
+                    // Save book to disk (global book info)
+                    if (OMR.gui == null) {
+                        book.store(BookManager.getDefaultSavePath(book), false);
+                    }
+                }
+                if (OMR.gui != null) {
+                    Integer focus = (sheetIds != null) ? sheetIds.first() : null;
+                    book.createStubsTabs(focus); // Tabs are now accessible
+                }
+                // Specific step to reach on all sheets in the book?
+                if (params.step != null) {
+                    boolean ok = book.reachBookStep(params.step, params.force, sheetIds);
+
+                    if (!ok) {
+                        return;
+                    }
+                }
+                if (params.transcribe) {
+                    book.reduceScores();
+                }
+                // Specific class to run?
+                if (params.runClass != null) {
+                    try {
+                        Constructor cons = params.runClass.getConstructor(
+                                new Class[]{Book.class, SortedSet.class});
+                        RunClass instance = (RunClass) cons.newInstance(book, sheetIds);
+                        instance.process();
+                    } catch (IllegalAccessException |
+                             IllegalArgumentException |
+                             InstantiationException |
+                             NoSuchMethodException |
+                             SecurityException |
+                             InvocationTargetException ex) {
+                        logger.warn("Error running {} {}", params.runClass, ex.toString(), ex);
+                    }
+                }
+                // Book export?
+                if (params.export) {
+                    logger.debug("Export book");
+                    book.export();
+                }
+                // Book sample?
+                if (params.sample) {
+                    logger.debug("Sample book");
+                    book.sample();
+                }
+                // Book annotate?
+                if (params.annotate) {
+                    logger.debug("Annotate book");
+                    book.annotate();
+                }
+                // Book print?
+                if (params.print) {
+                    logger.debug("Print book");
+                    book.print();
+                }
+            } catch (ProcessingCancellationException pce) {
+                logger.warn("Cancelled " + book);
+                cancelled = true;
+                throw pce;
+            } catch (IOException ex) {
+                logger.warn("Exception occurred " + ex, ex);
+                throw new RuntimeException(ex);
+            } finally {
+                // Close (when in batch mode only)
+                if (OMR.gui == null) {
+                    if (cancelled) {
+                        // Make a backup if needed, then save book "in its current status"
+                        book.store(BookManager.getDefaultSavePath(book), true);
+                    } else {
+                        book.store(BookManager.getDefaultSavePath(book), false);
+                    }
+
+                    book.close();
+                }
+
+                LogUtil.stopBook();
+
+                if (OMR.gui == null) {
+                    LogUtil.removeAppender(book.getRadix());
+                }
+            }
+        }
+    }
+
     //---------//
     // CliTask //
     //---------//
@@ -313,7 +499,6 @@ public class CLI
     public abstract static class CliTask
             implements Callable<Void>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Source file path. */
         public final Path path;
@@ -321,7 +506,11 @@ public class CLI
         /** Radix. */
         private final String radix;
 
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create a CliTask object.
+         *
+         * @param path the path to book file
+         */
         public CliTask (Path path)
         {
             this.path = path;
@@ -331,7 +520,6 @@ public class CLI
             radix = (alias != null) ? alias : nameSansExt;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public Void call ()
                 throws Exception
@@ -361,14 +549,16 @@ public class CLI
             return radix;
         }
 
-        /** Getting the book instance.
+        /**
+         * Getting the book instance.
          *
          * @param path path to source
          * @return the loaded book
          */
         protected abstract Book loadBook (Path path);
 
-        /** Processing the book instance.
+        /**
+         * Processing the book instance.
          *
          * @param book the book to process
          */
@@ -387,8 +577,14 @@ public class CLI
     public static class ClassOptionHandler
             extends OptionHandler<Properties>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
+        /**
+         * Create a ClassOptionHandler object.
+         *
+         * @param parser Command line argument owner
+         * @param option Run-time copy of the Option or Argument annotation
+         * @param setter Setter interface
+         */
         public ClassOptionHandler (CmdLineParser parser,
                                    OptionDef option,
                                    Setter<? super Properties> setter)
@@ -396,7 +592,6 @@ public class CLI
             super(parser, option, setter);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String getDefaultMetaVariable ()
         {
@@ -414,7 +609,7 @@ public class CLI
                     Class runClass = Class.forName(className);
                     FieldSetter fs = setter.asFieldSetter();
                     fs.addValue(runClass);
-                } catch (Throwable ex) {
+                } catch (ClassNotFoundException ex) {
                     throw new CmdLineException(owner, ex);
                 }
             }
@@ -436,8 +631,14 @@ public class CLI
     public static class IntArrayOptionHandler
             extends OptionHandler<Integer>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
+        /**
+         * Create an IntArrayOptionHandler object.
+         *
+         * @param parser Command line argument owner
+         * @param option Run-time copy of the Option or Argument annotation
+         * @param setter Setter interface
+         */
         public IntArrayOptionHandler (CmdLineParser parser,
                                       OptionDef option,
                                       Setter<Integer> setter)
@@ -445,7 +646,6 @@ public class CLI
             super(parser, option, setter);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String getDefaultMetaVariable ()
         {
@@ -465,7 +665,7 @@ public class CLI
                     break;
                 }
 
-                int minusPos = param.indexOf("-");
+                int minusPos = param.indexOf('-');
 
                 if (minusPos != -1) {
                     // " a - b " or a-b
@@ -498,10 +698,10 @@ public class CLI
      */
     public static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
+        // Fields are kept in alphabetical order
 
         /** Should symbols annotations be produced?. */
-        @Option(name = "-annotate", hidden = true, usage = "Annotate book symbols")
+        @Option(name = "-annotate", usage = "(advanced) Annotate book symbols")
         boolean annotate;
 
         /** Batch mode. */
@@ -517,11 +717,12 @@ public class CLI
         boolean force;
 
         /** Help mode. */
-        @Option(name = "-help", help = true, usage = "Display general help then stops")
+        @Option(name = "-help", help = true, usage = "Display general help then stop")
         boolean helpMode;
 
         /** The map of application options. */
-        @Option(name = "-option", usage = "Define an application constant", handler = PropertyOptionHandler.class)
+        @Option(name = "-option", usage = "Define an application constant",
+                handler = PropertyOptionHandler.class)
         Properties options;
 
         /** Output directory. */
@@ -533,23 +734,25 @@ public class CLI
         boolean print;
 
         /** Ability to run a class on each valid sheet. */
-        @Option(name = "-run", usage = "Run provided class on valid sheets", handler = ClassOptionHandler.class)
+        @Option(name = "-run", usage = "(advanced) Run provided class on valid sheets",
+                handler = ClassOptionHandler.class)
         Class runClass;
 
         /** Should samples be produced?. */
-        @Option(name = "-sample", usage = "Sample all book symbols")
+        @Option(name = "-sample", usage = "(advanced) Sample all book symbols")
         boolean sample;
 
-        /** Should book be saved?. */
-        @Option(name = "-save", usage = "Save book")
+        /** Should book be saved on every successful batch step?. */
+        @Option(name = "-save", usage = "Save book on every successful batch step")
         boolean save;
 
         /** The set of sheet IDs to load. */
-        @Option(name = "-sheets", usage = "Select specific sheets numbers and ranges (like 2-5)", handler = IntArrayOptionHandler.class)
+        @Option(name = "-sheets", usage = "Select specific sheets numbers and ranges (like 2-5)",
+                handler = IntArrayOptionHandler.class)
         private ArrayList<Integer> sheets;
 
         /** Specific step. */
-        @Option(name = "-step", usage = "Define a specific processing step")
+        @Option(name = "-step", usage = "Define a specific target step")
         Step step;
 
         /** Should book be transcribed?. */
@@ -560,14 +763,12 @@ public class CLI
         @Argument
         @Option(name = "--", handler = StopOptionHandler.class)
         /** Final arguments. */
-        List<Path> arguments = new ArrayList<Path>();
+        List<Path> arguments = new ArrayList<>();
 
-        //~ Constructors ---------------------------------------------------------------------------
         private Parameters ()
         {
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //-------------//
         // getSheetIds //
         //-------------//
@@ -583,7 +784,7 @@ public class CLI
                 return null;
             }
 
-            return new TreeSet<Integer>(sheets);
+            return new TreeSet<>(sheets);
         }
     }
 
@@ -596,8 +797,14 @@ public class CLI
     public static class PropertyOptionHandler
             extends OptionHandler<Properties>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
+        /**
+         * Create a PropertyOptionHandler.
+         *
+         * @param parser Command line argument owner
+         * @param option Run-time copy of the Option or Argument annotation
+         * @param setter Setter interface
+         */
         public PropertyOptionHandler (CmdLineParser parser,
                                       OptionDef option,
                                       Setter<? super Properties> setter)
@@ -610,7 +817,6 @@ public class CLI
             }
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String getDefaultMetaVariable ()
         {
@@ -633,212 +839,11 @@ public class CLI
 
             try {
                 props.load(new StringReader(pair));
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 throw new CmdLineException(owner, "Error in " + name + " " + pair, ex);
             }
 
             return 1;
-        }
-    }
-
-    //----------//
-    // BookTask //
-    //----------//
-    /**
-     * CLI task to process a book file.
-     */
-    private class BookTask
-            extends ProcessingTask
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public BookTask (Path path)
-        {
-            super(path);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String toString ()
-        {
-            return "Book \"" + path + "\"";
-        }
-
-        @Override
-        protected Book loadBook (Path path)
-        {
-            return OMR.engine.loadBook(path);
-        }
-    }
-
-    //-----------//
-    // InputTask //
-    //-----------//
-    /**
-     * CLI task to process an input (image) file.
-     */
-    private class InputTask
-            extends ProcessingTask
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public InputTask (Path path)
-        {
-            super(path);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String toString ()
-        {
-            return "Input \"" + path + "\"";
-        }
-
-        @Override
-        protected Book loadBook (Path path)
-        {
-            return OMR.engine.loadInput(path);
-        }
-    }
-
-    //----------------//
-    // ProcessingTask //
-    //----------------//
-    /**
-     * Processing common to both input (images) and books.
-     */
-    private abstract class ProcessingTask
-            extends CliTask
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public ProcessingTask (Path path)
-        {
-            super(path);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected void processBook (Book book)
-        {
-            final Path folder = BookManager.getDefaultBookFolder(book);
-            boolean cancelled = false;
-
-            try {
-                if (!Files.exists(folder)) {
-                    Files.createDirectories(folder);
-                }
-
-                // In batch, log into specific log file within book folder
-                if (OMR.gui == null) {
-                    LogUtil.addAppender(book.getRadix(), folder);
-                }
-
-                LogUtil.start(book);
-
-                // Specific sheets to process?
-                final SortedSet<Integer> sheetIds = params.getSheetIds();
-
-                // Make sure stubs are available
-                if (book.getStubs().isEmpty()) {
-                    book.createStubs(sheetIds);
-
-                    // Save book to disk (global book info)
-                    if (OMR.gui == null) {
-                        book.store(BookManager.getDefaultSavePath(book), false);
-                    }
-                }
-
-                if (OMR.gui != null) {
-                    Integer focus = (sheetIds != null) ? sheetIds.first() : null;
-                    book.createStubsTabs(focus); // Tabs are now accessible
-                }
-
-                // Specific step to reach on all sheets in the book?
-                if (params.step != null) {
-                    boolean ok = book.reachBookStep(params.step, params.force, sheetIds);
-
-                    if (!ok) {
-                        return;
-                    }
-                }
-
-                if (params.transcribe) {
-                    book.reduceScores();
-                }
-
-                // Specific class to run?
-                if (params.runClass != null) {
-                    try {
-                        Constructor cons = params.runClass.getConstructor(
-                                new Class[]{Book.class, SortedSet.class});
-                        RunClass instance = (RunClass) cons.newInstance(book, sheetIds);
-                        instance.process();
-                    } catch (Throwable ex) {
-                        logger.warn("Error running {} {}", params.runClass, ex.toString(), ex);
-                    }
-                }
-
-                // Book print?
-                if (params.print) {
-                    logger.debug("Print book");
-                    book.print();
-                }
-
-                // Book export?
-                if (params.export) {
-                    logger.debug("Export book");
-                    book.export();
-                }
-
-                // Book sample?
-                if (params.sample) {
-                    logger.debug("Sample book");
-                    book.sample();
-                }
-
-                // Book annotate?
-                if (params.annotate) {
-                    logger.debug("Annotate book");
-                    book.annotate();
-                }
-
-                // Book save?
-                if (params.save) {
-                    logger.debug("Save book");
-
-                    if (book.isModified()) {
-                        book.store(BookManager.getDefaultSavePath(book), false);
-                    } else {
-                        logger.info("No need to save {}", book);
-                    }
-                }
-            } catch (ProcessingCancellationException pce) {
-                logger.warn("Cancelled " + book);
-                cancelled = true;
-                throw pce;
-            } catch (Throwable ex) {
-                logger.warn("Exception occurred " + ex, ex);
-                throw new RuntimeException(ex);
-            } finally {
-                // Close (when in batch mode only)
-                if (OMR.gui == null) {
-                    if (cancelled) {
-                        // Make a backup if needed, then save book "in its current status"
-                        book.store(BookManager.getDefaultSavePath(book), true);
-                    } else {
-                        book.store(BookManager.getDefaultSavePath(book), false);
-                    }
-
-                    book.close();
-                }
-
-                LogUtil.stopBook();
-
-                if (OMR.gui == null) {
-                    LogUtil.removeAppender(book.getRadix());
-                }
-            }
         }
     }
 
@@ -851,14 +856,12 @@ public class CLI
     private static class SamplesTask
             extends CliTask
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public SamplesTask (Path path)
+        SamplesTask (Path path)
         {
             super(path);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

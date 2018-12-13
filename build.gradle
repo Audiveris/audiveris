@@ -15,11 +15,13 @@ ext.companyId       = "${programName}Ltd"
 ext.targetOSName   = System.getProperty('os.name').toLowerCase()\
                      .startsWith('mac os x') ? 'macosx' :\
                      System.getProperty('os.name').split(' ')[0].toLowerCase()
-ext.targetOSArch   = ["i386":"x86", "i486":"x86", "i586":"x86", "i686":"x86",
+ext.targetOSArch   = ["i386":"x86", "i486":"x86", "i586":"x86", "i686":"x86", "x86":"x86",
                       "amd64":"x86_64", "x86-64":"x86_64", "x86_64":"x86_64"]\
                      [System.getProperty('os.arch').toLowerCase()]
 ext.targetOS       = "${project.ext.targetOSName}-${project.ext.targetOSArch}"
 println "targetOS=${project.ext.targetOS}"
+
+ext.makensisPath = null
 
 //ext.dl4jVersion = '0.8.0'
 //ext.nd4jVersion = '0.8.0'
@@ -132,6 +134,13 @@ dependencies {
     )
 }
 
+// Specific configurations for specific OS dependencies
+['windows-x86', 'windows-x86_64'].each { os ->
+    configurations.create("runtime-$os")
+    dependencies.add("runtime-$os", [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.73-1.3', classifier: "$os"])
+    dependencies.add("runtime-$os", [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: '3.04.01-1.3', classifier: "$os"])
+}
+
 jar {
     // override default output archive name
     archiveName = "audiveris.jar"
@@ -172,6 +181,8 @@ task "git_build"(type:Exec) {
 }
 
 task generateProgramId(dependsOn: git_build) {
+    group "build"
+    description "Generates ProgramId source"
     doLast{
         project.ext.outputDir = file("$buildDir/generated-src/org/audiveris/omr")
 
@@ -202,6 +213,88 @@ sourceSets {
             srcDir { "$buildDir/generated-src/org/audiveris/omr" }
         }
     }
+}
+
+// Make sure we have an NSIS compiler available and store it into project.ext.makensisPath
+task findNsisCompiler {
+    description "Find path to NSIS compiler"
+    onlyIf {"windows" == "${project.ext.targetOSName}"}
+    
+    doLast {
+        // First test on PATH, then on standard program files locations
+        ["", "C:/Program Files (x86)/NSIS/", "C:/Program Files/NSIS/"].each { prefix ->        
+            if (project.ext.makensisPath == null) {
+                try {
+                    def path = "${prefix}makensis.exe"
+                    def proc = [path, "/VERSION"].execute()
+                    proc.waitFor()
+                    println "NSIS compiler $path found, version " + proc.in.text.trim()
+                    project.ext.makensisPath = path
+                } catch (ignored) {
+                }    
+            }
+        }
+    
+        if (project.ext.makensisPath == null) {
+            throw new RuntimeException("Cannot find NSIS compiler (makensis.exe)!")       
+        }
+    }
+}
+
+// All installers
+task installers {
+    group "Installers"
+    description "Builds all installers"
+}
+
+// Windows installers for 32-bit and 64-bit
+['windows-x86', 'windows-x86_64'].each { os ->
+    task "installer_$os"(type: Exec, dependsOn: [findNsisCompiler, jar, startScripts]) {
+        group "Installers"
+        description "Builds installer for $os"        
+        onlyIf {"windows" == "${project.ext.targetOSName}"}
+
+        // Filter line that starts with "CLASSPATH="  or "set CLASSPATH=" findClasspath,
+        // and update os-based classifier information.
+        def updateClassPath = { findClasspath, line ->
+            line.startsWith("${findClasspath}=") ? line.replaceAll("-${project.ext.targetOS}.jar", "-${os}.jar") : line
+        }
+        
+        doFirst  {
+            mkdir "$buildDir/installers"
+            
+            // Fresh population of os-dependent folder with bin+lib items
+            delete "$buildDir/installers/$os"
+            
+            // bin: Scripts and icon
+            copy {
+                into "$buildDir/installers/$os/bin"                
+                from("$buildDir/scripts/Audiveris") {filter updateClassPath.curry('CLASSPATH') }
+                from("$buildDir/scripts/Audiveris.bat") {filter updateClassPath.curry('set CLASSPATH')}            
+                from "$projectDir/res/icon-256.ico"
+            }
+
+            // lib: Libraries
+            copy {
+                into "$buildDir/installers/$os/lib"
+                from "$buildDir/jar" // audiveris.jar
+                from configurations.compile // Compile jars
+                from configurations."runtime-$os" // OS-specific jars 
+            }
+       
+            // Set NSIS compiler command line
+            def suffix = (os == "windows-x86_64")? "" : "32"    
+            commandLine "cmd", "/c",\
+                "${project.ext.makensisPath}",\
+                "/DPRODUCT_VERSION=$programVersion",\
+                "/DPROJECT_DIR=$projectDir",\
+                "/DTARGET_OS=$os",\
+                "/DSUFFIX=$suffix",\
+                "$projectDir/dev/installer-windows/Installer.nsi"
+        }
+    }
+    
+    installers.dependsOn("installer_$os")
 }
 
 javadoc {

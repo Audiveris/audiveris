@@ -23,6 +23,7 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.Inter;
 
@@ -31,19 +32,18 @@ import org.jgrapht.event.GraphEdgeChangeEvent;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ChordArpeggiatoRelation}
+ * Class {@code ChordArpeggiatoRelation} represents a relation between a (head) chord
+ * and an arpeggiato.
  *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "chord-arpeggiato")
 public class ChordArpeggiatoRelation
-        extends AbstractSupport
+        extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ArpeggiatoChordRelation} object.
      *
@@ -62,7 +62,6 @@ public class ChordArpeggiatoRelation
         super();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -98,7 +97,10 @@ public class ChordArpeggiatoRelation
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         final ArpeggiatoInter arpeggiato = (ArpeggiatoInter) e.getEdgeTarget();
-        arpeggiato.checkAbnormal();
+
+        if (!arpeggiato.isRemoved()) {
+            arpeggiato.checkAbnormal();
+        }
     }
 
     @Override
@@ -107,17 +109,31 @@ public class ChordArpeggiatoRelation
         return constants.arpeggiatoSupportCoeff.getValue();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //----------------//
+    // getXGapMaximum //
+    //----------------//
+    public static Scale.Fraction getXGapMaximum (boolean manual)
+    {
+        return manual ? constants.xGapMaxManual : constants.xGapMax;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio arpeggiatoSupportCoeff = new Constant.Ratio(
                 0.5,
                 "Supporting coeff for (source) arpeggiato");
+
+        private final Scale.Fraction xGapMax = new Scale.Fraction(
+                1.5,
+                "Maximum horizontal gap between arpeggiato & chord");
+
+        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(
+                2.5,
+                "Maximum manual horizontal gap between arpeggiato & chord");
     }
 }

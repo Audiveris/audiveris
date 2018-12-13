@@ -31,26 +31,21 @@ import org.audiveris.omr.sig.SIGraph;
  */
 public abstract class UITask
 {
-    //~ Enumerations -------------------------------------------------------------------------------
 
     /** Operation kind performed on a UITask. */
     public static enum OpKind
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         DO,
         UNDO,
         REDO;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying sheet. */
     protected final Sheet sheet;
 
     /** Underlying SIG. */
     protected final SIGraph sig;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code UITask} object.
      *
@@ -62,7 +57,6 @@ public abstract class UITask
         sheet = sig.getSystem().getSheet();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public SIGraph getSig ()
     {
         return sig;

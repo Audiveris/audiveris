@@ -28,11 +28,12 @@ import java.awt.Rectangle;
 
 /**
  * Class {@code FlatSymbol} handles a flat or double-flat symbol with a refPoint.
+ *
+ * @author Hervé Bitteur
  */
 public class FlatSymbol
         extends ShapeSymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new FlatSymbol object.
@@ -60,19 +61,18 @@ public class FlatSymbol
         super(isIcon, shape, false, codes);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getRefPoint //
     //-------------//
     /**
-     * Report the symbol reference point which is lower than center for flats.
+     * {@inheritDoc}
+     * <p>
+     * For a flat symbol, the reference point is lower than area center.
      */
     @Override
     public Point getRefPoint (Rectangle box)
     {
-        return new Point(
-                box.x + (box.width / 2),
-                box.y + (int) Math.rint(box.height * 0.67));
+        return new Point(box.x + (box.width / 2), box.y + (int) Math.rint(box.height * 0.67));
     }
 
     //------------//

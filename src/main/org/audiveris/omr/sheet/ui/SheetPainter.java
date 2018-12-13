@@ -27,6 +27,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.ui.SigPainter;
+import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.util.UIUtil;
@@ -47,7 +48,8 @@ import java.util.ConcurrentModificationException;
 /**
  * Class {@code SheetPainter} provides a basis to paint sheet content.
  * <p>
- * It is specialized in:<ul>
+ * It is specialized in:
+ * <ul>
  * <li>{@link SheetGradedPainter} which displays all SIG inters with opacity derived from each inter
  * grade value.</li>
  * <li>{@link SheetResultPainter} which displays the resulting score (SIG remaining inters,
@@ -59,11 +61,13 @@ import java.util.ConcurrentModificationException;
  */
 public abstract class SheetPainter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SheetPainter.class);
+
+    /** A transformation to half scale. (used for slot time annotation) */
+    protected static final AffineTransform halfAT = AffineTransform.getScaleInstance(0.5, 0.5);
 
     /** Font for annotations. */
     protected static final Font basicFont = new Font(
@@ -71,12 +75,11 @@ public abstract class SheetPainter
             Font.PLAIN,
             constants.basicFontSize.getValue());
 
-    /** A transformation to half scale. (used for slot time annotation) */
-    protected static final AffineTransform halfAT = AffineTransform.getScaleInstance(0.5, 0.5);
-
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Sheet. */
     protected final Sheet sheet;
+
+    /** View parameters. */
+    protected final ViewParameters viewParams = ViewParameters.getInstance();
 
     /** Graphic context. */
     protected final Graphics2D g;
@@ -87,7 +90,6 @@ public abstract class SheetPainter
     /** Painter for Inter instances. */
     protected SigPainter sigPainter;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SheetPainter object.
      *
@@ -103,13 +105,11 @@ public abstract class SheetPainter
         clip = g.getClipBounds();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
     /**
      * Paint the sheet.
-     *
      */
     public void process ()
     {
@@ -150,6 +150,11 @@ public abstract class SheetPainter
     //---------------//
     // getSigPainter //
     //---------------//
+    /**
+     * Report the concrete sig painter to be used.
+     *
+     * @return the sig painter
+     */
     protected abstract SigPainter getSigPainter ();
 
     //-------//
@@ -173,6 +178,11 @@ public abstract class SheetPainter
     //---------------//
     // processSystem //
     //---------------//
+    /**
+     * Process a system.
+     *
+     * @param system the system to process
+     */
     protected void processSystem (SystemInfo system)
     {
         try {
@@ -191,14 +201,12 @@ public abstract class SheetPainter
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Integer basicFontSize = new Constant.Integer(
                 "points",

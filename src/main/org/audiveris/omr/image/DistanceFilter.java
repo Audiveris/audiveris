@@ -32,12 +32,10 @@ import ij.process.ByteProcessor;
 public class DistanceFilter
         implements PixelFilter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The underlying distance image (distances to foreground). */
     private final Table distances;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new DistanceFilter object.
      *
@@ -48,7 +46,6 @@ public class DistanceFilter
         this.distances = distances;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public ByteProcessor filteredImage ()
     {

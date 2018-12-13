@@ -34,20 +34,10 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "chord-sentence")
 public class ChordSentenceRelation
-        extends AbstractSupport
+        extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // getXGapMax //
-    //------------//
-    public static Scale.Fraction getXGapMax ()
-    {
-        return constants.xGapMax;
-    }
 
     //----------------//
     // isSingleSource //
@@ -67,14 +57,20 @@ public class ChordSentenceRelation
         return true;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //------------//
+    // getXGapMax //
+    //------------//
+    public static Scale.Fraction getXGapMax ()
+    {
+        return constants.xGapMax;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction xGapMax = new Scale.Fraction(
                 1.0,

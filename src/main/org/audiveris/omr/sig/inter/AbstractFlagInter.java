@@ -23,10 +23,8 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-
 import static org.audiveris.omr.glyph.ShapeSet.FlagsUp;
 import static org.audiveris.omr.glyph.ShapeSet.SmallFlags;
-
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.sheet.Scale;
@@ -55,17 +53,15 @@ import java.util.List;
 public abstract class AbstractFlagInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractFlagInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** Value of this flag (compound?) in terms of individual flags.
+    /**
+     * Value of this flag (compound?) in terms of individual flags.
      * (Lazily evaluated)
      */
     protected Integer value;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AbstractFlagInter} object.
      */
@@ -85,44 +81,6 @@ public abstract class AbstractFlagInter
                                  double grade)
     {
         super(glyph, null, shape, grade);
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //------------------//
-    // createValidAdded //
-    //------------------//
-    /**
-     * (Try to) create and add a Flag inter (either standard FlagInter or SmallFlagInter).
-     * <p>
-     * At this time note heads have already been validated (with their attached stem).
-     * So, a flag is created only if it can be related to stems with consistent size head(s),
-     * and if it is correctly located WRT note heads on the stem.
-     *
-     * @param glyph       the flag glyph
-     * @param shape       flag shape
-     * @param grade       the interpretation quality
-     * @param system      the related system
-     * @param systemStems ordered collection of stems in system
-     * @return the created instance or null
-     */
-    public static AbstractFlagInter createValidAdded (Glyph glyph,
-                                                      Shape shape,
-                                                      double grade,
-                                                      SystemInfo system,
-                                                      List<Inter> systemStems)
-    {
-        AbstractFlagInter flag = new FlagInter(glyph, shape, grade);
-
-        Link link = flag.lookupLink(systemStems);
-
-        if (link != null) {
-            system.getSig().addVertex(flag);
-            link.applyTo(flag);
-
-            return flag;
-        }
-
-        return null;
     }
 
     //--------//
@@ -188,46 +146,6 @@ public abstract class AbstractFlagInter
         return Collections.singleton(link);
     }
 
-    //--------------//
-    // getFlagValue //
-    //--------------//
-    /**
-     * Report the number of individual flags that corresponds to the flag shape
-     *
-     * @param shape the given flag shape
-     * @return the number of individual flags
-     */
-    private static int getFlagValue (Shape shape)
-    {
-        switch (shape) {
-        case FLAG_1:
-        case FLAG_1_UP:
-        case SMALL_FLAG:
-        case SMALL_FLAG_SLASH:
-            return 1;
-
-        case FLAG_2:
-        case FLAG_2_UP:
-            return 2;
-
-        case FLAG_3:
-        case FLAG_3_UP:
-            return 3;
-
-        case FLAG_4:
-        case FLAG_4_UP:
-            return 4;
-
-        case FLAG_5:
-        case FLAG_5_UP:
-            return 5;
-        }
-
-        logger.error("Illegal flag shape: {}", shape);
-
-        return 0;
-    }
-
     //------------//
     // lookupLink //
     //------------//
@@ -258,10 +176,9 @@ public abstract class AbstractFlagInter
         final Point refPt = new Point(
                 flagBox.x,
                 isFlagUp ? ((flagBox.y + flagBox.height) - footHeight) : (flagBox.y + footHeight));
-        final int y = isFlagUp ? ((flagBox.y + flagBox.height) - footHeight
-                                  - maxStemFlagGapY) : (flagBox.y + maxStemFlagGapY);
-        final int midFootY = isFlagUp ? (refPt.y + (footHeight / 2))
-                : (refPt.y - (footHeight / 2));
+        final int y = isFlagUp ? ((flagBox.y + flagBox.height) - footHeight - maxStemFlagGapY)
+                : (flagBox.y + maxStemFlagGapY);
+        final int midFootY = isFlagUp ? (refPt.y + (footHeight / 2)) : (refPt.y - (footHeight / 2));
 
         //TODO: -1 is used to cope with stem margin when erased (To be improved)
         final Rectangle luBox = new Rectangle(
@@ -335,5 +252,82 @@ public abstract class AbstractFlagInter
         }
 
         return null;
+    }
+
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create and add a Flag inter (either standard FlagInter or SmallFlagInter).
+     * <p>
+     * At this time note heads have already been validated (with their attached stem).
+     * So, a flag is created only if it can be related to stems with consistent size head(s),
+     * and if it is correctly located WRT note heads on the stem.
+     *
+     * @param glyph       the flag glyph
+     * @param shape       flag shape
+     * @param grade       the interpretation quality
+     * @param system      the related system
+     * @param systemStems ordered collection of stems in system
+     * @return the created instance or null
+     */
+    public static AbstractFlagInter createValidAdded (Glyph glyph,
+                                                      Shape shape,
+                                                      double grade,
+                                                      SystemInfo system,
+                                                      List<Inter> systemStems)
+    {
+        AbstractFlagInter flag = new FlagInter(glyph, shape, grade);
+
+        Link link = flag.lookupLink(systemStems);
+
+        if (link != null) {
+            system.getSig().addVertex(flag);
+            link.applyTo(flag);
+
+            return flag;
+        }
+
+        return null;
+    }
+
+    //--------------//
+    // getFlagValue //
+    //--------------//
+    /**
+     * Report the number of individual flags that corresponds to the flag shape
+     *
+     * @param shape the given flag shape
+     * @return the number of individual flags
+     */
+    private static int getFlagValue (Shape shape)
+    {
+        switch (shape) {
+        case FLAG_1:
+        case FLAG_1_UP:
+        case SMALL_FLAG:
+        case SMALL_FLAG_SLASH:
+            return 1;
+
+        case FLAG_2:
+        case FLAG_2_UP:
+            return 2;
+
+        case FLAG_3:
+        case FLAG_3_UP:
+            return 3;
+
+        case FLAG_4:
+        case FLAG_4_UP:
+            return 4;
+
+        case FLAG_5:
+        case FLAG_5_UP:
+            return 5;
+        }
+
+        logger.error("Illegal flag shape: {}", shape);
+
+        return 0;
     }
 }

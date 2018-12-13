@@ -39,6 +39,8 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.jar.JarFile;
 
+import javax.swing.filechooser.FileSystemView;
+
 /**
  * Class {@code WellKnowns} gathers top public static final data to be shared within
  * Audiveris application.
@@ -50,7 +52,6 @@ import java.util.jar.JarFile;
  */
 public abstract class WellKnowns
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     //----------//
     // IDENTITY //
@@ -97,8 +98,8 @@ public abstract class WellKnowns
     public static final String OS_ARCH = System.getProperty("os.arch");
 
     /** Are we using Windows on 64 bit architecture?. */
-    public static final boolean WINDOWS_64 = WINDOWS
-                                             && (System.getenv("ProgramFiles(x86)") != null);
+    public static final boolean WINDOWS_64 = WINDOWS && (System.getenv(
+            "ProgramFiles(x86)") != null);
 
     /** File character encoding. */
     public static final String FILE_ENCODING = getFileEncoding();
@@ -129,12 +130,8 @@ public abstract class WellKnowns
     public static final boolean RUNNING_FROM_JAR = runningFromJar();
 
     /** The uri where read-only resources are stored. */
-    public static final URI RES_URI = RUNNING_FROM_JAR
-            ? toURI(WellKnowns.class.getClassLoader().getResource("res"))
-            : Paths.get("res").toUri();
-
-    /** The folder where Tesseract OCR material is stored. */
-    public static final Path OCR_FOLDER = getOcrFolder();
+    public static final URI RES_URI = RUNNING_FROM_JAR ? toURI(
+            WellKnowns.class.getClassLoader().getResource("res")) : Paths.get("res").toUri();
 
     //-------------// read-write area
     // USER CONFIG // Configuration files the user can edit on his own
@@ -142,9 +139,6 @@ public abstract class WellKnowns
     //
     /** The folder where global configuration data is stored. */
     public static final Path CONFIG_FOLDER = getFolder(FolderKind.CONFIG);
-
-    /** The folder where plugin scripts are found. */
-    public static final Path PLUGINS_FOLDER = CONFIG_FOLDER.resolve("plugins");
 
     //-----------// read-write area
     // USER DATA // User-specific data, except configuration stuff
@@ -165,14 +159,11 @@ public abstract class WellKnowns
      */
     public static final Path EXAMPLES_FOLDER = DATA_FOLDER.resolve("examples");
 
-    /** The folder where temporary data can be stored. */
-    public static final Path TEMP_FOLDER = DATA_FOLDER.resolve("temp");
-
     /** The folder where training material is stored. */
-    public static final Path TRAIN_FOLDER = DATA_FOLDER.resolve("train");
+    public static final Path TRAIN_FOLDER = CONFIG_FOLDER.resolve("train");
 
     /** The default base for output folders. */
-    public static final Path DEFAULT_BASE_FOLDER = DATA_FOLDER.resolve("output");
+    public static final Path DEFAULT_BASE_FOLDER = DATA_FOLDER; // BHT: skip "output"
 
     //----------//
     // USER LOG //
@@ -180,6 +171,9 @@ public abstract class WellKnowns
     //
     /** The folder where log files are stored. */
     public static final Path LOG_FOLDER = getFolder(FolderKind.LOG);
+
+    /** The folder where temporary data can be stored. */
+    public static final Path TEMP_FOLDER = LOG_FOLDER.resolve("temp");
 
     static {
         /** Logging configuration. */
@@ -205,26 +199,18 @@ public abstract class WellKnowns
         disableMediaLib();
     }
 
-    private static final String ocrNotFoundMsg = "Tesseract data could not be found. "
-                                                 + "Try setting the TESSDATA_PREFIX environment variable to the parent folder of \"tessdata\".";
-
-    //~ Enumerations -------------------------------------------------------------------------------
     private static enum FolderKind
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        CONFIG,
         DATA,
+        CONFIG,
         LOG;
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private WellKnowns ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // ensureLoaded //
     //--------------//
@@ -319,7 +305,9 @@ public abstract class WellKnowns
         } else if (LINUX) {
             return getFolderForLinux(kind);
         } else {
-            throw new RuntimeException("Platform unknown");
+            printError("Platform unknown: " + kind);
+
+            return null;
         }
     }
 
@@ -335,10 +323,10 @@ public abstract class WellKnowns
             final Path audiverisPath = Paths.get(xdg + TOOL_PREFIX);
 
             switch (kind) {
-            case CONFIG:
+            case DATA:
                 return audiverisPath;
 
-            case DATA:
+            case CONFIG:
                 return audiverisPath;
 
             default:
@@ -351,15 +339,17 @@ public abstract class WellKnowns
         final String home = System.getenv("HOME");
 
         if (home == null) {
-            throw new RuntimeException("HOME environment variable is not set");
+            printError("HOME environment variable is not set");
+
+            return null;
         }
 
         switch (kind) {
-        case CONFIG:
-            return Paths.get(home + "/.config" + TOOL_PREFIX);
-
         case DATA:
             return Paths.get(home + "/.local/share" + TOOL_PREFIX);
+
+        case CONFIG:
+            return Paths.get(home + "/.config" + TOOL_PREFIX);
 
         default:
         case LOG:
@@ -375,15 +365,17 @@ public abstract class WellKnowns
         final String home = System.getenv("HOME");
 
         if (home == null) {
-            throw new RuntimeException("HOME environment variable is not set");
+            printError("HOME environment variable is not set");
+
+            return null;
         }
 
         switch (kind) {
-        case CONFIG:
-            return Paths.get(home + "/Library/Application Support/" + TOOL_PREFIX);
-
         case DATA:
             return Paths.get(home + "/Library/" + TOOL_PREFIX + "/data");
+
+        case CONFIG:
+            return Paths.get(home + "/Library/Application Support/" + TOOL_PREFIX);
 
         default:
         case LOG:
@@ -396,20 +388,26 @@ public abstract class WellKnowns
     //---------------------//
     private static Path getFolderForWindows (FolderKind kind)
     {
+        // User Application Data
         final String appdata = System.getenv("APPDATA");
 
         if (appdata == null) {
-            throw new RuntimeException("APPDATA environment variable is not set");
+            printError("APPDATA environment variable is not set");
+
+            return null;
         }
 
         final Path audiverisPath = Paths.get(appdata + TOOL_PREFIX);
 
+        // User Documents
+        final String userDocs = FileSystemView.getFileSystemView().getDefaultDirectory().getPath();
+
         switch (kind) {
+        case DATA:
+            return Paths.get(userDocs + "/" + TOOL_NAME);
+
         case CONFIG:
             return audiverisPath.resolve("config");
-
-        case DATA:
-            return audiverisPath.resolve("data");
 
         default:
         case LOG:
@@ -435,58 +433,11 @@ public abstract class WellKnowns
 
                 return jarFile;
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             System.out.print("Error getting jar file " + ex);
         }
 
         return null;
-    }
-
-    //--------------//
-    // getOcrFolder //
-    //--------------//
-    private static Path getOcrFolder ()
-    {
-        // common Macintosh TESSDATA locations
-        final String[] macOcrLocations = {
-            "/opt/local/share", // Macports
-            "/usr/local/opt/tesseract/share" // Homebrew
-        };
-
-        // common Linux TESSDATA locations
-        final String[] linuxOcrLocations = {
-            "/usr/share/tesseract-ocr", // Debian, Ubuntu and derivatives
-            "/usr/share", // OpenSUSE
-            "/usr/share/tesseract" // Fedora
-        };
-
-        // First, try to use TESSDATA_PREFIX environment variable
-        // which might denote a Tesseract installation
-        final String TESSDATA_PREFIX = "TESSDATA_PREFIX";
-        final String tessPrefix = System.getenv(TESSDATA_PREFIX);
-
-        if (tessPrefix != null) {
-            Path dir = Paths.get(tessPrefix);
-
-            if (Files.isDirectory(dir)) {
-                return dir;
-            }
-        }
-
-        // Fallback to default directory on Windows
-        if (WINDOWS) {
-            final String pf32 = OS_ARCH.equals("x86") ? "ProgramFiles" : "ProgramFiles(x86)";
-
-            return Paths.get(System.getenv(pf32)).resolve("tesseract-ocr");
-
-            // scan common locations on Mac and Linux
-        } else if (LINUX) {
-            return scanOcrLocations(linuxOcrLocations);
-        } else if (MAC_OS_X) {
-            return scanOcrLocations(macOcrLocations);
-        }
-
-        throw new InstallationException(ocrNotFoundMsg);
     }
 
     //-----------------//
@@ -497,15 +448,28 @@ public abstract class WellKnowns
         // Note: Logger initialization has been differed until now
         final Logger logger = LoggerFactory.getLogger(WellKnowns.class);
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isTraceEnabled()) {
             for (Field field : WellKnowns.class.getDeclaredFields()) {
                 try {
-                    logger.debug("{}= {}", field.getName(), field.get(null));
+                    logger.trace("{}= {}", field.getName(), field.get(null));
                 } catch (IllegalAccessException ex) {
                     ex.printStackTrace();
                 }
             }
         }
+    }
+
+    //------------//
+    // printError //
+    //------------//
+    /**
+     * Fallback solution, since we cannot reliably use exception in static initializer.
+     *
+     * @param msg the error message
+     */
+    private static void printError (String msg)
+    {
+        System.err.println("*** INIT_ERROR occurred in class WellKnowns: " + msg);
     }
 
     //----------------//
@@ -516,55 +480,21 @@ public abstract class WellKnowns
         return CLASS_CONTAINER.toString().toLowerCase().endsWith(".jar");
     }
 
-    //------------------//
-    // scanOcrLocations //
-    //------------------//
-    private static Path scanOcrLocations (String[] locations)
-    {
-        for (String loc : locations) {
-            final Path path = Paths.get(loc);
-
-            if (Files.exists(path.resolve("tessdata"))) {
-                return path;
-            }
-        }
-
-        throw new InstallationException(ocrNotFoundMsg);
-    }
-
     //-------------//
     // xdgProperty //
     //-------------//
     private static String xdgProperty (FolderKind kind)
     {
         switch (kind) {
-        case CONFIG:
-            return "XDG_CONFIG_HOME";
-
         case DATA:
             return "XDG_DATA_HOME";
+
+        case CONFIG:
+            return "XDG_CONFIG_HOME";
 
         default:
         case LOG:
             return "XDG_CACHE_HOME";
-        }
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------------------//
-    // InstallationException //
-    //-----------------------//
-    /**
-     * Exception used to signal an installation error.
-     */
-    public static class InstallationException
-            extends RuntimeException
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public InstallationException (String message)
-        {
-            super(message);
         }
     }
 }

@@ -25,10 +25,10 @@ package org.audiveris.omr.util;
  * Interface {@code Predicate} is used to specify a filter on a provided entity.
  *
  * @param <E> Specific type of the entity on which the predicate is checked
+ * @author Hervé Bitteur
  */
 public interface Predicate<E>
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Run a check on the provided entity, and return the result

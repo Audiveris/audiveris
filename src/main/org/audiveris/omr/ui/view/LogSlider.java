@@ -24,7 +24,7 @@ package org.audiveris.omr.ui.view;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 
-import java.util.Hashtable;
+import java.util.Hashtable; // Obsolete but mandatory
 
 import javax.swing.JLabel;
 import javax.swing.JSlider;
@@ -32,7 +32,6 @@ import javax.swing.JSlider;
 /**
  * Class {@code LogSlider} is a specific {@link JSlider} which handles double values
  * with a logarithmic scale (while normal JSlider handles only integer values).
- *
  * <p>
  * As with a basic JSlider, any external entity can be notified of new slider value, by first
  * registering to this LogSlider via the {@link #addChangeListener} method.
@@ -42,7 +41,6 @@ import javax.swing.JSlider;
 public class LogSlider
         extends JSlider
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -51,11 +49,9 @@ public class LogSlider
 
     private static final double doubleUnit = unit; // To speed up
 
-    //~ Instance fields ----------------------------------------------------------------------------
     // Base of log (generally 2 or 10)
     private final double base;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code LogSlider} instance.
      *
@@ -80,7 +76,7 @@ public class LogSlider
         super(orientation, min * unit, max * unit, initial * unit);
 
         // Cache data
-        this.base = (double) base;
+        this.base = base;
 
         // Ticks
         super.setMajorTickSpacing(unit);
@@ -97,14 +93,19 @@ public class LogSlider
         //             break;
         //         case VERTICAL   : setBorder (BorderFactory.createEmptyBorder(0,0,0,5));
         //         }
-        // Create and populate the label table
-        Hashtable<Integer, JLabel> labelTable = new Hashtable<Integer, JLabel>();
+        //
+        /**
+         * Create and populate the label table.
+         * NOTA: Obsolete class Hashtable is imposed by {@link JSlider#setLabelTable(Dictionary)}
+         */
+        Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
 
         for (int i = min; i <= max; i++) {
             labelTable.put(
-                    Integer.valueOf(i * unit),
+                    i * unit,
                     new JLabel(
-                            (i < 0) ? ("1/" + (int) expOf(-i * unit)) : ("" + (int) expOf(i * unit))));
+                            (i < 0) ? ("1/" + (int) expOf(-i * unit))
+                                    : ("" + (int) expOf(i * unit))));
         }
 
         setLabelTable(labelTable);
@@ -114,7 +115,6 @@ public class LogSlider
         setSnapToTicks(true);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getDoubleValue //
     //----------------//
@@ -182,7 +182,7 @@ public class LogSlider
     //-------//
     private double expOf (int i)
     {
-        return Math.pow(base, (double) i / doubleUnit);
+        return Math.pow(base, i / doubleUnit);
     }
 
     //-------//
@@ -193,14 +193,12 @@ public class LogSlider
         return (int) Math.rint((doubleUnit * Math.log(d)) / Math.log(base));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Integer resolution = new Constant.Integer(
                 "Values",

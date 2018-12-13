@@ -45,7 +45,6 @@ import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.selection.AnchoredTemplateEvent;
 import org.audiveris.omr.ui.selection.SelectionService;
-
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 
@@ -65,20 +64,17 @@ import java.util.SortedMap;
  */
 public class DistancesBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(DistancesBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
     /** Table of distances to fore. */
     private DistanceTable table;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code DistancesBuilder} object.
      *
@@ -89,10 +85,14 @@ public class DistancesBuilder
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // buildDistances //
     //----------------//
+    /**
+     * Build the table of distances.
+     *
+     * @return the table of distance values
+     */
     public DistanceTable buildDistances ()
     {
         // Compute the distance-to-foreground transform image
@@ -112,7 +112,9 @@ public class DistancesBuilder
             TemplateBoard templateBoard = new TemplateBoard(sheet, table, templateService);
             sheet.getStub().getAssembly().addViewTab(
                     SheetTab.TEMPLATE_TAB,
-                    new ScrollImageView(sheet, new TemplateView(sheet, img, table, templateService)),
+                    new ScrollImageView(
+                            sheet,
+                            new TemplateView(sheet, img, table, templateService)),
                     new BoardsPane(new DistanceBoard(sheet, table), templateBoard));
             templateBoard.stateChanged(null); // To feed template service
         }
@@ -183,14 +185,12 @@ public class DistancesBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean displayTemplates = new Constant.Boolean(
                 false,

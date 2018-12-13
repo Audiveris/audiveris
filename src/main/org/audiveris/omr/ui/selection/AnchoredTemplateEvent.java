@@ -32,11 +32,9 @@ import org.audiveris.omr.image.AnchoredTemplate;
 public class AnchoredTemplateEvent
         extends UserEvent
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private final AnchoredTemplate anchoredTemplate;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AnchoredTemplateEvent} object.
      *
@@ -54,7 +52,6 @@ public class AnchoredTemplateEvent
         this.anchoredTemplate = anchoredTemplate;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//

@@ -41,18 +41,15 @@ import org.slf4j.LoggerFactory;
  */
 public class JunctionRetriever
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(JunctionRetriever.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Skeleton buffer. */
     private final ByteProcessor buf;
 
     /** Vicinity of current pixel. */
     private final Vicinity vicinity = new Vicinity();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new JunctionRetriever object.
      *
@@ -63,7 +60,6 @@ public class JunctionRetriever
         buf = skeleton.buf;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // scanImage //
     //-----------//
@@ -77,7 +73,7 @@ public class JunctionRetriever
                 int pix = buf.get(x, y);
 
                 if ((pix == FOREGROUND) // Basic pixel, not yet processed
-                    || isJunction(pix)) { // Junction, perhaps not the best
+                            || isJunction(pix)) { // Junction, perhaps not the best
                     checkJunction(x, y);
                 }
             }
@@ -203,7 +199,6 @@ public class JunctionRetriever
         return vicinity.getCount();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // Vicinity //
     //----------//
@@ -212,7 +207,6 @@ public class JunctionRetriever
      */
     private static class Vicinity
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         int verts; // Number of neighbors vertically connected
 
@@ -220,7 +214,6 @@ public class JunctionRetriever
 
         int diags; // Number of neighbors diagonally connected
 
-        //~ Methods --------------------------------------------------------------------------------
         public int getCount ()
         {
             return verts + horis + diags;

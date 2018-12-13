@@ -36,7 +36,6 @@ import java.awt.Rectangle;
 public abstract class AbstractDirectionInter
         extends AbstractInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code AbstractDirectionInter} object.

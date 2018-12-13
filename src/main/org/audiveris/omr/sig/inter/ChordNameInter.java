@@ -26,6 +26,7 @@ import org.audiveris.omr.sig.inter.ChordNameInter.Degree.DegreeType;
 import static org.audiveris.omr.sig.inter.ChordNameInter.Kind.Type.*;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextWord;
+import org.audiveris.omr.util.Jaxb;
 import static org.audiveris.omr.util.RegexUtil.*;
 
 import org.slf4j.Logger;
@@ -42,17 +43,18 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code ChordNameInter} is a formatted piece of text that
  * describes a chord symbol such as F#m7, A(9) or BMaj7/D#.
  * This class is organized according to the target MusicXML harmony element.
  * <p>
- * TODO: Add support for degree subtract (besides add and alter) </p>
+ * TODO: Add support for degree subtract (besides add and alter)
  * <p>
- * TODO: Add support for classical functions (besides root)</p>
+ * TODO: Add support for classical functions (besides root)
  * <p>
- * TODO: Add support for French steps: Do, Ré, Mi, etc.</p>
+ * TODO: Add support for French steps: Do, Ré, Mi, etc.
  *
  * @author Hervé Bitteur
  */
@@ -61,10 +63,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordNameInter
         extends WordInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            ChordNameInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChordNameInter.class);
 
     /** Unicode value for <b>flat</b> sign: {@value}. */
     public static final String FLAT = "\u266D";
@@ -116,12 +116,15 @@ public class ChordNameInter
     private static final String STEP_CLASS = "[A-G]";
 
     /** Pattern for root value. A, A# or Ab */
-    private static final String rootPat = group(ROOT_STEP, STEP_CLASS)
-                                          + group(ROOT_ALTER, Alter.CLASS) + "?";
+    private static final String rootPat = group(ROOT_STEP, STEP_CLASS) + group(
+            ROOT_ALTER,
+            Alter.CLASS) + "?";
 
     /** Pattern for bass value, if any. /A, /A# or /Ab */
     private static final String bassPat = "(/" + group(BASS_STEP, STEP_CLASS)
-                                          + group(BASS_ALTER, Alter.CLASS) + "?" + ")";
+                                                  + group(BASS_ALTER, Alter.CLASS)
+                                                  + "?"
+                                                  + ")";
 
     /** Pattern for major indication. M, maj or DELTA */
     private static final String majPat = group(MAJ, "(M|[Mm][Aa][Jj]|" + DELTA + ")");
@@ -139,13 +142,20 @@ public class ChordNameInter
     private static final String hdimPat = group(HDIM, "\u00F8");
 
     /** Pattern for any of the indication alternatives. (except sus) */
-    private static final String modePat = "(" + majPat + "|" + minPat + "|" + augPat + "|"
-                                          + dimPat + "|" + hdimPat + ")";
+    private static final String modePat = "(" + majPat
+                                                  + "|"
+                                                  + minPat
+                                                  + "|"
+                                                  + augPat
+                                                  + "|"
+                                                  + dimPat
+                                                  + "|"
+                                                  + hdimPat
+                                                  + ")";
 
     /** Pattern for (maj7) in min(maj7) = MAJOR_MINOR. */
-    private static final String parMajPat = "(\\("
-                                            + group(PMAJ7, "(M|[Mm][Aa][Jj]|" + DELTA + ")7")
-                                            + "\\))";
+    private static final String parMajPat = "(\\(" + group(PMAJ7, "(M|[Mm][Aa][Jj]|" + DELTA + ")7")
+                                                    + "\\))";
 
     /** Pattern for any degree value. 5, 6, 7, 9, 11 or 13 */
     private static final String DEG_CLASS = "(5|6|7|9|11|13)";
@@ -164,16 +174,13 @@ public class ChordNameInter
             modePat + "?" + parMajPat + "?" + degsPat + "?" + susPat + "?");
 
     /** Pattern for parenthesized degrees if any. (6), (#9), (#11b13) */
-    private static final String parPat = "(\\("
-                                         + group(
-                    PARS,
-                    Alter.CLASS + "?" + DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")*") + "\\))";
+    private static final String parPat = "(\\(" + group(
+            PARS,
+            Alter.CLASS + "?" + DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")*") + "\\))";
 
     /** Un-compiled patterns for whole chord symbol. */
     private static final String[] raws = new String[]{
-        rootPat + kindPat + "?" + parPat + "?" + bassPat
-        + "?"
-    // TODO: add a pattern for functions
+        rootPat + kindPat + "?" + parPat + "?" + bassPat + "?" // TODO: add a pattern for functions
     };
 
     /** Compiled patterns for whole chord symbol. */
@@ -181,12 +188,11 @@ public class ChordNameInter
 
     /** Pattern for one degree. (in a sequence of degrees) */
     private static final String degPat = group(DEG_ALTER, Alter.CLASS) + "?"
-                                         + group(DEG_VALUE, DEG_CLASS);
+                                                 + group(DEG_VALUE, DEG_CLASS);
 
     /** Compiled pattern for one degree. */
     private static final Pattern degPattern = Pattern.compile(degPat);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Root. */
     @XmlElement
     private final Pitch root;
@@ -203,7 +209,6 @@ public class ChordNameInter
     @XmlElement(name = "degree")
     private final List<Degree> degrees;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ChordInfo object, with all parameters.
      *
@@ -265,14 +270,12 @@ public class ChordNameInter
      */
     private ChordNameInter ()
     {
-        super(null);
         this.root = null;
         this.kind = null;
         this.bass = null;
         this.degrees = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -280,86 +283,6 @@ public class ChordNameInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
-    }
-
-    //--------//
-    // create //
-    //--------//
-    /**
-     * From a line of words assumed to be chord names, create a sentence of
-     * ChordNameInter instances.
-     *
-     * @param line the sequence of chord name words
-     * @return created sentence of created ChordNameInter instances
-     */
-    public static SentenceInter create (TextLine line)
-    {
-        SentenceInter sentence = new SentenceInter(
-                line.getBounds(),
-                line.getConfidence() * Grades.intrinsicRatio,
-                line.getMeanFont(),
-                line.getRole());
-
-        return sentence;
-    }
-
-    //-------------//
-    // createValid //
-    //-------------//
-    /**
-     * Convenient method to try to build a ChordNameInter instance from a
-     * provided piece of text.
-     *
-     * @param textWord text the precise text of the chord symbol
-     * @return a populated ChordNameInter instance if successful, null otherwise
-     */
-    public static ChordNameInter createValid (TextWord textWord)
-    {
-        for (Pattern pattern : getPatterns()) {
-            Matcher matcher = pattern.matcher(textWord.getValue());
-
-            if (matcher.matches()) {
-                // Root
-                Pitch root = Pitch.create(
-                        getGroup(matcher, ROOT_STEP),
-                        getGroup(matcher, ROOT_ALTER));
-
-                // Degrees
-                String degStr = getGroup(matcher, DEGS);
-                List<Degree> degrees = Degree.createList(degStr, null);
-                Degree firstDeg = (!degrees.isEmpty()) ? degrees.get(0) : null;
-                String firstDegStr = (firstDeg != null)
-                        ? Integer.toString(degrees.get(0).value) : "";
-
-                // (maj7) special stuff
-                String pmaj7 = standard(matcher, PMAJ7);
-
-                // Kind
-                Kind kind = Kind.create(matcher, firstDegStr + pmaj7);
-
-                // Bass
-                Pitch bass = Pitch.create(
-                        getGroup(matcher, BASS_STEP),
-                        getGroup(matcher, BASS_ALTER));
-
-                if ((firstDeg != null)
-                    && (kind.type != SUSPENDED_FOURTH)
-                    && (kind.type != SUSPENDED_SECOND)) {
-                    // Remove first degree
-                    degrees.remove(firstDeg);
-                }
-
-                // Degrees in parentheses
-                String parStr = getGroup(matcher, PARS);
-                degrees.addAll(Degree.createList(parStr, firstDeg));
-
-                return new ChordNameInter(textWord, root, kind, bass, degrees);
-            }
-        }
-
-        logger.debug("No pattern match for chord text {}", textWord);
-
-        return null;
     }
 
     /**
@@ -431,6 +354,85 @@ public class ChordNameInter
         return sb.toString();
     }
 
+    //--------//
+    // create //
+    //--------//
+    /**
+     * From a line of words assumed to be chord names, create a sentence of
+     * ChordNameInter instances.
+     *
+     * @param line the sequence of chord name words
+     * @return created sentence of created ChordNameInter instances
+     */
+    public static SentenceInter create (TextLine line)
+    {
+        SentenceInter sentence = new SentenceInter(
+                line.getBounds(),
+                line.getConfidence() * Grades.intrinsicRatio,
+                line.getMeanFont(),
+                line.getRole());
+
+        return sentence;
+    }
+
+    //-------------//
+    // createValid //
+    //-------------//
+    /**
+     * Convenient method to try to build a ChordNameInter instance from a
+     * provided piece of text.
+     *
+     * @param textWord text the precise text of the chord symbol
+     * @return a populated ChordNameInter instance if successful, null otherwise
+     */
+    public static ChordNameInter createValid (TextWord textWord)
+    {
+        for (Pattern pattern : getPatterns()) {
+            Matcher matcher = pattern.matcher(textWord.getValue());
+
+            if (matcher.matches()) {
+                // Root
+                Pitch root = Pitch.create(
+                        getGroup(matcher, ROOT_STEP),
+                        getGroup(matcher, ROOT_ALTER));
+
+                // Degrees
+                String degStr = getGroup(matcher, DEGS);
+                List<Degree> degrees = Degree.createList(degStr, null);
+                Degree firstDeg = (!degrees.isEmpty()) ? degrees.get(0) : null;
+                String firstDegStr = (firstDeg != null) ? Integer.toString(degrees.get(0).value)
+                        : "";
+
+                // (maj7) special stuff
+                String pmaj7 = standard(matcher, PMAJ7);
+
+                // Kind
+                Kind kind = Kind.create(matcher, firstDegStr + pmaj7);
+
+                // Bass
+                Pitch bass = Pitch.create(
+                        getGroup(matcher, BASS_STEP),
+                        getGroup(matcher, BASS_ALTER));
+
+                if ((firstDeg != null) && (kind.type != SUSPENDED_FOURTH)
+                            && (kind.type != SUSPENDED_SECOND)) {
+                    // Remove first degree
+                    degrees.remove(firstDeg);
+                }
+
+                // Degrees in parentheses
+                String parStr = getGroup(matcher, PARS);
+                degrees.addAll(Degree.createList(parStr, firstDeg));
+
+                return new ChordNameInter(textWord, root, kind, bass, degrees);
+            }
+        }
+
+        logger.debug("No pattern match for chord text {}", textWord);
+
+        return null;
+    }
+
     //-------------//
     // getPatterns //
     //-------------//
@@ -442,11 +444,13 @@ public class ChordNameInter
     private static List<Pattern> getPatterns ()
     {
         if (patterns == null) {
-            patterns = new ArrayList<Pattern>();
+            List<Pattern> ps = new ArrayList<>();
 
             for (String raw : raws) {
-                patterns.add(Pattern.compile(raw));
+                ps.add(Pattern.compile(raw));
             }
+
+            patterns = ps;
         }
 
         return patterns;
@@ -471,23 +475,12 @@ public class ChordNameInter
         return token.isEmpty() ? "" : name;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //
-    //-------//
-    // Alter //
-    //-------//
-    /**
-     * Handling of alteration indication (flat, sharp or nothing).
-     * The class accepts both number (#) and real sharp sign, as well as both (b) and real flat sign
-     */
     public static class Alter
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         /** Alter class. */
         private static final String CLASS = "[" + FLAT + "b" + SHARP + "#" + "]";
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Convert sharp/flat/empty sign to Integer.
          *
@@ -527,30 +520,15 @@ public class ChordNameInter
                 return (alter == 1) ? "#" : ((alter == -1) ? "b" : "");
             }
         }
+
+        private Alter ()
+        {
+        }
     }
 
-    //--------//
-    // Degree //
-    //--------//
-    /**
-     * Handling of degree information.
-     * <p>
-     * TODO: subtraction is not yet handled
-     */
     public static class Degree
     {
-        //~ Enumerations ---------------------------------------------------------------------------
 
-        public static enum DegreeType
-        {
-            //~ Enumeration constant initializers --------------------------------------------------
-
-            ADD,
-            ALTER,
-            SUBTRACT;
-        }
-
-        //~ Instance fields ------------------------------------------------------------------------
         //
         /** nth value of the degree, wrt the chord root. */
         @XmlAttribute
@@ -568,8 +546,6 @@ public class ChordNameInter
         @XmlAttribute
         public final String text;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        //
         public Degree (int value,
                        Integer alter,
                        DegreeType type)
@@ -586,54 +562,6 @@ public class ChordNameInter
             this.alter = alter;
             this.type = type;
             this.text = text;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        //
-        /**
-         * Build a sequence of Degree instances from the provided string
-         *
-         * @param str      the provided string, without parentheses, such as 7b13
-         * @param dominant the chord dominant degree, if any, otherwise null
-         * @return the list of degrees
-         */
-        public static List<Degree> createList (String str,
-                                               Degree dominant)
-        {
-            List<Degree> degrees = new ArrayList<Degree>();
-
-            if ((str == null) || str.isEmpty()) {
-                return degrees;
-            }
-
-            // Loop on occurrences of the one-degree pattern
-            Matcher matcher = degPattern.matcher(str);
-
-            while (matcher.find()) {
-                // Deg value
-                String degStr = getGroup(matcher, DEG_VALUE);
-                final int deg = Integer.decode(degStr);
-
-                // Deg type: 'add' or 'alter'
-                // TODO: handle 'subtract' as well
-                final DegreeType type;
-
-                if ((dominant != null) && (dominant.value > deg)) {
-                    type = DegreeType.ALTER;
-                } else if (deg <= 5) {
-                    type = DegreeType.ALTER;
-                } else {
-                    type = DegreeType.ADD;
-                }
-
-                // Deg alter
-                final String altStr = getGroup(matcher, DEG_ALTER);
-                final Integer alter = (altStr != null) ? Alter.toAlter(altStr) : null;
-
-                degrees.add(new Degree(deg, alter, type, ""));
-            }
-
-            return degrees;
         }
 
         @Override
@@ -655,99 +583,101 @@ public class ChordNameInter
 
             return sb.toString();
         }
-    }
 
-    //------//
-    // Kind //
-    //------//
-    /**
-     * Handling of kind (aka quality) chord information.
-     */
-    public static class Kind
-    {
-        //~ Enumerations ---------------------------------------------------------------------------
-
-        public static enum Type
+        //
+        /**
+         * Build a sequence of Degree instances from the provided string
+         *
+         * @param str      the provided string, without parentheses, such as 7b13
+         * @param dominant the chord dominant degree, if any, otherwise null
+         * @return the list of degrees
+         */
+        public static List<Degree> createList (String str,
+                                               Degree dominant)
         {
-            //~ Enumeration constant initializers --------------------------------------------------
+            List<Degree> degrees = new ArrayList<>();
+            if ((str == null) || str.isEmpty()) {
+                return degrees;
+            }
+            // Loop on occurrences of the one-degree pattern
+            Matcher matcher = degPattern.matcher(str);
+            while (matcher.find()) {
+                // Deg value
+                String degStr = getGroup(matcher, DEG_VALUE);
+                final int deg = Integer.decode(degStr);
 
-            MAJOR,
-            MINOR,
-            AUGMENTED,
-            DIMINISHED,
-            DOMINANT,
-            MAJOR_SEVENTH,
-            MINOR_SEVENTH,
-            DIMINISHED_SEVENTH,
-            AUGMENTED_SEVENTH,
-            HALF_DIMINISHED,
-            MAJOR_MINOR,
-            MAJOR_SIXTH,
-            MINOR_SIXTH,
-            DOMINANT_NINTH,
-            MAJOR_NINTH,
-            MINOR_NINTH,
-            DOMINANT_11_TH,
-            MAJOR_11_TH,
-            MINOR_11_TH,
-            DOMINANT_13_TH,
-            MAJOR_13_TH,
-            MINOR_13_TH,
-            SUSPENDED_SECOND,
-            SUSPENDED_FOURTH,
+                // Deg type: 'add' or 'alter'
+                // TODO: handle 'subtract' as well
+                final DegreeType type;
 
-            //        NEAPOLITAN,
-            //        ITALIAN,
-            //        FRENCH,
-            //        GERMAN,
-            //        PEDAL,
-            //        POWER,
-            //        TRISTAN,
-            OTHER,
-            NONE;
+                if ((dominant != null) && (dominant.value > deg)) {
+                    type = DegreeType.ALTER;
+                } else if (deg <= 5) {
+                    type = DegreeType.ALTER;
+                } else {
+                    type = DegreeType.ADD;
+                }
+
+                // Deg alter
+                final String altStr = getGroup(matcher, DEG_ALTER);
+                final Integer alter = Alter.toAlter(altStr);
+
+                degrees.add(new Degree(deg, alter, type, ""));
+            }
+            return degrees;
         }
 
-        //~ Instance fields ------------------------------------------------------------------------
-        //
+        public static enum DegreeType
+        {
+            ADD,
+            ALTER,
+            SUBTRACT;
+        }
+    }
+
+    public static class Kind
+    {
+
         /** Precise type of kind. (subset of the 33 Music XML values) */
         @XmlAttribute
         public final Type type;
 
         /** Flag to signal parentheses, if any. */
         @XmlAttribute
-        public final Boolean parentheses;
+        @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+        public final boolean parentheses;
 
         /** Flag to signal use of symbol, if any. */
         @XmlAttribute
-        public final Boolean symbol;
+        @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+        public final boolean symbol;
 
         /** Exact display text for the chord kind. (For example min vs m) */
         @XmlAttribute
         public final String text;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Kind (Type type)
         {
-            this(type, "", null, null);
+            this(type, "", false, false);
         }
 
         public Kind (Type type,
                      String text)
         {
-            this(type, text, null, null);
+            this(type, text, false, false);
         }
 
         public Kind (Type type,
                      String text,
-                     Boolean symbol)
+                     boolean symbol)
         {
-            this(type, text, symbol, null);
+            this(type, text, symbol, false);
         }
 
         public Kind (Type type,
                      String text,
-                     Boolean symbol,
-                     Boolean parentheses)
+                     boolean symbol,
+                     boolean parentheses)
         {
             this.type = type;
             this.parentheses = parentheses;
@@ -759,12 +689,11 @@ public class ChordNameInter
         private Kind ()
         {
             this.type = null;
-            this.parentheses = null;
-            this.symbol = null;
+            this.parentheses = false;
+            this.symbol = false;
             this.text = null;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -777,11 +706,11 @@ public class ChordNameInter
                 sb.append(" '").append(text).append("'");
             }
 
-            if ((parentheses != null) && parentheses) {
+            if (parentheses) {
                 sb.append(" parens");
             }
 
-            if ((symbol != null) && symbol) {
+            if (symbol) {
                 sb.append(" symbol");
             }
 
@@ -811,10 +740,10 @@ public class ChordNameInter
 
             switch (susStr.toLowerCase()) {
             case "sus2":
-                return new Kind(SUSPENDED_SECOND, kindStr, null, parentheses);
+                return new Kind(SUSPENDED_SECOND, kindStr, false, parentheses);
 
             case "sus4":
-                return new Kind(SUSPENDED_FOURTH, kindStr, null, parentheses);
+                return new Kind(SUSPENDED_FOURTH, kindStr, false, parentheses);
 
             case "": // Fall through
 
@@ -822,8 +751,10 @@ public class ChordNameInter
 
             // Then check for other combinations
             final String str = standard(matcher, MIN) + standard(matcher, MAJ)
-                               + standard(matcher, AUG) + standard(matcher, DIM)
-                               + standard(matcher, HDIM) + dominant;
+                                       + standard(matcher, AUG)
+                                       + standard(matcher, DIM)
+                                       + standard(matcher, HDIM)
+                                       + dominant;
             Type type = typeOf(str);
 
             // Special case for Triangle sign => maj7 rather than major
@@ -832,9 +763,8 @@ public class ChordNameInter
             }
 
             // Use of symbol?
-            Boolean symbol = (getGroup(matcher, MAJ).equals(DELTA)
-                              || getGroup(matcher, MIN).equals("-")
-                              || getGroup(matcher, AUG).equals("+")) ? Boolean.TRUE : null;
+            Boolean symbol = (getGroup(matcher, MAJ).equals(DELTA) || getGroup(matcher, MIN).equals(
+                    "-") || getGroup(matcher, AUG).equals("+")) ? Boolean.TRUE : null;
 
             return (type != null) ? new Kind(type, kindStr, symbol, parentheses) : null;
         }
@@ -923,18 +853,49 @@ public class ChordNameInter
                 return null;
             }
         }
+
+        public static enum Type
+        {
+            MAJOR,
+            MINOR,
+            AUGMENTED,
+            DIMINISHED,
+            DOMINANT,
+            MAJOR_SEVENTH,
+            MINOR_SEVENTH,
+            DIMINISHED_SEVENTH,
+            AUGMENTED_SEVENTH,
+            HALF_DIMINISHED,
+            MAJOR_MINOR,
+            MAJOR_SIXTH,
+            MINOR_SIXTH,
+            DOMINANT_NINTH,
+            MAJOR_NINTH,
+            MINOR_NINTH,
+            DOMINANT_11_TH,
+            MAJOR_11_TH,
+            MINOR_11_TH,
+            DOMINANT_13_TH,
+            MAJOR_13_TH,
+            MINOR_13_TH,
+            SUSPENDED_SECOND,
+            SUSPENDED_FOURTH,
+
+            //        NEAPOLITAN,
+            //        ITALIAN,
+            //        FRENCH,
+            //        GERMAN,
+            //        PEDAL,
+            //        POWER,
+            //        TRISTAN,
+            OTHER,
+            NONE;
+        }
     }
 
-    //-------//
-    // Pitch //
-    //-------//
-    /**
-     * General handling of pitch information, used by root and bass.
-     */
     @XmlAccessorType(XmlAccessType.NONE)
     public static class Pitch
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Related step. */
         @XmlAttribute
@@ -944,7 +905,6 @@ public class ChordNameInter
         @XmlAttribute
         public final Integer alter;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Pitch (AbstractNoteInter.Step step,
                       Integer alter)
         {
@@ -964,7 +924,18 @@ public class ChordNameInter
             this.alter = null;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.append(step);
+
+            sb.append(Alter.toString(alter));
+
+            return sb.toString();
+        }
+
         /**
          * Create a Pitch object from provided step and alter strings
          *
@@ -984,54 +955,5 @@ public class ChordNameInter
                 return null;
             }
         }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.append(step);
-
-            sb.append(Alter.toString(alter));
-
-            return sb.toString();
-        }
     }
-
-    /*
-     * major : X|maj ................ : 1 - 3 - 5
-     * minor : m|min ................ : 1 - b3 - 5
-     * augmented : +|aug............. : 1 - 3 - #5
-     * diminished : °|dim............ : 1 - b3 - b5
-     * dominant : 7 ................. : 1 - 3 - 5 - b7
-     * major-seventh : M7|maj7....... : 1 - 3 - 5 - 7
-     * minor-seventh : m7|min7....... : 1 - b3 - 5 - b7
-     * diminished-seventh : dim7..... : 1 - b3 - b5 -bb7
-     * augmented-seventh :+7|7+5|aug7 : 1 - 3 - #5 - b7
-     * half-diminished :-7b5|m7b5.... : 1 - b3 - b5 - b7
-     * major-minor : min(maj7)....... : 1 - b3 - 5 - 7
-     * major-sixth : 6 .............. : 1 - 3 - 5 - 6
-     * minor-sixth : m6|min6......... : 1 - b3 - 5 - 6
-     * dominant-ninth : 9............ : 1 - 3 - 5 - b7 - 9
-     * major-ninth : M9|maj9......... : 1 - 3 - 5 - 7 - 9
-     * minor-ninth : m9|min9......... : 1 - b3 - 5 - b7 - 9
-     * dominant-11th : 11............ : 1 - 3 - 5 - b7 - 9 - 11
-     * major-11th : M11|maj11........ : 1 - 3 - 5 - 7 - 9 - 11
-     * minor-11th : m11|min11........ : 1 - b3 - 5 - b7 - 9 - 11
-     * dominant-13th : 13............ : 1 - 3 - 5 - b7 - 9 - 11 - 13
-     * major-13th : M13|maj13........ : 1 - 3 - 5 - 7 - 9 - 11 - 13
-     * minor-13th : m13|min13........ : 1 - b3 - 5 - b7 - 9 - 11 - 13
-     * suspended-second : sus2....... : 1 - 2 - 5
-     * suspended-fourth : sus4....... : 1 - 4 - 5
-     * suspended-ninth : sus9........ : 1 - 4 - 5 - b7 - 9
-     * Neapolitan : ................. :
-     * Italian : .................... :
-     * French : ..................... :
-     * German : ..................... :
-     * pedal : ...................... :
-     * power : ...................... :
-     * Tristan : .................... :
-     * other : ...................... :
-     * none : ....................... :
-     */
 }

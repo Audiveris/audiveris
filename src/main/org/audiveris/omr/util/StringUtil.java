@@ -25,17 +25,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code StringUtil}
+ * Class {@code StringUtil} provides String utilities.
  *
  * @author Hervé Bitteur
  */
 public abstract class StringUtil
 {
-    //~ Methods ------------------------------------------------------------------------------------
+
+    /** Not meant to be instantiated. */
+    private StringUtil ()
+    {
+    }
 
     //---------//
     // compare //
     //---------//
+    /**
+     * Compare two Strings, handling null cases.
+     *
+     * @param s1 a string
+     * @param s2 another string
+     * @return comparison result (-1, 0, +1)
+     */
     public static int compare (String s1,
                                String s2)
     {
@@ -58,14 +69,14 @@ public abstract class StringUtil
     // parseInts //
     //-----------//
     /**
-     * Parse a string of strings, separated by comma.
+     * Parse a string of integer tokens, separated by comma.
      *
      * @param str the string to parse
      * @return the sequence of strings
      */
     public static List<String> parseStrings (String str)
     {
-        final List<String> strList = new ArrayList<String>();
+        final List<String> strList = new ArrayList<>();
         final String[] tokens = str.split("\\s*,\\s*");
 
         for (String token : tokens) {

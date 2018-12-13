@@ -30,7 +30,6 @@ package org.audiveris.omr.ui.field;
 public class LIntegerField
         extends LTextField
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create a (constant) integer labeled field
@@ -58,7 +57,6 @@ public class LIntegerField
         super(editable, label, tip);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getValue //
     //----------//

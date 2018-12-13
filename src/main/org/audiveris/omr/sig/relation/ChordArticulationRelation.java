@@ -44,19 +44,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordArticulationRelation
         extends AbstractConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            ChordArticulationRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChordArticulationRelation.class);
 
     private static final double[] WEIGHTS = new double[]{
         constants.xWeight.getValue(),
-        constants.yWeight.getValue()
-    };
+        constants.yWeight.getValue()};
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -65,6 +61,13 @@ public class ChordArticulationRelation
     {
         final ArticulationInter articulation = (ArticulationInter) e.getEdgeTarget();
         articulation.checkAbnormal();
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 
     //-------------------//
@@ -116,7 +119,10 @@ public class ChordArticulationRelation
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         final ArticulationInter articulation = (ArticulationInter) e.getEdgeTarget();
-        articulation.checkAbnormal();
+
+        if (!articulation.isRemoved()) {
+            articulation.checkAbnormal();
+        }
     }
 
     //---------------//
@@ -131,9 +137,6 @@ public class ChordArticulationRelation
     //----------------//
     // getTargetCoeff //
     //----------------//
-    /**
-     * @return the supporting coefficient for (target) articulation
-     */
     @Override
     protected double getTargetCoeff ()
     {
@@ -158,14 +161,12 @@ public class ChordArticulationRelation
         return getYGapMaximum(manual);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio articulationSupportCoeff = new Constant.Ratio(
                 3,

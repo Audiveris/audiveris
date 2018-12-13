@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
+import java.io.IOException;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -59,35 +60,32 @@ import javax.swing.AbstractListModel;
  */
 public class Language
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(Language.class);
 
-    /** Languages file name. */
-    private static final String LANG_FILE_NAME = "ISO639-3.xml";
-
     /** Separator in a specification. */
     public static final String SEP_CHAR = "+";
 
     /** Default language specification (such as deu+eng+fra). */
-    public static final Param<String> ocrDefaultLanguages = new ConstantBasedParam<String, Constant.String>(
-            constants.defaultSpecification);
+    public static final Param<String> ocrDefaultLanguages
+            = new ConstantBasedParam<String, Constant.String>(constants.defaultSpecification);
+
+    /** Languages file name. */
+    private static final String LANG_FILE_NAME = "ISO639-3.xml";
 
     /** Language used when specification is empty. */
     private static final String NO_SPEC = "eng";
 
     /** Collection of supported languages, lazily created. */
-    private static SupportedLanguages supportedLanguages;
+    private static volatile SupportedLanguages supportedLanguages;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private Language ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------------//
     // getSupportedLanguages //
     //-----------------------//
@@ -100,7 +98,6 @@ public class Language
         return supportedLanguages;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // ListModel //
     //-----------//
@@ -110,7 +107,6 @@ public class Language
     public static class ListModel
             extends AbstractListModel<String>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String getElementAt (int index)
@@ -152,10 +148,9 @@ public class Language
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.String defaultSpecification = new Constant.String(
                 "deu+eng+fra",
@@ -168,11 +163,9 @@ public class Language
     private static class OcrDefaultLanguages
             extends StringParam
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.String constant = constants.defaultSpecification;
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String getSourceValue ()
         {
@@ -230,37 +223,26 @@ public class Language
      */
     private static class SupportedLanguages
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Map of language code -> language full name. */
-        private final SortedMap<String, String> codes = new TreeMap<String, String>();
+        private final SortedMap<String, String> codes = new TreeMap<>();
 
         /** Convenient sequence of codes, parallel to sorted map. */
         private final List<String> codesList;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public SupportedLanguages ()
+        SupportedLanguages ()
         {
             // Build the map of all possible codes
             Properties langNames = new Properties();
             URI uri = UriUtil.toURI(WellKnowns.RES_URI, LANG_FILE_NAME);
 
-            try {
-                InputStream input = null;
+            try (InputStream input = uri.toURL().openStream()) {
+                langNames.loadFromXML(input);
 
-                try {
-                    input = uri.toURL().openStream();
-                    langNames.loadFromXML(input);
-
-                    for (String code : langNames.stringPropertyNames()) {
-                        codes.put(code, langNames.getProperty(code, code));
-                    }
-                } finally {
-                    if (input != null) {
-                        input.close();
-                    }
+                for (String code : langNames.stringPropertyNames()) {
+                    codes.put(code, langNames.getProperty(code, code));
                 }
-            } catch (Throwable ex) {
+            } catch (IOException ex) {
                 logger.error("Error loading " + uri, ex);
             }
 
@@ -270,10 +252,9 @@ public class Language
             codes.keySet().retainAll(supported);
 
             // Create parallel list of codes
-            codesList = new ArrayList<String>(codes.keySet());
+            codesList = new ArrayList<>(codes.keySet());
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Report the code out of a list item.
          *

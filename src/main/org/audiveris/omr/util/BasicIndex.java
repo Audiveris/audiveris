@@ -21,7 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
-import org.audiveris.omr.glyph.BasicGlyph;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.symbol.BasicSymbol;
 
@@ -54,31 +54,24 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Class {@code BasicIndex}
  *
  * @param <E> precise type for indexed entities
- *
  * @author HervÃ© Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement
-@XmlType(propOrder = {
-    "lastIdValue", "entities"}
-)
+@XmlType(propOrder = {"lastIdValue", "entities"})
 public class BasicIndex<E extends Entity>
         implements EntityIndex<E>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            BasicIndex.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicIndex.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
     /** Collection of all entities registered in this index, sorted on ID. */
     @XmlElement(name = "entities")
     @XmlJavaTypeAdapter(Adapter.class)
-    protected final ConcurrentSkipListMap<Integer, E> entities = new ConcurrentSkipListMap<Integer, E>();
+    protected final ConcurrentSkipListMap<Integer, E> entities = new ConcurrentSkipListMap<>();
 
     // Transient data
     //---------------
@@ -95,7 +88,6 @@ public class BasicIndex<E extends Entity>
     /** (debug) for easy inspection via browser. */
     private Collection<E> values;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BasicIndex} object.
      *
@@ -115,7 +107,6 @@ public class BasicIndex<E extends Entity>
         values = entities.values(); // Useful for debugging only
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------------//
     // getContainedEntities //
     //----------------------//
@@ -159,6 +150,16 @@ public class BasicIndex<E extends Entity>
     public EntityService<E> getEntityService ()
     {
         return entityService;
+    }
+
+    //------------------//
+    // setEntityService //
+    //------------------//
+    @Override
+    public void setEntityService (EntityService<E> entityService)
+    {
+        this.entityService = entityService;
+        entityService.connect();
     }
 
     //------------//
@@ -220,6 +221,15 @@ public class BasicIndex<E extends Entity>
     public int getLastId ()
     {
         return lastId.get();
+    }
+
+    //-----------//
+    // setLastId //
+    //-----------//
+    @Override
+    public void setLastId (int lastId)
+    {
+        this.lastId.set(lastId);
     }
 
     //---------//
@@ -317,28 +327,14 @@ public class BasicIndex<E extends Entity>
         entities.clear();
     }
 
-    //------------------//
-    // setEntityService //
-    //------------------//
-    @Override
-    public void setEntityService (EntityService<E> entityService)
-    {
-        this.entityService = entityService;
-        entityService.connect();
-    }
-
-    //-----------//
-    // setLastId //
-    //-----------//
-    @Override
-    public void setLastId (int lastId)
-    {
-        this.lastId.set(lastId);
-    }
-
     //-----------//
     // setVipIds //
     //-----------//
+    /**
+     * Record the IDs of VIP entities.
+     *
+     * @param vipIds collection of VIP IDs
+     */
     public void setVipIds (List<Integer> vipIds)
     {
         this.vipIds = vipIds;
@@ -361,6 +357,11 @@ public class BasicIndex<E extends Entity>
     //------------//
     // generateId //
     //------------//
+    /**
+     * Report the next available ID value.
+     *
+     * @return next available ID
+     */
     protected int generateId ()
     {
         return lastId.incrementAndGet();
@@ -369,6 +370,11 @@ public class BasicIndex<E extends Entity>
     //-----------//
     // internals //
     //-----------//
+    /**
+     * Report a description string of class internals.
+     *
+     * @return description string of internals
+     */
     protected String internals ()
     {
         return getName();
@@ -402,14 +408,15 @@ public class BasicIndex<E extends Entity>
         values = entities.values();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------//
     // InterfaceAdapter //
     //------------------//
+    /**
+     * @param <E> precise entity type
+     */
     public static class InterfaceAdapter<E extends AbstractEntity>
             extends XmlAdapter<BasicIndex<E>, EntityIndex<E>>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public BasicIndex<E> marshal (EntityIndex<E> itf)
@@ -438,14 +445,13 @@ public class BasicIndex<E extends Entity>
     private static class Adapter<E extends AbstractEntity>
             extends XmlAdapter<IndexValue<E>, ConcurrentSkipListMap<Integer, E>>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public IndexValue<E> marshal (ConcurrentSkipListMap<Integer, E> map)
                 throws Exception
         {
-            IndexValue<E> value = new IndexValue<E>();
-            value.list = new ArrayList<E>(map.values());
+            IndexValue<E> value = new IndexValue<>();
+            value.list = new ArrayList<>(map.values());
 
             return value;
         }
@@ -455,19 +461,17 @@ public class BasicIndex<E extends Entity>
                 throws Exception
         {
             // TODO: is sorting needed?
-            Collections.sort(
-                    value.list,
-                    new Comparator<E>()
-            {
-                @Override
-                public int compare (E e1,
-                                    E e2)
-                {
-                    return Integer.compare(e1.getId(), e2.getId());
-                }
-            });
+            Collections.sort(value.list, new Comparator<E>()
+                     {
+                         @Override
+                         public int compare (E e1,
+                                             E e2)
+                         {
+                             return Integer.compare(e1.getId(), e2.getId());
+                         }
+                     });
 
-            ConcurrentSkipListMap<Integer, E> map = new ConcurrentSkipListMap<Integer, E>();
+            ConcurrentSkipListMap<Integer, E> map = new ConcurrentSkipListMap<>();
 
             for (E entity : value.list) {
                 map.put(entity.getId(), entity);
@@ -488,12 +492,10 @@ public class BasicIndex<E extends Entity>
      */
     private static class IndexValue<E extends AbstractEntity>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlElementRefs({
-            @XmlElementRef(type = BasicGlyph.class)
-            , @XmlElementRef(type = BasicSymbol.class)
-        })
+            @XmlElementRef(type = Glyph.class),
+            @XmlElementRef(type = BasicSymbol.class)})
         ArrayList<E> list; // Flat list of entities (each with its embedded id)
     }
 }

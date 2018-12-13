@@ -36,7 +36,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "population")
 public class Population
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /**
      * Variance is said "biased" when dividing by n, and said "unbiased" when dividing
@@ -44,7 +43,6 @@ public class Population
      */
     public static final boolean BIASED = false;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Sum of measured values */
     @XmlAttribute(name = "sum")
     private double s = 0d;
@@ -57,7 +55,6 @@ public class Population
     @XmlAttribute(name = "count")
     private int n = 0;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Construct a structure to cumulate the measured values.
      */
@@ -65,7 +62,6 @@ public class Population
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // excludeValue //
     //--------------//
@@ -112,7 +108,7 @@ public class Population
             throw new RuntimeException("Population is empty");
         }
 
-        return s / (double) n;
+        return s / n;
     }
 
     //----------------------//

@@ -50,12 +50,9 @@ import javax.xml.bind.annotation.XmlElement;
 @XmlAccessorType(XmlAccessType.NONE)
 public class SectionSets
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SectionSets.class);
+    private static final Logger logger = LoggerFactory.getLogger(SectionSets.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The collection of sections sets. */
     protected Collection<Collection<Section>> sets;
 
@@ -63,7 +60,6 @@ public class SectionSets
     @XmlElement(name = "sections")
     private Collection<SectionDescSet> descSets;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SectionSets object.
      *
@@ -81,50 +77,6 @@ public class SectionSets
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //------------------//
-    // createFromGlyphs //
-    //------------------//
-    /**
-     * Convenient method to create the proper SectionSets out of a provided
-     * collection of glyphs
-     *
-     * @param glyphs the provided glyphs
-     * @return a newly built SectionSets instance
-     */
-    public static SectionSets createFromGlyphs (Collection<Glyph> glyphs)
-    {
-        throw new RuntimeException("HB. Not implemented yet");
-
-        //        SectionSets sectionSets = new SectionSets();
-        //        sectionSets.sets = new ArrayList<Collection<Section>>();
-        //
-        //        for (Glyph glyph : glyphs) {
-        //            sectionSets.sets.add(new ArrayList<Section>(glyph.getMembers()));
-        //        }
-        //
-        //        return sectionSets;
-    }
-
-    //--------------------//
-    // createFromSections //
-    //--------------------//
-    /**
-     * Convenient method to create the proper SectionSets out of a provided
-     * collection of sections
-     *
-     * @param sections the provided sections
-     * @return a newly built SectionSets instance (a singleton actually)
-     */
-    public static SectionSets createFromSections (Collection<Section> sections)
-    {
-        SectionSets sectionSets = new SectionSets();
-        sectionSets.sets = new ArrayList<Collection<Section>>();
-        sectionSets.sets.add(sections);
-
-        return sectionSets;
-    }
-
     //---------//
     // getSets //
     //---------//
@@ -137,14 +89,15 @@ public class SectionSets
     public Collection<Collection<Section>> getSets (Sheet sheet)
     {
         if (sets == null) {
-            sets = new ArrayList<Collection<Section>>();
+            sets = new ArrayList<>();
 
             for (SectionDescSet idSet : descSets) {
-                List<Section> sectionSet = new ArrayList<Section>();
+                List<Section> sectionSet = new ArrayList<>();
 
                 for (SectionDesc sectionId : idSet.sections) {
                     Lag lag = sheet.getLagManager().getLag(
-                            (sectionId.orientation == Orientation.VERTICAL) ? Lags.VLAG : Lags.HLAG);
+                            (sectionId.orientation == Orientation.VERTICAL) ? Lags.VLAG
+                                    : Lags.HLAG);
                     Section section = lag.getEntity(sectionId.id);
 
                     if (section == null) {
@@ -196,7 +149,7 @@ public class SectionSets
     {
         // Convert sections -> ids
         if (sets != null) {
-            descSets = new ArrayList<SectionDescSet>();
+            descSets = new ArrayList<>();
 
             for (Collection<Section> set : sets) {
                 SectionDescSet descSet = new SectionDescSet();
@@ -211,7 +164,48 @@ public class SectionSets
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //------------------//
+    // createFromGlyphs //
+    //------------------//
+    /**
+     * Convenient method to create the proper SectionSets out of a provided
+     * collection of glyphs
+     *
+     * @param glyphs the provided glyphs
+     * @return a newly built SectionSets instance
+     */
+    public static SectionSets createFromGlyphs (Collection<Glyph> glyphs)
+    {
+        throw new RuntimeException("HB. Not implemented yet");
+
+        //        SectionSets sectionSets = new SectionSets();
+        //        sectionSets.sets = new ArrayList<>();
+        //
+        //        for (Glyph glyph : glyphs) {
+        //            sectionSets.sets.add(new ArrayList<Section>(glyph.getMembers()));
+        //        }
+        //
+        //        return sectionSets;
+    }
+
+    //--------------------//
+    // createFromSections //
+    //--------------------//
+    /**
+     * Convenient method to create the proper SectionSets out of a provided
+     * collection of sections
+     *
+     * @param sections the provided sections
+     * @return a newly built SectionSets instance (a singleton actually)
+     */
+    public static SectionSets createFromSections (Collection<Section> sections)
+    {
+        SectionSets sectionSets = new SectionSets();
+        sectionSets.sets = new ArrayList<>();
+        sectionSets.sets.add(sections);
+        return sectionSets;
+    }
+
     //-------------//
     // SectionDesc //
     //-------------//
@@ -220,13 +214,12 @@ public class SectionSets
      */
     private static class SectionDesc
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // Annotation to get all ids, space-separated, in one single element:
         //@XmlList
         // Annotation to avoid any wrapper:
         //@XmlValue
-        //private Collection<Integer> ids = new ArrayList<Integer>();
+        //private Collection<Integer> ids = new ArrayList<>();
         /** Section id */
         @XmlAttribute(name = "id")
         int id;
@@ -235,20 +228,18 @@ public class SectionSets
         @XmlAttribute(name = "orientation")
         Orientation orientation;
 
-        //~ Constructors ---------------------------------------------------------------------------
         // For JAXB
-        public SectionDesc ()
+        SectionDesc ()
         {
         }
 
-        public SectionDesc (int id,
-                            Orientation orientation)
+        SectionDesc (int id,
+                     Orientation orientation)
         {
             this.id = id;
             this.orientation = orientation;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -271,13 +262,12 @@ public class SectionSets
      */
     private static class SectionDescSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         //        // Annotation to get all ids, space-separated, in one single element:
         //        @XmlList
         //        // Annotation to avoid any wrapper:
         //        @XmlValue
         @XmlElement(name = "section")
-        private Collection<SectionDesc> sections = new ArrayList<SectionDesc>();
+        private Collection<SectionDesc> sections = new ArrayList<>();
     }
 }

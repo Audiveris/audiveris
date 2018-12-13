@@ -69,13 +69,11 @@ import javax.swing.SwingUtilities;
 class TrainingPanel
         implements TrainingMonitor, Observer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TrainingPanel.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The swing component. */
     protected final Panel component;
 
@@ -120,15 +118,14 @@ class TrainingPanel
     /* Useful? */
     private boolean invoked;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TrainingPanel object.
      *
      * @param task           the current training task
      * @param selectionPanel user panel for samples selection
      */
-    public TrainingPanel (Trainer.Task task,
-                          SelectionPanel selectionPanel)
+    TrainingPanel (Trainer.Task task,
+                   SelectionPanel selectionPanel)
     {
         this.task = task;
         this.selectionPanel = selectionPanel;
@@ -155,7 +152,6 @@ class TrainingPanel
         inputParams();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void epochStarted (int epoch)
     {
@@ -173,7 +169,6 @@ class TrainingPanel
         return constants.listenerPeriod.getValue();
     }
 
-    //
     //    @Override
     //    public void invoke ()
     //    {
@@ -185,23 +180,23 @@ class TrainingPanel
     //    {
     //        return invoked;
     //    }
-//
-//        @Override
-//        public void iterationDone (Model model,
-//                                   int iteration)
-//        {
-//            iterCount++;
-//
-//            if ((iterCount % constants.listenerPeriod.getValue()) == 0) {
-//                ///invoke();
-//
-//                final double score = model.score();
-//                final int count = (int) iterCount;
-//                logger.info(String.format("Score at iteration %d is %.5f", count, score));
-//                display(epoch, count, score);
-//            }
-//        }
-//
+    //
+    //        @Override
+    //        public void iterationDone (Model model,
+    //                                   int iteration)
+    //        {
+    //            iterCount++;
+    //
+    //            if ((iterCount % constants.listenerPeriod.getValue()) == 0) {
+    //                ///invoke();
+    //
+    //                final double score = model.score();
+    //                final int count = (int) iterCount;
+    //                logger.info(String.format("Score at iteration %d is %.5f", count, score));
+    //                display(epoch, count, score);
+    //            }
+    //        }
+    //
     @Override
     public void iterationPeriodDone (int iter,
                                      double score)
@@ -243,7 +238,7 @@ class TrainingPanel
      */
     private List<Sample> checkPopulation (List<Sample> samples)
     {
-        EnumMap<Shape, List<Sample>> shapeSamples = new EnumMap<Shape, List<Sample>>(Shape.class);
+        EnumMap<Shape, List<Sample>> shapeSamples = new EnumMap<>(Shape.class);
 
         for (Iterator<Sample> it = samples.iterator(); it.hasNext();) {
             Sample sample = it.next();
@@ -256,7 +251,7 @@ class TrainingPanel
                     List<Sample> list = shapeSamples.get(shape);
 
                     if (list == null) {
-                        shapeSamples.put(shape, list = new ArrayList<Sample>());
+                        shapeSamples.put(shape, list = new ArrayList<>());
                     }
 
                     list.add(sample);
@@ -273,7 +268,7 @@ class TrainingPanel
         final Shape[] shapes = Shape.values();
         final int iMax = LAST_PHYSICAL_SHAPE.ordinal();
         final int minCount = SelectionPanel.getMinShapeSampleCount();
-        final List<Sample> newSamples = new ArrayList<Sample>();
+        final List<Sample> newSamples = new ArrayList<>();
 
         for (int is = 0; is <= iMax; is++) {
             Shape shape = shapes[is];
@@ -353,8 +348,7 @@ class TrainingPanel
                           final int iter,
                           final double score)
     {
-        SwingUtilities.invokeLater(
-                new Runnable()
+        SwingUtilities.invokeLater(new Runnable()
         {
             // This part is run on swing thread
             @Override
@@ -391,22 +385,16 @@ class TrainingPanel
         progressBar.setMaximum(maxEpochs.getValue());
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-------------//
-    // ResetAction //
-    //-------------//
     protected class ResetAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public ResetAction ()
+        ResetAction ()
         {
             super("Reset");
             putValue(Action.SHORT_DESCRIPTION, "Restart from scratch");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -417,45 +405,49 @@ class TrainingPanel
                 task.classifier.reset();
             }
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
-    //------------//
-    // StopAction //
-    //------------//
     protected class StopAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public StopAction ()
+        StopAction ()
         {
             super("Stop");
             putValue(Action.SHORT_DESCRIPTION, "Stop the training");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
             task.classifier.stop();
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
-    //-------------//
-    // TrainAction //
-    //-------------//
     protected class TrainAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public TrainAction ()
+        TrainAction ()
         {
             super("Train");
             putValue(Action.SHORT_DESCRIPTION, "Train the classifier");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -487,29 +479,18 @@ class TrainingPanel
             worker.setPriority(Thread.MIN_PRIORITY);
             worker.start();
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Integer listenerPeriod = new Constant.Integer(
-                "period",
-                50,
-                "Period (in iterations) between listener calls");
-    }
-
-    //-------------//
-    // ParamAction //
-    //-------------//
     private class ParamAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         // Purpose is just to read and remember the data from the various input fields.
         // Triggered when user presses Enter in one of these fields.
@@ -519,5 +500,25 @@ class TrainingPanel
             inputParams();
             displayParams();
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer listenerPeriod = new Constant.Integer(
+                "period",
+                50,
+                "Period (in iterations) between listener calls");
     }
 }

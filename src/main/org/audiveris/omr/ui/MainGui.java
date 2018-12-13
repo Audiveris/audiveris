@@ -40,6 +40,8 @@ import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.sig.ui.SigPainter;
 import org.audiveris.omr.step.ui.StepMenu;
 import org.audiveris.omr.step.ui.StepMonitoring;
+import org.audiveris.omr.text.OCR;
+import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.ui.action.ActionManager;
 import org.audiveris.omr.ui.action.Actions;
 import org.audiveris.omr.ui.selection.MouseMovement;
@@ -94,19 +96,16 @@ public class MainGui
         extends OmrGui
         implements EventSubscriber<StubEvent>, PropertyChangeListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(MainGui.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
-    /** Official name of the application. */
-    private String appName;
-
     /** Sheet tabbed pane, which may contain several views. */
     public StubsController stubsController;
+
+    /** Official name of the application. */
+    private String appName;
 
     /** The related concrete frame. */
     private JFrame frame;
@@ -135,7 +134,6 @@ public class MainGui
     /** Map of class resources. */
     private ResourceMap resources;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MainGui} instance, to handle any user display and interaction.
      */
@@ -143,8 +141,6 @@ public class MainGui
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //
     //----------//
     // clearLog //
     //----------//
@@ -308,8 +304,7 @@ public class MainGui
             }
 
             final SheetStub stub = stubEvent.getData();
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
@@ -504,6 +499,10 @@ public class MainGui
         logger.info("{} version {}", WellKnowns.TOOL_NAME, WellKnowns.TOOL_REF);
         logger.info("\n{}", LogUtil.allInitialMessages());
 
+        if (!OcrUtil.getOcr().isAvailable()) {
+            logger.warn("{} Check log file for more details.", OCR.NO_OCR);
+        }
+
         // Make the OmrGui instance available for the other classes
         OMR.gui = this;
 
@@ -533,36 +532,35 @@ public class MainGui
     //--------------//
     private void defineLayout ()
     {
-        /*
-         * +=============================================================+
-         * |toolKeyPanel . . . . . . . . . . . . . . . . . . . . . . . . |
-         * |+=================+=============================+===========+|
-         * || toolBar . . . . . . . . . .| progressBar . . .| Memory . .||
-         * |+=================+=============================+===========+|
-         * +=============================================================+
-         * | horiSplitPane . . . . . . . . . . . . . . . . . . . . . . . |
-         * |+=========================================+=================+|
-         * | . . . . . . . . . . . . . . . . . . . . .|boardsScrollPane ||
-         * | +========================================+ . . . . . . . . ||
-         * | | stubsController . . . . . . . . . . . .| . . . . . . . . ||
-         * | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * |m| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * |a| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * |i| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * |n| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-         * |P+=====================+==================+ . . . . . . . . ||
-         * |a| logPane . . . . . . | errors . . . . . | . . . . . . . . ||
-         * |n| . . . . . . . . . . |. . . . . . . . . | . . . . . . . . ||
-         * |e| . . . . . . . . . . |. . . . . . . . . | . . . . . . . . ||
-         * | +=====================+==================+=================+|
-         * +=============================================================+
-         */
+        // +=============================================================+
+        // |toolKeyPanel . . . . . . . . . . . . . . . . . . . . . . . . |
+        // |+=================+=============================+===========+|
+        // || toolBar . . . . . . . . . .| progressBar . . .| Memory . .||
+        // |+=================+=============================+===========+|
+        // +=============================================================+
+        // | horiSplitPane . . . . . . . . . . . . . . . . . . . . . . . |
+        // |+=========================================+=================+|
+        // | . . . . . . . . . . . . . . . . . . . . .|boardsScrollPane ||
+        // | +========================================+ . . . . . . . . ||
+        // | | stubsController . . . . . . . . . . . .| . . . . . . . . ||
+        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+        // |m| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+        // |a| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+        // |i| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+        // |n| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
+        // |P+=====================+==================+ . . . . . . . . ||
+        // |a| logPane . . . . . . | errors . . . . . | . . . . . . . . ||
+        // |n| . . . . . . . . . . |. . . . . . . . . | . . . . . . . . ||
+        // |e| . . . . . . . . . . |. . . . . . . . . | . . . . . . . . ||
+        // | +=====================+==================+=================+|
+        // +=============================================================+
+        //
 
         // Individual panes
         logPane = new LogPane();
@@ -717,12 +715,10 @@ public class MainGui
      */
     private boolean needBottomPane ()
     {
-        return GuiActions.getInstance().isLogWindowDisplayed()
-               || GuiActions.getInstance().isErrorsWindowDisplayed();
+        return GuiActions.getInstance().isLogWindowDisplayed() || GuiActions.getInstance()
+                .isErrorsWindowDisplayed();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //
     //------------------//
     // BoardsScrollPane //
     //------------------//
@@ -733,7 +729,6 @@ public class MainGui
     private static class BoardsScrollPane
             extends JScrollPane
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         public void setBoards (JComponent boards)
         {
@@ -745,10 +740,9 @@ public class MainGui
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
                 true,
@@ -764,13 +758,11 @@ public class MainGui
     private static class GuiExitListener
             implements ExitListener
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public GuiExitListener ()
+        GuiExitListener ()
         {
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean canExit (EventObject eo)
         {
@@ -799,7 +791,7 @@ public class MainGui
             int count = 0;
 
             // NB: Use a COPY of instances, to avoid concurrent modification
-            for (Book book : new ArrayList<Book>(OMR.engine.getAllBooks())) {
+            for (Book book : new ArrayList<>(OMR.engine.getAllBooks())) {
                 book.close();
                 count++;
             }

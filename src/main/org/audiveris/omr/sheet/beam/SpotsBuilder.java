@@ -28,8 +28,8 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
-import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.GlyphGroup;
+import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.image.MorphoProcessor;
 import org.audiveris.omr.image.StructureElement;
@@ -69,7 +69,6 @@ import java.util.List;
  */
 public class SpotsBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -78,12 +77,10 @@ public class SpotsBuilder
     /** Orientation chosen for spot runs. */
     public static final Orientation SPOT_ORIENTATION = Orientation.VERTICAL;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SpotsBuilder object.
      *
@@ -94,7 +91,6 @@ public class SpotsBuilder
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // buildSheetSpots //
     //-----------------//
@@ -117,7 +113,12 @@ public class SpotsBuilder
             // Retrieve major spots
             watch.start("buildSpots");
 
-            int beam = sheet.getScale().getBeamThickness();
+            Integer beam = sheet.getScale().getBeamThickness();
+
+            if (beam == null) {
+                throw new RuntimeException("No scale information on beam thickness");
+            }
+
             List<Glyph> spots = buildSpots(buffer, null, beam, null);
 
             // Dispatch spots per system(s)
@@ -247,7 +248,7 @@ public class SpotsBuilder
         int count = 0;
 
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
-        final List<SystemInfo> relevants = new ArrayList<SystemInfo>();
+        final List<SystemInfo> relevants = new ArrayList<>();
         final SystemManager systemManager = sheet.getSystemManager();
 
         for (Glyph glyph : spots) {
@@ -374,14 +375,12 @@ public class SpotsBuilder
         sheet.getPicture().setTable(Picture.TableKey.HEAD_SPOTS, runs, true);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean displayBeamSpots = new Constant.Boolean(
                 false,

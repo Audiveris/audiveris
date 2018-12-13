@@ -89,7 +89,7 @@ public enum TextRole
     public boolean isCreator ()
     {
         return (this == CreatorArranger) || (this == CreatorComposer)
-               || ((this == CreatorLyricist) || (this == Creator));
+                       || ((this == CreatorLyricist) || (this == Creator));
     }
 
     //-----------//
@@ -182,8 +182,9 @@ public enum TextRole
 
         logger.debug(
                 "{} firstSystem={} lastSystem={} systemPosition={}"
-                + " partPosition={} closeToStaff={} leftOfStaves={}"
-                + " pageCentered={} rightAligned={} shortSentence={}" + " highText={10}",
+                        + " partPosition={} closeToStaff={} leftOfStaves={}"
+                        + " pageCentered={} rightAligned={} shortSentence={}"
+                        + " highText={}",
                 box,
                 firstSystem,
                 lastSystem,
@@ -239,13 +240,13 @@ public enum TextRole
 
             if (leftOfStaves) {
                 return PartName;
-            } else if (lyricsAllowed
-                       && (switches.getValue(Switch.lyrics)
-                           || switches.getValue(Switch.lyricsAboveStaff))
-                       && ((partPosition == StaffPosition.BELOW_STAVES)
-                           || ((partPosition == StaffPosition.ABOVE_STAVES)
-                               && switches.getValue(Switch.lyricsAboveStaff)))
-                       && !isMainlyItalic) {
+            } else if (lyricsAllowed && (switches.getValue(Switch.lyrics) || switches.getValue(
+                    Switch.lyricsAboveStaff))
+                               && ((partPosition == StaffPosition.BELOW_STAVES)
+                                           || ((partPosition == StaffPosition.ABOVE_STAVES)
+                                               && switches.getValue(
+                            Switch.lyricsAboveStaff)))
+                               && !isMainlyItalic) {
                 return Lyrics;
             } else if (!tinySentence) {
                 return Direction;
@@ -266,11 +267,10 @@ public enum TextRole
             }
 
             if (part.getStaves().size() == 1) {
-                if (lyricsAllowed
-                    && (switches.getValue(Switch.lyrics)
-                        || switches.getValue(Switch.lyricsAboveStaff))
-                    && (partPosition == StaffPosition.BELOW_STAVES)
-                    && !isMainlyItalic) {
+                if (lyricsAllowed && (switches.getValue(Switch.lyrics) || switches.getValue(
+                        Switch.lyricsAboveStaff))
+                            && (partPosition == StaffPosition.BELOW_STAVES)
+                            && !isMainlyItalic) {
                     return Lyrics;
                 }
             }
@@ -283,7 +283,7 @@ public enum TextRole
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
 

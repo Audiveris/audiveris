@@ -36,12 +36,10 @@ public class FingeringInter
         extends AbstractInter
         implements StringSymbolInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Integer value for the number. (0, 1, 2, 3, 4) */
     private final int value;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new FingeringInter object.
      *
@@ -65,7 +63,6 @@ public class FingeringInter
         this.value = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

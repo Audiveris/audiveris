@@ -43,19 +43,18 @@ import java.awt.geom.Rectangle2D;
 public class TemplateSymbol
         extends BasicSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Affine Transform for small symbol shapes. */
     private static final AffineTransform smallAt = AffineTransform.getScaleInstance(
             Template.smallRatio,
             Template.smallRatio);
 
-    //~ Instance fields ----------------------------------------------------------------------------
+    /** Template shape. */
     protected final Shape shape;
 
+    /** Indicate a smaller symbol. */
     protected final boolean isSmall;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TemplateSymbol object.
      *
@@ -70,10 +69,15 @@ public class TemplateSymbol
         isSmall = shape.isSmall();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // getSymbolBounds //
     //-----------------//
+    /**
+     * Report the strict bounds of the symbol (within a perhaps larger template).
+     *
+     * @param font provided font
+     * @return relative symbol bounds within template
+     */
     public Rectangle getSymbolBounds (MusicFont font)
     {
         return getParams(font).symbolRect;
@@ -143,14 +147,12 @@ public class TemplateSymbol
         MusicFont.paint(g, p.layout, loc, AREA_CENTER);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         Rectangle symbolRect; // Bounds for symbol inside template image
     }

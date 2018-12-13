@@ -24,6 +24,8 @@ package org.audiveris.omr.classifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.glyph.Shape;
 
+import java.util.Comparator;
+
 /**
  * Class {@code Evaluation} gathers a glyph shape, its grade and, if any, details about
  * its failure (name of the check that failed).
@@ -31,9 +33,7 @@ import org.audiveris.omr.glyph.Shape;
  * @author Hervé Bitteur
  */
 public class Evaluation
-        implements Comparable<Evaluation>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Absolute confidence in shape manually assigned by the user. */
     public static final double MANUAL = 3;
@@ -41,7 +41,19 @@ public class Evaluation
     /** Confidence for in structurally assigned. */
     public static final double ALGORITHM = 2;
 
-    //~ Instance fields ----------------------------------------------------------------------------
+    /**
+     * For comparing Evaluation instances by decreasing grade.
+     */
+    public static final Comparator<Evaluation> byReverseGrade = new Comparator<Evaluation>()
+    {
+        @Override
+        public int compare (Evaluation e1,
+                            Evaluation e2)
+        {
+            return Double.compare(e2.grade, e1.grade); // Reverse order: highest to lowest
+        }
+    };
+
     /** The evaluated shape. */
     public Shape shape;
 
@@ -54,7 +66,6 @@ public class Evaluation
     /** The specific check that failed, if any. */
     public Failure failure;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an initialized evaluation instance.
      *
@@ -66,22 +77,6 @@ public class Evaluation
     {
         this.shape = shape;
         this.grade = grade;
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // compareTo //
-    //-----------//
-    /**
-     * To sort from best to worst.
-     *
-     * @param that the other evaluation instance
-     * @return -1,0 or +1
-     */
-    @Override
-    public int compareTo (Evaluation that)
-    {
-        return Double.compare(that.grade, this.grade); // Reverse order: highest to lowest
     }
 
     //----------//
@@ -111,7 +106,6 @@ public class Evaluation
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Failure //
     //---------//
@@ -121,18 +115,20 @@ public class Evaluation
      */
     public static class Failure
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** The name of the test that failed. */
         public final String test;
 
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create a {@code Failure} object.
+         *
+         * @param test the test which failed
+         */
         public Failure (String test)
         {
             this.test = test;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -149,7 +145,6 @@ public class Evaluation
     public static class Grade
             extends Constant.Double
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Specific constructor, where unit &amp; name are assigned later.

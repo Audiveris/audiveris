@@ -55,13 +55,11 @@ import java.util.List;
  */
 public class WedgesBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(WedgesBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
     protected final Sheet sheet;
@@ -72,7 +70,6 @@ public class WedgesBuilder
     /** Scale-dependent parameters. */
     private final Parameters params;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new WedgesBuilder object.
      *
@@ -85,7 +82,6 @@ public class WedgesBuilder
         params = new Parameters(sheet.getScale());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // buildWedges //
     //-------------//
@@ -246,14 +242,12 @@ public class WedgesBuilder
         return rect;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction closedMaxDx = new Scale.Fraction(
                 0.2,
@@ -285,7 +279,6 @@ public class WedgesBuilder
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int closedMaxDx;
 
@@ -297,8 +290,7 @@ public class WedgesBuilder
 
         final double openMaxBias;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             closedMaxDx = scale.toPixels(constants.closedMaxDx);
             closedMaxDy = scale.toPixels(constants.closedMaxDy);
@@ -310,12 +302,5 @@ public class WedgesBuilder
                 new Dumping().dump(this);
             }
         }
-    }
-
-    //-----------//
-    // WedgeInfo //
-    //-----------//
-    private class WedgeInfo
-    {
     }
 }

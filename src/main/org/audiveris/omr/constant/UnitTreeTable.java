@@ -57,19 +57,16 @@ import javax.swing.tree.TreePath;
 public class UnitTreeTable
         extends JTreeTable
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(UnitTreeTable.class);
 
     /** Alternate color for zebra appearance */
     private static final Color zebraColor = new Color(248, 248, 255);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final TableCellRenderer valueRenderer = new ValueRenderer();
 
     private final TableCellRenderer pixelRenderer = new PixelRenderer();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a User Interface JTreeTable dedicated to the handling of
      * unit constants.
@@ -99,7 +96,6 @@ public class UnitTreeTable
         preExpandPackages();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getCellEditor //
     //---------------//
@@ -221,7 +217,7 @@ public class UnitTreeTable
      */
     public List<Integer> setNodesSelection (Collection<Object> matches)
     {
-        List<TreePath> paths = new ArrayList<TreePath>();
+        List<TreePath> paths = new ArrayList<>();
 
         for (Object object : matches) {
             if (object instanceof Constant) {
@@ -241,7 +237,7 @@ public class UnitTreeTable
         // Selection on table side
         clearSelection();
 
-        List<Integer> rows = new ArrayList<Integer>();
+        List<Integer> rows = new ArrayList<>();
 
         for (TreePath path : paths) {
             int row = tree.getRowForPath(path);
@@ -283,7 +279,7 @@ public class UnitTreeTable
                               String fullName)
     {
         UnitManager unitManager = UnitManager.getInstance();
-        List<Object> objects = new ArrayList<Object>();
+        List<Object> objects = new ArrayList<>();
         objects.add(unitManager.getRoot());
 
         int dotPos = -1;
@@ -330,14 +326,12 @@ public class UnitTreeTable
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // PixelRenderer //
     //---------------//
     private static class PixelRenderer
             extends DefaultTableCellRenderer
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Component getTableCellRendererComponent (JTable table,
@@ -362,7 +356,6 @@ public class UnitTreeTable
     private static class ValueRenderer
             extends DefaultTableCellRenderer
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Component getTableCellRendererComponent (JTable table,

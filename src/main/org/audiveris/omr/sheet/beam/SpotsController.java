@@ -52,11 +52,9 @@ import java.util.List;
  */
 public class SpotsController
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SpotsController.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -73,7 +71,6 @@ public class SpotsController
     /** User display. */
     private MyView view;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SpotsController object.
      *
@@ -90,7 +87,6 @@ public class SpotsController
         this.spotLag = spotLag;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // refresh //
     //---------//
@@ -101,7 +97,7 @@ public class SpotsController
     {
         if (view == null) {
             displayFrame();
-        } else if (view != null) {
+        } else {
             view.repaint();
         }
     }
@@ -123,16 +119,14 @@ public class SpotsController
                         new SectionBoard(spotLag, true)));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyView //
     //--------//
-    private final class MyView
+    private class MyView
             extends NestView
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public MyView (GlyphIndex glyphIndex)
+        MyView (GlyphIndex glyphIndex)
         {
             super(glyphIndex.getEntityService(), Arrays.asList(spotLag), sheet);
 
@@ -141,7 +135,6 @@ public class SpotsController
             setName("SpotsController-MyView");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //--------//
         // render //
         //--------//

@@ -41,6 +41,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * Value class meant for JAXB.
@@ -49,15 +50,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "tribes")
 class TribeList
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            TribeList.class);
+    private static final Logger logger = LoggerFactory.getLogger(TribeList.class);
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     /** Used only to include sheet-name within the written file. */
@@ -66,15 +64,14 @@ class TribeList
 
     /** The collection of tribes in sample sheet. */
     @XmlElement(name = "tribe")
-    private final ArrayList<Tribe> tribes = new ArrayList<Tribe>();
+    private final ArrayList<Tribe> tribes = new ArrayList<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TribeList} object.
      *
      * @param sampleSheet the containing sample sheet
      */
-    public TribeList (SampleSheet sampleSheet)
+    TribeList (SampleSheet sampleSheet)
     {
         name = sampleSheet.getDescriptor().getName();
 
@@ -89,7 +86,6 @@ class TribeList
         name = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getTribes //
     //-----------//
@@ -115,9 +111,25 @@ class TribeList
             logger.debug("Marshalling {}", this);
             Jaxb.marshal(this, tribesPath, getJaxbContext());
             logger.info("Stored {}", tribesPath);
-        } catch (Exception ex) {
+        } catch (IOException |
+                 JAXBException |
+                 XMLStreamException ex) {
             logger.error("Error marshalling " + this + " " + ex, ex);
         }
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(TribeList.class);
+        }
+
+        return jaxbContext;
     }
 
     //-----------//
@@ -135,31 +147,13 @@ class TribeList
     {
         logger.debug("TribeList unmarshalling {}", path);
 
-        try {
-            InputStream is = Files.newInputStream(path, StandardOpenOption.READ);
+        try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ)) {
             Unmarshaller um = getJaxbContext().createUnmarshaller();
             TribeList tribeList = (TribeList) um.unmarshal(is);
-            is.close();
-
             return tribeList;
         } catch (JAXBException ex) {
             logger.warn("Error unmarshalling " + path + " " + ex, ex);
-
             return null;
         }
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(TribeList.class);
-        }
-
-        return jaxbContext;
     }
 }

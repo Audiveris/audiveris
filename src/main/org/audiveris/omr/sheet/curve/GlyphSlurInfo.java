@@ -47,50 +47,12 @@ import java.util.List;
 public class GlyphSlurInfo
         extends SlurInfo
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     private GlyphSlurInfo (Glyph glyph,
                            List<Point> keyPoints)
     {
         super(0, null, null, keyPoints, null, Collections.EMPTY_LIST, 0);
         this.glyph = glyph;
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Create proper GlyphSlurInfo for a slur defined by its glyph.
-     * The bezier curve is directly computed from the glyph.
-     *
-     * @param glyph the defining glyph
-     * @return the corresponding slur info
-     */
-    public static GlyphSlurInfo create (Glyph glyph)
-    {
-        final List<Point> points = new KeyPointsBuilder(glyph).retrieveKeyPoints();
-        final GlyphSlurInfo info = new GlyphSlurInfo(glyph, points);
-
-        // Curve (nota: s1 and s2 are not control points, but intermediate points located on curve)
-        final Point s0 = points.get(0);
-        final Point s1 = points.get(1);
-        final Point s2 = points.get(2);
-        final Point s3 = points.get(3);
-
-        info.curve = new CubicCurve2D.Double(
-                s0.x,
-                s0.y,
-                ((-(5 * s0.x) + (18 * s1.x)) - (9 * s2.x) + (2 * s3.x)) / 6,
-                ((-(5 * s0.y) + (18 * s1.y)) - (9 * s2.y) + (2 * s3.y)) / 6,
-                (((2 * s0.x) - (9 * s1.x) + (18 * s2.x)) - (5 * s3.x)) / 6,
-                (((2 * s0.y) - (9 * s1.y) + (18 * s2.y)) - (5 * s3.y)) / 6,
-                s3.x,
-                s3.y);
-
-        // Above or below?
-        final int ccw = new Line2D.Double(s0, s1).relativeCCW(s3);
-        info.above = -ccw;
-        info.bisUnit = info.computeBisector(info.above > 0);
-
-        return info;
     }
 
     //----------//
@@ -121,13 +83,53 @@ public class GlyphSlurInfo
     //-------------//
     // getMidPoint //
     //-------------//
+    /**
+     * Report the middle point of the slur.
+     *
+     * @return middle point
+     */
     @Override
     public Point2D getMidPoint ()
     {
         return CubicUtil.getMidPoint(curve);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    /**
+     * Create proper GlyphSlurInfo for a slur defined by its glyph.
+     * The bezier curve is directly computed from the glyph.
+     *
+     * @param glyph the defining glyph
+     * @return the corresponding slur info
+     */
+    public static GlyphSlurInfo create (Glyph glyph)
+    {
+        final List<Point> points = new KeyPointsBuilder(glyph).retrieveKeyPoints();
+        final GlyphSlurInfo info = new GlyphSlurInfo(glyph, points);
+
+        // Curve (nota: s1 and s2 are not control points, but intermediate points located on curve)
+        final Point s0 = points.get(0);
+        final Point s1 = points.get(1);
+        final Point s2 = points.get(2);
+        final Point s3 = points.get(3);
+
+        info.curve = new CubicCurve2D.Double(
+                s0.x,
+                s0.y,
+                ((-(5 * s0.x) + (18 * s1.x)) - (9 * s2.x) + (2 * s3.x)) / 6.0,
+                ((-(5 * s0.y) + (18 * s1.y)) - (9 * s2.y) + (2 * s3.y)) / 6.0,
+                (((2 * s0.x) - (9 * s1.x) + (18 * s2.x)) - (5 * s3.x)) / 6.0,
+                (((2 * s0.y) - (9 * s1.y) + (18 * s2.y)) - (5 * s3.y)) / 6.0,
+                s3.x,
+                s3.y);
+
+        // Above or below?
+        final int ccw = new Line2D.Double(s0, s1).relativeCCW(s3);
+        info.above = -ccw;
+        info.bisUnit = info.computeBisector(info.above > 0);
+
+        return info;
+    }
+
     //------------------//
     // KeyPointsBuilder //
     //------------------//
@@ -139,25 +141,22 @@ public class GlyphSlurInfo
      */
     private static class KeyPointsBuilder
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Glyph glyph;
 
         private final RunTable rt;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new {@code KeyPointsBuilder} object.
          *
          * @param glyph the underlying glyph
          */
-        public KeyPointsBuilder (Glyph glyph)
+        KeyPointsBuilder (Glyph glyph)
         {
             this.glyph = glyph;
             rt = glyph.getRunTable();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public List<Point> retrieveKeyPoints ()
         {
             if (rt.getOrientation() != Orientation.VERTICAL) {
@@ -166,7 +165,7 @@ public class GlyphSlurInfo
 
             // Retrieve the 4 points WRT glyph bounds
             final int width = glyph.getWidth();
-            final List<Point> points = new ArrayList<Point>(4);
+            final List<Point> points = new ArrayList<>(4);
             points.add(vectorAtX(0));
             points.add(vectorAtX((int) Math.rint(width / 3.0)));
             points.add(vectorAtX((int) Math.rint((2 * width) / 3.0)));

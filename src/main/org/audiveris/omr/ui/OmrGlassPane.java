@@ -38,25 +38,9 @@ import java.awt.Rectangle;
 public class OmrGlassPane
         extends GhostGlassPane
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Reference point relative to this glassPane. */
     private Point reference;
-
-    //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Set current reference point.
-     *
-     * @param reference the reference (screen-based) point to set
-     */
-    public void setReference (ScreenPoint reference)
-    {
-        if (reference != null) {
-            this.reference = reference.getLocalPoint(this);
-        } else {
-            this.reference = null;
-        }
-    }
 
     /**
      * On top of inter image, draw a link from inter center to reference point.
@@ -68,9 +52,23 @@ public class OmrGlassPane
     {
         super.paintComponent(g);
 
-        if (reference != null && overTarget) {
+        if ((reference != null) && overTarget) {
             g.setColor(Color.RED);
             g.drawLine(localPoint.x, localPoint.y, reference.x, reference.y);
+        }
+    }
+
+    /**
+     * Set current reference point.
+     *
+     * @param reference the reference (screen-based) point to set
+     */
+    public void setReference (ScreenPoint reference)
+    {
+        if (reference != null) {
+            this.reference = reference.getLocalPoint(this);
+        } else {
+            this.reference = null;
         }
     }
 

@@ -57,14 +57,11 @@ import java.util.List;
  */
 public class PartConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PartConnection.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private List<ResultEntry> resultEntries;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PartConnection} object.
      *
@@ -75,7 +72,6 @@ public class PartConnection
         resultEntries = connect(sequences);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // dumpResults //
     //-------------//
@@ -134,7 +130,7 @@ public class PartConnection
         logger.debug("Created {} from {}", result, candidate);
 
         ResultEntry entry = new ResultEntry();
-        List<Candidate> candidates = new ArrayList<Candidate>();
+        List<Candidate> candidates = new ArrayList<>();
         candidates.add(candidate);
         entry.result = result;
         entry.candidates = candidates;
@@ -177,7 +173,7 @@ public class PartConnection
     private List<ResultEntry> connect (List<List<Candidate>> sequences)
     {
         /** Resulting sequence of logical parts. */
-        resultEntries = new ArrayList<ResultEntry>();
+        resultEntries = new ArrayList<>();
 
         // Two-staff entry found, if any
         ResultEntry biEntry = null;
@@ -247,7 +243,8 @@ public class PartConnection
             resultIndex += dir;
             logger.debug("resultIndex:{}", resultIndex);
 
-            if (((dir > 0) && (resultIndex >= results.size())) || ((dir < 0) && (resultIndex < 0))) {
+            if (((dir > 0) && (resultIndex >= results.size())) || ((dir < 0)
+                                                                           && (resultIndex < 0))) {
                 logger.debug("No more entries available");
 
                 // Create a brand new logical part for this candidate
@@ -294,7 +291,6 @@ public class PartConnection
         }
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
     //-----------//
     // Candidate //
     //-----------//
@@ -310,40 +306,44 @@ public class PartConnection
      */
     public static interface Candidate
     {
-        //~ Methods --------------------------------------------------------------------------------
 
-        /** Report the abbreviation, if any, that relates to this part
+        /**
+         * Report the abbreviation, if any, that relates to this part
          *
          * @return the abbreviation if any
          */
         String getAbbreviation ();
 
-        /** Report the name of the part, if any
+        /**
+         * Report the name of the part, if any
          *
          * @return the part name if any
          */
         String getName ();
 
-        /** Report the number of staves in the part
+        /**
+         * Report the number of staves in the part
          *
          * @return the number of staves
          */
         int getStaffCount ();
 
-        /** Assign an id to the candidate (and recursively to its affiliates if any).
+        /**
+         * Assign an id to the candidate (and recursively to its affiliates if any).
          *
          * @param id the assigned id value
          */
         void setId (int id);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ResultEntry //
     //-------------//
+    /**
+     * Entry to gather results related to a single part.
+     */
     public static class ResultEntry
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Resulting logical part. */
         LogicalPart result;

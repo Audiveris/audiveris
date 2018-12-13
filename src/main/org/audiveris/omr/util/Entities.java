@@ -31,13 +31,12 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code Entities}
+ * Class {@code Entities} provides utility methods for entities.
  *
  * @author Hervé Bitteur
  */
 public class Entities
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To compare Entity instances according to their id. */
     public static final Comparator<Entity> byId = new Comparator<Entity>()
@@ -50,7 +49,10 @@ public class Entities
         }
     };
 
-    //~ Methods ------------------------------------------------------------------------------------
+    private Entities ()
+    {
+    }
+
     //-------------------//
     // containedEntities //
     //-------------------//
@@ -74,7 +76,7 @@ public class Entities
 
             if ((bounds != null) && rect.contains(bounds)) {
                 if (list == null) {
-                    list = new ArrayList<E>();
+                    list = new ArrayList<>();
                 }
 
                 list.add(entity);
@@ -110,7 +112,7 @@ public class Entities
 
             if (entity.contains(point)) {
                 if (list == null) {
-                    list = new ArrayList<E>();
+                    list = new ArrayList<>();
                 }
 
                 list.add(entity);
@@ -156,7 +158,7 @@ public class Entities
     // ids //
     //-----//
     /**
-     * Build a string with just the ids of the entity collection.
+     * Build a string with just the IDs of the entity collection.
      *
      * @param entities the collection of Entity instances
      * @return the string built

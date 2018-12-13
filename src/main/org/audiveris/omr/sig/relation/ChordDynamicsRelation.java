@@ -31,9 +31,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "chord-dynamics")
 public class ChordDynamicsRelation
-        extends AbstractSupport
+        extends Support
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     //----------------//
     // isSingleSource //
@@ -51,5 +50,12 @@ public class ChordDynamicsRelation
     public boolean isSingleTarget ()
     {
         return true;
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 }

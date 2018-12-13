@@ -32,15 +32,15 @@ import java.awt.geom.Rectangle2D;
 /**
  * Class {@code HeadsSymbol} displays a column of several identical heads.
  * (black, void or whole)
+ *
+ * @author Hervé Bitteur
  */
 public class HeadsSymbol
         extends ShapeSymbol
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private final int count;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new HeadsSymbol object.
      *
@@ -58,7 +58,6 @@ public class HeadsSymbol
         this.count = count;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -104,14 +103,12 @@ public class HeadsSymbol
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         int dy;
     }

@@ -31,7 +31,6 @@ import org.audiveris.omr.glyph.Shape;
 public class BeamHookSymbol
         extends BeamSymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create a BeamHookSymbol
@@ -51,7 +50,6 @@ public class BeamHookSymbol
         super(1, isIcon, Shape.BEAM_HOOK);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//

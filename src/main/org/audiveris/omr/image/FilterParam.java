@@ -35,12 +35,13 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 public class FilterParam
         extends Param<FilterDescriptor>
 {
-    //~ Inner Classes ------------------------------------------------------------------------------
 
+    /**
+     * JAXB adapter.
+     */
     public static class Adapter
             extends XmlAdapter<Adapter.Value, FilterParam>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Value marshal (FilterParam fp)
@@ -76,15 +77,15 @@ public class FilterParam
             return fp;
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
+        /**
+         * Flattened value for un/marshalling.
+         */
         protected static class Value
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             @XmlElementRefs({
-                @XmlElementRef(type = GlobalDescriptor.class)
-                , @XmlElementRef(type = AdaptiveDescriptor.class)
-            })
+                @XmlElementRef(type = GlobalDescriptor.class),
+                @XmlElementRef(type = AdaptiveDescriptor.class)})
             FilterDescriptor filter;
         }
     }

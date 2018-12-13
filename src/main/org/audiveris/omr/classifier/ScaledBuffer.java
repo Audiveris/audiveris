@@ -38,18 +38,16 @@ import java.awt.Point;
  */
 public class ScaledBuffer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Scaled interline value. */
-    public static int INTERLINE = 5;
+    public static final int INTERLINE = 5;
 
     /** Target width. */
-    public static int WIDTH = 24; // 24 = 3 * 2**3
+    public static final int WIDTH = 24; // 24 = 3 * 2**3
 
     /** Target height. */
-    public static int HEIGHT = 48; // 48 = 6 * 2**3
+    public static final int HEIGHT = 48; // 48 = 6 * 2**3
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Compute the scaled buffer for the provided glyph, using related staff interline
      * value.
@@ -68,10 +66,8 @@ public class ScaledBuffer
         // Build scaled buffer, filled by (scaled) glyph
         final int scaledWidth = (int) Math.ceil(runTable.getWidth() * scale);
         final int scaledHeight = (int) Math.ceil(runTable.getHeight() * scale);
-        final ByteProcessor scaledBuffer = (ByteProcessor) glyphBuffer.resize(
-                scaledWidth,
-                scaledHeight,
-                true); // True => use averaging when down-scaling
+        final ByteProcessor scaledBuffer = (ByteProcessor) glyphBuffer.resize(scaledWidth,
+                                                                              scaledHeight, true); // True => use averaging when down-scaling
 
         // Copy scaledBuffer into a WIDTH*HEIGHT target buffer centered on glyph centroid
         final Point centroid = glyph.getCentroid();

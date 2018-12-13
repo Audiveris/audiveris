@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -50,16 +51,14 @@ import java.util.List;
 public class InterService
         extends EntityService<Inter>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterService.class);
 
     /** Events that can be published on inter service. */
     private static final Class<?>[] eventsAllowed = new Class<?>[]{
-        EntityListEvent.class, IdEvent.class
-    };
+        EntityListEvent.class,
+        IdEvent.class};
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code InterService} object.
      *
@@ -72,7 +71,6 @@ public class InterService
         super(index, locationService, eventsAllowed);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // getMostRelevant //
     //-----------------//
@@ -87,8 +85,7 @@ public class InterService
             return list.get(0);
 
         default:
-
-            List<Inter> copy = new ArrayList<Inter>(list);
+            List<Inter> copy = new ArrayList<>(list);
             Collections.sort(copy, Inters.membersFirst);
 
             return copy.get(0);
@@ -138,8 +135,23 @@ public class InterService
     protected void handleLocationEvent (LocationEvent locationEvent)
     {
         // Search only when in MODE_INTER or MODE_GLYPH
-        if (ViewParameters.getInstance().getSelectionMode() != ViewParameters.SelectionMode.MODE_SECTION) {
+        if (ViewParameters.getInstance()
+                .getSelectionMode() != ViewParameters.SelectionMode.MODE_SECTION) {
             super.handleLocationEvent(locationEvent);
+        }
+    }
+
+    //-------------//
+    // purgeBasket //
+    //-------------//
+    @Override
+    protected void purgeBasket ()
+    {
+        // Purge basket of Inter instances that are flagged as removed
+        for (Iterator<Inter> it = basket.iterator(); it.hasNext();) {
+            if (it.next().isRemoved()) {
+                it.remove();
+            }
         }
     }
 }

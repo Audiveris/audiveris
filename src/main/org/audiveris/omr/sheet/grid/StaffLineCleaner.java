@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.grid;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.dynamic.SectionCompound;
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Lags;
 import org.audiveris.omr.sheet.Sheet;
@@ -46,13 +47,11 @@ import java.util.List;
  */
 public class StaffLineCleaner
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StaffLineCleaner.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -60,7 +59,6 @@ public class StaffLineCleaner
     /** Horizontal lag. */
     private final Lag hLag;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StaffLineCleaner} object.
      *
@@ -73,10 +71,12 @@ public class StaffLineCleaner
         hLag = sheet.getLagManager().getLag(Lags.HLAG);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
+    /**
+     * Clean the staff lines by "removing" the line glyphs.
+     */
     public void process ()
     {
         StopWatch watch = new StopWatch("StaffLineCleaner");
@@ -89,7 +89,7 @@ public class StaffLineCleaner
 
             // Remove staff line sections from hLag
             for (LineInfo line : originals) {
-                hLag.removeSections(((StaffFilament) line).getMembers());
+                hLag.removeSections(((SectionCompound) line).getMembers());
             }
         }
 
@@ -105,14 +105,12 @@ public class StaffLineCleaner
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,

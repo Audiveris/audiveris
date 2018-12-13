@@ -27,7 +27,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 /**
  * Class {@code Param} defines data value at default level, book level, sheet level.
  * <p>
- * The {@link #getValue()} reports the current data value: <ol>
+ * The {@link #getValue()} reports the current data value:
+ * <ol>
  * <li>If the param instance has a non-null specific value, this specific value is returned.
  * <li>Otherwise, if this instance has a registered parent param, parent.getValue() is returned.
  * <li>Otherwise, null is returned.
@@ -36,14 +37,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
  * <img src="doc-files/Param.png" alt="Param UML">
  *
  * @param <E> type of parameter handled
- *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class Param<E>
 {
 
-    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -56,7 +55,19 @@ public class Param<E>
     /** Parent param, if any, to inherit from. */
     protected Param<E> parent;
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // getSourceValue //
+    //----------------//
+    /**
+     * Report the source value if any, by default this return null.
+     *
+     * @return the source value
+     */
+    public E getSourceValue ()
+    {
+        return null;
+    }
+
     //-------------//
     // getSpecific //
     //-------------//
@@ -91,19 +102,6 @@ public class Param<E>
             return parent.getValue();
         }
 
-        return null;
-    }
-
-    //----------------//
-    // getSourceValue //
-    //----------------//
-    /**
-     * Report the source value if any, by default this return null.
-     *
-     * @return the source value
-     */
-    public E getSourceValue ()
-    {
         return null;
     }
 

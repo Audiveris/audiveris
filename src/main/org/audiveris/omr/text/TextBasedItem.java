@@ -41,7 +41,6 @@ public abstract class TextBasedItem
         extends TextItem
         implements Vip
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Baseline. */
     private Line2D baseline;
@@ -52,7 +51,6 @@ public abstract class TextBasedItem
     /** (Debug) flag this object as VIP. */
     private boolean vip;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TextBasedItem object.
      *
@@ -72,33 +70,6 @@ public abstract class TextBasedItem
         this.confidence = confidence;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // baselineOf //
-    //------------//
-    public static Line2D baselineOf (List<? extends TextBasedItem> items)
-    {
-        Point2D first = items.get(0).getBaseline().getP1();
-        Point2D last = items.get(items.size() - 1).getBaseline().getP2();
-
-        return new Line2D.Double(first, last);
-    }
-
-    //--------------//
-    // confidenceOf //
-    //--------------//
-    public static double confidenceOf (Collection<? extends TextBasedItem> items)
-    {
-        // Use average confidence
-        double total = 0;
-
-        for (TextBasedItem item : items) {
-            total += item.getConfidence();
-        }
-
-        return total / items.size();
-    }
-
     //-------------//
     // getBaseline //
     //-------------//
@@ -110,6 +81,19 @@ public abstract class TextBasedItem
     public Line2D getBaseline ()
     {
         return baseline;
+    }
+
+    //-------------//
+    // setBaseline //
+    //-------------//
+    /**
+     * Assign the word baseline
+     *
+     * @param baseline the new item baseline
+     */
+    public void setBaseline (Line2D baseline)
+    {
+        this.baseline = baseline;
     }
 
     //---------------//
@@ -125,9 +109,27 @@ public abstract class TextBasedItem
         return confidence;
     }
 
+    //---------------//
+    // setConfidence //
+    //---------------//
+    /**
+     * Assign the item confidence level
+     *
+     * @param confidence the confidence or null
+     */
+    public void setConfidence (Double confidence)
+    {
+        this.confidence = confidence;
+    }
+
     //-------------//
     // getLocation //
     //-------------//
+    /**
+     * Report the text starting location, if any.
+     *
+     * @return starting location or null
+     */
     public Point getLocation ()
     {
         Line2D bl = getBaseline();
@@ -146,33 +148,6 @@ public abstract class TextBasedItem
     public boolean isVip ()
     {
         return vip;
-    }
-
-    //
-    //-------------//
-    // setBaseline //
-    //-------------//
-    /**
-     * Assign the word baseline
-     *
-     * @param baseline the new item baseline
-     */
-    public void setBaseline (Line2D baseline)
-    {
-        this.baseline = baseline;
-    }
-
-    //---------------//
-    // setConfidence //
-    //---------------//
-    /**
-     * Assign the item confidence level
-     *
-     * @param confidence the confidence or null
-     */
-    public void setConfidence (Double confidence)
-    {
-        this.confidence = confidence;
     }
 
     //--------//
@@ -233,5 +208,43 @@ public abstract class TextBasedItem
         }
 
         return sb.toString();
+    }
+
+    //------------//
+    // baselineOf //
+    //------------//
+    /**
+     * Report the baseline defined by the provided sequence of items.
+     *
+     * @param items provided sequence
+     * @return baseline from first to last
+     */
+    public static Line2D baselineOf (List<? extends TextBasedItem> items)
+    {
+        Point2D first = items.get(0).getBaseline().getP1();
+        Point2D last = items.get(items.size() - 1).getBaseline().getP2();
+
+        return new Line2D.Double(first, last);
+    }
+
+    //--------------//
+    // confidenceOf //
+    //--------------//
+    /**
+     * Report a global confidence value for the provided collection of test items.
+     *
+     * @param items provided items
+     * @return global confidence value
+     */
+    public static double confidenceOf (Collection<? extends TextBasedItem> items)
+    {
+        // Use average confidence
+        double total = 0;
+
+        for (TextBasedItem item : items) {
+            total += item.getConfidence();
+        }
+
+        return total / items.size();
     }
 }

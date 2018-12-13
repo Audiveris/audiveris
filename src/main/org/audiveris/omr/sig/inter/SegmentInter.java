@@ -23,7 +23,6 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.curve.SegmentInfo;
-import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -37,11 +36,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class SegmentInter
         extends AbstractInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private final SegmentInfo info;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SegmentInter object.
      *
@@ -64,7 +61,6 @@ public class SegmentInter
         this.info = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -77,25 +73,27 @@ public class SegmentInter
     //---------//
     // getInfo //
     //---------//
+    /**
+     * Report the related building information.
+     *
+     * @return segment building info
+     */
     public SegmentInfo getInfo ()
     {
         return info;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
-            extends BasicImpacts
+            extends GradeImpacts
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{"dist"};
 
         private static final double[] WEIGHTS = new double[]{1};
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double dist)
         {
             super(NAMES, WEIGHTS);

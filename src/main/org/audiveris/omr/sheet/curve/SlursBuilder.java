@@ -80,7 +80,6 @@ import java.util.Set;
 public class SlursBuilder
         extends CurvesBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -92,7 +91,6 @@ public class SlursBuilder
 
     private static final Color SLUR_MODELS = new Color(255, 255, 0, 100);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Scale-dependent parameters. */
     private final Parameters params;
 
@@ -100,15 +98,14 @@ public class SlursBuilder
     private final ClumpPruner clumpPruner;
 
     /** All slur informations created. */
-    private final List<SlurInfo> pageInfos = new ArrayList<SlurInfo>();
+    private final List<SlurInfo> pageInfos = new ArrayList<>();
 
     /** All slur inters retrieved. */
-    private final List<SlurInter> pageSlurs = new ArrayList<SlurInter>();
+    private final List<SlurInter> pageSlurs = new ArrayList<>();
 
     /** Current maximum length for arcs to be tried. */
     private Integer maxLength = null;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SlursBuilder object.
      *
@@ -122,10 +119,12 @@ public class SlursBuilder
         params = new Parameters(sheet.getScale());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildSlurs //
     //------------//
+    /**
+     * Build slurs for the system.
+     */
     public void buildSlurs ()
     {
         try {
@@ -150,7 +149,7 @@ public class SlursBuilder
                 }
             }
 
-            // Handle tie collisions on same chord, although ties are not fully known 
+            // Handle tie collisions on same chord, although ties are not fully known
             // (because alterations & clefs have not been handled yet)
             handleTieCollisions();
 
@@ -202,7 +201,7 @@ public class SlursBuilder
         g.setColor(SLUR_CURVES);
 
         Stroke lineStroke = new BasicStroke(
-                (float) sheet.getScale().getFore(),
+                sheet.getScale().getFore(),
                 BasicStroke.CAP_ROUND,
                 BasicStroke.JOIN_ROUND);
         g.setStroke(lineStroke);
@@ -382,7 +381,7 @@ public class SlursBuilder
         }
 
         double angleImpact = (params.maxArcAngleHigh - arcAngle) / (params.maxArcAngleHigh
-                                                                    - params.maxArcAngleLow);
+                                                                            - params.maxArcAngleLow);
 
         // Features below are relevant only for full slur evaluations
         if (!bothSides) {
@@ -396,7 +395,7 @@ public class SlursBuilder
             midAngle += (2 * PI);
         }
 
-        midAngle = midAngle % PI;
+        midAngle %= PI;
 
         double fromVertical = min(abs(midAngle), abs(PI - midAngle));
 
@@ -406,8 +405,9 @@ public class SlursBuilder
             return null;
         }
 
-        double vertImpact = (fromVertical - params.minAngleFromVerticalLow) / (params.minAngleFromVerticalHigh
-                                                                               - params.minAngleFromVerticalLow);
+        double vertImpact = (fromVertical - params.minAngleFromVerticalLow)
+                                    / (params.minAngleFromVerticalHigh
+                                               - params.minAngleFromVerticalLow);
 
         List<Point> points = slur.getPoints();
         Point p0 = points.get(0);
@@ -424,7 +424,7 @@ public class SlursBuilder
         }
 
         double widthImpact = (width - params.minSlurWidthLow) / (params.minSlurWidthHigh
-                                                                 - params.minSlurWidthLow);
+                                                                         - params.minSlurWidthLow);
 
         // Slur high enough (bent enough)
         double height = Line2D.ptLineDist(p0.x, p0.y, p2.x, p2.y, p1.x, p1.y);
@@ -436,7 +436,7 @@ public class SlursBuilder
         }
 
         double heightImpact = (height - params.minSlurHeightLow) / (params.minSlurHeightHigh
-                                                                    - params.minSlurHeightLow);
+                                                                            - params.minSlurHeightLow);
 
         return new SlurInter.Impacts(
                 distImpact,
@@ -492,8 +492,9 @@ public class SlursBuilder
             final double r1 = rough.getRadius();
             final double r2 = fitted.getRadius();
 
-            if (Double.isInfinite(r1)
-                || ((abs(r1 - r2) / (max(r1, r2))) <= params.similarRadiusRatio)) {
+            if (Double.isInfinite(r1) || ((abs(r1 - r2) / (max(
+                    r1,
+                    r2))) <= params.similarRadiusRatio)) {
                 circle = fitted;
                 dist = circle.getDistance();
             } else {
@@ -551,9 +552,8 @@ public class SlursBuilder
         SlurInfo slur = (SlurInfo) seq;
         GradeImpacts impacts = computeImpacts(slur, true);
 
-        if ((impacts != null)
-            && (impacts.getGrade() >= SlurInter.getMinGrade())
-            && (slur.getCurve() != null)) {
+        if ((impacts != null) && (impacts.getGrade() >= SlurInter.getMinGrade()) && (slur
+                .getCurve() != null)) {
             slur.retrieveGlyph(sheet, params.maxRunDistance);
 
             if (slur.getGlyph() != null) {
@@ -609,7 +609,7 @@ public class SlursBuilder
     protected void weed (Set<Curve> clump)
     {
         // Compute grades
-        List<SlurInter> inters = new ArrayList<SlurInter>();
+        List<SlurInter> inters = new ArrayList<>();
 
         for (Curve seq : clump) {
             SlurInfo slur = (SlurInfo) seq;
@@ -722,7 +722,7 @@ public class SlursBuilder
      */
     private List<Arc> getSeedArcs ()
     {
-        Set<Arc> set = new LinkedHashSet<Arc>();
+        Set<Arc> set = new LinkedHashSet<>();
 
         for (Arc arc : skeleton.arcsMap.values()) {
             if (arc.getLength() >= params.arcMinSeedLength) {
@@ -730,7 +730,7 @@ public class SlursBuilder
             }
         }
 
-        List<Arc> list = new ArrayList<Arc>(set);
+        List<Arc> list = new ArrayList<>(set);
         Collections.sort(list, Arc.byReverseLength);
 
         return list;
@@ -809,7 +809,7 @@ public class SlursBuilder
 
                 for (HorizontalSide slurSide : HorizontalSide.values()) {
                     // Count ties for this chord on selected *slur* side
-                    final Set<SlurInter> ties = new LinkedHashSet<SlurInter>();
+                    final Set<SlurInter> ties = new LinkedHashSet<>();
 
                     for (Inter nInter : chord.getNotes()) {
                         for (Relation rel : sig.getRelations(nInter, SlurHeadRelation.class)) {
@@ -828,7 +828,7 @@ public class SlursBuilder
                     if (ties.size() > 1) {
                         HorizontalSide oppSide = slurSide.opposite();
                         Map<HeadChordInter, List<SlurInter>> origins;
-                        origins = new LinkedHashMap<HeadChordInter, List<SlurInter>>();
+                        origins = new LinkedHashMap<>();
 
                         // Check whether the ties are linked to different chords
                         for (SlurInter tie : ties) {
@@ -841,7 +841,7 @@ public class SlursBuilder
                                         List<SlurInter> list = origins.get(ch);
 
                                         if (list == null) {
-                                            origins.put(ch, list = new ArrayList<SlurInter>());
+                                            origins.put(ch, list = new ArrayList<>());
                                         }
 
                                         list.add(tie);
@@ -884,7 +884,7 @@ public class SlursBuilder
             SlurInter slur = inters.get(i);
             Point end = slur.getInfo().getEnd(reverse);
 
-            List<SlurInter> toDelete = new ArrayList<SlurInter>();
+            List<SlurInter> toDelete = new ArrayList<>();
 
             for (SlurInter otherSlur : inters.subList(i + 1, inters.size())) {
                 Point otherEnd = otherSlur.getInfo().getEnd(reverse);
@@ -954,7 +954,7 @@ public class SlursBuilder
      */
     private void purgeStaffLines (List<SlurInter> inters)
     {
-        List<SlurInter> toDelete = new ArrayList<SlurInter>();
+        List<SlurInter> toDelete = new ArrayList<>();
 
         for (SlurInter inter : inters) {
             SlurInfo slur = inter.getInfo();
@@ -1071,14 +1071,12 @@ public class SlursBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio similarRadiusRatio = new Constant.Ratio(
                 0.25,
@@ -1186,7 +1184,6 @@ public class SlursBuilder
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final double similarRadiusRatio;
 
@@ -1234,13 +1231,12 @@ public class SlursBuilder
 
         final double maxRunDistance;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
          *
          * @param scale the scaling factor
          */
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             similarRadiusRatio = constants.similarRadiusRatio.getValue();
             tangentLength = scale.toPixels(constants.tangentLength);

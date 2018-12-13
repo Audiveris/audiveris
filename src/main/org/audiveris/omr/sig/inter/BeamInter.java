@@ -33,14 +33,12 @@ import javax.xml.bind.annotation.XmlRootElement;
  * to a beam hook interpretation.
  *
  * @see BeamHookInter
- *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "beam")
 public class BeamInter
         extends AbstractBeamInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new BeamInter object.
@@ -74,7 +72,6 @@ public class BeamInter
         super(null, null, null, 0);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

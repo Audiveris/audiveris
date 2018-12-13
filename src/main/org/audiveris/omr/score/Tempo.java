@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class Tempo
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -44,20 +43,17 @@ public abstract class Tempo
     /** Default parameter. */
     public static final Param<Integer> defaultTempo = new Default();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private Tempo ()
     {
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Integer defaultTempo = new Constant.Integer(
                 "QuartersPerMn",
@@ -71,7 +67,6 @@ public abstract class Tempo
     private static class Default
             extends Param<Integer>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Integer getSpecific ()

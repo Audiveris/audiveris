@@ -27,12 +27,11 @@ import org.slf4j.LoggerFactory;
 /**
  * Class {@code LocalHistogram}
  *
- * @author Hervé Bitteur
+ * @author ?
  */
 public class LocalHistogram
         implements MorphoConstants
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(LocalHistogram.class);
 
@@ -40,7 +39,6 @@ public class LocalHistogram
 
     private static final int MIN = 0;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     //  private int[] hist=new int[256];
     private int[] counts = new int[256];
 
@@ -50,7 +48,6 @@ public class LocalHistogram
 
     private int binCount = 0;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LocalHistogram object.
      *
@@ -92,27 +89,10 @@ public class LocalHistogram
                            int[][] pg,
                            int type)
     {
-        int binCount = Math.min(pg.length, 256);
+        binCount = Math.min(pg.length, 256);
         //hist=new int[256];
         counts = new int[256];
         init(index, width, height, pixels, pg, type);
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    public void Log ()
-    {
-        //    IJ.log("min:  "+min + "  max: "+max);
-        StringBuffer sb = new StringBuffer(200);
-
-        for (int h = 0; h <= 255; h++) {
-            if (counts[h] != 0) {
-                sb.append(h + " " + counts[h] + " \n");
-            }
-
-            // sb.append(counts[h]+" ");
-        }
-
-        logger.info("histogram +\n" + sb.toString() + "\n");
     }
 
     public void add (LocalHistogram bh)
@@ -126,7 +106,7 @@ public class LocalHistogram
         //   IJ.log("u "+u+" v "+v);
         //int tmin=u; int tmax=v;
         for (int i = u; i <= v; i++) {
-            counts[i] = counts[i] + bh.counts[i];
+            counts[i] += bh.counts[i];
 
             // if (counts[i]<0) IJ.log("less than zero: "+i);
         }
@@ -288,6 +268,22 @@ public class LocalHistogram
         //Log();
     }
 
+    public void log ()
+    {
+        //    IJ.log("min:  "+min + "  max: "+max);
+        StringBuilder sb = new StringBuilder(200);
+
+        for (int h = 0; h <= 255; h++) {
+            if (counts[h] != 0) {
+                sb.append(h).append(" ").append(counts[h]).append(" \n");
+            }
+
+            // sb.append(counts[h]+" ");
+        }
+
+        logger.info("histogram +\n" + sb.toString() + "\n");
+    }
+
     public void sub (LocalHistogram bh)
     {
         int u = Math.min(min, bh.min);
@@ -303,7 +299,7 @@ public class LocalHistogram
         int tmax = v;
 
         for (int i = u; i <= v; i++) {
-            counts[i] = counts[i] - bh.counts[i];
+            counts[i] -= bh.counts[i];
 
             if (counts[i] < 0) {
                 counts[i] = 0;

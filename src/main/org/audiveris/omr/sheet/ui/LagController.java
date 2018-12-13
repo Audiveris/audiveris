@@ -23,7 +23,6 @@ package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.GlyphsModel;
-import org.audiveris.omr.glyph.ui.GlyphService;
 import org.audiveris.omr.glyph.ui.GlyphsController;
 import org.audiveris.omr.glyph.ui.NestView;
 import org.audiveris.omr.glyph.ui.SymbolGlyphBoard;
@@ -44,7 +43,6 @@ import java.util.Arrays;
 public class LagController
         extends GlyphsController
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The underlying lag. */
     private final Lag lag;
@@ -55,7 +53,6 @@ public class LagController
     /** Related user display if any */
     private MyView view;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code LagController} object.
      *
@@ -67,12 +64,11 @@ public class LagController
                           Lag lag,
                           SheetTab tab)
     {
-        super(new GlyphsModel(sheet, (GlyphService) sheet.getGlyphIndex().getEntityService()));
+        super(new GlyphsModel(sheet, sheet.getGlyphIndex().getEntityService()));
         this.lag = lag;
         this.tab = tab;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // refresh //
     //---------//
@@ -83,7 +79,7 @@ public class LagController
     {
         if (view == null) {
             displayFrame();
-        } else if (view != null) {
+        } else {
             view.repaint();
         }
     }
@@ -105,16 +101,14 @@ public class LagController
                         new SymbolGlyphBoard(this, true, true)));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyView //
     //--------//
-    private final class MyView
+    private class MyView
             extends NestView
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public MyView (GlyphIndex glyphIndex)
+        MyView (GlyphIndex glyphIndex)
         {
             super(glyphIndex.getEntityService(), Arrays.asList(lag), sheet);
 

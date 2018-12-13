@@ -42,13 +42,11 @@ import java.awt.image.BufferedImage;
 public class LoadStep
         extends AbstractStep
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(LoadStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LoadStep object.
      */
@@ -56,7 +54,6 @@ public class LoadStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // doit //
     //------//
@@ -80,7 +77,9 @@ public class LoadStep
 
                 ///logger.info("Occupied memory: {}", Memory.getValue());
                 final String msg = "Too large image: " + String.format("%,d", count)
-                                   + " pixels (vs " + String.format("%,d", max) + " max)";
+                                           + " pixels (vs "
+                                           + String.format("%,d", max)
+                                           + " max)";
                 stub.decideOnRemoval(msg, false); // This may throw StepException
             }
 
@@ -97,18 +96,16 @@ public class LoadStep
         return SheetTab.PICTURE_TAB;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Integer maxPixelCount = new Constant.Integer(
                 "Pixels",
-                20000000,
+                20_000_000,
                 "Maximum image size, specified in pixel count");
     }
 }

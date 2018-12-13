@@ -33,7 +33,6 @@ import org.audiveris.omr.sig.SigReducer;
 public class ReductionStep
         extends AbstractSystemStep<Void>
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new ReductionStep object.
@@ -42,7 +41,6 @@ public class ReductionStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//

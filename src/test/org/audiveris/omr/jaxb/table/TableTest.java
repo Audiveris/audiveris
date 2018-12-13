@@ -98,7 +98,7 @@ public class TableTest
     }
 
     private void unmarshall ()
-            throws JAXBException, FileNotFoundException
+            throws JAXBException, FileNotFoundException, IOException
     {
         System.out.println("=========================================================");
         System.out.println("Unmarshalling ...");
@@ -108,6 +108,8 @@ public class TableTest
         Unmarshaller um = jaxbContext.createUnmarshaller();
 
         Table table = (Table) um.unmarshal(is);
+        is.close();
+
         System.out.println("Unmarshalled from " + source);
 
         new Dumping().dump(table);

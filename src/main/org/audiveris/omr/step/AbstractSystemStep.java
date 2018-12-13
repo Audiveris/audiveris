@@ -40,17 +40,14 @@ import java.util.concurrent.Callable;
  * sheet systems, perhaps in parallel.
  *
  * @param <C> context type
- *
  * @author Hervé Bitteur
  */
 public abstract class AbstractSystemStep<C>
         extends AbstractStep
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractSystemStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractSystemStep object.
      */
@@ -58,8 +55,6 @@ public abstract class AbstractSystemStep<C>
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //
     //-------------//
     // clearErrors //
     //-------------//
@@ -174,11 +169,10 @@ public abstract class AbstractSystemStep<C>
     {
         try {
             final boolean parallel = Main.processSystemsInParallel();
-            final Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+            final Collection<Callable<Void>> tasks = new ArrayList<>();
 
             for (final SystemInfo system : sheet.getSystems()) {
-                tasks.add(
-                        new Callable<Void>()
+                tasks.add(new Callable<Void>()
                 {
                     @Override
                     public Void call ()
@@ -197,7 +191,7 @@ public abstract class AbstractSystemStep<C>
                                     system.getId());
 
                             doSystem(system, context);
-                        } catch (Exception ex) {
+                        } catch (StepException ex) {
                             logger.warn(system.getLogPrefix() + ex, ex);
                         } finally {
                             if (parallel) {

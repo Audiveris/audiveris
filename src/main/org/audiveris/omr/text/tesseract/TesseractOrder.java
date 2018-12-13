@@ -23,6 +23,7 @@ package org.audiveris.omr.text.tesseract;
 
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.text.FontInfo;
+import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.text.TextChar;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextWord;
@@ -41,10 +42,12 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -60,7 +63,6 @@ import javax.imageio.stream.ImageOutputStream;
  */
 public class TesseractOrder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TesseractOrder.class);
 
@@ -68,7 +70,7 @@ public class TesseractOrder
     private static final String UTF8 = "UTF-8";
 
     /** To avoid repetitive warnings if OCR binding failed. */
-    private static boolean userWarned;
+    private static volatile boolean userWarned;
 
     static {
         IIORegistry registry = IIORegistry.getDefaultInstance();
@@ -78,7 +80,6 @@ public class TesseractOrder
                 new com.github.jaiimageio.impl.plugins.tiff.TIFFImageReaderSpi());
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Serial number for this order. */
     private final int serial;
 
@@ -100,8 +101,6 @@ public class TesseractOrder
     /** The image being processed. */
     private final PIX image;
 
-    //~ Constructors -------------------------------------------------------------------------------
-    //
     //----------------//
     // TesseractOrder //
     //----------------//
@@ -114,7 +113,6 @@ public class TesseractOrder
      * @param lang          The language specification
      * @param segMode       The desired page segmentation mode
      * @param bufferedImage The image to process
-     *
      * @throws UnsatisfiedLinkError When bridge to C++ could not be loaded
      * @throws IOException          When temporary Tiff buffer failed
      * @throws RuntimeException     When PIX image failed
@@ -125,7 +123,8 @@ public class TesseractOrder
                            String lang,
                            int segMode,
                            BufferedImage bufferedImage)
-            throws UnsatisfiedLinkError, IOException
+            throws UnsatisfiedLinkError,
+                   IOException
     {
         this.label = label;
         this.serial = serial;
@@ -144,8 +143,6 @@ public class TesseractOrder
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //
     //---------//
     // process //
     //---------//
@@ -156,12 +153,16 @@ public class TesseractOrder
      */
     public List<TextLine> process ()
     {
+        if (!OcrUtil.getOcr().isAvailable()) {
+            return Collections.EMPTY_LIST;
+        }
+
         try {
-            //api = new TessBaseAPI(WellKnowns.OCR_FOLDER.toString());
+            final Path ocrFolder = TesseractOCR.getInstance().getOcrFolder();
             api = new TessBaseAPI();
 
             // Init API with proper language
-            if (api.Init(WellKnowns.OCR_FOLDER.toString(), lang) != 0) {
+            if (api.Init(ocrFolder.toString(), lang) != 0) {
                 logger.warn("Could not initialize Tesseract with lang {}", lang);
 
                 return finish(null);
@@ -196,40 +197,6 @@ public class TesseractOrder
         }
     }
 
-    private Line2D Baseline (ResultIterator rit,
-                             int level)
-    {
-        IntPointer x1 = new IntPointer(0);
-        IntPointer y1 = new IntPointer(0);
-        IntPointer x2 = new IntPointer(0);
-        IntPointer y2 = new IntPointer(0);
-
-        if (rit.Baseline(level, x1, y1, x2, y2)) {
-            return new Line2D.Double(x1.get(), y1.get(), x2.get(), y2.get());
-        } else {
-            return null;
-        }
-    }
-
-    private Rectangle BoundingBox (PageIterator it,
-                                   int level)
-    {
-        IntPointer left = new IntPointer(0);
-        IntPointer top = new IntPointer(0);
-        IntPointer right = new IntPointer(0);
-        IntPointer bottom = new IntPointer(0);
-
-        if (it.BoundingBox(level, left, top, right, bottom)) {
-            return new Rectangle(
-                    left.get(),
-                    top.get(),
-                    right.get() - left.get(),
-                    bottom.get() - top.get());
-        } else {
-            return null;
-        }
-    }
-
     //--------//
     // finish //
     //--------//
@@ -250,6 +217,40 @@ public class TesseractOrder
         }
 
         return lines;
+    }
+
+    private Line2D getBaseline (ResultIterator rit,
+                                int level)
+    {
+        IntPointer x1 = new IntPointer(0);
+        IntPointer y1 = new IntPointer(0);
+        IntPointer x2 = new IntPointer(0);
+        IntPointer y2 = new IntPointer(0);
+
+        if (rit.Baseline(level, x1, y1, x2, y2)) {
+            return new Line2D.Double(x1.get(), y1.get(), x2.get(), y2.get());
+        } else {
+            return null;
+        }
+    }
+
+    private Rectangle getBoundingBox (PageIterator it,
+                                      int level)
+    {
+        IntPointer left = new IntPointer(0);
+        IntPointer top = new IntPointer(0);
+        IntPointer right = new IntPointer(0);
+        IntPointer bottom = new IntPointer(0);
+
+        if (it.BoundingBox(level, left, top, right, bottom)) {
+            return new Rectangle(
+                    left.get(),
+                    top.get(),
+                    right.get() - left.get(),
+                    bottom.get() - top.get());
+        } else {
+            return null;
+        }
     }
 
     //---------//
@@ -316,7 +317,7 @@ public class TesseractOrder
     private List<TextLine> getLines ()
     {
         final ResultIterator it = api.GetIterator();
-        final List<TextLine> lines = new ArrayList<TextLine>(); // All lines built so far
+        final List<TextLine> lines = new ArrayList<>(); // All lines built so far
         TextLine line = null; // The line being built
         TextWord word = null; // The word being built
         int nextLevel;
@@ -349,9 +350,9 @@ public class TesseractOrder
                     }
 
                     word = new TextWord(
-                            BoundingBox(it, RIL_WORD),
+                            getBoundingBox(it, RIL_WORD),
                             it.GetUTF8Text(RIL_WORD).getString(UTF8),
-                            Baseline(it, RIL_WORD),
+                            getBaseline(it, RIL_WORD),
                             it.Confidence(RIL_WORD) / 100.0,
                             fontInfo,
                             line);
@@ -372,7 +373,7 @@ public class TesseractOrder
                 // Char/symbol to be processed
                 wordAddChars(
                         word,
-                        BoundingBox(it, RIL_SYMBOL),
+                        getBoundingBox(it, RIL_SYMBOL),
                         it.GetUTF8Text(RIL_SYMBOL).getString(UTF8));
             } while (it.Next(nextLevel));
 
@@ -382,7 +383,7 @@ public class TesseractOrder
             }
 
             return lines;
-        } catch (Exception ex) {
+        } catch (UnsupportedEncodingException ex) {
             logger.warn("Error decoding tesseract output", ex);
 
             return null;
@@ -395,8 +396,9 @@ public class TesseractOrder
     // toTiffBuffer //
     //--------------//
     /**
-     * Convert the given image into a TIFF-formatted ByteBuffer for
-     * passing it directly to Tesseract.
+     * Convert the given image into a TIFF-formatted ByteBuffer for passing it directly
+     * to Tesseract.
+     * <p>
      * A copy of the tiff buffer can be saved on disk, if so desired.
      *
      * @param image the input image
@@ -407,21 +409,11 @@ public class TesseractOrder
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        try {
-            ImageOutputStream ios = null;
-
-            try {
-                ios = ImageIO.createImageOutputStream(baos);
-
-                ImageWriter writer = ImageIO.getImageWritersByFormatName("tiff").next();
-                writer.setOutput(ios);
-                writer.write(image);
-            } finally {
-                if (ios != null) {
-                    ios.close();
-                }
-            }
-        } catch (Exception ex) {
+        try (ImageOutputStream ios = ImageIO.createImageOutputStream(baos)) {
+            ImageWriter writer = ImageIO.getImageWritersByFormatName("tiff").next();
+            writer.setOutput(ios);
+            writer.write(image);
+        } catch (IOException ex) {
             logger.warn("Could not write image", ex);
         }
 
@@ -439,18 +431,9 @@ public class TesseractOrder
                 Files.createDirectories(WellKnowns.TEMP_FOLDER);
             }
 
-            try {
-                FileOutputStream fos = null;
-
-                try {
-                    fos = new FileOutputStream(path.toFile());
-                    fos.write(bytes);
-                } finally {
-                    if (fos != null) {
-                        fos.close();
-                    }
-                }
-            } catch (Exception ex) {
+            try (FileOutputStream fos = new FileOutputStream(path.toFile())) {
+                fos.write(bytes);
+            } catch (IOException ex) {
                 logger.warn("Could not write to {}", path, ex);
             }
         }

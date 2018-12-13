@@ -44,21 +44,21 @@ import java.util.Comparator;
 public class SlurHeadLink
         extends Link
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    public static Comparator<SlurHeadLink> byEuclidean = new Comparator<SlurHeadLink>()
+    /**
+     * To sort by increasing euclidian distance.
+     */
+    public static final Comparator<SlurHeadLink> byEuclidean = new Comparator<SlurHeadLink>()
     {
         @Override
         public int compare (SlurHeadLink o1,
                             SlurHeadLink o2)
         {
-            return Double.compare(
-                    ((SlurHeadRelation) o1.relation).getEuclidean(),
-                    ((SlurHeadRelation) o2.relation).getEuclidean());
+            return Double.compare(((SlurHeadRelation) o1.relation).getEuclidean(),
+                                  ((SlurHeadRelation) o2.relation).getEuclidean());
         }
     };
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SlurHeadLink} object.
      *
@@ -71,7 +71,25 @@ public class SlurHeadLink
         super(head, rel, true);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * Report the HeadChord which contains the linked head.
+     *
+     * @return the containing HeadChord
+     */
+    public HeadChordInter getChord ()
+    {
+        return ((HeadInter) partner).getChord();
+    }
+
+    /**
+     * Build proper SlurHeadRelation object.
+     *
+     * @param slurEnd  slur ending point
+     * @param slurSide slur horizontal side
+     * @param chord    head chord
+     * @param head     head to be connected
+     * @return proper SlurHeadRelation instance, ready to be inserted in SIG
+     */
     public static SlurHeadLink create (Point slurEnd,
                                        HorizontalSide slurSide,
                                        AbstractChordInter chord,
@@ -81,23 +99,10 @@ public class SlurHeadLink
 
         // Define middle vertical line of chord box
         Rectangle box = chord.getBounds();
-        Line2D vert = new Line2D.Double(
-                box.x + (box.width / 2),
-                box.y,
-                box.x + (box.width / 2),
-                box.y + box.height);
+        Line2D vert = new Line2D.Double(box.x + (box.width / 2), box.y, box.x + (box.width / 2),
+                                        box.y + box.height);
         rel.setEuclidean(vert.ptSegDist(slurEnd));
 
         return new SlurHeadLink(head, rel);
-    }
-
-    /**
-     * Report the HeadChord which contains the linked head.
-     *
-     * @return the containing HeadChord
-     */
-    public HeadChordInter getChord ()
-    {
-        return (HeadChordInter) ((HeadInter) partner).getChord();
     }
 }

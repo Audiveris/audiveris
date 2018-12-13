@@ -39,12 +39,10 @@ import java.awt.geom.Rectangle2D;
 public class SlashedFlagSymbol
         extends ShapeSymbol
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The small flag symbol. */
     private final ShapeSymbol flagSymbol = Symbols.getSymbol(Shape.SMALL_FLAG);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SmallFlagSymbol} object.
      *
@@ -55,7 +53,6 @@ public class SlashedFlagSymbol
         super(isIcon, Shape.SMALL_FLAG_SLASH, false);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -105,14 +102,12 @@ public class SlashedFlagSymbol
         g.setStroke(oldStroke);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     private class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         Stroke stroke;
     }

@@ -73,7 +73,8 @@ import javax.xml.bind.JAXBException;
  * (means and standard deviations).
  * <p>
  * The classifier data is thus composed of two parts (model and norms) which are loaded as a whole
- * according to the following algorithm: <ol>
+ * according to the following algorithm:
+ * <ol>
  * <li>It first tries to find data in the application user local area ('train').
  * If found, this data contains a custom definition of model+norms, typically after a user
  * training.</li>
@@ -85,13 +86,11 @@ import javax.xml.bind.JAXBException;
  * which will be picked up first when the application is run again.
  *
  * @param <M> precise model class to be used
- *
  * @author Hervé Bitteur
  */
 public abstract class AbstractClassifier<M extends Object>
         implements Classifier
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -110,13 +109,9 @@ public abstract class AbstractClassifier<M extends Object>
     public static final String STDS_XML_ENTRY_NAME = "stds.xml";
 
     /** A special evaluation array, used to report NOISE. */
-    protected static final Evaluation[] noiseEvaluations = {
-        new Evaluation(
-        Shape.NOISE,
-        Evaluation.ALGORITHM)
-    };
+    private static final Evaluation[] noiseEvaluations = {
+        new Evaluation(Shape.NOISE, Evaluation.ALGORITHM)};
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Features means and standard deviations. */
     protected Norms norms;
 
@@ -126,7 +121,6 @@ public abstract class AbstractClassifier<M extends Object>
     /** The glyph checker for additional specific checks. */
     protected ShapeChecker glyphChecker = ShapeChecker.getInstance();
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // evaluate //
     //----------//
@@ -249,8 +243,7 @@ public abstract class AbstractClassifier<M extends Object>
             return noiseEvaluations;
         } else {
             Evaluation[] evals = getNaturalEvaluations(glyph, interline);
-            // Order the evals from best to worst
-            Arrays.sort(evals);
+            Arrays.sort(evals, Evaluation.byReverseGrade); // Order the evals from best to worst
 
             return evals;
         }
@@ -301,7 +294,7 @@ public abstract class AbstractClassifier<M extends Object>
 
                     if (!isCompatible(model, norms)) {
                         final String msg = "Obsolete classifier user data in " + path
-                                           + ", trying default data";
+                                                   + ", trying default data";
                         logger.warn(msg);
                     } else {
                         // Tell user we are not using the default
@@ -334,9 +327,9 @@ public abstract class AbstractClassifier<M extends Object>
                 logger.debug("tmpFile={}", tmpFile);
                 tmpFile.deleteOnExit();
 
-                InputStream is = uri.toURL().openStream();
-                FileUtils.copyInputStreamToFile(is, tmpFile);
-                is.close();
+                try (InputStream is = uri.toURL().openStream()) {
+                    FileUtils.copyInputStreamToFile(is, tmpFile);
+                }
                 zipPath = tmpFile.toPath();
             } else {
                 zipPath = Paths.get(uri);
@@ -349,7 +342,7 @@ public abstract class AbstractClassifier<M extends Object>
 
             if (!isCompatible(model, norms)) {
                 final String msg = "Obsolete classifier default data in " + uri
-                                   + ", please retrain from scratch";
+                                           + ", please retrain from scratch";
                 logger.warn(msg);
             } else {
                 logger.info("Classifier data loaded from default uri {}", uri);
@@ -412,20 +405,20 @@ public abstract class AbstractClassifier<M extends Object>
 
         if (meansEntry != null) {
             InputStream is = Files.newInputStream(meansEntry); // READ by default
-            DataInputStream dis = new DataInputStream(new BufferedInputStream(is));
-            means = Nd4j.read(dis);
-            logger.info("means:{}", means);
-            dis.close();
+            try (DataInputStream dis = new DataInputStream(new BufferedInputStream(is))) {
+                means = Nd4j.read(dis);
+                logger.info("means:{}", means);
+            }
         }
 
         final Path stdsEntry = root.resolve(STDS_ENTRY_NAME);
 
         if (stdsEntry != null) {
             InputStream is = Files.newInputStream(stdsEntry); // READ by default
-            DataInputStream dis = new DataInputStream(new BufferedInputStream(is));
-            stds = Nd4j.read(dis);
-            logger.info("stds:{}", stds);
-            dis.close();
+            try (DataInputStream dis = new DataInputStream(new BufferedInputStream(is))) {
+                stds = Nd4j.read(dis);
+                logger.info("stds:{}", stds);
+            }
         }
 
         if ((means != null) && (stds != null)) {
@@ -478,22 +471,18 @@ public abstract class AbstractClassifier<M extends Object>
     protected void storeNorms (Path root)
             throws Exception
     {
-        {
-            Path means = root.resolve(MEANS_ENTRY_NAME);
-            DataOutputStream dos = new DataOutputStream(
-                    new BufferedOutputStream(Files.newOutputStream(means, CREATE)));
+        Path means = root.resolve(MEANS_ENTRY_NAME);
+        try (DataOutputStream dos = new DataOutputStream(
+                new BufferedOutputStream(Files.newOutputStream(means, CREATE)))) {
             Nd4j.write(norms.means, dos);
             dos.flush();
-            dos.close();
         }
 
-        {
-            Path stds = root.resolve(STDS_ENTRY_NAME);
-            DataOutputStream dos = new DataOutputStream(
-                    new BufferedOutputStream(Files.newOutputStream(stds, CREATE)));
+        Path stds = root.resolve(STDS_ENTRY_NAME);
+        try (DataOutputStream dos = new DataOutputStream(
+                new BufferedOutputStream(Files.newOutputStream(stds, CREATE)))) {
             Nd4j.write(norms.stds, dos);
             dos.flush();
-            dos.close();
         }
     }
 
@@ -507,7 +496,7 @@ public abstract class AbstractClassifier<M extends Object>
                                    EnumSet<Classifier.Condition> conditions,
                                    int interline)
     {
-        List<Evaluation> bests = new ArrayList<Evaluation>();
+        List<Evaluation> bests = new ArrayList<>();
         Evaluation[] evals = getSortedEvaluations(glyph, interline);
 
         EvalsLoop:
@@ -542,7 +531,6 @@ public abstract class AbstractClassifier<M extends Object>
         return bests.toArray(new Evaluation[bests.size()]);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Norms //
     //-------//
@@ -551,7 +539,6 @@ public abstract class AbstractClassifier<M extends Object>
      */
     protected static class Norms
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Features means. */
         final INDArray means;
@@ -559,9 +546,14 @@ public abstract class AbstractClassifier<M extends Object>
         /** Features standard deviations. */
         final INDArray stds;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Norms (INDArray means,
-                      INDArray stds)
+        /**
+         * Creates a new {@code Norms} object.
+         *
+         * @param means
+         * @param stds
+         */
+        Norms (INDArray means,
+               INDArray stds)
         {
             this.means = means;
             this.stds = stds;
@@ -571,10 +563,9 @@ public abstract class AbstractClassifier<M extends Object>
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,

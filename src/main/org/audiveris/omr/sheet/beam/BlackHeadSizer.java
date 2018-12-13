@@ -57,19 +57,16 @@ import java.util.List;
  */
 public class BlackHeadSizer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BlackHeadSizer.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final Sheet sheet;
 
     /** Scale-dependent global constants. */
     private final Parameters params;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BlackHeadSizer} object.
      *
@@ -81,7 +78,6 @@ public class BlackHeadSizer
         params = new Parameters(sheet.getScale());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -107,8 +103,8 @@ public class BlackHeadSizer
         // Filter the spots based on typical weight, width and height.
         // Then derive main width and main height.
         // For visual check, use group BLACK_HEAD_SPOT and BLACK_STACK_SPOT
-        final List<Glyph> singles = new ArrayList<Glyph>();
-        final List<Glyph> stacks = new ArrayList<Glyph>();
+        final List<Glyph> singles = new ArrayList<>();
+        final List<Glyph> stacks = new ArrayList<>();
 
         for (Glyph glyph : spots) {
             // First check on glyph
@@ -167,11 +163,7 @@ public class BlackHeadSizer
 
         final int height = glyph.getHeight();
 
-        if ((height < params.minHeight) || (height > params.maxStackHeight)) {
-            return false;
-        }
-
-        return true;
+        return !((height < params.minHeight) || (height > params.maxStackHeight));
     }
 
     //----------------//
@@ -256,14 +248,12 @@ public class BlackHeadSizer
         logger.info("{}", musicFontScale);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction closingDiameter = new Scale.Fraction(
                 0.9,
@@ -328,7 +318,6 @@ public class BlackHeadSizer
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int minWidth;
 
@@ -356,13 +345,12 @@ public class BlackHeadSizer
 
         final int singlesQuorum;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
          *
          * @param scale the scaling factor
          */
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             minWidth = scale.toPixels(constants.minWidth);
             maxWidth = scale.toPixels(constants.maxWidth);

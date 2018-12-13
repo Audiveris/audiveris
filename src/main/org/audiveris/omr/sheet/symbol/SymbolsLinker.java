@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.symbol;
 
-import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
@@ -52,7 +51,6 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 
 import org.slf4j.Logger;
@@ -62,7 +60,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -74,18 +71,15 @@ import java.util.List;
  */
 public class SymbolsLinker
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolsLinker.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Dedicated system. */
     private final SystemInfo system;
 
     /** SIG for the system. */
     private final SIGraph sig;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SymbolsLinker} object.
      *
@@ -98,7 +92,6 @@ public class SymbolsLinker
         sig = system.getSig();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // linkOneSentence //
     //-----------------//
@@ -205,6 +198,9 @@ public class SymbolsLinker
     //---------//
     // process //
     //---------//
+    /**
+     * Process all links.
+     */
     public void process ()
     {
         linkDynamics();
@@ -338,19 +334,9 @@ public class SymbolsLinker
                 // Look for a related barline
                 if (!fermata.linkWithBarline()) {
                     // Look for a chord (head or rest) related to this fermata
-                    final Point center = fermata.getCenter();
-                    final Rectangle bounds = arc.getBounds();
-                    final MeasureStack stack = system.getStackAt(center);
-                    final Collection<AbstractChordInter> chords = (fermata.getShape() == Shape.FERMATA_BELOW)
-                            ? stack.getStandardChordsAbove(
-                                    center,
-                                    bounds) : stack.getStandardChordsBelow(center, bounds);
-
-                    if (!fermata.linkWithChords(chords)) {
+                    if (!fermata.linkWithChord()) {
                         // No link to barline, no link to chord, discard it
-                        fermata.remove();
-                        arc.remove();
-                        dot.remove();
+                        fermata.remove(); // Which also removes arc and dot members
                     }
                 }
             } catch (Exception ex) {
@@ -467,13 +453,10 @@ public class SymbolsLinker
                 final Line2D topLine = wedge.getLine1();
 
                 for (HorizontalSide side : HorizontalSide.values()) {
-                    final Point2D location = (side == LEFT)
-                            ? new Point2D.Double(
-                                    topLine.getX1() + xMargin,
-                                    topLine.getY1())
-                            : new Point2D.Double(
-                                    topLine.getX2() - xMargin,
-                                    topLine.getY2());
+                    final Point2D location = (side == LEFT) ? new Point2D.Double(
+                            topLine.getX1() + xMargin,
+                            topLine.getY1())
+                            : new Point2D.Double(topLine.getX2() - xMargin, topLine.getY2());
                     final MeasureStack stack = system.getStackAt(location);
                     final AbstractChordInter chordAbove = stack.getStandardChordAbove(
                             location,

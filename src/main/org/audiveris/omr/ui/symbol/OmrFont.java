@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
@@ -37,6 +38,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ConcurrentModificationException;
@@ -52,20 +54,18 @@ import java.util.Map;
 public abstract class OmrFont
         extends Font
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(OmrFont.class);
-
-    /** Needed for font size computation. */
-    protected static final FontRenderContext frc = new FontRenderContext(null, true, true);
 
     /** Default color for images. */
     public static final Color defaultImageColor = Color.BLACK;
 
-    /** Cache for fonts. No style, no size. */
-    private static final Map<String, Font> fontCache = new HashMap<String, Font>();
+    /** Needed for font size computation. */
+    protected static final FontRenderContext frc = new FontRenderContext(null, true, true);
 
-    //~ Constructors -------------------------------------------------------------------------------
+    /** Cache for fonts. No style, no size. */
+    private static final Map<String, Font> fontCache = new HashMap<>();
+
     /**
      * Creates a new OmrFont object.
      *
@@ -80,7 +80,6 @@ public abstract class OmrFont
         super(createFont(name, style, pointSize));
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // layout //
     //--------//
@@ -200,7 +199,8 @@ public abstract class OmrFont
                     input.close();
                 }
             }
-        } catch (Exception ex) {
+        } catch (FontFormatException |
+                 IOException ex) {
             logger.debug("Could not create custom font {} " + ex, fontName);
         }
 

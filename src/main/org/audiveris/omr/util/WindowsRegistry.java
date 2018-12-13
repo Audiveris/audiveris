@@ -21,10 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
+import org.audiveris.omr.WellKnowns;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -39,11 +42,14 @@ import java.util.List;
  */
 public class WindowsRegistry
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(WindowsRegistry.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
+    /** Not meant to be instantiated. */
+    private WindowsRegistry ()
+    {
+    }
+
     //-------//
     // query //
     //-------//
@@ -56,13 +62,15 @@ public class WindowsRegistry
     public static List<String> query (String... args)
     {
         // Output lines
-        List<String> output = new ArrayList<String>();
+        List<String> output = new ArrayList<>();
 
         // Command arguments
-        List<String> cmdArgs = new ArrayList<String>();
+        List<String> cmdArgs = new ArrayList<>();
         cmdArgs.addAll(Arrays.asList("cmd.exe", "/c", "reg", "query"));
         cmdArgs.addAll(Arrays.asList(args));
         logger.debug("cmdArgs: {}", cmdArgs);
+
+        BufferedReader br = null;
 
         try {
             // Spawn cmd process
@@ -73,8 +81,9 @@ public class WindowsRegistry
 
             // Read output
             InputStream is = process.getInputStream();
-            InputStreamReader isr = new InputStreamReader(is);
-            BufferedReader br = new BufferedReader(isr);
+            InputStreamReader isr = new InputStreamReader(is, WellKnowns.FILE_ENCODING);
+            br = new BufferedReader(isr);
+
             String line;
 
             while ((line = br.readLine()) != null) {
@@ -84,8 +93,19 @@ public class WindowsRegistry
             // Wait for process completion
             int exitValue = process.waitFor();
             logger.debug("Exit value is: {}", exitValue);
-        } catch (Exception ex) {
+        } catch (RuntimeException rex) {
+            throw rex;
+        } catch (IOException |
+                 InterruptedException ex) {
             logger.warn("Error running " + cmdArgs, ex);
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException ex) {
+                    logger.warn("Error closing cmd reader {}", ex.toString(), ex);
+                }
+            }
         }
 
         return output;

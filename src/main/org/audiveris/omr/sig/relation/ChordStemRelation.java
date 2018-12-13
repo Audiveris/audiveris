@@ -38,9 +38,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "chord-stem")
 public class ChordStemRelation
-        extends AbstractRelation
+        extends Relation
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     //-------//
     // added //
@@ -77,6 +76,16 @@ public class ChordStemRelation
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         HeadChordInter headChord = (HeadChordInter) e.getEdgeSource();
-        headChord.invalidateCache();
+
+        if (!headChord.isRemoved()) {
+            headChord.invalidateCache();
+        }
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 }

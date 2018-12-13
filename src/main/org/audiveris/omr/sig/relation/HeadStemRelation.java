@@ -27,6 +27,7 @@ import org.audiveris.omr.image.Anchored.Anchor;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
@@ -41,6 +42,8 @@ import org.jgrapht.event.GraphEdgeChangeEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
@@ -50,6 +53,21 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class {@code HeadStemRelation} represents the relation support between a head and a
  * stem.
+ * <p>
+ * A special configuration is known as the canonical "shared" configuration.
+ * It gathers a head with two stems:
+ * <ul>
+ * <li>STEM_TOP on head LEFT side
+ * <li>STEM_BOTTOM on head RIGHT side
+ * </ul>
+ *
+ * <pre>
+ *    |
+ *    |
+ *  +O+
+ *  |
+ *  |
+ * </pre>
  *
  * @author Hervé Bitteur
  */
@@ -57,19 +75,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class HeadStemRelation
         extends AbstractStemConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            HeadStemRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(HeadStemRelation.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Which side of head is used?. */
     @XmlAttribute(name = "head-side")
     private HorizontalSide headSide;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadStemRelation} object.
      */
@@ -77,7 +91,6 @@ public class HeadStemRelation
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -108,7 +121,17 @@ public class HeadStemRelation
             HeadChordInter ch = head.getChord();
 
             if (ch != null) {
-                ch.setStem(stem);
+                StemInter existingStem = ch.getStem();
+
+                if (existingStem != stem) {
+                    if (existingStem != null) {
+                        SIGraph sig = stem.getSig();
+                        Relation rel = sig.getRelation(ch, existingStem, ChordStemRelation.class);
+                        sig.removeEdge(rel);
+                    }
+
+                    ch.setStem(stem);
+                }
 
                 // Propagate to beam if any
                 Measure measure = ch.getMeasure();
@@ -123,6 +146,13 @@ public class HeadStemRelation
 
         head.checkAbnormal();
         stem.checkAbnormal();
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 
     //------------------//
@@ -165,14 +195,31 @@ public class HeadStemRelation
                                        Line2D stemLine,
                                        Scale scale)
     {
-        final double margin = source.getBounds().height * constants.anchorHeightRatio.getValue();
-        final double midStem = (stemLine.getY1() + stemLine.getY2()) / 2;
-        final double anchor = extensionPoint.getY();
+        return getStemPortion((HeadInter) source, stemLine, extensionPoint.getY());
+    }
 
-        if (anchor >= midStem) {
-            return (anchor > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;
+    //----------------//
+    // getStemPortion //
+    //----------------//
+    /**
+     * Helper method to retrieve StemPortion of the connection.
+     *
+     * @param head       the item connected to the stem (head)
+     * @param stemLine   logical range of the stem
+     * @param yExtension ordinate of head-stem extension point
+     * @return the stem Portion
+     */
+    public static StemPortion getStemPortion (HeadInter head,
+                                              Line2D stemLine,
+                                              double yExtension)
+    {
+        final double margin = head.getBounds().height * constants.anchorHeightRatio.getValue();
+        final double yMidStem = (stemLine.getY1() + stemLine.getY2()) / 2;
+
+        if (yExtension >= yMidStem) {
+            return (yExtension > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;
         } else {
-            return (anchor < (stemLine.getY1() + margin)) ? STEM_TOP : STEM_MIDDLE;
+            return (yExtension < (stemLine.getY1() + margin)) ? STEM_TOP : STEM_MIDDLE;
         }
     }
 
@@ -187,8 +234,8 @@ public class HeadStemRelation
      */
     public boolean isInvading ()
     {
-        return (dy <= constants.maxInvadingDy.getValue())
-               && (dx <= constants.maxInvadingDx.getValue());
+        return (dy <= constants.maxInvadingDy.getValue()) && (dx <= constants.maxInvadingDx
+                .getValue());
     }
 
     //----------------//
@@ -218,8 +265,13 @@ public class HeadStemRelation
         final HeadInter head = (HeadInter) e.getEdgeSource();
         final StemInter stem = (StemInter) e.getEdgeTarget();
 
-        head.checkAbnormal();
-        stem.checkAbnormal();
+        if (!head.isRemoved()) {
+            head.checkAbnormal();
+        }
+
+        if (!stem.isRemoved()) {
+            stem.checkAbnormal();
+        }
     }
 
     //-------------//
@@ -287,14 +339,101 @@ public class HeadStemRelation
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    /**
+     * Check whether this is the canonical "shared" configuration.
+     * It uses stems.
+     *
+     * @param leftStem  stem on left
+     * @param head      head in the middle
+     * @param rightStem stem on right
+     * @return true if canonical
+     */
+    public static boolean isCanonicalShare (StemInter leftStem,
+                                            HeadInter head,
+                                            StemInter rightStem)
+    {
+        return isCanonicalShare(leftStem, null, head, null, rightStem);
+    }
+
+    /**
+     * Check whether this is the canonical "shared" configuration.
+     * It uses relations to stems.
+     *
+     * @param leftRel  head-stem relation on left
+     * @param head     head in the middle
+     * @param rightRel head-stem relation on right
+     * @return true if canonical
+     */
+    public static boolean isCanonicalShare (HeadStemRelation leftRel,
+                                            HeadInter head,
+                                            HeadStemRelation rightRel)
+    {
+        return isCanonicalShare(null, leftRel, head, rightRel, null);
+    }
+
+    /**
+     * Check whether this is the canonical "shared" configuration.
+     * It uses stems and/or relations to stems.
+     *
+     * @param leftStem  stem on left (can be null if leftRel is not)
+     * @param leftRel   head-stem relation on left (can be null if leftStem is not)
+     * @param head      head in the middle
+     * @param rightRel  head-stem relation on right (can be null if rightStem is not)
+     * @param rightStem stem on right (can be null if rightRel is not)
+     * @return true if canonical
+     */
+    public static boolean isCanonicalShare (StemInter leftStem,
+                                            HeadStemRelation leftRel,
+                                            HeadInter head,
+                                            HeadStemRelation rightRel,
+                                            StemInter rightStem)
+    {
+        final SIGraph sig = head.getSig();
+
+        if (leftStem == null) {
+            if (leftRel == null) {
+                return false;
+            }
+
+            leftStem = (StemInter) sig.getOppositeInter(head, leftRel);
+        }
+
+        if (rightStem == null) {
+            if (rightRel == null) {
+                return false;
+            }
+
+            rightStem = (StemInter) sig.getOppositeInter(head, rightRel);
+        }
+
+        // Prefer use of relation extension points over stem physical limits
+        Line2D leftLine = leftStem.computeExtendedLine();
+        Line2D rightLine = rightStem.computeExtendedLine();
+
+        Rectangle headBox = head.getBounds();
+        Point headCenter = head.getCenter();
+        double yMidLeft = (leftLine.getY1() + leftLine.getY2()) / 2;
+        double yMidRight = (rightLine.getY1() + rightLine.getY2()) / 2;
+        if (headCenter.y >= yMidLeft || headCenter.y <= yMidRight) {
+            return false;
+        }
+
+        double yLeftExt = leftRel != null ? leftRel.getExtensionPoint().getY() : headBox.y;
+        double yRightExt = rightRel != null ? rightRel.getExtensionPoint().getY()
+                : headBox.y + headBox.height - 1;
+
+        StemPortion leftPortion = getStemPortion(head, leftLine, yLeftExt);
+        StemPortion rightPortion = getStemPortion(head, rightLine, yRightExt);
+
+        return leftPortion == STEM_TOP && rightPortion == STEM_BOTTOM;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio headSupportCoeff = new Constant.Ratio(
                 1,
@@ -313,12 +452,12 @@ public class HeadStemRelation
                 "Maximum manual horizontal overlap between stem & head");
 
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
-                0.25,
+                0.275,
                 "Maximum horizontal gap between stem & head");
 
         private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
                 0.35,
-                "Maximum manualhorizontal gap between stem & head");
+                "Maximum manual horizontal gap between stem & head");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.8,

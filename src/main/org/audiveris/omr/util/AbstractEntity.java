@@ -41,13 +41,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class AbstractEntity
         implements Entity
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractEntity.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractEntity.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
@@ -63,7 +59,6 @@ public abstract class AbstractEntity
     /** (Debug) flag this as VIP. */
     protected boolean vip;
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // dumpOf //
     //--------//
@@ -83,21 +78,21 @@ public abstract class AbstractEntity
     }
 
     //-------//
-    // isVip //
-    //-------//
-    @Override
-    public boolean isVip ()
-    {
-        return vip;
-    }
-
-    //-------//
     // setId //
     //-------//
     @Override
     public void setId (int id)
     {
         this.id = id;
+    }
+
+    //-------//
+    // isVip //
+    //-------//
+    @Override
+    public boolean isVip ()
+    {
+        return vip;
     }
 
     //--------//
@@ -136,6 +131,11 @@ public abstract class AbstractEntity
     //-----------//
     // internals //
     //-----------//
+    /**
+     * Report description of object internals.
+     *
+     * @return internals description
+     */
     protected String internals ()
     {
         return "";

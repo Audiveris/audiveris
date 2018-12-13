@@ -33,7 +33,6 @@ import java.util.List;
  */
 public class TargetSystem
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Raw information */
     public final SystemInfo info;
@@ -51,9 +50,8 @@ public class TargetSystem
     public final double right;
 
     /** Sequence of staves */
-    public final List<TargetStaff> staves = new ArrayList<TargetStaff>();
+    public final List<TargetStaff> staves = new ArrayList<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TargetSystem object.
      *
@@ -75,7 +73,6 @@ public class TargetSystem
         id = info.getId();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // toString //
     //----------//

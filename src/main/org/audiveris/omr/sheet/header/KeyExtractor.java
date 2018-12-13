@@ -37,9 +37,7 @@ import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.IntegerFunction;
-
 import static org.audiveris.omr.run.Orientation.VERTICAL;
-
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
@@ -76,13 +74,11 @@ import java.util.Set;
  */
 public class KeyExtractor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(KeyExtractor.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final Sheet sheet;
 
     private final SystemInfo system;
@@ -103,9 +99,8 @@ public class KeyExtractor
     private final Classifier classifier = ShapeClassifier.getInstance();
 
     /** All glyphs submitted to classifier. */
-    private final Set<Glyph> glyphCandidates = new LinkedHashSet<Glyph>();
+    private final Set<Glyph> glyphCandidates = new LinkedHashSet<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code KeyExtractor} object.
      *
@@ -124,7 +119,6 @@ public class KeyExtractor
         staffFreeSource = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // extractAlter //
     //--------------//
@@ -161,8 +155,8 @@ public class KeyExtractor
             double grade = Grades.intrinsicRatio * slice.getEval().grade;
 
             if (grade >= minGrade) {
-                if ((slice.getAlter() == null)
-                    || (slice.getAlter().getGlyph() != slice.getGlyph())) {
+                if ((slice.getAlter() == null) || (slice.getAlter().getGlyph() != slice
+                        .getGlyph())) {
                     logger.debug("Glyph#{} {}", slice.getGlyph().getId(), slice.getEval());
 
                     KeyAlterInter alterInter = KeyAlterInter.create(
@@ -347,19 +341,17 @@ public class KeyExtractor
         // Key-signature area pixels
         ByteProcessor keyBuf = roi.getAreaPixels(staffFreeSource, range);
         RunTable runTable = new RunTableFactory(VERTICAL).createTable(keyBuf);
-        List<Glyph> parts = GlyphFactory.buildGlyphs(
-                runTable,
-                new Point(range.getStart(), roi.y));
+        List<Glyph> parts = GlyphFactory.buildGlyphs(runTable, new Point(range.getStart(), roi.y));
 
         purgeParts(parts, range.getStop());
         system.registerGlyphs(parts, null);
 
         // Formalize parts relationships in a global graph
         SimpleGraph<Glyph, GlyphLink> graph = Glyphs.buildLinks(parts, params.maxPartGap);
-        List<Set<Glyph>> sets = new ConnectivityInspector<Glyph, GlyphLink>(graph).connectedSets();
+        List<Set<Glyph>> sets = new ConnectivityInspector<>(graph).connectedSets();
         logger.debug("Staff#{} sets:{}", id, sets.size());
 
-        List<Candidate> allCandidates = new ArrayList<Candidate>();
+        List<Candidate> allCandidates = new ArrayList<>();
 
         for (Set<Glyph> set : sets) {
             // Use only the subgraph for this set
@@ -482,7 +474,7 @@ public class KeyExtractor
      */
     private void purgeCandidates (List<Candidate> candidates)
     {
-        final List<Candidate> toRemove = new ArrayList<Candidate>();
+        final List<Candidate> toRemove = new ArrayList<>();
         Collections.sort(candidates, Candidate.byReverseGrade);
 
         for (int i = 0; i < candidates.size(); i++) {
@@ -521,7 +513,7 @@ public class KeyExtractor
     private void purgeParts (List<Glyph> parts,
                              int xMax)
     {
-        final List<Glyph> toRemove = new ArrayList<Glyph>();
+        final List<Glyph> toRemove = new ArrayList<>();
 
         for (Glyph glyph : parts) {
             if ((glyph.getWeight() < params.minPartWeight) || (glyph.getBounds().x == xMax)) {
@@ -539,78 +531,6 @@ public class KeyExtractor
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Candidate //
-    //-----------//
-    /**
-     * Meant to mutually exclude candidates that have a part in common.
-     */
-    public static class Candidate
-    {
-        //~ Static fields/initializers -------------------------------------------------------------
-
-        /** To sort according to decreasing grade. */
-        public static final Comparator<Candidate> byReverseGrade = new Comparator<Candidate>()
-        {
-            @Override
-            public int compare (Candidate c1,
-                                Candidate c2)
-            {
-                if (c1 == c2) {
-                    return 0;
-                }
-
-                return Double.compare(c2.eval.grade, c1.eval.grade);
-            }
-        };
-
-        /** To sort according to left abscissa. */
-        public static final Comparator<Candidate> byAbscissa = new Comparator<Candidate>()
-        {
-            @Override
-            public int compare (Candidate c1,
-                                Candidate c2)
-            {
-                if (c1 == c2) {
-                    return 0;
-                }
-
-                return Double.compare(c1.glyph.getLeft(), c2.glyph.getLeft());
-            }
-        };
-
-        //~ Instance fields ------------------------------------------------------------------------
-        final Glyph glyph;
-
-        final Set<Glyph> parts;
-
-        final Evaluation eval;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Candidate (Glyph glyph,
-                          Set<Glyph> parts,
-                          Evaluation eval)
-        {
-            this.glyph = glyph;
-            this.parts = parts;
-            this.eval = eval;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder("Candidate{#");
-
-            sb.append(glyph.getId());
-            sb.append(" ").append(eval);
-            sb.append("}");
-
-            return sb.toString();
-        }
-    }
-
     //--------------------//
     // AbstractKeyAdapter //
     //--------------------//
@@ -620,7 +540,6 @@ public class KeyExtractor
     private abstract class AbstractKeyAdapter
             extends GlyphCluster.AbstractAdapter
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Relevant peaks. */
         protected final List<KeyPeak> peaks;
@@ -631,11 +550,10 @@ public class KeyExtractor
         /** Relevant shapes. */
         protected final EnumSet<Shape> targetShapes = EnumSet.noneOf(Shape.class);
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public AbstractKeyAdapter (SimpleGraph<Glyph, GlyphLink> graph,
-                                   List<KeyPeak> peaks,
-                                   Set<Shape> targetShapes,
-                                   double minGrade)
+        AbstractKeyAdapter (SimpleGraph<Glyph, GlyphLink> graph,
+                            List<KeyPeak> peaks,
+                            Set<Shape> targetShapes,
+                            double minGrade)
         {
             super(graph);
             this.peaks = peaks;
@@ -643,7 +561,6 @@ public class KeyExtractor
             this.minGrade = minGrade;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean isTooHeavy (int weight)
         {
@@ -653,8 +570,7 @@ public class KeyExtractor
         @Override
         public boolean isTooLarge (Rectangle bounds)
         {
-            return (bounds.width > params.maxGlyphWidth)
-                   || (bounds.height > params.maxGlyphHeight);
+            return (bounds.width > params.maxGlyphWidth) || (bounds.height > params.maxGlyphHeight);
         }
 
         @Override
@@ -666,8 +582,7 @@ public class KeyExtractor
         @Override
         public boolean isTooSmall (Rectangle bounds)
         {
-            return (bounds.width < params.minGlyphWidth)
-                   || (bounds.height < params.minGlyphHeight);
+            return (bounds.width < params.minGlyphWidth) || (bounds.height < params.minGlyphHeight);
         }
 
         protected boolean embracesSlicePeaks (KeySlice slice,
@@ -740,13 +655,170 @@ public class KeyExtractor
                                                Evaluation eval);
     }
 
+    //-----------------//
+    // MultipleAdapter //
+    //-----------------//
+    /**
+     * Adapter for retrieving all items of the key (in key area).
+     */
+    private class MultipleAdapter
+            extends AbstractKeyAdapter
+    {
+
+        final KeyRoi roi;
+
+        final List<Candidate> candidates = new ArrayList<>();
+
+        MultipleAdapter (KeyRoi roi,
+                         List<KeyPeak> peaks,
+                         SimpleGraph<Glyph, GlyphLink> graph,
+                         Set<Shape> targetShapes,
+                         double minGrade)
+        {
+            super(graph, peaks, targetShapes, minGrade);
+            this.roi = roi;
+        }
+
+        @Override
+        public void evaluateGlyph (Glyph glyph,
+                                   Set<Glyph> parts)
+        {
+            // Retrieve impacted slice
+            final KeySlice slice = roi.sliceOf(glyph.getCentroid().x);
+            evaluateSliceGlyph(slice, glyph, parts);
+        }
+
+        @Override
+        protected void keepCandidate (Glyph glyph,
+                                      Set<Glyph> parts,
+                                      Evaluation eval)
+        {
+            candidates.add(new Candidate(glyph, parts, eval));
+        }
+    }
+
+    //---------------//
+    // SingleAdapter //
+    //---------------//
+    /**
+     * Adapter for retrieving one key item (in a slice).
+     */
+    private class SingleAdapter
+            extends AbstractKeyAdapter
+    {
+
+        /** Related slice. */
+        private final KeySlice slice;
+
+        SingleAdapter (KeySlice slice,
+                       List<KeyPeak> peaks,
+                       List<Glyph> parts,
+                       Set<Shape> targetShapes,
+                       double minGrade)
+        {
+            super(Glyphs.buildLinks(parts, params.maxPartGap), peaks, targetShapes, minGrade);
+            this.slice = slice;
+        }
+
+        @Override
+        public void evaluateGlyph (Glyph glyph,
+                                   Set<Glyph> parts)
+        {
+            evaluateSliceGlyph(slice, glyph, parts);
+        }
+
+        @Override
+        protected void keepCandidate (Glyph glyph,
+                                      Set<Glyph> parts,
+                                      Evaluation eval)
+        {
+            if ((slice.getEval() == null) || (slice.getEval().grade < eval.grade)) {
+                slice.setEval(eval);
+                slice.setGlyph(glyph);
+            }
+        }
+    }
+
+    //-----------//
+    // Candidate //
+    //-----------//
+    /**
+     * Meant to mutually exclude candidates that have a part in common.
+     */
+    public static class Candidate
+    {
+
+        /** To sort according to decreasing grade. */
+        public static final Comparator<Candidate> byReverseGrade = new Comparator<Candidate>()
+        {
+            @Override
+            public int compare (Candidate c1,
+                                Candidate c2)
+            {
+                if (c1 == c2) {
+                    return 0;
+                }
+
+                return Double.compare(c2.eval.grade, c1.eval.grade);
+            }
+        };
+
+        /** To sort according to left abscissa. */
+        public static final Comparator<Candidate> byAbscissa = new Comparator<Candidate>()
+        {
+            @Override
+            public int compare (Candidate c1,
+                                Candidate c2)
+            {
+                if (c1 == c2) {
+                    return 0;
+                }
+
+                return Double.compare(c1.glyph.getLeft(), c2.glyph.getLeft());
+            }
+        };
+
+        final Glyph glyph;
+
+        final Set<Glyph> parts;
+
+        final Evaluation eval;
+
+        /**
+         * Create a Candidate object
+         *
+         * @param glyph the underlying glyph
+         * @param parts the parts the glyph was built from
+         * @param eval  the evaluation result
+         */
+        public Candidate (Glyph glyph,
+                          Set<Glyph> parts,
+                          Evaluation eval)
+        {
+            this.glyph = glyph;
+            this.parts = parts;
+            this.eval = eval;
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("Candidate{#");
+
+            sb.append(glyph.getId());
+            sb.append(" ").append(eval);
+            sb.append("}");
+
+            return sb.toString();
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Integer maxPartCount = new Constant.Integer(
                 "Glyphs",
@@ -766,13 +838,9 @@ public class KeyExtractor
                 1.5,
                 "Maximum distance between two parts of a single alter symbol");
 
-        private final Scale.Fraction minGlyphWidth = new Scale.Fraction(
-                0.5,
-                "Minimum glyph width");
+        private final Scale.Fraction minGlyphWidth = new Scale.Fraction(0.5, "Minimum glyph width");
 
-        private final Scale.Fraction maxGlyphWidth = new Scale.Fraction(
-                2.0,
-                "Maximum glyph width");
+        private final Scale.Fraction maxGlyphWidth = new Scale.Fraction(2.0, "Maximum glyph width");
 
         private final Scale.Fraction minGlyphHeight = new Scale.Fraction(
                 1.0,
@@ -791,57 +859,11 @@ public class KeyExtractor
                 "Maximum glyph weight");
     }
 
-    //-----------------//
-    // MultipleAdapter //
-    //-----------------//
-    /**
-     * Adapter for retrieving all items of the key (in key area).
-     */
-    private class MultipleAdapter
-            extends AbstractKeyAdapter
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final KeyRoi roi;
-
-        final List<Candidate> candidates = new ArrayList<Candidate>();
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public MultipleAdapter (KeyRoi roi,
-                                List<KeyPeak> peaks,
-                                SimpleGraph<Glyph, GlyphLink> graph,
-                                Set<Shape> targetShapes,
-                                double minGrade)
-        {
-            super(graph, peaks, targetShapes, minGrade);
-            this.roi = roi;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void evaluateGlyph (Glyph glyph,
-                                   Set<Glyph> parts)
-        {
-            // Retrieve impacted slice
-            final KeySlice slice = roi.sliceOf(glyph.getCentroid().x);
-            evaluateSliceGlyph(slice, glyph, parts);
-        }
-
-        @Override
-        protected void keepCandidate (Glyph glyph,
-                                      Set<Glyph> parts,
-                                      Evaluation eval)
-        {
-            candidates.add(new Candidate(glyph, parts, eval));
-        }
-    }
-
     //------------//
     // Parameters //
     //------------//
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int maxPartCount;
 
@@ -866,9 +888,8 @@ public class KeyExtractor
 
         final int maxGlyphWeight;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale,
-                           int staffSpecific)
+        Parameters (Scale scale,
+                    int staffSpecific)
         {
             maxPartCount = constants.maxPartCount.getValue();
             maxEvalRank = constants.maxEvalRank.getValue();
@@ -884,51 +905,6 @@ public class KeyExtractor
                 maxGlyphHeight = specific.toPixelsDouble(constants.maxGlyphHeight);
                 minGlyphWeight = specific.toPixels(constants.minGlyphWeight);
                 maxGlyphWeight = specific.toPixels(constants.maxGlyphWeight);
-            }
-        }
-    }
-
-    //---------------//
-    // SingleAdapter //
-    //---------------//
-    /**
-     * Adapter for retrieving one key item (in a slice).
-     */
-    private class SingleAdapter
-            extends AbstractKeyAdapter
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Related slice. */
-        private final KeySlice slice;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public SingleAdapter (KeySlice slice,
-                              List<KeyPeak> peaks,
-                              List<Glyph> parts,
-                              Set<Shape> targetShapes,
-                              double minGrade)
-        {
-            super(Glyphs.buildLinks(parts, params.maxPartGap), peaks, targetShapes, minGrade);
-            this.slice = slice;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void evaluateGlyph (Glyph glyph,
-                                   Set<Glyph> parts)
-        {
-            evaluateSliceGlyph(slice, glyph, parts);
-        }
-
-        @Override
-        protected void keepCandidate (Glyph glyph,
-                                      Set<Glyph> parts,
-                                      Evaluation eval)
-        {
-            if ((slice.getEval() == null) || (slice.getEval().grade < eval.grade)) {
-                slice.setEval(eval);
-                slice.setGlyph(glyph);
             }
         }
     }

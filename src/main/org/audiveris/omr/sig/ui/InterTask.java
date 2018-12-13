@@ -41,7 +41,6 @@ import java.util.Set;
 public abstract class InterTask
         extends UITask
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Task focus. */
     protected final Inter inter;
@@ -52,7 +51,6 @@ public abstract class InterTask
     /** Relations inter is involved in. */
     protected Collection<Link> links;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code InterTask} object.
      *
@@ -72,7 +70,6 @@ public abstract class InterTask
         this.links = links;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Getter for involved inter.
      *
@@ -113,13 +110,13 @@ public abstract class InterTask
 
         for (Relation rel : sig.edgesOf(inter)) {
             if (links == null) {
-                links = new LinkedHashSet<Link>();
+                links = new LinkedHashSet<>();
             }
 
             Inter partner = sig.getOppositeInter(inter, rel);
 
-            links.add(
-                    new Link(sig.getOppositeInter(inter, rel), rel, sig.getEdgeTarget(rel) == partner));
+            links.add(new Link(sig.getOppositeInter(inter, rel), rel, sig.getEdgeTarget(rel)
+                                                                              == partner));
         }
 
         if (links == null) {
