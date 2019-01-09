@@ -25,19 +25,20 @@ import org.apache.commons.io.FileUtils;
 
 import org.audiveris.omr.WellKnowns;
 import static org.audiveris.omr.classifier.Classifier.SHAPE_COUNT;
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeChecker;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.UriUtil;
 import org.audiveris.omr.util.ZipFileSystem;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +70,8 @@ import javax.xml.bind.JAXBException;
  * (means and standard deviations).
  * <p>
  * The classifier data is thus composed of two parts (model and norms) which are loaded as a whole
- * according to the following algorithm: <ol>
+ * according to the following algorithm:
+ * <ol>
  * <li>It first tries to find data in the application user local area ('train').
  * If found, this data contains a custom definition of model+norms, typically after a user
  * training.</li>
@@ -81,13 +83,11 @@ import javax.xml.bind.JAXBException;
  * which will be picked up first when the application is run again.
  *
  * @param <M> precise model class to be used
- *
  * @author Hervé Bitteur
  */
 public abstract class AbstractClassifier<M extends Object>
         implements Classifier
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -101,12 +101,8 @@ public abstract class AbstractClassifier<M extends Object>
 
     /** A special evaluation array, used to report NOISE. */
     private static final Evaluation[] noiseEvaluations = {
-        new Evaluation(
-        Shape.NOISE,
-        Evaluation.ALGORITHM)
-    };
+        new Evaluation(Shape.NOISE, Evaluation.ALGORITHM)};
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Features means and standard deviations. */
     protected Norms norms;
 
@@ -116,7 +112,6 @@ public abstract class AbstractClassifier<M extends Object>
     /** The glyph checker for additional specific checks. */
     protected ShapeChecker glyphChecker = ShapeChecker.getInstance();
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // evaluate //
     //----------//
@@ -175,7 +170,6 @@ public abstract class AbstractClassifier<M extends Object>
 
             double[] des = new double[SHAPE_COUNT];
             Arrays.fill(des, 0);
-
             des[sample.getShape().getPhysicalShape().ordinal()] = 1;
             desiredOutputs[ig] = des;
 
@@ -311,9 +305,9 @@ public abstract class AbstractClassifier<M extends Object>
                 logger.debug("tmpFile={}", tmpFile);
                 tmpFile.deleteOnExit();
 
-                InputStream is = uri.toURL().openStream();
-                FileUtils.copyInputStreamToFile(is, tmpFile);
-                is.close();
+                try (InputStream is = uri.toURL().openStream()) {
+                    FileUtils.copyInputStreamToFile(is, tmpFile);
+                }
                 zipPath = tmpFile.toPath();
             } else {
                 zipPath = Paths.get(uri);
@@ -376,11 +370,11 @@ public abstract class AbstractClassifier<M extends Object>
      *
      * @param root the root path to file system
      * @return the loaded Norms instance, or exception is thrown
-     * @throws IOException if something goes wrong during IO operations
+     * @throws IOException   if something goes wrong during IO operations
      * @throws JAXBException if something goes wrong with XML deserialization
      */
     protected Norms loadNorms (Path root)
-            throws IOException, JAXBException
+            throws Exception
     {
         INDArray means = null;
         INDArray stds = null;
@@ -389,18 +383,20 @@ public abstract class AbstractClassifier<M extends Object>
 
         if (meansEntry != null) {
             InputStream is = Files.newInputStream(meansEntry); // READ by default
-            DataInputStream dis = new DataInputStream(new BufferedInputStream(is));
-            means = Nd4j.read(dis);
-            dis.close();
+            try (DataInputStream dis = new DataInputStream(new BufferedInputStream(is))) {
+                means = Nd4j.read(dis);
+                logger.info("means:{}", means);
+            }
         }
 
         final Path stdsEntry = root.resolve(STDS_ENTRY_NAME);
 
         if (stdsEntry != null) {
             InputStream is = Files.newInputStream(stdsEntry); // READ by default
-            DataInputStream dis = new DataInputStream(new BufferedInputStream(is));
-            stds = Nd4j.read(dis);
-            dis.close();
+            try (DataInputStream dis = new DataInputStream(new BufferedInputStream(is))) {
+                stds = Nd4j.read(dis);
+                logger.info("stds:{}", stds);
+            }
         }
 
         if ((means != null) && (stds != null)) {
@@ -451,24 +447,20 @@ public abstract class AbstractClassifier<M extends Object>
      * @throws IOException if something goes wrong during IO operations
      */
     protected void storeNorms (Path root)
-            throws IOException
+            throws Exception
     {
-        {
-            Path means = root.resolve(MEANS_ENTRY_NAME);
-            DataOutputStream dos = new DataOutputStream(
-                    new BufferedOutputStream(Files.newOutputStream(means, CREATE)));
+        Path means = root.resolve(MEANS_ENTRY_NAME);
+        try (DataOutputStream dos = new DataOutputStream(
+                new BufferedOutputStream(Files.newOutputStream(means, CREATE)))) {
             Nd4j.write(norms.means, dos);
             dos.flush();
-            dos.close();
         }
 
-        {
-            Path stds = root.resolve(STDS_ENTRY_NAME);
-            DataOutputStream dos = new DataOutputStream(
-                    new BufferedOutputStream(Files.newOutputStream(stds, CREATE)));
+        Path stds = root.resolve(STDS_ENTRY_NAME);
+        try (DataOutputStream dos = new DataOutputStream(
+                new BufferedOutputStream(Files.newOutputStream(stds, CREATE)))) {
             Nd4j.write(norms.stds, dos);
             dos.flush();
-            dos.close();
         }
     }
 
@@ -482,7 +474,7 @@ public abstract class AbstractClassifier<M extends Object>
                                    EnumSet<Classifier.Condition> conditions,
                                    int interline)
     {
-        List<Evaluation> bests = new ArrayList<Evaluation>();
+        List<Evaluation> bests = new ArrayList<>();
         Evaluation[] evals = getSortedEvaluations(glyph, interline);
 
         EvalsLoop:
@@ -517,7 +509,6 @@ public abstract class AbstractClassifier<M extends Object>
         return bests.toArray(new Evaluation[bests.size()]);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Norms //
     //-------//
@@ -526,7 +517,6 @@ public abstract class AbstractClassifier<M extends Object>
      */
     protected static class Norms
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Features means. */
         final INDArray means;
@@ -534,9 +524,14 @@ public abstract class AbstractClassifier<M extends Object>
         /** Features standard deviations. */
         final INDArray stds;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Norms (INDArray means,
-                      INDArray stds)
+        /**
+         * Creates a new {@code Norms} object.
+         *
+         * @param means
+         * @param stds
+         */
+        Norms (INDArray means,
+               INDArray stds)
         {
             this.means = means;
             this.stds = stds;
@@ -546,10 +541,13 @@ public abstract class AbstractClassifier<M extends Object>
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
 
         private final Scale.AreaFraction minWeight = new Scale.AreaFraction(
                 0.04,

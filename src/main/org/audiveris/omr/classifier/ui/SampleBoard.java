@@ -57,7 +57,6 @@ import javax.swing.SwingConstants;
 public class SampleBoard
         extends EntityBoard<Sample>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -65,7 +64,6 @@ public class SampleBoard
 
     private static final String DBL_FORMAT = "%.3f"; // Format for double output
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** User controller for samples. */
     private final SampleController controller;
 
@@ -104,7 +102,6 @@ public class SampleBoard
     /** To reassign. */
     private final AssignAction assignAction;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleBoard} object.
      *
@@ -137,7 +134,6 @@ public class SampleBoard
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getFormLayout //
     //---------------//
@@ -145,66 +141,6 @@ public class SampleBoard
     protected FormLayout getFormLayout ()
     {
         return Panel.makeFormLayout(6, 3);
-    }
-
-    //--------------//
-    // defineLayout //
-    //--------------//
-    /**
-     * Define the layout for SampleBoard specific fields.
-     */
-    private void defineLayout ()
-    {
-        final CellConstraints cst = new CellConstraints();
-
-        // Layout
-        int r = 1; // -----------------------------
-
-        JButton removeButton = new JButton(controller.getRemoveAction());
-        removeButton.setHorizontalTextPosition(SwingConstants.LEFT);
-        removeButton.setHorizontalAlignment(SwingConstants.RIGHT);
-        removeAction.setEnabled(false);
-        builder.add(removeButton, cst.xyw(5, r, 3));
-
-        assignButton = new JButton(assignAction);
-        assignButton.setHorizontalTextPosition(SwingConstants.LEFT);
-        assignButton.setHorizontalAlignment(SwingConstants.RIGHT);
-        assignAction.setEnabled(false);
-        builder.add(assignButton, cst.xyw(9, r, 3));
-
-        r += 2; // --------------------------------
-
-        // Shape Icon (start, spans several rows)
-        builder.add(shapeIcon, cst.xywh(3, r, 1, 9));
-
-        builder.add(sheetName.getLabel(), cst.xy(1, r));
-        builder.add(sheetName.getField(), cst.xyw(3, r, 9));
-
-        r += 2; // --------------------------------
-
-        builder.add(shapeField.getLabel(), cst.xy(5, r));
-        builder.add(shapeField.getField(), cst.xyw(7, r, 5));
-
-        r += 2; // --------------------------------
-
-        builder.add(iLine.getLabel(), cst.xy(5, r));
-        builder.add(iLine.getField(), cst.xy(7, r));
-
-        builder.add(width.getLabel(), cst.xy(9, r));
-        builder.add(width.getField(), cst.xy(11, r));
-
-        r += 2; // --------------------------------
-
-        builder.add(weight.getLabel(), cst.xy(5, r));
-        builder.add(weight.getField(), cst.xy(7, r));
-
-        builder.add(height.getLabel(), cst.xy(9, r));
-        builder.add(height.getField(), cst.xy(11, r));
-
-        r += 2; // --------------------------------
-
-        builder.add(pitch.getLabel(), cst.xy(9, r));
-        builder.add(pitch.getField(), cst.xy(11, r));
     }
 
     //-----------------------//
@@ -276,14 +212,72 @@ public class SampleBoard
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------------//
+    // defineLayout //
+    //--------------//
+    /**
+     * Define the layout for SampleBoard specific fields.
+     */
+    private void defineLayout ()
+    {
+        final CellConstraints cst = new CellConstraints();
+
+        // Layout
+        int r = 1; // -----------------------------
+
+        JButton removeButton = new JButton(controller.getRemoveAction());
+        removeButton.setHorizontalTextPosition(SwingConstants.LEFT);
+        removeButton.setHorizontalAlignment(SwingConstants.RIGHT);
+        removeAction.setEnabled(false);
+        builder.add(removeButton, cst.xyw(5, r, 3));
+
+        assignButton = new JButton(assignAction);
+        assignButton.setHorizontalTextPosition(SwingConstants.LEFT);
+        assignButton.setHorizontalAlignment(SwingConstants.RIGHT);
+        assignAction.setEnabled(false);
+        builder.add(assignButton, cst.xyw(9, r, 3));
+
+        r += 2; // --------------------------------
+
+        // Shape Icon (start, spans several rows)
+        builder.add(shapeIcon, cst.xywh(3, r, 1, 9));
+
+        builder.add(sheetName.getLabel(), cst.xy(1, r));
+        builder.add(sheetName.getField(), cst.xyw(3, r, 9));
+
+        r += 2; // --------------------------------
+
+        builder.add(shapeField.getLabel(), cst.xy(5, r));
+        builder.add(shapeField.getField(), cst.xyw(7, r, 5));
+
+        r += 2; // --------------------------------
+
+        builder.add(iLine.getLabel(), cst.xy(5, r));
+        builder.add(iLine.getField(), cst.xy(7, r));
+
+        builder.add(width.getLabel(), cst.xy(9, r));
+        builder.add(width.getField(), cst.xy(11, r));
+
+        r += 2; // --------------------------------
+
+        builder.add(weight.getLabel(), cst.xy(5, r));
+        builder.add(weight.getField(), cst.xy(7, r));
+
+        builder.add(height.getLabel(), cst.xy(9, r));
+        builder.add(height.getField(), cst.xy(11, r));
+
+        r += 2; // --------------------------------
+
+        builder.add(pitch.getLabel(), cst.xy(9, r));
+        builder.add(pitch.getField(), cst.xy(11, r));
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final PixelCount shapeIconHeight = new PixelCount(
                 70,

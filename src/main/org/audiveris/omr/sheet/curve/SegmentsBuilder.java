@@ -62,7 +62,6 @@ import java.util.Set;
 public class SegmentsBuilder
         extends CurvesBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -70,14 +69,12 @@ public class SegmentsBuilder
 
     private static final Color SEGMENT = Color.CYAN;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Scale-dependent parameters. */
     private final Parameters params;
 
     /** All segments retrieved in sheet. */
     private final List<SegmentInter> segments;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SegmentsBuilder object.
      *
@@ -90,7 +87,6 @@ public class SegmentsBuilder
         segments = curves.getSegments();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // buildSegments //
     //---------------//
@@ -257,7 +253,7 @@ public class SegmentsBuilder
     protected void weed (Set<Curve> clump)
     {
         // Simply keep the one with longest X range.
-        List<Curve> list = new ArrayList<Curve>(clump);
+        List<Curve> list = new ArrayList<>(clump);
         Collections.sort(list, Curve.byReverseXLength);
         clump.clear();
         clump.add(list.get(0));
@@ -275,7 +271,7 @@ public class SegmentsBuilder
     private List<Arc> getSeedArcs ()
     {
         final StaffManager staffManager = sheet.getStaffManager();
-        final Set<Arc> set = new LinkedHashSet<Arc>();
+        final Set<Arc> set = new LinkedHashSet<>();
 
         ArcLoop:
         for (Arc arc : skeleton.arcsMap.values()) {
@@ -313,7 +309,7 @@ public class SegmentsBuilder
             set.add(arc);
         }
 
-        List<Arc> list = new ArrayList<Arc>(set);
+        List<Arc> list = new ArrayList<>(set);
         Collections.sort(list, Arc.byReverseLength);
 
         return list;
@@ -346,14 +342,12 @@ public class SegmentsBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction arcMinSeedLength = new Scale.Fraction(
                 1.25,
@@ -389,7 +383,6 @@ public class SegmentsBuilder
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int arcMinSeedLength;
 
@@ -403,8 +396,7 @@ public class SegmentsBuilder
 
         final double maxRunDistance;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             arcMinSeedLength = scale.toPixels(constants.arcMinSeedLength);
             maxWedgeSlope = Math.tan(Math.toRadians(constants.maxWedgeAngle.getValue()));

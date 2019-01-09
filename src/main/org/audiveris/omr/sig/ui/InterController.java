@@ -61,6 +61,7 @@ import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.MirrorRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
@@ -126,13 +127,11 @@ import javax.swing.KeyStroke;
  */
 public class InterController
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(InterController.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying sheet. */
     private final Sheet sheet;
 
@@ -142,7 +141,6 @@ public class InterController
     /** User pane. Lazily assigned */
     private SymbolsEditor editor;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code IntersController} object.
      *
@@ -153,14 +151,13 @@ public class InterController
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // addInters //
     //-----------//
     /**
      * Add one or several inters.
      *
-     * @param inters  the populated inters (staff &amp; bounds are already set)
+     * @param inters  the populated inters (staff and bounds are already set)
      * @param options additional options
      */
     @UIThread
@@ -196,7 +193,7 @@ public class InterController
             protected Void doInBackground ()
             {
                 try {
-                    List<LinkedGhost> lgs = new ArrayList<LinkedGhost>();
+                    List<LinkedGhost> lgs = new ArrayList<>();
 
                     for (Inter inter : inters) {
                         SystemInfo system = inter.getStaff().getSystem();
@@ -209,9 +206,9 @@ public class InterController
                             }
                         }
 
-                        // If glyph used by another inter, delete this other inter
-                        ///removeCompetitors(inter, inter.getGlyph(), system, seq);
-                        //
+                        // If glyph is used by another inter, delete this other inter
+                        removeCompetitors(inter, inter.getGlyph(), system, seq);
+
                         lgs.add(new LinkedGhost(inter, inter.searchLinks(system, false)));
                     }
 
@@ -255,8 +252,8 @@ public class InterController
         ghost.setBounds(glyph.getBounds());
         ghost.setGlyph(glyph);
 
-        // While interacting with user, make sure we have the target staff
-        final Collection<Link> links = new ArrayList<Link>();
+        // While we are still interacting with the user, make sure we have the target staff
+        final Collection<Link> links = new ArrayList<>();
         final Staff staff = determineStaff(glyph, ghost, links);
 
         if (staff == null) {
@@ -397,13 +394,13 @@ public class InterController
      * Add a relation between inters.
      *
      * @param sig      the containing SIG
-     * @param source   the source inter
+     * @param src      the source inter
      * @param target   the target inter
      * @param relation the relation to add
      */
     @UIThread
     public void link (final SIGraph sig,
-                      final Inter source,
+                      final Inter src,
                       final Inter target,
                       final Relation relation)
     {
@@ -412,103 +409,22 @@ public class InterController
             @Override
             protected Void doInBackground ()
             {
+                Inter source = src; // To allow use of a new source
+
                 try {
                     if (relation instanceof HeadStemRelation) {
                         HeadInter head = (HeadInter) source;
-                        StemInter stem = (StemInter) target;
-                        HeadChordInter headChord = (HeadChordInter) head.getChord();
 
-                        if (headChord != null) {
-                            List<HeadChordInter> stemChords = stem.getChords();
-                            HeadChordInter stemChord = (!stemChords.isEmpty())
-                                    ? stemChords.get(0) : null;
-
-                            if ((stemChords.isEmpty() && (headChord.getStem() != null))
-                                || (!stemChords.isEmpty() && !stemChords.contains(headChord))) {
-                                // Extract head from headChord
-                                seq.add(
-                                        new UnlinkTask(
-                                                sig,
-                                                sig.getRelation(headChord, head, Containment.class)));
-
-                                if (headChord.getNotes().size() <= 1) {
-                                    // Remove headChord getting empty
-                                    seq.add(new RemovalTask(headChord));
-                                }
-
-                                if (stemChord == null) {
-                                    // Create a HeadChord on the fly based on stem
-                                    stemChord = new HeadChordInter(-1);
-                                    seq.add(
-                                            new AdditionTask(
-                                                    sig,
-                                                    stemChord,
-                                                    stem.getBounds(),
-                                                    Collections.EMPTY_SET));
-                                    seq.add(
-                                            new LinkTask(
-                                                    sig,
-                                                    stemChord,
-                                                    stem,
-                                                    new ChordStemRelation()));
-                                }
-
-                                // Insert head to stem chord
-                                seq.add(new LinkTask(sig, stemChord, head, new Containment()));
-                            }
+                        if (head.getChord() != null) {
+                            source = preHeadStemLink(seq, head, (StemInter) target);
                         }
                     }
 
                     // Remove conflicting relations if any
-                    Set<Relation> toRemove = new LinkedHashSet<Relation>();
-
-                    if (relation instanceof SlurHeadRelation) {
-                        // This relation is declared multi-source & multi-target
-                        // But is single target (head) for each given side
-                        SlurInter slur = (SlurInter) source;
-                        HeadInter head = (HeadInter) target;
-                        HorizontalSide side = (head.getCenter().x < slur.getCenter().x)
-                                ? LEFT : RIGHT;
-                        SlurHeadRelation existingRel = slur.getHeadRelation(side);
-
-                        if (existingRel != null) {
-                            toRemove.add(existingRel);
-                        }
-                    }
-
-                    if (relation.isSingleSource()) {
-                        for (Relation rel : sig.getRelations(target, relation.getClass())) {
-                            toRemove.add(rel);
-                        }
-                    }
-
-                    if (relation.isSingleTarget()) {
-                        for (Relation rel : sig.getRelations(source, relation.getClass())) {
-                            toRemove.add(rel);
-                        }
-                    }
-
-                    for (Relation rel : toRemove) {
-                        seq.add(new UnlinkTask(sig, rel));
-                    }
+                    removeConflictingRelations(seq, sig, src, source, target, relation);
 
                     // Finally, add relation
                     seq.add(new LinkTask(sig, source, target, relation));
-
-                    // Specific case for dot augmenting mirrored heads
-                    if (relation instanceof AugmentationRelation
-                        && target instanceof HeadInter) {
-                        Inter mirror = target.getMirror();
-
-                        if (mirror != null) {
-                            logger.debug(
-                                    "LinkTask from {} to mirrored {} and {}",
-                                    source,
-                                    target,
-                                    mirror);
-                            seq.add(new LinkTask(sig, source, mirror, relation.duplicate()));
-                        }
-                    }
 
                     seq.performDo();
                     epilog(seq);
@@ -567,7 +483,7 @@ public class InterController
         if ((options == null) || !Arrays.asList(options).contains(Option.VALIDATED)) {
             if (sheet.getStub().getLatestStep().compareTo(Step.MEASURES) >= 0) {
                 // Now that measures exist, it's whole system height or nothing
-                List<Inter> staffBarlines = new ArrayList<Inter>(staffBarlinesOf(inters));
+                List<Inter> staffBarlines = new ArrayList<>(staffBarlinesOf(inters));
 
                 if (staffBarlines.isEmpty()) {
                     for (Inter inter : barlinesOf(inters)) {
@@ -864,8 +780,7 @@ public class InterController
                     }
 
                     final Point centroid = glyph.getCentroid();
-                    final SystemInfo system = sheet.getSystemManager().getClosestSystem(
-                            centroid);
+                    final SystemInfo system = sheet.getSystemManager().getClosestSystem(centroid);
 
                     if (system == null) {
                         return null;
@@ -908,12 +823,14 @@ public class InterController
                                                 word,
                                                 textWord.getBounds(),
                                                 Arrays.asList(
-                                                        new Link(sentence, new Containment(), false))));
+                                                        new Link(
+                                                                sentence,
+                                                                new Containment(),
+                                                                false))));
                             } else {
                                 sentence = lyrics ? LyricLineInter.create(line)
-                                        : ((role == TextRole.ChordName)
-                                                ? ChordNameInter.create(line)
-                                                : SentenceInter.create(line));
+                                        : ((role == TextRole.ChordName) ? ChordNameInter.create(
+                                                        line) : SentenceInter.create(line));
                                 staff = sentence.assignStaff(system, line.getLocation());
                                 seq.add(
                                         new AdditionTask(
@@ -926,7 +843,8 @@ public class InterController
                                                 sig,
                                                 sentence,
                                                 line.getBounds(),
-                                                Arrays.asList(new Link(word, new Containment(), true))));
+                                                Arrays.asList(
+                                                        new Link(word, new Containment(), true))));
                             }
 
                             word.setStaff(staff);
@@ -970,7 +888,7 @@ public class InterController
         final Skew skew = sheet.getSkew();
         final Point center = GeoUtil.centerOf(oneBounds);
         final double slope = skew.getSlope();
-        final List<Inter> closure = new ArrayList<Inter>();
+        final List<Inter> closure = new ArrayList<>();
 
         for (Staff st : system.getStaves()) {
             if (st == staff) {
@@ -993,7 +911,7 @@ public class InterController
 
         // Display closure staff barlines to user
         sheet.getInterIndex().getEntityService().publish(
-                new EntityListEvent<Inter>(
+                new EntityListEvent<>(
                         this,
                         SelectionHint.ENTITY_INIT,
                         MouseMovement.PRESSING,
@@ -1032,9 +950,8 @@ public class InterController
             throw new IllegalStateException("No staff for " + center);
         }
 
-        if ((staves.size() == 1)
-            || ghost instanceof BarlineInter
-            || ghost instanceof StaffBarlineInter) {
+        if ((staves.size() == 1) || ghost instanceof BarlineInter
+                    || ghost instanceof StaffBarlineInter) {
             // Staff is uniquely defined
             staff = staves.get(0);
             system = staff.getSystem();
@@ -1044,17 +961,15 @@ public class InterController
         }
 
         // Sort the 2 staves by increasing distance from glyph center
-        Collections.sort(
-                staves,
-                new Comparator<Staff>()
-        {
-            @Override
-            public int compare (Staff s1,
-                                Staff s2)
-            {
-                return Double.compare(s1.distanceTo(center), s2.distanceTo(center));
-            }
-        });
+        Collections.sort(staves, new Comparator<Staff>()
+                 {
+                     @Override
+                     public int compare (Staff s1,
+                                         Staff s2)
+                     {
+                         return Double.compare(s1.distanceTo(center), s2.distanceTo(center));
+                     }
+                 });
 
         if (constants.useStaffLink.isSet()) {
             // Try to use link
@@ -1117,7 +1032,7 @@ public class InterController
     private Step firstImpactedStep (UITaskList seq)
     {
         // Classes of inter and relation instances involved
-        final Set<Class> classes = new HashSet<Class>();
+        final Set<Class> classes = new HashSet<>();
 
         for (UITask task : seq.getTasks()) {
             if (task instanceof InterTask) {
@@ -1145,7 +1060,7 @@ public class InterController
     //------------------------//
     private List<Inter> getStaffBarlineClosure (StaffBarlineInter oneBar)
     {
-        final List<Inter> closure = new ArrayList<Inter>();
+        final List<Inter> closure = new ArrayList<>();
 
         for (PartBarline pb : oneBar.getSystemBarline()) {
             closure.addAll(pb.getStaffBarlines());
@@ -1153,7 +1068,7 @@ public class InterController
 
         // Display closure staff barlines to user
         sheet.getInterIndex().getEntityService().publish(
-                new EntityListEvent<Inter>(
+                new EntityListEvent<>(
                         this,
                         SelectionHint.ENTITY_INIT,
                         MouseMovement.PRESSING,
@@ -1199,6 +1114,109 @@ public class InterController
         removal.populateTaskList(seq);
     }
 
+    //-----------------//
+    // preHeadStemLink //
+    //-----------------//
+    /**
+     * Specific actions before linking a head and a stem.
+     * <ul>
+     * <li>If head is not yet part of a chord, no specific preparation is needed.
+     * <li>If the link is to result in a canonical share (down stem + head + up stem) then the
+     * head must be "mirrored" between left and right chords.
+     * <li>Otherwise, if link is to result in a non compatible configuration between head, stem
+     * and existing chords, then the head must migrate away from its chord to incoming stem chord.
+     * </ul>
+     *
+     * @param seq  action sequence to populate
+     * @param head head inter being linked
+     * @param stem stem inter being linked
+     * @return the (perhaps new) head
+     */
+    private Inter preHeadStemLink (UITaskList seq,
+                                   HeadInter head,
+                                   StemInter stem)
+    {
+        final HeadChordInter headChord = head.getChord(); // Not null
+        final SIGraph sig = head.getSig();
+        final List<HeadChordInter> stemChords = stem.getChords();
+        HeadChordInter stemChord = (!stemChords.isEmpty()) ? stemChords.get(0) : null;
+
+        // Check for a canonical head share, to share head
+        final HorizontalSide headSide = (stem.getCenter().x < head.getCenter().x) ? LEFT : RIGHT;
+        final StemInter headStem = headChord.getStem();
+
+        final boolean sharing;
+        if (headSide == LEFT) {
+            sharing = HeadStemRelation.isCanonicalShare(stem, head, headStem);
+        } else {
+            sharing = HeadStemRelation.isCanonicalShare(headStem, head, stem);
+        }
+
+        if (sharing) {
+            // Duplicate head and link as mirror
+            HeadInter newHead = head.duplicate();
+            newHead.setManual(true);
+            seq.add(
+                    new AdditionTask(
+                            sig,
+                            newHead,
+                            newHead.getBounds(),
+                            Arrays.asList(new Link(head, new MirrorRelation(), false))));
+
+            // Insert newHead to stem chord
+            if (stemChord == null) {
+                stemChord = buildStemChord(seq, stem);
+            }
+
+            seq.add(new LinkTask(sig, stemChord, newHead, new Containment()));
+
+            return newHead;
+        }
+
+        // If resulting chords are not compatible, move head to stemChord
+        if ((stemChords.isEmpty() && (headChord.getStem() != null)) || (!stemChords.isEmpty()
+                                                                                && !stemChords
+                        .contains(headChord))) {
+            // Extract head from headChord
+            seq.add(new UnlinkTask(sig, sig.getRelation(headChord, head, Containment.class)));
+
+            if (headChord.getNotes().size() <= 1) {
+                // Remove headChord getting empty
+                seq.add(new RemovalTask(headChord));
+            }
+
+            if (stemChord == null) {
+                stemChord = buildStemChord(seq, stem);
+            }
+
+            // Insert head to stem chord
+            seq.add(new LinkTask(sig, stemChord, head, new Containment()));
+        }
+
+        return head;
+    }
+
+    //----------------//
+    // buildStemChord //
+    //----------------//
+    /**
+     * Create a HeadChord on the fly based on provided stem.
+     *
+     * @param seq  action sequence to populate
+     * @param stem the provided stem
+     * @return a HeadChord around this stem
+     */
+    private HeadChordInter buildStemChord (UITaskList seq,
+                                           StemInter stem)
+    {
+        final SIGraph sig = stem.getSig();
+        final HeadChordInter stemChord = new HeadChordInter(-1);
+        seq.add(new AdditionTask(sig, stemChord, stem.getBounds(), Collections.EMPTY_SET));
+        seq.add(new LinkTask(sig, stemChord, stem, new ChordStemRelation()));
+
+        return stemChord;
+    }
+
     //-----------//
     // refreshUI //
     //-----------//
@@ -1236,7 +1254,7 @@ public class InterController
         }
 
         final List<Inter> intersected = system.getSig().intersectedInters(glyph.getBounds());
-        final List<Inter> competitors = new ArrayList<Inter>();
+        final List<Inter> competitors = new ArrayList<>();
 
         for (Inter inter : intersected) {
             if ((inter != ghost) && (inter.getGlyph() == glyph)) {
@@ -1247,6 +1265,66 @@ public class InterController
         populateRemovals(competitors, seq);
     }
 
+    //----------------------------//
+    // removeConflictingRelations //
+    //----------------------------//
+    private void removeConflictingRelations (UITaskList seq,
+                                             SIGraph sig,
+                                             Inter src,
+                                             Inter source,
+                                             Inter target,
+                                             Relation relation)
+    {
+        Set<Relation> toRemove = new LinkedHashSet<>();
+
+        if (relation instanceof SlurHeadRelation) {
+            // This relation is declared multi-source & multi-target
+            // But is single target (head) for each given side
+            SlurInter slur = (SlurInter) source;
+            HeadInter head = (HeadInter) target;
+            HorizontalSide side = (head.getCenter().x < slur.getCenter().x) ? LEFT : RIGHT;
+            SlurHeadRelation existingRel = slur.getHeadRelation(side);
+
+            if (existingRel != null) {
+                toRemove.add(existingRel);
+            }
+        }
+
+        // Conflict on sources
+        if (relation.isSingleSource()) {
+            for (Relation rel : sig.getRelations(target, relation.getClass())) {
+                toRemove.add(rel);
+            }
+        }
+
+        // Conflict on targets
+        if (relation.isSingleTarget()) {
+            if (source == src) {
+                for (Relation rel : sig.getRelations(source, relation.getClass())) {
+                    toRemove.add(rel);
+                }
+
+                // Specific case of (single target) augmentation dot to shared head:
+                // We allow a dot source to augment both mirrored head targets
+                if (relation instanceof AugmentationRelation && target instanceof HeadInter) {
+                    HeadInter mirror = (HeadInter) target.getMirror();
+
+                    if (mirror != null) {
+                        Relation mirrorRel = sig.getRelation(source, mirror, relation.getClass());
+
+                        if (mirrorRel != null) {
+                            toRemove.remove(mirrorRel);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (Relation rel : toRemove) {
+            seq.add(new UnlinkTask(sig, rel));
+        }
+    }
+
     //-----------------//
     // staffBarlinesOf //
     //-----------------//
@@ -1255,14 +1333,12 @@ public class InterController
         return Inters.inters(inters, new Inters.ClassPredicate(StaffBarlineInter.class));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean useStaffLink = new Constant.Boolean(
                 true,
@@ -1282,13 +1358,11 @@ public class InterController
     //-------------//
     private static class LinkedGhost
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Inter ghost;
 
         final Collection<Link> links;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public LinkedGhost (Inter ghost,
                             Collection<Link> links)
         {
@@ -1310,18 +1384,16 @@ public class InterController
      */
     private static class Removal
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Non-ensemble inters to be removed. */
-        LinkedHashSet<Inter> inters = new LinkedHashSet<Inter>();
+        LinkedHashSet<Inter> inters = new LinkedHashSet<>();
 
         /** Ensemble inters to be removed. */
-        LinkedHashSet<InterEnsemble> ensembles = new LinkedHashSet<InterEnsemble>();
+        LinkedHashSet<InterEnsemble> ensembles = new LinkedHashSet<>();
 
         /** Ensemble inters to be watched for potential removal. */
-        LinkedHashSet<InterEnsemble> watched = new LinkedHashSet<InterEnsemble>();
+        LinkedHashSet<InterEnsemble> watched = new LinkedHashSet<>();
 
-        //~ Methods --------------------------------------------------------------------------------
         public void include (Inter inter)
         {
             if (inter instanceof InterEnsemble) {
@@ -1364,7 +1436,7 @@ public class InterController
         {
             // Examine watched ensembles
             for (InterEnsemble ens : watched) {
-                List<Inter> members = new ArrayList<Inter>(ens.getMembers());
+                List<Inter> members = new ArrayList<>(ens.getMembers());
                 members.removeAll(inters);
 
                 if (members.isEmpty()) {
@@ -1404,19 +1476,16 @@ public class InterController
     private abstract class CtrlTask
             extends VoidTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         protected UITaskList seq = new UITaskList();
 
         protected final OpKind opKind;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public CtrlTask (OpKind opKind)
         {
             this.opKind = opKind;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Background epilog for any user action sequence.
          *
@@ -1468,7 +1537,6 @@ public class InterController
     private class RemoveAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void actionPerformed (ActionEvent e)
@@ -1479,10 +1547,9 @@ public class InterController
                 return;
             }
 
-            if ((inters.size() == 1)
-                || OMR.gui.displayConfirmation(
-                            "Do you confirm this multiple deletion?",
-                            "Deletion of " + inters.size() + " inters")) {
+            if ((inters.size() == 1) || OMR.gui.displayConfirmation(
+                    "Do you confirm this multiple deletion?",
+                    "Deletion of " + inters.size() + " inters")) {
                 removeInters(inters);
             }
         }

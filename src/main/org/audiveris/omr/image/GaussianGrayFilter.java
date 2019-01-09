@@ -37,7 +37,6 @@ import java.awt.image.Kernel;
 public class GaussianGrayFilter
         extends AbstractGrayFilter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Radius of the kernel. */
     private final float radius;
@@ -45,7 +44,6 @@ public class GaussianGrayFilter
     /** The kernel to apply. */
     private final Kernel kernel;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new GaussianGrayFilter object with a default radius value.
      */
@@ -65,7 +63,6 @@ public class GaussianGrayFilter
         kernel = makeKernel(radius);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // filter //
     //--------//
@@ -111,6 +108,50 @@ public class GaussianGrayFilter
     public float getRadius ()
     {
         return radius;
+    }
+
+    //----------------------//
+    // convolveAndTranspose //
+    //----------------------//
+    private void convolveAndTranspose (byte[] inPixels,
+                                       byte[] outPixels,
+                                       int width,
+                                       int height)
+    {
+        float[] matrix = kernel.getKernelData(null);
+        int cols = kernel.getWidth();
+        int cols2 = cols / 2;
+
+        for (int y = 0; y < height; y++) {
+            int index = y;
+            int ioffset = y * width;
+
+            for (int x = 0; x < width; x++) {
+                float p = 0;
+                int moffset = cols2;
+
+                for (int col = -cols2; col <= cols2; col++) {
+                    float f = matrix[moffset + col];
+
+                    if (f != 0) {
+                        int ix = x + col;
+
+                        if (ix < 0) {
+                            ix = 0;
+                        } else if (ix >= width) {
+                            ix = width - 1;
+                        }
+
+                        int pix = inPixels[ioffset + ix] & 0xff;
+                        p += (f * pix);
+                    }
+                }
+
+                int ip = clamp((int) (p + 0.5));
+                outPixels[index] = (byte) ip;
+                index += height;
+            }
+        }
     }
 
     //------------//
@@ -177,47 +218,4 @@ public class GaussianGrayFilter
         return val;
     }
 
-    //----------------------//
-    // convolveAndTranspose //
-    //----------------------//
-    private void convolveAndTranspose (byte[] inPixels,
-                                       byte[] outPixels,
-                                       int width,
-                                       int height)
-    {
-        float[] matrix = kernel.getKernelData(null);
-        int cols = kernel.getWidth();
-        int cols2 = cols / 2;
-
-        for (int y = 0; y < height; y++) {
-            int index = y;
-            int ioffset = y * width;
-
-            for (int x = 0; x < width; x++) {
-                float p = 0;
-                int moffset = cols2;
-
-                for (int col = -cols2; col <= cols2; col++) {
-                    float f = matrix[moffset + col];
-
-                    if (f != 0) {
-                        int ix = x + col;
-
-                        if (ix < 0) {
-                            ix = 0;
-                        } else if (ix >= width) {
-                            ix = width - 1;
-                        }
-
-                        int pix = inPixels[ioffset + ix] & 0xff;
-                        p += (f * pix);
-                    }
-                }
-
-                int ip = clamp((int) (p + 0.5));
-                outPixels[index] = (byte) ip;
-                index += height;
-            }
-        }
-    }
 }

@@ -53,24 +53,21 @@ import java.util.List;
 public class NestView
         extends EntityView<Glyph>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(NestView.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying glyph index */
     protected final GlyphIndex glyphIndex;
 
     /** The sequence of lags. */
-    protected final List<Lag> lags = new ArrayList<Lag>();
+    protected final List<Lag> lags = new ArrayList<>();
 
     /** Related sheet, if any. */
     @Navigable(false)
     private final Sheet sheet;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a nest view.
      *
@@ -92,7 +89,6 @@ public class NestView
         setName("NestView");
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // render //
     //--------//
@@ -100,7 +96,8 @@ public class NestView
     public void render (Graphics2D g)
     {
         // Should we draw the section borders?
-        final boolean drawBorders = ViewParameters.getInstance().getSelectionMode() == SelectionMode.MODE_SECTION;
+        final boolean drawBorders = ViewParameters.getInstance()
+                .getSelectionMode() == SelectionMode.MODE_SECTION;
 
         // Stroke for borders
         final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
@@ -207,8 +204,6 @@ public class NestView
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //
     //    //---------------------//
     //    // renderGlyphSentence //
     //    //---------------------//
@@ -332,10 +327,9 @@ public class NestView
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean showSentenceBaseline = new Constant.Boolean(
                 true,

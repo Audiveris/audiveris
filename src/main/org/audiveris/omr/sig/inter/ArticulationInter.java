@@ -55,11 +55,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ArticulationInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ArticulationInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ArticulationInter object.
      *
@@ -101,7 +99,6 @@ public class ArticulationInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -132,6 +129,147 @@ public class ArticulationInter
         setAbnormal(!sig.hasRelation(this, ChordArticulationRelation.class));
 
         return isAbnormal();
+    }
+
+    //----------//
+    // getStaff //
+    //----------//
+    @Override
+    public Staff getStaff ()
+    {
+        if (staff == null) {
+            for (Relation rel : sig.getRelations(this, ChordArticulationRelation.class)) {
+                HeadChordInter chord = (HeadChordInter) sig.getOppositeInter(this, rel);
+
+                return staff = chord.getStaff();
+            }
+        }
+
+        return staff;
+    }
+
+    //----------//
+    // getVoice //
+    //----------//
+    @Override
+    public Voice getVoice ()
+    {
+        for (Relation rel : sig.getRelations(this, ChordArticulationRelation.class)) {
+            return sig.getOppositeInter(this, rel).getVoice();
+        }
+
+        return null;
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
+    {
+        // Not very optimized!
+        List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+        Collections.sort(systemHeadChords, Inters.byAbscissa);
+
+        Link link = lookupLink(systemHeadChords);
+
+        if (link == null) {
+            return Collections.emptyList();
+        }
+
+        if (doit) {
+            link.applyTo(this);
+        }
+
+        return Collections.singleton(link);
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
+    }
+
+    //------------//
+    // lookupLink //
+    //------------//
+    /**
+     * Try to detect a link between this articulation instance and a HeadChord nearby.
+     *
+     * @param systemHeadChords ordered collection of head chords in system
+     * @return the link found or null
+     */
+    private Link lookupLink (List<Inter> systemHeadChords)
+    {
+        if (systemHeadChords.isEmpty()) {
+            return null;
+        }
+
+        final SystemInfo system = systemHeadChords.get(0).getSig().getSystem();
+        final Scale scale = system.getSheet().getScale();
+        final int maxDx = scale.toPixels(ChordArticulationRelation.getXOutGapMaximum(manual));
+        final int maxDy = scale.toPixels(ChordArticulationRelation.getYGapMaximum(manual));
+        final int minDy = scale.toPixels(ChordArticulationRelation.getYGapMinimum(manual));
+        final Rectangle articBox = getBounds();
+        final Point arcticCenter = getCenter();
+        final Rectangle luBox = new Rectangle(arcticCenter);
+        luBox.grow(maxDx, maxDy);
+
+        final List<Inter> chords = Inters.intersectedInters(
+                systemHeadChords,
+                GeoOrder.BY_ABSCISSA,
+                luBox);
+
+        if (chords.isEmpty()) {
+            return null;
+        }
+
+        ChordArticulationRelation bestRel = null;
+        Inter bestChord = null;
+        double bestYGap = Double.MAX_VALUE;
+
+        for (Inter chord : chords) {
+            Rectangle chordBox = chord.getBounds();
+
+            // The articulation cannot intersect the chord
+            if (chordBox.intersects(articBox)) {
+                continue;
+            }
+
+            Point center = chord.getCenter();
+
+            // Select proper chord reference point (top or bottom)
+            int yRef = (arcticCenter.y > center.y) ? (chordBox.y + chordBox.height) : chordBox.y;
+            double absXGap = Math.abs(center.x - arcticCenter.x);
+            double yGap = (arcticCenter.y > center.y) ? (arcticCenter.y - yRef)
+                    : (yRef - arcticCenter.y);
+
+            if (yGap < minDy) {
+                continue;
+            }
+
+            double absYGap = Math.abs(yGap);
+            ChordArticulationRelation rel = new ChordArticulationRelation();
+            rel.setOutGaps(scale.pixelsToFrac(absXGap), scale.pixelsToFrac(absYGap), manual);
+
+            if (rel.getGrade() >= rel.getMinGrade()) {
+                if ((bestRel == null) || (bestYGap > absYGap)) {
+                    bestRel = rel;
+                    bestChord = chord;
+                    bestYGap = absYGap;
+                }
+            }
+        }
+
+        if (bestRel != null) {
+            return new Link(bestChord, bestRel, false);
+        }
+
+        return null;
     }
 
     //------------------//
@@ -199,139 +337,6 @@ public class ArticulationInter
             link.applyTo(artic);
 
             return artic;
-        }
-
-        return null;
-    }
-
-    //----------//
-    // getStaff //
-    //----------//
-    @Override
-    public Staff getStaff ()
-    {
-        if (staff == null) {
-            for (Relation rel : sig.getRelations(this, ChordArticulationRelation.class)) {
-                HeadChordInter chord = (HeadChordInter) sig.getOppositeInter(this, rel);
-
-                return staff = chord.getStaff();
-            }
-        }
-
-        return staff;
-    }
-
-    //----------//
-    // getVoice //
-    //----------//
-    @Override
-    public Voice getVoice ()
-    {
-        for (Relation rel : sig.getRelations(this, ChordArticulationRelation.class)) {
-            return sig.getOppositeInter(this, rel).getVoice();
-        }
-
-        return null;
-    }
-
-    //-------------//
-    // searchLinks //
-    //-------------//
-    @Override
-    public Collection<Link> searchLinks (SystemInfo system,
-                                         boolean doit)
-    {
-        // Not very optimized!
-        List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
-        Collections.sort(systemHeadChords, Inters.byAbscissa);
-
-        Link link = lookupLink(systemHeadChords);
-
-        if (link == null) {
-            return Collections.emptyList();
-        }
-
-        if (doit) {
-            link.applyTo(this);
-        }
-
-        return Collections.singleton(link);
-    }
-
-    //------------//
-    // lookupLink //
-    //------------//
-    /**
-     * Try to detect a link between this articulation instance and a HeadChord nearby.
-     *
-     * @param systemHeadChords ordered collection of head chords in system
-     * @return the link found or null
-     */
-    private Link lookupLink (List<Inter> systemHeadChords)
-    {
-        if (systemHeadChords.isEmpty()) {
-            return null;
-        }
-
-        final SystemInfo system = systemHeadChords.get(0).getSig().getSystem();
-        final Scale scale = system.getSheet().getScale();
-        final int maxDx = scale.toPixels(
-                ChordArticulationRelation.getXOutGapMaximum(manual));
-        final int maxDy = scale.toPixels(ChordArticulationRelation.getYGapMaximum(manual));
-        final int minDy = scale.toPixels(ChordArticulationRelation.getYGapMinimum(manual));
-        final Rectangle articBox = getBounds();
-        final Point arcticCenter = getCenter();
-        final Rectangle luBox = new Rectangle(arcticCenter);
-        luBox.grow(maxDx, maxDy);
-
-        final List<Inter> chords = Inters.intersectedInters(
-                systemHeadChords,
-                GeoOrder.BY_ABSCISSA,
-                luBox);
-
-        if (chords.isEmpty()) {
-            return null;
-        }
-
-        ChordArticulationRelation bestRel = null;
-        Inter bestChord = null;
-        double bestYGap = Double.MAX_VALUE;
-
-        for (Inter chord : chords) {
-            Rectangle chordBox = chord.getBounds();
-
-            // The articulation cannot intersect the chord
-            if (chordBox.intersects(articBox)) {
-                continue;
-            }
-
-            Point center = chord.getCenter();
-
-            // Select proper chord reference point (top or bottom)
-            int yRef = (arcticCenter.y > center.y) ? (chordBox.y + chordBox.height) : chordBox.y;
-            double absXGap = Math.abs(center.x - arcticCenter.x);
-            double yGap = (arcticCenter.y > center.y) ? (arcticCenter.y - yRef)
-                    : (yRef - arcticCenter.y);
-
-            if (yGap < minDy) {
-                continue;
-            }
-
-            double absYGap = Math.abs(yGap);
-            ChordArticulationRelation rel = new ChordArticulationRelation();
-            rel.setOutGaps(scale.pixelsToFrac(absXGap), scale.pixelsToFrac(absYGap), manual);
-
-            if (rel.getGrade() >= rel.getMinGrade()) {
-                if ((bestRel == null) || (bestYGap > absYGap)) {
-                    bestRel = rel;
-                    bestChord = chord;
-                    bestYGap = absYGap;
-                }
-            }
-        }
-
-        if (bestRel != null) {
-            return new Link(bestChord, bestRel, false);
         }
 
         return null;

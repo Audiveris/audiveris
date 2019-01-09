@@ -98,12 +98,10 @@ import javax.swing.SwingUtilities;
 public class ShapeBoard
         extends Board
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            ShapeBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(ShapeBoard.class);
 
     /** To force the width of the various panels. */
     private static final int BOARD_WIDTH = 317;
@@ -116,16 +114,15 @@ public class ShapeBoard
     private static final Map<ShapeSet, Integer> heights = buildHeightMap();
 
     /** Map first typed char to selected shape set. */
-    private static final Map<Character, ShapeSet> setMap = new HashMap<Character, ShapeSet>();
+    private static final Map<Character, ShapeSet> setMap = new HashMap<>();
 
     /** Map 2-char typed string to selected shape. */
-    private static final Map<String, Shape> shapeMap = new HashMap<String, Shape>();
+    private static final Map<String, Shape> shapeMap = new HashMap<>();
 
     static {
         populateCharMaps();
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -185,7 +182,7 @@ public class ShapeBoard
     private final Panel setsPanel;
 
     /** Map of shape panels, indexed by shapeSet. */
-    private final Map<ShapeSet, Panel> shapesPanels = new HashMap<ShapeSet, Panel>();
+    private final Map<ShapeSet, Panel> shapesPanels = new HashMap<>();
 
     /** History of recently used shapes. */
     private final ShapeHistory shapeHistory;
@@ -208,7 +205,6 @@ public class ShapeBoard
     /** To handle sequence of keys typed. */
     private final MyKeyListener keyListener = new MyKeyListener();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new ShapeBoard object.
      *
@@ -234,7 +230,6 @@ public class ShapeBoard
         getComponent().addKeyListener(keyListener);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // addToHistory //
     //--------------//
@@ -351,7 +346,7 @@ public class ShapeBoard
     //----------------//
     private static Map<ShapeSet, Integer> buildHeightMap ()
     {
-        Map<ShapeSet, Integer> map = new HashMap<ShapeSet, Integer>();
+        Map<ShapeSet, Integer> map = new HashMap<>();
         map.put(ShapeSet.Accidentals, 40);
         map.put(ShapeSet.Articulations, 40);
         map.put(ShapeSet.Attributes, 60);
@@ -472,9 +467,7 @@ public class ShapeBoard
     private void defineLayout ()
     {
         CellConstraints cst = new CellConstraints();
-        FormLayout layout = new FormLayout(
-                "190dlu",
-                "pref," + Panel.getFieldInterline() + ",pref");
+        FormLayout layout = new FormLayout("190dlu", "pref," + Panel.getFieldInterline() + ",pref");
         PanelBuilder builder = new PanelBuilder(layout, getBody());
 
         builder.add(shapeHistory.panel, cst.xy(1, 1));
@@ -555,7 +548,6 @@ public class ShapeBoard
         shapesPanel.requestFocusInWindow();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ShapeButton //
     //-------------//
@@ -565,11 +557,9 @@ public class ShapeBoard
     public static class ShapeButton
             extends JButton
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Shape shape;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ShapeButton (Shape shape,
                             MyKeyListener keyListener)
         {
@@ -586,10 +576,9 @@ public class ShapeBoard
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean publishLocationWhileDragging = new Constant.Boolean(
                 false,
@@ -610,14 +599,12 @@ public class ShapeBoard
     private class MyDropAdapter
             extends GhostDropAdapter<Shape>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public MyDropAdapter ()
         {
             super(ShapeBoard.this.glassPane, null);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public Shape getAction ()
         {
             return action;
@@ -668,7 +655,6 @@ public class ShapeBoard
     private class MyDropListener
             extends AbstractGhostDropListener<Shape>
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public MyDropListener ()
         {
@@ -676,7 +662,6 @@ public class ShapeBoard
             super(null);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void dropped (GhostDropEvent<Shape> e)
         {
@@ -715,11 +700,9 @@ public class ShapeBoard
     private class MyKeyListener
             implements KeyListener
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         Character c1 = null;
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void keyPressed (KeyEvent e)
         {
@@ -786,22 +769,19 @@ public class ShapeBoard
     private class MyMotionAdapter
             extends GhostMotionAdapter
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // Optimization: remember the latest component on target
         private WeakReference<Component> prevComponent;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public MyMotionAdapter ()
         {
             super(ShapeBoard.this.glassPane);
             reset();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public final void reset ()
         {
-            prevComponent = new WeakReference<Component>(null);
+            prevComponent = new WeakReference<>(null);
         }
 
         /**
@@ -846,14 +826,15 @@ public class ShapeBoard
                         glass.setReference(null);
                     }
 
-                    prevComponent = new WeakReference<Component>(component);
+                    prevComponent = new WeakReference<>(component);
                 }
 
                 if (shape.isDraggable()) {
                     // Update reference point
                     Point localRef = dndOperation.getReference(localPt);
                     glass.setReference(
-                            (localRef != null) ? new ScreenPoint(view, zoom.scaled(localRef)) : null);
+                            (localRef != null) ? new ScreenPoint(view, zoom.scaled(localRef))
+                                    : null);
                 }
             } else if (prevComponent.get() != null) {
                 // No longer on a droppable target, reuse initial image & size
@@ -876,14 +857,12 @@ public class ShapeBoard
      */
     private class ShapeHistory
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Shapes recently used, ordered from most to less recent. */
-        private final List<Shape> shapes = new ArrayList<Shape>();
+        private final List<Shape> shapes = new ArrayList<>();
 
         private final Panel panel = new Panel();
 
-        //~ Constructors ---------------------------------------------------------------------------
         public ShapeHistory ()
         {
             panel.setNoInsets();
@@ -895,7 +874,6 @@ public class ShapeBoard
             panel.setLayout(layout);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Insert a shape in history.
          * <p>
@@ -908,8 +886,7 @@ public class ShapeBoard
         {
             if (!SwingUtilities.isEventDispatchThread()) {
                 try {
-                    SwingUtilities.invokeAndWait(
-                            new Runnable()
+                    SwingUtilities.invokeAndWait(new Runnable()
                     {
                         @Override
                         public void run ()

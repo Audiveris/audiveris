@@ -47,7 +47,6 @@ import java.util.List;
 public class GlyphSlurInfo
         extends SlurInfo
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     private GlyphSlurInfo (Glyph glyph,
                            List<Point> keyPoints)
@@ -56,7 +55,45 @@ public class GlyphSlurInfo
         this.glyph = glyph;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //----------//
+    // getCurve //
+    //----------//
+    @Override
+    public CubicCurve2D getCurve ()
+    {
+        return curve;
+    }
+
+    //--------------//
+    // getEndVector //
+    //--------------//
+    @Override
+    public Point2D getEndVector (boolean reverse)
+    {
+        // We use the control points to retrieve tangent vector
+        Point2D vector = reverse ? PointUtil.subtraction(curve.getP1(), curve.getCtrlP1())
+                : PointUtil.subtraction(curve.getP2(), curve.getCtrlP2());
+
+        // Normalize
+        vector = PointUtil.times(vector, 1.0 / PointUtil.length(vector));
+
+        return vector;
+    }
+
+    //-------------//
+    // getMidPoint //
+    //-------------//
+    /**
+     * Report the middle point of the slur.
+     *
+     * @return middle point
+     */
+    @Override
+    public Point2D getMidPoint ()
+    {
+        return CubicUtil.getMidPoint(curve);
+    }
+
     /**
      * Create proper GlyphSlurInfo for a slur defined by its glyph.
      * The bezier curve is directly computed from the glyph.
@@ -93,41 +130,6 @@ public class GlyphSlurInfo
         return info;
     }
 
-    //----------//
-    // getCurve //
-    //----------//
-    @Override
-    public CubicCurve2D getCurve ()
-    {
-        return curve;
-    }
-
-    //--------------//
-    // getEndVector //
-    //--------------//
-    @Override
-    public Point2D getEndVector (boolean reverse)
-    {
-        // We use the control points to retrieve tangent vector
-        Point2D vector = reverse ? PointUtil.subtraction(curve.getP1(), curve.getCtrlP1())
-                : PointUtil.subtraction(curve.getP2(), curve.getCtrlP2());
-
-        // Normalize
-        vector = PointUtil.times(vector, 1.0 / PointUtil.length(vector));
-
-        return vector;
-    }
-
-    //-------------//
-    // getMidPoint //
-    //-------------//
-    @Override
-    public Point2D getMidPoint ()
-    {
-        return CubicUtil.getMidPoint(curve);
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------//
     // KeyPointsBuilder //
     //------------------//
@@ -139,25 +141,22 @@ public class GlyphSlurInfo
      */
     private static class KeyPointsBuilder
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Glyph glyph;
 
         private final RunTable rt;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new {@code KeyPointsBuilder} object.
          *
          * @param glyph the underlying glyph
          */
-        public KeyPointsBuilder (Glyph glyph)
+        KeyPointsBuilder (Glyph glyph)
         {
             this.glyph = glyph;
             rt = glyph.getRunTable();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public List<Point> retrieveKeyPoints ()
         {
             if (rt.getOrientation() != Orientation.VERTICAL) {
@@ -166,7 +165,7 @@ public class GlyphSlurInfo
 
             // Retrieve the 4 points WRT glyph bounds
             final int width = glyph.getWidth();
-            final List<Point> points = new ArrayList<Point>(4);
+            final List<Point> points = new ArrayList<>(4);
             points.add(vectorAtX(0));
             points.add(vectorAtX((int) Math.rint(width / 3.0)));
             points.add(vectorAtX((int) Math.rint((2 * width) / 3.0)));

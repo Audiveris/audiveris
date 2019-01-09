@@ -40,14 +40,12 @@ import java.awt.geom.Line2D;
  */
 public abstract class CurveGap
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CurveGap.class);
 
     /** Pixels added on both sides of connection line to get some thickness. */
     protected static final int MARGIN = 1;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** End point of curve. */
     protected final Point p1;
 
@@ -60,7 +58,6 @@ public abstract class CurveGap
     /** Gap vector to check empty locations. */
     protected int[] vector;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new CurveGap object.
      *
@@ -72,29 +69,6 @@ public abstract class CurveGap
     {
         this.p1 = p1;
         this.p2 = p2;
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Factory method to create the CurveGap instance with proper orientation.
-     *
-     * @param p1 curve end point
-     * @param p2 arc end point
-     * @return either a Horizontal or a Vertical gap instance according to relative position of
-     *         p1 and p2.
-     */
-    public static CurveGap create (Point p1,
-                                   Point p2)
-    {
-        // Determine if line is rather horizontal or vertical
-        final int dx = Math.abs(p2.x - p1.x);
-        final int dy = Math.abs(p2.y - p1.y);
-
-        if (dx >= dy) {
-            return new Horizontal(p1, p2);
-        } else {
-            return new Vertical(p1, p2);
-        }
     }
 
     /**
@@ -120,6 +94,11 @@ public abstract class CurveGap
         return vector;
     }
 
+    /**
+     * Report the lookup area.
+     *
+     * @return lookup area
+     */
     public Area getArea ()
     {
         return area;
@@ -171,14 +150,34 @@ public abstract class CurveGap
     protected abstract void populateVector (int x,
                                             int y);
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    /**
+     * Factory method to create the CurveGap instance with proper orientation.
+     *
+     * @param p1 curve end point
+     * @param p2 arc end point
+     * @return either a Horizontal or a Vertical gap instance according to relative position of
+     *         p1 and p2.
+     */
+    public static CurveGap create (Point p1,
+                                   Point p2)
+    {
+        // Determine if line is rather horizontal or vertical
+        final int dx = Math.abs(p2.x - p1.x);
+        final int dy = Math.abs(p2.y - p1.y);
+
+        if (dx >= dy) {
+            return new Horizontal(p1, p2);
+        } else {
+            return new Vertical(p1, p2);
+        }
+    }
+
     /**
      * For rather horizontal gaps.
      */
     public static class Horizontal
             extends CurveGap
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Creates a new CurveGap.Horizontal object.
@@ -194,7 +193,6 @@ public abstract class CurveGap
             area = computeArea();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected final void populateVector (int x,
                                              int y)
@@ -226,7 +224,6 @@ public abstract class CurveGap
     public static class Vertical
             extends CurveGap
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Creates a new CurveGap.Vertical object.
@@ -242,7 +239,6 @@ public abstract class CurveGap
             area = computeArea();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected final void populateVector (int x,
                                              int y)

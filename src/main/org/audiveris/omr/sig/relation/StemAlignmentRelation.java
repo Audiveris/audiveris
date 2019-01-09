@@ -34,7 +34,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class StemAlignmentRelation
         extends Support
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     //----------------//
     // isSingleSource //
@@ -52,5 +51,12 @@ public class StemAlignmentRelation
     public boolean isSingleTarget ()
     {
         return false;
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 }

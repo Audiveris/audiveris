@@ -60,7 +60,6 @@ import static java.nio.file.StandardOpenOption.CREATE;
  */
 public abstract class ModelSystemSerializer
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Load a multi layer network from a file system
@@ -176,8 +175,9 @@ public abstract class ModelSystemSerializer
         } else {
             throw new IllegalStateException(
                     "Model wasn't found within file: gotConfig: [" + gotConfig
-                    + "], gotCoefficients: [" + gotCoefficients + "], gotUpdater: [" + gotUpdaterState
-                    + "]");
+                            + "], gotCoefficients: [" + gotCoefficients + "], gotUpdater: ["
+                    + gotUpdaterState
+                            + "]");
         }
     }
 

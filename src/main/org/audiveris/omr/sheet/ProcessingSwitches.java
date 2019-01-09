@@ -48,7 +48,6 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  */
 public class ProcessingSwitches
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -57,77 +56,29 @@ public class ProcessingSwitches
     /** Default switches values. */
     private static volatile ProcessingSwitches defaultSwitches;
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /** Enumerated names, based on defined constants. */
-    public static enum Switch
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
+    /** Map of switches. */
+    protected final EnumMap<Switch, Param<Boolean>> map = new EnumMap<>(Switch.class);
 
-        articulations(constants.articulations),
-        chordNames(constants.chordNames),
-        fingerings(constants.fingerings),
-        frets(constants.frets),
-        pluckings(constants.pluckings),
-        lyrics(constants.lyrics),
-        lyricsAboveStaff(constants.lyricsAboveStaff),
-        smallBlackHeads(constants.smallBlackHeads),
-        smallVoidHeads(constants.smallVoidHeads),
-        smallWholeHeads(constants.smallWholeHeads);
-
-        //~ Instance fields ------------------------------------------------------------------------
-        /** Underlying boolean constant. */
-        Constant.Boolean constant;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        Switch (Constant.Boolean constant)
-        {
-            this.constant = constant;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public Constant.Boolean getConstant ()
-        {
-            return constant;
-        }
-    }
-
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Parent switches, if any. */
     private ProcessingSwitches parent;
 
-    /** Map of switches. */
-    protected final EnumMap<Switch, Param<Boolean>> map = new EnumMap<Switch, Param<Boolean>>(
-            Switch.class);
-
-    //~ Methods ------------------------------------------------------------------------------------
-    public static ProcessingSwitches getDefaultSwitches ()
-    {
-        // Workaround for elaboration circularity
-        if (defaultSwitches == null) {
-            constants.initialize();
-            defaultSwitches = new DefaultSwitches();
-        }
-
-        return defaultSwitches;
-    }
-
+    /**
+     * Report the parameter for the provided key.
+     *
+     * @param key provided key
+     * @return related parameter
+     */
     public Param<Boolean> getParam (Switch key)
     {
         return map.get(key);
     }
-//
-//    public Boolean getSpecific (Switch key)
-//    {
-//        Param<Boolean> param = getParam(key);
-//
-//        if (param == null) {
-//            return null;
-//        }
-//
-//        return param.getSpecific();
-//    }
-//
 
+    /**
+     * Report the current value for the provided key.
+     *
+     * @param key provided key
+     * @return current value, perhaps null
+     */
     public Boolean getValue (Switch key)
     {
         Param<Boolean> param = getParam(key);
@@ -139,6 +90,11 @@ public class ProcessingSwitches
         return param.getValue();
     }
 
+    /**
+     * Report whether this object provided no specific information.
+     *
+     * @return true if empty
+     */
     public boolean isEmpty ()
     {
         for (Entry<Switch, Param<Boolean>> entry : map.entrySet()) {
@@ -150,6 +106,11 @@ public class ProcessingSwitches
         return true;
     }
 
+    /**
+     * Assign the parent of this object.
+     *
+     * @param parent the parent to assign
+     */
     public void setParent (ProcessingSwitches parent)
     {
         this.parent = parent;
@@ -165,33 +126,57 @@ public class ProcessingSwitches
             }
         }
     }
-//
-//    public void setSpecific (Switch key,
-//                             Boolean specific)
-//    {
-//        if (specific == null) {
-//            map.remove(key);
-//        } else {
-//            Param<Boolean> param = getParam(key);
-//
-//            if (param == null) {
-//                map.put(key, param = new BooleanParam());
-//
-//                if (parent != null) {
-//                    param.setParent(parent.getParam(key));
-//                }
-//            }
-//
-//            param.setSpecific(specific);
-//        }
-//    }
-//
-    //~ Inner Classes ------------------------------------------------------------------------------
 
+    /**
+     * Report the top level switches, which provide default values.
+     *
+     * @return top default switches.
+     */
+    public static ProcessingSwitches getDefaultSwitches ()
+    {
+        // Workaround for elaboration circularity
+        if (defaultSwitches == null) {
+            constants.initialize();
+            defaultSwitches = new DefaultSwitches();
+        }
+
+        return defaultSwitches;
+    }
+
+    /** Enumerated names, based on defined constants. */
+    public static enum Switch
+    {
+        articulations(constants.articulations),
+        chordNames(constants.chordNames),
+        fingerings(constants.fingerings),
+        frets(constants.frets),
+        pluckings(constants.pluckings),
+        lyrics(constants.lyrics),
+        lyricsAboveStaff(constants.lyricsAboveStaff),
+        smallBlackHeads(constants.smallBlackHeads),
+        smallVoidHeads(constants.smallVoidHeads),
+        smallWholeHeads(constants.smallWholeHeads);
+
+        /** Underlying boolean constant. */
+        Constant.Boolean constant;
+
+        Switch (Constant.Boolean constant)
+        {
+            this.constant = constant;
+        }
+
+        public Constant.Boolean getConstant ()
+        {
+            return constant;
+        }
+    }
+
+    /**
+     * JAXB adapter for ProcessingSwitches type.
+     */
     public static class Adapter
             extends XmlAdapter<Adapter.MyEntries, ProcessingSwitches>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public MyEntries marshal (ProcessingSwitches switches)
@@ -234,18 +219,21 @@ public class ProcessingSwitches
             return switches;
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
-        public static final class MyEntries
+        /**
+         * Flat list of entries.
+         */
+        public static class MyEntries
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             @XmlElement(name = "switch")
-            List<MyEntry> entries = new ArrayList<MyEntry>();
+            List<MyEntry> entries = new ArrayList<>();
         }
 
-        public static final class MyEntry
+        /**
+         * Plain entry: key / value.
+         */
+        public static class MyEntry
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             @XmlAttribute(name = "key")
             public Switch key;
@@ -258,10 +246,9 @@ public class ProcessingSwitches
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean articulations = new Constant.Boolean(
                 true,
@@ -308,9 +295,8 @@ public class ProcessingSwitches
     private static class DefaultSwitches
             extends ProcessingSwitches
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public DefaultSwitches ()
+        DefaultSwitches ()
         {
             for (Switch key : Switch.values()) {
                 map.put(key, new ConstantBasedParam<Boolean, Constant.Boolean>(key.getConstant()));

@@ -37,14 +37,12 @@ import org.audiveris.omr.util.EntityIndex;
 public class SectionService
         extends EntityService<Section>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Events that can be published on section service. */
     private static final Class<?>[] eventsAllowed = new Class<?>[]{
-        IdEvent.class, EntityListEvent.class
-    };
+        IdEvent.class,
+        EntityListEvent.class};
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SectionService} object.
      *
@@ -57,7 +55,6 @@ public class SectionService
         super(index, locationService, eventsAllowed);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------------//
     // handleLocationEvent //
     //---------------------//
@@ -70,7 +67,8 @@ public class SectionService
     protected void handleLocationEvent (LocationEvent locationEvent)
     {
         // Search only when in MODE_SECTION
-        if (ViewParameters.getInstance().getSelectionMode() == ViewParameters.SelectionMode.MODE_SECTION) {
+        if (ViewParameters.getInstance()
+                .getSelectionMode() == ViewParameters.SelectionMode.MODE_SECTION) {
             super.handleLocationEvent(locationEvent);
         }
     }

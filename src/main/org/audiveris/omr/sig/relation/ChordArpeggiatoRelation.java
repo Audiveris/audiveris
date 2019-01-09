@@ -32,7 +32,8 @@ import org.jgrapht.event.GraphEdgeChangeEvent;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ChordArpeggiatoRelation}
+ * Class {@code ChordArpeggiatoRelation} represents a relation between a (head) chord
+ * and an arpeggiato.
  *
  * @author Hervé Bitteur
  */
@@ -40,11 +41,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordArpeggiatoRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ArpeggiatoChordRelation} object.
      *
@@ -63,7 +62,6 @@ public class ChordArpeggiatoRelation
         super();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -72,14 +70,6 @@ public class ChordArpeggiatoRelation
     {
         final ArpeggiatoInter arpeggiato = (ArpeggiatoInter) e.getEdgeTarget();
         arpeggiato.checkAbnormal();
-    }
-
-    //----------------//
-    // getXGapMaximum //
-    //----------------//
-    public static Scale.Fraction getXGapMaximum (boolean manual)
-    {
-        return manual ? constants.xGapMaxManual : constants.xGapMax;
     }
 
     //----------------//
@@ -119,14 +109,20 @@ public class ChordArpeggiatoRelation
         return constants.arpeggiatoSupportCoeff.getValue();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //----------------//
+    // getXGapMaximum //
+    //----------------//
+    public static Scale.Fraction getXGapMaximum (boolean manual)
+    {
+        return manual ? constants.xGapMaxManual : constants.xGapMax;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio arpeggiatoSupportCoeff = new Constant.Ratio(
                 0.5,

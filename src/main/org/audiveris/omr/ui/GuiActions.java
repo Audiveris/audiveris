@@ -85,24 +85,10 @@ import javax.swing.text.JTextComponent;
 public class GuiActions
         extends AbstractBean
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(GuiActions.class);
-
-    /** Options UI */
-    private static Options options;
-
-    // Resource injection
-    private static ResourceMap resource = Application.getInstance().getContext().getResourceMap(
-            GuiActions.class);
-
-    /** Singleton */
-    private static GuiActions INSTANCE;
-
-    /** Create this action just once */
-    private static volatile AboutAction aboutAction;
 
     /** Should the errors window be displayed. */
     public static final String ERRORS_WINDOW_DISPLAYED = "errorsWindowDisplayed";
@@ -113,23 +99,15 @@ public class GuiActions
     /** Should the boards window be displayed. */
     public static final String BOARDS_WINDOW_DISPLAYED = "boardsWindowDisplayed";
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton
-     *
-     * @return the unique instance of this class
-     */
-    public static synchronized GuiActions getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new GuiActions();
-        }
+    /** Options UI */
+    private static Options options;
 
-        return INSTANCE;
-    }
+    // Resource injection
+    private static ResourceMap resource = Application.getInstance().getContext().getResourceMap(
+            GuiActions.class);
+
+    /** Create this action just once */
+    private static volatile AboutAction aboutAction;
 
     //---------------------//
     // browseGlobalSamples //
@@ -186,7 +164,8 @@ public class GuiActions
                 public void run ()
                 {
                     try {
-                        new SampleBrowser(SampleRepository.getInstance(repoPath, true)).setVisible();
+                        new SampleBrowser(SampleRepository.getInstance(repoPath, true))
+                                .setVisible();
                     } catch (Throwable ex) {
                         logger.warn("Could not launch samples browser. " + ex, ex);
                     }
@@ -275,6 +254,16 @@ public class GuiActions
         return constants.boardsWindowDisplayed.getValue();
     }
 
+    //--------------------------//
+    // setBoardsWindowDisplayed //
+    //--------------------------//
+    public void setBoardsWindowDisplayed (boolean value)
+    {
+        boolean oldValue = constants.boardsWindowDisplayed.getValue();
+        constants.boardsWindowDisplayed.setValue(value);
+        firePropertyChange(BOARDS_WINDOW_DISPLAYED, oldValue, value);
+    }
+
     //--------------------//
     // isBrowserSupported //
     //--------------------//
@@ -296,12 +285,32 @@ public class GuiActions
         return constants.errorsWindowDisplayed.getValue();
     }
 
+    //--------------------------//
+    // setErrorsWindowDisplayed //
+    //--------------------------//
+    public void setErrorsWindowDisplayed (boolean value)
+    {
+        boolean oldValue = constants.errorsWindowDisplayed.getValue();
+        constants.errorsWindowDisplayed.setValue(value);
+        firePropertyChange(ERRORS_WINDOW_DISPLAYED, oldValue, value);
+    }
+
     //----------------------//
     // isLogWindowDisplayed //
     //----------------------//
     public boolean isLogWindowDisplayed ()
     {
         return constants.logWindowDisplayed.getValue();
+    }
+
+    //-----------------------//
+    // setLogWindowDisplayed //
+    //-----------------------//
+    public void setLogWindowDisplayed (boolean value)
+    {
+        boolean oldValue = constants.logWindowDisplayed.getValue();
+        constants.logWindowDisplayed.setValue(value);
+        firePropertyChange(LOG_WINDOW_DISPLAYED, oldValue, value);
     }
 
     //--------------------//
@@ -327,16 +336,14 @@ public class GuiActions
     @Action
     public void launchTrainer (ActionEvent e)
     {
-        CursorController.launchWithDelayedMessage(
-                "Launching trainer...",
-                new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                Trainer.launch();
-            }
-        });
+        CursorController.launchWithDelayedMessage("Launching trainer...", new Runnable()
+                                          {
+                                              @Override
+                                              public void run ()
+                                              {
+                                                  Trainer.launch();
+                                              }
+                                          });
     }
 
     //-------------------//
@@ -351,36 +358,6 @@ public class GuiActions
     public void saveGlobalSamples (ActionEvent e)
     {
         SampleRepository.getGlobalInstance().checkForSave();
-    }
-
-    //--------------------------//
-    // setBoardsWindowDisplayed //
-    //--------------------------//
-    public void setBoardsWindowDisplayed (boolean value)
-    {
-        boolean oldValue = constants.boardsWindowDisplayed.getValue();
-        constants.boardsWindowDisplayed.setValue(value);
-        firePropertyChange(BOARDS_WINDOW_DISPLAYED, oldValue, value);
-    }
-
-    //--------------------------//
-    // setErrorsWindowDisplayed //
-    //--------------------------//
-    public void setErrorsWindowDisplayed (boolean value)
-    {
-        boolean oldValue = constants.errorsWindowDisplayed.getValue();
-        constants.errorsWindowDisplayed.setValue(value);
-        firePropertyChange(ERRORS_WINDOW_DISPLAYED, oldValue, value);
-    }
-
-    //-----------------------//
-    // setLogWindowDisplayed //
-    //-----------------------//
-    public void setLogWindowDisplayed (boolean value)
-    {
-        boolean oldValue = constants.logWindowDisplayed.getValue();
-        constants.logWindowDisplayed.setValue(value);
-        firePropertyChange(LOG_WINDOW_DISPLAYED, oldValue, value);
     }
 
     //-----------//
@@ -525,67 +502,36 @@ public class GuiActions
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
-    // AboutAction //
+    // getInstance //
     //-------------//
     /**
-     * Class {@code AboutAction} opens an 'About' dialog with some
-     * information about the application.
+     * Report the single instance of this class in application.
      *
+     * @return the instance
      */
+    public static GuiActions getInstance ()
+    {
+        return LazySingleton.INSTANCE;
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final GuiActions INSTANCE = new GuiActions();
+    }
+
     public static class AboutAction
     {
-        //~ Enumerations ---------------------------------------------------------------------------
 
-        private static enum Topic
-        {
-            //~ Enumeration constant initializers --------------------------------------------------
-
-            /** Longer application description */
-            description(new JTextField()),
-            /** Current version */
-            version(new JTextField()),
-            /** Precise classes */
-            classes(new JTextField()),
-            /** Link to web site */
-            home(new JEditorPane("text/html", "")),
-            /** Link to book site */
-            book(new JEditorPane("text/html", "")),
-            /** License */
-            license(new JTextField()),
-            /** OCR version */
-            ocr(new JTextField()),
-            /** Java vendor */
-            javaVendor(new JTextField()),
-            /** Java version */
-            javaVersion(new JTextField()),
-            /** Java runtime */
-            javaRuntime(new JTextField()),
-            /** Java VM */
-            javaVm(new JTextField()),
-            /** OS */
-            os(new JTextField()),
-            /** Arch */
-            osArch(new JTextField());
-            //~ Instance fields --------------------------------------------------------------------
-
-            public final JTextComponent comp;
-
-            //~ Constructors -----------------------------------------------------------------------
-            Topic (JTextComponent comp)
-            {
-                this.comp = comp;
-            }
-        }
-
-        //~ Instance fields ------------------------------------------------------------------------
         // Dialog
         private JDialog aboutBox = null;
 
         private HyperlinkListener linkListener = new LinkListener();
 
-        //~ Methods --------------------------------------------------------------------------------
         public void actionPerformed (ActionEvent e)
         {
             if (aboutBox == null) {
@@ -668,11 +614,14 @@ public class GuiActions
             Topic.javaVersion.comp.setText(System.getProperty("java.version"));
             Topic.javaRuntime.comp.setText(
                     System.getProperty("java.runtime.name") + " (build "
-                    + System.getProperty("java.runtime.version") + ")");
+                            + System.getProperty("java.runtime.version")
+                            + ")");
             Topic.javaVm.comp.setText(
                     System.getProperty("java.vm.name") + " (build "
-                    + System.getProperty("java.vm.version") + ", " + System.getProperty("java.vm.info")
-                    + ")");
+                            + System.getProperty("java.vm.version")
+                            + ", "
+                            + System.getProperty("java.vm.info")
+                            + ")");
             Topic.os.comp.setText(
                     System.getProperty("os.name") + " " + System.getProperty("os.version"));
             Topic.osArch.comp.setText(System.getProperty("os.arch"));
@@ -680,19 +629,53 @@ public class GuiActions
             return dialog;
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
+        private static enum Topic
+        {
+            /** Longer application description */
+            description(new JTextField()),
+            /** Current version */
+            version(new JTextField()),
+            /** Precise classes */
+            classes(new JTextField()),
+            /** Link to web site */
+            home(new JEditorPane("text/html", "")),
+            /** Link to book site */
+            book(new JEditorPane("text/html", "")),
+            /** License */
+            license(new JTextField()),
+            /** OCR version */
+            ocr(new JTextField()),
+            /** Java vendor */
+            javaVendor(new JTextField()),
+            /** Java version */
+            javaVersion(new JTextField()),
+            /** Java runtime */
+            javaRuntime(new JTextField()),
+            /** Java VM */
+            javaVm(new JTextField()),
+            /** OS */
+            os(new JTextField()),
+            /** Arch */
+            osArch(new JTextField());
+
+            public final JTextComponent comp;
+
+            Topic (JTextComponent comp)
+            {
+                this.comp = comp;
+            }
+        }
+
         //------------//
         // ImagePanel //
         //------------//
         private static class ImagePanel
                 extends JPanel
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             private Image img;
 
-            //~ Constructors -----------------------------------------------------------------------
-            public ImagePanel (Image img)
+            ImagePanel (Image img)
             {
                 this.img = img;
 
@@ -704,13 +687,12 @@ public class GuiActions
                 setLayout(null);
             }
 
-            public ImagePanel (URI uri)
+            ImagePanel (URI uri)
                     throws MalformedURLException
             {
                 this(new ImageIcon(uri.toURL()).getImage());
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void paintComponent (Graphics g)
             {
@@ -721,7 +703,6 @@ public class GuiActions
         private static class LinkListener
                 implements HyperlinkListener
         {
-            //~ Methods ----------------------------------------------------------------------------
 
             @Override
             public void hyperlinkUpdate (HyperlinkEvent event)
@@ -745,10 +726,9 @@ public class GuiActions
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.String webSiteUrl = new Constant.String(
                 "http://www.audiveris.org",
@@ -758,8 +738,7 @@ public class GuiActions
                 "https://github.com/Audiveris/audiveris/wiki",
                 "URL of Audiveris wiki");
 
-        private final Constant.String manualUrl = new Constant.String(
-                //"docs/manual/handbook.html",
+        private final Constant.String manualUrl = new Constant.String( //"docs/manual/handbook.html",
                 "https://bacchushlg.gitbooks.io/audiveris-5-1/content/",
                 "URL of Audiveris manual");
 
@@ -782,28 +761,23 @@ public class GuiActions
     private static class OptionsTask
             extends Task<Options, Void>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Timer timer = new Timer();
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public OptionsTask ()
+        OptionsTask ()
         {
             super(OmrGui.getApplication());
 
-            timer.schedule(
-                    new TimerTask()
+            timer.schedule(new TimerTask()
             {
                 @Override
                 public void run ()
                 {
                     logger.info("Building options window...");
                 }
-            },
-                    CursorController.delay);
+            }, CursorController.delay);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Options doInBackground ()
                 throws Exception

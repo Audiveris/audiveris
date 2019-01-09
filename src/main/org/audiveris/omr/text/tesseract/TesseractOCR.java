@@ -53,32 +53,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Class {@code TesseractOCR} is an OCR service built on the Google Tesseract engine.
- *
  * <p>
- * It relies on <b>tesseract3</b> C++ program, accessed through a <b>JavaCPP</b>-based bridge.</p>
+ * It relies on <b>tesseract3</b> C++ program, accessed through a <b>JavaCPP</b>-based bridge.
  *
  * @author Hervé Bitteur
  */
 public class TesseractOCR
         implements OCR
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TesseractOCR.class);
-
-    /** Singleton. */
-    private static final TesseractOCR INSTANCE = new TesseractOCR();
 
     /** Latin encoder, to check character validity. (not used yet) */
     private static final CharsetEncoder encoder = Charset.forName("iso-8859-1").newEncoder();
 
     /** Warning message when OCR folder cannot be found. */
     private static final String ocrNotFoundMsg = "Tesseract data could not be found. "
-                                                 + "Try setting the TESSDATA_PREFIX environment variable to the parent folder of \"tessdata\".";
+                                                         + "Try setting the TESSDATA_PREFIX environment variable to the parent folder of \"tessdata\".";
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The folder where Tesseract OCR material is stored. */
     private Path OCR_FOLDER;
 
@@ -88,26 +82,11 @@ public class TesseractOCR
     /** To assign a serial number to each image processing order. */
     private final AtomicInteger serial = new AtomicInteger(0);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates the TesseractOCR singleton.
      */
     private TesseractOCR ()
     {
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the service singleton.
-     *
-     * @return the TesseractOCR service instance
-     */
-    public static TesseractOCR getInstance ()
-    {
-        return INSTANCE;
     }
 
     //--------------//
@@ -118,7 +97,7 @@ public class TesseractOCR
     {
         if (isAvailable()) {
             final Path ocrFolder = getOcrFolder();
-            TreeSet<String> set = new TreeSet<String>();
+            TreeSet<String> set = new TreeSet<>();
 
             try {
                 TessBaseAPI api = new TessBaseAPI();
@@ -344,14 +323,34 @@ public class TesseractOCR
         return null;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this class in application.
+     *
+     * @return the instance
+     */
+    public static TesseractOCR getInstance ()
+    {
+        return LazySingleton.INSTANCE;
+    }
+
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final TesseractOCR INSTANCE = new TesseractOCR();
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean useOCR = new Constant.Boolean(
                 true,

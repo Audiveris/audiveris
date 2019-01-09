@@ -66,21 +66,17 @@ import java.util.TreeMap;
  */
 public class LedgersFilter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(LedgersFilter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** Related sheet. */
     private final Sheet sheet;
 
     // Debug
     final List<Integer> vipSections;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LedgersFilter object.
      *
@@ -98,7 +94,6 @@ public class LedgersFilter
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -115,8 +110,7 @@ public class LedgersFilter
     public Map<SystemInfo, List<Section>> process ()
     {
         final Scale scale = sheet.getScale();
-        final int minDistanceFromStaff = scale.toPixels(
-                constants.minDistanceFromStaff);
+        final int minDistanceFromStaff = scale.toPixels(constants.minDistanceFromStaff);
         final StaffManager staffManager = sheet.getStaffManager();
 
         // Filter to keep only the runs which stand outside of staves cores.
@@ -166,8 +160,8 @@ public class LedgersFilter
      */
     private Map<SystemInfo, List<Section>> dispatchLedgerSections (Collection<Section> sections)
     {
-        Map<SystemInfo, List<Section>> sectionMap = new TreeMap<SystemInfo, List<Section>>();
-        List<SystemInfo> relevants = new ArrayList<SystemInfo>();
+        Map<SystemInfo, List<Section>> sectionMap = new TreeMap<>();
+        List<SystemInfo> relevants = new ArrayList<>();
         SystemManager systemManager = sheet.getSystemManager();
 
         for (Section section : sections) {
@@ -180,7 +174,7 @@ public class LedgersFilter
                     List<Section> list = sectionMap.get(system);
 
                     if (list == null) {
-                        sectionMap.put(system, list = new ArrayList<Section>());
+                        sectionMap.put(system, list = new ArrayList<>());
                     }
 
                     list.add(section);
@@ -207,14 +201,12 @@ public class LedgersFilter
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean displayLedgers = new Constant.Boolean(
                 false,

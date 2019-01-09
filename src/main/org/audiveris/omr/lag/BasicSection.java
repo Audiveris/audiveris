@@ -71,12 +71,9 @@ public class BasicSection
         extends AbstractEntity
         implements Section
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            BasicSection.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicSection.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Position of first run */
     @XmlAttribute(name = "first-pos")
     protected int firstPos;
@@ -87,7 +84,7 @@ public class BasicSection
 
     /** The collection of runs that make up the section */
     @XmlElement(name = "run")
-    protected final List<Run> runs = new ArrayList<Run>();
+    protected final List<Run> runs = new ArrayList<>();
 
     /** Containing lag, if any. */
     protected Lag lag;
@@ -110,7 +107,6 @@ public class BasicSection
     /** Approximating oriented line for this section */
     protected Line orientedLine;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicSection.
      *
@@ -138,28 +134,6 @@ public class BasicSection
         weight = ds.getWeight();
         polygon = ds.getPolygon();
         orientedLine = ds.getOrientedLine();
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //---------------//
-    // allocateTable //
-    //---------------//
-    /**
-     * For basic print out, allocate a drawing table, to be later filled
-     * with section pixels
-     *
-     * @param box the limits of the drawing table
-     * @return the table ready to be filled
-     */
-    public static char[][] allocateTable (Rectangle box)
-    {
-        char[][] table = new char[box.height + 1][box.width + 1];
-
-        for (int i = 0; i < table.length; i++) {
-            Arrays.fill(table[i], ' ');
-        }
-
-        return table;
     }
 
     //----------//
@@ -316,40 +290,6 @@ public class BasicSection
         drawingOfTable(table, box);
     }
 
-    //----------------//
-    // drawingOfTable //
-    //----------------//
-    /**
-     * Printout the filled drawing table
-     *
-     * @param table the filled table
-     * @param box   the table limits in the image
-     * @return the drawing as a string
-     */
-    public static String drawingOfTable (char[][] table,
-                                         Rectangle box)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%n"));
-
-        sb.append(String.format("xMin=%d, xMax=%d%n", box.x, (box.x + box.width) - 1));
-        sb.append(String.format("yMin=%d, yMax=%d%n", box.y, (box.y + box.height) - 1));
-
-        for (int iy = 0; iy < table.length; iy++) {
-            sb.append(String.format("%d:", iy + box.y));
-
-            char[] line = table[iy];
-
-            for (int ix = 0; ix < line.length; ix++) {
-                sb.append(line[ix]);
-            }
-
-            sb.append(String.format("%n"));
-        }
-
-        return sb.toString();
-    }
-
     //--------//
     // equals //
     //--------//
@@ -471,7 +411,7 @@ public class BasicSection
     @Override
     public double getAspect (Orientation orientation)
     {
-        return (double) getLength(orientation) / (double) getThickness(orientation);
+        return getLength(orientation) / (double) getThickness(orientation);
     }
 
     //-----------//
@@ -542,6 +482,19 @@ public class BasicSection
     public Lag getLag ()
     {
         return lag;
+    }
+
+    //--------//
+    // setLag //
+    //--------//
+    @Override
+    public void setLag (Lag lag)
+    {
+        this.lag = lag;
+
+        if (lag != null) {
+            orientation = lag.getOrientation();
+        }
     }
 
     //------------//
@@ -670,9 +623,7 @@ public class BasicSection
         cumulate(barycenter, absRoi);
 
         if (barycenter.getWeight() != 0) {
-            return new Point(
-                    (int) Math.rint(barycenter.getX()),
-                    (int) Math.rint(barycenter.getY()));
+            return new Point((int) Math.rint(barycenter.getX()), (int) Math.rint(barycenter.getY()));
         } else {
             return null;
         }
@@ -770,8 +721,8 @@ public class BasicSection
 
         for (Run run : runs) {
             final int start = run.getStart();
-            final Rectangle runBox = (orientation == HORIZONTAL)
-                    ? new Rectangle(start, pos, run.getLength(), 1)
+            final Rectangle runBox = (orientation == HORIZONTAL) ? new Rectangle(start, pos, run
+                                                                                 .getLength(), 1)
                     : new Rectangle(pos, start, 1, run.getLength());
 
             if (shape.intersects(runBox)) {
@@ -876,24 +827,6 @@ public class BasicSection
         }
     }
 
-    //--------//
-    // setLag //
-    //--------//
-    /**
-     * (package access from lag?)
-     *
-     * @param lag the containing lag
-     */
-    @Override
-    public void setLag (Lag lag)
-    {
-        this.lag = lag;
-
-        if (lag != null) {
-            orientation = lag.getOrientation();
-        }
-    }
-
     //---------//
     // touches //
     //---------//
@@ -912,8 +845,8 @@ public class BasicSection
 
         for (Run run : runs) {
             final int start = run.getStart();
-            final Rectangle r1 = (orientation == HORIZONTAL)
-                    ? new Rectangle(start, pos, run.getLength(), 1)
+            final Rectangle r1 = (orientation == HORIZONTAL) ? new Rectangle(start, pos, run
+                                                                             .getLength(), 1)
                     : new Rectangle(pos, start, 1, run.getLength());
 
             if (thatFatBox.intersects(r1)) {
@@ -923,8 +856,8 @@ public class BasicSection
                 for (Run thatRun : that.getRuns()) {
                     final int thatStart = thatRun.getStart();
                     final int thatLength = thatRun.getLength();
-                    final Rectangle r2 = (that.getOrientation() == HORIZONTAL)
-                            ? new Rectangle(thatStart, thatPos, thatLength, 1)
+                    final Rectangle r2 = (that.getOrientation() == HORIZONTAL) ? new Rectangle(
+                            thatStart, thatPos, thatLength, 1)
                             : new Rectangle(thatPos, thatStart, 1, thatLength);
 
                     if (GeoUtil.touch(r1, r2)) {
@@ -973,6 +906,11 @@ public class BasicSection
     //---------------------//
     // computeOrientedLine //
     //---------------------//
+    /**
+     * Compute the oriented approximating line.
+     *
+     * @return the oriented line
+     */
     protected Line computeOrientedLine ()
     {
         // Compute the section line
@@ -1002,7 +940,59 @@ public class BasicSection
         return orientation.isVertical() ? "V" : "H";
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------------//
+    // allocateTable //
+    //---------------//
+    /**
+     * For basic print out, allocate a drawing table, to be later filled
+     * with section pixels
+     *
+     * @param box the limits of the drawing table
+     * @return the table ready to be filled
+     */
+    public static char[][] allocateTable (Rectangle box)
+    {
+        char[][] table = new char[box.height + 1][box.width + 1];
+        for (char[] table1 : table) {
+            Arrays.fill(table1, ' ');
+        }
+        return table;
+    }
+
+    //----------------//
+    // drawingOfTable //
+    //----------------//
+    /**
+     * Printout the filled drawing table
+     *
+     * @param table the filled table
+     * @param box   the table limits in the image
+     * @return the drawing as a string
+     */
+    public static String drawingOfTable (char[][] table,
+                                         Rectangle box)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%n"));
+
+        sb.append(String.format("xMin=%d, xMax=%d%n", box.x, (box.x + box.width) - 1));
+        sb.append(String.format("yMin=%d, yMax=%d%n", box.y, (box.y + box.height) - 1));
+
+        for (int iy = 0; iy < table.length; iy++) {
+            sb.append(String.format("%d:", iy + box.y));
+
+            char[] line = table[iy];
+
+            for (int ix = 0; ix < line.length; ix++) {
+                sb.append(line[ix]);
+            }
+
+            sb.append(String.format("%n"));
+        }
+
+        return sb.toString();
+    }
+
     //---------//
     // Adapter //
     //---------//
@@ -1012,7 +1002,6 @@ public class BasicSection
     public static class Adapter
             extends XmlAdapter<BasicSection, Section>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public BasicSection marshal (Section s)

@@ -32,13 +32,11 @@ import javax.imageio.ImageIO;
  * retrieved from the class resource path.
  *
  * @param <A> The precise type of action carried by the drop
- *
  * @author Hervé Bitteur (from Romain Guy's demo)
  */
 public class GhostPictureAdapter<A>
         extends GhostDropAdapter<A>
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create a new GhostPictureAdapter object
@@ -53,9 +51,9 @@ public class GhostPictureAdapter<A>
     {
         super(glassPane, action);
 
-        try {
-            image = ImageIO.read(
-                    new BufferedInputStream(GhostPictureAdapter.class.getResourceAsStream(picture)));
+        try (BufferedInputStream bis = new BufferedInputStream(
+                GhostPictureAdapter.class.getResourceAsStream(picture));) {
+            image = ImageIO.read(bis);
         } catch (MalformedURLException mue) {
             throw new IllegalStateException("Invalid picture URL.");
         } catch (IOException ioe) {

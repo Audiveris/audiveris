@@ -43,12 +43,10 @@ import java.util.List;
  */
 public class AnnotationSymbolsBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(
             AnnotationSymbolsBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -63,7 +61,6 @@ public class AnnotationSymbolsBuilder
     /** Companion factory for symbols inters. */
     private final InterFactory factory;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AnnotationSymbolsBuilder} object.
      *
@@ -82,7 +79,6 @@ public class AnnotationSymbolsBuilder
         sheet = system.getSheet();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//

@@ -39,7 +39,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class PageRef
         implements Comparable<PageRef>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     // Persistent data
     //----------------
@@ -59,13 +58,12 @@ public class PageRef
     //
     private int sheetNumber;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PageRef} object.
      *
      * @param sheetNumber    sheet number within book
      * @param id             page id within sheet
-     * @param movementStart  is page a movement start
+     * @param movementStart  is page a movement start?
      * @param deltaMeasureId increase of measure IDs within the page, or null
      */
     public PageRef (int sheetNumber,
@@ -88,7 +86,6 @@ public class PageRef
         movementStart = false;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // compareTo //
     //-----------//
@@ -122,6 +119,14 @@ public class PageRef
     public Integer getDeltaMeasureId ()
     {
         return deltaMeasureId;
+    }
+
+    /**
+     * @param deltaMeasureId the deltaMeasureId to set
+     */
+    public void setDeltaMeasureId (Integer deltaMeasureId)
+    {
+        this.deltaMeasureId = deltaMeasureId;
     }
 
     /**
@@ -162,14 +167,6 @@ public class PageRef
     public boolean isMovementStart ()
     {
         return movementStart;
-    }
-
-    /**
-     * @param deltaMeasureId the deltaMeasureId to set
-     */
-    public void setDeltaMeasureId (Integer deltaMeasureId)
-    {
-        this.deltaMeasureId = deltaMeasureId;
     }
 
     @Override

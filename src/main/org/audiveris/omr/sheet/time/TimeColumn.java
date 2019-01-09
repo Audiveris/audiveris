@@ -62,13 +62,11 @@ import org.audiveris.omr.util.Predicate;
  */
 public abstract class TimeColumn
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TimeColumn.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing system. */
     protected final SystemInfo system;
 
@@ -78,7 +76,6 @@ public abstract class TimeColumn
     /** Map of time builders. (one per staff) */
     protected final Map<Staff, TimeBuilder> builders = new TreeMap<Staff, TimeBuilder>(Staff.byId);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Column} object.
      *
@@ -89,7 +86,6 @@ public abstract class TimeColumn
         this.system = system;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getMaxDxOffset //
     //----------------//
@@ -180,7 +176,7 @@ public abstract class TimeColumn
             public boolean check (Inter inter)
             {
                 return inter.getBounds().intersects(columnBox)
-                       && !(inter instanceof InterEnsemble);
+                               && !(inter instanceof InterEnsemble);
             }
         });
 
@@ -321,7 +317,8 @@ public abstract class TimeColumn
     protected Map<TimeValue, AbstractTimeInter[]> getValueVectors ()
     {
         // Retrieve all occurrences of time values across staves.
-        final Map<TimeValue, AbstractTimeInter[]> values = new HashMap<TimeValue, AbstractTimeInter[]>();
+        final Map<TimeValue, AbstractTimeInter[]> values
+                = new HashMap<TimeValue, AbstractTimeInter[]>();
 
         // Loop on system staves
         final List<Staff> staves = system.getStaves();
@@ -381,14 +378,12 @@ public abstract class TimeColumn
         // Void by default
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction maxDxOffset = new Scale.Fraction(
                 2,

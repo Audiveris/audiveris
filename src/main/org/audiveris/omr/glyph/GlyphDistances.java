@@ -37,7 +37,6 @@ import java.util.Iterator;
  */
 public class GlyphDistances
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Table of distances around the glyph. */
     private final DistanceTable distTable;
@@ -45,7 +44,6 @@ public class GlyphDistances
     /** Table bounds. (Generally somewhat larger than glyph bounds) */
     private final Rectangle tableBox;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new GlyphDistances object, around a provided glyph.
      *
@@ -59,7 +57,6 @@ public class GlyphDistances
         distTable = new Distances().compute(glyph, tableBox);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // distanceTo //
     //------------//
@@ -141,14 +138,12 @@ public class GlyphDistances
         return (double) bestDist / distTable.getNormalizer();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Distances //
     //-----------//
     private static class Distances
             extends ChamferDistance.Short
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         public DistanceTable compute (Glyph glyph,
                                       Rectangle box)

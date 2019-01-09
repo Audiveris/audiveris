@@ -36,11 +36,9 @@ import org.audiveris.omr.ui.selection.EntityService;
 public class SampleModel
         extends GlyphsModel
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private final SampleRepository repository;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleModel} object.
      *
@@ -54,7 +52,12 @@ public class SampleModel
         this.repository = repository;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * Add a sample.
+     *
+     * @param sample      the sample to add
+     * @param sampleSheet the containing sheet
+     */
     public void addSample (Sample sample,
                            SampleSheet sampleSheet)
     {
@@ -62,6 +65,8 @@ public class SampleModel
     }
 
     /**
+     * Report the underlying repository
+     *
      * @return the repository
      */
     public SampleRepository getRepository ()
@@ -69,6 +74,11 @@ public class SampleModel
         return repository;
     }
 
+    /**
+     * Remove a sample.
+     *
+     * @param sample the sample to remove
+     */
     public void removeSample (Sample sample)
     {
         repository.removeSample(sample);

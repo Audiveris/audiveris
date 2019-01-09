@@ -38,11 +38,11 @@ import javax.swing.SwingConstants;
  * the requested modifications on commit.
  *
  * @param <E> specific data type
+ * @author Hervé Bitteur
  */
 public abstract class XactDataPane<E>
         implements ActionListener
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Model parameter (cannot be null). */
     protected final Param<E> model;
@@ -59,7 +59,6 @@ public abstract class XactDataPane<E>
     /** Separator. */
     protected final JLabel separator;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code XactDataPane} object.
      *
@@ -86,7 +85,6 @@ public abstract class XactDataPane<E>
         selBox.addActionListener(this);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void actionPerformed (ActionEvent e)
     {

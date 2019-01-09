@@ -53,14 +53,12 @@ import java.util.List;
  */
 public class Circle
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Circle.class);
 
     /** Size for matrices used to compute the circle. */
     private static final int DIM = 4;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Center. */
     private Point2D.Double center;
 
@@ -85,7 +83,6 @@ public class Circle
     /** Bézier curve for circle arc. */
     private CubicCurve2D curve;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of Circle, defined by a sequence of points.
      *
@@ -130,7 +127,6 @@ public class Circle
         computeAngles(first, middle, last);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // ccw //
     //-----//
@@ -247,6 +243,19 @@ public class Circle
         return distance;
     }
 
+    //-------------//
+    // getDistance //
+    //-------------//
+    /**
+     * Record the mean distance (useful for 2-point definitions)
+     *
+     * @param distance the computed mean distance
+     */
+    public void setDistance (double distance)
+    {
+        this.distance = distance;
+    }
+
     //---------------//
     // getFirstAngle //
     //---------------//
@@ -350,19 +359,6 @@ public class Circle
         ccw = -ccw;
     }
 
-    //-------------//
-    // getDistance //
-    //-------------//
-    /**
-     * Record the mean distance (useful for 2-point definitions)
-     *
-     * @param distance the computed mean distance
-     */
-    public void setDistance (double distance)
-    {
-        this.distance = distance;
-    }
-
     //----------//
     // toString //
     //----------//
@@ -379,7 +375,10 @@ public class Circle
 
         if ((firstAngle != null) && (lastAngle != null)) {
             sb.append(
-                    String.format(" degrees=(%.0f,%.0f)", toDegrees(firstAngle), toDegrees(lastAngle)));
+                    String.format(
+                            " degrees=(%.0f,%.0f)",
+                            toDegrees(firstAngle),
+                            toDegrees(lastAngle)));
         }
 
         sb.append("}");
@@ -415,7 +414,7 @@ public class Circle
         }
 
         final double bucketSize = (2 * PI) / BUCKET_NB;
-        ArrayList<Double> angles = new ArrayList<Double>();
+        ArrayList<Double> angles = new ArrayList<>();
 
         for (int i = 0; i < xx.length; i++) {
             // Get an angle between 0 and 2*PI
@@ -503,8 +502,8 @@ public class Circle
     private void computeCurve ()
     {
         // Make sure we do have an arc defined, rather than a full circle
-        if (((lastAngle == null) || (lastAngle.isNaN()))
-            || ((firstAngle == null) || (firstAngle.isNaN()))) {
+        if (((lastAngle == null) || (lastAngle.isNaN())) || ((firstAngle == null) || (firstAngle
+                .isNaN()))) {
             return;
         }
 
@@ -524,62 +523,26 @@ public class Circle
 
         ///System.out.println("angleDeg/2=" + toDegrees(theta));
         final Matrix rotation = new Matrix(
-                new double[][]{
-                    {cos(theta), -sin(theta), 0},
-                    {sin(theta), cos(theta), 0},
-                    {0, 0, 1}
-                });
+                new double[][]{{cos(theta), -sin(theta), 0}, {sin(theta), cos(theta), 0}, {0, 0, 1}});
 
         // Scaling
         final Matrix scaling = new Matrix(
-                new double[][]{
-                    {radius, 0, 0},
-                    {0, radius, 0},
-                    {0, 0, 1}
-                });
+                new double[][]{{radius, 0, 0}, {0, radius, 0}, {0, 0, 1}});
 
         // Translation
         final Matrix translation = new Matrix(
-                new double[][]{
-                    {1, 0, center.x},
-                    {0, 1, center.y},
-                    {0, 0, 1}
-                });
+                new double[][]{{1, 0, center.x}, {0, 1, center.y}, {0, 0, 1}});
 
         // Composite operation
         final Matrix op = translation.times(scaling).times(rotation);
 
-        final Matrix M0 = op.times(
-                new Matrix(
-                        new double[][]{
-                            {x0},
-                            {y0},
-                            {1}
-                        }));
+        final Matrix M0 = op.times(new Matrix(new double[][]{{x0}, {y0}, {1}}));
 
-        final Matrix M1 = op.times(
-                new Matrix(
-                        new double[][]{
-                            {x1},
-                            {y1},
-                            {1}
-                        }));
+        final Matrix M1 = op.times(new Matrix(new double[][]{{x1}, {y1}, {1}}));
 
-        final Matrix M2 = op.times(
-                new Matrix(
-                        new double[][]{
-                            {x2},
-                            {y2},
-                            {1}
-                        }));
+        final Matrix M2 = op.times(new Matrix(new double[][]{{x2}, {y2}, {1}}));
 
-        final Matrix M3 = op.times(
-                new Matrix(
-                        new double[][]{
-                            {x3},
-                            {y3},
-                            {1}
-                        }));
+        final Matrix M3 = op.times(new Matrix(new double[][]{{x3}, {y3}, {1}}));
 
         // Bezier curve (make sure the curve goes from left to right)
         if (M0.get(0, 0) <= M3.get(0, 0)) {

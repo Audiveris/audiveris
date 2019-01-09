@@ -47,6 +47,7 @@ import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.SmallFlagInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
@@ -70,20 +71,24 @@ import java.util.Set;
  */
 public abstract class Relations
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Relations.class);
+    private static final Logger logger = LoggerFactory.getLogger(Relations.class);
 
-    private static final Map<Class<? extends Inter>, Set<Class<? extends Relation>>> src = new LinkedHashMap<Class<? extends Inter>, Set<Class<? extends Relation>>>();
+    private static final Map<Class<? extends Inter>, Set<Class<? extends Relation>>> src
+            = new LinkedHashMap<>();
 
-    private static final Map<Class<? extends Inter>, Set<Class<? extends Relation>>> tgt = new LinkedHashMap<Class<? extends Inter>, Set<Class<? extends Relation>>>();
+    private static final Map<Class<? extends Inter>, Set<Class<? extends Relation>>> tgt
+            = new LinkedHashMap<>();
 
     static {
         buildMaps();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    /** Not meant to be instantiated. */
+    private Relations ()
+    {
+    }
+
     /**
      * Report the defined relation classes between the provided source and target
      * inter classes.
@@ -96,7 +101,7 @@ public abstract class Relations
             Class<? extends Inter> sourceClass,
             Class<? extends Inter> targetClass)
     {
-        final Set<Class<? extends Relation>> defined = new LinkedHashSet<Class<? extends Relation>>();
+        final Set<Class<? extends Relation>> defined = new LinkedHashSet<>();
         Set<Class<? extends Relation>> from = definedRelationsFrom(sourceClass);
         Set<Class<? extends Relation>> to = definedRelationsTo(targetClass);
         defined.addAll(from);
@@ -120,7 +125,7 @@ public abstract class Relations
     {
         Objects.requireNonNull(sourceClass, "Source class is null");
 
-        final Set<Class<? extends Relation>> defined = new LinkedHashSet<Class<? extends Relation>>();
+        final Set<Class<? extends Relation>> defined = new LinkedHashSet<>();
         Class classe = sourceClass;
 
         while (true) {
@@ -155,7 +160,7 @@ public abstract class Relations
     {
         Objects.requireNonNull(targetClass, "Target class is null");
 
-        final Set<Class<? extends Relation>> defined = new LinkedHashSet<Class<? extends Relation>>();
+        final Set<Class<? extends Relation>> defined = new LinkedHashSet<>();
         Class classe = targetClass;
 
         while (true) {
@@ -215,7 +220,7 @@ public abstract class Relations
         }
 
         // Suggestions
-        Set<Class<? extends Relation>> suggestions = new LinkedHashSet<Class<? extends Relation>>(
+        Set<Class<? extends Relation>> suggestions = new LinkedHashSet<>(
                 definedRelationsBetween(source.getClass(), target.getClass()));
 
         // Let's not remove existing relation, to allow cleaning of relations
@@ -239,7 +244,8 @@ public abstract class Relations
      * target inter class.
      * <p>
      * A few relations are used only for support during reduction, rather than symbolic relation.
-     * They are thus excluded for lack of usefulness at UI level:<ul>
+     * They are thus excluded for lack of usefulness at UI level:
+     * <ul>
      * <li>BarConnectionRelation
      * <li>BeamHeadRelation
      * <li>ClefKeyRelation
@@ -274,6 +280,7 @@ public abstract class Relations
         map(FermataInter.class, FermataChordRelation.class, AbstractChordInter.class);
 
         map(FlagInter.class, FlagStemRelation.class, StemInter.class);
+        map(SmallFlagInter.class, FlagStemRelation.class, StemInter.class);
 
         map(HeadChordInter.class, ChordArpeggiatoRelation.class, ArpeggiatoInter.class);
         map(HeadChordInter.class, ChordArticulationRelation.class, ArticulationInter.class);
@@ -303,7 +310,7 @@ public abstract class Relations
         Set<Class<? extends Relation>> set = map.get(classe);
 
         if (set == null) {
-            map.put(classe, set = new LinkedHashSet<Class<? extends Relation>>());
+            map.put(classe, set = new LinkedHashSet<>());
         }
 
         return set;

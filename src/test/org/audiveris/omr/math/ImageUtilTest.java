@@ -4,8 +4,6 @@
  */
 package org.audiveris.omr.math;
 
-import org.audiveris.omr.math.TableUtil;
-
 import org.junit.Test;
 
 /**
@@ -14,7 +12,6 @@ import org.junit.Test;
  */
 public class ImageUtilTest
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Test of dump method, of class TableUtil.

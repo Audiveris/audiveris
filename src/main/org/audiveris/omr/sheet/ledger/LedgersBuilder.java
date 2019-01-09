@@ -38,9 +38,7 @@ import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.run.Orientation;
-
 import static org.audiveris.omr.run.Orientation.*;
-
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
@@ -62,9 +60,7 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
-
 import org.audiveris.omr.util.NamedDouble;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
@@ -103,7 +99,6 @@ import java.util.Set;
  */
 public class LedgersBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -125,8 +120,6 @@ public class LedgersBuilder
 
     private static final Failure TOO_SHIFTED = new Failure("Hori-TooShifted");
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -160,7 +153,6 @@ public class LedgersBuilder
 
     private final NamedDouble minLengthHigh;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * @param system the related system to process
      */
@@ -181,7 +173,6 @@ public class LedgersBuilder
         minAbscissaOverlap = largeScale.toPixels(constants.minAbscissaOverlap);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // addCheckBoard //
     //---------------//
@@ -225,25 +216,6 @@ public class LedgersBuilder
         } catch (Throwable ex) {
             logger.warn("Error retrieving ledgers. " + ex, ex);
         }
-    }
-
-    //-----------//
-    // getMiddle //
-    //-----------//
-    /**
-     * Retrieve the middle point of a stick, assumed rather horizontal.
-     *
-     * @param stick the stick to process
-     * @return the middle point
-     */
-    private static Point2D getMiddle (Filament stick)
-    {
-        final Point2D startPoint = stick.getStartPoint();
-        final Point2D stopPoint = stick.getStopPoint();
-
-        return new Point2D.Double(
-                (startPoint.getX() + stopPoint.getX()) / 2,
-                (startPoint.getY() + stopPoint.getY()) / 2);
     }
 
     //-------------//
@@ -342,8 +314,7 @@ public class LedgersBuilder
      */
     private List<Inter> getGoodBeams ()
     {
-        List<Inter> beams = sig.inters(
-                new Predicate<Inter>()
+        List<Inter> beams = sig.inters(new Predicate<Inter>()
         {
             @Override
             public boolean check (Inter inter)
@@ -479,8 +450,7 @@ public class LedgersBuilder
         final CheckSuite<StickContext> suite = suites.getSuite(interline);
         final InterlineScale staffScale = scale.getInterlineScale(interline);
         final int yMargin = staffScale.toPixels(constants.ledgerMarginY);
-        final LineInfo staffLine = (index < 0) ? staff.getFirstLine()
-                : staff.getLastLine();
+        final LineInfo staffLine = (index < 0) ? staff.getFirstLine() : staff.getLastLine();
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
         final int minWide = staffScale.toPixels(constants.minWideLedgerLength);
 
@@ -489,7 +459,7 @@ public class LedgersBuilder
         virtualLineBox.y += (index * interline);
         virtualLineBox.grow(0, 2 * yMargin);
 
-        final List<LedgerInter> ledgers = new ArrayList<LedgerInter>();
+        final List<LedgerInter> ledgers = new ArrayList<>();
 
         // Filter enclosed candidates and populate acceptable ledgers
         for (StraightFilament stick : ledgerCandidates) {
@@ -506,7 +476,7 @@ public class LedgersBuilder
 
             // Check for presence of ledger on previous line
             // and definition of a reference ordinate (staff line or ledger)
-            final Wrapper<LedgerInter> prevWrapper = new Wrapper<LedgerInter>(null);
+            final Wrapper<LedgerInter> prevWrapper = new Wrapper<>(null);
             final Double yRef = getYReference(staff, index, stick, prevWrapper);
 
             if (yRef == null) {
@@ -581,7 +551,7 @@ public class LedgersBuilder
      */
     private void purgeBeamOverlaps (List<StraightFilament> filaments)
     {
-        List<Filament> toRemove = new ArrayList<Filament>();
+        List<Filament> toRemove = new ArrayList<>();
 
         for (Filament fil : filaments) {
             if (beamOverlap(fil)) {
@@ -611,7 +581,7 @@ public class LedgersBuilder
     {
         final int interline = staff.getSpecificInterline();
         int maxDx = largeScale.toPixels(constants.maxInterLedgerDx);
-        Set<Exclusion> exclusions = new LinkedHashSet<Exclusion>();
+        Set<Exclusion> exclusions = new LinkedHashSet<>();
         Collections.sort(ledgers, Inters.byAbscissa);
 
         for (int i = 0; i < ledgers.size(); i++) {
@@ -643,14 +613,296 @@ public class LedgersBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // getMiddle //
+    //-----------//
+    /**
+     * Retrieve the middle point of a stick, assumed rather horizontal.
+     *
+     * @param stick the stick to process
+     * @return the middle point
+     */
+    private static Point2D getMiddle (Filament stick)
+    {
+        final Point2D startPoint = stick.getStartPoint();
+        final Point2D stopPoint = stick.getStopPoint();
+
+        return new Point2D.Double(
+                (startPoint.getX() + stopPoint.getX()) / 2,
+                (startPoint.getY() + stopPoint.getY()) / 2);
+    }
+
+    //-------------//
+    // LedgerSuite //
+    //-------------//
+    /**
+     * A suite of checks, with scaling that may depend on specific staff interline.
+     */
+    private class LedgerSuite
+            extends CheckSuite<StickContext>
+    {
+
+        /**
+         * Staff 'specific' interline scale.
+         * NOTA: we also can use 'largeScale' and 'scale' where applicable.
+         */
+        private final InterlineScale specific;
+
+        /**
+         * Create a check suite.
+         */
+        LedgerSuite (InterlineScale interlineScale)
+        {
+            super("Ledger");
+            this.specific = interlineScale;
+
+            add(0.5, new MinThicknessCheck());
+            add(0, new MaxThicknessCheck());
+            add(4, new MinLengthCheck());
+            add(2, new ConvexityCheck());
+            add(1, new StraightCheck());
+            add(0.5, new LeftPitchCheck());
+            add(0.5, new RightPitchCheck());
+        }
+
+        private class ConvexityCheck
+                extends Check<StickContext>
+        {
+
+            ConvexityCheck ()
+            {
+                super(
+                        "Convex",
+                        "Check number of convex stick ends",
+                        constants.convexityLow,
+                        Constant.Double.TWO,
+                        true,
+                        TOO_CONCAVE);
+            }
+
+            @Override
+            protected double getValue (StickContext context)
+            {
+                ByteProcessor pixelFilter = sheet.getPicture().getSource(
+                        Picture.SourceKey.NO_STAFF);
+
+                Filament stick = context.stick;
+                Rectangle box = stick.getBounds();
+                int convexities = 0;
+
+                // On each end of stick, we check that pixels just above and just below are white,
+                // so that stick slightly stands out.
+                // We use the stick bounds, regardless of the precise geometry inside.
+                //
+                //  X                                                         X
+                //  +---------------------------------------------------------+
+                //  |                                                         |
+                //  |                                                         |
+                //  +---------------------------------------------------------+
+                //  X                                                         X
+                //
+                for (HorizontalSide hSide : HorizontalSide.values()) {
+                    int x = (hSide == LEFT) ? box.x : ((box.x + box.width) - 1);
+                    boolean topFore = pixelFilter.get(x, box.y - 1) == 0;
+                    boolean bottomFore = pixelFilter.get(x, box.y + box.height) == 0;
+                    boolean isConvex = !(topFore || bottomFore);
+
+                    if (isConvex) {
+                        convexities++;
+                    }
+                }
+
+                return convexities;
+            }
+        }
+
+        private class LeftPitchCheck
+                extends Check<StickContext>
+        {
+
+            protected LeftPitchCheck ()
+            {
+                super(
+                        "LPitch",
+                        "Check that left ordinate is close to theoretical value",
+                        Constant.Double.ZERO,
+                        constants.ledgerMarginY,
+                        false,
+                        TOO_SHIFTED);
+            }
+
+            @Override
+            protected double getValue (StickContext context)
+            {
+                Filament stick = context.stick;
+                double yTarget = context.yTarget;
+                double y = stick.getStartPoint().getY();
+
+                return specific.pixelsToFrac(Math.abs(y - yTarget));
+            }
+        }
+
+        private class MaxThicknessCheck
+                extends Check<StickContext>
+        {
+
+            protected MaxThicknessCheck ()
+            {
+                super(
+                        "MaxTh.",
+                        "Check that stick is not too thick",
+                        constants.maxThicknessLow,
+                        constants.maxThicknessHigh,
+                        false,
+                        TOO_THICK);
+            }
+
+            // Retrieve the thickness data
+            @Override
+            protected double getValue (StickContext context)
+            {
+                Filament stick = context.stick;
+
+                return scale.pixelsToLineFrac(stick.getMeanThickness(HORIZONTAL));
+            }
+        }
+
+        private class MinLengthCheck
+                extends Check<StickContext>
+        {
+
+            protected MinLengthCheck ()
+            {
+                super(
+                        "Length",
+                        "Check that stick is long enough",
+                        minLengthLow, // Intermediate value
+                        minLengthHigh, // Intermediate value
+                        true,
+                        TOO_SHORT);
+            }
+
+            // Retrieve the length data
+            @Override
+            protected double getValue (StickContext context)
+            {
+                Filament stick = context.stick;
+
+                return specific.pixelsToFrac(stick.getLength(HORIZONTAL));
+            }
+        }
+
+        private class MinThicknessCheck
+                extends Check<StickContext>
+        {
+
+            protected MinThicknessCheck ()
+            {
+                super(
+                        "MinTh.",
+                        "Check that stick is thick enough",
+                        Constant.Double.ZERO,
+                        constants.minThicknessHigh,
+                        true,
+                        TOO_THIN);
+            }
+
+            // Retrieve the thickness data
+            @Override
+            protected double getValue (StickContext context)
+            {
+                Filament stick = context.stick;
+
+                return largeScale.pixelsToFrac(stick.getMeanThickness(HORIZONTAL));
+            }
+        }
+
+        private class RightPitchCheck
+                extends Check<StickContext>
+        {
+
+            protected RightPitchCheck ()
+            {
+                super(
+                        "RPitch",
+                        "Check that right ordinate is close to theoretical value",
+                        Constant.Double.ZERO,
+                        constants.ledgerMarginY,
+                        false,
+                        TOO_SHIFTED);
+            }
+
+            @Override
+            protected double getValue (StickContext context)
+            {
+                Filament stick = context.stick;
+                double yTarget = context.yTarget;
+                double y = stick.getStopPoint().getY();
+
+                return specific.pixelsToFrac(Math.abs(y - yTarget));
+            }
+        }
+
+        private class StraightCheck
+                extends Check<StickContext>
+        {
+
+            protected StraightCheck ()
+            {
+                super(
+                        "Straight",
+                        "Check that stick is rather straight",
+                        Constant.Double.ZERO,
+                        constants.maxDistanceHigh,
+                        false,
+                        TOO_BENDED);
+            }
+
+            @Override
+            protected double getValue (StickContext context)
+            {
+                StraightFilament stick = context.stick;
+
+                return largeScale.pixelsToFrac(stick.getMeanDistance());
+            }
+        }
+    }
+
+    //--------//
+    // Suites //
+    //--------//
+    /**
+     * Management of check suites, based on staff interline.
+     */
+    private class Suites
+    {
+
+        final Map<Integer, LedgerSuite> map = new HashMap<>();
+
+        Suites (Scale sheetScale)
+        {
+            final Integer large = sheetScale.getInterline();
+            map.put(large, new LedgerSuite(sheetScale.getInterlineScale()));
+
+            final Integer small = sheetScale.getSmallInterline();
+
+            if (small != null) {
+                map.put(small, new LedgerSuite(sheetScale.getSmallInterlineScale()));
+            }
+        }
+
+        LedgerSuite getSuite (int interline)
+        {
+            return map.get(interline);
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
@@ -740,18 +992,15 @@ public class LedgersBuilder
     private static class LedgerCheckBoard
             extends CheckBoard<StickContext>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Sheet sheet;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public LedgerCheckBoard (Sheet sheet)
+        LedgerCheckBoard (Sheet sheet)
         {
             super("LedgerCheck", null, sheet.getFilamentIndex().getEntityService(), eventClasses);
             this.sheet = sheet;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void onEvent (UserEvent event)
         {
@@ -766,9 +1015,8 @@ public class LedgersBuilder
                     final Filament fil = listEvent.getEntity();
 
                     // Make sure we have a rather horizontal stick
-                    if ((fil != null)
-                        && (fil instanceof StraightFilament)
-                        && (Math.abs(fil.getSlope()) <= constants.maxSlopeForCheck.getValue())) {
+                    if ((fil != null) && (fil instanceof StraightFilament) && (Math.abs(
+                            fil.getSlope()) <= constants.maxSlopeForCheck.getValue())) {
                         // Use the closest staff
                         Point center = fil.getCenter();
                         StaffManager mgr = sheet.getStaffManager();
@@ -781,7 +1029,7 @@ public class LedgersBuilder
                         // Instead, we use an index value based on distance to staff
                         int pitch = (int) Math.rint(staff.pitchPositionOf(center));
                         int index = (pitch / 2) - (2 * Integer.signum(pitch));
-                        Wrapper<LedgerInter> p = new Wrapper<LedgerInter>(null);
+                        Wrapper<LedgerInter> p = new Wrapper<>(null);
                         Double yRef = builder.getYReference(staff, index, fil, p);
 
                         if (yRef != null) {
@@ -800,265 +1048,11 @@ public class LedgersBuilder
         }
     }
 
-    //-------------//
-    // LedgerSuite //
-    //-------------//
-    /**
-     * A suite of checks, with scaling that may depend on specific staff interline.
-     */
-    private class LedgerSuite
-            extends CheckSuite<StickContext>
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /**
-         * Staff 'specific' interline scale.
-         * NOTA: we also can use 'largeScale' and 'scale' where applicable.
-         */
-        private final InterlineScale specific;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Create a check suite.
-         */
-        public LedgerSuite (InterlineScale interlineScale)
-        {
-            super("Ledger");
-            this.specific = interlineScale;
-
-            add(0.5, new MinThicknessCheck());
-            add(0, new MaxThicknessCheck());
-            add(4, new MinLengthCheck());
-            add(2, new ConvexityCheck());
-            add(1, new StraightCheck());
-            add(0.5, new LeftPitchCheck());
-            add(0.5, new RightPitchCheck());
-        }
-
-        //~ Inner Classes --------------------------------------------------------------------------
-        private class ConvexityCheck
-                extends Check<StickContext>
-        {
-            //~ Constructors -----------------------------------------------------------------------
-
-            public ConvexityCheck ()
-            {
-                super(
-                        "Convex",
-                        "Check number of convex stick ends",
-                        constants.convexityLow,
-                        Constant.Double.TWO,
-                        true,
-                        TOO_CONCAVE);
-            }
-
-            //~ Methods ----------------------------------------------------------------------------
-            @Override
-            protected double getValue (StickContext context)
-            {
-                ByteProcessor pixelFilter = sheet.getPicture().getSource(
-                        Picture.SourceKey.NO_STAFF);
-
-                Filament stick = context.stick;
-                Rectangle box = stick.getBounds();
-                int convexities = 0;
-
-                // On each end of stick, we check that pixels just above and just below are white,
-                // so that stick slightly stands out.
-                // We use the stick bounds, regardless of the precise geometry inside.
-                //
-                //  X                                                         X
-                //  +---------------------------------------------------------+
-                //  |                                                         |
-                //  |                                                         |
-                //  +---------------------------------------------------------+
-                //  X                                                         X
-                //
-                for (HorizontalSide hSide : HorizontalSide.values()) {
-                    int x = (hSide == LEFT) ? box.x : ((box.x + box.width) - 1);
-                    boolean topFore = pixelFilter.get(x, box.y - 1) == 0;
-                    boolean bottomFore = pixelFilter.get(x, box.y + box.height) == 0;
-                    boolean isConvex = !(topFore || bottomFore);
-
-                    if (isConvex) {
-                        convexities++;
-                    }
-                }
-
-                return convexities;
-            }
-        }
-
-        private class LeftPitchCheck
-                extends Check<StickContext>
-        {
-            //~ Constructors -----------------------------------------------------------------------
-
-            protected LeftPitchCheck ()
-            {
-                super(
-                        "LPitch",
-                        "Check that left ordinate is close to theoretical value",
-                        Constant.Double.ZERO,
-                        constants.ledgerMarginY,
-                        false,
-                        TOO_SHIFTED);
-            }
-
-            //~ Methods ----------------------------------------------------------------------------
-            @Override
-            protected double getValue (StickContext context)
-            {
-                Filament stick = context.stick;
-                double yTarget = context.yTarget;
-                double y = stick.getStartPoint().getY();
-
-                return specific.pixelsToFrac(Math.abs(y - yTarget));
-            }
-        }
-
-        private class MaxThicknessCheck
-                extends Check<StickContext>
-        {
-            //~ Constructors -----------------------------------------------------------------------
-
-            protected MaxThicknessCheck ()
-            {
-                super(
-                        "MaxTh.",
-                        "Check that stick is not too thick",
-                        constants.maxThicknessLow,
-                        constants.maxThicknessHigh,
-                        false,
-                        TOO_THICK);
-            }
-
-            //~ Methods ----------------------------------------------------------------------------
-            // Retrieve the thickness data
-            @Override
-            protected double getValue (StickContext context)
-            {
-                Filament stick = context.stick;
-
-                return scale.pixelsToLineFrac(stick.getMeanThickness(HORIZONTAL));
-            }
-        }
-
-        private class MinLengthCheck
-                extends Check<StickContext>
-        {
-            //~ Constructors -----------------------------------------------------------------------
-
-            protected MinLengthCheck ()
-            {
-                super(
-                        "Length",
-                        "Check that stick is long enough",
-                        minLengthLow, // Intermediate value
-                        minLengthHigh, // Intermediate value
-                        true,
-                        TOO_SHORT);
-            }
-
-            //~ Methods ----------------------------------------------------------------------------
-            // Retrieve the length data
-            @Override
-            protected double getValue (StickContext context)
-            {
-                Filament stick = context.stick;
-
-                return specific.pixelsToFrac(stick.getLength(HORIZONTAL));
-            }
-        }
-
-        private class MinThicknessCheck
-                extends Check<StickContext>
-        {
-            //~ Constructors -----------------------------------------------------------------------
-
-            protected MinThicknessCheck ()
-            {
-                super(
-                        "MinTh.",
-                        "Check that stick is thick enough",
-                        Constant.Double.ZERO,
-                        constants.minThicknessHigh,
-                        true,
-                        TOO_THIN);
-            }
-
-            //~ Methods ----------------------------------------------------------------------------
-            // Retrieve the thickness data
-            @Override
-            protected double getValue (StickContext context)
-            {
-                Filament stick = context.stick;
-
-                return largeScale.pixelsToFrac(stick.getMeanThickness(HORIZONTAL));
-            }
-        }
-
-        private class RightPitchCheck
-                extends Check<StickContext>
-        {
-            //~ Constructors -----------------------------------------------------------------------
-
-            protected RightPitchCheck ()
-            {
-                super(
-                        "RPitch",
-                        "Check that right ordinate is close to theoretical value",
-                        Constant.Double.ZERO,
-                        constants.ledgerMarginY,
-                        false,
-                        TOO_SHIFTED);
-            }
-
-            //~ Methods ----------------------------------------------------------------------------
-            @Override
-            protected double getValue (StickContext context)
-            {
-                Filament stick = context.stick;
-                double yTarget = context.yTarget;
-                double y = stick.getStopPoint().getY();
-
-                return specific.pixelsToFrac(Math.abs(y - yTarget));
-            }
-        }
-
-        private class StraightCheck
-                extends Check<StickContext>
-        {
-            //~ Constructors -----------------------------------------------------------------------
-
-            protected StraightCheck ()
-            {
-                super(
-                        "Straight",
-                        "Check that stick is rather straight",
-                        Constant.Double.ZERO,
-                        constants.maxDistanceHigh,
-                        false,
-                        TOO_BENDED);
-            }
-
-            //~ Methods ----------------------------------------------------------------------------
-            @Override
-            protected double getValue (StickContext context)
-            {
-                StraightFilament stick = context.stick;
-
-                return largeScale.pixelsToFrac(stick.getMeanDistance());
-            }
-        }
-    }
-
     //--------------//
     // StickContext //
     //--------------//
     private static class StickContext
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** The stick being checked. */
         final StraightFilament stick;
@@ -1066,15 +1060,13 @@ public class LedgersBuilder
         /** Target ordinate. */
         final double yTarget;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public StickContext (StraightFilament stick,
-                             double yTarget)
+        StickContext (StraightFilament stick,
+                      double yTarget)
         {
             this.stick = stick;
             this.yTarget = yTarget;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -1082,35 +1074,4 @@ public class LedgersBuilder
         }
     }
 
-    //--------//
-    // Suites //
-    //--------//
-    /**
-     * Management of check suites, based on staff interline.
-     */
-    private class Suites
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final Map<Integer, LedgerSuite> map = new HashMap<Integer, LedgerSuite>();
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Suites (Scale sheetScale)
-        {
-            final Integer large = sheetScale.getInterline();
-            map.put(large, new LedgerSuite(sheetScale.getInterlineScale()));
-
-            final Integer small = sheetScale.getSmallInterline();
-
-            if (small != null) {
-                map.put(small, new LedgerSuite(sheetScale.getSmallInterlineScale()));
-            }
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        LedgerSuite getSuite (int interline)
-        {
-            return map.get(interline);
-        }
-    }
 }

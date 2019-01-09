@@ -38,11 +38,9 @@ import java.util.ArrayList;
  */
 public class AnnotationJsonParser
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AnnotationJsonParser.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // parse //
     //-------//

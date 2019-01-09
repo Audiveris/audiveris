@@ -21,14 +21,15 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import java.awt.Rectangle;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.Relation;
-
-import javax.xml.bind.annotation.XmlRootElement;
 import org.audiveris.omrdataset.api.OmrShape;
+
+import java.awt.Rectangle;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code PedalInter} represents a pedal (start) or pedal up (stop) event
@@ -39,7 +40,6 @@ import org.audiveris.omrdataset.api.OmrShape;
 public class PedalInter
         extends AbstractDirectionInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code PedalInter} object.
@@ -79,7 +79,6 @@ public class PedalInter
         super(null, null, null, 0);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -108,5 +107,29 @@ public class PedalInter
         }
 
         return null;
+    }
+
+    //----------//
+    // getStaff //
+    //----------//
+    @Override
+    public Staff getStaff ()
+    {
+        if (staff == null) {
+            if (sig != null) {
+                staff = sig.getSystem().getStaffAtOrAbove(getCenter());
+            }
+        }
+
+        return staff;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
     }
 }

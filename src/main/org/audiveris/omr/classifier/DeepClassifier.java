@@ -69,7 +69,6 @@ import java.util.List;
 public class DeepClassifier
         extends AbstractClassifier<MultiLayerNetwork>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -81,15 +80,12 @@ public class DeepClassifier
     /** Classifier file name. */
     public static final String FILE_NAME = "deep-classifier.zip";
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** The underlying convolutional neural network. */
     private MultiLayerNetwork model;
 
     /** Boolean to trigger stopping. */
     protected volatile boolean stopping = false;
 
-    //~ Constructors -------------------------------------------------------------------------------
     private DeepClassifier ()
     {
         descriptor = new ImgGlyphDescriptor();
@@ -102,7 +98,6 @@ public class DeepClassifier
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -162,7 +157,7 @@ public class DeepClassifier
     // addListener //
     //-------------//
     @Override
-    public void addListener (IterationListener listener)
+    public void addListener (TrainingMonitor listener)
     {
         if (listener != null) {
             Collection<IterationListener> listeners = model.getListeners();
@@ -221,8 +216,7 @@ public class DeepClassifier
     //----------------//
     // removeListener //
     //----------------//
-    @Override
-    public void removeListener (IterationListener listener)
+    public void removeListener (TrainingMonitor listener)
     {
         if (listener != null) {
             Collection<IterationListener> listeners = model.getListeners();
@@ -365,10 +359,12 @@ public class DeepClassifier
         }
 
         // Check input numbers for model
-        final org.deeplearning4j.nn.layers.convolution.ConvolutionLayer inputLayer = (org.deeplearning4j.nn.layers.convolution.ConvolutionLayer) model.getLayer(
-                0);
-        final org.deeplearning4j.nn.conf.layers.ConvolutionLayer confInputLayer = (org.deeplearning4j.nn.conf.layers.ConvolutionLayer) inputLayer.conf()
-                .getLayer();
+        final org.deeplearning4j.nn.layers.convolution.ConvolutionLayer inputLayer
+                = (org.deeplearning4j.nn.layers.convolution.ConvolutionLayer) model.getLayer(
+                        0);
+        final org.deeplearning4j.nn.conf.layers.ConvolutionLayer confInputLayer
+                = (org.deeplearning4j.nn.conf.layers.ConvolutionLayer) inputLayer.conf()
+                        .getLayer();
         final int modelIn = confInputLayer.getNIn();
 
         if (modelIn != 1) {
@@ -378,9 +374,11 @@ public class DeepClassifier
         }
 
         // Check output numbers for model
-        final org.deeplearning4j.nn.layers.OutputLayer outputLayer = (org.deeplearning4j.nn.layers.OutputLayer) model.getOutputLayer();
-        final org.deeplearning4j.nn.conf.layers.OutputLayer confOutputLayer = (org.deeplearning4j.nn.conf.layers.OutputLayer) outputLayer.conf()
-                .getLayer();
+        final org.deeplearning4j.nn.layers.OutputLayer outputLayer
+                = (org.deeplearning4j.nn.layers.OutputLayer) model.getOutputLayer();
+        final org.deeplearning4j.nn.conf.layers.OutputLayer confOutputLayer
+                = (org.deeplearning4j.nn.conf.layers.OutputLayer) outputLayer.conf()
+                        .getLayer();
         final int modelOut = confOutputLayer.getNOut();
 
         if (modelOut != SHAPE_COUNT) {
@@ -490,7 +488,8 @@ public class DeepClassifier
                                 .nOut(SHAPE_COUNT) //
                                 .activation(Activation.SOFTMAX) //
                                 .build()) //
-                .setInputType(InputType.convolutionalFlat(ScaledBuffer.HEIGHT, ScaledBuffer.WIDTH, 1));
+                .setInputType(InputType
+                        .convolutionalFlat(ScaledBuffer.HEIGHT, ScaledBuffer.WIDTH, 1));
 
         MultiLayerConfiguration conf = builder.build();
         model = new MultiLayerNetwork(conf);
@@ -512,14 +511,12 @@ public class DeepClassifier
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio learningRate = new Constant.Ratio(0.002, "Learning Rate");
 

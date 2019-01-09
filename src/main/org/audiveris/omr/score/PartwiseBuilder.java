@@ -37,6 +37,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
@@ -186,6 +187,7 @@ import java.awt.Rectangle;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -214,7 +216,6 @@ import javax.xml.bind.JAXBException;
  */
 public class PartwiseBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -250,7 +251,6 @@ public class PartwiseBuilder
     /** Should be 6, but is 12 to cope with slurs not closed for lack of time slot. */
     private static final int MAX_SLUR_NUMBER = 12;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The ScorePartwise instance to be populated. */
     private final ScorePartwise scorePartwise = new ScorePartwise();
 
@@ -267,15 +267,14 @@ public class PartwiseBuilder
     private final IsFirst isFirst = new IsFirst();
 
     /** Map of Slur numbers, reset for every LogicalPart. */
-    private final Map<SlurInter, Integer> slurNumbers = new HashMap<SlurInter, Integer>();
+    private final Map<SlurInter, Integer> slurNumbers = new HashMap<>();
 
     /** Map of Tuplet numbers, reset for every Measure. */
-    private final Map<TupletInter, Integer> tupletNumbers = new HashMap<TupletInter, Integer>();
+    private final Map<TupletInter, Integer> tupletNumbers = new HashMap<>();
 
     /** Factory for ProxyMusic entities. */
     private final ObjectFactory factory = new ObjectFactory();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new PartwiseBuilder object, on a related score instance.
      *
@@ -284,74 +283,13 @@ public class PartwiseBuilder
      * @throws ExecutionException   if a checked exception was thrown
      */
     private PartwiseBuilder (Score score)
-            throws InterruptedException, ExecutionException
+            throws InterruptedException,
+                   ExecutionException
     {
         // Make sure the JAXB context is ready
         loading.get();
 
         this.score = score;
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //-------//
-    // build //
-    //-------//
-    /**
-     * Visit the whole score tree and build the corresponding ScorePartwise.
-     *
-     * @param score the score to export (cannot be null)
-     * @return the populated ScorePartwise
-     * @throws InterruptedException if the thread has been interrupted
-     * @throws ExecutionException   if a checked exception was thrown
-     */
-    public static ScorePartwise build (Score score)
-            throws InterruptedException, ExecutionException
-    {
-        Objects.requireNonNull(score, "Trying to export a null score");
-
-        final PartwiseBuilder builder = new PartwiseBuilder(score);
-
-        builder.processScore();
-
-        return builder.scorePartwise;
-    }
-
-    //---------//
-    // preload //
-    //---------//
-    /**
-     * Empty static method, just to trigger class elaboration (and thus JAXB context).
-     */
-    public static void preload ()
-    {
-    }
-
-    //----------//
-    // areEqual //
-    //----------//
-    private static boolean areEqual (Key left,
-                                     Key right)
-    {
-        return left.getFifths().equals(right.getFifths());
-    }
-
-    //----------//
-    // areEqual //
-    //----------//
-    /**
-     * Check whether the two Clef instances are equal.
-     *
-     * @param left  one clef
-     * @param right another clef
-     * @return true if equal
-     */
-    private static boolean areEqual (Clef left,
-                                     Clef right)
-    {
-        return Objects.equals(left.getNumber(), right.getNumber())
-               && Objects.equals(left.getSign(), right.getSign())
-               && Objects.equals(left.getLine(), right.getLine())
-               && Objects.equals(left.getClefOctaveChange(), right.getClefOctaveChange());
     }
 
     //---------//
@@ -493,7 +431,8 @@ public class PartwiseBuilder
         PartName partName = factory.createPartName();
         pmScorePart.setPartName(partName);
         partName.setValue(
-                (logicalPart.getName() != null) ? logicalPart.getName() : logicalPart.getDefaultName());
+                (logicalPart.getName() != null) ? logicalPart.getName()
+                : logicalPart.getDefaultName());
 
         // Score instrument
         Integer midiProgram = logicalPart.getMidiProgram();
@@ -607,8 +546,8 @@ public class PartwiseBuilder
         // Browse the current list of measures backwards within current part
         List<ScorePartwise.Part.Measure> measures = current.pmPart.getMeasure();
 
-        for (ListIterator<ScorePartwise.Part.Measure> it = measures.listIterator(measures.size());
-                it.hasPrevious();) {
+        for (ListIterator<ScorePartwise.Part.Measure> it = measures.listIterator(
+                measures.size()); it.hasPrevious();) {
             ScorePartwise.Part.Measure pmMeasure = it.previous();
 
             for (Object obj : pmMeasure.getNoteOrBackupOrForward()) {
@@ -624,33 +563,6 @@ public class PartwiseBuilder
         }
 
         return null; // No key found
-    }
-
-    //----------//
-    // getGrace //
-    //----------//
-    /**
-     * Report the grace chord, if any, which precedes the provided head-chord.
-     *
-     * @param chord the standard chord to check
-     * @return the linked grace chord if any
-     */
-    private SmallChordInter getGrace (HeadChordInter chord)
-    {
-        final SIGraph sig = chord.getSig();
-
-        for (Inter interNote : chord.getNotes()) {
-            for (Relation rel : sig.getRelations(interNote, SlurHeadRelation.class)) {
-                SlurInter slur = (SlurInter) sig.getOppositeInter(interNote, rel);
-                HeadInter head = slur.getHead(HorizontalSide.LEFT);
-
-                if ((head != null) && head.getShape().isSmall()) {
-                    return (SmallChordInter) head.getChord();
-                }
-            }
-        }
-
-        return null;
     }
 
     //--------------//
@@ -800,7 +712,11 @@ public class PartwiseBuilder
             try {
                 Method method = classe.getMethod("setStaff", BigInteger.class);
                 method.invoke(obj, new BigInteger("" + (1 + staff.getIndexInPart())));
-            } catch (Exception ex) {
+            } catch (IllegalAccessException |
+                     IllegalArgumentException |
+                     NoSuchMethodException |
+                     SecurityException |
+                     InvocationTargetException ex) {
                 ex.printStackTrace();
                 logger.error("Could not setStaff for element {}", classe);
             }
@@ -822,8 +738,8 @@ public class PartwiseBuilder
         // Browse the  current list of measures backwards
         List<ScorePartwise.Part.Measure> measures = current.pmPart.getMeasure();
 
-        for (ListIterator<ScorePartwise.Part.Measure> mit = measures.listIterator(measures.size());
-                mit.hasPrevious();) {
+        for (ListIterator<ScorePartwise.Part.Measure> mit = measures.listIterator(
+                measures.size()); mit.hasPrevious();) {
             ScorePartwise.Part.Measure pmMeasure = mit.previous();
 
             // Look backwards in measure items, checking staff
@@ -911,7 +827,11 @@ public class PartwiseBuilder
 
             // Include in Articulations
             getArticulations().getAccentOrStrongAccentOrStaccato().add(element);
-        } catch (Exception ex) {
+        } catch (IllegalAccessException |
+                 IllegalArgumentException |
+                 NoSuchMethodException |
+                 SecurityException |
+                 InvocationTargetException ex) {
             logger.warn("Error visiting " + articulation, ex);
         }
     }
@@ -943,8 +863,7 @@ public class PartwiseBuilder
             final EndingInter ending = partBarline.getEnding(
                     (location == RightLeftMiddle.RIGHT) ? RIGHT : LEFT);
             final String endingValue = (ending != null) ? ending.getValue() : null;
-            String endingNumber = (ending != null) ? ending.getExportedNumber()
-                    : null;
+            String endingNumber = (ending != null) ? ending.getExportedNumber() : null;
 
             if (endingNumber == null) {
                 endingNumber = "99"; // Dummy integer value to mean: unknown
@@ -958,13 +877,15 @@ public class PartwiseBuilder
             needed |= (partBarline == current.measure.getLeftPartBarline());
             // On left side, with stuff (left repeat, left ending):
             needed |= ((location == RightLeftMiddle.LEFT)
-                       && (stack.isRepeat(LEFT) || (ending != null)));
+                               && (stack.isRepeat(LEFT) || (ending != null)));
             // Specific barline on middle location:
             needed |= (location == RightLeftMiddle.MIDDLE);
             // On right side, but with stuff (right repeat, right ending, fermata) or non regular:
             needed |= ((location == RightLeftMiddle.RIGHT)
-                       && (stack.isRepeat(RIGHT) || (ending != null) || !fermatas.isEmpty()
-                           || (style != PartBarline.Style.REGULAR)));
+                               && (stack.isRepeat(RIGHT)
+                                           || (ending != null)
+                                           || !fermatas.isEmpty()
+                                           || (style != PartBarline.Style.REGULAR)));
 
             if (needed) {
                 try {
@@ -1150,7 +1071,8 @@ public class PartwiseBuilder
 
             // Placement
             direction.setPlacement(
-                    (location.y < current.note.getCenter().y) ? AboveBelow.ABOVE : AboveBelow.BELOW);
+                    (location.y < current.note.getCenter().y) ? AboveBelow.ABOVE
+                    : AboveBelow.BELOW);
 
             // default-y
             pmWords.setDefaultY(yOf(location, staff));
@@ -1170,7 +1092,6 @@ public class PartwiseBuilder
         }
     }
 
-    //
     //    //------------------//
     //    // processChordName //
     //    //------------------//
@@ -1366,9 +1287,9 @@ public class PartwiseBuilder
 
             // Everything is now OK
             if (pmBarline != null) {
-                pmBarline.getFermata().add(pmFermata); // Add to note
+                pmBarline.getFermata().add(pmFermata); // Add to barline
             } else {
-                getNotations().getTiedOrSlurOrTuplet().add(pmFermata); // Add to barline
+                getNotations().getTiedOrSlurOrTuplet().add(pmFermata); // Add to note
             }
         } catch (Exception ex) {
             logger.warn("Error visiting " + fermata, ex);
@@ -1660,9 +1581,8 @@ public class PartwiseBuilder
             // Divisions?
             if (isPageFirstMeasure) {
                 try {
-                    getAttributes()
-                            .setDivisions(
-                                    new BigDecimal(current.page.simpleDurationOf(QUARTER_DURATION)));
+                    getAttributes().setDivisions(
+                            new BigDecimal(current.page.simpleDurationOf(QUARTER_DURATION)));
                 } catch (Exception ex) {
                     if (current.page.getDurationDivisor() == null) {
                         logger.warn(
@@ -1746,8 +1666,7 @@ public class PartwiseBuilder
                     for (Slot slot : stack.getSlots()) {
                         Voice.SlotVoice info = voice.getSlotInfo(slot);
 
-                        if ((info != null)
-                            && // Skip free slots
+                        if ((info != null) && // Skip free slots
                                 (info.status == Voice.Status.BEGIN)) {
                             AbstractChordInter chord = info.chord;
                             clefIters.push(slot.getXOffset(), chord.getTopStaff());
@@ -1760,12 +1679,21 @@ public class PartwiseBuilder
                                 timeCounter = timeOffset;
                             }
 
-                            // Grace note before this chord?
+                            // Grace chord(s) before this chord?
                             if (chord instanceof HeadChordInter) {
-                                SmallChordInter small = getGrace((HeadChordInter) chord);
+                                HeadChordInter headChord = (HeadChordInter) chord;
+                                SmallChordInter small = headChord.getGraceChord();
 
                                 if (small != null) {
-                                    processChord(small);
+                                    BeamGroup group = small.getBeamGroup();
+
+                                    if (group != null) {
+                                        for (AbstractChordInter ch : group.getChords()) {
+                                            processChord(ch);
+                                        }
+                                    } else {
+                                        processChord(small);
+                                    }
                                 }
                             }
 
@@ -1921,7 +1849,8 @@ public class PartwiseBuilder
 
                     if (stem != null) {
                         for (Relation rel : sig.getRelations(stem, FlagStemRelation.class)) {
-                            if (Shape.SMALL_FLAG_SLASH == sig.getOppositeInter(stem, rel).getShape()) {
+                            if (Shape.SMALL_FLAG_SLASH == sig.getOppositeInter(stem, rel)
+                                    .getShape()) {
                                 grace.setSlash(YesNo.YES);
 
                                 break;
@@ -1939,7 +1868,7 @@ public class PartwiseBuilder
                 HeadInter head = (HeadInter) note;
                 Key key = current.keys.get(staff.getIndexInPart());
                 Integer fifths = (key != null) ? key.getFifths().intValue() : null;
-                int alter = head.getAlter(fifths);
+                int alter = head.getAlteration(fifths);
 
                 if (alter != 0) {
                     pitch.setAlter(new BigDecimal(alter));
@@ -1976,7 +1905,8 @@ public class PartwiseBuilder
                 if (isFirstInChord) {
                     List<AbstractChordInter> embraced = tuplet.getChords();
 
-                    if ((embraced.get(0) == chord) || (embraced.get(embraced.size() - 1) == chord)) {
+                    if ((embraced.get(0) == chord) || (embraced.get(
+                            embraced.size() - 1) == chord)) {
                         processTuplet(tuplet);
                     }
                 }
@@ -2003,7 +1933,13 @@ public class PartwiseBuilder
             }
 
             // Voice
-            current.pmNote.setVoice("" + chord.getVoice().getId());
+            Voice voice = chord.getVoice();
+
+            if (voice != null) {
+                current.pmNote.setVoice("" + voice.getId());
+            } else {
+                logger.warn("No voice for {}", chord);
+            }
 
             // Type
             if (!current.measure.isDummy()) {
@@ -2016,7 +1952,7 @@ public class PartwiseBuilder
 
             // For specific mirrored note
             if (note.getMirror() != null) {
-                int fbn = note.getChord().getFlagsNumber() + note.getChord().getBeams().size();
+                int fbn = note.getChord().getBeamsOrFlagsNumber();
 
                 if ((fbn > 0) && (note.getShape() == Shape.NOTEHEAD_VOID)) {
                     // Indicate that the head should not be filled
@@ -2136,7 +2072,11 @@ public class PartwiseBuilder
             // Everything is OK
             // Include in ornaments
             getOrnaments().getTrillMarkOrTurnOrDelayedTurn().add(element);
-        } catch (Exception ex) {
+        } catch (IllegalAccessException |
+                 IllegalArgumentException |
+                 NoSuchMethodException |
+                 SecurityException |
+                 InvocationTargetException ex) {
             logger.warn("Error visiting " + ornament, ex);
         }
     }
@@ -2171,7 +2111,7 @@ public class PartwiseBuilder
         scorePartwise.setPartList(partList);
 
         // Allocate & initialize a ScorePart instance for each logical part
-        Map<LogicalPart, ScorePartwise.Part> partMap = new LinkedHashMap<LogicalPart, ScorePartwise.Part>();
+        Map<LogicalPart, ScorePartwise.Part> partMap = new LinkedHashMap<>();
 
         for (LogicalPart p : score.getLogicalParts()) {
             ScorePartwise.Part pmPart = createScorePart(p);
@@ -2230,7 +2170,8 @@ public class PartwiseBuilder
 
             // Placement
             direction.setPlacement(
-                    (refPoint.y < current.note.getCenter().y) ? AboveBelow.ABOVE : AboveBelow.BELOW);
+                    (refPoint.y < current.note.getCenter().y) ? AboveBelow.ABOVE
+                    : AboveBelow.BELOW);
 
             // Everything is OK
             directionType.setPedal(pmPedal);
@@ -2313,7 +2254,9 @@ public class PartwiseBuilder
                     // Assuming 300 DPI
                     scaling.setMillimeters(
                             new BigDecimal(
-                                    String.format("%.4f", (current.scale.getInterline() * 25.4 * 4) / 300)));
+                                    String.format(
+                                            "%.4f",
+                                            (current.scale.getInterline() * 25.4 * 4) / 300)));
                     scaling.setTenths(new BigDecimal(40));
 
                     // [Defaults]/PageLayout (using first page)
@@ -2790,8 +2733,6 @@ public class PartwiseBuilder
         }
     }
 
-    //- Utilities ----------------------------------------------------------------------------------
-    //
     //-------------//
     // setFontInfo //
     //-------------//
@@ -2855,28 +2796,66 @@ public class PartwiseBuilder
         return toTenths(staffTopY - point.getY());
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
+    //-------//
+    // build //
+    //-------//
+    /**
+     * Visit the whole score tree and build the corresponding ScorePartwise.
+     *
+     * @param score the score to export (cannot be null)
+     * @return the populated ScorePartwise
+     * @throws InterruptedException if the thread has been interrupted
+     * @throws ExecutionException   if a checked exception was thrown
+     */
+    public static ScorePartwise build (Score score)
+            throws InterruptedException,
+                   ExecutionException
     {
-        //~ Instance fields ------------------------------------------------------------------------
+        Objects.requireNonNull(score, "Trying to export a null score");
 
-        private final Constant.Integer pageHorizontalMargin = new Constant.Integer(
-                "tenths",
-                80,
-                "Page horizontal margin");
+        final PartwiseBuilder builder = new PartwiseBuilder(score);
 
-        private final Constant.Integer pageVerticalMargin = new Constant.Integer(
-                "tenths",
-                80,
-                "Page vertical margin");
+        builder.processScore();
 
-        private final Constant.Boolean avoidTupletBrackets = new Constant.Boolean(
-                false,
-                "Should we avoid brackets for all tuplets");
+        return builder.scorePartwise;
+    }
+
+    //---------//
+    // preload //
+    //---------//
+    /**
+     * Empty static method, just to trigger class elaboration (and thus JAXB context).
+     */
+    public static void preload ()
+    {
+    }
+
+    //----------//
+    // areEqual //
+    //----------//
+    private static boolean areEqual (Key left,
+                                     Key right)
+    {
+        return left.getFifths().equals(right.getFifths());
+    }
+
+    //----------//
+    // areEqual //
+    //----------//
+    /**
+     * Check whether the two Clef instances are equal.
+     *
+     * @param left  one clef
+     * @param right another clef
+     * @return true if equal
+     */
+    private static boolean areEqual (Clef left,
+                                     Clef right)
+    {
+        return Objects.equals(left.getNumber(), right.getNumber()) && Objects.equals(
+                left.getSign(),
+                right.getSign()) && Objects.equals(left.getLine(), right.getLine()) && Objects
+                .equals(left.getClefOctaveChange(), right.getClefOctaveChange());
     }
 
     //---------------//
@@ -2890,7 +2869,6 @@ public class PartwiseBuilder
      */
     private class ClefIterators
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Containing measure. */
         private final Measure measure;
@@ -2901,29 +2879,28 @@ public class PartwiseBuilder
         /** Per staff, iterator on Clefs sorted by abscissa. */
         private final Map<Staff, ListIterator<ClefInter>> iters;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public ClefIterators (Measure measure)
+        ClefIterators (Measure measure)
         {
             this.measure = measure;
 
             staves = measure.getPart().getStaves();
 
             // Temporary map: staff -> staff's clefs
-            Map<Staff, List<ClefInter>> map = new HashMap<Staff, List<ClefInter>>();
+            Map<Staff, List<ClefInter>> map = new HashMap<>();
 
             for (ClefInter clef : measure.getClefs()) {
                 Staff staff = clef.getStaff();
                 List<ClefInter> list = map.get(staff);
 
                 if (list == null) {
-                    map.put(staff, list = new ArrayList<ClefInter>());
+                    map.put(staff, list = new ArrayList<>());
                 }
 
                 list.add(clef);
             }
 
             // Populate iterators
-            iters = new LinkedHashMap<Staff, ListIterator<ClefInter>>();
+            iters = new LinkedHashMap<>();
 
             for (Map.Entry<Staff, List<ClefInter>> entry : map.entrySet()) {
                 List<ClefInter> list = entry.getValue(); // Already sorted by full center abscissa
@@ -2931,7 +2908,6 @@ public class PartwiseBuilder
             }
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Push as far as possible the relevant clefs iterators, according to the
          * current abscissa offset.
@@ -2956,7 +2932,7 @@ public class PartwiseBuilder
                             final ClefInter clef = it.next();
 
                             if (measure.isDummy() /// || measure.isTemporary()
-                                || (stack.getXOffset(clef.getCenter(), theStaff) <= xOffset)) {
+                                        || (stack.getXOffset(clef.getCenter(), theStaff) <= xOffset)) {
                                 // Consume this clef
                                 processClef(clef);
                             } else {
@@ -2977,124 +2953,6 @@ public class PartwiseBuilder
         }
     }
 
-    //---------//
-    // Current //
-    //---------//
-    /** Keep references of all current entities. */
-    private static class Current
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        // Score dependent
-        Work pmWork;
-
-        // Part dependent
-        LogicalPart logicalPart;
-
-        ScorePartwise.Part pmPart;
-
-        // Page dependent
-        Page page;
-
-        Scale scale;
-
-        // System dependent
-        SystemInfo system;
-
-        // Measure dependent
-        Measure measure;
-
-        ScorePartwise.Part.Measure pmMeasure;
-
-        final TreeMap<Integer, Key> keys = new TreeMap<Integer, Key>();
-
-        Voice voice;
-
-        Attributes pmAttributes;
-
-        // Note dependent
-        AbstractNoteInter note;
-
-        Note pmNote;
-
-        Notations pmNotations;
-
-        //~ Methods --------------------------------------------------------------------------------
-        // Cleanup at end of measure
-        void endMeasure ()
-        {
-            measure = null;
-            pmMeasure = null;
-            voice = null;
-            pmAttributes = null;
-
-            endVoice();
-        }
-
-        // Cleanup at end of note
-        void endNote ()
-        {
-            note = null;
-            pmNote = null;
-            pmNotations = null;
-        }
-
-        // Cleanup at end of voice
-        void endVoice ()
-        {
-            voice = null;
-            pmAttributes = null;
-
-            endNote();
-        }
-    }
-
-    //---------//
-    // IsFirst //
-    //---------//
-    /** Composite flag to help drive processing of any entity. */
-    private static class IsFirst
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** We are writing the first part of the score */
-        boolean part;
-
-        /** We are writing the first page of the score */
-        boolean page;
-
-        /** We are writing the first system in the current page */
-        boolean system;
-
-        /** We are writing the first measure in current system (in current logicalPart) */
-        boolean measure;
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public java.lang.String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            if (part) {
-                sb.append(" firstPart");
-            }
-
-            if (page) {
-                sb.append(" firstPage");
-            }
-
-            if (system) {
-                sb.append(" firstSystem");
-            }
-
-            if (measure) {
-                sb.append(" firstMeasure");
-            }
-
-            return sb.toString();
-        }
-    }
-
     //--------------//
     // MeasurePrint //
     //--------------//
@@ -3103,7 +2961,6 @@ public class PartwiseBuilder
      */
     private class MeasurePrint
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Measure measure;
 
@@ -3112,8 +2969,7 @@ public class PartwiseBuilder
         /** Needed to remove the element if not actually used. */
         private boolean used = false;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public MeasurePrint (Measure measure)
+        MeasurePrint (Measure measure)
         {
             this.measure = measure;
 
@@ -3123,7 +2979,6 @@ public class PartwiseBuilder
             current.pmMeasure.getNoteOrBackupOrForward().add(pmPrint);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public void process ()
         {
             populatePrint();
@@ -3165,7 +3020,8 @@ public class PartwiseBuilder
                 systemMargins.setRightMargin(
                         toTenths(
                                 current.page.getDimension().width - current.system.getLeft()
-                                - current.system.getWidth()).subtract(pageHorizontalMargin));
+                                        - current.system.getWidth()).subtract(
+                                pageHorizontalMargin));
 
                 if (isFirst.system) {
                     // TopSystemDistance
@@ -3197,13 +3053,15 @@ public class PartwiseBuilder
                             if (staffIndexInSystem > 0) {
                                 Staff staffAbove = system.getStaves().get(staffIndexInSystem - 1);
                                 staffLayout.setStaffDistance(
-                                        toTenths(staff.getLeftY(TOP) - staffAbove.getLeftY(BOTTOM)));
+                                        toTenths(
+                                                staff.getLeftY(TOP) - staffAbove.getLeftY(BOTTOM)));
                                 getPrint().getStaffLayout().add(staffLayout);
                             }
                         } catch (Exception ex) {
                             logger.warn(
                                     "Error exporting staff layout system#" + current.system.getId()
-                                    + " part#" + current.logicalPart.getId() + " staff#" + staff.getId(),
+                                            + " part#" + current.logicalPart.getId() + " staff#"
+                                            + staff.getId(),
                                     ex);
                         }
                     }
@@ -3231,4 +3089,141 @@ public class PartwiseBuilder
             }
         }
     }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer pageHorizontalMargin = new Constant.Integer(
+                "tenths",
+                80,
+                "Page horizontal margin");
+
+        private final Constant.Integer pageVerticalMargin = new Constant.Integer(
+                "tenths",
+                80,
+                "Page vertical margin");
+
+        private final Constant.Boolean avoidTupletBrackets = new Constant.Boolean(
+                false,
+                "Should we avoid brackets for all tuplets");
+    }
+
+    //---------//
+    // Current //
+    //---------//
+    /** Keep references of all current entities. */
+    private static class Current
+    {
+
+        // Score dependent
+        Work pmWork;
+
+        // Part dependent
+        LogicalPart logicalPart;
+
+        ScorePartwise.Part pmPart;
+
+        // Page dependent
+        Page page;
+
+        Scale scale;
+
+        // System dependent
+        SystemInfo system;
+
+        // Measure dependent
+        Measure measure;
+
+        ScorePartwise.Part.Measure pmMeasure;
+
+        final TreeMap<Integer, Key> keys = new TreeMap<>();
+
+        Voice voice;
+
+        Attributes pmAttributes;
+
+        // Note dependent
+        AbstractNoteInter note;
+
+        Note pmNote;
+
+        Notations pmNotations;
+
+        // Cleanup at end of measure
+        void endMeasure ()
+        {
+            measure = null;
+            pmMeasure = null;
+            voice = null;
+            pmAttributes = null;
+
+            endVoice();
+        }
+
+        // Cleanup at end of note
+        void endNote ()
+        {
+            note = null;
+            pmNote = null;
+            pmNotations = null;
+        }
+
+        // Cleanup at end of voice
+        void endVoice ()
+        {
+            voice = null;
+            pmAttributes = null;
+
+            endNote();
+        }
+    }
+
+    //---------//
+    // IsFirst //
+    //---------//
+    /** Composite flag to help drive processing of any entity. */
+    private static class IsFirst
+    {
+
+        /** We are writing the first part of the score */
+        boolean part;
+
+        /** We are writing the first page of the score */
+        boolean page;
+
+        /** We are writing the first system in the current page */
+        boolean system;
+
+        /** We are writing the first measure in current system (in current logicalPart) */
+        boolean measure;
+
+        @Override
+        public java.lang.String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (part) {
+                sb.append(" firstPart");
+            }
+
+            if (page) {
+                sb.append(" firstPage");
+            }
+
+            if (system) {
+                sb.append(" firstSystem");
+            }
+
+            if (measure) {
+                sb.append(" firstMeasure");
+            }
+
+            return sb.toString();
+        }
+    }
+
 }

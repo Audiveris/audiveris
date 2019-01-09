@@ -70,7 +70,6 @@ import java.util.Set;
  */
 public abstract class TimeBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -82,23 +81,6 @@ public abstract class TimeBuilder
     /** Possible shapes for top or bottom half of time signatures. */
     protected static final EnumSet<Shape> halfShapes = EnumSet.copyOf(ShapeSet.PartialTimes);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /**
-     * The different parts of a time signature.
-     */
-    public static enum TimeKind
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        /** Whole signature (common or cut or combo). */
-        WHOLE,
-        /** Upper half (numerator number). */
-        NUM,
-        /** Lower half (denominator number). */
-        DEN;
-    }
-
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Dedicated staff to analyze. */
     protected final Staff staff;
 
@@ -119,21 +101,20 @@ public abstract class TimeBuilder
     protected final Parameters params;
 
     /** whole candidates. (common or cut or combo like 6/8 ...) */
-    protected final List<Inter> wholes = new ArrayList<Inter>();
+    protected final List<Inter> wholes = new ArrayList<>();
 
     /** Top half candidates. (6/ ...) */
-    protected final List<Inter> nums = new ArrayList<Inter>();
+    protected final List<Inter> nums = new ArrayList<>();
 
     /** Bottom half candidates. (/8 ...) */
-    protected final List<Inter> dens = new ArrayList<Inter>();
+    protected final List<Inter> dens = new ArrayList<>();
 
     /** The time inter instance chosen for the staff. */
     protected AbstractTimeInter timeInter;
 
     /** All glyphs submitted to classifier. */
-    protected final Set<Glyph> glyphCandidates = new LinkedHashSet<Glyph>();
+    protected final Set<Glyph> glyphCandidates = new LinkedHashSet<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TimeBuilder} object.
      *
@@ -153,7 +134,6 @@ public abstract class TimeBuilder
         params = new Parameters(scale, staff.getSpecificInterline());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * This is called when we discover that a candidate is wrong,
      * so that all related data inserted in sig is removed.
@@ -223,7 +203,7 @@ public abstract class TimeBuilder
      */
     protected void discardOthers ()
     {
-        final Map<Shape, Glyph> compatibles = new EnumMap<Shape, Glyph>(Shape.class);
+        final Map<Shape, Glyph> compatibles = new EnumMap<>(Shape.class);
 
         if (timeInter instanceof TimeWholeInter) {
             // It's a whole sig: COMMON_TIME or CUT_TIME or combo
@@ -373,7 +353,19 @@ public abstract class TimeBuilder
         return !wholes.isEmpty() || !nums.isEmpty();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    /**
+     * The different parts of a time signature.
+     */
+    public static enum TimeKind
+    {
+        /** Whole signature (common or cut or combo). */
+        WHOLE,
+        /** Upper half (numerator number). */
+        NUM,
+        /** Lower half (denominator number). */
+        DEN;
+    }
+
     //------------//
     // Parameters //
     //------------//
@@ -383,7 +375,6 @@ public abstract class TimeBuilder
      */
     protected static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int maxEvalRank;
 
@@ -415,9 +406,12 @@ public abstract class TimeBuilder
 
         final int maxSpaceCumul;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale,
-                           int staffSpecific)
+        /**
+         * @param scale
+         * @param staffSpecific
+         */
+        Parameters (Scale scale,
+                    int staffSpecific)
         {
             maxEvalRank = constants.maxEvalRank.getValue();
 
@@ -447,10 +441,9 @@ public abstract class TimeBuilder
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Integer maxEvalRank = new Constant.Integer(
                 "none",

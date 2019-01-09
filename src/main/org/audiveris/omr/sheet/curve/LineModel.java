@@ -38,12 +38,10 @@ import java.util.List;
 public class LineModel
         implements Model
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Underlying line. */
     private final BasicLine line;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LineModel object.
      *
@@ -54,7 +52,6 @@ public class LineModel
         line = new BasicLine(points);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public int above ()
     {
@@ -111,6 +108,12 @@ public class LineModel
     }
 
     @Override
+    public void setDistance (double dist)
+    {
+        // void?
+    }
+
+    @Override
     public Point2D getEndVector (boolean reverse)
     {
         int dir = reverse ? (-1) : 1;
@@ -136,9 +139,4 @@ public class LineModel
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public void setDistance (double dist)
-    {
-        // void?
-    }
 }

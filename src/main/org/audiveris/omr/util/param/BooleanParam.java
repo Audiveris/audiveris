@@ -31,12 +31,13 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 public class BooleanParam
         extends Param<Boolean>
 {
-    //~ Inner Classes ------------------------------------------------------------------------------
 
+    /**
+     * JAXB adapter for BooleanParam type.
+     */
     public static class Adapter
             extends XmlAdapter<String, BooleanParam>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String marshal (BooleanParam val)

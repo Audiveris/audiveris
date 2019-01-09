@@ -35,7 +35,6 @@ import java.util.Comparator;
  */
 public abstract class PointUtil
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To compare points on abscissa. */
     public static final Comparator<Point> byAbscissa = new Comparator<Point>()
@@ -59,7 +58,13 @@ public abstract class PointUtil
         }
     };
 
-    //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * Not meant to be instantiated.
+     */
+    private PointUtil ()
+    {
+    }
+
     //----------//
     // addition //
     //----------//
@@ -243,6 +248,12 @@ public abstract class PointUtil
     //----------//
     // toString //
     //----------//
+    /**
+     * A toString() that can cope with null instance.
+     *
+     * @param p point instance
+     * @return string value
+     */
     public static String toString (Point p)
     {
         if (p == null) {
@@ -254,4 +265,5 @@ public abstract class PointUtil
 
         return sb.toString();
     }
+
 }

@@ -36,7 +36,6 @@ public class WeakGlyph
         extends WeakReference<Glyph>
         implements Entity, Comparable<WeakGlyph>
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code WeakGlyph} object.
@@ -48,7 +47,6 @@ public class WeakGlyph
         super(referent);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public int compareTo (WeakGlyph that)
     {
@@ -150,6 +148,16 @@ public class WeakGlyph
         return 0;
     }
 
+    @Override
+    public void setId (int id)
+    {
+        final Glyph glyph = get();
+
+        if (glyph != null) {
+            glyph.setId(id);
+        }
+    }
+
     //----------//
     // hashCode //
     //----------//
@@ -177,16 +185,6 @@ public class WeakGlyph
         }
 
         return false;
-    }
-
-    @Override
-    public void setId (int id)
-    {
-        final Glyph glyph = get();
-
-        if (glyph != null) {
-            glyph.setId(id);
-        }
     }
 
     @Override

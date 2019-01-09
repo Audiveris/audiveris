@@ -93,10 +93,8 @@ import java.util.List;
  */
 public abstract class AbstractStep
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractStep.class);
 
     /**
      * List of all non-abstract Inter classes sorted alphabetically.
@@ -155,7 +153,6 @@ public abstract class AbstractStep
             WedgeInter.class,
             WordInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AbstractStep} object.
      */
@@ -163,10 +160,15 @@ public abstract class AbstractStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // clearErrors //
     //-------------//
+    /**
+     * Clear the errors window in editor (No longer used).
+     *
+     * @param step  step concerned
+     * @param sheet related sheet
+     */
     public void clearErrors (Step step,
                              Sheet sheet)
     {
@@ -178,6 +180,12 @@ public abstract class AbstractStep
     //-----------//
     // displayUI //
     //-----------//
+    /**
+     * Update UI at step completion.
+     *
+     * @param step  step just completed
+     * @param sheet related sheet
+     */
     public void displayUI (Step step,
                            Sheet sheet)
     {

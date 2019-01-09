@@ -40,7 +40,6 @@ import java.util.TreeSet;
  */
 public abstract class Compounds
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * No meant to be instantiated.
@@ -49,7 +48,6 @@ public abstract class Compounds
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // byReverseLength //
     //-----------------//
@@ -192,7 +190,7 @@ public abstract class Compounds
      */
     public static Set<Section> sectionsOf (Collection<SectionCompound> compounds)
     {
-        Set<Section> sections = new TreeSet<Section>();
+        Set<Section> sections = new TreeSet<>();
 
         for (SectionCompound compound : compounds) {
             sections.addAll(compound.getMembers());

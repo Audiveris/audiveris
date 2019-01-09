@@ -50,12 +50,9 @@ public abstract class AbstractWeightedEntity
         extends AbstractEntity
         implements WeightedEntity
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final EnumSet<GlyphGroup> NO_GROUP = EnumSet.noneOf(GlyphGroup.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
@@ -70,7 +67,6 @@ public abstract class AbstractWeightedEntity
     /** Potential attachments. */
     protected AttachmentHolder attachments;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AbstractSymbol} object.
      */
@@ -78,7 +74,6 @@ public abstract class AbstractWeightedEntity
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void addAttachment (String id,
                                java.awt.Shape attachment)

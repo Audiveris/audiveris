@@ -32,7 +32,6 @@ import java.awt.geom.Point2D;
  */
 public abstract class CubicUtil
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Not meant to be instantiated.
@@ -41,7 +40,6 @@ public abstract class CubicUtil
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the point on the curve, located at t = 1-t = 0.5.
      * It splits the curve length equally.

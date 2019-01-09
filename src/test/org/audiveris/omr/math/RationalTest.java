@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.math;
 
-import org.audiveris.omr.math.Rational;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -31,7 +30,6 @@ import org.junit.Test;
  */
 public class RationalTest
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new RationalTest object.
@@ -40,7 +38,6 @@ public class RationalTest
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of abs method, of class Rational.
      */

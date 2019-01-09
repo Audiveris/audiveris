@@ -43,11 +43,9 @@ import java.awt.Rectangle;
  */
 public class KeySlice
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(KeySlice.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing Roi. */
     private final KeyRoi roi;
 
@@ -66,7 +64,6 @@ public class KeySlice
     /** If occupied by non-valid material. */
     private boolean stuffed;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code KeySlice} object.
      *
@@ -80,7 +77,9 @@ public class KeySlice
         this.roi = roi;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * Remove the alter in this slice.
+     */
     public void deleteAlter ()
     {
         if (alter != null) {
@@ -90,6 +89,8 @@ public class KeySlice
     }
 
     /**
+     * Report the slice alter
+     *
      * @return the alter, if any
      */
     public KeyAlterInter getAlter ()
@@ -98,73 +99,8 @@ public class KeySlice
     }
 
     /**
-     * @return the eval
-     */
-    public Evaluation getEval ()
-    {
-        return eval;
-    }
-
-    /**
-     * @return the glyph
-     */
-    public Glyph getGlyph ()
-    {
-        return glyph;
-    }
-
-    public int getId ()
-    {
-        return 1 + roi.indexOf(this);
-    }
-
-    /**
-     * @return a fixed-size description string (9 char)
-     */
-    public String getLabel ()
-    {
-        if (alter != null) {
-            return String.format(
-                    "%s%+1d %-5d",
-                    (alter.getShape() == Shape.FLAT) ? "b" : "#",
-                    alter.getIntegerPitch(),
-                    alter.getId());
-        } else if (stuffed) {
-            return "STUFFED  ";
-        } else {
-            return "NO_ALTER ";
-        }
-    }
-
-    /**
-     * @return the rectangle definition
-     */
-    public final Rectangle getRect ()
-    {
-        return new Rectangle(rect);
-    }
-
-    public final int getStart ()
-    {
-        return rect.x;
-    }
-
-    public final int getStop ()
-    {
-        return (rect.x + rect.width) - 1;
-    }
-
-    public final int getWidth ()
-    {
-        return rect.width;
-    }
-
-    public boolean isStuffed ()
-    {
-        return stuffed;
-    }
-
-    /**
+     * Set slice alter
+     *
      * @param alter the alter to set
      */
     public void setAlter (KeyAlterInter alter)
@@ -174,6 +110,18 @@ public class KeySlice
     }
 
     /**
+     * Report slice evaluation
+     *
+     * @return the eval
+     */
+    public Evaluation getEval ()
+    {
+        return eval;
+    }
+
+    /**
+     * Set slice evaluation
+     *
      * @param eval the eval to set
      */
     public void setEval (Evaluation eval)
@@ -182,11 +130,110 @@ public class KeySlice
     }
 
     /**
+     * Report slice glyph
+     *
+     * @return the glyph
+     */
+    public Glyph getGlyph ()
+    {
+        return glyph;
+    }
+
+    /**
+     * Set slice glyph
+     *
      * @param glyph the glyph to set
      */
     public void setGlyph (Glyph glyph)
     {
         this.glyph = glyph;
+    }
+
+    /**
+     * Report slice ID
+     *
+     * @return 1-based rank of slice within key
+     */
+    public int getId ()
+    {
+        return 1 + roi.indexOf(this);
+    }
+
+    /**
+     * Report a slice string description
+     *
+     * @return a fixed-size description string (9 char)
+     */
+    public String getLabel ()
+    {
+        if (alter != null) {
+            return String.format("%s%+1d %-5d", (alter.getShape() == Shape.FLAT) ? "b" : "#", alter
+                                 .getIntegerPitch(), alter.getId());
+        } else if (stuffed) {
+            return "STUFFED  ";
+        } else {
+            return "NO_ALTER ";
+        }
+    }
+
+    /**
+     * Report slice bounds
+     *
+     * @return the rectangle definition
+     */
+    public final Rectangle getRect ()
+    {
+        return new Rectangle(rect);
+    }
+
+    /**
+     * Define a new rectangle for this slice.
+     *
+     * @param rect the slice new rectangle
+     */
+    public void setRect (Rectangle rect)
+    {
+        this.rect = new Rectangle(rect);
+    }
+
+    /**
+     * Report slice starting abscissa
+     *
+     * @return the abscissa value on left side
+     */
+    public final int getStart ()
+    {
+        return rect.x;
+    }
+
+    /**
+     * Report slice ending abscissa
+     *
+     * @return the abscissa value of right side
+     */
+    public final int getStop ()
+    {
+        return (rect.x + rect.width) - 1;
+    }
+
+    /**
+     * Report slice width
+     *
+     * @return the slice width
+     */
+    public final int getWidth ()
+    {
+        return rect.width;
+    }
+
+    /**
+     * Tell whether slice is stuffed with some invalid material.
+     *
+     * @return true if so
+     */
+    public boolean isStuffed ()
+    {
+        return stuffed;
     }
 
     //--------------//
@@ -216,15 +263,8 @@ public class KeySlice
     }
 
     /**
-     * Define a new rectangle for this slice.
      *
-     * @param rect the slice new rectangle
      */
-    public void setRect (Rectangle rect)
-    {
-        this.rect = new Rectangle(rect);
-    }
-
     public void setStuffed ()
     {
         stuffed = true;

@@ -26,22 +26,15 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import org.audiveris.omr.classifier.Classifier;
-import org.audiveris.omr.classifier.DeepClassifier;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.SampleSource;
 import org.audiveris.omr.classifier.ui.Trainer.Task;
 import static org.audiveris.omr.classifier.ui.Trainer.Task.Activity.*;
 import org.audiveris.omr.glyph.Grades;
-import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.util.Panel;
-
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +42,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.event.ActionEvent;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -70,11 +62,9 @@ import javax.swing.JProgressBar;
 public class ValidationPanel
         implements Observer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ValidationPanel.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Swing component. */
     private final Panel component;
 
@@ -115,7 +105,7 @@ public class ValidationPanel
             "Number of samples incorrectly recognized");
 
     /** Collection of samples leading to false positives. */
-    private final List<Sample> falsePositives = new ArrayList<Sample>();
+    private final List<Sample> falsePositives = new ArrayList<>();
 
     /** User action to investigate on false positives. */
     private final FalsePositiveAction falsePositiveAction = new FalsePositiveAction();
@@ -126,7 +116,7 @@ public class ValidationPanel
             "Number of samples weakly recognized");
 
     /** Collection of samples not recognized (false negatives). */
-    private final List<Sample> weakPositives = new ArrayList<Sample>();
+    private final List<Sample> weakPositives = new ArrayList<>();
 
     /** User action to investigate on weak positives. */
     private final WeakPositiveAction weakPositiveAction = new WeakPositiveAction();
@@ -137,12 +127,11 @@ public class ValidationPanel
             "Number of samples weakly negative");
 
     /** Collection of samples weakly negatives. */
-    private final List<Sample> weakNegatives = new ArrayList<Sample>();
+    private final List<Sample> weakNegatives = new ArrayList<>();
 
     /** User action to investigate on weak negatives. */
     private final WeakNegativeAction weakNegativeAction = new WeakNegativeAction();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ValidationPanel object.
      *
@@ -170,7 +159,6 @@ public class ValidationPanel
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getComponent //
     //--------------//
@@ -347,50 +335,55 @@ public class ValidationPanel
         falsePositiveValue.setText(Integer.toString(falsePositives.size()));
         weakNegativeValue.setText(Integer.toString(weakNegatives.size()));
 
-        // Additional evaluation
-        if (task.classifier instanceof DeepClassifier) {
-            final DeepClassifier deepClassifier = (DeepClassifier) task.classifier;
-            final MultiLayerNetwork model = deepClassifier.getModel();
-            DataSet dataSet = deepClassifier.getRawDataSet(samples);
-            deepClassifier.normalize(dataSet.getFeatures());
-
-            final List<String> names = Arrays.asList(
-                    ShapeSet.getPhysicalShapeNames());
-            org.deeplearning4j.eval.Evaluation eval = new org.deeplearning4j.eval.Evaluation(names);
-            INDArray guesses = model.output(dataSet.getFeatureMatrix());
-            eval.eval(dataSet.getLabels(), guesses);
-            System.out.println(eval.stats(true));
-
-            logger.info(
-                    String.format(
-                            "Accuracy: %s Precision: %s Recall: %s F1 Score: %s",
-                            df.format(eval.accuracy()),
-                            df.format(eval.precision()),
-                            df.format(eval.recall()),
-                            df.format(eval.f1())));
-        }
+        //
+        //        // Additional evaluation
+        //        if (task.classifier instanceof DeepClassifier) {
+        //            final DeepClassifier deepClassifier = (DeepClassifier) task.classifier;
+        //            final MultiLayerNetwork model = deepClassifier.getModel();
+        //            DataSet dataSet = deepClassifier.getRawDataSet(samples);
+        //            deepClassifier.normalize(dataSet.getFeatures());
+        //
+        //            final List<String> names = Arrays.asList(
+        //                    ShapeSet.getPhysicalShapeNames());
+        //            org.deeplearning4j.eval.Evaluation eval = new org.deeplearning4j.eval.Evaluation(names);
+        //            INDArray guesses = model.output(dataSet.getFeatureMatrix());
+        //            eval.eval(dataSet.getLabels(), guesses);
+        //            System.out.println(eval.stats(true));
+        //
+        //            logger.info(
+        //                    String.format(
+        //                            "Accuracy: %s Precision: %s Recall: %s F1 Score: %s",
+        //                            df.format(eval.accuracy()),
+        //                            df.format(eval.precision()),
+        //                            df.format(eval.recall()),
+        //                            df.format(eval.f1())));
+        //        }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------------//
     // FalsePositiveAction //
     //---------------------//
     private class FalsePositiveAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public FalsePositiveAction ()
+        FalsePositiveAction ()
         {
             super("View");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
             SampleBrowser.getInstance().displayAll(falsePositives);
             SampleBrowser.getInstance().setVisible();
+        }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 
@@ -400,19 +393,16 @@ public class ValidationPanel
     private class ValidateAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public ValidateAction ()
+        ValidateAction ()
         {
             super("Test");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            executor.execute(
-                    new Runnable()
+            executor.execute(new Runnable()
             {
                 @Override
                 public void run ()
@@ -437,6 +427,13 @@ public class ValidationPanel
                 }
             });
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     //--------------------//
@@ -445,19 +442,24 @@ public class ValidationPanel
     private class WeakNegativeAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public WeakNegativeAction ()
+        WeakNegativeAction ()
         {
             super("View");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
             SampleBrowser.getInstance().displayAll(weakNegatives);
             SampleBrowser.getInstance().setVisible();
+        }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 
@@ -467,19 +469,24 @@ public class ValidationPanel
     private class WeakPositiveAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public WeakPositiveAction ()
+        WeakPositiveAction ()
         {
             super("View");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
             SampleBrowser.getInstance().displayAll(weakPositives);
             SampleBrowser.getInstance().setVisible();
+        }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 }

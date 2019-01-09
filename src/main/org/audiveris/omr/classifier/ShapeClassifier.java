@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.classifier;
 
-import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.util.OmrExecutors;
 
@@ -38,7 +37,6 @@ import java.util.concurrent.Future;
  */
 public abstract class ShapeClassifier
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -67,13 +65,11 @@ public abstract class ShapeClassifier
         }
     });
 
-    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private ShapeClassifier ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the classifier instance in use.
      *
@@ -110,6 +106,20 @@ public abstract class ShapeClassifier
         //        }
     }
 
+    //    /**
+    //     * Report the second classifier instance in use.
+    //     *
+    //     * @return the second classifier
+    //     */
+    //    public static Classifier getSecondInstance ()
+    //    {
+    //        if (useDeepClassifier()) {
+    //            return BasicClassifier.getInstance();
+    //        } else {
+    //            return DeepClassifier.getInstance();
+    //        }
+    //    }
+    //
     //---------//
     // preload //
     //---------//
@@ -125,10 +135,10 @@ public abstract class ShapeClassifier
      *
      * @return true for DeepClassifier, false for BasicClassifier
      */
-    public static boolean useDeepClassifier ()
-    {
-        return constants.useDeepClassifier.isSet();
-    }
+//    public static boolean useDeepClassifier ()
+//    {
+//        return constants.useDeepClassifier.isSet();
+//    }
 
     //--------------------//
     // getPatchClassifier //
@@ -138,17 +148,15 @@ public abstract class ShapeClassifier
         return PatchClassifier.getInstance();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Boolean useDeepClassifier = new Constant.Boolean(
-                false,
-                "Should we use DeepClassifier? (rather than old BasicClassifier)");
+        //
+        //        private final Constant.Boolean useDeepClassifier = new Constant.Boolean(
+        //                false,
+        //                "Should we use DeepClassifier? (rather than old BasicClassifier)");
     }
 }

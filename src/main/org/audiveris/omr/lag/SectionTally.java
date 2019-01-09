@@ -29,16 +29,15 @@ import java.util.List;
  * A easy way to access all sections that begin at a given position.
  *
  * @param <S> precise section type
+ * @author Hervé Bitteur
  */
 public class SectionTally<S extends Section>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private final List<S> list;
 
     private final int[] starts;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Build a tally on a sorted list of sections
      *
@@ -72,7 +71,6 @@ public class SectionTally<S extends Section>
         starts[starts.length - 1] = list.size(); // End mark
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // getSubList //
     //------------//

@@ -46,7 +46,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class TimeWholeInter
         extends AbstractTimeInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code TimeWholeInter} object.
@@ -95,7 +94,6 @@ public class TimeWholeInter
         super((Glyph) null, null, 0);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -103,29 +101,6 @@ public class TimeWholeInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
-    }
-
-    //--------//
-    // create //
-    //--------//
-    /**
-     * Create a TimeWholeInter.
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape
-     * @param grade evaluation value
-     * @param staff related staff
-     * @return the created instance or null if failed
-     */
-    public static TimeWholeInter create (Glyph glyph,
-                                         Shape shape,
-                                         double grade,
-                                         Staff staff)
-    {
-        TimeWholeInter time = new TimeWholeInter(glyph, shape, grade);
-        time.setStaff(staff);
-
-        return time;
     }
 
     //-----------------//
@@ -171,5 +146,28 @@ public class TimeWholeInter
         inter.setStaff(targetStaff);
 
         return inter;
+    }
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create a TimeWholeInter.
+     *
+     * @param glyph underlying glyph
+     * @param shape precise shape
+     * @param grade evaluation value
+     * @param staff related staff
+     * @return the created instance or null if failed
+     */
+    public static TimeWholeInter create (Glyph glyph,
+                                         Shape shape,
+                                         double grade,
+                                         Staff staff)
+    {
+        TimeWholeInter time = new TimeWholeInter(glyph, shape, grade);
+        time.setStaff(staff);
+
+        return time;
     }
 }

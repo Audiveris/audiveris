@@ -32,18 +32,17 @@ import javax.swing.Icon;
 
 /**
  * Force an icon to be painted within a given width.
+ *
+ * @author Hervé Bitteur
  */
 public class FixedWidthIcon
         implements Icon
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final Icon icon;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code FixedIcon} object.
      *
@@ -55,7 +54,6 @@ public class FixedWidthIcon
         this.icon = icon;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public int getIconHeight ()
     {
@@ -78,14 +76,12 @@ public class FixedWidthIcon
         icon.paintIcon(c, g, x + ((getIconWidth() - w) / 2), y);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Integer iconWidth = new Constant.Integer(
                 "pixels",

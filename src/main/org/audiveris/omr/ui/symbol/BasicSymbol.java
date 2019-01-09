@@ -55,7 +55,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BasicSymbol
         implements SymbolIcon
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     protected static final Logger logger = LoggerFactory.getLogger(BasicSymbol.class);
 
@@ -81,36 +80,34 @@ public class BasicSymbol
             0); // m12
 
     /** A transformation to turn 1 quadrant clockwise. */
-    protected static final AffineTransform quadrantRotateOne = AffineTransform.getQuadrantRotateInstance(
-            1);
+    protected static final AffineTransform quadrantRotateOne = AffineTransform
+            .getQuadrantRotateInstance(1);
 
     /** A transformation to turn 2 quadrants clockwise. */
-    protected static final AffineTransform quadrantRotateTwo = AffineTransform.getQuadrantRotateInstance(
-            2);
+    protected static final AffineTransform quadrantRotateTwo = AffineTransform
+            .getQuadrantRotateInstance(2);
 
     /** A transformation for really small icon display. */
     protected static final AffineTransform tiny = AffineTransform.getScaleInstance(0.5, 0.5);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** To flag an icon symbol. */
-    protected final boolean isIcon;
-
     /** Sequence of point codes. */
     public final int[] codes;
 
-    /** Related image, corresponding to standard interline. */
-    private BufferedImage image;
+    /** To flag an icon symbol. */
+    protected final boolean isIcon;
 
     /** Pre-scaled symbol for icon display. */
     protected BasicSymbol icon;
 
-    /** Image dimension corresponding to standard interline. */
-    private Dimension dimension;
-
     /** Offset of centroid WRT area center, specified in ratio of width and height. */
     protected Point2D centroidOffset;
 
-    //~ Constructors -------------------------------------------------------------------------------
+    /** Related image, corresponding to standard interline. */
+    private BufferedImage image;
+
+    /** Image dimension corresponding to standard interline. */
+    private Dimension dimension;
+
     /**
      * Creates a new BasicSymbol object.
      *
@@ -134,13 +131,15 @@ public class BasicSymbol
         this(false, codes);
     }
 
+    /**
+     * Useful?
+     */
     public BasicSymbol ()
     {
         this.isIcon = false;
         this.codes = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildImage //
     //------------//
@@ -237,6 +236,11 @@ public class BasicSymbol
     //-----------//
     // getString //
     //-----------//
+    /**
+     * Report the String defined by Unicode characters
+     *
+     * @return the resulting String
+     */
     public final String getString ()
     {
         return new String(codes, 0, codes.length);
@@ -283,7 +287,7 @@ public class BasicSymbol
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append("{");
 
-        sb.append(internalsString());
+        sb.append(internals());
 
         sb.append("}");
 
@@ -358,6 +362,12 @@ public class BasicSymbol
     //-----------//
     // getParams //
     //-----------//
+    /**
+     * Report the specific Params object to draw this symbol.
+     *
+     * @param font scaled music font
+     * @return the specific Params object
+     */
     protected Params getParams (MusicFont font)
     {
         Params p = new Params();
@@ -388,10 +398,15 @@ public class BasicSymbol
         return dimension.width;
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
-    protected String internalsString ()
+    //-----------//
+    // internals //
+    //-----------//
+    /**
+     * Report a string description of internals.
+     *
+     * @return string of internal informations
+     */
+    protected String internals ()
     {
         StringBuilder sb = new StringBuilder();
 
@@ -529,7 +544,6 @@ public class BasicSymbol
         return values;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
@@ -538,7 +552,6 @@ public class BasicSymbol
      */
     protected class Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Specific offset, if any, from area center. */
         Point offset;

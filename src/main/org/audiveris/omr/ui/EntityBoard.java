@@ -56,32 +56,18 @@ import javax.swing.event.ChangeListener;
  * Class {@code EntityBoard} is a basic board related to an entity type.
  *
  * @param <E> precise entity type
- *
  * @author Hervé Bitteur
  */
 public class EntityBoard<E extends Entity>
         extends Board
         implements ChangeListener, ActionListener
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(EntityBoard.class);
 
     /** Events this board is interested in. */
     private static final Class<?>[] eventsRead = new Class<?>[]{EntityListEvent.class};
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /** To select precise ID option. */
-    public static enum IdOption
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        ID_NONE,
-        ID_LABEL,
-        ID_SPINNER;
-    }
-
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Counter of entities selection. */
     protected JLabel count;
 
@@ -106,7 +92,6 @@ public class EntityBoard<E extends Entity>
     /** To avoid loop, indicate that update() method id being processed. */
     protected boolean selfUpdating = false;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code EntityBoard} object, with all entity fields by default.
      *
@@ -186,7 +171,6 @@ public class EntityBoard<E extends Entity>
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//
@@ -293,6 +277,11 @@ public class EntityBoard<E extends Entity>
     //-------------------//
     // getSelectedEntity //
     //-------------------//
+    /**
+     * Report the selected entity (first in sequence).
+     *
+     * @return selected entity
+     */
     @SuppressWarnings("unchecked")
     protected E getSelectedEntity ()
     {
@@ -425,7 +414,7 @@ public class EntityBoard<E extends Entity>
      */
     private JSpinner makeIdSpinner (EntityIndex<E> index)
     {
-        JSpinner spinner = new JSpinner(new SpinnerIdModel<E>(index));
+        JSpinner spinner = new JSpinner(new SpinnerIdModel<>(index));
         spinner.setValue(0); // Initial value before listener is set!
         spinner.addChangeListener(this);
         spinner.setLocale(Locale.ENGLISH);
@@ -433,5 +422,13 @@ public class EntityBoard<E extends Entity>
         SpinnerUtil.setEditable(spinner, true);
 
         return spinner;
+    }
+
+    /** To select precise ID option. */
+    public static enum IdOption
+    {
+        ID_NONE,
+        ID_LABEL,
+        ID_SPINNER;
     }
 }

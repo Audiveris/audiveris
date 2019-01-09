@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.Alignment.Horizontal;
 import static org.audiveris.omr.ui.symbol.Alignment.Horizontal.*;
 import org.audiveris.omr.ui.symbol.Alignment.Vertical;
@@ -42,12 +41,10 @@ import java.util.Map.Entry;
  */
 public class AlignmentTest
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Map Alignment -> Point */
     Map<Alignment, Point> points = new HashMap<Alignment, Point>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AlignmentTest object.
      */
@@ -55,7 +52,6 @@ public class AlignmentTest
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of toPoint method, of class Alignment.
      */

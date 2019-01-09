@@ -39,24 +39,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BracketInter
         extends AbstractVerticalInter
 {
-    //~ Enumerations -------------------------------------------------------------------------------
 
-    public static enum BracketKind
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        TOP,
-        BOTH,
-        BOTTOM,
-        NONE;
-    }
-
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Bracket kind. */
     @XmlAttribute(name = "kind")
     private final BracketKind kind;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BracketInter} object.
      *
@@ -85,7 +72,6 @@ public class BracketInter
         this.kind = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -111,10 +97,23 @@ public class BracketInter
     // getKind //
     //---------//
     /**
+     * Report the bracket kind.
+     *
      * @return the kind
      */
     public BracketKind getKind ()
     {
         return kind;
+    }
+
+    /**
+     * Kind of bracket.
+     */
+    public static enum BracketKind
+    {
+        TOP,
+        BOTH,
+        BOTTOM,
+        NONE
     }
 }

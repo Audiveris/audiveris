@@ -60,10 +60,8 @@ public class SentenceInter
         extends AbstractInter
         implements InterEnsemble
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SentenceInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(SentenceInter.class);
 
     /** For ordering sentences by their de-skewed ordinate. */
     public static final Comparator<SentenceInter> byOrdinate = new Comparator<SentenceInter>()
@@ -80,8 +78,6 @@ public class SentenceInter
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
@@ -94,7 +90,6 @@ public class SentenceInter
     @XmlAttribute
     protected TextRole role;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SentenceInter} object.
      *
@@ -137,7 +132,6 @@ public class SentenceInter
         this.role = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -184,26 +178,6 @@ public class SentenceInter
         return staff;
     }
 
-    //--------//
-    // create //
-    //--------//
-    /**
-     * Create a {@code SentenceInter} from a TextLine.
-     *
-     * @param line the OCR'ed text line
-     * @return the sentence inter
-     */
-    public static SentenceInter create (TextLine line)
-    {
-        SentenceInter sentence = new SentenceInter(
-                line.getBounds(),
-                line.getConfidence() * Grades.intrinsicRatio,
-                line.getMeanFont(),
-                line.getRole());
-
-        return sentence;
-    }
-
     //-----------//
     // getBounds //
     //-----------//
@@ -233,6 +207,11 @@ public class SentenceInter
     //--------------//
     // getFirstWord //
     //--------------//
+    /**
+     * Report the first word in this sentence.
+     *
+     * @return first word or null if sentence is empty
+     */
     public WordInter getFirstWord ()
     {
         final List<? extends Inter> words = getMembers();
@@ -247,6 +226,11 @@ public class SentenceInter
     //-------------//
     // getLastWord //
     //-------------//
+    /**
+     * Report the last word in this sentence
+     *
+     * @return last word or null if empty
+     */
     public WordInter getLastWord ()
     {
         final List<? extends Inter> words = getMembers();
@@ -261,6 +245,11 @@ public class SentenceInter
     //-------------//
     // getLocation //
     //-------------//
+    /**
+     * Return the starting point of the first word.
+     *
+     * @return starting point
+     */
     public Point getLocation ()
     {
         final Inter first = getFirstWord();
@@ -307,9 +296,27 @@ public class SentenceInter
         return role;
     }
 
+    //---------//
+    // setRole //
+    //---------//
+    /**
+     * Assign a new role.
+     *
+     * @param role the new role
+     */
+    public void setRole (TextRole role)
+    {
+        this.role = role;
+    }
+
     //----------//
     // getValue //
     //----------//
+    /**
+     * Report sentence text content, built out of contained words.
+     *
+     * @return text content
+     */
     public String getValue ()
     {
         StringBuilder sb = null;
@@ -357,19 +364,6 @@ public class SentenceInter
         EnsembleHelper.removeMember(this, member);
     }
 
-    //---------//
-    // setRole //
-    //---------//
-    /**
-     * Assign a new role.
-     *
-     * @param role the new role
-     */
-    public void setRole (TextRole role)
-    {
-        this.role = role;
-    }
-
     //-------------//
     // shapeString //
     //-------------//
@@ -391,5 +385,25 @@ public class SentenceInter
         sb.append(' ').append(role);
 
         return sb.toString();
+    }
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create a {@code SentenceInter} from a TextLine.
+     *
+     * @param line the OCR'ed text line
+     * @return the sentence inter
+     */
+    public static SentenceInter create (TextLine line)
+    {
+        SentenceInter sentence = new SentenceInter(
+                line.getBounds(),
+                line.getConfidence() * Grades.intrinsicRatio,
+                line.getMeanFont(),
+                line.getRole());
+
+        return sentence;
     }
 }

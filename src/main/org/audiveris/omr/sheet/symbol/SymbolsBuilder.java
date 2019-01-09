@@ -28,10 +28,10 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphCluster;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.GlyphLink;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
-import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
@@ -67,14 +67,11 @@ import java.util.Set;
  */
 public class SymbolsBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SymbolsBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(SymbolsBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -86,19 +83,18 @@ public class SymbolsBuilder
     /** Shape classifier to use. */
     private final Classifier classifier = ShapeClassifier.getInstance();
 
-    /** Shape second classifier to use. */
-    private final Classifier classifier2 = ShapeClassifier.getSecondInstance();
-
+    //    /** Shape second classifier to use. */
+    //    private final Classifier classifier2 = ShapeClassifier.getSecondInstance();
+    //
     /** Companion factory for symbols inters. */
     private final InterFactory factory;
 
-    /** Areas where fine glyphs may be needed. */
-    private final List<Rectangle> fineBoxes = new ArrayList<Rectangle>();
+    /** Aras where fine glyphs may be needed. */
+    private final List<Rectangle> fineBoxes = new ArrayList<>();
 
     /** Scale-dependent global constants. */
     private final Parameters params;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolsBuilder object.
      *
@@ -116,7 +112,6 @@ public class SymbolsBuilder
         params = new Parameters(sheet.getScale());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // buildSymbols //
     //--------------//
@@ -124,6 +119,7 @@ public class SymbolsBuilder
      * Find all possible interpretations of symbols composed from available system glyphs.
      * <p>
      * <b>Synopsis:</b>
+     *
      * <pre>
      * - retrieveFineBoxes()                            // Retrieve areas around small chords
      * - getSymbolsGlyphs()                             // Retrieve all glyphs usable for symbols
@@ -202,13 +198,14 @@ public class SymbolsBuilder
                 2,
                 Grades.symbolMinGrade,
                 EnumSet.of(Classifier.Condition.CHECKED));
-//        Evaluation[] evals2 = classifier2.evaluate(
-//                glyph,
-//                system,
-//                2,
-//                Grades.symbolMinGrade, // Not OK for deep classifier!
-//                EnumSet.of(Classifier.Condition.CHECKED));
-//
+
+        //        Evaluation[] evals2 = classifier2.evaluate(
+        //                glyph,
+        //                system,
+        //                2,
+        //                Grades.symbolMinGrade, // Not OK for deep classifier!
+        //                EnumSet.of(Classifier.Condition.CHECKED));
+        //
         if (evals.length > 0) {
             //            // Create one interpretation for each acceptable evaluation
             //            for (Evaluation eval : evals) {
@@ -227,6 +224,7 @@ public class SymbolsBuilder
             } catch (Exception ex) {
                 logger.warn("Error in glyph evaluation " + ex, ex);
             }
+
             ///}
         }
     }
@@ -250,7 +248,7 @@ public class SymbolsBuilder
     private List<Glyph> getSymbolsGlyphs (Map<SystemInfo, List<Glyph>> optionalsMap)
     {
         // Sorted by abscissa, ordinate, id
-        List<Glyph> glyphs = new ArrayList<Glyph>();
+        List<Glyph> glyphs = new ArrayList<>();
 
         for (Glyph glyph : system.getGroupedGlyphs(GlyphGroup.SYMBOL)) {
             final int weight = glyph.getWeight();
@@ -313,7 +311,7 @@ public class SymbolsBuilder
     private void processClusters (SimpleGraph<Glyph, GlyphLink> systemGraph)
     {
         // Retrieve all the clusters of glyphs (sets of connected glyphs)
-        final ConnectivityInspector<Glyph, GlyphLink> inspector = new ConnectivityInspector<Glyph, GlyphLink>(
+        final ConnectivityInspector<Glyph, GlyphLink> inspector = new ConnectivityInspector<>(
                 systemGraph);
         final List<Set<Glyph>> sets = inspector.connectedSets();
         logger.debug("symbols sets: {}", sets.size());
@@ -331,10 +329,10 @@ public class SymbolsBuilder
                 if (setSize <= maxPartCount) {
                     subSet = set;
                 } else {
-                    List<Glyph> list = new ArrayList<Glyph>(set);
+                    List<Glyph> list = new ArrayList<>(set);
                     Collections.sort(list, Glyphs.byReverseWeight);
                     list = list.subList(0, Math.min(list.size(), maxPartCount));
-                    subSet = new LinkedHashSet<Glyph>(list);
+                    subSet = new LinkedHashSet<>(list);
                     logger.info("Symbol parts shrunk from {} to {}", setSize, maxPartCount);
                 }
 
@@ -372,14 +370,58 @@ public class SymbolsBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------------//
+    // SymbolAdapter //
+    //---------------//
+    private class SymbolAdapter
+            extends GlyphCluster.AbstractAdapter
+    {
+
+        private final Scale scale = sheet.getScale();
+
+        SymbolAdapter (SimpleGraph<Glyph, GlyphLink> graph)
+        {
+            super(graph);
+        }
+
+        @Override
+        public void evaluateGlyph (Glyph glyph,
+                                   Set<Glyph> parts)
+        {
+            SymbolsBuilder.this.evaluateGlyph(glyph);
+        }
+
+        @Override
+        public boolean isTooLarge (Rectangle symBox)
+        {
+            // Check width
+            if (symBox.width > params.maxSymbolWidth) {
+                return true;
+            }
+
+            // Check height (not limited if on left of system: braces / brackets)
+            if (GeoUtil.centerOf(symBox).x < system.getLeft()) {
+                return false;
+            } else {
+                return symBox.height > params.maxSymbolHeight;
+            }
+        }
+
+        @Override
+        public boolean isTooLight (int weight)
+        {
+            double normed = scale.pixelsToAreaFrac(weight);
+
+            return !classifier.isBigEnough(normed);
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
@@ -423,7 +465,6 @@ public class SymbolsBuilder
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final double maxGap;
 
@@ -437,8 +478,7 @@ public class SymbolsBuilder
 
         final int minFineWeight;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             maxGap = scale.toPixelsDouble(constants.maxGap);
             maxSymbolWidth = scale.toPixels(constants.maxSymbolWidth);
@@ -453,52 +493,4 @@ public class SymbolsBuilder
         }
     }
 
-    //---------------//
-    // SymbolAdapter //
-    //---------------//
-    private class SymbolAdapter
-            extends GlyphCluster.AbstractAdapter
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Scale scale = sheet.getScale();
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public SymbolAdapter (SimpleGraph<Glyph, GlyphLink> graph)
-        {
-            super(graph);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void evaluateGlyph (Glyph glyph,
-                                   Set<Glyph> parts)
-        {
-            SymbolsBuilder.this.evaluateGlyph(glyph);
-        }
-
-        @Override
-        public boolean isTooLarge (Rectangle symBox)
-        {
-            // Check width
-            if (symBox.width > params.maxSymbolWidth) {
-                return true;
-            }
-
-            // Check height (not limited if on left of system: braces / brackets)
-            if (GeoUtil.centerOf(symBox).x < system.getLeft()) {
-                return false;
-            } else {
-                return symBox.height > params.maxSymbolHeight;
-            }
-        }
-
-        @Override
-        public boolean isTooLight (int weight)
-        {
-            double normed = scale.pixelsToAreaFrac(weight);
-
-            return !classifier.isBigEnough(normed);
-        }
-    }
 }

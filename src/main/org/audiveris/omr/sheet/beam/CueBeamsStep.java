@@ -45,11 +45,9 @@ import java.util.List;
 public class CueBeamsStep
         extends AbstractSystemStep<CueBeamsStep.Context>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new CueBeamsStep object.
      */
@@ -57,7 +55,6 @@ public class CueBeamsStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -75,7 +72,7 @@ public class CueBeamsStep
     @Override
     protected Context doProlog (Sheet sheet)
     {
-        List<Glyph> spots = new ArrayList<Glyph>();
+        List<Glyph> spots = new ArrayList<>();
         Lag spotLag = new BasicLag(Lags.SPOT_LAG, SpotsBuilder.SPOT_ORIENTATION);
 
         // Display on cue spot glyphs?
@@ -87,23 +84,29 @@ public class CueBeamsStep
         return new Context(spots, spotLag);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Context //
     //---------//
+    /**
+     * Context for step processing.
+     */
     protected static class Context
     {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Spot glyphs. */
-        private final List<Glyph> spots;
 
         /** Lag of spot sections. */
         public final Lag spotLag;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Context (List<Glyph> spots,
-                        Lag spotLag)
+        /** Spot glyphs. */
+        private final List<Glyph> spots;
+
+        /**
+         * Create Context.
+         *
+         * @param spots
+         * @param spotLag
+         */
+        Context (List<Glyph> spots,
+                 Lag spotLag)
         {
             this.spots = spots;
             this.spotLag = spotLag;
@@ -113,10 +116,9 @@ public class CueBeamsStep
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean displayCueBeamSpots = new Constant.Boolean(
                 false,

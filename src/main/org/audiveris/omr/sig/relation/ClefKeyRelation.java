@@ -37,11 +37,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ClefKeyRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ClefKeyRelation} object.
      */
@@ -49,7 +47,6 @@ public class ClefKeyRelation
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -66,20 +63,6 @@ public class ClefKeyRelation
     public boolean isSingleTarget ()
     {
         return true;
-    }
-
-    //------------------------//
-    // maxContributionForClef //
-    //------------------------//
-    /**
-     * Report the maximum contribution for the clef, brought by the following key.
-     *
-     * @return maximum contribution a clef can expect (from the following key)
-     */
-    public static double maxContributionForClef ()
-    {
-        // Maximum key grade value is Grades.intrinsicRatio
-        return Grades.intrinsicRatio * constants.clefSupportCoeff.getValue();
     }
 
     //----------------//
@@ -100,14 +83,26 @@ public class ClefKeyRelation
         return constants.keySupportCoeff.getValue();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //------------------------//
+    // maxContributionForClef //
+    //------------------------//
+    /**
+     * Report the maximum contribution for the clef, brought by the following key.
+     *
+     * @return maximum contribution a clef can expect (from the following key)
+     */
+    public static double maxContributionForClef ()
+    {
+        // Maximum key grade value is Grades.intrinsicRatio
+        return Grades.intrinsicRatio * constants.clefSupportCoeff.getValue();
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio clefSupportCoeff = new Constant.Ratio(
                 5,

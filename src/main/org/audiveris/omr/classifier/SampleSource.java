@@ -30,7 +30,6 @@ import java.util.List;
  */
 public interface SampleSource
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Get the collection of samples to test.
@@ -46,21 +45,26 @@ public interface SampleSource
      */
     List<Sample> getTrainSamples ();
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    /**
+     * A basic source of samples, the same set being used for training and for test.
+     */
     static class ConstantSource
             implements SampleSource
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
+        /** The underlying collection of samples. */
         private final List<Sample> samples;
 
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create a ConstantSource object.
+         *
+         * @param samples the underlying collection of samples.
+         */
         public ConstantSource (List<Sample> samples)
         {
             this.samples = samples;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public List<Sample> getTestSamples ()
         {

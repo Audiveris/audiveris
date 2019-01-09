@@ -32,12 +32,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BarGroupRelation
         extends Relation
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Horizontal white gap (in interline) between the two bar lines. */
     private final double xGap;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarGroupRelation object.
      *
@@ -54,7 +52,6 @@ public class BarGroupRelation
         this.xGap = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -84,5 +81,12 @@ public class BarGroupRelation
         sb.append("@(").append(String.format("%.2f", xGap)).append(")");
 
         return sb.toString();
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 }

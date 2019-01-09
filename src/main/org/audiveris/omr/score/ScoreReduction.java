@@ -36,7 +36,8 @@ import java.util.Objects;
  * Class {@code ScoreReduction} reduces the logical parts for a score,
  * based on the merge of Audiveris Page instances.
  * <p>
- * <b>Features not yet implemented:</b> <ul>
+ * <b>Features not yet implemented:</b>
+ * <ul>
  * <li>Connection of slurs between pages</li>
  * <li>In part-list, handling of part-group beside score-part</li>
  * </ul>
@@ -45,15 +46,12 @@ import java.util.Objects;
  */
 public class ScoreReduction
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ScoreReduction.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related score. */
     private final Score score;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ScoreReduction object.
      *
@@ -64,7 +62,6 @@ public class ScoreReduction
         this.score = score;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // reduce //
     //--------//
@@ -102,10 +99,10 @@ public class ScoreReduction
     private List<List<Candidate>> buildSequences (List<Page> pages)
     {
         // Build candidates (here a candidate is a LogicalPart, with affiliated system parts)
-        List<List<Candidate>> sequences = new ArrayList<List<Candidate>>();
+        List<List<Candidate>> sequences = new ArrayList<>();
 
         for (Page page : pages) {
-            List<Candidate> candidates = new ArrayList<Candidate>();
+            List<Candidate> candidates = new ArrayList<>();
             List<LogicalPart> partList = page.getLogicalParts();
 
             if (partList != null) {
@@ -135,7 +132,7 @@ public class ScoreReduction
      */
     private boolean storeResults (List<ResultEntry> resultEntries)
     {
-        List<LogicalPart> partList = new ArrayList<LogicalPart>();
+        List<LogicalPart> partList = new ArrayList<>();
 
         for (ResultEntry entry : resultEntries) {
             LogicalPart logicalPart = entry.result;
@@ -151,7 +148,6 @@ public class ScoreReduction
         return false;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------------------//
     // LogicalPartCandidate //
     //----------------------//
@@ -161,7 +157,6 @@ public class ScoreReduction
     private static class LogicalPartCandidate
             implements Candidate
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final LogicalPart logicalPart;
 
@@ -169,17 +164,15 @@ public class ScoreReduction
 
         private final List<Part> systemParts;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public LogicalPartCandidate (LogicalPart logicalPart,
-                                     Page page,
-                                     List<Part> systemParts)
+        LogicalPartCandidate (LogicalPart logicalPart,
+                              Page page,
+                              List<Part> systemParts)
         {
             this.logicalPart = logicalPart;
             this.page = page;
             this.systemParts = systemParts;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String getAbbreviation ()
         {

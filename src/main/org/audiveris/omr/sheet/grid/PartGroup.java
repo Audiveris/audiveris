@@ -35,7 +35,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 @XmlAccessorType(XmlAccessType.NONE)
 public class PartGroup
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To compare groups by their first staff ID. */
     public static final Comparator<PartGroup> byFirstId = new Comparator<PartGroup>()
@@ -48,18 +47,6 @@ public class PartGroup
         }
     };
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    public static enum Symbol
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        bracket,
-        brace,
-        square;
-    }
-
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
@@ -91,7 +78,6 @@ public class PartGroup
     @XmlAttribute
     private String abbreviation;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Build a {@code PartGroup} object.
      *
@@ -124,7 +110,6 @@ public class PartGroup
         this.firstStaffId = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * @return the abbreviation
      */
@@ -134,6 +119,18 @@ public class PartGroup
     }
 
     /**
+     * Set group abbreviation.
+     *
+     * @param abbreviation the abbreviation to set
+     */
+    public void setAbbreviation (String abbreviation)
+    {
+        this.abbreviation = abbreviation;
+    }
+
+    /**
+     * Get group first staff id.
+     *
      * @return the firstStaffId
      */
     public int getFirstStaffId ()
@@ -142,6 +139,8 @@ public class PartGroup
     }
 
     /**
+     * Get group last staff id.
+     *
      * @return the lastStaffId
      */
     public int getLastStaffId ()
@@ -150,6 +149,18 @@ public class PartGroup
     }
 
     /**
+     * Set group first staff id.
+     *
+     * @param lastStaffId ID of the lastStaff
+     */
+    public void setLastStaffId (int lastStaffId)
+    {
+        this.lastStaffId = lastStaffId;
+    }
+
+    /**
+     * Report group name, if any
+     *
      * @return the name
      */
     public String getName ()
@@ -158,6 +169,18 @@ public class PartGroup
     }
 
     /**
+     * Assign group name.
+     *
+     * @param name the name to set
+     */
+    public void setName (String name)
+    {
+        this.name = name;
+    }
+
+    /**
+     * Report group number.
+     *
      * @return the number
      */
     public int getNumber ()
@@ -166,6 +189,8 @@ public class PartGroup
     }
 
     /**
+     * Report the group defining symbol.
+     *
      * @return the symbol
      */
     public Symbol getSymbol ()
@@ -174,7 +199,9 @@ public class PartGroup
     }
 
     /**
-     * @return the barline
+     * Tell whether this group is based on a barline connection.
+     *
+     * @return true if so
      */
     public boolean isBarline ()
     {
@@ -189,30 +216,6 @@ public class PartGroup
     public boolean isBrace ()
     {
         return symbol == Symbol.brace;
-    }
-
-    /**
-     * @param abbreviation the abbreviation to set
-     */
-    public void setAbbreviation (String abbreviation)
-    {
-        this.abbreviation = abbreviation;
-    }
-
-    /**
-     * @param lastStaffId ID of the lastStaff
-     */
-    public void setLastStaffId (int lastStaffId)
-    {
-        this.lastStaffId = lastStaffId;
-    }
-
-    /**
-     * @param name the name to set
-     */
-    public void setName (String name)
-    {
-        this.name = name;
     }
 
     //----------//
@@ -246,5 +249,15 @@ public class PartGroup
         sb.append("}");
 
         return sb.toString();
+    }
+
+    /**
+     * Kind of symbol that defines the group of parts.
+     */
+    public static enum Symbol
+    {
+        bracket,
+        brace,
+        square
     }
 }

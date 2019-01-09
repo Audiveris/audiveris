@@ -46,11 +46,10 @@ public class StraightFilament
         extends Filament
         implements NearLine
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
+    /** The approximating line. */
     protected BasicLine line;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StraightFilament} object.
      *
@@ -61,7 +60,6 @@ public class StraightFilament
         super(interline);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // computeLine //
     //-------------//
@@ -110,6 +108,11 @@ public class StraightFilament
     //--------------//
     // getBasicLine //
     //--------------//
+    /**
+     * Return the approximating line as a BasicLine
+     *
+     * @return the BasicLine instance
+     */
     public BasicLine getBasicLine ()
     {
         checkLine();
@@ -272,24 +275,33 @@ public class StraightFilament
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // Constructor //
     //-------------//
-    public static final class Constructor
+    /**
+     * Kind of 'constructor' for a StraightFilament.
+     */
+    public static class Constructor
             implements CompoundFactory.CompoundConstructor
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final int interline;
 
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create the constructor.
+         *
+         * @param interline the related interline
+         */
         public Constructor (int interline)
         {
             this.interline = interline;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Create a new instance of StraightFilament.
+         *
+         * @return the new instance
+         */
         @Override
         public SectionCompound newInstance ()
         {

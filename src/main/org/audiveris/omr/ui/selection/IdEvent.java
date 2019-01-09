@@ -29,12 +29,10 @@ package org.audiveris.omr.ui.selection;
 public class IdEvent
         extends UserEvent
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The selected entity id, which may be null. */
     private final Integer id;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new IdEvent object.
      *
@@ -52,7 +50,6 @@ public class IdEvent
         this.id = id;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//

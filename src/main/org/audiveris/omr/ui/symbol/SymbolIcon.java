@@ -31,18 +31,15 @@ import javax.swing.Icon;
 
 /**
  * Interface {@code SymbolIcon} handles the display of a symbol.
- * A SymbolIcon can provide several features:<ul>
- *
+ * A SymbolIcon can provide several features:
+ * <ul>
  * <li>It can be used as an <b>icon</b> for buttons, menus, etc. For that purpose,
  * {@code SymbolIcon}
  * implements the {@link Icon} interface.</li>
- *
  * <li>It can be used as an <b>image</b> for precise drawing on score views, whatever the desired
  * scale and display ratio. See {@link #buildImage} and {@link #paintSymbol} methods.</li>
- *
  * <li>It may also be used to <b>train</b> the glyph classifier when we don't have enough "real"
  * glyphs available.</li>
- *
  * <li>It may also be used to convey the <b>reference point</b> of that shape.
  * Most shapes have no reference point, and thus we use their area center, which is the center of
  * their bounding box.
@@ -56,7 +53,6 @@ import javax.swing.Icon;
 public interface SymbolIcon
         extends Icon
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Paint the symbol that represents the related shape, using the scaled font and

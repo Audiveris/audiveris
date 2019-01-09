@@ -35,7 +35,6 @@ import javax.swing.SwingUtilities;
 public class ScreenPoint
         extends Point
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new ScreenPoint object, from provided coordinates.
@@ -62,7 +61,6 @@ public class ScreenPoint
         SwingUtilities.convertPointToScreen(this, component);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getLocalPoint //
     //---------------//
@@ -94,5 +92,11 @@ public class ScreenPoint
         Rectangle bounds = new Rectangle(0, 0, component.getWidth(), component.getHeight());
 
         return bounds.contains(getLocalPoint(component));
+    }
+
+    @Override
+    public Object clone ()
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 }

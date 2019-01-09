@@ -44,19 +44,17 @@ import java.util.List;
 import org.audiveris.omr.sheet.header.StaffHeader;
 
 /**
- * Class {@code KeyRoi} handles the region of interest for key retrieval, split into
- * vertical slices.
+ * Class {@code KeyRoi} handles the region of interest for key retrieval,
+ * split horizontally into vertical slices.
  *
  * @author Hervé Bitteur
  */
 public class KeyRoi
         extends ArrayList<KeySlice>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(KeyRoi.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying staff. */
     private final Staff staff;
 
@@ -72,7 +70,6 @@ public class KeyRoi
     /** Maximum abscissa distance to theoretical slice. */
     private final int maxSliceDist;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code KeyRoi} object.
      *
@@ -95,10 +92,15 @@ public class KeyRoi
         this.maxSliceDist = maxSliceDist;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // attachmentKey //
     //---------------//
+    /**
+     * Report a short string to uniquely describe this key roi (for visual check)
+     *
+     * @param id a sequential value
+     * @return the attachment label
+     */
     public String attachmentKey (int id)
     {
         final String s = (keyShape == Shape.SHARP) ? "s" : "f";
@@ -166,6 +168,9 @@ public class KeyRoi
     //--------------//
     // freezeAlters //
     //--------------//
+    /**
+     * Freeze all alters.
+     */
     public void freezeAlters ()
     {
         for (KeySlice slice : this) {
@@ -212,7 +217,7 @@ public class KeyRoi
         for (KeySlice slice : this) {
             if (slice.getAlter() == null) {
                 if (emptySlices == null) {
-                    emptySlices = new ArrayList<KeySlice>();
+                    emptySlices = new ArrayList<>();
                 }
 
                 emptySlices.add(slice);
@@ -229,6 +234,11 @@ public class KeyRoi
     //-------------------//
     // getLastValidSlice //
     //-------------------//
+    /**
+     * Report right-most valid slice in key roi.
+     *
+     * @return the last valid slide in roi
+     */
     public KeySlice getLastValidSlice ()
     {
         KeySlice validSlice = null;
@@ -258,10 +268,8 @@ public class KeyRoi
                                          boolean cropNeighbors)
     {
         Rectangle sRect = slice.getRect();
-        BufferedImage sImage = new BufferedImage(
-                sRect.width,
-                sRect.height,
-                BufferedImage.TYPE_BYTE_GRAY);
+        BufferedImage sImage = new BufferedImage(sRect.width, sRect.height,
+                                                 BufferedImage.TYPE_BYTE_GRAY);
         ByteProcessor sBuffer = new ByteProcessor(sImage);
         sBuffer.copyBits(source, -sRect.x, -sRect.y, Blitter.COPY);
 
@@ -285,9 +293,8 @@ public class KeyRoi
                                 g.setColor(Color.white);
                             }
 
-                            final Point offset = new Point(
-                                    glyph.getLeft() - sRect.x,
-                                    glyph.getTop() - sRect.y);
+                            final Point offset = new Point(glyph.getLeft() - sRect.x, glyph.getTop()
+                                                                                              - sRect.y);
                             logger.debug("Erasing glyph#{} from {}", glyph.getId(), slice);
                             glyph.getRunTable().render(g, offset);
                         }
@@ -306,6 +313,11 @@ public class KeyRoi
     //----------//
     // getStaff //
     //----------//
+    /**
+     * Report the containing staff.
+     *
+     * @return the containing staff
+     */
     public final Staff getStaff ()
     {
         return staff;
@@ -314,9 +326,14 @@ public class KeyRoi
     //-----------//
     // getStarts //
     //-----------//
+    /**
+     * Report the sequence of abscissa starts, one per slice.
+     *
+     * @return the sequence of slices starting abscissae
+     */
     public List<Integer> getStarts ()
     {
-        List<Integer> starts = new ArrayList<Integer>();
+        List<Integer> starts = new ArrayList<>();
 
         for (KeySlice slice : this) {
             starts.add(slice.getRect().x);
@@ -328,6 +345,12 @@ public class KeyRoi
     //---------//
     // sliceOf //
     //---------//
+    /**
+     * Report the containing slice at provided abscissa value
+     *
+     * @param x the provided abscissa value
+     * @return the slice found, or null
+     */
     public KeySlice sliceOf (int x)
     {
         for (KeySlice slice : this) {
@@ -353,6 +376,12 @@ public class KeyRoi
             slice.deleteAlter();
             slice.setStuffed();
         }
+    }
+
+    @Override
+    public Object clone ()
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 
     //---------------//

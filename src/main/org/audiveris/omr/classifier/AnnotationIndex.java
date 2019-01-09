@@ -63,7 +63,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AnnotationIndex
         extends BasicIndex<Annotation>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -71,11 +70,9 @@ public class AnnotationIndex
 
     public static final String FILE_NAME = "annotations.xml";
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** To avoid useless marshalling to disk. */
     private boolean modified = false;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AnnotationIndex} object.
      */
@@ -99,7 +96,6 @@ public class AnnotationIndex
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // load //
     //------//
@@ -265,7 +261,6 @@ public class AnnotationIndex
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------//
     // AnnotationsValue //
     //------------------//
@@ -276,21 +271,17 @@ public class AnnotationIndex
     @XmlRootElement(name = "annotations")
     private static class AnnotationsValue
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static JAXBContext jaxbContext;
 
-        //~ Instance fields ------------------------------------------------------------------------
         @XmlElement(name = "annotation")
         ArrayList<Annotation> list = new ArrayList<Annotation>();
 
-        //~ Constructors ---------------------------------------------------------------------------
         /** No-arg constructor needed by JAXB. */
         public AnnotationsValue ()
         {
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         static JAXBContext getJaxbContext ()
         {
             if (jaxbContext == null) {
@@ -311,7 +302,6 @@ public class AnnotationIndex
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.String vipAnnotations = new Constant.String(
                 "",

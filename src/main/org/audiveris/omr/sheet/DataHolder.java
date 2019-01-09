@@ -39,31 +39,34 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class {@code DataHolder} is a place holder for sheet internal data.
  * <p>
- * It handles: <ul>
+ * It handles:
+ * <ul>
  * <li>The data itself, if any.</li>
- * <li>A path to disk where data can be unmarshalled from.</li>
+ * <li>A path to disk where data can be un/marshalled from/to.</li>
  * </ul>
  *
  * @param <T> specific type for data handled
- *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "holder")
 public abstract class DataHolder<T>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            DataHolder.class);
+    private static final Logger logger = LoggerFactory.getLogger(DataHolder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** Direct access to data, if any. */
-    protected T data;
-
-    /** Path to data on disk. */
+    // Persistent data
+    //----------------
+    //
+    /** Path to data on disk (within sheet folder). */
     @XmlAttribute(name = "path")
     protected final String pathString;
+
+    // Transient data
+    //---------------
+    //
+    /** Direct access to data, if any. */
+    protected T data;
 
     /** To avoid useless marshalling to disk. */
     protected boolean modified = false;
@@ -71,7 +74,6 @@ public abstract class DataHolder<T>
     /** To avoid multiple load attempts. */
     protected boolean hasNoData = false;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code DataHolder} object.
      *
@@ -83,14 +85,13 @@ public abstract class DataHolder<T>
     }
 
     /**
-     * Creates a new {@code DataHolder} object.
+     * No-arg constructor needed for JAXB.
      */
     protected DataHolder ()
     {
         this.pathString = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//
@@ -107,20 +108,21 @@ public abstract class DataHolder<T>
                 return null;
             }
 
+            final Book book = stub.getBook();
+
             try {
-                stub.getBook().getLock().lock();
+                book.getLock().lock();
 
                 if (data == null) {
                     // Open book file system
-                    Path path = stub.getBook().openSheetFolder(stub.getNumber()).resolve(
-                            pathString);
+                    Path path = book.openSheetFolder(stub.getNumber()).resolve(pathString);
                     logger.debug("path: {}", path);
 
                     if (Files.exists(path)) {
-                        InputStream is = Files.newInputStream(path, StandardOpenOption.READ);
-                        data = load(is);
-                        is.close();
-                        logger.debug("Loaded {}", path);
+                        try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ)) {
+                            data = load(is);
+                            logger.debug("Loaded {}", path);
+                        }
                     } else {
                         hasNoData = true;
                         logger.info("No {}", path);
@@ -132,7 +134,7 @@ public abstract class DataHolder<T>
             } catch (Exception ex) {
                 logger.warn("Error reading data from " + pathString, ex);
             } finally {
-                stub.getBook().getLock().unlock();
+                book.getLock().unlock();
             }
         }
 
@@ -140,8 +142,33 @@ public abstract class DataHolder<T>
     }
 
     //---------//
+    // setData //
+    //---------//
+    /**
+     * Assign the data.
+     *
+     * @param data     the data to be hold
+     * @param modified is this data modified with respect to disk version
+     */
+    public void setData (T data,
+                         boolean modified)
+    {
+        this.data = data;
+        this.modified = modified;
+
+        if (data != null) {
+            hasNoData = false;
+        }
+    }
+
+    //---------//
     // hasData //
     //---------//
+    /**
+     * Tell whether data is available in memory.
+     *
+     * @return true if available
+     */
     public boolean hasData ()
     {
         return data != null;
@@ -150,6 +177,11 @@ public abstract class DataHolder<T>
     //-----------//
     // hasNoData //
     //-----------//
+    /**
+     * Tell whether there is no data at all (even on disk).
+     *
+     * @return true if no data at all is available
+     */
     public boolean hasNoData ()
     {
         return hasNoData;
@@ -158,24 +190,24 @@ public abstract class DataHolder<T>
     //------------//
     // isModified //
     //------------//
+    /**
+     * Tell whether the disk value does not exist or is different from memory value.
+     *
+     * @return true if modified
+     */
     public boolean isModified ()
     {
         return modified;
     }
 
-    //---------//
-    // setData //
-    //---------//
-    public void setData (T data,
-                         boolean modified)
-    {
-        this.data = data;
-        setModified(modified);
-    }
-
     //-------------//
     // setModified //
     //-------------//
+    /**
+     * Set the modified value with respect to disk
+     *
+     * @param bool the new modified value
+     */
     public void setModified (boolean bool)
     {
         modified = bool;
@@ -184,11 +216,18 @@ public abstract class DataHolder<T>
     //-----------//
     // storeData //
     //-----------//
+    /**
+     * Store data to book project file.
+     * <p>
+     * NOTA: This method assumes the containing book is properly locked.
+     *
+     * @param sheetFolder    path to sheet folder
+     * @param oldSheetFolder (optional) path to previous sheet folder for retrieval
+     */
     public void storeData (Path sheetFolder,
                            Path oldSheetFolder)
     {
         final Path path = sheetFolder.resolve(pathString);
-        OutputStream os = null;
 
         try {
             if (!hasData()) {
@@ -198,19 +237,14 @@ public abstract class DataHolder<T>
                     Files.copy(oldPath, path);
                     logger.info("Copied {}", path);
                 }
-            } else if (isModified()) {
-                try {
-                    Files.deleteIfExists(path);
+            } else if (modified) {
+                Files.deleteIfExists(path);
 
-                    os = Files.newOutputStream(path, CREATE);
+                try (OutputStream os = Files.newOutputStream(path, CREATE);) {
                     store(os);
+                    os.flush();
                     setModified(false);
                     logger.info("Stored {}", path);
-                } finally {
-                    if (os != null) {
-                        os.flush();
-                        os.close();
-                    }
                 }
             }
         } catch (Exception ex) {
@@ -221,12 +255,44 @@ public abstract class DataHolder<T>
     //------//
     // load //
     //------//
+    /**
+     * Load data from the provided input stream.
+     *
+     * @param is provided input stream
+     * @return the loaded data
+     * @throws Exception if anything goes wrong
+     */
     protected abstract T load (InputStream is)
             throws Exception;
 
     //-------//
     // store //
     //-------//
+    /**
+     * Store data to the provided output stream.
+     *
+     * @param os provided output stream
+     * @throws Exception if anything goes wrong
+     */
     protected abstract void store (OutputStream os)
             throws Exception;
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getSimpleName());
+        sb.append('{');
+
+        if (pathString != null) {
+            sb.append(pathString);
+        }
+
+        sb.append('}');
+
+        return sb.toString();
+    }
 }

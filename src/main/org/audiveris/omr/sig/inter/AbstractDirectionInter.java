@@ -24,9 +24,9 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import java.awt.Rectangle;
-import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code AbstractDirectionInter} represents any direction.
@@ -37,7 +37,6 @@ import org.audiveris.omrdataset.api.OmrShape;
 public abstract class AbstractDirectionInter
         extends AbstractInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code AbstractDirectionInter} object.

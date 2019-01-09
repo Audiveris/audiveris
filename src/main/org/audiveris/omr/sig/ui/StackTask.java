@@ -31,12 +31,10 @@ import org.audiveris.omr.sheet.rhythm.MeasureStack;
 public class StackTask
         extends UITask
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Impacted stack. */
     private final MeasureStack stack;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StackTask} object.
      *
@@ -48,7 +46,6 @@ public class StackTask
         this.stack = stack;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public MeasureStack getStack ()
     {
         return stack;

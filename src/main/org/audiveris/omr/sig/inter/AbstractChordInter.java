@@ -72,15 +72,11 @@ public abstract class AbstractChordInter
         extends AbstractInter
         implements InterEnsemble
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractChordInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractChordInter.class);
 
     private static final List<AbstractBeamInter> NO_BEAM = Collections.emptyList();
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Transient data
     //---------------
     //
@@ -111,7 +107,6 @@ public abstract class AbstractChordInter
     /** Voice this chord belongs to. */
     protected Voice voice;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AbstractChordInter} object.
      *
@@ -127,36 +122,6 @@ public abstract class AbstractChordInter
      */
     protected AbstractChordInter ()
     {
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //-----------------//
-    // getClosestChord //
-    //-----------------//
-    /**
-     * From a provided Chord collection, report the chord which has the
-     * closest abscissa to a provided point.
-     *
-     * @param chords the collection of chords to browse
-     * @param point  the reference point
-     * @return the abscissa-wise closest chord
-     */
-    public static AbstractChordInter getClosestChord (Collection<AbstractChordInter> chords,
-                                                      Point point)
-    {
-        AbstractChordInter bestChord = null;
-        int bestDx = Integer.MAX_VALUE;
-
-        for (AbstractChordInter chord : chords) {
-            int dx = Math.abs(chord.getHeadLocation().x - point.x);
-
-            if (dx < bestDx) {
-                bestDx = dx;
-                bestChord = chord;
-            }
-        }
-
-        return bestChord;
     }
 
     //--------//
@@ -211,6 +176,11 @@ public abstract class AbstractChordInter
     //-------------//
     // afterReload //
     //-------------//
+    /**
+     * To be called right after unmarshalling.
+     *
+     * @param measure containing measure
+     */
     public void afterReload (Measure measure)
     {
         try {
@@ -324,12 +294,12 @@ public abstract class AbstractChordInter
      * Report the sequence of beams that are attached to this chord,
      * ordered from the tail to the head of the chord.
      *
-     * @return the attached beams
+     * @return the list of attached beams, perhaps empty
      */
     public List<AbstractBeamInter> getBeams ()
     {
         if (beams == null) {
-            beams = new ArrayList<AbstractBeamInter>();
+            beams = new ArrayList<>();
 
             final StemInter stem = getStem();
 
@@ -340,26 +310,37 @@ public abstract class AbstractChordInter
                 }
 
                 // Keep the sequence sorted from chord tail
-                Collections.sort(
-                        beams,
-                        new Comparator<AbstractBeamInter>()
-                {
-                    @Override
-                    public int compare (AbstractBeamInter b1,
-                                        AbstractBeamInter b2)
-                    {
-                        int x = getCenter().x;
-                        double y1 = LineUtil.yAtX(b1.getMedian(), x);
-                        double y2 = LineUtil.yAtX(b2.getMedian(), x);
-                        int yHead = getHeadLocation().y;
+                Collections.sort(beams, new Comparator<AbstractBeamInter>()
+                         {
+                             @Override
+                             public int compare (AbstractBeamInter b1,
+                                                 AbstractBeamInter b2)
+                             {
+                                 int x = getCenter().x;
+                                 double y1 = LineUtil.yAtX(b1.getMedian(), x);
+                                 double y2 = LineUtil.yAtX(b2.getMedian(), x);
+                                 int yHead = getHeadLocation().y;
 
-                        return Double.compare(Math.abs(yHead - y2), Math.abs(yHead - y1));
-                    }
-                });
+                                 return Double.compare(Math.abs(yHead - y2), Math.abs(yHead - y1));
+                             }
+                         });
             }
         }
 
         return beams;
+    }
+
+    //-----------------------//
+    // getBeamsOrFlagsNumber //
+    //-----------------------//
+    /**
+     * Report the number of beams/flags that apply to this chord.
+     *
+     * @return beams count + flags count
+     */
+    public int getBeamsOrFlagsNumber ()
+    {
+        return getBeams().size() + getFlagsNumber();
     }
 
     //----------------//
@@ -506,8 +487,7 @@ public abstract class AbstractChordInter
             if (!noteShape.isWholeRest()) {
                 // Apply flags/beams for non-rests
                 if (!noteShape.isRest()) {
-                    final int beamNb = (getBeams() != null) ? getBeams().size() : 0;
-                    final int fbn = getFlagsNumber() + beamNb;
+                    final int fbn = getBeamsOrFlagsNumber();
 
                     if (fbn > 0) {
                         /*
@@ -619,7 +599,7 @@ public abstract class AbstractChordInter
      */
     public List<AbstractChordInter> getFollowingTiedChords ()
     {
-        final List<AbstractChordInter> tied = new ArrayList<AbstractChordInter>();
+        final List<AbstractChordInter> tied = new ArrayList<>();
 
         for (Inter inter : getMembers()) {
             AbstractNoteInter note = (AbstractNoteInter) inter;
@@ -684,9 +664,27 @@ public abstract class AbstractChordInter
     //------------//
     // getMeasure //
     //------------//
+    /**
+     * Report the containing measure, if any.
+     *
+     * @return containing measure or null
+     */
     public Measure getMeasure ()
     {
         return measure;
+    }
+
+    //------------//
+    // setMeasure //
+    //------------//
+    /**
+     * Set the containing measure.
+     *
+     * @param measure the measure that contains this chord
+     */
+    public void setMeasure (Measure measure)
+    {
+        this.measure = measure;
     }
 
     //------------//
@@ -744,6 +742,19 @@ public abstract class AbstractChordInter
     public Slot getSlot ()
     {
         return slot;
+    }
+
+    //---------//
+    // setSlot //
+    //---------//
+    /**
+     * Return the containing time slot, if any
+     *
+     * @param slot containing slot or null
+     */
+    public void setSlot (Slot slot)
+    {
+        this.slot = slot;
     }
 
     //----------//
@@ -910,6 +921,73 @@ public abstract class AbstractChordInter
         return voice;
     }
 
+    //----------//
+    // setVoice //
+    //----------//
+    /**
+     * Assign a voice to this chord, and to the related ones.
+     *
+     * @param voice the voice to assign
+     */
+    public void setVoice (Voice voice)
+    {
+        // Already done?
+        if (this.voice == null) {
+            this.voice = voice;
+
+            // Update the voice entity
+            if (!isWholeRest()) {
+                if (slot != null) {
+                    voice.startChord(slot, this);
+                }
+
+                // Extend this voice to other grouped chords if any
+                BeamGroup group = getBeamGroup();
+
+                if (group != null) {
+                    logger.debug(
+                            "{} extending voice#{} to group#{}",
+                            this,
+                            voice.getId(),
+                            group.getId());
+
+                    group.setVoice(voice);
+                }
+
+                // Extend to the following tied chords as well
+                List<AbstractChordInter> tied = getFollowingTiedChords();
+
+                for (AbstractChordInter chord : tied) {
+                    logger.debug("{} tied to {}", this, chord);
+
+                    // Check the tied chords belong to the same measure
+                    if (this.measure == chord.measure) {
+                        logger.debug(
+                                "{} extending voice#{} to tied chord#{}",
+                                this,
+                                voice.getId(),
+                                chord.getId());
+
+                        chord.setVoice(voice);
+                    } else {
+                        // Chords tied across measure boundary
+                        logger.debug("{} Cross tie -> {}", this, chord);
+                    }
+                }
+            }
+        } else if (this.voice != voice) {
+            logger.warn(
+                    "{} Attempt to reassign voice from {} to {}",
+                    this,
+                    this.voice.getId(),
+                    voice.getId());
+        } else if (!isWholeRest()) {
+            if (slot != null) {
+                voice.startChord(slot, this);
+            }
+        }
+    }
+
     //-----------------//
     // invalidateCache //
     //-----------------//
@@ -1055,6 +1133,9 @@ public abstract class AbstractChordInter
     //-------------//
     // resetTiming //
     //-------------//
+    /**
+     * Reset cached data related to timing.
+     */
     public void resetTiming ()
     {
         dotsNumber = 0;
@@ -1063,25 +1144,9 @@ public abstract class AbstractChordInter
         timeOffset = null;
     }
 
-    //------------//
-    // setMeasure //
-    //------------//
-    public void setMeasure (Measure measure)
-    {
-        this.measure = measure;
-    }
-
-    //---------//
-    // setSlot //
-    //---------//
-    public void setSlot (Slot slot)
-    {
-        this.slot = slot;
-    }
-
-    //----_----------//
+    //---------------//
     // setTimeOffset //
-    //------_--------//
+    //---------------//
     /**
      * Remember the time offset for this chord
      *
@@ -1104,71 +1169,6 @@ public abstract class AbstractChordInter
         }
 
         return true;
-    }
-
-    //----------//
-    // setVoice //
-    //----------//
-    /**
-     * Assign a voice to this chord, and to the related ones.
-     *
-     * @param voice the voice to assign
-     */
-    public void setVoice (Voice voice)
-    {
-        // Already done?
-        if (this.voice == null) {
-            this.voice = voice;
-
-            // Update the voice entity
-            if (!isWholeRest()) {
-                if (slot != null) {
-                    voice.startChord(slot, this);
-                }
-
-                // Extend this voice to other grouped chords if any
-                BeamGroup group = getBeamGroup();
-
-                if (group != null) {
-                    logger.debug(
-                            "{} extending voice#{} to group#{}",
-                            this,
-                            voice.getId(),
-                            group.getId());
-
-                    group.setVoice(voice);
-                }
-
-                // Extend to the following tied chords as well
-                List<AbstractChordInter> tied = getFollowingTiedChords();
-
-                for (AbstractChordInter chord : tied) {
-                    logger.debug("{} tied to {}", this, chord);
-
-                    // Check the tied chords belong to the same measure
-                    if (this.measure == chord.measure) {
-                        logger.debug(
-                                "{} extending voice#{} to tied chord#{}",
-                                this,
-                                voice.getId(),
-                                chord.getId());
-
-                        chord.setVoice(voice);
-                    } else {
-                        // Chords tied across measure boundary
-                        logger.debug("{} Cross tie -> {}", this, chord);
-                    }
-                }
-            }
-        } else if (this.voice != voice) {
-            logger.warn(
-                    "{} Attempt to reassign voice from " + this.voice.getId() + " to " + voice.getId(),
-                    this);
-        } else if (!isWholeRest()) {
-            if (slot != null) {
-                voice.startChord(slot, this);
-            }
-        }
     }
 
     //------------------//
@@ -1211,5 +1211,34 @@ public abstract class AbstractChordInter
         }
 
         return sb.toString();
+    }
+
+    //-----------------//
+    // getClosestChord //
+    //-----------------//
+    /**
+     * From a provided Chord collection, report the chord which has the
+     * closest abscissa to a provided point.
+     *
+     * @param chords the collection of chords to browse
+     * @param point  the reference point
+     * @return the abscissa-wise closest chord
+     */
+    public static AbstractChordInter getClosestChord (Collection<AbstractChordInter> chords,
+                                                      Point point)
+    {
+        AbstractChordInter bestChord = null;
+        int bestDx = Integer.MAX_VALUE;
+
+        for (AbstractChordInter chord : chords) {
+            int dx = Math.abs(chord.getHeadLocation().x - point.x);
+
+            if (dx < bestDx) {
+                bestDx = dx;
+                bestChord = chord;
+            }
+        }
+
+        return bestChord;
     }
 }

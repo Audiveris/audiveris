@@ -28,10 +28,11 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
  * Non-mutable font attributes (generally for a word).
+ *
+ * @author Hervé Bitteur
  */
 public class FontInfo
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(FontInfo.class);
 
@@ -41,7 +42,6 @@ public class FontInfo
     /** Separator in memo between attributes (if any) and point size. */
     private static final char SEPARATOR = '-';
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** True if bold. */
     public final boolean isBold;
 
@@ -66,7 +66,6 @@ public class FontInfo
     /** Font name. */
     public final String fontName;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new FontInfo object.
      *
@@ -116,42 +115,6 @@ public class FontInfo
                 org.isSmallcaps,
                 pointSize,
                 org.fontName);
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //
-    //---------------//
-    // createDefault //
-    //---------------//
-    /**
-     * Create a default font using provided fontSize.
-     *
-     * @param fontSize the size to use
-     * @return the FontInfo instance
-     */
-    public static FontInfo createDefault (int fontSize)
-    {
-        return new FontInfo(false, false, false, false, true, false, fontSize, "Serif");
-    }
-
-    //--------//
-    // decode //
-    //--------//
-    public static FontInfo decode (String str)
-    {
-        final int sep = str.indexOf(SEPARATOR);
-        final String sizeStr = (sep != -1) ? str.substring(sep + 1) : str;
-        final int size = Integer.decode(sizeStr);
-
-        return new FontInfo(
-                str.indexOf('B') != -1,
-                str.indexOf('I') != -1,
-                str.indexOf('U') != -1,
-                str.indexOf('M') != -1,
-                str.indexOf('S') != -1,
-                str.indexOf('C') != -1,
-                size,
-                "generic");
     }
 
     //----------//
@@ -218,14 +181,55 @@ public class FontInfo
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------------//
+    // createDefault //
+    //---------------//
+    /**
+     * Create a default font using provided fontSize.
+     *
+     * @param fontSize the size to use
+     * @return the FontInfo instance
+     */
+    public static FontInfo createDefault (int fontSize)
+    {
+        return new FontInfo(false, false, false, false, true, false, fontSize, "Serif");
+    }
+
+    //--------//
+    // decode //
+    //--------//
+    /**
+     * Decode a FontInfo out of the provided string.
+     *
+     * @param str input string
+     * @return decoded FontInfo
+     */
+    public static FontInfo decode (String str)
+    {
+        final int sep = str.indexOf(SEPARATOR);
+        final String sizeStr = (sep != -1) ? str.substring(sep + 1) : str;
+        final int size = Integer.decode(sizeStr);
+
+        return new FontInfo(
+                str.indexOf('B') != -1,
+                str.indexOf('I') != -1,
+                str.indexOf('U') != -1,
+                str.indexOf('M') != -1,
+                str.indexOf('S') != -1,
+                str.indexOf('C') != -1,
+                size,
+                "generic");
+    }
+
     //---------//
     // Adapter //
     //---------//
+    /**
+     * JAXB adapter for FontInfo.
+     */
     public static class Adapter
             extends XmlAdapter<String, FontInfo>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String marshal (FontInfo info)

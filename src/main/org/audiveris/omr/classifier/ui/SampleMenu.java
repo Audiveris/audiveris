@@ -49,18 +49,15 @@ import javax.swing.JMenuItem;
 public class SampleMenu
         extends SeparableMenu
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleMenu.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing sheet. */
     private final Sheet sheet;
 
     /** Selected glyph. */
     private final Glyph glyph;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleMenu} object.
      *
@@ -76,7 +73,6 @@ public class SampleMenu
         populateMenu();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getGlyph //
     //----------//
@@ -133,14 +129,12 @@ public class SampleMenu
         add(new SelectMenu());
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // AssignMenu //
     //------------//
     private class AssignMenu
             extends JMenu
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final ActionListener listener = new ActionListener()
         {
@@ -153,15 +147,13 @@ public class SampleMenu
             }
         };
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public AssignMenu (Set<Shape> shapes)
+        AssignMenu (Set<Shape> shapes)
         {
             super("Assign sample");
 
             populate(shapes);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         private void populate (Set<Shape> shapes)
         {
             for (Shape shape : shapes) {
@@ -178,30 +170,26 @@ public class SampleMenu
     private class SelectMenu
             extends JMenu
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public SelectMenu ()
+        SelectMenu ()
         {
             super("Select sample");
 
             populate();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         private void populate ()
         {
-            ShapeSet.addAllShapes(
-                    this,
-                    new ActionListener()
-            {
-                @Override
-                public void actionPerformed (ActionEvent e)
-                {
-                    JMenuItem source = (JMenuItem) e.getSource();
-                    Shape shape = Shape.valueOf(source.getText());
-                    addSample(shape);
-                }
-            });
+            ShapeSet.addAllShapes(this, new ActionListener()
+                          {
+                              @Override
+                              public void actionPerformed (ActionEvent e)
+                              {
+                                  JMenuItem source = (JMenuItem) e.getSource();
+                                  Shape shape = Shape.valueOf(source.getText());
+                                  addSample(shape);
+                              }
+                          });
         }
     }
 }

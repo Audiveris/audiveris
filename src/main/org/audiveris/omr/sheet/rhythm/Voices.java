@@ -52,7 +52,6 @@ import java.util.Map;
  */
 public abstract class Voices
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Voices.class);
 
@@ -126,7 +125,11 @@ public abstract class Voices
         }
     };
 
-    //~ Methods ------------------------------------------------------------------------------------
+    // Not meant to be instantiated.
+    private Voices ()
+    {
+    }
+
     //------------//
     // refinePage //
     //------------//
@@ -205,8 +208,7 @@ public abstract class Voices
 
                     final List<SlurInter> orphans = part.getSlurs(SlurInter.isBeginningOrphan);
 
-                    final Part precedingPart = prevSystem.getPartById(
-                            logicalPart.getId());
+                    final Part precedingPart = prevSystem.getPartById(logicalPart.getId());
 
                     if (precedingPart != null) {
                         final List<SlurInter> precOrphans = precedingPart.getSlurs(
@@ -268,6 +270,8 @@ public abstract class Voices
      * See {@link Slot#buildVoices(java.util.List)} method.
      * <p>
      * Here we simply rename the IDs from top to bottom (roughly), within each staff.
+     * <p>
+     * We then extend each chord voice to its preceding cue chords.
      *
      * @param stack the stack to process
      */
@@ -277,6 +281,7 @@ public abstract class Voices
         for (Measure measure : stack.getMeasures()) {
             measure.sortVoices();
             measure.renameVoices();
+            measure.setCueVoices();
         }
     }
 
@@ -373,13 +378,11 @@ public abstract class Voices
         return null;
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
     //-------------//
     // SlurAdapter //
     //-------------//
     private static interface SlurAdapter
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Report the slur connected to the left of the provided one.

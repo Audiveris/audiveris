@@ -52,15 +52,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class SlurHeadRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SlurHeadRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(SlurHeadRelation.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
@@ -74,7 +70,6 @@ public class SlurHeadRelation
     /** Euclidean distance from slur end to chord middle vertical. */
     private double euclidean;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SlurNoteRelation} object.
      *
@@ -92,7 +87,6 @@ public class SlurHeadRelation
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -129,11 +123,26 @@ public class SlurHeadRelation
     // getEuclidean //
     //--------------//
     /**
+     * Report the euclidean distance between head and slur end.
+     *
      * @return the euclidean distance
      */
     public double getEuclidean ()
     {
         return euclidean;
+    }
+
+    //--------------//
+    // setEuclidean //
+    //--------------//
+    /**
+     * Set the euclidean distance between head and slur end.
+     *
+     * @param euclidean the euclidean distance to set
+     */
+    public void setEuclidean (double euclidean)
+    {
+        this.euclidean = euclidean;
     }
 
     //---------//
@@ -178,17 +187,6 @@ public class SlurHeadRelation
         }
     }
 
-    //--------------//
-    // setEuclidean //
-    //--------------//
-    /**
-     * @param euclidean the euclidean distance to set
-     */
-    public void setEuclidean (double euclidean)
-    {
-        this.euclidean = euclidean;
-    }
-
     //----------//
     // toString //
     //----------//
@@ -207,14 +205,12 @@ public class SlurHeadRelation
         return constants.slurSupportCoeff.getValue();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio slurSupportCoeff = new Constant.Ratio(
                 5,

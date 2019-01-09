@@ -45,7 +45,6 @@ import javax.xml.stream.XMLStreamException;
 public class TestEntity
         extends BaseTestCase
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private JAXBContext jaxbContext;
 
@@ -53,9 +52,11 @@ public class TestEntity
 
     private final String indexFileName = "itf-index.xml";
 
-    //~ Methods ------------------------------------------------------------------------------------
     public void testInSequence ()
-            throws JAXBException, FileNotFoundException, IOException, XMLStreamException
+            throws JAXBException,
+                   FileNotFoundException,
+                   IOException,
+                   XMLStreamException
     {
         marshall();
         unmarshall();
@@ -70,7 +71,10 @@ public class TestEntity
     }
 
     private void marshall ()
-            throws JAXBException, FileNotFoundException, IOException, XMLStreamException
+            throws JAXBException,
+                   FileNotFoundException,
+                   IOException,
+                   XMLStreamException
     {
         File target = new File(dir, indexFileName);
         Files.deleteIfExists(target.toPath());
@@ -94,7 +98,9 @@ public class TestEntity
     }
 
     private void unmarshall ()
-            throws JAXBException, FileNotFoundException, IOException
+            throws JAXBException,
+                   FileNotFoundException,
+                   IOException
     {
         System.out.println("=========================================================");
         System.out.println("Unmarshalling ...");

@@ -42,23 +42,21 @@ import java.awt.geom.Rectangle2D;
 public class TextFont
         extends OmrFont
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TextFont.class);
 
-    /** Name of the chosen underlying text font */
-    private static final String fontName = constants.defaultTextFontName.getValue();
+    /** Ratio from a 300 DPI scan to font point-size (72 pt/inch) */
+    public static final float TO_POINT = 72f / 300f;
 
     /** The base font used for text entities */
     public static final TextFont baseTextFont = new TextFont(
             constants.defaultTextFontSize.getValue());
 
-    /** Ratio from a 300 DPI scan to font point-size (72 pt/inch) */
-    public static final float TO_POINT = 72f / 300f;
+    /** Name of the chosen underlying text font */
+    private static final String fontName = constants.defaultTextFontName.getValue();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TextFont object.
      *
@@ -98,8 +96,6 @@ public class TextFont
         super(fontName, Font.PLAIN, size);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //
     //-----------------//
     // computeFontSize //
     //-----------------//
@@ -131,14 +127,12 @@ public class TextFont
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.String defaultTextFontName = new Constant.String(
                 "Serif",

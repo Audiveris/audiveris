@@ -45,12 +45,9 @@ import java.util.List;
  */
 public class SheetParameters
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SheetParameters.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetParameters.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The swing component of this panel. */
     private final ScopedPanel scopedPanel;
 
@@ -61,10 +58,8 @@ public class SheetParameters
     private Scale scale;
 
     /** Map of scaling parameters. */
-    private final EnumMap<Item, ScalingParam> scalings = new EnumMap<Item, ScalingParam>(
-            Item.class);
+    private final EnumMap<Item, ScalingParam> scalings = new EnumMap<>(Item.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SheetParameters} object.
      *
@@ -78,7 +73,7 @@ public class SheetParameters
         // Populate scalings with current scale values
         populateScalings();
 
-        final List<XactDataPane> sheetPanes = new ArrayList<XactDataPane>();
+        final List<XactDataPane> sheetPanes = new ArrayList<>();
 
         for (Item key : Item.values()) {
             ScalingParam ip = scalings.get(key);
@@ -95,7 +90,6 @@ public class SheetParameters
         initialDisplay();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // commit //
     //--------//
@@ -161,85 +155,23 @@ public class SheetParameters
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-------------//
-    // ScalingPane //
-    //-------------//
-    /**
-     * Pane to define a scaling parameter (sheet scope only).
-     */
-    private static class ScalingPane
-            extends IntegerPane
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final Scale.Item key;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public ScalingPane (Scale.Item key,
-                            XactDataPane parent,
-                            ScalingParam model)
-        {
-            super(key.getDescription(), parent, "", null, model);
-            this.key = key;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            if ((e != null) && (e.getSource() == data.getField())) {
-                display(read());
-            } else {
-                super.actionPerformed(e);
-            }
-        }
-
-        @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int r)
-        {
-            // Draw the specific/inherit box
-            builder.add(selBox, cst.xyw(1, r, 1));
-            builder.add(separator, cst.xyw(3, r, 3));
-            builder.add(data.getField(), cst.xyw(7, r, 1));
-
-            return r + 2;
-        }
-
-        public Scale.Item getKey ()
-        {
-            return key;
-        }
-
-        @Override
-        public int getLogicalRowCount ()
-        {
-            return 1;
-        }
-    }
-
     //--------------//
     // ScalingParam //
     //--------------//
     /**
-     * An integer param, backed by Scale structure.
+     * An integer {@code Param}, backed by Scale structure.
      */
     private class ScalingParam
             extends Param<Integer>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public final Item key;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public ScalingParam (Item key)
+        ScalingParam (Item key)
         {
             this.key = key;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public Integer getSourceValue ()
         {
@@ -278,6 +210,61 @@ public class SheetParameters
             }
 
             return false;
+        }
+    }
+
+    //-------------//
+    // ScalingPane //
+    //-------------//
+    /**
+     * Pane to define a scaling parameter (sheet scope only).
+     */
+    private static class ScalingPane
+            extends IntegerPane
+    {
+
+        final Scale.Item key;
+
+        ScalingPane (Scale.Item key,
+                     XactDataPane parent,
+                     ScalingParam model)
+        {
+            super(key.getDescription(), parent, "", null, model);
+            this.key = key;
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            if ((e != null) && (e.getSource() == data.getField())) {
+                display(read());
+            } else {
+                super.actionPerformed(e);
+            }
+        }
+
+        @Override
+        public int defineLayout (PanelBuilder builder,
+                                 CellConstraints cst,
+                                 int r)
+        {
+            // Draw the specific/inherit box
+            builder.add(selBox, cst.xyw(1, r, 1));
+            builder.add(separator, cst.xyw(3, r, 3));
+            builder.add(data.getField(), cst.xyw(7, r, 1));
+
+            return r + 2;
+        }
+
+        public Scale.Item getKey ()
+        {
+            return key;
+        }
+
+        @Override
+        public int getLogicalRowCount ()
+        {
+            return 1;
         }
     }
 }

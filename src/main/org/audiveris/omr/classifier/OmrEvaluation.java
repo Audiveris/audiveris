@@ -31,7 +31,6 @@ import org.audiveris.omrdataset.api.OmrShape;
 public class OmrEvaluation
         implements Comparable<OmrEvaluation>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The evaluated OMR shape. */
     public final OmrShape omrShape;
@@ -42,7 +41,6 @@ public class OmrEvaluation
      */
     public final double grade;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code OmrEvaluation} object.
      *
@@ -56,7 +54,6 @@ public class OmrEvaluation
         this.grade = grade;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // compareTo //
     //-----------//

@@ -21,12 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import java.awt.Rectangle;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-
-import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omrdataset.api.OmrShape;
+
+import java.awt.Rectangle;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code SmallFlagInter} is a flag for grace note (with or without slash).
@@ -37,7 +38,6 @@ import org.audiveris.omrdataset.api.OmrShape;
 public class SmallFlagInter
         extends AbstractFlagInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new SmallFlagInter object.
@@ -76,7 +76,6 @@ public class SmallFlagInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -84,5 +83,37 @@ public class SmallFlagInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        setAbnormal(true); // No stem linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if flag is connected to a stem
+        setAbnormal(!sig.hasRelation(this, FlagStemRelation.class));
+
+        return isAbnormal();
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
     }
 }

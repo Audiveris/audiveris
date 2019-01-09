@@ -41,15 +41,12 @@ import java.util.Objects;
  */
 public class PageReduction
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PageReduction.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related page. */
     private final Page page;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new PageReduction object.
      *
@@ -60,7 +57,6 @@ public class PageReduction
         this.page = page;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // reduce //
     //--------//
@@ -96,10 +92,10 @@ public class PageReduction
     private List<List<Candidate>> buildSequences (Page page)
     {
         // Build candidates (here, a candidate is a Part)
-        List<List<Candidate>> sequences = new ArrayList<List<Candidate>>();
+        List<List<Candidate>> sequences = new ArrayList<>();
 
         for (SystemInfo system : page.getSystems()) {
-            List<Candidate> parts = new ArrayList<Candidate>();
+            List<Candidate> parts = new ArrayList<>();
 
             for (Part systemPart : system.getParts()) {
                 parts.add(new PartCandidate(systemPart));
@@ -121,7 +117,7 @@ public class PageReduction
      */
     private void storeResults (List<ResultEntry> resultEntries)
     {
-        List<LogicalPart> logicalParts = new ArrayList<LogicalPart>();
+        List<LogicalPart> logicalParts = new ArrayList<>();
 
         for (ResultEntry entry : resultEntries) {
             LogicalPart logicalPart = entry.result;
@@ -134,7 +130,6 @@ public class PageReduction
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // PartCandidate //
     //---------------//
@@ -144,17 +139,14 @@ public class PageReduction
     private static class PartCandidate
             implements Candidate
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Part systemPart;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public PartCandidate (Part part)
+        PartCandidate (Part part)
         {
             this.systemPart = part;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String getAbbreviation ()
         {

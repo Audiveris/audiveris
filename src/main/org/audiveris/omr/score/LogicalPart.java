@@ -40,22 +40,18 @@ import javax.xml.bind.annotation.XmlAttribute;
  * It can be "instantiated" in one or several SystemInfo by a {@link org.audiveris.omr.sheet.Part}.
  * <p>
  * There is an intermediate LogicalPart instance at Page level, which abstracts the system parts at
- * page level, and which is then used when abstracting the part information from pages to score.</p>
+ * page level, and which is then used when abstracting the part information from pages to score.
  *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class LogicalPart
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            LogicalPart.class);
+    private static final Logger logger = LoggerFactory.getLogger(LogicalPart.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
@@ -82,7 +78,6 @@ public class LogicalPart
     @XmlAttribute(name = "midi-program")
     private Integer midiProgram;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of ScorePart
      *
@@ -103,7 +98,6 @@ public class LogicalPart
         staffCount = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // equals //
     //--------//
@@ -124,9 +118,9 @@ public class LogicalPart
             return false;
         }
 
-        return Objects.deepEquals(midiProgram, that.midiProgram)
-               && Objects.deepEquals(name, that.name)
-               && Objects.deepEquals(abbreviation, that.abbreviation);
+        return Objects.deepEquals(midiProgram, that.midiProgram) && Objects.deepEquals(
+                name,
+                that.name) && Objects.deepEquals(abbreviation, that.abbreviation);
     }
 
     //-------//
@@ -144,6 +138,19 @@ public class LogicalPart
         }
     }
 
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Report the id of this part
+     *
+     * @return the part id
+     */
+    public int getId ()
+    {
+        return id;
+    }
+
     //-----------------//
     // getAbbreviation //
     //-----------------//
@@ -155,9 +162,25 @@ public class LogicalPart
         return abbreviation;
     }
 
+    //-----------------//
+    // setAbbreviation //
+    //-----------------//
+    /**
+     * @param abbreviation the abbreviation to set
+     */
+    public void setAbbreviation (String abbreviation)
+    {
+        this.abbreviation = abbreviation;
+    }
+
     //----------------//
     // getDefaultName //
     //----------------//
+    /**
+     * Report the default name for this part, based on staff count.
+     *
+     * @return inferred name
+     */
     public String getDefaultName ()
     {
         switch (staffCount) {
@@ -175,6 +198,11 @@ public class LogicalPart
     //-------------------//
     // getDefaultProgram //
     //-------------------//
+    /**
+     * Report the default midi program, based on staff count.
+     *
+     * @return inferred program
+     */
     public Integer getDefaultProgram ()
     {
         logger.debug("Part #{} count={}", getId(), staffCount);
@@ -191,25 +219,30 @@ public class LogicalPart
         }
     }
 
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Report the id of this part
-     *
-     * @return the part id
-     */
-    public int getId ()
-    {
-        return id;
-    }
-
     //----------------//
     // getMidiProgram //
     //----------------//
+    /**
+     * Report part midi program number, if any.
+     *
+     * @return program number or null
+     */
     public Integer getMidiProgram ()
     {
         return midiProgram;
+    }
+
+    //----------------//
+    // setMidiProgram //
+    //----------------//
+    /**
+     * Assign the part midi program.
+     *
+     * @param midiProgram the midi program number for this part
+     */
+    public void setMidiProgram (Integer midiProgram)
+    {
+        this.midiProgram = midiProgram;
     }
 
     //---------//
@@ -223,6 +256,19 @@ public class LogicalPart
     public String getName ()
     {
         return name;
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assign a name to this part
+     *
+     * @param name the new part name
+     */
+    public void setName (String name)
+    {
+        this.name = name;
     }
 
     //--------//
@@ -275,38 +321,6 @@ public class LogicalPart
         return staffCount > 1;
     }
 
-    //-----------------//
-    // setAbbreviation //
-    //-----------------//
-    /**
-     * @param abbreviation the abbreviation to set
-     */
-    public void setAbbreviation (String abbreviation)
-    {
-        this.abbreviation = abbreviation;
-    }
-
-    //----------------//
-    // setMidiProgram //
-    //----------------//
-    public void setMidiProgram (Integer midiProgram)
-    {
-        this.midiProgram = midiProgram;
-    }
-
-    //---------//
-    // setName //
-    //---------//
-    /**
-     * Assign a name to this part
-     *
-     * @param name the new part name
-     */
-    public void setName (String name)
-    {
-        this.name = name;
-    }
-
     //-------------//
     // swapVoiceId //
     //-------------//
@@ -356,14 +370,12 @@ public class LogicalPart
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // Default Part names
         private final Constant.String defaultSingleStaffPartName = new Constant.String(

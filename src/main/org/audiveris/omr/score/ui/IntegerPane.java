@@ -35,11 +35,10 @@ import org.audiveris.omr.util.param.Param;
 public class IntegerPane
         extends XactDataPane<Integer>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
+    /** Data labeled field. */
     protected final LIntegerField data;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code IntegerPane} object.
      *
@@ -59,7 +58,6 @@ public class IntegerPane
         data = new LIntegerField(true, text, tip);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public int defineLayout (PanelBuilder builder,
                              CellConstraints cst,

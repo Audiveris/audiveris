@@ -42,7 +42,6 @@ import javax.swing.JLabel;
 public class AnnotationBoard
         extends EntityBoard<Annotation>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Output : shape icon. */
     private final JLabel shapeIcon = new JLabel();
@@ -53,7 +52,6 @@ public class AnnotationBoard
     /** Output : shape. */
     private final LTextField shapeField = new LTextField("", "Shape for this annotation");
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AnnotationBoard} object.
      *
@@ -71,7 +69,6 @@ public class AnnotationBoard
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------------//
     // handleEntityListEvent //
     //-----------------------//

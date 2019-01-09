@@ -39,7 +39,6 @@ import org.audiveris.omr.util.VerticalSide;
 public class BasicTimeBuilder
         extends TimeBuilder
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code BasicTimeBuilder} object.
@@ -53,7 +52,6 @@ public class BasicTimeBuilder
         super(staff, column);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void cleanup ()
     {

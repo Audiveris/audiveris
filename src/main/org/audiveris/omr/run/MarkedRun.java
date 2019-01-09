@@ -30,12 +30,10 @@ package org.audiveris.omr.run;
 public class MarkedRun
         extends Run
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Assigned mark. */
     private int mark;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MarkedRun} object.
      *
@@ -63,12 +61,21 @@ public class MarkedRun
         this.mark = mark;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * Report the assigned mark.
+     *
+     * @return mark
+     */
     public int getMark ()
     {
         return mark;
     }
 
+    /**
+     * Assign a mark.
+     *
+     * @param mark assigned mark
+     */
     public void setMark (int mark)
     {
         this.mark = mark;

@@ -37,11 +37,9 @@ import org.slf4j.LoggerFactory;
 public class HeadersStep
         extends AbstractSystemStep<Void>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(HeadersStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadersStep} object.
      */
@@ -49,7 +47,6 @@ public class HeadersStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//

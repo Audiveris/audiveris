@@ -44,21 +44,21 @@ import java.util.zip.ZipOutputStream;
 /**
  * Class {@code Zip} is a convenient utility that provides both writing and reading
  * from a file which is transparently compressed in Zip.
+ * <p>
+ * No longer used.
  *
  * @author Hervé Bitteur
  */
 public abstract class Zip
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Zip.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
+    /** Not meant to be instantiated. */
     private Zip ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // createInputStream //
     //-------------------//
@@ -67,7 +67,6 @@ public abstract class Zip
      * and by reading the first entry in this zip file.
      *
      * @param file the zip file
-     *
      * @return a InputStream on the zip entry
      */
     public static InputStream createInputStream (File file)
@@ -100,7 +99,6 @@ public abstract class Zip
      * extension added.
      *
      * @param file the file (with no zip extension)
-     *
      * @return a OutputStream on the zip entry
      */
     public static OutputStream createOutputStream (File file)
@@ -116,7 +114,7 @@ public abstract class Zip
         } catch (FileNotFoundException ex) {
             System.err.println(ex.toString());
             System.err.println(file + " not found");
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             System.err.println(ex.toString());
         }
 
@@ -132,7 +130,6 @@ public abstract class Zip
      * this zip file.
      *
      * @param file the file (with no zip extension)
-     *
      * @return a reader on the zip entry
      */
     public static Reader createReader (File file)
@@ -167,7 +164,6 @@ public abstract class Zip
      * added.
      *
      * @param file the file (with no zip extension)
-     *
      * @return a writer on the zip entry
      */
     public static Writer createWriter (File file)
@@ -183,7 +179,7 @@ public abstract class Zip
         } catch (FileNotFoundException ex) {
             System.err.println(ex.toString());
             System.err.println(file + " not found");
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             System.err.println(ex.toString());
         }
 
@@ -193,8 +189,17 @@ public abstract class Zip
     //---------//
     // isEmpty //
     //---------//
+    /**
+     * Tell whether the archive file is empty.
+     *
+     * @param file provided file
+     * @return true if so
+     * @throws FileNotFoundException if file is not found
+     * @throws IOException           if any IO goes wrong
+     */
     public static boolean isEmpty (File file)
-            throws FileNotFoundException, IOException
+            throws FileNotFoundException,
+                   IOException
     {
         String path = file.getCanonicalPath();
         ZipFile zf = new ZipFile(path);

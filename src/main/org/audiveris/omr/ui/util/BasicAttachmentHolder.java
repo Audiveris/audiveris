@@ -44,12 +44,10 @@ import java.util.Map;
 public class BasicAttachmentHolder
         implements AttachmentHolder
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Map for attachments */
-    protected Map<String, java.awt.Shape> attachments = new HashMap<String, java.awt.Shape>();
+    protected Map<String, java.awt.Shape> attachments = new HashMap<>();
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // addAttachment //
     //---------------//
@@ -78,7 +76,7 @@ public class BasicAttachmentHolder
     public int removeAttachments (String prefix)
     {
         // To avoid concurrent modifications
-        List<String> toRemove = new ArrayList<String>();
+        List<String> toRemove = new ArrayList<>();
 
         for (String key : attachments.keySet()) {
             if (key.startsWith(prefix)) {

@@ -38,12 +38,10 @@ import java.awt.geom.Rectangle2D;
 public class FlagsDownSymbol
         extends ShapeSymbol
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The number of flags. */
     protected final int fn;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new FlagsDownSymbol object.
      *
@@ -59,7 +57,6 @@ public class FlagsDownSymbol
         this.fn = flagCount;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -81,8 +78,8 @@ public class FlagsDownSymbol
                 0,
                 0,
                 (int) Math.ceil(p.rect2.getWidth()),
-                (((fn / 2) + ((fn + 1) % 2)) * Math.abs(p.dy))
-                + ((fn % 2) * (int) Math.ceil(p.rect1.getHeight())));
+                (((fn / 2) + ((fn + 1) % 2)) * Math.abs(p.dy)) + ((fn % 2) * (int) Math.ceil(
+                p.rect1.getHeight())));
 
         return p;
     }
@@ -90,6 +87,12 @@ public class FlagsDownSymbol
     //------------//
     // initParams //
     //------------//
+    /**
+     * Specific initialization, based on provided font, depending on flag direction.
+     *
+     * @param font provided font
+     * @return initialized params
+     */
     protected MyParams initParams (MusicFont font)
     {
         MyParams p = new MyParams();
@@ -127,14 +130,12 @@ public class FlagsDownSymbol
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
             extends BasicSymbol.Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         TextLayout flag1;
 

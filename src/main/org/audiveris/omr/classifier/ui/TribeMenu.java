@@ -33,7 +33,6 @@ import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.util.SeparableMenu;
 
 import org.jdesktop.application.Action;
-import org.jdesktop.application.ApplicationAction;
 import org.jdesktop.application.ApplicationActionMap;
 
 import org.slf4j.Logger;
@@ -53,11 +52,9 @@ import javax.swing.JMenuItem;
 public class TribeMenu
         extends SeparableMenu
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleMenu.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Selected glyph. */
     private final Glyph glyph;
 
@@ -67,7 +64,6 @@ public class TribeMenu
     /** Related sample sheet, if any. */
     private SampleSheet sampleSheet;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TribeMenu} object.
      *
@@ -86,10 +82,14 @@ public class TribeMenu
         populateMenu();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // addGood //
     //---------//
+    /**
+     * Add a good sample
+     *
+     * @param e triggering event
+     */
     @Action
     public void addGood (ActionEvent e)
     {
@@ -110,6 +110,11 @@ public class TribeMenu
     //----------//
     // addOther //
     //----------//
+    /**
+     * Add a plain sample
+     *
+     * @param e triggering event
+     */
     @Action
     public void addOther (ActionEvent e)
     {
@@ -157,10 +162,10 @@ public class TribeMenu
 
         if (currentTribe != null) {
             // Good: Add compatible glyph to current tribe
-            add(new JMenuItem((ApplicationAction) actionMap.get("addGood")));
+            add(new JMenuItem(actionMap.get("addGood")));
 
             // Other: Add sub-optimal glyph to current tribe
-            add(new JMenuItem((ApplicationAction) actionMap.get("addOther")));
+            add(new JMenuItem(actionMap.get("addOther")));
         }
     }
 
@@ -180,37 +185,32 @@ public class TribeMenu
         sampleSheet.getTribe(best);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // SelectMenu //
     //------------//
     private class SelectMenu
             extends JMenu
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public SelectMenu ()
+        SelectMenu ()
         {
             super("Set as Best");
 
             populate();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         private void populate ()
         {
-            ShapeSet.addAllShapes(
-                    this,
-                    new ActionListener()
-            {
-                @Override
-                public void actionPerformed (ActionEvent e)
-                {
-                    JMenuItem source = (JMenuItem) e.getSource();
-                    Shape shape = Shape.valueOf(source.getText());
-                    selectBest(shape);
-                }
-            });
+            ShapeSet.addAllShapes(this, new ActionListener()
+                          {
+                              @Override
+                              public void actionPerformed (ActionEvent e)
+                              {
+                                  JMenuItem source = (JMenuItem) e.getSource();
+                                  Shape shape = Shape.valueOf(source.getText());
+                                  selectBest(shape);
+                              }
+                          });
         }
     }
 }

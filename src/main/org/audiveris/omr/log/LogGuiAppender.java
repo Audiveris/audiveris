@@ -40,34 +40,16 @@ import java.util.concurrent.ArrayBlockingQueue;
 public class LogGuiAppender
         extends AppenderBase<ILoggingEvent>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /**
      * Size of the mail box.
      * (This cannot be an application Constant, for elaboration dependencies)
      */
-    private static final int LOG_MBX_SIZE = 10000;
+    private static final int LOG_MBX_SIZE = 10_000;
 
     /** Temporary mail box for logged messages. */
-    private static final ArrayBlockingQueue<ILoggingEvent> logMbx = new ArrayBlockingQueue<ILoggingEvent>(
+    private static final ArrayBlockingQueue<ILoggingEvent> logMbx = new ArrayBlockingQueue<>(
             LOG_MBX_SIZE);
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //---------------//
-    // getEventCount //
-    //---------------//
-    public static int getEventCount ()
-    {
-        return logMbx.size();
-    }
-
-    //-----------//
-    // pollEvent //
-    //-----------//
-    public static ILoggingEvent pollEvent ()
-    {
-        return logMbx.poll();
-    }
 
     //--------//
     // append //
@@ -80,5 +62,31 @@ public class LogGuiAppender
         if (OMR.gui != null) {
             OMR.gui.notifyLog();
         }
+    }
+
+    //---------------//
+    // getEventCount //
+    //---------------//
+    /**
+     * Report count of pending events.
+     *
+     * @return pending count
+     */
+    public static int getEventCount ()
+    {
+        return logMbx.size();
+    }
+
+    //-----------//
+    // pollEvent //
+    //-----------//
+    /**
+     * Poll mail box for next pending event, if any.
+     *
+     * @return next event or null
+     */
+    public static ILoggingEvent pollEvent ()
+    {
+        return logMbx.poll();
     }
 }

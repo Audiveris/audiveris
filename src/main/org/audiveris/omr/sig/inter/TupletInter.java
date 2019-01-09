@@ -62,20 +62,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class TupletInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TupletInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     // Factor lazily computed
     private DurationFactor durationFactor;
 
     /** Base duration. Lazily computed. */
     private Rational baseDuration;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TupletInter} object.
      *
@@ -111,83 +108,6 @@ public class TupletInter
      */
     private TupletInter ()
     {
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // createValid //
-    //-------------//
-    /**
-     * (Try to) create a tuplet inter, checking that there is at least one (head) chord
-     * nearby.
-     *
-     * @param glyph        the candidate tuplet glyph
-     * @param shape        TUPLET_THREE or TUPLET_SIX
-     * @param grade        the interpretation quality
-     * @param system       the related system
-     * @param systemChords abscissa-ordered list of chords in this system
-     * @return the create TupletInter or null
-     */
-    public static TupletInter createValid (Glyph glyph,
-                                           Shape shape,
-                                           double grade,
-                                           SystemInfo system,
-                                           List<Inter> systemChords)
-    {
-        Rectangle luBox = glyph.getBounds();
-        Scale scale = system.getSheet().getScale();
-        luBox.grow(
-                scale.toPixels(constants.maxTupletChordDx),
-                scale.toPixels(constants.maxTupletChordDy));
-
-        List<Inter> nearby = Inters.intersectedInters(systemChords, GeoOrder.BY_ABSCISSA, luBox);
-
-        if (nearby.isEmpty()) {
-            logger.debug("Discarding isolated tuplet candidate glyph#{}", glyph.getId());
-
-            return null;
-        }
-
-        return new TupletInter(glyph, shape, grade);
-    }
-
-    //-------------//
-    // createValid //
-    //-------------//
-    /**
-     * (Try to) create a tuplet inter, checking that there is at least one (head) chord
-     * nearby.
-     *
-     * @param annotationId ID of original annotation if any
-     * @param bounds       bounding box
-     * @param omrShape     detected shape
-     * @param grade        the interpretation quality
-     * @param system       the related system
-     * @param systemChords abscissa-ordered list of chords in this system
-     * @return the create TupletInter or null
-     */
-    public static TupletInter createValid (int annotationId,
-                                           Rectangle bounds,
-                                           OmrShape omrShape,
-                                           double grade,
-                                           SystemInfo system,
-                                           List<Inter> systemChords)
-    {
-        Rectangle luBox = new Rectangle(bounds);
-        Scale scale = system.getSheet().getScale();
-        luBox.grow(
-                scale.toPixels(constants.maxTupletChordDx),
-                scale.toPixels(constants.maxTupletChordDy));
-
-        List<Inter> nearby = Inters.intersectedInters(systemChords, GeoOrder.BY_ABSCISSA, luBox);
-
-        if (nearby.isEmpty()) {
-            logger.debug("Discarding isolated tuplet candidate annotation#{}", annotationId);
-
-            return null;
-        }
-
-        return new TupletInter(annotationId, bounds, omrShape, grade);
     }
 
     //--------//
@@ -238,6 +158,11 @@ public class TupletInter
     //-----------------//
     // getBaseDuration //
     //-----------------//
+    /**
+     * Report the chord duration (without dot) on which tuplet modification applies.
+     *
+     * @return base duration
+     */
     public Rational getBaseDuration ()
     {
         if (baseDuration == null) {
@@ -264,7 +189,7 @@ public class TupletInter
      */
     public List<AbstractChordInter> getChords ()
     {
-        List<AbstractChordInter> list = new ArrayList<AbstractChordInter>();
+        List<AbstractChordInter> list = new ArrayList<>();
 
         for (Relation tcRel : sig.getRelations(this, ChordTupletRelation.class)) {
             list.add((AbstractChordInter) sig.getOppositeInter(this, tcRel));
@@ -372,6 +297,91 @@ public class TupletInter
     }
 
     //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
+    }
+
+    //-------------//
+    // createValid //
+    //-------------//
+    /**
+     * (Try to) create a tuplet inter, checking that there is at least one (head) chord
+     * nearby.
+     *
+     * @param glyph        the candidate tuplet glyph
+     * @param shape        TUPLET_THREE or TUPLET_SIX
+     * @param grade        the interpretation quality
+     * @param system       the related system
+     * @param systemChords abscissa-ordered list of chords in this system
+     * @return the create TupletInter or null
+     */
+    public static TupletInter createValid (Glyph glyph,
+                                           Shape shape,
+                                           double grade,
+                                           SystemInfo system,
+                                           List<Inter> systemChords)
+    {
+        Rectangle luBox = glyph.getBounds();
+        Scale scale = system.getSheet().getScale();
+        luBox.grow(
+                scale.toPixels(constants.maxTupletChordDx),
+                scale.toPixels(constants.maxTupletChordDy));
+
+        List<Inter> nearby = Inters.intersectedInters(systemChords, GeoOrder.BY_ABSCISSA, luBox);
+
+        if (nearby.isEmpty()) {
+            logger.debug("Discarding isolated tuplet candidate glyph#{}", glyph.getId());
+
+            return null;
+        }
+
+        return new TupletInter(glyph, shape, grade);
+    }
+
+    //-------------//
+    // createValid //
+    //-------------//
+    /**
+     * (Try to) create a tuplet inter, checking that there is at least one (head) chord
+     * nearby.
+     *
+     * @param annotationId ID of original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     detected shape
+     * @param grade        the interpretation quality
+     * @param system       the related system
+     * @param systemChords abscissa-ordered list of chords in this system
+     * @return the create TupletInter or null
+     */
+    public static TupletInter createValid (int annotationId,
+                                           Rectangle bounds,
+                                           OmrShape omrShape,
+                                           double grade,
+                                           SystemInfo system,
+                                           List<Inter> systemChords)
+    {
+        Rectangle luBox = new Rectangle(bounds);
+        Scale scale = system.getSheet().getScale();
+        luBox.grow(
+                scale.toPixels(constants.maxTupletChordDx),
+                scale.toPixels(constants.maxTupletChordDy));
+
+        List<Inter> nearby = Inters.intersectedInters(systemChords, GeoOrder.BY_ABSCISSA, luBox);
+
+        if (nearby.isEmpty()) {
+            logger.debug("Discarding isolated tuplet candidate annotation#{}", annotationId);
+
+            return null;
+        }
+
+        return new TupletInter(annotationId, bounds, omrShape, grade);
+    }
+
+    //-----------//
     // getFactor //
     //-----------//
     /**
@@ -396,14 +406,12 @@ public class TupletInter
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction maxTupletChordDx = new Scale.Fraction(
                 3,

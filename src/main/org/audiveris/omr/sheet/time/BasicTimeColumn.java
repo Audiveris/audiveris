@@ -20,7 +20,6 @@ import java.util.Set;
 public class BasicTimeColumn
         extends TimeColumn
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The measure stack for which a column of times is checked. */
     final MeasureStack stack;
@@ -28,7 +27,6 @@ public class BasicTimeColumn
     /** Relevant time symbols found in stack. */
     final Set<Inter> timeSet;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BasicColumn} object.
      *
@@ -43,7 +41,6 @@ public class BasicTimeColumn
         this.timeSet = new LinkedHashSet<Inter>(timeSet);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     protected TimeBuilder allocateBuilder (Staff staff)
     {

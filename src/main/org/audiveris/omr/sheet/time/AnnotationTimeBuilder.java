@@ -35,7 +35,6 @@ import org.audiveris.omr.util.VerticalSide;
 public class AnnotationTimeBuilder
         extends TimeBuilder
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code AnnotationTimeBuilder} object.

@@ -34,25 +34,24 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * Class {@code Rational} implements non-mutable rational numbers
  * (composed of a numerator and a denominator).
  * <p>
- * Invariants:<ol>
+ * Invariants:
+ * <ol>
  * <li>The rational data is always kept in reduced form : gcd(num,den) == 1</li>
  * <li>The denominator value is always kept positive : den &ge; 1</li>
  * </ol>
  * <p>
- * It is (un)marshallable through JAXB.</p>
+ * It is (un)marshallable through JAXB.
+ * </p>
  *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "rational")
-@XmlType(propOrder = {
-    "num", "den"}
-)
+@XmlType(propOrder = {"num", "den"})
 public class Rational
         extends Number
         implements Comparable<Rational>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** The zero rational instance. */
     public static final Rational ZERO = new Rational(0, 1);
@@ -66,7 +65,6 @@ public class Rational
     /** Max rational value. */
     public static final Rational MAX_VALUE = new Rational(Integer.MAX_VALUE, 1);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Final numerator value. */
     @XmlAttribute
     public final int num;
@@ -75,7 +73,6 @@ public class Rational
     @XmlAttribute
     public final int den;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a final Rational instance
      *
@@ -112,51 +109,6 @@ public class Rational
         num = den = 1;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // decode //
-    //--------//
-    public static Rational decode (String str)
-    {
-        final int slash = str.indexOf('/');
-
-        if (slash == -1) {
-            return new Rational(Integer.decode(str), 1);
-        }
-
-        final int num = Integer.decode(str.substring(0, slash));
-        final int den = Integer.decode(str.substring(slash + 1));
-
-        return new Rational(num, den);
-    }
-
-    //-----//
-    // gcd //
-    //-----//
-    public static Rational gcd (Rational a,
-                                Rational b)
-    {
-        if (a.num == 0) {
-            return b;
-        } else {
-            return new Rational(1, GCD.lcm(a.den, b.den));
-        }
-    }
-
-    //-----//
-    // gcd //
-    //-----//
-    public static Rational gcd (Rational... vals)
-    {
-        Rational s = Rational.ZERO;
-
-        for (Rational val : vals) {
-            s = gcd(s, val);
-        }
-
-        return s;
-    }
-
     //-----//
     // abs //
     //-----//
@@ -190,8 +142,8 @@ public class Rational
         int b = this.den * that.num;
 
         // Detect overflow, using the fact that den's are always >= 1
-        if ((Integer.signum(b) != Integer.signum(that.num))
-            || (Integer.signum(a) != Integer.signum(this.num))) {
+        if ((Integer.signum(b) != Integer.signum(that.num)) || (Integer.signum(a) != Integer.signum(
+                this.num))) {
             BigInteger bigThisNum = BigInteger.valueOf(this.num);
             BigInteger bigThisDen = BigInteger.valueOf(this.den);
             BigInteger bigThatNum = BigInteger.valueOf(that.num);
@@ -432,14 +384,85 @@ public class Rational
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------//
+    // decode //
+    //--------//
+    /**
+     * Decode provided string as a rational value.
+     *
+     * @param str input string, such as "3/4" or "5" (equivalent of "5/1")
+     * @return decoded rational value
+     * @throws NumberFormatException if input string is invalid
+     */
+    public static Rational decode (String str)
+    {
+        final String[] tokens = str.split("\\s*/\\s*");
+
+        switch (tokens.length) {
+        case 2: {
+            int num = Integer.decode(tokens[0].trim());
+            int den = Integer.decode(tokens[1].trim());
+
+            return new Rational(num, den);
+        }
+        case 1: {
+            int num = Integer.decode(tokens[0].trim());
+            return new Rational(num, 1);
+        }
+        default:
+            throw new NumberFormatException(str);
+        }
+    }
+
+    //-----//
+    // gcd //
+    //-----//
+    /**
+     * Compute the Greatest Common Divisor of two rational values.
+     *
+     * @param a a rational
+     * @param b another rational
+     * @return the GCD of a and b
+     */
+    public static Rational gcd (Rational a,
+                                Rational b)
+    {
+        if (a.num == 0) {
+            return b;
+        } else {
+            return new Rational(1, GCD.lcm(a.den, b.den));
+        }
+    }
+
+    //-----//
+    // gcd //
+    //-----//
+    /**
+     * Compute the Greatest Common Divisor of several rational values.
+     *
+     * @param vals rational values
+     * @return the GCD of all
+     */
+    public static Rational gcd (Rational... vals)
+    {
+        Rational s = Rational.ZERO;
+
+        for (Rational val : vals) {
+            s = gcd(s, val);
+        }
+
+        return s;
+    }
+
     //---------//
     // Adapter //
     //---------//
+    /**
+     * JAXB adapter to un/marshal a Rational object as "num/den".
+     */
     public static class Adapter
             extends XmlAdapter<String, Rational>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String marshal (Rational val)

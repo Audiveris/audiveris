@@ -44,22 +44,29 @@ import javax.swing.SwingWorker;
  */
 public class CursorController
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CursorController.class);
 
+    /** Cursor when waiting. */
     public static final Cursor busyCursor = new Cursor(Cursor.WAIT_CURSOR);
 
+    /** Cursor in standard status. */
     public static final Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 
+    /** Delay before busy cursor is displayed. */
     public static final int delay = 500; // in milliseconds
 
-    //~ Constructors -------------------------------------------------------------------------------
     private CursorController ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * Wraps an action listener with a busy cursor if not performed within delay.
+     *
+     * @param component          owner of cursor
+     * @param mainActionListener real listener to be wrapped
+     * @return the wrapped listener
+     */
     public static ActionListener createListener (final Component component,
                                                  final ActionListener mainActionListener)
     {

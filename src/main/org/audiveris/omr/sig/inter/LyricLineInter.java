@@ -47,16 +47,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class LyricLineInter
         extends SentenceInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(LyricLineInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The line number. */
     @XmlAttribute
     private int number;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LyricLine object.
      *
@@ -79,7 +76,6 @@ public class LyricLineInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -102,25 +98,6 @@ public class LyricLineInter
         }
     }
 
-    //--------//
-    // create //
-    //--------//
-    /**
-     * Create a {@code LyricLineInter} from a TextLine.
-     *
-     * @param line the OCR'ed text line
-     * @return the LyricLine inter
-     */
-    public static LyricLineInter create (TextLine line)
-    {
-        LyricLineInter lyricLine = new LyricLineInter(
-                line.getBounds(),
-                line.getConfidence() * Grades.intrinsicRatio,
-                line.getMeanFont());
-
-        return lyricLine;
-    }
-
     //------------------//
     // getFollowingLine //
     //------------------//
@@ -139,7 +116,7 @@ public class LyricLineInter
         if (nextPart != null) {
             // Retrieve the same lyrics line in the next (system) part
             if (nextPart.getLyrics().size() >= number) {
-                nextLine = (LyricLineInter) nextPart.getLyrics().get(number - 1);
+                nextLine = nextPart.getLyrics().get(number - 1);
             }
         }
 
@@ -159,6 +136,19 @@ public class LyricLineInter
         return number;
     }
 
+    //-----------//
+    // setNumber //
+    //-----------//
+    /**
+     * Set the number of this item within the containing lyrics line.
+     *
+     * @param number 1-based number
+     */
+    public void setNumber (int number)
+    {
+        this.number = number;
+    }
+
     //------------------//
     // getPrecedingLine //
     //------------------//
@@ -173,7 +163,7 @@ public class LyricLineInter
         Part prevPart = staff.getPart().getPrecedingInPage();
 
         if ((prevPart != null) && (prevPart.getLyrics().size() >= number)) {
-            return (LyricLineInter) prevPart.getLyrics().get(number - 1);
+            return prevPart.getLyrics().get(number - 1);
         }
 
         return null;
@@ -213,6 +203,9 @@ public class LyricLineInter
     //----------------------//
     // refineLyricSyllables //
     //----------------------//
+    /**
+     * Refine items syllabic types in this lyric line.
+     */
     public void refineLyricSyllables ()
     {
         // Last item of preceding line is any
@@ -264,14 +257,6 @@ public class LyricLineInter
         super.remove(extensive);
     }
 
-    //-----------//
-    // setNumber //
-    //-----------//
-    public void setNumber (int number)
-    {
-        this.number = number;
-    }
-
     //-------------//
     // shapeString //
     //-------------//
@@ -279,5 +264,24 @@ public class LyricLineInter
     public String shapeString ()
     {
         return "LYRICS";
+    }
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create a {@code LyricLineInter} from a TextLine.
+     *
+     * @param line the OCR'ed text line
+     * @return the LyricLine inter
+     */
+    public static LyricLineInter create (TextLine line)
+    {
+        LyricLineInter lyricLine = new LyricLineInter(
+                line.getBounds(),
+                line.getConfidence() * Grades.intrinsicRatio,
+                line.getMeanFont());
+
+        return lyricLine;
     }
 }

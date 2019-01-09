@@ -35,7 +35,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 @XmlAccessorType(XmlAccessType.NONE)
 public class Run
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Abscissa (for horizontal) / ordinate (for vertical) of first pixel. */
     @XmlAttribute
@@ -45,7 +44,6 @@ public class Run
     @XmlAttribute
     protected int length;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Run} instance.
      *
@@ -76,7 +74,6 @@ public class Run
         this(0, 0);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getLength //
     //-----------//
@@ -88,6 +85,16 @@ public class Run
     public final int getLength ()
     {
         return length;
+    }
+
+    /**
+     * (package private) method to set length value.
+     *
+     * @param length the length to set
+     */
+    void setLength (int length)
+    {
+        this.length = length;
     }
 
     //----------//
@@ -102,6 +109,16 @@ public class Run
     public final int getStart ()
     {
         return start;
+    }
+
+    /**
+     * (package private) method to set start value.
+     *
+     * @param start the start to set
+     */
+    void setStart (int start)
+    {
+        this.start = start;
     }
 
     //---------//
@@ -176,23 +193,4 @@ public class Run
         return sb.toString();
     }
 
-    /**
-     * (package private) method to set length value.
-     *
-     * @param length the length to set
-     */
-    void setLength (int length)
-    {
-        this.length = length;
-    }
-
-    /**
-     * (package private) method to set start value.
-     *
-     * @param start the start to set
-     */
-    void setStart (int start)
-    {
-        this.start = start;
-    }
 }

@@ -45,11 +45,9 @@ import java.util.SortedSet;
 public class RunPartCheck
         extends RunClass
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RunPartCheck.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code RunPartCheck} object.
      *
@@ -62,7 +60,6 @@ public class RunPartCheck
         super(book, sheetIds);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void process ()
     {
@@ -74,7 +71,7 @@ public class RunPartCheck
                     Sheet sheet = stub.getSheet();
 
                     for (SystemInfo system : sheet.getSystems()) {
-                        List<Staff> staves = new ArrayList<Staff>(system.getStaves());
+                        List<Staff> staves = new ArrayList<>(system.getStaves());
 
                         for (Part part : system.getParts()) {
                             staves.removeAll(part.getStaves());

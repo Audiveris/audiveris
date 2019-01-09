@@ -45,11 +45,9 @@ import java.util.List;
  */
 public class HeadsBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(HeadsBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -69,7 +67,6 @@ public class HeadsBuilder
     /** Relevant head annotations for this system. */
     private final List<Annotation> headAnnotations;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadsBuilder} object.
      *
@@ -87,7 +84,6 @@ public class HeadsBuilder
         scale = sheet.getScale();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildHeads //
     //------------//

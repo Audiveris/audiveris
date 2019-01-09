@@ -51,7 +51,6 @@ import java.util.List;
  */
 public abstract class FileUtil
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
@@ -59,7 +58,10 @@ public abstract class FileUtil
 
     private static final int BACKUP_MAX = 99;
 
-    //~ Methods ------------------------------------------------------------------------------------
+    private FileUtil ()
+    {
+    }
+
     //-----------------//
     // avoidExtensions //
     //-----------------//
@@ -163,42 +165,47 @@ public abstract class FileUtil
     //----------//
     // copyTree //
     //----------//
+    /**
+     * Recursively copy a hierarchy of files and directories to another.
+     *
+     * @param sourceDir source directory
+     * @param targetDir target directory
+     * @throws IOException if an IO problem occurs
+     */
     public static void copyTree (final Path sourceDir,
                                  final Path targetDir)
             throws IOException
     {
-        Files.walkFileTree(
-                sourceDir,
-                new SimpleFileVisitor<Path>()
-        {
-            @Override
-            public FileVisitResult preVisitDirectory (Path dir,
-                                                      BasicFileAttributes attrs)
-                    throws IOException
-            {
-                Path target = targetDir.resolve(sourceDir.relativize(dir));
+        Files.walkFileTree(sourceDir, new SimpleFileVisitor<Path>()
+                   {
+                       @Override
+                       public FileVisitResult preVisitDirectory (Path dir,
+                                                                 BasicFileAttributes attrs)
+                               throws IOException
+                       {
+                           Path target = targetDir.resolve(sourceDir.relativize(dir));
 
-                try {
-                    Files.copy(dir, target);
-                } catch (FileAlreadyExistsException e) {
-                    if (!Files.isDirectory(target)) {
-                        throw e;
-                    }
-                }
+                           try {
+                               Files.copy(dir, target);
+                           } catch (FileAlreadyExistsException e) {
+                               if (!Files.isDirectory(target)) {
+                                   throw e;
+                               }
+                           }
 
-                return FileVisitResult.CONTINUE;
-            }
+                           return FileVisitResult.CONTINUE;
+                       }
 
-            @Override
-            public FileVisitResult visitFile (Path file,
-                                              BasicFileAttributes attrs)
-                    throws IOException
-            {
-                Files.copy(file, targetDir.resolve(sourceDir.relativize(file)));
+                       @Override
+                       public FileVisitResult visitFile (Path file,
+                                                         BasicFileAttributes attrs)
+                               throws IOException
+                       {
+                           Files.copy(file, targetDir.resolve(sourceDir.relativize(file)));
 
-                return FileVisitResult.CONTINUE;
-            }
-        });
+                           return FileVisitResult.CONTINUE;
+                       }
+                   });
     }
 
     //-----------//
@@ -250,30 +257,28 @@ public abstract class FileUtil
             throw new IllegalArgumentException(directory + " is not a directory");
         }
 
-        Files.walkFileTree(
-                directory,
-                new SimpleFileVisitor<Path>()
-        {
-            @Override
-            public FileVisitResult visitFile (Path file,
-                                              BasicFileAttributes attrs)
-                    throws IOException
-            {
-                Files.delete(file);
+        Files.walkFileTree(directory, new SimpleFileVisitor<Path>()
+                   {
+                       @Override
+                       public FileVisitResult visitFile (Path file,
+                                                         BasicFileAttributes attrs)
+                               throws IOException
+                       {
+                           Files.delete(file);
 
-                return FileVisitResult.CONTINUE;
-            }
+                           return FileVisitResult.CONTINUE;
+                       }
 
-            @Override
-            public FileVisitResult postVisitDirectory (Path dir,
-                                                       IOException exc)
-                    throws IOException
-            {
-                Files.delete(dir);
+                       @Override
+                       public FileVisitResult postVisitDirectory (Path dir,
+                                                                  IOException exc)
+                               throws IOException
+                       {
+                           Files.delete(dir);
 
-                return FileVisitResult.CONTINUE;
-            }
-        });
+                           return FileVisitResult.CONTINUE;
+                       }
+                   });
     }
 
     //--------------//
@@ -283,14 +288,15 @@ public abstract class FileUtil
      * From a file "path/name.ext", return the final ".ext" portion.
      * <p>
      * <b>Nota</b>: the dot character is part of the extension, since we
-     * could have the following cases: <ul>
-     * <li> "path/name.ext" &rarr; ".ext"
-     * <li> "path/name." &rarr; "." (just the dot)
-     * <li> "path/name" &rarr; "" (the empty string) </ul>
+     * could have the following cases:
+     * <ul>
+     * <li>"path/name.ext" &rarr; ".ext"
+     * <li>"path/name." &rarr; "." (just the dot)
+     * <li>"path/name" &rarr; "" (the empty string)
+     * </ul>
      *
      * @param file the File to process
-     *
-     * @return the extension, which may be ""
+     * @return the extension, which can be the empty string ("")
      */
     public static String getExtension (File file)
     {
@@ -304,14 +310,15 @@ public abstract class FileUtil
      * From a path "path/name.ext", return the final ".ext" portion.
      * <p>
      * <b>Nota</b>: the dot character is part of the extension, since we
-     * could have the following cases: <ul>
-     * <li> "path/name.ext" &rarr; ".ext"
-     * <li> "path/name." &rarr; "." (just the dot)
-     * <li> "path/name" &rarr; "" (the empty string) </ul>
+     * could have the following cases:
+     * <ul>
+     * <li>"path/name.ext" &rarr; ".ext"
+     * <li>"path/name." &rarr; "." (just the dot)
+     * <li>"path/name" &rarr; "" (the empty string)
+     * </ul>
      *
      * @param path the File to process
-     *
-     * @return the extension, which may be ""
+     * @return the extension, which can be the empty string ("")
      */
     public static String getExtension (Path path)
     {
@@ -321,6 +328,12 @@ public abstract class FileUtil
     //--------------//
     // getExtension //
     //--------------//
+    /**
+     * Report the (last) extension in provided string.
+     *
+     * @param name the input file name
+     * @return its last extension, or "" if none
+     */
     public static String getExtension (String name)
     {
         int i = name.lastIndexOf('.');
@@ -340,7 +353,6 @@ public abstract class FileUtil
      * From a file "path/name.ext1.ext2", return the "name.ext1" portion.
      *
      * @param file provided abstract path name
-     *
      * @return just the name, w/o path and final extension
      */
     public static String getNameSansExtension (File file)
@@ -356,7 +368,6 @@ public abstract class FileUtil
      * From a file "path/name.ext1.ext2", return the "name.ext1" portion.
      *
      * @param path provided abstract path name
-     *
      * @return just the name, w/o path and final extension
      */
     public static String getNameSansExtension (Path path)
@@ -400,6 +411,12 @@ public abstract class FileUtil
     //---------------//
     // sansExtension //
     //---------------//
+    /**
+     * Report the provided name without its last extension.
+     *
+     * @param name input file name
+     * @return name with its last extension removed
+     */
     public static String sansExtension (String name)
     {
         int i = name.lastIndexOf('.');
@@ -432,53 +449,51 @@ public abstract class FileUtil
         final FileSystem fs = FileSystems.getDefault();
         final PathMatcher dirMatcher = fs.getPathMatcher(dirGlob);
         final PathMatcher fileMatcher = fs.getPathMatcher(fileGlob);
-        final List<Path> pathsFound = new ArrayList<Path>();
+        final List<Path> pathsFound = new ArrayList<>();
 
         if (!Files.exists(folder)) {
             return pathsFound;
         }
 
         try {
-            Files.walkFileTree(
-                    folder,
-                    new SimpleFileVisitor<Path>()
-            {
-                @Override
-                public FileVisitResult preVisitDirectory (Path dir,
-                                                          BasicFileAttributes attrs)
-                        throws IOException
-                {
-                    if (dir.equals(folder) || dirMatcher.matches(dir)) {
-                        return FileVisitResult.CONTINUE;
-                    } else {
-                        return FileVisitResult.SKIP_SUBTREE;
-                    }
-                }
+            Files.walkFileTree(folder, new SimpleFileVisitor<Path>()
+                       {
+                           @Override
+                           public FileVisitResult preVisitDirectory (Path dir,
+                                                                     BasicFileAttributes attrs)
+                                   throws IOException
+                           {
+                               if (dir.equals(folder) || dirMatcher.matches(dir)) {
+                                   return FileVisitResult.CONTINUE;
+                               } else {
+                                   return FileVisitResult.SKIP_SUBTREE;
+                               }
+                           }
 
-                @Override
-                public FileVisitResult visitFile (Path file,
-                                                  BasicFileAttributes attrs)
-                        throws IOException
-                {
-                    if (fileMatcher.matches(file)) {
-                        pathsFound.add(file);
-                    }
+                           @Override
+                           public FileVisitResult visitFile (Path file,
+                                                             BasicFileAttributes attrs)
+                                   throws IOException
+                           {
+                               if (fileMatcher.matches(file)) {
+                                   pathsFound.add(file);
+                               }
 
-                    return FileVisitResult.CONTINUE;
-                }
+                               return FileVisitResult.CONTINUE;
+                           }
 
-                @Override
-                public FileVisitResult postVisitDirectory (Path dir,
-                                                           IOException exc)
-                        throws IOException
-                {
-                    if (dirMatcher.matches(dir)) {
-                        pathsFound.add(dir);
-                    }
+                           @Override
+                           public FileVisitResult postVisitDirectory (Path dir,
+                                                                      IOException exc)
+                                   throws IOException
+                           {
+                               if (dirMatcher.matches(dir)) {
+                                   pathsFound.add(dir);
+                               }
 
-                    return FileVisitResult.CONTINUE;
-                }
-            });
+                               return FileVisitResult.CONTINUE;
+                           }
+                       });
         } catch (IOException ex) {
             logger.warn("Error in browsing " + folder + " " + ex, ex);
         }

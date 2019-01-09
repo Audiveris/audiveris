@@ -62,32 +62,11 @@ import java.beans.PropertyChangeListener;
  */
 public class SheetDiff
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SheetDiff.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    public static enum DiffKind
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        /**
-         * Non recognized entities.
-         * Input data not found in output. */
-        NEGATIVES,
-        /**
-         * Recognized entities.
-         * Intersection of input and output. */
-        POSITIVES,
-        /**
-         * False recognized entities.
-         * Output data not found in input. */
-        FALSE_POSITIVES;
-    }
-
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -98,13 +77,16 @@ public class SheetDiff
     /** Cached number of foreground pixels in input image. */
     private Integer inputCount;
 
-    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Create a {@code SheetDiff} object.
+     *
+     * @param sheet related sheet
+     */
     public SheetDiff (Sheet sheet)
     {
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // computeDiff //
     //-------------//
@@ -400,14 +382,65 @@ public class SheetDiff
         return output;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------//
+    // MyView //
+    //--------//
+    private class MyView
+            extends ImageView
+            implements PropertyChangeListener
+    {
+
+        MyView (ByteProcessor filtered)
+        {
+            super(filtered.getBufferedImage());
+            setModelSize(new Dimension(sheet.getWidth(), sheet.getHeight()));
+
+            // Inject dependency of pixel location
+            setLocationService(sheet.getLocationService());
+
+            // Listen to all view parameters
+            ViewParameters.getInstance().addPropertyChangeListener(
+                    new WeakPropertyChangeListener(this));
+        }
+
+        //----------------//
+        // propertyChange //
+        //----------------//
+        @Override
+        public void propertyChange (PropertyChangeEvent evt)
+        {
+            repaint();
+        }
+    }
+
+    /**
+     *
+     */
+    public static enum DiffKind
+    {
+        /**
+         * Non recognized entities.
+         * Input data not found in output.
+         */
+        NEGATIVES,
+        /**
+         * Recognized entities.
+         * Intersection of input and output.
+         */
+        POSITIVES,
+        /**
+         * False recognized entities.
+         * Output data not found in input.
+         */
+        FALSE_POSITIVES
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
@@ -417,38 +450,5 @@ public class SheetDiff
                 "gray level",
                 127,
                 "Global threshold to binarize delta results");
-    }
-
-    //--------//
-    // MyView //
-    //--------//
-    private class MyView
-            extends ImageView
-            implements PropertyChangeListener
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public MyView (ByteProcessor filtered)
-        {
-            super(filtered.getBufferedImage());
-            setModelSize(new Dimension(sheet.getWidth(), sheet.getHeight()));
-
-            // Inject dependency of pixel location
-            setLocationService(sheet.getLocationService());
-
-            // Listen to all view parameters
-            ViewParameters.getInstance()
-                    .addPropertyChangeListener(new WeakPropertyChangeListener(this));
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        //----------------//
-        // propertyChange //
-        //----------------//
-        @Override
-        public void propertyChange (PropertyChangeEvent evt)
-        {
-            repaint();
-        }
     }
 }

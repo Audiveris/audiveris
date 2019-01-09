@@ -30,11 +30,9 @@ import java.util.UUID;
  */
 public class MultipartUtility
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final String LINE_FEED = "\r\n";
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final String boundary;
 
     private HttpURLConnection httpConn;
@@ -45,7 +43,6 @@ public class MultipartUtility
 
     private PrintWriter writer;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * This constructor initializes a new HTTP POST request with content type
      * is set to multipart/form-data
@@ -76,7 +73,6 @@ public class MultipartUtility
         writer = new PrintWriter(new OutputStreamWriter(outputStream, charset), true);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Adds a upload file section to the request
      *
@@ -92,7 +88,7 @@ public class MultipartUtility
         writer.append("--" + boundary).append(LINE_FEED);
         writer.append(
                 "Content-Disposition: form-data; name=\"" + fieldName + "\"; filename=\"" + fileName
-                + "\"").append(LINE_FEED);
+                        + "\"").append(LINE_FEED);
         writer.append("Content-Type: " + URLConnection.guessContentTypeFromName(fileName)).append(
                 LINE_FEED);
         writer.append("Content-Transfer-Encoding: binary").append(LINE_FEED);

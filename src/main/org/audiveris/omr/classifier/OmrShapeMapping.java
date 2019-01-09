@@ -37,13 +37,11 @@ import java.util.Map;
  */
 public abstract class OmrShapeMapping
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Map<Shape, OmrShape> SHAPE_TO_OMRSHAPE = buildShapeMap();
 
     private static final Map<OmrShape, Shape> OMRSHAPE_TO_SHAPE = buildOmrShapeMap();
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the mapped OmrShape, if any, for a given TimePairInter.
      *
@@ -95,7 +93,7 @@ public abstract class OmrShapeMapping
      */
     private static Map<OmrShape, Shape> buildOmrShapeMap ()
     {
-        final Map<OmrShape, Shape> map = new EnumMap<OmrShape, Shape>(OmrShape.class);
+        final Map<OmrShape, Shape> map = new EnumMap<>(OmrShape.class);
 
         for (Map.Entry<Shape, OmrShape> entry : SHAPE_TO_OMRSHAPE.entrySet()) {
             final Shape shape = entry.getKey();
@@ -148,7 +146,7 @@ public abstract class OmrShapeMapping
      */
     private static Map<Shape, OmrShape> buildShapeMap ()
     {
-        final Map<Shape, OmrShape> map = new EnumMap<Shape, OmrShape>(Shape.class);
+        final Map<Shape, OmrShape> map = new EnumMap<>(Shape.class);
 
         map.put(Shape.DAL_SEGNO, OmrShape.dalSegno);
         map.put(Shape.DA_CAPO, OmrShape.daCapo);
@@ -324,5 +322,9 @@ public abstract class OmrShapeMapping
         map.put(Shape.FERMATA_BELOW, OmrShape.fermataBelow);
 
         return map;
+    }
+
+    private OmrShapeMapping ()
+    {
     }
 }

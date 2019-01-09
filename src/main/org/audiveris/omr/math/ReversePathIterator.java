@@ -75,7 +75,6 @@ import java.awt.geom.PathIterator;
 public class ReversePathIterator
         implements PathIterator
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The winding rule. */
     private final int windingRule;
@@ -92,7 +91,6 @@ public class ReversePathIterator
     /** The index into the segment types during iteration. */
     private int segmentIndex = 0;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an inverted path iterator from a standard one, keeping the winding rule.
      *
@@ -230,7 +228,6 @@ public class ReversePathIterator
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Returns the coordinates and type of the current path segment in
      * the iteration.
@@ -304,6 +301,44 @@ public class ReversePathIterator
     }
 
     /**
+     * Returns the winding rule for determining the interior of the
+     * path. This just returns the winding rule of the original path,
+     * which may or may not be what is wanted.
+     *
+     * @return the winding rule.
+     * @see #WIND_EVEN_ODD
+     * @see #WIND_NON_ZERO
+     */
+    @Override
+    public int getWindingRule ()
+    {
+        return windingRule;
+    }
+
+    /**
+     * Tests if the iteration is complete.
+     *
+     * @return {@code true} if all the segments have
+     *         been read; {@code false} otherwise.
+     */
+    @Override
+    public boolean isDone ()
+    {
+        return segmentIndex >= segmentTypes.length;
+    }
+
+    /**
+     * Moves the iterator to the next segment of the path forwards
+     * along the primary direction of traversal as long as there are
+     * more points in that direction.
+     */
+    @Override
+    public void next ()
+    {
+        coordIndex += coordinatesForSegmentType(segmentTypes[segmentIndex++]);
+    }
+
+    /**
      * Get a reverse path iterator for a shape, keeping the shape's winding
      * rule.
      *
@@ -335,7 +370,7 @@ public class ReversePathIterator
      * winding rule.
      *
      * @param shape shape for which a reverse transformed path iterator is needed
-     * @param at the affine transform
+     * @param at    the affine transform
      * @return reverse transformed path iterator
      */
     public static PathIterator getReversePathIterator (Shape shape,
@@ -350,7 +385,7 @@ public class ReversePathIterator
      *
      * @param shape    shape for which a reverse transformed flattened path
      *                 iterator is needed
-     * @param at the affine transform
+     * @param at       the affine transform
      * @param flatness flatness epsilon
      * @return reverse transformed flattened path iterator
      */
@@ -395,7 +430,7 @@ public class ReversePathIterator
      *
      * @param shape       shape for which a reverse transformed path iterator is
      *                    needed
-     * @param at the affine transform
+     * @param at          the affine transform
      * @param windingRule winding rule of newly created iterator
      * @return reverse transformed path iterator
      */
@@ -411,7 +446,7 @@ public class ReversePathIterator
      *
      * @param shape       shape for which a reverse transformed flattened path
      *                    iterator is needed
-     * @param at the affine transform
+     * @param at          the affine transform
      * @param flatness    flatness epsilon
      * @param windingRule winding rule of newly created iterator
      * @return reverse transformed flattened path iterator
@@ -422,44 +457,6 @@ public class ReversePathIterator
                                                        int windingRule)
     {
         return new ReversePathIterator(shape.getPathIterator(at, flatness), windingRule);
-    }
-
-    /**
-     * Returns the winding rule for determining the interior of the
-     * path. This just returns the winding rule of the original path,
-     * which may or may not be what is wanted.
-     *
-     * @return the winding rule.
-     * @see #WIND_EVEN_ODD
-     * @see #WIND_NON_ZERO
-     */
-    @Override
-    public int getWindingRule ()
-    {
-        return windingRule;
-    }
-
-    /**
-     * Tests if the iteration is complete.
-     *
-     * @return {@code true} if all the segments have
-     *         been read; {@code false} otherwise.
-     */
-    @Override
-    public boolean isDone ()
-    {
-        return segmentIndex >= segmentTypes.length;
-    }
-
-    /**
-     * Moves the iterator to the next segment of the path forwards
-     * along the primary direction of traversal as long as there are
-     * more points in that direction.
-     */
-    @Override
-    public void next ()
-    {
-        coordIndex += coordinatesForSegmentType(segmentTypes[segmentIndex++]);
     }
 
     /**

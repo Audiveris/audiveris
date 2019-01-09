@@ -78,7 +78,6 @@ import javax.swing.SwingConstants;
 public class PatchClassifierBoard
         extends Board
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -88,7 +87,6 @@ public class PatchClassifierBoard
     /** Events this board is interested in. */
     private static final Class<?>[] eventsRead = new Class<?>[]{LocationEvent.class};
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -99,7 +97,6 @@ public class PatchClassifierBoard
     /** Output: sub-image. */
     private final SubImagePanel subImagePanel = new SubImagePanel();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a {@code PatchClassifierBoard} instance.
      *
@@ -129,7 +126,6 @@ public class PatchClassifierBoard
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // onEvent //
     //---------//
@@ -200,14 +196,12 @@ public class PatchClassifierBoard
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Evaluation.Grade minGrade = new Evaluation.Grade(
                 0.0001,
@@ -225,11 +219,9 @@ public class PatchClassifierBoard
     private static class SubImagePanel
             extends Panel
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private BufferedImage image;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public SubImagePanel ()
         {
             final Dimension dim = new Dimension(CONTEXT_WIDTH + 2, CONTEXT_HEIGHT + 2);
@@ -238,7 +230,6 @@ public class PatchClassifierBoard
             setMinimumSize(dim);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public void setImage (BufferedImage image)
         {
             this.image = image;
@@ -271,7 +262,6 @@ public class PatchClassifierBoard
     //--------------------//
     private class EvaluationSelector
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Selector panel. */
         private final JPanel panel = new JPanel();
@@ -282,7 +272,6 @@ public class PatchClassifierBoard
         /** Minimum grade for a button to be displayed. */
         final double minGrade;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new {@code EvaluationSelector} object.
          *
@@ -303,7 +292,6 @@ public class PatchClassifierBoard
             defineLayout();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //----------//
         // setEvals //
         //----------//
@@ -380,14 +368,12 @@ public class PatchClassifierBoard
             }
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         //------------//
         // EvalButton //
         //------------//
         private class EvalButton
                 implements ActionListener
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             // Shape button or text field. Only one of them will be created and used
             final JButton button;
@@ -395,7 +381,6 @@ public class PatchClassifierBoard
             // The related grade
             JLabel grade = new JLabel("", SwingConstants.RIGHT);
 
-            //~ Constructors -----------------------------------------------------------------------
             public EvalButton ()
             {
                 grade.setToolTipText("Grade of the evaluation");
@@ -405,7 +390,6 @@ public class PatchClassifierBoard
                 button.setHorizontalAlignment(SwingConstants.LEFT);
             }
 
-            //~ Methods ----------------------------------------------------------------------------
             // Triggered by button selection
             @Override
             public void actionPerformed (ActionEvent e)

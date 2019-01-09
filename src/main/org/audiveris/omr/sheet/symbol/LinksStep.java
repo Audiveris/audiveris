@@ -60,7 +60,6 @@ import java.util.Set;
 public class LinksStep
         extends AbstractSystemStep<Void>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -69,21 +68,20 @@ public class LinksStep
     /** Classes that may impact texts. */
     private static final Set<Class> forTexts;
 
-    static {
-        forTexts = new HashSet<Class>();
-        forTexts.add(WordInter.class);
-        forTexts.add(SentenceInter.class);
-    }
-
     /** All impacting classes. */
     private static final Set<Class> impactingClasses;
 
     static {
-        impactingClasses = new HashSet<Class>();
+        forTexts = new HashSet<>();
+        forTexts.add(WordInter.class);
+        forTexts.add(SentenceInter.class);
+    }
+
+    static {
+        impactingClasses = new HashSet<>();
         impactingClasses.addAll(forTexts);
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code LinksStep} object.
      */
@@ -91,7 +89,6 @@ public class LinksStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -142,7 +139,7 @@ public class LinksStep
                 InterTask interTask = (InterTask) task;
                 Inter inter = interTask.getInter();
                 SystemInfo system = inter.getSig().getSystem();
-                Class interClass = (Class) inter.getClass();
+                Class interClass = inter.getClass();
 
                 if (isImpactedBy(interClass, forTexts)) {
                     if (inter instanceof LyricItemInter) {
@@ -199,14 +196,12 @@ public class LinksStep
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,

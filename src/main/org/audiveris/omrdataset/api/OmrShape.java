@@ -34,7 +34,8 @@ package org.audiveris.omrdataset.api;
  * The only exception is the <b>brace</b> symbol, which can vary in size, but we hope that a
  * classifier could recognize the brace center part.
  * <p>
- * We added a few names: <ul>
+ * We added a few names:
+ * <ul>
  * <li><b>none</b>.
  * This is a special name to indicate the absence of any valid symbol.
  * <li><b>arpeggiato</b>.
@@ -47,7 +48,6 @@ package org.audiveris.omrdataset.api;
  * All the barline and repeat symbols are meant to be defined for the staff height only.
  *
  * @see <a href="http://www.smufl.org/">http://www.smufl.org/</a>
- *
  * @author Hervé Bitteur
  */
 public enum OmrShape
@@ -65,6 +65,7 @@ public enum OmrShape
     // 4.2 Staves
     //
     legerLine("Leger line"),
+
     //
     // 4.3 Barlines
     //
@@ -160,10 +161,12 @@ public enum OmrShape
     noteheadXHalf("X notehead half"),
     noteheadXWhole("X notehead whole"),
     augmentationDot("Augmentation dot"),
+
     //
     // 4.15 Stems
     //
     stem("Combining stem"),
+
     //
     // 4.16 Tremolos
     //
@@ -172,6 +175,7 @@ public enum OmrShape
     tremolo3("Combining tremolo 3"),
     tremolo4("Combining tremolo 4"),
     tremolo5("Combining tremolo 5"),
+
     //
     // 4.17 Flags
     //
@@ -193,6 +197,7 @@ public enum OmrShape
     flag256thDown("Combining flag 6 (256th) below"),
     flag512thDown("Combining flag 7 (512th) below"),
     flag1024thDown("Combining flag 8 (1024th) below"),
+
     //
     // 4.18 Standard accidentals
     //
@@ -211,6 +216,7 @@ public enum OmrShape
     keyFlat("Flat in key signature"),
     keyNatural("Natural in key signature"),
     keySharp("Sharp in key signature"),
+
     //
     // 4.39 Articulations
     //
@@ -226,6 +232,7 @@ public enum OmrShape
     articMarcatoBelow("Marcato below"),
     articTenutoStaccatoAbove("Louré (tenuto-staccato) above"),
     articTenutoStaccatoBelow("Louré (tenuto-staccato) below"),
+
     //
     // 4.40 Holds and pauses
     //
@@ -233,6 +240,7 @@ public enum OmrShape
     fermataBelow("Fermata below staff"),
     breathMarkComma("Breath mark (comma)"),
     caesura("Caesura"),
+
     //
     // 4.41 Rests
     //
@@ -257,6 +265,7 @@ public enum OmrShape
     //
     ottavaAlta("Ottava alta (8va)"),
     ottavaBassaVb("Ottava bassa (8vb)"),
+
     //
     // 4.44 Dynamics
     //
@@ -311,20 +320,24 @@ public enum OmrShape
     //
     stringsDownBow("Down bow"),
     stringsUpBow("Up bow"),
+
     //
     // 4.53 Plucked techniques (NOTA: I found only arpeggiato down and up, with an arrow head)
     //
     arpeggiato("Arpeggiato"),
+
     //
     // 4.55 Keyboard techniques
     //
     keyboardPedalPed("Pedal mark"),
     keyboardPedalUp("Pedal up mark"),
+
     //
     // 4.75 Tuplets
     //
     tuplet3("Tuplet 3"),
     tuplet6("Tuplet 6"),
+
     //
     // 4.115 Fingering
     //

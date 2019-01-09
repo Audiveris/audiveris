@@ -44,16 +44,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class EndingBarRelation
         extends AbstractConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final double[] WEIGHTS = new double[]{
         constants.xWeight.getValue(),
-        constants.yWeight.getValue()
-    };
+        constants.yWeight.getValue()};
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Which side of ending is used?. */
     @XmlAttribute(name = "side")
     private HorizontalSide endingSide;
@@ -61,7 +58,6 @@ public class EndingBarRelation
     /** Horizontal delta (in interline) between bar line and ending side. */
     private final double xDistance;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new EndingBarRelation object.
      *
@@ -83,7 +79,13 @@ public class EndingBarRelation
         this.xDistance = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
     //----------------//
     // getXGapMaximum //
     //----------------//
@@ -219,14 +221,12 @@ public class EndingBarRelation
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio endingSupportCoeff = new Constant.Ratio(
                 3,

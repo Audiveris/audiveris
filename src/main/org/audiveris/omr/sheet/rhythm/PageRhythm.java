@@ -78,24 +78,22 @@ import java.util.List;
  */
 public class PageRhythm
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PageRhythm.class);
 
     /** Adjustable rhythm classes. (FRAT: Flag, RestChord, AugmentationDot, Tuplet) */
     private static final Class<?>[] FRAT_CLASSES = new Class<?>[]{
-        FlagInter.class, RestChordInter.class,
-        AugmentationDotInter.class, TupletInter.class
-    };
+        FlagInter.class,
+        RestChordInter.class,
+        AugmentationDotInter.class,
+        TupletInter.class};
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** The page being processed.. */
+    /** The page being processed. */
     private final Page page;
 
     /** Sequence of time-sig ranges found in page. */
-    private final List<Range> ranges = new ArrayList<Range>();
+    private final List<Range> ranges = new ArrayList<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PageRhythm} object.
      *
@@ -106,7 +104,6 @@ public class PageRhythm
         this.page = page;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // process //
     //---------//
@@ -194,23 +191,23 @@ public class PageRhythm
                     }
 
                     if (found) {
-                        ranges.add(new Range(stack.getIdValue(), stack.getTimeSignature()));
+                        ranges.add(new Range(seqNumOf(stack), stack.getTimeSignature()));
                     }
                 }
             }
         }
 
         // If there was no time sig at beginning of page
-        if (ranges.isEmpty() || (ranges.get(0).startId > 1)) {
+        if (ranges.isEmpty() || (ranges.get(0).startSN > 1)) {
             ranges.add(0, new Range(1, null));
         }
 
-        // Assign the stopId values
+        // Assign the stopSN values
         for (int i = 0; i < (ranges.size() - 1); i++) {
-            ranges.get(i).stopId = ranges.get(i + 1).startId - 1;
+            ranges.get(i).stopSN = ranges.get(i + 1).startSN - 1;
         }
 
-        ranges.get(ranges.size() - 1).stopId = page.getLastSystem().getLastStack().getIdValue();
+        ranges.get(ranges.size() - 1).stopSN = seqNumOf(page.getLastSystem().getLastStack());
     }
 
     //---------------//
@@ -226,31 +223,32 @@ public class PageRhythm
 
         for (SystemInfo system : page.getSystems()) {
             for (MeasureStack stack : system.getStacks()) {
-                // Start of range?
-                if (stack.getIdValue() == range.startId) {
-                    logger.debug("Starting {}", range);
+                final int sn = seqNumOf(stack);
 
-                    // Adjust time signature? (TODO: today we don't adjust anything in fact)
-                    if ((range.duration != null)
-                        && ((range.ts == null)
-                            || !range.ts.getTimeRational().getValue().equals(range.duration))) {
-                        logger.info(
-                                "{}{} should update to {}-based time sig?",
-                                stack.getSystem().getLogPrefix(),
-                                range,
-                                range.duration);
-                    }
+                // Start of range?
+                if (sn == range.startSN) {
+                    logger.debug("Starting {}", range);
+                    //
+                    //                    // Adjust time signature? (TODO: today we don't adjust anything in fact)
+                    //                    if ((range.duration != null) && ((range.ts == null) || !range.ts
+                    //                            .getTimeRational().getValue().equals(range.duration))) {
+                    //                        logger.info(
+                    //                                "{}{} should update to {}-based time sig?",
+                    //                                stack.getSystem().getLogPrefix(),
+                    //                                range,
+                    //                                range.duration);
+                    //                    }
                 }
 
                 try {
-                    logger.debug("\n--- Processing {} expDur: {} ---", stack, range.duration);
+                    logger.debug("\n--- Processing {} {} expDur:{}", sn, stack, range.duration);
                     new StackTuner(stack, false).process(range.duration);
                 } catch (Exception ex) {
                     logger.warn("Error on stack " + stack + " " + ex, ex);
                 }
 
                 // End of range?
-                if (stack.getIdValue() == range.stopId) {
+                if (sn == range.stopSN) {
                     if (it.hasNext()) {
                         range = it.next();
                     }
@@ -274,29 +272,24 @@ public class PageRhythm
      */
     private Rational retrieveExpectedDuration (Range range)
     {
-        Histogram<Rational> histo = new Histogram<Rational>();
-        int stackNb = 0;
-        int voiceNb = 0;
+        Histogram<Rational> histo = new Histogram<>();
 
         SystemLoop:
         for (SystemInfo system : page.getSystems()) {
             for (MeasureStack stack : system.getStacks()) {
-                int stackId = stack.getIdValue();
+                final int sn = seqNumOf(stack);
 
-                if (stackId < range.startId) {
+                if (sn < range.startSN) {
                     continue;
-                } else if (stackId > range.stopId) {
+                } else if (sn > range.stopSN) {
                     break SystemLoop;
                 }
-
-                stackNb++;
 
                 for (Voice voice : stack.getVoices()) {
                     Rational dur = voice.getDuration();
 
                     if (dur != null) {
                         histo.increaseCount(dur, 1);
-                        voiceNb++;
                     }
                 }
             }
@@ -355,18 +348,21 @@ public class PageRhythm
 
         for (SystemInfo system : page.getSystems()) {
             for (MeasureStack stack : system.getStacks()) {
+                final int sn = seqNumOf(stack);
+
                 try {
-                    logger.debug("\n--- Raw processing {} ---", stack);
+                    logger.debug("\n--- Raw processing {} {} ---", sn, stack);
                     new StackTuner(stack, true).process(null);
                 } catch (Exception ex) {
                     logger.warn("Error on stack " + stack + " " + ex, ex);
                 }
 
                 // End of range?
-                if (stack.getIdValue() == range.stopId) {
+                if (sn == range.stopSN) {
                     // If range is governed by a manual time signature, use it!
                     if ((range.ts != null) && range.ts.isManual()) {
                         range.duration = range.ts.getTimeRational().getValue();
+                        logger.debug("{} manual:{}", range, range.duration);
                     } else {
                         // Use CURRENT MATERIAL of voices to determine expected duration on this range
                         Rational guess = retrieveExpectedDuration(range);
@@ -377,7 +373,7 @@ public class PageRhythm
                             range.duration = range.ts.getTimeRational().getValue();
                         }
 
-                        logger.info("{} guess:{}", range, guess);
+                        logger.debug("{} guess:{}", range, guess);
                     }
 
                     if (it.hasNext()) {
@@ -388,41 +384,72 @@ public class PageRhythm
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //----------//
+    // seqNumOf //
+    //----------//
+    /**
+     * Report the 1-based sequence number of the provided stack in sheet.
+     *
+     * @param stack the provided stack
+     * @return the stack sequence number
+     */
+    private int seqNumOf (MeasureStack stack)
+    {
+        final SystemInfo stackSystem = stack.getSystem();
+        int sn = 1;
+
+        for (SystemInfo system : page.getSystems()) {
+            if (system != stackSystem) {
+                sn += system.getStacks().size();
+            } else {
+                sn += system.getStacks().indexOf(stack);
+                break;
+            }
+        }
+
+        return sn;
+    }
+
     //-------//
     // Range //
     //-------//
     /**
-     * Describes a range of stack governed by a time signature.
+     * This private class describes a range of stacks governed by a time signature.
+     * <p>
      * The very first range in sheet may have no time signature.
+     * <p>
+     * NOTA: We use a local 1-based sequence number to identify all stacks in page,
+     * because the stack id value can be modified with measure renumbering,
+     * it can be zero (pickup measure) and may not be unique (second half or cautionary measure).
      */
     private static class Range
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        final int startId; // Id of first stack
+        final int startSN; // 1-based sequence number of first stack in page
 
-        int stopId; // Id of last stack
+        int stopSN; // 1-based sequence number of last stack in page
 
         AbstractTimeInter ts; // Time signature found in first stack of range, if any
 
         Rational duration; // Inferred measure duration for the range
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Range (int startId,
-                      AbstractTimeInter ts)
+        Range (int startSN,
+               AbstractTimeInter ts)
         {
-            this.startId = startId;
+            this.startSN = startSN;
             this.ts = ts;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
             StringBuilder sb = new StringBuilder(getClass().getSimpleName());
             sb.append("{");
-            sb.append(startId).append('-').append(stopId);
+            sb.append("SN").append(startSN).append("-");
+
+            if (stopSN != 0) {
+                sb.append(stopSN);
+            }
 
             if (ts != null) {
                 sb.append(" ts:").append(ts.getTimeRational());

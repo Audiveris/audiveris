@@ -42,6 +42,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -62,7 +63,6 @@ import javax.imageio.stream.ImageOutputStream;
  */
 public class TesseractOrder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TesseractOrder.class);
 
@@ -80,7 +80,6 @@ public class TesseractOrder
                 new com.github.jaiimageio.impl.plugins.tiff.TIFFImageReaderSpi());
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Serial number for this order. */
     private final int serial;
 
@@ -102,8 +101,6 @@ public class TesseractOrder
     /** The image being processed. */
     private final PIX image;
 
-    //~ Constructors -------------------------------------------------------------------------------
-    //
     //----------------//
     // TesseractOrder //
     //----------------//
@@ -116,7 +113,6 @@ public class TesseractOrder
      * @param lang          The language specification
      * @param segMode       The desired page segmentation mode
      * @param bufferedImage The image to process
-     *
      * @throws UnsatisfiedLinkError When bridge to C++ could not be loaded
      * @throws IOException          When temporary Tiff buffer failed
      * @throws RuntimeException     When PIX image failed
@@ -127,7 +123,8 @@ public class TesseractOrder
                            String lang,
                            int segMode,
                            BufferedImage bufferedImage)
-            throws UnsatisfiedLinkError, IOException
+            throws UnsatisfiedLinkError,
+                   IOException
     {
         this.label = label;
         this.serial = serial;
@@ -146,8 +143,6 @@ public class TesseractOrder
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //
     //---------//
     // process //
     //---------//
@@ -322,7 +317,7 @@ public class TesseractOrder
     private List<TextLine> getLines ()
     {
         final ResultIterator it = api.GetIterator();
-        final List<TextLine> lines = new ArrayList<TextLine>(); // All lines built so far
+        final List<TextLine> lines = new ArrayList<>(); // All lines built so far
         TextLine line = null; // The line being built
         TextWord word = null; // The word being built
         int nextLevel;
@@ -388,7 +383,7 @@ public class TesseractOrder
             }
 
             return lines;
-        } catch (Exception ex) {
+        } catch (UnsupportedEncodingException ex) {
             logger.warn("Error decoding tesseract output", ex);
 
             return null;
@@ -401,8 +396,9 @@ public class TesseractOrder
     // toTiffBuffer //
     //--------------//
     /**
-     * Convert the given image into a TIFF-formatted ByteBuffer for
-     * passing it directly to Tesseract.
+     * Convert the given image into a TIFF-formatted ByteBuffer for passing it directly
+     * to Tesseract.
+     * <p>
      * A copy of the tiff buffer can be saved on disk, if so desired.
      *
      * @param image the input image
@@ -413,21 +409,11 @@ public class TesseractOrder
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        try {
-            ImageOutputStream ios = null;
-
-            try {
-                ios = ImageIO.createImageOutputStream(baos);
-
-                ImageWriter writer = ImageIO.getImageWritersByFormatName("tiff").next();
-                writer.setOutput(ios);
-                writer.write(image);
-            } finally {
-                if (ios != null) {
-                    ios.close();
-                }
-            }
-        } catch (Exception ex) {
+        try (ImageOutputStream ios = ImageIO.createImageOutputStream(baos)) {
+            ImageWriter writer = ImageIO.getImageWritersByFormatName("tiff").next();
+            writer.setOutput(ios);
+            writer.write(image);
+        } catch (IOException ex) {
             logger.warn("Could not write image", ex);
         }
 
@@ -445,18 +431,9 @@ public class TesseractOrder
                 Files.createDirectories(WellKnowns.TEMP_FOLDER);
             }
 
-            try {
-                FileOutputStream fos = null;
-
-                try {
-                    fos = new FileOutputStream(path.toFile());
-                    fos.write(bytes);
-                } finally {
-                    if (fos != null) {
-                        fos.close();
-                    }
-                }
-            } catch (Exception ex) {
+            try (FileOutputStream fos = new FileOutputStream(path.toFile())) {
+                fos.write(bytes);
+            } catch (IOException ex) {
                 logger.warn("Could not write to {}", path, ex);
             }
         }

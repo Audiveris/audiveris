@@ -32,7 +32,6 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Voice;
-import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
@@ -70,7 +69,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * The following image shows two beams - a (full) beam and a beam hook:
  * <p>
  * <img alt="Beam image"
- * src="http://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Beamed_notes.svg/220px-Beamed_notes.svg.png">
+ * src=
+ * "http://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Beamed_notes.svg/220px-Beamed_notes.svg.png">
  *
  * @author Hervé Bitteur
  */
@@ -78,13 +78,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class AbstractBeamInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractBeamInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractBeamInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
@@ -95,6 +91,7 @@ public abstract class AbstractBeamInter
 
     /** Median line. */
     @XmlElement
+    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     protected Line2D median;
 
     // Transient data
@@ -103,7 +100,6 @@ public abstract class AbstractBeamInter
     /** The containing beam group. */
     private BeamGroup group;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractBeamInter object.
      * Note there is no underlying glyph, cleaning will be based on beam area.
@@ -140,7 +136,6 @@ public abstract class AbstractBeamInter
         super(null, null, shape, grade);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -286,7 +281,7 @@ public abstract class AbstractBeamInter
      */
     public List<AbstractChordInter> getChords ()
     {
-        List<AbstractChordInter> chords = new ArrayList<AbstractChordInter>();
+        List<AbstractChordInter> chords = new ArrayList<>();
 
         for (StemInter stem : getStems()) {
             for (AbstractChordInter chord : stem.getChords()) {
@@ -327,6 +322,19 @@ public abstract class AbstractBeamInter
     public BeamGroup getGroup ()
     {
         return group;
+    }
+
+    //----------//
+    // setGroup //
+    //----------//
+    /**
+     * Assign the containing BeamGroup.
+     *
+     * @param group containing group
+     */
+    public void setGroup (BeamGroup group)
+    {
+        this.group = group;
     }
 
     //-----------//
@@ -394,7 +402,7 @@ public abstract class AbstractBeamInter
      */
     public Set<StemInter> getStems ()
     {
-        Set<StemInter> stems = new LinkedHashSet<StemInter>();
+        Set<StemInter> stems = new LinkedHashSet<>();
 
         for (Relation bs : sig.getRelations(this, BeamStemRelation.class)) {
             StemInter stem = (StemInter) sig.getOppositeInter(this, bs);
@@ -429,6 +437,11 @@ public abstract class AbstractBeamInter
     //--------//
     // isHook //
     //--------//
+    /**
+     * Report whether this beam is a beam hook.
+     *
+     * @return true if so
+     */
     public boolean isHook ()
     {
         return false;
@@ -490,14 +503,6 @@ public abstract class AbstractBeamInter
         }
     }
 
-    //----------//
-    // setGroup //
-    //----------//
-    public void setGroup (BeamGroup group)
-    {
-        this.group = group;
-    }
-
     //---------------//
     // switchToGroup //
     //---------------//
@@ -533,6 +538,9 @@ public abstract class AbstractBeamInter
     //-------------//
     // computeArea //
     //-------------//
+    /**
+     *
+     */
     protected void computeArea ()
     {
         setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height));
@@ -612,7 +620,7 @@ public abstract class AbstractBeamInter
             logger.info("VIP lookupLinks for {}", this);
         }
 
-        final List<Link> links = new ArrayList<Link>();
+        final List<Link> links = new ArrayList<>();
         final Scale scale = system.getSheet().getScale();
         final Area luArea = getLookupArea(scale);
         List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.NONE, luArea);
@@ -631,24 +639,25 @@ public abstract class AbstractBeamInter
         return links;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
-            extends BasicImpacts
+            extends GradeImpacts
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{
-            "wdth", "minH", "maxH", "core", "belt", "jit"
-        };
+            "wdth",
+            "minH",
+            "maxH",
+            "core",
+            "belt",
+            "jit"};
 
         private static final int DIST_INDEX = 5;
 
         private static final double[] WEIGHTS = new double[]{0.5, 1, 1, 2, 2, 2};
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double width,
                         double minHeight,
                         double maxHeight,
@@ -665,7 +674,6 @@ public abstract class AbstractBeamInter
             setImpact(5, dist);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public double getDistImpact ()
         {
             return getImpact(DIST_INDEX);

@@ -28,17 +28,15 @@ import org.jdesktop.application.Task;
 /**
  * Class {@code BasicTask} is an Application Framework Task for Audiveris application.
  *
- * @author Hervé Bitteur
- *
  * @param <T> the result type returned by this {@code SwingWorker's}
  *            {@code doInBackground} and {@code get} methods
  * @param <V> the type used for carrying out intermediate results by this
  *            {@code SwingWorker's} {@code publish} and {@code process} methods
+ * @author Hervé Bitteur
  */
 public abstract class BasicTask<T, V>
         extends Task<T, V>
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Audiveris application is injected into this task.

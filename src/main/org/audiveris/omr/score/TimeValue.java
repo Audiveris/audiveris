@@ -41,7 +41,6 @@ import java.util.Objects;
  */
 public class TimeValue
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Specific specificShape if any: COMMON_TIME or CUT_TIME, otherwise null. */
     public final Shape specificShape;
@@ -49,7 +48,6 @@ public class TimeValue
     /** Time rational value. (6/8, 3/4, etc) */
     public final TimeRational timeRational;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TimeValue} object.
      *
@@ -68,7 +66,6 @@ public class TimeValue
         this.timeRational = timeRational;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // equals //
     //--------//

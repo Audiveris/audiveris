@@ -55,7 +55,6 @@ import java.awt.Rectangle;
 public class BinarizationBoard
         extends Board
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BinarizationBoard.class);
 
@@ -65,8 +64,6 @@ public class BinarizationBoard
     /** Format used for every double field. */
     private static final String format = "%.2f";
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** The related sheet. */
     private final Sheet sheet;
 
@@ -83,7 +80,6 @@ public class BinarizationBoard
     /** Computed threshold. */
     private final LDoubleField threshold = new LDoubleField(false, "Thres.", "Threshold", format);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BinarizationBoard object.
      *
@@ -105,8 +101,6 @@ public class BinarizationBoard
         defineLayout();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //
     //---------//
     // onEvent //
     //---------//

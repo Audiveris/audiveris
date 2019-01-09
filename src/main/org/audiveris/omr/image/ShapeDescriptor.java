@@ -46,7 +46,7 @@ import java.util.Set;
 
 /**
  * Class {@code ShapeDescriptor} handles all the templates for a shape at a given
- * global interline value.
+ * pointSize value.
  * <p>
  * Today there is just a single template per ShapeDescriptor.
  * <p>
@@ -66,7 +66,6 @@ import java.util.Set;
  */
 public class ShapeDescriptor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -91,7 +90,6 @@ public class ShapeDescriptor
     /** Color for irrelevant pixels. */
     private static final int IRRELEVANT = new Color(0, 0, 0, 0).getRGB(); // Fully transparent
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final Shape shape;
 
     private final int pointSize;
@@ -104,7 +102,6 @@ public class ShapeDescriptor
     /** Symbol height. */
     private int height = -1;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ShapeDescriptor object.
      *
@@ -118,33 +115,6 @@ public class ShapeDescriptor
         this.pointSize = pointSize;
 
         template = createTemplate(shape, pointSize);
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //------//
-    // main //
-    //------//
-    /**
-     * An entry point to allow generation and visual check of a bunch of templates.
-     *
-     * @param args minimum and maximum interline values
-     */
-    public static void main (String... args)
-    {
-        if ((args == null) || (args.length == 0)) {
-            logger.warn("Expected args: minInterline maxInterline");
-
-            return;
-        }
-
-        final int min = Integer.decode(args[0]);
-        final int max = (args.length > 1) ? Integer.decode(args[1]) : min;
-
-        for (int interline = min; interline <= max; interline++) {
-            for (Shape shape : ShapeSet.getTemplateNotes(null)) {
-                new ShapeDescriptor(shape, interline);
-            }
-        }
     }
 
     //----------//
@@ -204,6 +174,11 @@ public class ShapeDescriptor
     //-----------//
     // getHeight //
     //-----------//
+    /**
+     * Report symbol height.
+     *
+     * @return symbol height
+     */
     public int getHeight ()
     {
         return height;
@@ -212,6 +187,12 @@ public class ShapeDescriptor
     //-----------//
     // getOffset //
     //-----------//
+    /**
+     * Report the offset for desired anchor.
+     *
+     * @param anchor desired anchor
+     * @return point offset
+     */
     public Point getOffset (Anchored.Anchor anchor)
     {
         return template.getOffset(anchor);
@@ -220,6 +201,11 @@ public class ShapeDescriptor
     //----------//
     // getShape //
     //----------//
+    /**
+     * Report the related shape.
+     *
+     * @return related shape
+     */
     public Shape getShape ()
     {
         return shape;
@@ -247,6 +233,11 @@ public class ShapeDescriptor
     //-------------//
     // getTemplate //
     //-------------//
+    /**
+     * Report the related template.
+     *
+     * @return related template
+     */
     public Template getTemplate ()
     {
         return template;
@@ -274,6 +265,11 @@ public class ShapeDescriptor
     //----------//
     // getWidth //
     //----------//
+    /**
+     * Report the symbol width.
+     *
+     * @return symbol width
+     */
     public int getWidth ()
     {
         return width;
@@ -292,123 +288,6 @@ public class ShapeDescriptor
         sb.append("(").append(width).append("x").append(height).append(")");
 
         return sb.toString();
-    }
-
-    //------------------//
-    // computeDistances //
-    //------------------//
-    /**
-     * Compute all distances to nearest foreground pixel.
-     * For this we work as if there was a foreground rectangle right around the image.
-     * Similarly, the non-relevant pixels are assumed to be foreground.
-     * This is to allow the detection of reliable background key points.
-     *
-     * @param img   the source image
-     * @param shape the template shape
-     * @return the table of distances to foreground
-     */
-    private static DistanceTable computeDistances (BufferedImage img,
-                                                   Shape shape)
-    {
-        // Retrieve foreground pixels
-        final int width = img.getWidth();
-        final int height = img.getHeight();
-        final boolean[][] fore = new boolean[width + 2][height + 2];
-
-        // Fill with img foreground pixels and irrelevant pixels
-        for (int y = 1; y < (height + 1); y++) {
-            for (int x = 1; x < (width + 1); x++) {
-                Color pix = new Color(img.getRGB(x - 1, y - 1), true);
-
-                if (pix.equals(Color.BLACK) || (pix.getAlpha() == 0)) {
-                    fore[x][y] = true;
-                }
-            }
-        }
-
-        // Surround with a rectangle of foreground pixels
-        for (int y = 0; y < (height + 2); y++) {
-            fore[0][y] = true;
-            fore[width + 1][y] = true;
-        }
-
-        for (int x = 0; x < (width + 2); x++) {
-            fore[x][0] = true;
-            fore[x][height + 1] = true;
-        }
-
-        // Compute template distance transform
-        final DistanceTable distances = new ChamferDistance.Short().compute(fore);
-
-        if (logger.isDebugEnabled()) {
-            distances.dump(shape + "  distances");
-        }
-
-        // Trim the distance table of its surrounding rectangle
-        final Rectangle roi = new Rectangle(1, 1, width, height);
-        final DistanceTable trimmed = (DistanceTable) distances.getView(roi);
-
-        return trimmed;
-    }
-
-    //---------//
-    // getCode //
-    //---------//
-    private static int getCode (Shape shape)
-    {
-        switch (shape) {
-        case NOTEHEAD_BLACK:
-        case NOTEHEAD_BLACK_SMALL:
-            return 207;
-
-        case NOTEHEAD_VOID:
-        case NOTEHEAD_VOID_SMALL:
-            return 250;
-
-        case WHOLE_NOTE:
-        case WHOLE_NOTE_SMALL:
-            return 119;
-        }
-
-        logger.error(shape + " is not supported!");
-
-        return 0;
-    }
-
-    //--------------//
-    // getKeyPoints //
-    //--------------//
-    /**
-     * Build the collection of key points to be used for matching tests.
-     * These are the locations where the image distance value will be checked against the recorded
-     * template distance value.
-     *
-     * @param img       the template source image
-     * @param distances the template distances (extended on each direction)
-     * @return the collection of key locations, with their corresponding distance value
-     */
-    private static List<PixelDistance> getKeyPoints (BufferedImage img,
-                                                     DistanceTable distances)
-    {
-        List<PixelDistance> keyPoints = new ArrayList<PixelDistance>();
-
-        for (int y = 0, h = img.getHeight(); y < h; y++) {
-            for (int x = 0, w = img.getWidth(); x < w; x++) {
-                int pix = img.getRGB(x, y);
-
-                // We consider only relevant pixels
-                if (pix != IRRELEVANT) {
-                    // For hole, use *NEGATIVE* dist to nearest foreground
-                    // For background, use dist to nearest foreground
-                    // For foreground, dist to nearest foreground is 0 by definition
-                    final int val = distances.getValue(x, y);
-                    final int d = (pix == HOLE) ? (-val) : ((pix == BACK) ? val : 0);
-                    keyPoints.add(new PixelDistance(x, y, d));
-                }
-            }
-        }
-
-        return keyPoints;
     }
 
     //------------//
@@ -473,7 +352,7 @@ public class ShapeDescriptor
     {
         if (shapesWithHoles.contains(shape)) {
             // Identify holes
-            final List<Point> holeSeeds = new ArrayList<Point>();
+            final List<Point> holeSeeds = new ArrayList<>();
 
             // We have no ledger, just a big hole in the symbol center
             holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 2)));
@@ -567,7 +446,7 @@ public class ShapeDescriptor
         final List<PixelDistance> keyPoints = getKeyPoints(img, distances);
 
         // Generate the template instance
-        Template template = new Template(
+        Template tpl = new Template(
                 shape,
                 pointSize,
                 symbol,
@@ -577,15 +456,15 @@ public class ShapeDescriptor
                 symbolBounds);
 
         // Add specific anchor points, if any
-        addAnchors(template, img);
+        addAnchors(tpl, img);
 
         // Store a copy on disk for visual check?
         if (constants.keepTemplates.isSet()) {
-            BufferedImage output = template.buildDecoratedImage(img);
+            BufferedImage output = tpl.buildDecoratedImage(img);
             ImageUtil.saveOnDisk(output, shape + ".tpl" + pointSize);
         }
 
-        return template;
+        return tpl;
     }
 
     //----------------------//
@@ -630,7 +509,7 @@ public class ShapeDescriptor
     //------------//
     private Set<Point> getBorders (BufferedImage img)
     {
-        final Set<Point> borders = new LinkedHashSet<Point>();
+        final Set<Point> borders = new LinkedHashSet<>();
 
         for (int y = 0, h = img.getHeight(); y < h; y++) {
             for (int x = 0, w = img.getWidth(); x < w; x++) {
@@ -876,14 +755,153 @@ public class ShapeDescriptor
         return new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //------//
+    // main //
+    //------//
+    /**
+     * An entry point to allow generation and visual check of a bunch of templates.
+     *
+     * @param args minimum and maximum interline values
+     */
+    public static void main (String... args)
+    {
+        if ((args == null) || (args.length == 0)) {
+            logger.warn("Expected args: minInterline maxInterline");
+
+            return;
+        }
+
+        final int min = Integer.decode(args[0]);
+        final int max = (args.length > 1) ? Integer.decode(args[1]) : min;
+
+        for (int interline = min; interline <= max; interline++) {
+            for (Shape shape : ShapeSet.getTemplateNotes(null)) {
+                new ShapeDescriptor(shape, interline);
+            }
+        }
+    }
+
+    //------------------//
+    // computeDistances //
+    //------------------//
+    /**
+     * Compute all distances to nearest foreground pixel.
+     * For this we work as if there was a foreground rectangle right around the image.
+     * Similarly, the non-relevant pixels are assumed to be foreground.
+     * This is to allow the detection of reliable background key points.
+     *
+     * @param img   the source image
+     * @param shape the template shape
+     * @return the table of distances to foreground
+     */
+    private static DistanceTable computeDistances (BufferedImage img,
+                                                   Shape shape)
+    {
+        // Retrieve foreground pixels
+        final int width = img.getWidth();
+        final int height = img.getHeight();
+        final boolean[][] fore = new boolean[width + 2][height + 2];
+
+        // Fill with img foreground pixels and irrelevant pixels
+        for (int y = 1; y < (height + 1); y++) {
+            for (int x = 1; x < (width + 1); x++) {
+                Color pix = new Color(img.getRGB(x - 1, y - 1), true);
+
+                if (pix.equals(Color.BLACK) || (pix.getAlpha() == 0)) {
+                    fore[x][y] = true;
+                }
+            }
+        }
+
+        // Surround with a rectangle of foreground pixels
+        for (int y = 0; y < (height + 2); y++) {
+            fore[0][y] = true;
+            fore[width + 1][y] = true;
+        }
+
+        for (int x = 0; x < (width + 2); x++) {
+            fore[x][0] = true;
+            fore[x][height + 1] = true;
+        }
+
+        // Compute template distance transform
+        final DistanceTable distances = new ChamferDistance.Short().compute(fore);
+
+        if (logger.isDebugEnabled()) {
+            distances.dump(shape + "  distances");
+        }
+
+        // Trim the distance table of its surrounding rectangle
+        final Rectangle roi = new Rectangle(1, 1, width, height);
+        final DistanceTable trimmed = (DistanceTable) distances.getView(roi);
+
+        return trimmed;
+    }
+
+    //---------//
+    // getCode //
+    //---------//
+    private static int getCode (Shape shape)
+    {
+        switch (shape) {
+        case NOTEHEAD_BLACK:
+        case NOTEHEAD_BLACK_SMALL:
+            return 207;
+
+        case NOTEHEAD_VOID:
+        case NOTEHEAD_VOID_SMALL:
+            return 250;
+
+        case WHOLE_NOTE:
+        case WHOLE_NOTE_SMALL:
+            return 119;
+        }
+
+        logger.error(shape + " is not supported!");
+
+        return 0;
+    }
+
+    //--------------//
+    // getKeyPoints //
+    //--------------//
+    /**
+     * Build the collection of key points to be used for matching tests.
+     * These are the locations where the image distance value will be checked against the recorded
+     * template distance value.
+     *
+     * @param img       the template source image
+     * @param distances the template distances (extended on each direction)
+     * @return the collection of key locations, with their corresponding distance value
+     */
+    private static List<PixelDistance> getKeyPoints (BufferedImage img,
+                                                     DistanceTable distances)
+    {
+        List<PixelDistance> keyPoints = new ArrayList<>();
+        for (int y = 0, h = img.getHeight(); y < h; y++) {
+            for (int x = 0, w = img.getWidth(); x < w; x++) {
+                int pix = img.getRGB(x, y);
+
+                // We consider only relevant pixels
+                if (pix != IRRELEVANT) {
+                    // For hole, use *NEGATIVE* dist to nearest foreground
+                    // For background, use dist to nearest foreground
+                    // For foreground, dist to nearest foreground is 0 by definition
+                    final int val = distances.getValue(x, y);
+                    final int d = (pix == HOLE) ? (-val) : ((pix == BACK) ? val : 0);
+                    keyPoints.add(new PixelDistance(x, y, d));
+                }
+            }
+        }
+        return keyPoints;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean keepTemplates = new Constant.Boolean(
                 false,

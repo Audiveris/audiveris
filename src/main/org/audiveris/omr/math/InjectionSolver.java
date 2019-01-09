@@ -35,7 +35,6 @@ import java.util.Arrays;
  */
 public class InjectionSolver
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Size of domain. */
     private final int domainSize;
@@ -58,7 +57,6 @@ public class InjectionSolver
     /** Configuration being worked upon. */
     private final int[] config;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of InjectionSolver
      *
@@ -80,7 +78,6 @@ public class InjectionSolver
         config = new int[domainSize];
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // solve //
     //-------//
@@ -152,13 +149,11 @@ public class InjectionSolver
         }
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
     /**
      * Interface {@code Distance} provides the measurement for individual mapping costs.
      */
     public static interface Distance
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Report the distance when mapping element 'id' of domain to element 'ir' of

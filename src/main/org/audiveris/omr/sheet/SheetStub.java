@@ -54,7 +54,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -71,6 +73,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
 import javax.swing.SwingUtilities;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -85,11 +88,12 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Class {@code SheetStub} represents a placeholder in a {@link Book} to decouple the
  * Book instance from the actual {@link Sheet} instances and avoid loading all of them
  * in memory.
- *
+ * <p>
  * Methods are organized as follows:
  * <dl>
  * <dt>Administration</dt>
- * <dd><ul>
+ * <dd>
+ * <ul>
  * <li>{@link #getId}</li>
  * <li>{@link #getBook}</li>
  * <li>{@link #getNum}</li>
@@ -103,26 +107,29 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #close}</li>
  * <li>{@link #getLock}</li>
  * <li>{@link #storeSheet}</li>
- * </ul></dd>
- *
+ * </ul>
+ * </dd>
  * <dt>Pages</dt>
- * <dd><ul>
+ * <dd>
+ * <ul>
  * <li>{@link #addPageRef}</li>
  * <li>{@link #clearPageRefs}</li>
  * <li>{@link #getFirstPageRef}</li>
  * <li>{@link #getLastPageRef}</li>
  * <li>{@link #getPageRefs}</li>
- * </ul></dd>
- *
+ * </ul>
+ * </dd>
  * <dt>Parameters</dt>
- * <dd><ul>
+ * <dd>
+ * <ul>
  * <li>{@link #getBinarizationFilter}</li>
  * <li>{@link #getOcrLanguages}</li>
  * <li>{@link #getProcessingSwitches}</li>
- * </ul></dd>
- *
+ * </ul>
+ * </dd>
  * <dt>Transcription</dt>
- * <dd><ul>
+ * <dd>
+ * <ul>
  * <li>{@link #reset}</li>
  * <li>{@link #resetToBinary}</li>
  * <li>{@link #reachStep}</li>
@@ -133,12 +140,14 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #isDone}</li>
  * <li>{@link #invalidate}</li>
  * <li>{@link #isValid}</li>
- * </ul></dd>
- *
+ * </ul>
+ * </dd>
  * <dt>UI</dt>
- * <dd><ul>
+ * <dd>
+ * <ul>
  * <li>{@link #getAssembly}</li>
- * </ul></dd>
+ * </ul>
+ * </dd>
  * </dl>
  *
  * @author Hervé Bitteur
@@ -146,15 +155,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 public class SheetStub
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SheetStub.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetStub.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
@@ -189,7 +194,7 @@ public class SheetStub
 
     /** Pages references. */
     @XmlElement(name = "page")
-    private final List<PageRef> pageRefs = new ArrayList<PageRef>();
+    private final List<PageRef> pageRefs = new ArrayList<>();
 
     // Transient data
     //---------------
@@ -207,13 +212,15 @@ public class SheetStub
     /** The step being performed on the sheet. */
     private volatile Step currentStep;
 
-    /** Has sheet been modified, WRT its book data. */
-    private boolean modified = false;
+    /** Has this sheet been modified, WRT its persisted data. */
+    private volatile boolean modified = false;
+
+    /** Has this sheet been upgraded, WRT its persisted data. */
+    private volatile boolean upgraded = false;
 
     /** Related assembly instance, if any. */
     private SheetAssembly assembly;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SheetStub} object.
      *
@@ -236,7 +243,6 @@ public class SheetStub
         this.number = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // addPageRef //
     //------------//
@@ -308,8 +314,8 @@ public class SheetStub
             StubsController.invokeSelect(this);
         }
 
-        if ((OMR.gui == null)
-            || (OMR.gui.displayConfirmation(msg + LINE_SEPARATOR + "OK for discarding this sheet?"))) {
+        if ((OMR.gui == null) || (OMR.gui.displayConfirmation(
+                msg + LINE_SEPARATOR + "OK for discarding this sheet?"))) {
             invalidate();
 
             if (book.isMultiSheet()) {
@@ -389,6 +395,19 @@ public class SheetStub
     public Step getCurrentStep ()
     {
         return currentStep;
+    }
+
+    //----------------//
+    // setCurrentStep //
+    //----------------//
+    /**
+     * Assign the step being performed.
+     *
+     * @param step the current step
+     */
+    public void setCurrentStep (Step step)
+    {
+        currentStep = step;
     }
 
     //-----------------//
@@ -565,10 +584,13 @@ public class SheetStub
      */
     public Sheet getSheet ()
     {
-        if (sheet == null) {
+        Sheet sh = this.sheet;
+
+        if (sh == null) {
             synchronized (this) {
+                sh = this.sheet;
                 // We have to recheck sheet, which may have just been allocated
-                if (sheet == null) {
+                if (sh == null) {
                     if (SwingUtilities.isEventDispatchThread()) {
                         logger.warn("XXXX getSheet called on EDT XXXX");
                     }
@@ -577,7 +599,7 @@ public class SheetStub
                     if (!isDone(Step.LOAD)) {
                         // LOAD not yet performed: load from book image file
                         try {
-                            sheet = new Sheet(this, (BufferedImage) null);
+                            this.sheet = sh = new Sheet(this, (BufferedImage) null);
                         } catch (StepException ignored) {
                             logger.info("Could not load sheet for stub {}", this);
                         }
@@ -595,13 +617,12 @@ public class SheetStub
                                 sheetFile = book.openSheetFolder(number).resolve(
                                         Sheet.getSheetFileName(number));
 
-                                InputStream is = Files.newInputStream(
+                                try (InputStream is = Files.newInputStream(
                                         sheetFile,
-                                        StandardOpenOption.READ);
-                                sheet = Sheet.unmarshal(is);
+                                        StandardOpenOption.READ)) {
+                                    this.sheet = sh = Sheet.unmarshal(is);
+                                }
 
-                                // Close the stream as well as the book file system
-                                is.close();
                                 sheetFile.getFileSystem().close();
                             } finally {
                                 book.getLock().unlock();
@@ -609,9 +630,10 @@ public class SheetStub
 
                             // Complete sheet reload
                             watch.start("afterReload");
-                            sheet.afterReload(this);
+                            sh.afterReload(this);
                             logger.info("Loaded {}", sheetFile);
-                        } catch (Exception ex) {
+                        } catch (IOException |
+                                 JAXBException ex) {
                             logger.warn("Error in loading sheet structure " + ex, ex);
                             logger.info("Trying to restart from binary");
                             resetToBinary();
@@ -625,7 +647,7 @@ public class SheetStub
             }
         }
 
-        return sheet;
+        return sh;
     }
 
     //----------//
@@ -681,13 +703,73 @@ public class SheetStub
     // isModified //
     //------------//
     /**
-     * Has the sheet been modified with respect to its book data?.
+     * Has the sheet been modified with respect to its persisted data?.
      *
      * @return true if modified
      */
     public boolean isModified ()
     {
         return modified;
+    }
+
+    //-------------//
+    // setModified //
+    //-------------//
+    /**
+     * Set the modified flag.
+     *
+     * @param modified the new flag value
+     */
+    public void setModified (boolean modified)
+    {
+        this.modified = modified;
+
+        if (modified) {
+            book.setModified(true);
+            book.setDirty(true);
+        }
+    }
+
+    //------------//
+    // isUpgraded //
+    //------------//
+    /**
+     * Has the sheet been upgraded with respect to its persisted data?.
+     *
+     * @return true if upgraded
+     */
+    public boolean isUpgraded ()
+    {
+        return upgraded;
+    }
+
+    //-------------//
+    // setUpgraded //
+    //-------------//
+    /**
+     * Set the upgraded flag.
+     *
+     * @param upgraded the new flag value
+     */
+    public void setUpgraded (boolean upgraded)
+    {
+        this.upgraded = upgraded;
+
+        if (OMR.gui != null) {
+            SwingUtilities.invokeLater(new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    final StubsController controller = StubsController.getInstance();
+                    final SheetStub stub = controller.getSelectedStub();
+
+                    if ((stub == SheetStub.this)) {
+                        controller.refresh();
+                    }
+                }
+            });
+        }
     }
 
     //---------//
@@ -815,7 +897,8 @@ public class SheetStub
                 } else {
                     SwingUtilities.invokeAndWait(runnable);
                 }
-            } catch (Throwable ex) {
+            } catch (InterruptedException |
+                     InvocationTargetException ex) {
                 logger.warn("Could not reset {}", ex.toString(), ex);
             }
         }
@@ -866,32 +949,6 @@ public class SheetStub
         } catch (Throwable ex) {
             logger.warn("Could not reset to BINARY {}", ex.toString(), ex);
             reset();
-        }
-    }
-
-    //----------------//
-    // setCurrentStep //
-    //----------------//
-    public void setCurrentStep (Step step)
-    {
-        currentStep = step;
-    }
-
-    //-------------//
-    // setModified //
-    //-------------//
-    /**
-     * Set the modified flag.
-     *
-     * @param modified the new flag value
-     */
-    public void setModified (boolean modified)
-    {
-        this.modified = modified;
-
-        if (modified) {
-            book.setModified(true);
-            book.setDirty(true);
         }
     }
 
@@ -946,8 +1003,7 @@ public class SheetStub
             }
 
             if (OMR.gui != null) {
-                SwingUtilities.invokeLater(
-                        new Runnable()
+                SwingUtilities.invokeLater(new Runnable()
                 {
                     @Override
                     public void run ()
@@ -1050,8 +1106,7 @@ public class SheetStub
             }
 
             // Implement a timeout for this step on the stub
-            future = OmrExecutors.getCachedLowExecutor().submit(
-                    new Callable<Void>()
+            future = OmrExecutors.getCachedLowExecutor().submit(new Callable<Void>()
             {
                 @Override
                 public Void call ()
@@ -1190,14 +1245,12 @@ public class SheetStub
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
@@ -1207,10 +1260,9 @@ public class SheetStub
     //-------------------//
     // OcrSheetLanguages //
     //-------------------//
-    private static final class OcrSheetLanguages
+    private static class OcrSheetLanguages
             extends Param<String>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public boolean setSpecific (String specific)
@@ -1223,14 +1275,12 @@ public class SheetStub
             return super.setSpecific(specific);
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         /**
          * JAXB adapter to mimic XmlValue.
          */
         public static class Adapter
                 extends XmlAdapter<String, OcrSheetLanguages>
         {
-            //~ Methods ----------------------------------------------------------------------------
 
             @Override
             public String marshal (OcrSheetLanguages val)

@@ -58,11 +58,12 @@ import javax.swing.plaf.basic.BasicButtonUI;
 /**
  * Component to be used as tabComponent.
  * Contains a JLabel to show the text and a JButton to close the tab it belongs to.
+ *
+ * @author Hervé Bitteur
  */
 public class ButtonTabComponent
         extends JPanel
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** The same listener for all TabButton instances in application!. */
     private static final MouseListener buttonMouseListener = new MouseAdapter()
@@ -90,11 +91,9 @@ public class ButtonTabComponent
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The containing JTabbedPane. */
     private final ClosableTabbedPane pane;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ButtonTabComponent} object.
      *
@@ -142,7 +141,6 @@ public class ButtonTabComponent
         ///setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // TabButton //
     //-----------//
@@ -150,9 +148,8 @@ public class ButtonTabComponent
             extends JButton
             implements ActionListener
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public TabButton ()
+        TabButton ()
         {
             final int size = 13; // Button side length
             setPreferredSize(new Dimension(size, size));
@@ -178,7 +175,6 @@ public class ButtonTabComponent
             addActionListener(this);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {

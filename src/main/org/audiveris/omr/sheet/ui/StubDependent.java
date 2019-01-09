@@ -45,7 +45,6 @@ public abstract class StubDependent
         extends AbstractBean
         implements EventSubscriber<StubEvent>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StubDependent.class);
 
@@ -73,8 +72,8 @@ public abstract class StubDependent
     /** Name of property linked to book lack of activity. */
     public static final String BOOK_IDLE = "bookIdle";
 
-    /** Name of property linked to book modified. */
-    public static final String BOOK_MODIFIED = "bookModified";
+    /** Name of property linked to book modified/upgraded. */
+    public static final String BOOK_MODIFIED_OR_UPGRADED = "bookModifiedOrUpgraded";
 
     /** Name of property linked to undoable. */
     public static final String UNDOABLE = "undoable";
@@ -82,7 +81,6 @@ public abstract class StubDependent
     /** Name of property linked to redoable. */
     public static final String REDOABLE = "redoable";
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Indicates whether the current sheet stub has been annotated. */
     protected boolean stubAnnotated = false;
 
@@ -107,8 +105,8 @@ public abstract class StubDependent
     /** Indicates whether current book is idle (all its sheets are idle). */
     protected boolean bookIdle = false;
 
-    /** Indicates whether current book has been modified. */
-    protected boolean bookModified = false;
+    /** Indicates whether current book has been modified/upgraded. */
+    protected boolean bookModifiedOrUpgraded = false;
 
     /** Indicates whether we can undo user action. */
     protected boolean undoable = false;
@@ -116,7 +114,6 @@ public abstract class StubDependent
     /** Indicates whether we can redo user action. */
     protected boolean redoable = false;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StubDependent} object.
      */
@@ -126,7 +123,6 @@ public abstract class StubDependent
         StubsController.getInstance().subscribe(this);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // isBookAnnotated //
     //-----------------//
@@ -138,6 +134,24 @@ public abstract class StubDependent
     public boolean isBookAnnotated ()
     {
         return bookAnnotated;
+    }
+
+    //------------------//
+    // setBookAnnotated //
+    //------------------//
+    /**
+     * Setter for bookAnnotated property.
+     *
+     * @param bookAnnotated the new property value
+     */
+    public void setBookAnnotated (boolean bookAnnotated)
+    {
+        boolean oldValue = this.bookAnnotated;
+        this.bookAnnotated = bookAnnotated;
+
+        if (bookAnnotated != oldValue) {
+            firePropertyChange(BOOK_ANNOTATED, oldValue, this.bookAnnotated);
+        }
     }
 
     //------------//
@@ -153,17 +167,53 @@ public abstract class StubDependent
         return bookIdle;
     }
 
-    //----------------//
-    // isBookModified //
-    //----------------//
+    //-------------//
+    // setBookIdle //
+    //-------------//
     /**
-     * Getter for bookModified property
+     * Setter for bookIdle property
+     *
+     * @param bookIdle the new property value
+     */
+    public void setBookIdle (boolean bookIdle)
+    {
+        boolean oldValue = this.bookIdle;
+        this.bookIdle = bookIdle;
+
+        if (bookIdle != oldValue) {
+            firePropertyChange(BOOK_IDLE, oldValue, this.bookIdle);
+        }
+    }
+
+    //--------------------------//
+    // isBookModifiedOrUpgraded //
+    //--------------------------//
+    /**
+     * Getter for bookModifiedOrUpgraded property
      *
      * @return the current property value
      */
-    public boolean isBookModified ()
+    public boolean isBookModifiedOrUpgraded ()
     {
-        return bookModified;
+        return bookModifiedOrUpgraded;
+    }
+
+    //---------------------------//
+    // setBookModifiedOrUpgraded //
+    //---------------------------//
+    /**
+     * Setter for bookModifiedOrUpgraded property
+     *
+     * @param bookModifiedOrUpgraded the new property value
+     */
+    public void setBookModifiedOrUpgraded (boolean bookModifiedOrUpgraded)
+    {
+        boolean oldValue = this.bookModifiedOrUpgraded;
+        this.bookModifiedOrUpgraded = bookModifiedOrUpgraded;
+
+        if (bookModifiedOrUpgraded != oldValue) {
+            firePropertyChange(BOOK_MODIFIED_OR_UPGRADED, oldValue, this.bookModifiedOrUpgraded);
+        }
     }
 
     //---------------------//
@@ -179,6 +229,24 @@ public abstract class StubDependent
         return bookTranscribable;
     }
 
+    //----------------------//
+    // setBookTranscribable //
+    //----------------------//
+    /**
+     * Setter for bookTranscribable property.
+     *
+     * @param bookTranscribable the new property value
+     */
+    public void setBookTranscribable (boolean bookTranscribable)
+    {
+        boolean oldValue = this.bookTranscribable;
+        this.bookTranscribable = bookTranscribable;
+
+        if (bookTranscribable != oldValue) {
+            firePropertyChange(BOOK_TRANSCRIBABLE, oldValue, this.bookTranscribable);
+        }
+    }
+
     //------------//
     // isRedoable //
     //------------//
@@ -190,6 +258,24 @@ public abstract class StubDependent
     public boolean isRedoable ()
     {
         return redoable;
+    }
+
+    //-------------//
+    // setRedoable //
+    //-------------//
+    /**
+     * Setter for redoable property
+     *
+     * @param redoable the new property value
+     */
+    public void setRedoable (boolean redoable)
+    {
+        boolean oldValue = this.redoable;
+        this.redoable = redoable;
+
+        if (redoable != oldValue) {
+            firePropertyChange(REDOABLE, oldValue, this.redoable);
+        }
     }
 
     //-----------------//
@@ -205,6 +291,24 @@ public abstract class StubDependent
         return stubAnnotated;
     }
 
+    //------------------//
+    // setStubAnnotated //
+    //------------------//
+    /**
+     * Setter for stubAnnotated property.
+     *
+     * @param stubAnnotated the new property value
+     */
+    public void setStubAnnotated (boolean stubAnnotated)
+    {
+        boolean oldValue = this.stubAnnotated;
+        this.stubAnnotated = stubAnnotated;
+
+        if (stubAnnotated != oldValue) {
+            firePropertyChange(STUB_ANNOTATED, oldValue, this.stubAnnotated);
+        }
+    }
+
     //-----------------//
     // isStubAvailable //
     //-----------------//
@@ -216,6 +320,24 @@ public abstract class StubDependent
     public boolean isStubAvailable ()
     {
         return stubAvailable;
+    }
+
+    //------------------//
+    // setStubAvailable //
+    //------------------//
+    /**
+     * Setter for stubAvailable property.
+     *
+     * @param stubAvailable the new property value
+     */
+    public void setStubAvailable (boolean stubAvailable)
+    {
+        boolean oldValue = this.stubAvailable;
+        this.stubAvailable = stubAvailable;
+
+        if (stubAvailable != oldValue) {
+            firePropertyChange(STUB_AVAILABLE, oldValue, this.stubAvailable);
+        }
     }
 
     //------------//
@@ -231,6 +353,24 @@ public abstract class StubDependent
         return stubIdle;
     }
 
+    //-------------//
+    // setStubIdle //
+    //-------------//
+    /**
+     * Setter for stubIdle property
+     *
+     * @param stubIdle the new property value
+     */
+    public void setStubIdle (boolean stubIdle)
+    {
+        boolean oldValue = this.stubIdle;
+        this.stubIdle = stubIdle;
+
+        if (stubIdle != oldValue) {
+            firePropertyChange(STUB_IDLE, oldValue, this.stubIdle);
+        }
+    }
+
     //---------------------//
     // isStubTranscribable //
     //---------------------//
@@ -242,6 +382,24 @@ public abstract class StubDependent
     public boolean isStubTranscribable ()
     {
         return stubTranscribable;
+    }
+
+    //----------------------//
+    // setStubTranscribable //
+    //----------------------//
+    /**
+     * Setter for stubTranscribable property.
+     *
+     * @param stubTranscribable the new property value
+     */
+    public void setStubTranscribable (boolean stubTranscribable)
+    {
+        boolean oldValue = this.stubTranscribable;
+        this.stubTranscribable = stubTranscribable;
+
+        if (stubTranscribable != oldValue) {
+            firePropertyChange(STUB_TRANSCRIBABLE, oldValue, this.stubTranscribable);
+        }
     }
 
     //-------------//
@@ -257,6 +415,24 @@ public abstract class StubDependent
         return stubValid;
     }
 
+    //--------------//
+    // setStubValid //
+    //--------------//
+    /**
+     * Setter for stubValid property.
+     *
+     * @param stubValid the new property value
+     */
+    public void setStubValid (boolean stubValid)
+    {
+        boolean oldValue = this.stubValid;
+        this.stubValid = stubValid;
+
+        if (stubValid != oldValue) {
+            firePropertyChange(STUB_VALID, oldValue, this.stubValid);
+        }
+    }
+
     //------------//
     // isUndoable //
     //------------//
@@ -268,6 +444,24 @@ public abstract class StubDependent
     public boolean isUndoable ()
     {
         return undoable;
+    }
+
+    //-------------//
+    // setUndoable //
+    //-------------//
+    /**
+     * Setter for undoable property
+     *
+     * @param undoable the new property value
+     */
+    public void setUndoable (boolean undoable)
+    {
+        boolean oldValue = this.undoable;
+        this.undoable = undoable;
+
+        if (undoable != oldValue) {
+            firePropertyChange(UNDOABLE, oldValue, this.undoable);
+        }
     }
 
     //---------//
@@ -292,7 +486,7 @@ public abstract class StubDependent
             //            logger.info(
             //                    "event: {} {}",
             //                    stubEvent,
-            //                    (stub != null) ? stub.getSheet().getId() : "no stub");
+            //                    (stub != null) ? stub.getId() : "no stub");
             //
             // Update stubAvailable
             setStubAvailable(stub != null);
@@ -325,11 +519,12 @@ public abstract class StubDependent
                 setBookAnnotated(false);
             }
 
-            // Update bookModified
+            // Update bookModifiedOrUpgraded
             if (stub != null) {
-                setBookModified(stub.isModified() || stub.getBook().isModified());
+                final Book book = stub.getBook();
+                setBookModifiedOrUpgraded(book.isModified() || book.isUpgraded());
             } else {
-                setBookModified(false);
+                setBookModifiedOrUpgraded(false);
             }
 
             // Update undoable/redoable
@@ -346,203 +541,6 @@ public abstract class StubDependent
         }
     }
 
-    //------------------//
-    // setBookAnnotated //
-    //------------------//
-    /**
-     * Setter for bookAnnotated property.
-     *
-     * @param bookAnnotated the new property value
-     */
-    public void setBookAnnotated (boolean bookAnnotated)
-    {
-        boolean oldValue = this.bookAnnotated;
-        this.bookAnnotated = bookAnnotated;
-
-        if (bookAnnotated != oldValue) {
-            firePropertyChange(BOOK_ANNOTATED, oldValue, this.bookAnnotated);
-        }
-    }
-
-    //-------------//
-    // setBookIdle //
-    //-------------//
-    /**
-     * Setter for bookIdle property
-     *
-     * @param bookIdle the new property value
-     */
-    public void setBookIdle (boolean bookIdle)
-    {
-        boolean oldValue = this.bookIdle;
-        this.bookIdle = bookIdle;
-
-        if (bookIdle != oldValue) {
-            firePropertyChange(BOOK_IDLE, oldValue, this.bookIdle);
-        }
-    }
-
-    //-----------------//
-    // setBookModified //
-    //-----------------//
-    /**
-     * Setter for bookModified property
-     *
-     * @param bookModified the new property value
-     */
-    public void setBookModified (boolean bookModified)
-    {
-        boolean oldValue = this.bookModified;
-        this.bookModified = bookModified;
-
-        if (bookModified != oldValue) {
-            firePropertyChange(BOOK_MODIFIED, oldValue, this.bookModified);
-        }
-    }
-
-    //----------------------//
-    // setBookTranscribable //
-    //----------------------//
-    /**
-     * Setter for bookTranscribable property.
-     *
-     * @param bookTranscribable the new property value
-     */
-    public void setBookTranscribable (boolean bookTranscribable)
-    {
-        boolean oldValue = this.bookTranscribable;
-        this.bookTranscribable = bookTranscribable;
-
-        if (bookTranscribable != oldValue) {
-            firePropertyChange(BOOK_TRANSCRIBABLE, oldValue, this.bookTranscribable);
-        }
-    }
-
-    //-------------//
-    // setRedoable //
-    //-------------//
-    /**
-     * Setter for redoable property
-     *
-     * @param redoable the new property value
-     */
-    public void setRedoable (boolean redoable)
-    {
-        boolean oldValue = this.redoable;
-        this.redoable = redoable;
-
-        if (redoable != oldValue) {
-            firePropertyChange(REDOABLE, oldValue, this.redoable);
-        }
-    }
-
-    //------------------//
-    // setStubAnnotated //
-    //------------------//
-    /**
-     * Setter for stubAnnotated property.
-     *
-     * @param stubAnnotated the new property value
-     */
-    public void setStubAnnotated (boolean stubAnnotated)
-    {
-        boolean oldValue = this.stubAnnotated;
-        this.stubAnnotated = stubAnnotated;
-
-        if (stubAnnotated != oldValue) {
-            firePropertyChange(STUB_ANNOTATED, oldValue, this.stubAnnotated);
-        }
-    }
-
-    //------------------//
-    // setStubAvailable //
-    //------------------//
-    /**
-     * Setter for stubAvailable property.
-     *
-     * @param stubAvailable the new property value
-     */
-    public void setStubAvailable (boolean stubAvailable)
-    {
-        boolean oldValue = this.stubAvailable;
-        this.stubAvailable = stubAvailable;
-
-        if (stubAvailable != oldValue) {
-            firePropertyChange(STUB_AVAILABLE, oldValue, this.stubAvailable);
-        }
-    }
-
-    //-------------//
-    // setStubIdle //
-    //-------------//
-    /**
-     * Setter for stubIdle property
-     *
-     * @param stubIdle the new property value
-     */
-    public void setStubIdle (boolean stubIdle)
-    {
-        boolean oldValue = this.stubIdle;
-        this.stubIdle = stubIdle;
-
-        if (stubIdle != oldValue) {
-            firePropertyChange(STUB_IDLE, oldValue, this.stubIdle);
-        }
-    }
-
-    //----------------------//
-    // setStubTranscribable //
-    //----------------------//
-    /**
-     * Setter for stubTranscribable property.
-     *
-     * @param stubTranscribable the new property value
-     */
-    public void setStubTranscribable (boolean stubTranscribable)
-    {
-        boolean oldValue = this.stubTranscribable;
-        this.stubTranscribable = stubTranscribable;
-
-        if (stubTranscribable != oldValue) {
-            firePropertyChange(STUB_TRANSCRIBABLE, oldValue, this.stubTranscribable);
-        }
-    }
-
-    //--------------//
-    // setStubValid //
-    //--------------//
-    /**
-     * Setter for stubValid property.
-     *
-     * @param stubValid the new property value
-     */
-    public void setStubValid (boolean stubValid)
-    {
-        boolean oldValue = this.stubValid;
-        this.stubValid = stubValid;
-
-        if (stubValid != oldValue) {
-            firePropertyChange(STUB_VALID, oldValue, this.stubValid);
-        }
-    }
-
-    //-------------//
-    // setUndoable //
-    //-------------//
-    /**
-     * Setter for undoable property
-     *
-     * @param undoable the new property value
-     */
-    public void setUndoable (boolean undoable)
-    {
-        boolean oldValue = this.undoable;
-        this.undoable = undoable;
-
-        if (undoable != oldValue) {
-            firePropertyChange(UNDOABLE, oldValue, this.undoable);
-        }
-    }
 
     //-----------------//
     // isBookAnnotated //

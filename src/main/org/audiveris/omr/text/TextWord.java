@@ -44,7 +44,6 @@ import java.util.List;
 public class TextWord
         extends TextBasedItem
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TextWord.class);
 
@@ -70,8 +69,6 @@ public class TextWord
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** Containing TextLine. */
     @Navigable(false)
     private TextLine textLine;
@@ -80,7 +77,7 @@ public class TextWord
     private final FontInfo fontInfo;
 
     /** Chars that compose this word. */
-    private final List<TextChar> chars = new ArrayList<TextChar>();
+    private final List<TextChar> chars = new ArrayList<>();
 
     /** Underlying glyph, if known. */
     private Glyph glyph;
@@ -88,8 +85,6 @@ public class TextWord
     /** Precise font size, lazily computed. */
     private Float preciseFontSize;
 
-    //~ Constructors -------------------------------------------------------------------------------
-    //
     //----------//
     // TextWord //
     //----------//
@@ -146,69 +141,6 @@ public class TextWord
 
         final float size = TextFont.computeFontSize(value, fontInfo, bounds.getSize());
         this.fontInfo = new FontInfo(fontInfo, (int) Math.rint(size));
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //------------------//
-    // createManualWord //
-    //------------------//
-    /**
-     * Create a TextWord instance manually, out of a given glyph and value.
-     * TODO: Perhaps we could improve the baseline, according to the precise string value provided.
-     *
-     * @param glyph the underlying glyph
-     * @param value the provided string value
-     * @return the TextWord created
-     */
-    public static TextWord createManualWord (Glyph glyph,
-                                             String value)
-    {
-        Rectangle box = glyph.getBounds();
-        int fontSize = (int) Math.rint(
-                TextFont.computeFontSize(value, FontInfo.DEFAULT, box.getSize()));
-        TextWord word = new TextWord(
-                box,
-                value,
-                new Line2D.Double(box.x, box.y + box.height, box.x + box.width, box.y + box.height),
-                1.0, // Confidence
-                FontInfo.createDefault(fontSize),
-                null);
-
-        word.setGlyph(glyph);
-
-        return word;
-    }
-
-    //---------//
-    // mergeOf //
-    //---------//
-    /**
-     * Return a word which results from the merge of the provided words.
-     *
-     * @param words the words to merge
-     * @return the compound word
-     */
-    public static TextWord mergeOf (TextWord... words)
-    {
-        List<TextChar> chars = new ArrayList<TextChar>();
-        StringBuilder sb = new StringBuilder();
-
-        for (TextWord word : words) {
-            chars.addAll(word.getChars());
-            sb.append(word.getValue());
-        }
-
-        // Use font info of first word. What else?
-        FontInfo fontInfo = words[0].getFontInfo();
-        TextLine line = words[0].textLine;
-
-        return new TextWord(
-                baselineOf(Arrays.asList(words)),
-                sb.toString(),
-                fontInfo,
-                confidenceOf(Arrays.asList(words)),
-                chars,
-                line);
     }
 
     //---------//
@@ -302,9 +234,31 @@ public class TextWord
         return glyph;
     }
 
+    //----------//
+    // setGlyph //
+    //----------//
+    /**
+     * Assign the underlying glyph.
+     *
+     * @param glyph the glyph to set
+     */
+    public void setGlyph (Glyph glyph)
+    {
+        this.glyph = glyph;
+
+        if (glyph.isVip()) {
+            setVip(true);
+        }
+    }
+
     //------------------//
     // getInternalValue //
     //------------------//
+    /**
+     * Report the word content.
+     *
+     * @return text value
+     */
     public String getInternalValue ()
     {
         return super.getValue();
@@ -329,7 +283,8 @@ public class TextWord
      * word bounds.
      * <p>
      * The size appears to be a bit larger than OCR detected side, by a factor in the range 1.1 -
-     * 1.2. TODO: To be improved, using font attributes for better font selection</p>
+     * 1.2. TODO: To be improved, using font attributes for better font selection
+     * </p>
      *
      * @return the computed font size
      */
@@ -340,50 +295,6 @@ public class TextWord
         }
 
         return preciseFontSize;
-    }
-
-    //-------------//
-    // getTextLine //
-    //-------------//
-    /**
-     * Report the containing TextLine instance
-     *
-     * @return the containing line
-     */
-    public TextLine getTextLine ()
-    {
-        return textLine;
-    }
-
-    //----------//
-    // getValue //
-    //----------//
-    /**
-     * Overridden to use glyph manual value if any or fall back using initial value.
-     *
-     * @return the value to be used
-     */
-    @Override
-    public String getValue ()
-    {
-        return getInternalValue();
-    }
-
-    //----------//
-    // setGlyph //
-    //----------//
-    /**
-     * Assign the underlying glyph.
-     *
-     * @param glyph the glyph to set
-     */
-    public void setGlyph (Glyph glyph)
-    {
-        this.glyph = glyph;
-
-        if (glyph.isVip()) {
-            setVip(true);
-        }
     }
 
     //--------------------//
@@ -401,6 +312,19 @@ public class TextWord
     }
 
     //-------------//
+    // getTextLine //
+    //-------------//
+    /**
+     * Report the containing TextLine instance
+     *
+     * @return the containing line
+     */
+    public TextLine getTextLine ()
+    {
+        return textLine;
+    }
+
+    //-------------//
     // setTextLine //
     //-------------//
     /**
@@ -415,6 +339,20 @@ public class TextWord
         if (isVip() && (textLine != null)) {
             textLine.setVip(true);
         }
+    }
+
+    //----------//
+    // getValue //
+    //----------//
+    /**
+     * Overridden to use glyph manual value if any or fall back using initial value.
+     *
+     * @return the value to be used
+     */
+    @Override
+    public String getValue ()
+    {
+        return getInternalValue();
     }
 
     //-----------//
@@ -459,5 +397,65 @@ public class TextWord
         }
 
         return sb.toString();
+    }
+
+    //------------------//
+    // createManualWord //
+    //------------------//
+    /**
+     * Create a TextWord instance manually, out of a given glyph and value.
+     * <p>
+     * TODO: Perhaps we could improve the baseline, according to the precise string value provided.
+     *
+     * @param glyph the underlying glyph
+     * @param value the provided string value
+     * @return the TextWord created
+     */
+    public static TextWord createManualWord (Glyph glyph,
+                                             String value)
+    {
+        Rectangle box = glyph.getBounds();
+        int fontSize = (int) Math.rint(
+                TextFont.computeFontSize(value, FontInfo.DEFAULT, box.getSize()));
+        TextWord word = new TextWord(
+                box,
+                value,
+                new Line2D.Double(box.x, box.y + box.height, box.x + box.width, box.y + box.height),
+                1.0, // Confidence
+                FontInfo.createDefault(fontSize),
+                null);
+
+        word.setGlyph(glyph);
+
+        return word;
+    }
+
+    //---------//
+    // mergeOf //
+    //---------//
+    /**
+     * Return a word which results from the merge of the provided words.
+     *
+     * @param words the words to merge
+     * @return the compound word
+     */
+    public static TextWord mergeOf (TextWord... words)
+    {
+        List<TextChar> chars = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        for (TextWord word : words) {
+            chars.addAll(word.getChars());
+            sb.append(word.getValue());
+        }
+        // Use font info of first word. What else?
+        FontInfo fontInfo = words[0].getFontInfo();
+        TextLine line = words[0].textLine;
+        return new TextWord(
+                baselineOf(Arrays.asList(words)),
+                sb.toString(),
+                fontInfo,
+                confidenceOf(Arrays.asList(words)),
+                chars,
+                line);
     }
 }

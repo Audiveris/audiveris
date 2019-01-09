@@ -37,26 +37,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordOrnamentRelation
         extends AbstractConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //-------------------//
-    // getXOutGapMaximum //
-    //-------------------//
-    public static Scale.Fraction getXOutGapMaximum (boolean manual)
-    {
-        return manual ? constants.xGapMaxManual : constants.xGapMax;
-    }
-
-    //----------------//
-    // getYGapMaximum //
-    //----------------//
-    public static Scale.Fraction getYGapMaximum (boolean manual)
-    {
-        return manual ? constants.yGapMaxManual : constants.yGapMax;
-    }
 
     //----------------//
     // isSingleSource //
@@ -103,14 +85,28 @@ public class ChordOrnamentRelation
         return getYGapMaximum(manual);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------------//
+    // getXOutGapMaximum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMaximum (boolean manual)
+    {
+        return manual ? constants.xGapMaxManual : constants.xGapMax;
+    }
+
+    //----------------//
+    // getYGapMaximum //
+    //----------------//
+    public static Scale.Fraction getYGapMaximum (boolean manual)
+    {
+        return manual ? constants.yGapMaxManual : constants.yGapMax;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio ornamentTargetCoeff = new Constant.Ratio(
                 0.5,

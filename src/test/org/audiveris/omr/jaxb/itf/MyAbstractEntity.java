@@ -40,7 +40,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class MyAbstractEntity
         implements MyEntity
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Identity for debugging. */
     @XmlID
@@ -48,7 +47,6 @@ public class MyAbstractEntity
     @XmlJavaTypeAdapter(type = int.class, value = Jaxb.StringIntegerAdapter.class)
     protected int id;
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // getId //
     //-------//

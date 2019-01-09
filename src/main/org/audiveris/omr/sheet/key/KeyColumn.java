@@ -48,7 +48,8 @@ import java.util.TreeMap;
  * For each staff slice, a connected component is first looked up (phase #1) and, if
  * unsuccessful, then a hard slice-based glyph is searched (phase #2).
  * <p>
- * Second, it is assumed that, within the same containing system: <ol>
+ * Second, it is assumed that, within the same containing system:
+ * <ol>
  * <li>All staff key signatures start at similar abscissa offset since measure start,
  * <li>All staff key slices have similar widths across staves, even between small and standard
  * staves, and regardless of key alter shape (SHARP, FLAT or NATURAL),
@@ -75,31 +76,11 @@ import java.util.TreeMap;
  */
 public class KeyColumn
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(KeyColumn.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /** Status of key replication within part. */
-    public enum PartStatus
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        /** Success. */
-        OK,
-        /** Slice count to be reduced. */
-        SHRINK,
-        /** No clef in staff. */
-        NO_CLEF,
-        /** Replication failed. */
-        NO_REPLICATE,
-        /** No key in part. */
-        DESTROY;
-    }
-
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related system. */
     private final SystemInfo system;
 
@@ -107,12 +88,11 @@ public class KeyColumn
     private final Parameters params;
 
     /** Map of key builders. (one per staff) */
-    private final Map<Staff, KeyBuilder> builders = new TreeMap<Staff, KeyBuilder>(Staff.byId);
+    private final Map<Staff, KeyBuilder> builders = new TreeMap<>(Staff.byId);
 
     /** Theoretical abscissa offset for each slice. */
     private List<Integer> globalOffsets;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code KeyColumn} object.
      *
@@ -124,7 +104,6 @@ public class KeyColumn
         params = new Parameters(system.getSheet().getScale());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // addPlot //
     //---------//
@@ -208,53 +187,6 @@ public class KeyColumn
         }
 
         return maxKeyOffset;
-    }
-
-    //-----------------//
-    // getMaxSliceDist //
-    //-----------------//
-    final int getMaxSliceDist ()
-    {
-        return params.maxSliceDist;
-    }
-
-    //----------------//
-    // getGlobalIndex //
-    //----------------//
-    /**
-     * Determine the corresponding global index for the provided abscissa offset.
-     *
-     * @param offset slice offset
-     * @return the global index, or null
-     */
-    Integer getGlobalIndex (int offset)
-    {
-        Integer bestIndex = null;
-        double bestDist = Double.MAX_VALUE;
-
-        for (int i = 0; i < globalOffsets.size(); i++) {
-            int gOffset = globalOffsets.get(i);
-            double dist = Math.abs(gOffset - offset);
-
-            if (bestDist > dist) {
-                bestDist = dist;
-                bestIndex = i;
-            }
-        }
-
-        if (bestDist <= getMaxSliceDist()) {
-            return bestIndex;
-        } else {
-            return null;
-        }
-    }
-
-    //-----------------//
-    // getGlobalOffset //
-    //-----------------//
-    int getGlobalOffset (int index)
-    {
-        return globalOffsets.get(index);
     }
 
     //-------------------//
@@ -380,8 +312,8 @@ public class KeyColumn
         int meanSliceWidth = 0;
 
         // Check that key-sig slices appear rather vertically aligned across system staves
-        List<Population> pops = new ArrayList<Population>(); // 1 population per slice index
-        List<Double> vals = new ArrayList<Double>(); // All offset values
+        List<Population> pops = new ArrayList<>(); // 1 population per slice index
+        List<Double> vals = new ArrayList<>(); // All offset values
 
         for (KeyBuilder builder : builders.values()) {
             KeyInter bestInter = builder.getBestKeyInter();
@@ -428,7 +360,7 @@ public class KeyColumn
 
         Clustering.EM(table, laws);
 
-        List<Integer> theoreticals = new ArrayList<Integer>();
+        List<Integer> theoreticals = new ArrayList<>();
 
         for (int k = 0; k < G; k++) {
             Clustering.Gaussian law = laws[k];
@@ -473,14 +405,74 @@ public class KeyColumn
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------------//
+    // getMaxSliceDist //
+    //-----------------//
+    final int getMaxSliceDist ()
+    {
+        return params.maxSliceDist;
+    }
+
+    //----------------//
+    // getGlobalIndex //
+    //----------------//
+    /**
+     * Determine the corresponding global index for the provided abscissa offset.
+     *
+     * @param offset slice offset
+     * @return the global index, or null
+     */
+    Integer getGlobalIndex (int offset)
+    {
+        Integer bestIndex = null;
+        double bestDist = Double.MAX_VALUE;
+
+        for (int i = 0; i < globalOffsets.size(); i++) {
+            int gOffset = globalOffsets.get(i);
+            double dist = Math.abs(gOffset - offset);
+
+            if (bestDist > dist) {
+                bestDist = dist;
+                bestIndex = i;
+            }
+        }
+
+        if (bestDist <= getMaxSliceDist()) {
+            return bestIndex;
+        } else {
+            return null;
+        }
+    }
+
+    //-----------------//
+    // getGlobalOffset //
+    //-----------------//
+    int getGlobalOffset (int index)
+    {
+        return globalOffsets.get(index);
+    }
+
+    /** Status of key replication within part. */
+    public enum PartStatus
+    {
+        /** Success. */
+        OK,
+        /** Slice count to be reduced. */
+        SHRINK,
+        /** No clef in staff. */
+        NO_CLEF,
+        /** Replication failed. */
+        NO_REPLICATE,
+        /** No key in part. */
+        DESTROY;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction maxSliceDist = new Scale.Fraction(
                 0.5,
@@ -490,14 +482,12 @@ public class KeyColumn
     //------------//
     // Parameters //
     //------------//
-    private static final class Parameters
+    private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int maxSliceDist;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             maxSliceDist = scale.toPixels(constants.maxSliceDist);
         }

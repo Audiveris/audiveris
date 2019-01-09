@@ -46,16 +46,13 @@ import java.util.Collection;
  */
 public abstract class AnnotationPainter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Constructors -------------------------------------------------------------------------------
     private AnnotationPainter ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // paint //
     //-------//
@@ -112,14 +109,12 @@ public abstract class AnnotationPainter
         g.setStroke(oldStroke);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------------------//
     // SimpleAnnotationPainter //
     //-------------------------//
     public static class SimpleAnnotationPainter
             implements SimpleSheetPainter
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void paint (Sheet sheet,
@@ -135,7 +130,6 @@ public abstract class AnnotationPainter
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio minZoomForNames = new Constant.Ratio(
                 0.5,

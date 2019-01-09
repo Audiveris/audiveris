@@ -55,11 +55,9 @@ import java.util.List;
 public class HeaderTimeBuilder
         extends TimeBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(HeaderTimeBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Time range info. */
     private final StaffHeader.Range range;
 
@@ -70,7 +68,6 @@ public class HeaderTimeBuilder
     /** Region of interest for time-sig. */
     private final Rectangle roi;
 
-    //~ Constructors -------------------------------------------------------------------------------
     //
     //    /** 3 adapters for glyph building, one for each kind: whole, num & den. */
     //    final Map<TimeKind, TimeAdapter> adapters = new EnumMap<TimeKind, TimeAdapter>(TimeKind.class);
@@ -103,7 +100,6 @@ public class HeaderTimeBuilder
         ///projection = getProjection();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // cleanup //
     //---------//
@@ -469,7 +465,6 @@ public class HeaderTimeBuilder
 //    //-------//
 //    private static class Space
 //    {
-//        //~ Instance fields ------------------------------------------------------------------------
 //
 //        /** Left abscissa. */
 //        protected final int start;
@@ -477,7 +472,6 @@ public class HeaderTimeBuilder
 //        /** Right abscissa. */
 //        protected final int stop;
 //
-//        //~ Constructors ---------------------------------------------------------------------------
 //        public Space (int start,
 //                      int stop)
 //        {
@@ -485,7 +479,6 @@ public class HeaderTimeBuilder
 //            this.stop = stop;
 //        }
 //
-//        //~ Methods --------------------------------------------------------------------------------
 //        @Override
 //        public String toString ()
 //        {
@@ -508,12 +501,10 @@ public class HeaderTimeBuilder
 //    private class HalfAdapter
 //            extends TimeAdapter
 //    {
-//        //~ Instance fields ------------------------------------------------------------------------
 //
 //        /** Which half is being searched. (NUM or DEN) */
 //        private final TimeKind half;
 //
-//        //~ Constructors ---------------------------------------------------------------------------
 //        public HalfAdapter (TimeKind half,
 //                            List<Glyph> parts)
 //        {
@@ -521,7 +512,6 @@ public class HeaderTimeBuilder
 //            this.half = half;
 //        }
 //
-//        //~ Methods --------------------------------------------------------------------------------
 //        @Override
 //        public void evaluateGlyph (Glyph glyph,
 //                                   Set<Glyph> parts)
@@ -574,18 +564,15 @@ public class HeaderTimeBuilder
 //    private abstract class TimeAdapter
 //            extends GlyphCluster.AbstractAdapter
 //    {
-//        //~ Instance fields ------------------------------------------------------------------------
 //
 //        /** Best inter per time shape. */
 //        public Map<Shape, Inter> bestMap = new EnumMap<Shape, Inter>(Shape.class);
 //
-//        //~ Constructors ---------------------------------------------------------------------------
 //        public TimeAdapter (List<Glyph> parts)
 //        {
 //            super(parts, params.maxPartGap);
 //        }
 //
-//        //~ Methods --------------------------------------------------------------------------------
 //        public void cleanup ()
 //        {
 //            for (Inter inter : bestMap.values()) {
@@ -623,14 +610,12 @@ public class HeaderTimeBuilder
 //    private class WholeAdapter
 //            extends TimeAdapter
 //    {
-//        //~ Constructors ---------------------------------------------------------------------------
 //
 //        public WholeAdapter (List<Glyph> parts)
 //        {
 //            super(parts);
 //        }
 //
-//        //~ Methods --------------------------------------------------------------------------------
 //        @Override
 //        public void evaluateGlyph (Glyph glyph,
 //                                   Set<Glyph> parts)

@@ -40,14 +40,9 @@ import static javax.swing.JOptionPane.CLOSED_OPTION;
  */
 public class StaffSelection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StaffSelection.class);
 
-    /** Singleton. */
-    private static volatile StaffSelection INSTANCE;
-
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Resource injection. */
     private final ResourceMap resources = Application.getInstance().getContext().getResourceMap(
             StaffSelection.class);
@@ -55,42 +50,39 @@ public class StaffSelection
     private final String className = getClass().getSimpleName();
 
     /** Options objects for dialog. */
-    private final Object[] options = new Object[]{
-        resources.getImageIcon(className + ".UP.icon"),
-        resources.getImageIcon(className + ".DOWN.icon"),
-        resources.getString(className + ".cancel")
-    };
+    private final Object[] options = new Object[]{resources.getImageIcon(className + ".UP.icon"),
+                                                  resources.getImageIcon(className + ".DOWN.icon"),
+                                                  resources.getString(className + ".cancel")};
 
     /** Option pane. */
-    private final JOptionPane pane = new JOptionPane(
-            resources.getString(className + ".message"),
-            JOptionPane.QUESTION_MESSAGE,
-            JOptionPane.DEFAULT_OPTION,
-            null,
-            options);
+    private final JOptionPane pane = new JOptionPane(resources.getString(className + ".message"),
+                                                     JOptionPane.QUESTION_MESSAGE,
+                                                     JOptionPane.DEFAULT_OPTION, null, options);
 
     /** Reusable dialog. */
-    private final JDialog dialog = pane.createDialog(
-            OMR.gui.getFrame(),
-            resources.getString(className + ".title"));
+    private final JDialog dialog = pane.createDialog(OMR.gui.getFrame(), resources.getString(
+                                                     className + ".title"));
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // getInstance //
+    //-------------//
     /**
-     * Report the singleton
+     * Report the single instance of this class in application.
      *
-     * @return the unique instance of this class
+     * @return the instance
      */
     public static StaffSelection getInstance ()
     {
-        if (INSTANCE == null) {
-            synchronized (StaffSelection.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new StaffSelection();
-                }
-            }
-        }
+        return LazySingleton.INSTANCE;
+    }
 
-        return INSTANCE;
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final StaffSelection INSTANCE = new StaffSelection();
     }
 
     /**

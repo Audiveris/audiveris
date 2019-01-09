@@ -37,11 +37,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BracketConnectorInter
         extends AbstractVerticalInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private final BarConnection connection;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BracketConnectorInter object.
      *
@@ -64,7 +62,6 @@ public class BracketConnectorInter
         this.connection = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

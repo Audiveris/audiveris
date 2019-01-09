@@ -32,17 +32,17 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code NumDenSymbol} displays a time sig, with numerator and denominator.
+ *
+ * @author Hervé Bitteur
  */
 public class NumDenSymbol
         extends ShapeSymbol
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private final int[] numCodes;
 
     private final int[] denCodes;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new NumDenSymbol object.
      *
@@ -97,7 +97,6 @@ public class NumDenSymbol
         this.denCodes = denCodes;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -143,14 +142,12 @@ public class NumDenSymbol
         OmrFont.paint(g, p.denLayout, bot, AREA_CENTER);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int dy;
 
@@ -158,8 +155,7 @@ public class NumDenSymbol
 
         final TextLayout denLayout;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public MyParams (MusicFont font)
+        MyParams (MusicFont font)
         {
             dy = (int) Math.rint(2 * font.getStaffInterline());
             numLayout = font.layout(numCodes);

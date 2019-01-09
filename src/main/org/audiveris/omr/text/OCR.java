@@ -33,25 +33,19 @@ import java.util.Set;
  */
 public interface OCR
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Standard NO_OCR message: {@value}. */
     static String NO_OCR = "No OCR is available!";
 
-    //~ Enumerations -------------------------------------------------------------------------------
     /** Handling of image layout. */
     enum LayoutMode
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /** Automatic discovery of multi block layout */
         MULTI_BLOCK,
         /** No layout processing, a single block is assumed */
         SINGLE_BLOCK;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //
     /**
      * Report the set of supported language codes
      *
@@ -84,7 +78,8 @@ public interface OCR
      * @param label        an optional label related to the image, null otherwise.
      *                     This is meant for keeping track of the temporary image files.
      * @return a list of TextLine instances, or null.
-     *         The coordinates of any returned TextLine are absolute coordinates thanks to the topLeft
+     *         The coordinates of any returned TextLine are absolute coordinates thanks to the
+     *         topLeft
      *         parameter.
      */
     List<TextLine> recognize (int interline,
@@ -94,20 +89,29 @@ public interface OCR
                               LayoutMode layoutMode,
                               String label);
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     /**
      * Exception used to signal that no OCR is actually available.
      */
     static class UnavailableOcrException
             extends RuntimeException
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
+        /**
+         * Create a UnavailableOcrException.
+         *
+         * @param msg related message
+         */
         public UnavailableOcrException (String msg)
         {
             super(msg);
         }
 
+        /**
+         * Create a UnavailableOcrException.
+         *
+         * @param msg   related message
+         * @param cause exception cause
+         */
         public UnavailableOcrException (String msg,
                                         Throwable cause)
         {

@@ -32,7 +32,6 @@ import org.audiveris.omr.sig.relation.Relation;
 public class UnlinkTask
         extends RelationTask
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code UnlinkTask} object.
@@ -48,16 +47,15 @@ public class UnlinkTask
         target = sig.getEdgeTarget(relation);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void performDo ()
     {
         sig.removeEdge(getRelation());
 
-//        // Source inter may have been removed when publication is seen on UI...
-//        if (!source.isRemoved()) {
-//            sheet.getInterIndex().publish(source);
-//        }
+        //        // Source inter may have been removed when publication is seen on UI...
+        //        if (!source.isRemoved()) {
+        //            sheet.getInterIndex().publish(source);
+        //        }
     }
 
     @Override

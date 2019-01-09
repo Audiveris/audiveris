@@ -29,17 +29,14 @@ package org.audiveris.omr.util;
  */
 public abstract class Memory
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Runtime rt = Runtime.getRuntime();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private Memory ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // free //
     //------//

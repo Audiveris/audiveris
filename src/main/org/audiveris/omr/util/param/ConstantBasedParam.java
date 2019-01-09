@@ -31,21 +31,17 @@ import org.slf4j.LoggerFactory;
  * as is the case for many default Param.
  *
  * @author Hervé Bitteur
- *
  * @param <E> type for value
  * @param <C> type for value constant
  */
 public class ConstantBasedParam<E, C extends Constant>
         extends Param<E>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ConstantBasedParam.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final C cst;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ConstantBasedParam} object.
      *
@@ -56,7 +52,6 @@ public class ConstantBasedParam<E, C extends Constant>
         this.cst = constant;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public E getSourceValue ()
     {

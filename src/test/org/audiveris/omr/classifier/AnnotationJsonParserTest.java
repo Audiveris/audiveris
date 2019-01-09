@@ -20,14 +20,11 @@ import static org.junit.Assert.*;
  */
 public class AnnotationJsonParserTest
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AnnotationJsonParserTest.class);
 
-    //~ Fields -------------------------------------------------------------------------------------
     private String jsonString;
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Before
     public void setUp ()
     {
@@ -71,11 +68,14 @@ public class AnnotationJsonParserTest
     {
         String json = "[1001, 159, 1005, 163, \"articStaccatoBelow\"]";
         assertNull(AnnotationJsonParser.extractArray(json));
-        json = "[[1001, 159, 1005, 163, \"articStaccatoBelow\"],[1001, 159, 1005, 163, \"articStaccatoBelow\"]]";
+        json
+                = "[[1001, 159, 1005, 163, \"articStaccatoBelow\"],[1001, 159, 1005, 163, \"articStaccatoBelow\"]]";
         assertNull(AnnotationJsonParser.extractArray(json));
-        json = "{[[1001, 159, 1005, 163, \"articStaccatoBelow\"],[1001, 159, 1005, 163, \"articStaccatoBelow\"]]}";
+        json
+                = "{[[1001, 159, 1005, 163, \"articStaccatoBelow\"],[1001, 159, 1005, 163, \"articStaccatoBelow\"]]}";
         assertNull(AnnotationJsonParser.extractArray(json));
-        json = "{\"Niet!\": [[1001, 159, 1005, 163, \"articStaccatoBelow\"],[1001, 159, 1005, 163, \"articStaccatoBelow\"]]}";
+        json
+                = "{\"Niet!\": [[1001, 159, 1005, 163, \"articStaccatoBelow\"],[1001, 159, 1005, 163, \"articStaccatoBelow\"]]}";
         assertNull(AnnotationJsonParser.extractArray(json));
     }
 

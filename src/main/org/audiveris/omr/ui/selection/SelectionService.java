@@ -41,20 +41,17 @@ import java.util.List;
 public class SelectionService
         extends ThreadSafeEventService
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SelectionService.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Name of this service. */
     private final String name;
 
     /** Allowed events. */
     private final Class[] eventsAllowed;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SelectionService object.
      *
@@ -71,10 +68,12 @@ public class SelectionService
         setDefaultCacheSizePerClassOrTopic(1);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // dumpSubscribers //
     //-----------------//
+    /**
+     * Dump all current subscribers to this service.
+     */
     public void dumpSubscribers ()
     {
         logger.info("{} subscribers:", this);
@@ -107,6 +106,11 @@ public class SelectionService
     //---------//
     // getName //
     //---------//
+    /**
+     * Report service name.
+     *
+     * @return service name
+     */
     public String getName ()
     {
         return name;
@@ -232,6 +236,11 @@ public class SelectionService
     //------------------//
     // getEventsAllowed //
     //------------------//
+    /**
+     * Report the event classes that can ne published on this service.
+     *
+     * @return the allowed classes of event
+     */
     protected Class[] getEventsAllowed ()
     {
         return eventsAllowed;
@@ -251,14 +260,12 @@ public class SelectionService
         return false;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean checkPublishedEvents = new Constant.Boolean(
                 true,

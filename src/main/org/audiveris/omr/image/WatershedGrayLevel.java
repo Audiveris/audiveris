@@ -14,7 +14,6 @@ import java.util.LinkedList;
  */
 public class WatershedGrayLevel
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Number of gray level values. */
     private static final int GRAYLEVEL = 256;
@@ -28,9 +27,8 @@ public class WatershedGrayLevel
     /** Ordinate offsets of the 8 neighbors, clockwise. */
     private static final int[] dy8 = new int[]{-1, -1, -1, 0, 1, 1, 1, 0};
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Original gray-level image, organized row per row. */
-    private Table image;
+    private final Table image;
 
     /** Image width. */
     private final int width;
@@ -52,7 +50,6 @@ public class WatershedGrayLevel
     /** List of pixels (one per level) to process. */
     private ListOfPixels[] exploreList;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new WatershedGrayLevel object.
      *
@@ -79,7 +76,6 @@ public class WatershedGrayLevel
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getRegionCount //
     //----------------//
@@ -170,7 +166,6 @@ public class WatershedGrayLevel
         exploreList = null;
     }
 
-    //
     //    private void dumpRmap ()
     //    {
     //        System.out.println("rmap:");
@@ -306,7 +301,6 @@ public class WatershedGrayLevel
         return null;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // ListOfPixels //
     //--------------//
@@ -316,6 +310,12 @@ public class WatershedGrayLevel
     private static class ListOfPixels
             extends LinkedList<Pixel>
     {
+
+        @Override
+        public Object clone ()
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     //-------//
@@ -326,7 +326,6 @@ public class WatershedGrayLevel
      */
     private static class Pixel
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         int x;
 
@@ -334,17 +333,15 @@ public class WatershedGrayLevel
 
         int level;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Pixel (int x,
-                      int y,
-                      int level)
+        Pixel (int x,
+               int y,
+               int level)
         {
             this.x = x;
             this.y = y;
             this.level = level;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

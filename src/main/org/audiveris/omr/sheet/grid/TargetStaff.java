@@ -33,7 +33,6 @@ import java.util.List;
  */
 public class TargetStaff
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Initial raw information */
     public final Staff info;
@@ -45,17 +44,16 @@ public class TargetStaff
     public final double top;
 
     /** Sequence of staff lines */
-    public final List<TargetLine> lines = new ArrayList<TargetLine>();
+    public final List<TargetLine> lines = new ArrayList<>();
 
     /** Containing system */
     public final TargetSystem system;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TargetStaff object.
      *
-     * @param info initial raw information
-     * @param top  Ordinate of top in containing page
+     * @param info   initial raw information
+     * @param top    Ordinate of top in containing page
      * @param system the containing system
      */
     public TargetStaff (Staff info,
@@ -69,7 +67,6 @@ public class TargetStaff
         id = info.getId();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // toString //
     //----------//

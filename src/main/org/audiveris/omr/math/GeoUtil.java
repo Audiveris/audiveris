@@ -32,7 +32,11 @@ import java.awt.geom.Line2D;
  */
 public abstract class GeoUtil
 {
-    //~ Methods ------------------------------------------------------------------------------------
+
+    // Not meant to be instantiated.
+    private GeoUtil ()
+    {
+    }
 
     //----------//
     // centerOf //

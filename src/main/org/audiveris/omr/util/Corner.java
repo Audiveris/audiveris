@@ -35,7 +35,6 @@ import java.util.List;
  */
 public class Corner
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     public static final Corner TOP_LEFT = new Corner(TOP, LEFT);
 
@@ -52,14 +51,12 @@ public class Corner
             TOP_LEFT,
             BOTTOM_RIGHT);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The vertical side. */
     public final VerticalSide vSide;
 
     /** The horizontal side. */
     public final HorizontalSide hSide;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Corner object.
      *
@@ -73,12 +70,21 @@ public class Corner
         this.hSide = hSide;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * Report the corner integer ID.
+     *
+     * @return id
+     */
     public int getId ()
     {
         return values.indexOf(this);
     }
 
+    /**
+     * Report the corresponding anchor for this corner.
+     *
+     * @return stem-based anchor
+     */
     public Anchor stemAnchor ()
     {
         if (this == TOP_LEFT) {

@@ -39,7 +39,6 @@ import java.awt.geom.Rectangle2D;
 public class BraceSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     // The upper part symbol
     private static final BasicSymbol upperSymbol = Symbols.SYMBOL_BRACE_UPPER_HALF;
@@ -47,7 +46,6 @@ public class BraceSymbol
     // The lower part symbol
     private static final BasicSymbol lowerSymbol = Symbols.SYMBOL_BRACE_LOWER_HALF;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a BraceSymbol (which is made of upper and lower parts)
      *
@@ -58,7 +56,6 @@ public class BraceSymbol
         super(isIcon, Shape.BRACE, false);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -101,14 +98,12 @@ public class BraceSymbol
         MusicFont.paint(g, p.lowerLayout, loc, TOP_LEFT);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         TextLayout upperLayout;
 

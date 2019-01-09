@@ -39,7 +39,6 @@ import java.awt.geom.Rectangle2D;
 public class EvenStepSymbol
         extends ShapeSymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new EvenStepSymbol object.
@@ -53,7 +52,6 @@ public class EvenStepSymbol
         super(shape, codes);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getParams //
     //-----------//
@@ -93,14 +91,12 @@ public class EvenStepSymbol
         g.fillRect(loc.x, loc.y - (p.line / 2), p.rect.width - 1, p.line);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         int line; // Thickness of a ledger or staff line
     }

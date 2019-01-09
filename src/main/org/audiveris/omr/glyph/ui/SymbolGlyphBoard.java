@@ -41,11 +41,9 @@ import org.slf4j.LoggerFactory;
 public class SymbolGlyphBoard
         extends GlyphBoard
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolGlyphBoard.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Glyph characteristics : normalized weight. */
     private final LDoubleField weight = new LDoubleField(
             false,
@@ -63,7 +61,6 @@ public class SymbolGlyphBoard
             "Normalized height",
             "%.3f");
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the symbol glyph board.
      *
@@ -84,33 +81,6 @@ public class SymbolGlyphBoard
         weight.setEnabled(false);
 
         defineLayout();
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // defineLayout //
-    //--------------//
-    /**
-     * Define a specific layout for this Symbol GlyphBoard.
-     */
-    private void defineLayout ()
-    {
-        final CellConstraints cst = new CellConstraints();
-
-        int r = 1; // --------------------------------
-        // id + width
-
-        builder.add(width.getLabel(), cst.xy(9, r));
-        builder.add(width.getField(), cst.xy(11, r));
-
-        r += 2; // --------------------------------
-        // weight + height
-
-        builder.add(weight.getLabel(), cst.xy(5, r));
-        builder.add(weight.getField(), cst.xy(7, r));
-
-        builder.add(height.getLabel(), cst.xy(9, r));
-        builder.add(height.getField(), cst.xy(11, r));
     }
 
     //-----------------------//
@@ -143,5 +113,31 @@ public class SymbolGlyphBoard
         width.setEnabled(glyph != null);
         height.setEnabled(glyph != null);
         weight.setEnabled(glyph != null);
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    /**
+     * Define a specific layout for this Symbol GlyphBoard.
+     */
+    private void defineLayout ()
+    {
+        final CellConstraints cst = new CellConstraints();
+
+        int r = 1; // --------------------------------
+        // id + width
+
+        builder.add(width.getLabel(), cst.xy(9, r));
+        builder.add(width.getField(), cst.xy(11, r));
+
+        r += 2; // --------------------------------
+        // weight + height
+
+        builder.add(weight.getLabel(), cst.xy(5, r));
+        builder.add(weight.getField(), cst.xy(7, r));
+
+        builder.add(height.getLabel(), cst.xy(9, r));
+        builder.add(height.getField(), cst.xy(11, r));
     }
 }

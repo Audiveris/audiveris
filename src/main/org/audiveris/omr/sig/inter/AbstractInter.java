@@ -36,6 +36,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.MirrorRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -82,7 +83,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * interface.
  * <p>
  * As a general policy, subclasses can provide convenient creation static methods, which should
- * be consistently named as follows: <ul>
+ * be consistently named as follows:
+ * <ul>
  * <li>{@code create} for just inter creation.
  * <li>{@code createValid} for inter creation and validation (if failed, inter is not created).
  * <li>{@code createAdded} for inter creation and addition to SIG.
@@ -96,13 +98,9 @@ public abstract class AbstractInter
         extends AbstractEntity
         implements Inter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
@@ -126,6 +124,7 @@ public abstract class AbstractInter
 
     /** Object bounds, perhaps different from glyph bounds. */
     @XmlElement(name = "bounds")
+    @XmlJavaTypeAdapter(Jaxb.RectangleAdapter.class)
     protected Rectangle bounds;
 
     /** The quality of this interpretation. */
@@ -133,10 +132,11 @@ public abstract class AbstractInter
     @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double3Adapter.class)
     protected double grade;
 
-    /** Mirror instance, if any. */
+    /** Deprecated. Old mirror instance, if any. */
+    @Deprecated
     @XmlIDREF
     @XmlAttribute(name = "mirror")
-    protected AbstractInter mirror;
+    private AbstractInter oldMirror;
 
     /** Is it abnormal?. */
     @XmlAttribute(name = "abnormal")
@@ -188,7 +188,6 @@ public abstract class AbstractInter
     /** Core bounds meant for overlap check. */
     protected Rectangle coreBounds;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractInter object, with detailed impacts information.
      *
@@ -261,7 +260,6 @@ public abstract class AbstractInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -417,7 +415,7 @@ public abstract class AbstractInter
         for (Relation rel : sig.incomingEdgesOf(this)) {
             if (rel instanceof Containment) {
                 if (ensembles == null) {
-                    ensembles = new LinkedHashSet<Inter>();
+                    ensembles = new LinkedHashSet<>();
                 }
 
                 ensembles.add(sig.getOppositeInter(this, rel));
@@ -450,6 +448,19 @@ public abstract class AbstractInter
     public Area getArea ()
     {
         return area;
+    }
+
+    //---------//
+    // setArea //
+    //---------//
+    /**
+     * Set the underlying area.
+     *
+     * @param area the area to set
+     */
+    public void setArea (Area area)
+    {
+        this.area = area;
     }
 
     //----------------//
@@ -498,6 +509,15 @@ public abstract class AbstractInter
     }
 
     //-----------//
+    // setBounds //
+    //-----------//
+    @Override
+    public void setBounds (Rectangle bounds)
+    {
+        this.bounds = bounds;
+    }
+
+    //-----------//
     // getCenter //
     //-----------//
     @Override
@@ -523,32 +543,6 @@ public abstract class AbstractInter
         Rectangle bounds = getBounds();
 
         return new Point(bounds.x, bounds.y + (bounds.height / 2));
-    }
-
-    //--------------//
-    // getGoodGrade //
-    //--------------//
-    /**
-     * Report the minimum grade to consider an interpretation as good.
-     *
-     * @return the minimum grade value for a good interpretation
-     */
-    public static double getGoodGrade ()
-    {
-        return Grades.goodInterGrade;
-    }
-
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    /**
-     * Report the minimum grade for an acceptable interpretation
-     *
-     * @return the minimum grade for keeping an Inter instance
-     */
-    public static double getMinGrade ()
-    {
-        return Grades.minInterGrade;
     }
 
     //----------------//
@@ -586,6 +580,15 @@ public abstract class AbstractInter
     public Double getContextualGrade ()
     {
         return ctxGrade;
+    }
+
+    //--------------------//
+    // setContextualGrade //
+    //--------------------//
+    @Override
+    public void setContextualGrade (double value)
+    {
+        ctxGrade = value;
     }
 
     //---------------//
@@ -670,12 +673,30 @@ public abstract class AbstractInter
     }
 
     //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        this.glyph = glyph;
+    }
+
+    //----------//
     // getGrade //
     //----------//
     @Override
     public double getGrade ()
     {
         return grade;
+    }
+
+    //----------//
+    // setGrade //
+    //----------//
+    @Override
+    public void setGrade (double grade)
+    {
+        this.grade = grade;
     }
 
     //------------//
@@ -693,7 +714,27 @@ public abstract class AbstractInter
     @Override
     public Inter getMirror ()
     {
-        return mirror;
+        for (Relation rel : sig.getRelations(this, MirrorRelation.class)) {
+            return sig.getOppositeInter(this, rel);
+        }
+
+        return null;
+    }
+
+    //-----------//
+    // setMirror //
+    //-----------//
+    @Override
+    public void setMirror (Inter mirror)
+    {
+        final boolean direct = this.getId() < mirror.getId();
+        final Inter source = direct ? this : mirror;
+        final Inter target = direct ? mirror : this;
+        Relation rel = sig.getRelation(source, target, MirrorRelation.class);
+
+        if (rel == null) {
+            sig.addEdge(source, target, new MirrorRelation());
+        }
     }
 
     //-------------//
@@ -719,6 +760,15 @@ public abstract class AbstractInter
         }
 
         return part;
+    }
+
+    //---------//
+    // setPart //
+    //---------//
+    @Override
+    public void setPart (Part part)
+    {
+        this.part = part;
     }
 
     //-------------------//
@@ -748,6 +798,15 @@ public abstract class AbstractInter
         return sig;
     }
 
+    //--------//
+    // setSig //
+    //--------//
+    @Override
+    public void setSig (SIGraph sig)
+    {
+        this.sig = sig;
+    }
+
     //----------//
     // getStaff //
     //----------//
@@ -758,6 +817,18 @@ public abstract class AbstractInter
     public Staff getStaff ()
     {
         return staff;
+    }
+
+    //----------//
+    // setStaff //
+    //----------//
+    /**
+     * @param staff the staff to set
+     */
+    @Override
+    public void setStaff (Staff staff)
+    {
+        this.staff = staff;
     }
 
     //-----------------//
@@ -834,6 +905,21 @@ public abstract class AbstractInter
         return abnormal;
     }
 
+    //-------------//
+    // setAbnormal //
+    //-------------//
+    @Override
+    public void setAbnormal (boolean abnormal)
+    {
+        if (this.abnormal != abnormal) {
+            this.abnormal = abnormal;
+
+            if (sig != null) {
+                sig.getSystem().getSheet().getStub().setModified(true);
+            }
+        }
+    }
+
     //--------------------//
     // isContextuallyGood //
     //--------------------//
@@ -875,6 +961,15 @@ public abstract class AbstractInter
     }
 
     //-----------//
+    // setManual //
+    //-----------//
+    @Override
+    public void setManual (boolean manual)
+    {
+        this.manual = manual;
+    }
+
+    //-----------//
     // isRemoved //
     //-----------//
     @Override
@@ -907,9 +1002,8 @@ public abstract class AbstractInter
     public boolean overlaps (Inter that)
             throws DeletedInterException
     {
-        // Discard overlapping if both involved items are annotation-based
-        // (because they have been considered as compatible by the page classifier)
-        if ((this.getAnnotationId() != 0) && (that.getAnnotationId() != 0)) {
+        // Discard overlapping if any involved item is annotation-based
+        if ((this.getAnnotationId() != 0) || (that.getAnnotationId() != 0)) {
             return false;
         }
 
@@ -928,9 +1022,8 @@ public abstract class AbstractInter
             }
 
             for (Inter thisMember : members) {
-                if (thisMember.overlaps(that)
-                    && that.overlaps(thisMember)
-                    && sig.noSupport(thisMember, that)) {
+                if (thisMember.overlaps(that) && that.overlaps(thisMember)
+                            && sig.noSupport(thisMember, that)) {
                     return true;
                 }
             }
@@ -1011,7 +1104,7 @@ public abstract class AbstractInter
                 if (extensive) {
                     // Handle ensemble - member cases?
                     // Copy is needed to avoid concurrent modification exception
-                    List<Relation> relsCopy = new ArrayList<Relation>(sig.incomingEdgesOf(this));
+                    List<Relation> relsCopy = new ArrayList<>(sig.incomingEdgesOf(this));
 
                     for (Relation rel : relsCopy) {
                         // A member may be contained by several ensembles (case of TimeNumberInter)
@@ -1083,68 +1176,6 @@ public abstract class AbstractInter
         return Collections.emptySet(); // By default
     }
 
-    //-------------//
-    // setAbnormal //
-    //-------------//
-    @Override
-    public void setAbnormal (boolean abnormal)
-    {
-        if (this.abnormal != abnormal) {
-            this.abnormal = abnormal;
-
-            if (sig != null) {
-                sig.getSystem().getSheet().getStub().setModified(true);
-            }
-        }
-    }
-
-    //---------//
-    // setArea //
-    //---------//
-    /**
-     * @param area the area to set
-     */
-    public void setArea (Area area)
-    {
-        this.area = area;
-    }
-
-    //-----------//
-    // setBounds //
-    //-----------//
-    @Override
-    public void setBounds (Rectangle bounds)
-    {
-        this.bounds = bounds;
-    }
-
-    //--------------------//
-    // setContextualGrade //
-    //--------------------//
-    @Override
-    public void setContextualGrade (double value)
-    {
-        ctxGrade = value;
-    }
-
-    //----------//
-    // setGlyph //
-    //----------//
-    @Override
-    public void setGlyph (Glyph glyph)
-    {
-        this.glyph = glyph;
-    }
-
-    //----------//
-    // setGrade //
-    //----------//
-    @Override
-    public void setGrade (double grade)
-    {
-        this.grade = grade;
-    }
-
     //-------//
     // setId //
     //-------//
@@ -1162,57 +1193,6 @@ public abstract class AbstractInter
         this.id = id;
     }
 
-    //-----------//
-    // setManual //
-    //-----------//
-    @Override
-    public void setManual (boolean manual)
-    {
-        this.manual = manual;
-    }
-
-    //-----------//
-    // setMirror //
-    //-----------//
-    @Override
-    public void setMirror (Inter mirror)
-    {
-        this.mirror = (AbstractInter) mirror;
-    }
-
-    //---------//
-    // setPart //
-    //---------//
-    /**
-     * @param part the part to set
-     */
-    @Override
-    public void setPart (Part part)
-    {
-        this.part = part;
-    }
-
-    //--------//
-    // setSig //
-    //--------//
-    @Override
-    public void setSig (SIGraph sig)
-    {
-        this.sig = sig;
-    }
-
-    //----------//
-    // setStaff //
-    //----------//
-    /**
-     * @param staff the staff to set
-     */
-    @Override
-    public void setStaff (Staff staff)
-    {
-        this.staff = staff;
-    }
-
     //-------------//
     // shapeString //
     //-------------//
@@ -1220,6 +1200,31 @@ public abstract class AbstractInter
     public String shapeString ()
     {
         return shape.toString();
+    }
+
+    //-----------------//
+    // upgradeOldStuff //
+    //-----------------//
+    /**
+     * Temporary method to upgrade from oldMirror field to MirrorRelation.
+     *
+     * @return true if really upgraded
+     */
+    @Deprecated
+    public boolean upgradeOldStuff ()
+    {
+        if (oldMirror != null) {
+            // We keep only Head mirrors (not HeadChord "mirrors" any more)
+            if (this instanceof HeadInter) {
+                setMirror(oldMirror);
+            }
+
+            oldMirror = null;
+
+            return true;
+        }
+
+        return false;
     }
 
     //---------------//
@@ -1283,10 +1288,6 @@ public abstract class AbstractInter
             sb.append(" A").append(annotationId);
         }
 
-        if (mirror != null) {
-            sb.append(" mirror#").append(mirror.getId());
-        }
-
         if (staff != null) {
             sb.append(" s:").append(staff.getId());
         }
@@ -1337,7 +1338,32 @@ public abstract class AbstractInter
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------------//
+    // getGoodGrade //
+    //--------------//
+    /**
+     * Report the minimum grade to consider an interpretation as good.
+     *
+     * @return the minimum grade value for a good interpretation
+     */
+    public static double getGoodGrade ()
+    {
+        return Grades.goodInterGrade;
+    }
+
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    /**
+     * Report the minimum grade for an acceptable interpretation
+     *
+     * @return the minimum grade for keeping an Inter instance
+     */
+    public static double getMinGrade ()
+    {
+        return Grades.minInterGrade;
+    }
+
     //---------//
     // Adapter //
     //---------//
@@ -1347,7 +1373,6 @@ public abstract class AbstractInter
     public static class Adapter
             extends XmlAdapter<AbstractInter, Inter>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public AbstractInter marshal (Inter inter)

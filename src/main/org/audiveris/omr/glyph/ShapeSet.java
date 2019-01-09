@@ -53,14 +53,16 @@ import javax.swing.JMenuItem;
  * It handles additional properties over a simple EnumSet, especially assigned colors and its
  * automatic insertion in shape menus and palette hierarchy.
  * So don't remove any of the ShapeSet's, unless you know what you are doing.
+ *
+ * @author Hervé Bitteur
  */
 public class ShapeSet
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ShapeSet.class);
 
-    /** Half time numbers. These shapes are used for upper or lower part of a time signature.
+    /**
+     * Half time numbers. These shapes are used for upper or lower part of a time signature.
      */
     public static final List<Shape> PartialTimes = Arrays.asList(
             TIME_TWO,
@@ -74,7 +76,8 @@ public class ShapeSet
             TIME_TWELVE,
             TIME_SIXTEEN);
 
-    /** Measure counts.
+    /**
+     * Measure counts.
      * These time-looking shapes may appear right above a staff containing just a long measure rest,
      * to indicate the number of measures the rest represents.
      */
@@ -92,10 +95,10 @@ public class ShapeSet
             TIME_TWELVE,
             TIME_SIXTEEN);
 
-    /** Single-symbols for whole time signature */
+    /** Single-symbols for whole time signature. */
     public static final EnumSet<Shape> SingleWholeTimes = EnumSet.of(COMMON_TIME, CUT_TIME);
 
-    /** Single-symbols and predefined combos for whole time signature */
+    /** Single-symbols and predefined combos for whole time signature. */
     public static final EnumSet<Shape> WholeTimes = EnumSet.of(
             COMMON_TIME,
             CUT_TIME,
@@ -107,21 +110,21 @@ public class ShapeSet
             TIME_THREE_EIGHT,
             TIME_SIX_EIGHT);
 
-    /** All sorts of F clefs */
+    /** All sorts of F clefs. */
     public static final EnumSet<Shape> BassClefs = EnumSet.of(
             F_CLEF,
             F_CLEF_SMALL,
             F_CLEF_8VA,
             F_CLEF_8VB);
 
-    /** All sorts of G clefs */
+    /** All sorts of G clefs. */
     public static final EnumSet<Shape> TrebleClefs = EnumSet.of(
             G_CLEF,
             G_CLEF_SMALL,
             G_CLEF_8VA,
             G_CLEF_8VB);
 
-    /** All flags down */
+    /** All flags down. */
     public static final EnumSet<Shape> FlagsDown = EnumSet.of(
             FLAG_1,
             FLAG_2,
@@ -129,10 +132,10 @@ public class ShapeSet
             FLAG_4,
             FLAG_5);
 
-    /** Small flags */
+    /** Small flags. */
     public static final EnumSet<Shape> SmallFlags = EnumSet.of(SMALL_FLAG, SMALL_FLAG_SLASH);
 
-    /** All flags up */
+    /** All flags up. */
     public static final EnumSet<Shape> FlagsUp = EnumSet.of(
             FLAG_1_UP,
             FLAG_2_UP,
@@ -140,7 +143,7 @@ public class ShapeSet
             FLAG_4_UP,
             FLAG_5_UP);
 
-    /** All SHARP-based keys */
+    /** All SHARP-based keys. */
     public static final EnumSet<Shape> SharpKeys = EnumSet.of(
             KEY_SHARP_1,
             KEY_SHARP_2,
@@ -150,7 +153,7 @@ public class ShapeSet
             KEY_SHARP_6,
             KEY_SHARP_7);
 
-    /** All FLAT-based keys */
+    /** All FLAT-based keys. */
     public static final EnumSet<Shape> FlatKeys = EnumSet.of(
             KEY_FLAT_1,
             KEY_FLAT_2,
@@ -160,12 +163,12 @@ public class ShapeSet
             KEY_FLAT_6,
             KEY_FLAT_7);
 
-    /** All black note heads */
+    /** All black note heads. */
     public static final EnumSet<Shape> BlackNoteHeads = EnumSet.of(
             NOTEHEAD_BLACK,
             NOTEHEAD_BLACK_SMALL);
 
-    /** All void note heads */
+    /** All void note heads. */
     public static final EnumSet<Shape> VoidNoteHeads = EnumSet.of(
             NOTEHEAD_VOID,
             NOTEHEAD_VOID_SMALL);
@@ -279,7 +282,7 @@ public class ShapeSet
     public static final ShapeSet Flags = new ShapeSet(
             FLAG_1,
             Colors.SCORE_NOTES,
-            shapesOf(new ArrayList<Shape>(FlagsDown), SmallFlags, FlagsUp));
+            shapesOf(new ArrayList<>(FlagsDown), SmallFlags, FlagsUp));
 
     public static final ShapeSet Holds = new ShapeSet(
             FERMATA,
@@ -289,7 +292,7 @@ public class ShapeSet
     public static final ShapeSet Keys = new ShapeSet(
             KEY_SHARP_3,
             Colors.SCORE_MODIFIERS,
-            shapesOf(new ArrayList<Shape>(FlatKeys), SharpKeys));
+            shapesOf(new ArrayList<>(FlatKeys), SharpKeys));
 
     public static final ShapeSet HeadsAndDot = new ShapeSet(
             NOTEHEAD_BLACK,
@@ -338,13 +341,7 @@ public class ShapeSet
     public static final ShapeSet Digits = new ShapeSet(
             DIGIT_1,
             Colors.SCORE_MODIFIERS,
-            shapesOf(
-                    DIGIT_0,
-                    DIGIT_1,
-                    DIGIT_2,
-                    DIGIT_3,
-                    DIGIT_4,
-                    DIGIT_5 //  ,
+            shapesOf(DIGIT_0, DIGIT_1, DIGIT_2, DIGIT_3, DIGIT_4, DIGIT_5 //  ,
             //                    DIGIT_6,
             //                    DIGIT_7,
             //                    DIGIT_8,
@@ -382,6 +379,7 @@ public class ShapeSet
     // Below are EnumSet instances, used programmatically.
     // They do not lead to shape submenus as the ShapeSet instances do.
     // =========================================================================
+    //
     /** All physical shapes. Here the use of EnumSet.range is OK */
     public static final EnumSet<Shape> allPhysicalShapes = EnumSet.range(
             Shape.values()[0],
@@ -422,8 +420,6 @@ public class ShapeSet
         ///dumpShapeColors();
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** Name of the set. */
     private String name;
 
@@ -442,7 +438,6 @@ public class ShapeSet
     /** Related color constant. */
     private Constant.Color constantColor;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ShapeSet object from a collection of shapes.
      *
@@ -466,13 +461,142 @@ public class ShapeSet
 
         // Keep a specific order?
         if (shapes instanceof List) {
-            this.sortedShapes = new ArrayList<Shape>(shapes);
+            this.sortedShapes = new ArrayList<>(shapes);
         } else {
             this.sortedShapes = null;
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // getRep //
+    //--------//
+    /**
+     * Report the representative shape of the set, if any.
+     *
+     * @return the rep shape, or null
+     */
+    public Shape getRep ()
+    {
+        return rep;
+    }
+
+    //-----------//
+    // getShapes //
+    //-----------//
+    /**
+     * Exports the set of shapes.
+     *
+     * @return the proper enum set
+     */
+    public EnumSet<Shape> getShapes ()
+    {
+        return shapes;
+    }
+
+    //------------------//
+    // setConstantColor //
+    //------------------//
+    /**
+     * Define a specific color for the set.
+     *
+     * @param color the specified color
+     */
+    public void setConstantColor (Color color)
+    {
+        constantColor.setValue(color);
+        setColor(color);
+    }
+
+    //----------//
+    // contains //
+    //----------//
+    /**
+     * Convenient method to check if encapsulated shapes set does contain the provided
+     * object.
+     *
+     * @param shape the Shape object to check for inclusion
+     * @return true if contained, false otherwise
+     */
+    public boolean contains (Shape shape)
+    {
+        return shapes.contains(shape);
+    }
+
+    //----------//
+    // getColor //
+    //----------//
+    /**
+     * Report the color currently assigned to the range, if any.
+     *
+     * @return the related color, or null
+     */
+    public Color getColor ()
+    {
+        return color;
+    }
+
+    //----------//
+    // setColor //
+    //----------//
+    /**
+     * Assign a display color to the shape set.
+     *
+     * @param color the display color
+     */
+    private void setColor (Color color)
+    {
+        this.color = color;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name of the set.
+     *
+     * @return the set name
+     */
+    public String getName ()
+    {
+        return name;
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    private void setName (String name)
+    {
+        this.name = name;
+
+        constantColor = new Constant.Color(
+                getClass().getName(),
+                name + ".color",
+                Constant.Color.encodeColor(color),
+                "Color code for set " + name);
+
+        // Check for a user-modified value
+        if (!constantColor.isSourceValue()) {
+            setColor(constantColor.getValue());
+        }
+    }
+
+    //-----------------//
+    // getSortedShapes //
+    //-----------------//
+    /**
+     * Exports the sorted collection of shapes.
+     *
+     * @return the proper enum set
+     */
+    public List<Shape> getSortedShapes ()
+    {
+        if (sortedShapes != null) {
+            return sortedShapes;
+        } else {
+            return new ArrayList<>(shapes);
+        }
+    }
+
     //-----------------//
     // addAllShapeSets //
     //-----------------//
@@ -638,22 +762,15 @@ public class ShapeSet
         return set;
     }
 
-    //--------//
-    // getRep //
-    //--------//
-    /**
-     * Report the representative shape of the set, if any.
-     *
-     * @return the rep shape, or null
-     */
-    public Shape getRep ()
-    {
-        return rep;
-    }
-
     //-------------//
     // getShapeSet //
     //-------------//
+    /**
+     * Report the ShapeSet for the provided name
+     *
+     * @param name provided name
+     * @return corresponding ShapeSet instance
+     */
     public static ShapeSet getShapeSet (String name)
     {
         return Sets.map.get(name);
@@ -662,22 +779,14 @@ public class ShapeSet
     //--------------//
     // getShapeSets //
     //--------------//
+    /**
+     * Report the list of all ShapeSet instances
+     *
+     * @return the list of ShapeSet instances
+     */
     public static List<ShapeSet> getShapeSets ()
     {
         return Sets.setList;
-    }
-
-    //-----------//
-    // getShapes //
-    //-----------//
-    /**
-     * Exports the set of shapes.
-     *
-     * @return the proper enum set
-     */
-    public EnumSet<Shape> getShapes ()
-    {
-        return shapes;
     }
 
     //----------------------//
@@ -738,20 +847,6 @@ public class ShapeSet
         }
 
         return set;
-    }
-
-    //------------------//
-    // setConstantColor //
-    //------------------//
-    /**
-     * Define a specific color for the set.
-     *
-     * @param color the specified color
-     */
-    public void setConstantColor (Color color)
-    {
-        constantColor.setValue(color);
-        setColor(color);
     }
 
     //----------//
@@ -876,62 +971,20 @@ public class ShapeSet
         return Sets.map.get(str);
     }
 
-    //----------//
-    // contains //
-    //----------//
-    /**
-     * Convenient method to check if encapsulated shapes set does
-     * contain the provided object.
-     *
-     * @param shape the Shape object to check for inclusion
-     * @return true if contained, false otherwise
-     */
-    public boolean contains (Shape shape)
+    //----------------//
+    // addColoredItem //
+    //----------------//
+    private static void addColoredItem (JComponent top,
+                                        JMenuItem item,
+                                        Color color)
     {
-        return shapes.contains(shape);
-    }
-
-    //----------//
-    // getColor //
-    //----------//
-    /**
-     * Report the color currently assigned to the range, if any.
-     *
-     * @return the related color, or null
-     */
-    public Color getColor ()
-    {
-        return color;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name of the set.
-     *
-     * @return the set name
-     */
-    public String getName ()
-    {
-        return name;
-    }
-
-    //-----------------//
-    // getSortedShapes //
-    //-----------------//
-    /**
-     * Exports the sorted collection of shapes.
-     *
-     * @return the proper enum set
-     */
-    public List<Shape> getSortedShapes ()
-    {
-        if (sortedShapes != null) {
-            return sortedShapes;
+        if (color != null) {
+            item.setForeground(color);
         } else {
-            return new ArrayList<Shape>(shapes);
+            item.setForeground(Color.black);
         }
+
+        top.add(item);
     }
 
     //----------------------//
@@ -977,66 +1030,16 @@ public class ShapeSet
         }
     }
 
-    //----------------//
-    // addColoredItem //
-    //----------------//
-    private static void addColoredItem (JComponent top,
-                                        JMenuItem item,
-                                        Color color)
-    {
-        if (color != null) {
-            item.setForeground(color);
-        } else {
-            item.setForeground(Color.black);
-        }
-
-        top.add(item);
-    }
-
-    //----------//
-    // setColor //
-    //----------//
-    /**
-     * Assign a display color to the shape set.
-     *
-     * @param color the display color
-     */
-    private void setColor (Color color)
-    {
-        this.color = color;
-    }
-
-    //---------//
-    // setName //
-    //---------//
-    private void setName (String name)
-    {
-        this.name = name;
-
-        constantColor = new Constant.Color(
-                getClass().getName(),
-                name + ".color",
-                Constant.Color.encodeColor(color),
-                "Color code for set " + name);
-
-        // Check for a user-modified value
-        if (!constantColor.isSourceValue()) {
-            setColor(constantColor.getValue());
-        }
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Sets //
     //------//
     /** Build the set map in a lazy way */
     private static class Sets
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
-        static final Map<String, ShapeSet> map = new HashMap<String, ShapeSet>();
+        static final Map<String, ShapeSet> map = new HashMap<>();
 
-        static final List<ShapeSet> setList = new ArrayList<ShapeSet>();
+        static final List<ShapeSet> setList = new ArrayList<>();
 
         static {
             for (Field field : ShapeSet.class.getDeclaredFields()) {
@@ -1052,7 +1055,6 @@ public class ShapeSet
             }
         }
 
-        //~ Constructors ---------------------------------------------------------------------------
         private Sets ()
         {
         }

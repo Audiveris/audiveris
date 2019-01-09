@@ -37,11 +37,9 @@ import org.slf4j.LoggerFactory;
 public class TimesStep
         extends AbstractSystemStep<Void>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TimesStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TimesStep} object.
      */
@@ -49,7 +47,6 @@ public class TimesStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//

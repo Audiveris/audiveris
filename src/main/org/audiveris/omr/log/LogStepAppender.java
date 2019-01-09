@@ -38,7 +38,6 @@ import org.audiveris.omr.step.ui.StepMonitoring;
 public class LogStepAppender
         extends AppenderBase<ILoggingEvent>
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     @Override
     protected void append (ILoggingEvent event)

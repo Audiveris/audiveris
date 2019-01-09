@@ -68,13 +68,11 @@ import javax.imageio.ImageIO;
 public class AnnotationsStep
         extends AbstractStep
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AnnotationsStep.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------------//
     // displayAnnotationTab //
     //----------------------//
@@ -85,7 +83,8 @@ public class AnnotationsStep
      */
     public static void displayAnnotationTab (Sheet sheet)
     {
-        AnnotationService service = (AnnotationService) sheet.getAnnotationIndex().getEntityService();
+        AnnotationService service = (AnnotationService) sheet.getAnnotationIndex()
+                .getEntityService();
         AnnotationView view = new AnnotationView(service, sheet);
         sheet.getStub().getAssembly().addViewTab(
                 SheetTab.ANNOTATION_TAB,
@@ -238,14 +237,12 @@ public class AnnotationsStep
         return scaledBuffer;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean displayAnnotations = new Constant.Boolean(
                 true,

@@ -37,15 +37,12 @@ import java.util.Set;
  */
 public class InstancesWatcher<E>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InstancesWatcher.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Weak references to instances. */
-    private final Set<WeakReference<E>> actives = new LinkedHashSet<WeakReference<E>>();
+    private final Set<WeakReference<E>> actives = new LinkedHashSet<>();
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Register an instance.
      * (to be called in class constructor)
@@ -54,7 +51,7 @@ public class InstancesWatcher<E>
      */
     public synchronized void addRef (E ref)
     {
-        actives.add(new WeakReference<E>(ref));
+        actives.add(new WeakReference<>(ref));
     }
 
     /**

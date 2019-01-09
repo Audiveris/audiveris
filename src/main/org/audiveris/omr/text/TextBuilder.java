@@ -83,7 +83,8 @@ import java.util.regex.PatternSyntaxException;
  * Class {@code TextBuilder} works at system level, to provide features to check, build
  * and reorganize text items, including interacting with the OCR engine.
  * <p>
- * This builder can operate in 3 different modes: <ol>
+ * This builder can operate in 3 different modes:
+ * <ol>
  * <li><b>Free mode</b>: Engine mode, text role can be any role, determined by heuristics.
  * manualLyrics == null;
  * <li><b>Manual as lyrics</b>: Manual mode, for which text role is imposed as lyrics.
@@ -96,11 +97,13 @@ import java.util.regex.PatternSyntaxException;
  */
 public class TextBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TextBuilder.class);
+
+    /** Needed for font size computation. */
+    protected static final FontRenderContext frc = new FontRenderContext(null, true, true);
 
     /** Abnormal characters. */
     private static final char[] ABNORMAL_CHARS = new char[]{'\\'};
@@ -108,10 +111,6 @@ public class TextBuilder
     /** Regexp for abnormal words. */
     private static final Pattern ABNORMAL_WORDS = getAbnormalWords();
 
-    /** Needed for font size computation. */
-    protected static final FontRenderContext frc = new FontRenderContext(null, true, true);
-
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -127,15 +126,14 @@ public class TextBuilder
     private final Parameters params;
 
     /** Set of text lines. */
-    private final Set<TextLine> textLines = new LinkedHashSet<TextLine>();
+    private final Set<TextLine> textLines = new LinkedHashSet<>();
 
     /** Processed sections. true/false */
-    private final Set<Section> processedSections = new LinkedHashSet<Section>();
+    private final Set<Section> processedSections = new LinkedHashSet<>();
 
     /** Manual mode. */
     private final Boolean manualLyrics;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TextBuilder object.
      *
@@ -166,40 +164,6 @@ public class TextBuilder
         sheet = system.getSheet();
         skew = sheet.getSkew();
         params = new Parameters(sheet.getScale(), true);
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // isMainlyItalic //
-    //----------------//
-    /**
-     * Check whether the (majority of) line is in italic font.
-     *
-     * @param line the line to check
-     * @return true if mainly italics
-     */
-    public static boolean isMainlyItalic (TextLine line)
-    {
-        int reliableWords = 0;
-        int italicWords = 0;
-
-        for (TextWord word : line.getWords()) {
-            if ((word.getConfidence() >= constants.minConfidence.getValue())
-                && (word.getLength() > 1)) {
-                reliableWords++;
-
-                if (word.getFontInfo().isItalic) {
-                    italicWords++;
-                }
-            }
-        }
-
-        // Check for majority among reliable words
-        if (reliableWords != 0) {
-            return (italicWords * 2) >= reliableWords;
-        } else {
-            return false;
-        }
     }
 
     //--------------------//
@@ -252,7 +216,7 @@ public class TextBuilder
         StopWatch watch = new StopWatch("Texts retrieveLines system#" + system.getId());
         watch.start("Pickup system lines");
 
-        List<TextLine> systemLines = new ArrayList<TextLine>();
+        List<TextLine> systemLines = new ArrayList<>();
 
         // We pick up the words that are contained by system area
         // Beware: a text located between two systems must be deep copied to each system!
@@ -346,7 +310,7 @@ public class TextBuilder
         {
             // Discard really invalid words
             final double lowConf = constants.lowConfidence.getValue();
-            final List<TextWord> toRemove = new ArrayList<TextWord>();
+            final List<TextWord> toRemove = new ArrayList<>();
 
             for (TextWord word : line.getWords()) {
                 if (word.getConfidence() < lowConf) {
@@ -512,8 +476,7 @@ public class TextBuilder
         for (TextLine line : textLines) {
             final TextRole role = line.getRole();
             final SentenceInter sentence = (role == TextRole.Lyrics) ? LyricLineInter.create(line)
-                    : ((role == TextRole.ChordName)
-                            ? ChordNameInter.create(line)
+                    : ((role == TextRole.ChordName) ? ChordNameInter.create(line)
                             : SentenceInter.create(line));
 
             // Related staff (can still be modified later)
@@ -594,25 +557,6 @@ public class TextBuilder
         return null;
     }
 
-    //------------------//
-    // getAbnormalWords //
-    //------------------//
-    /**
-     * Compile the provided regexp to detect abnormal words
-     *
-     * @return the pattern for abnormal words, if successful
-     */
-    private static Pattern getAbnormalWords ()
-    {
-        try {
-            return Pattern.compile(constants.abnormalWordRegexp.getValue());
-        } catch (PatternSyntaxException pse) {
-            logger.warn("Error in regexp for abnormal words", pse);
-
-            return null;
-        }
-    }
-
     //-----------------//
     // getDeskewedCore //
     //-----------------//
@@ -669,7 +613,7 @@ public class TextBuilder
                                        List<TextLine> lines)
     {
         SectionFactory factory = new SectionFactory(VERTICAL, JunctionRatioPolicy.DEFAULT);
-        List<Section> allSections = new ArrayList<Section>();
+        List<Section> allSections = new ArrayList<>();
 
         for (TextLine line : lines) {
             for (TextWord word : line.getWords()) {
@@ -698,7 +642,7 @@ public class TextBuilder
                                         TextLine line,
                                         WordScanner scanner)
     {
-        final List<TextWord> subWords = new ArrayList<TextWord>();
+        final List<TextWord> subWords = new ArrayList<>();
         final int contentLength = word.getValue().length();
 
         while (scanner.hasNext()) {
@@ -856,8 +800,8 @@ public class TextBuilder
             logger.debug("  mapping {}", line);
 
             // Browse all words, starting by shorter ones
-            List<TextWord> toRemove = new ArrayList<TextWord>();
-            List<TextWord> sortedWords = new ArrayList<TextWord>(line.getWords());
+            List<TextWord> toRemove = new ArrayList<>();
+            List<TextWord> sortedWords = new ArrayList<>(line.getWords());
             Collections.sort(sortedWords, TextWord.bySize);
 
             for (TextWord word : sortedWords) {
@@ -945,7 +889,7 @@ public class TextBuilder
      */
     private TextLine mergeLines (List<TextLine> lines)
     {
-        List<TextWord> words = new ArrayList<TextWord>();
+        List<TextWord> words = new ArrayList<>();
 
         for (TextLine line : lines) {
             line.setProcessed(true);
@@ -970,10 +914,10 @@ public class TextBuilder
     {
         logger.debug("mergeLyricsLines");
 
-        List<TextLine> newLyrics = new ArrayList<TextLine>();
+        List<TextLine> newLyrics = new ArrayList<>();
         Collections.sort(oldLyrics, TextLine.byOrdinate(skew));
 
-        List<TextLine> chunks = new ArrayList<TextLine>();
+        List<TextLine> chunks = new ArrayList<>();
         double lastY = 0;
 
         for (TextLine line : oldLyrics) {
@@ -1063,7 +1007,7 @@ public class TextBuilder
                             candidate.setProcessed(true);
                             candidate = head;
 
-                            break HeadsLoop;
+                            break;
                         }
                     }
                 }
@@ -1071,7 +1015,7 @@ public class TextBuilder
         }
 
         // Remove unavailable lines
-        List<TextLine> newStandards = new ArrayList<TextLine>();
+        List<TextLine> newStandards = new ArrayList<>();
 
         for (TextLine line : oldStandards) {
             if (!line.isProcessed()) {
@@ -1091,8 +1035,8 @@ public class TextBuilder
         ///logger.debug("  mergeStandardWords for {}", line);
         final int minWordDx = (int) Math.rint(
                 line.getMeanFont().pointsize * params.minWordDxFontRatio);
-        List<TextWord> toAdd = new ArrayList<TextWord>();
-        List<TextWord> toRemove = new ArrayList<TextWord>();
+        List<TextWord> toAdd = new ArrayList<>();
+        List<TextWord> toRemove = new ArrayList<>();
         TextWord prevWord = null;
 
         for (TextWord word : line.getWords()) {
@@ -1122,7 +1066,7 @@ public class TextBuilder
 
         if (!toAdd.isEmpty()) {
             // No use to add & remove the same words
-            List<TextWord> common = new ArrayList<TextWord>(toAdd);
+            List<TextWord> common = new ArrayList<>(toAdd);
             common.retainAll(toRemove);
             toAdd.removeAll(common);
             toRemove.removeAll(common);
@@ -1150,7 +1094,7 @@ public class TextBuilder
             return;
         }
 
-        List<LyricLineInter> lines = new ArrayList<LyricLineInter>();
+        List<LyricLineInter> lines = new ArrayList<>();
 
         for (Inter inter : lyricInters) {
             lines.add((LyricLineInter) inter);
@@ -1190,7 +1134,7 @@ public class TextBuilder
     {
         logger.debug("purgeInvalidLines for {}", kind);
 
-        List<TextLine> newLines = new ArrayList<TextLine>();
+        List<TextLine> newLines = new ArrayList<>();
 
         for (TextLine line : lines) {
             String reason = checkValidity(line);
@@ -1234,8 +1178,8 @@ public class TextBuilder
         logger.debug("System#{} recomposeLines", system.getId());
 
         // Separate lyrics and standard lines, based on their roles
-        List<TextLine> standards = new ArrayList<TextLine>();
-        List<TextLine> lyrics = new ArrayList<TextLine>();
+        List<TextLine> standards = new ArrayList<>();
+        List<TextLine> lyrics = new ArrayList<>();
         separatePopulations(rawLines, standards, lyrics);
 
         // Process lyrics
@@ -1275,7 +1219,7 @@ public class TextBuilder
         }
 
         // Gather and sort all lines (standard & lyrics)
-        List<TextLine> allLines = new ArrayList<TextLine>();
+        List<TextLine> allLines = new ArrayList<>();
         allLines.addAll(lyrics);
         allLines.addAll(standards);
         Collections.sort(allLines, TextLine.byOrdinate(skew));
@@ -1313,7 +1257,7 @@ public class TextBuilder
                                                  Collection<Section> allSections,
                                                  Point offset)
     {
-        final SortedSet<Section> wordSections = new TreeSet<Section>(Section.byFullAbscissa);
+        final SortedSet<Section> wordSections = new TreeSet<>(Section.byFullAbscissa);
         final CompoundConstructor constructor = new SectionCompound.Constructor(
                 sheet.getInterline());
 
@@ -1322,7 +1266,7 @@ public class TextBuilder
 
         for (TextChar charDesc : chars) {
             final Rectangle charBox = charDesc.getBounds();
-            final SortedSet<Section> charSections = new TreeSet<Section>(Section.byFullAbscissa);
+            final SortedSet<Section> charSections = new TreeSet<>(Section.byFullAbscissa);
 
             for (Section section : allSections) {
                 // Do we contain a section not (yet) assigned?
@@ -1413,7 +1357,7 @@ public class TextBuilder
 
         Collections.sort(oldStandards, TextLine.byOrdinate(skew));
 
-        List<TextLine> newStandards = new ArrayList<TextLine>();
+        List<TextLine> newStandards = new ArrayList<>();
 
         for (TextLine line : oldStandards) {
             final int maxAbscissaGap = getWordGap(line); // TODO: should gap depend on font size?
@@ -1491,8 +1435,8 @@ public class TextBuilder
                              TextLine line)
     {
         // To avoid concurrent modification errors
-        Collection<TextWord> toAdd = new ArrayList<TextWord>();
-        Collection<TextWord> toRemove = new ArrayList<TextWord>();
+        Collection<TextWord> toAdd = new ArrayList<>();
+        Collection<TextWord> toRemove = new ArrayList<>();
 
         for (TextWord word : words) {
             List<TextWord> subWords = null; // Results of split
@@ -1555,14 +1499,64 @@ public class TextBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //----------------//
+    // isMainlyItalic //
+    //----------------//
+    /**
+     * Check whether the (majority of) line is in italic font.
+     *
+     * @param line the line to check
+     * @return true if mainly italics
+     */
+    public static boolean isMainlyItalic (TextLine line)
+    {
+        int reliableWords = 0;
+        int italicWords = 0;
+
+        for (TextWord word : line.getWords()) {
+            if ((word.getConfidence() >= constants.minConfidence.getValue()) && (word
+                    .getLength() > 1)) {
+                reliableWords++;
+
+                if (word.getFontInfo().isItalic) {
+                    italicWords++;
+                }
+            }
+        }
+
+        // Check for majority among reliable words
+        if (reliableWords != 0) {
+            return (italicWords * 2) >= reliableWords;
+        } else {
+            return false;
+        }
+    }
+
+    //------------------//
+    // getAbnormalWords //
+    //------------------//
+    /**
+     * Compile the provided regexp to detect abnormal words
+     *
+     * @return the pattern for abnormal words, if successful
+     */
+    private static Pattern getAbnormalWords ()
+    {
+        try {
+            return Pattern.compile(constants.abnormalWordRegexp.getValue());
+        } catch (PatternSyntaxException pse) {
+            logger.warn("Error in regexp for abnormal words", pse);
+
+            return null;
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
@@ -1640,7 +1634,6 @@ public class TextBuilder
     //------------//
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int minFontSize;
 
@@ -1668,9 +1661,8 @@ public class TextBuilder
 
         final double maxDiagRatio;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale,
-                           boolean isManual)
+        Parameters (Scale scale,
+                    boolean isManual)
         {
             // TODO: check all these constant for specific manual work...
             minFontSize = scale.toPixels(constants.minFontSize);

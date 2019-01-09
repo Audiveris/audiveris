@@ -37,6 +37,7 @@ public enum GlyphGroup
     HEAD_SPOT("Head-oriented spot"),
     VERTICAL_SEED("Vertical seed"),
     SYMBOL("Fixed symbol"),
+
     /**
      * The remaining ones below are not needed. But may still exist in .omr files...
      */

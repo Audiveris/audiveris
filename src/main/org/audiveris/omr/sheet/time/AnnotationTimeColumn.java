@@ -62,11 +62,9 @@ import java.util.TreeMap;
 public class AnnotationTimeColumn
         extends TimeColumn
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AnnotationTimeColumn.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Relevant time symbols found in column. */
     final Set<Inter> timeSet = new LinkedHashSet<Inter>();
 
@@ -76,7 +74,6 @@ public class AnnotationTimeColumn
     /** Mean de-skewed abscissa. */
     Double meanDskX;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AnnotationTimeColumn} object.
      *
@@ -94,7 +91,6 @@ public class AnnotationTimeColumn
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addInter //
     //----------//
@@ -153,13 +149,11 @@ public class AnnotationTimeColumn
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------------//
     // AnnotationRetriever //
     //---------------------//
     public static class AnnotationRetriever
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final SystemInfo system;
 
@@ -172,14 +166,12 @@ public class AnnotationTimeColumn
         /** Columns detected so far. */
         private final List<AnnotationTimeColumn> columns = new ArrayList<AnnotationTimeColumn>();
 
-        //~ Constructors ---------------------------------------------------------------------------
         public AnnotationRetriever (SystemInfo system)
         {
             this.system = system;
             sig = system.getSig();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public void process ()
         {
             // Filter the time annotations for this system to create inters
@@ -274,7 +266,7 @@ public class AnnotationTimeColumn
                             final Inter inter;
 
                             if (OmrShapes.TIME_COMMONS.contains(omrShape)
-                                || OmrShapes.TIME_COMBOS.contains(omrShape)) {
+                                        || OmrShapes.TIME_COMBOS.contains(omrShape)) {
                                 // Whole time sig
                                 inter = new TimeWholeInter(id, bounds, omrShape, grade);
                                 inter.setStaff(staff);

@@ -25,9 +25,9 @@ import java.awt.Rectangle;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code RepeatDotInter} represents a repeat dot, near a bar line.
@@ -38,7 +38,6 @@ import org.audiveris.omrdataset.api.OmrShape;
 public class RepeatDotInter
         extends AbstractPitchedInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new RepeatDotInter object.
@@ -81,7 +80,6 @@ public class RepeatDotInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

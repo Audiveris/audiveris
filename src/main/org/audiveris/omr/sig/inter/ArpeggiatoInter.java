@@ -31,6 +31,7 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,6 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code ArpeggiatoInter} represents the arpeggiato notation along the heads
@@ -53,11 +53,9 @@ import org.audiveris.omrdataset.api.OmrShape;
 public class ArpeggiatoInter
         extends AbstractInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ArpeggiatoInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ArpeggiatoInter} object.
      *
@@ -91,7 +89,6 @@ public class ArpeggiatoInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -122,70 +119,6 @@ public class ArpeggiatoInter
         setAbnormal(!sig.hasRelation(this, ChordArpeggiatoRelation.class));
 
         return isAbnormal();
-    }
-
-    //------------------//
-    // createValidAdded //
-    //------------------//
-    /**
-     * (Try to) create and add an arpeggiato inter.
-     *
-     * @param glyph            the arpeggiato glyph
-     * @param grade            the interpretation quality
-     * @param system           the related system
-     * @param systemHeadChords abscissa-ordered list of head-chords in this system
-     * @return the created arpeggiato or null
-     */
-    public static ArpeggiatoInter createValidAdded (Glyph glyph,
-                                                    double grade,
-                                                    SystemInfo system,
-                                                    List<Inter> systemHeadChords)
-    {
-        ArpeggiatoInter arpeggiato = new ArpeggiatoInter(glyph, grade);
-
-        Link link = arpeggiato.lookupLink(systemHeadChords, system);
-
-        if (link != null) {
-            system.getSig().addVertex(arpeggiato);
-            link.applyTo(arpeggiato);
-
-            return arpeggiato;
-        }
-
-        return null;
-    }
-
-    //------------------//
-    // createValidAdded //
-    //------------------//
-    /**
-     * (Try to) create and add an arpeggiato inter.
-     *
-     * @param annotationId     ID of the original annotation if any
-     * @param bounds           the bounding box
-     * @param grade            the interpretation quality
-     * @param system           the related system
-     * @param systemHeadChords abscissa-ordered list of head-chords in this system
-     * @return the created arpeggiato or null
-     */
-    public static ArpeggiatoInter createValidAdded (int annotationId,
-                                                    Rectangle bounds,
-                                                    double grade,
-                                                    SystemInfo system,
-                                                    List<Inter> systemHeadChords)
-    {
-        ArpeggiatoInter arpeggiato = new ArpeggiatoInter(annotationId, bounds, grade);
-
-        Link link = arpeggiato.lookupLink(systemHeadChords, system);
-
-        if (link != null) {
-            system.getSig().addVertex(arpeggiato);
-            link.applyTo(arpeggiato);
-
-            return arpeggiato;
-        }
-
-        return null;
     }
 
     //----------//
@@ -279,5 +212,69 @@ public class ArpeggiatoInter
         }
 
         return new Link(bestChord, rel, false);
+    }
+
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create and add an arpeggiato inter.
+     *
+     * @param glyph            the arpeggiato glyph
+     * @param grade            the interpretation quality
+     * @param system           the related system
+     * @param systemHeadChords abscissa-ordered list of head-chords in this system
+     * @return the created arpeggiato or null
+     */
+    public static ArpeggiatoInter createValidAdded (Glyph glyph,
+                                                    double grade,
+                                                    SystemInfo system,
+                                                    List<Inter> systemHeadChords)
+    {
+        ArpeggiatoInter arpeggiato = new ArpeggiatoInter(glyph, grade);
+
+        Link link = arpeggiato.lookupLink(systemHeadChords, system);
+
+        if (link != null) {
+            system.getSig().addVertex(arpeggiato);
+            link.applyTo(arpeggiato);
+
+            return arpeggiato;
+        }
+
+        return null;
+    }
+
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create and add an arpeggiato inter.
+     *
+     * @param annotationId     ID of the original annotation if any
+     * @param bounds           the bounding box
+     * @param grade            the interpretation quality
+     * @param system           the related system
+     * @param systemHeadChords abscissa-ordered list of head-chords in this system
+     * @return the created arpeggiato or null
+     */
+    public static ArpeggiatoInter createValidAdded (int annotationId,
+                                                    Rectangle bounds,
+                                                    double grade,
+                                                    SystemInfo system,
+                                                    List<Inter> systemHeadChords)
+    {
+        ArpeggiatoInter arpeggiato = new ArpeggiatoInter(annotationId, bounds, grade);
+
+        Link link = arpeggiato.lookupLink(systemHeadChords, system);
+
+        if (link != null) {
+            system.getSig().addVertex(arpeggiato);
+            link.applyTo(arpeggiato);
+
+            return arpeggiato;
+        }
+
+        return null;
     }
 }

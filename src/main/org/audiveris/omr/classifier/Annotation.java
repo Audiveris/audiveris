@@ -46,12 +46,10 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class Annotation
         extends AbstractEntity
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(
             Annotation.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** OmrShape as guessed by the classifier. */
     @XmlAttribute(name = "omr-shape")
     private final OmrShape omrShape;
@@ -65,7 +63,6 @@ public class Annotation
     @XmlJavaTypeAdapter(Jaxb.RectangleAdapter.class)
     private final Rectangle bounds;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Annotation} object.
      *
@@ -112,7 +109,6 @@ public class Annotation
         this.confidence = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // contains //
     //----------//

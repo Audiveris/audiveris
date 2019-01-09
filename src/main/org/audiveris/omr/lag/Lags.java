@@ -34,7 +34,6 @@ import java.awt.Point;
  */
 public class Lags
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Horizontal (partial) lag. It complements vLag. */
     public static final String HLAG = "hLag";
@@ -51,7 +50,6 @@ public class Lags
     /** Symbol lag. (for symbols) */
     public static final String SYMBOL_LAG = "symLag";
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // buildBuffer //
     //-------------//
@@ -78,5 +76,9 @@ public class Lags
         }
 
         return buf;
+    }
+
+    private Lags ()
+    {
     }
 }

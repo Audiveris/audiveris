@@ -53,13 +53,11 @@ import java.util.List;
  */
 public class ChordsLinker
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ChordsLinker.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -68,7 +66,6 @@ public class ChordsLinker
     @Navigable(false)
     private final SIGraph sig;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ChordsLinker} object.
      *
@@ -80,7 +77,6 @@ public class ChordsLinker
         sig = system.getSig();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // checkBeamChords //
     //-----------------//
@@ -121,12 +117,16 @@ public class ChordsLinker
                         logger.info("{} Overlapping {} {} vs {}", beam, ratio, prevChord, chord);
 
                         StemInter prevStem = prevChord.getStem();
-                        BeamStemRelation prevRel = (BeamStemRelation) sig.getEdge(
+                        BeamStemRelation prevRel = (BeamStemRelation) sig.getRelation(
                                 beam,
-                                prevStem);
+                                prevStem,
+                                BeamStemRelation.class);
 
                         StemInter stem = chord.getStem();
-                        BeamStemRelation rel = (BeamStemRelation) sig.getEdge(beam, stem);
+                        BeamStemRelation rel = (BeamStemRelation) sig.getRelation(
+                                beam,
+                                stem,
+                                BeamStemRelation.class);
 
                         final BeamStemRelation guiltyRel;
 
@@ -159,9 +159,11 @@ public class ChordsLinker
     //------------//
     // linkChords //
     //------------//
+    /**
+     * Allocate beam groups per measure.
+     */
     public void linkChords ()
     {
-        // Allocate beam groups per stack
         for (MeasureStack stack : system.getStacks()) {
             for (Measure measure : stack.getMeasures()) {
                 BeamGroup.populate(measure, true); // True for checkGroupSplit
@@ -169,14 +171,12 @@ public class ChordsLinker
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio maxAbscissaOverlapRatio = new Constant.Ratio(
                 0.25,

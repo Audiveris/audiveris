@@ -43,7 +43,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  * (Treble, Alto, Tenor and Bass) and for each presents where the "Middle C" note (C4) would take
  * place.
  * <p>
- * <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Middle_C_in_four_clefs.svg/600px-Middle_C_in_four_clefs.svg.png"
+ * <img src=
+ * "http://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Middle_C_in_four_clefs.svg/600px-Middle_C_in_four_clefs.svg.png"
  * alt="Middle C in four clefs">
  * <p>
  * Step line of the clef : -4 for top line (Baritone), -2 for Bass and Tenor,
@@ -55,7 +56,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ClefInter
         extends AbstractPitchedInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ClefInter.class);
 
@@ -68,39 +68,10 @@ public class ClefInter
             +2.0,
             ClefKind.TREBLE);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    public static enum ClefKind
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        TREBLE(Shape.G_CLEF, 2),
-        BASS(Shape.F_CLEF, -2),
-        ALTO(Shape.C_CLEF, 0),
-        TENOR(Shape.C_CLEF, -2),
-        PERCUSSION(Shape.PERCUSSION_CLEF, 0);
-
-        //~ Instance fields ------------------------------------------------------------------------
-        /** Symbol shape class. (regardless of ottava mark if any) */
-        public final Shape shape;
-
-        /** Pitch of reference line. */
-        public final int pitch;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        ClefKind (Shape shape,
-                  int pitch)
-        {
-            this.shape = shape;
-            this.pitch = pitch;
-        }
-    }
-
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Kind of the clef. */
     @XmlAttribute
     private ClefKind kind;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a <b>ghost</b> ClefInter object.
      *
@@ -165,7 +136,6 @@ public class ClefInter
         super(null, null, null, null, null, null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -196,123 +166,6 @@ public class ClefInter
         visitor.visit(this);
     }
 
-    //--------//
-    // create //
-    //--------//
-    /**
-     * Create a Clef inter.
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape
-     * @param grade evaluation value
-     * @param staff related staff
-     * @return the created instance or null if failed
-     */
-    public static ClefInter create (Glyph glyph,
-                                    Shape shape,
-                                    double grade,
-                                    Staff staff)
-    {
-        switch (shape) {
-        case G_CLEF:
-        case G_CLEF_SMALL:
-        case G_CLEF_8VA:
-        case G_CLEF_8VB:
-            return new ClefInter(glyph, shape, grade, staff, 2.0, ClefKind.TREBLE);
-
-        case C_CLEF:
-
-            // Depending on precise clef position, we can have
-            // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2)
-            Point center = glyph.getCenter();
-            double pp = Math.rint(staff.pitchPositionOf(center));
-            ClefKind kind = (pp >= -1) ? ClefKind.ALTO : ClefKind.TENOR;
-
-            return new ClefInter(glyph, shape, grade, staff, pp, kind);
-
-        case F_CLEF:
-        case F_CLEF_SMALL:
-        case F_CLEF_8VA:
-        case F_CLEF_8VB:
-            return new ClefInter(glyph, shape, grade, staff, -2.0, ClefKind.BASS);
-
-        case PERCUSSION_CLEF:
-            return new ClefInter(glyph, shape, grade, staff, 0.0, ClefKind.PERCUSSION);
-
-        default:
-            return null;
-        }
-    }
-
-    //--------//
-    // create //
-    //--------//
-    /**
-     * Create a Clef inter.
-     *
-     * @param annotationId ID of the original annotation if any
-     * @param bounds       clef bounds
-     * @param omrShape     precise OMR shape
-     * @param grade        evaluation value
-     * @param staff        related staff
-     * @return the created instance
-     * @throws IllegalArgumentException if provided omrShape is not supported
-     */
-    public static ClefInter create (int annotationId,
-                                    Rectangle bounds,
-                                    OmrShape omrShape,
-                                    double grade,
-                                    Staff staff)
-    {
-        switch (omrShape) {
-        case gClef:
-        case gClef8vb:
-        case gClef8va:
-        case gClef15mb:
-        case gClef15ma:
-            return new ClefInter(
-                    annotationId,
-                    bounds,
-                    omrShape,
-                    grade,
-                    staff,
-                    2.0,
-                    ClefKind.TREBLE);
-
-        case cClefAlto:
-            return new ClefInter(annotationId, bounds, omrShape, grade, staff, 0.0, ClefKind.ALTO);
-
-        case cClefTenor:
-            return new ClefInter(
-                    annotationId,
-                    bounds,
-                    omrShape,
-                    grade,
-                    staff,
-                    -2.0,
-                    ClefKind.TENOR);
-
-        case fClef:
-        case fClef8vb:
-        case fClef8va:
-        case fClef15mb:
-        case fClef15ma:
-            return new ClefInter(annotationId, bounds, omrShape, grade, staff, -2.0, ClefKind.BASS);
-
-        case unpitchedPercussionClef1:
-            return new ClefInter(
-                    annotationId,
-                    bounds,
-                    omrShape,
-                    grade,
-                    staff,
-                    0.0,
-                    ClefKind.PERCUSSION);
-        }
-
-        throw new IllegalArgumentException("Cannot create ClefInter for " + omrShape);
-    }
-
     //---------//
     // getKind //
     //---------//
@@ -322,121 +175,6 @@ public class ClefInter
     public ClefKind getKind ()
     {
         return kind;
-    }
-
-    //--------//
-    // kindOf //
-    //--------//
-    public static ClefKind kindOf (Point center,
-                                   Shape shape,
-                                   Staff staff)
-    {
-        switch (shape) {
-        case G_CLEF:
-        case G_CLEF_SMALL:
-        case G_CLEF_8VA:
-        case G_CLEF_8VB:
-            return ClefKind.TREBLE;
-
-        case C_CLEF:
-
-            // Disambiguate between Alto C-clef (pp=0) and Tenor C-clef (pp=-2)
-            int pp = (int) Math.rint(staff.pitchPositionOf(center));
-
-            return (pp >= -1) ? ClefKind.ALTO : ClefKind.TENOR;
-
-        case F_CLEF:
-        case F_CLEF_SMALL:
-        case F_CLEF_8VA:
-        case F_CLEF_8VB:
-            return ClefKind.BASS;
-
-        case PERCUSSION_CLEF:
-            return ClefKind.PERCUSSION;
-
-        default:
-            return null;
-        }
-    }
-
-    /**
-     * Report the ClefKind for a provided OmrShape
-     *
-     * @param omrShape provided OmrShape
-     * @return related ClefKind
-     * @throws IllegalArgumentException if provided omrShape is not mapped
-     */
-    public static ClefKind kindOf (OmrShape omrShape)
-    {
-        switch (omrShape) {
-        case gClef:
-        case gClef8vb:
-        case gClef8va:
-        case gClef15mb:
-        case gClef15ma:
-            return ClefKind.TREBLE;
-
-        case cClefAlto:
-            return ClefKind.ALTO;
-
-        case cClefTenor:
-            return ClefKind.TENOR;
-
-        case fClef:
-        case fClef8vb:
-        case fClef8va:
-        case fClef15mb:
-        case fClef15ma:
-            return ClefKind.BASS;
-
-        case unpitchedPercussionClef1:
-            return ClefKind.PERCUSSION;
-        }
-
-        throw new IllegalArgumentException("No ClefKind for " + omrShape);
-    }
-
-    //------------//
-    // noteStepOf //
-    //------------//
-    /**
-     * Report the note step that corresponds to a note in the provided pitch position,
-     * using the current clef if any, otherwise using the default clef (G_CLEF)
-     *
-     * @param clef          the provided current clef
-     * @param pitchPosition the pitch position of the provided note
-     * @return the corresponding note step
-     */
-    public static HeadInter.Step noteStepOf (ClefInter clef,
-                                             int pitchPosition)
-    {
-        if (clef == null) {
-            return defaultClef.noteStepOf(pitchPosition);
-        } else {
-            return clef.noteStepOf(pitchPosition);
-        }
-    }
-
-    //----------//
-    // octaveOf //
-    //----------//
-    /**
-     * Report the octave corresponding to a note at the provided pitch position,
-     * assuming we are governed by the provided clef, otherwise (if clef is null)
-     * we use the default clef (G_CLEF)
-     *
-     * @param clef  the current clef if any
-     * @param pitch the pitch position of the note
-     * @return the corresponding octave
-     */
-    public static int octaveOf (ClefInter clef,
-                                double pitch)
-    {
-        if (clef == null) {
-            return defaultClef.octaveOf(pitch);
-        } else {
-            return clef.octaveOf(pitch);
-        }
     }
 
     //--------//
@@ -480,7 +218,7 @@ public class ClefInter
     @Override
     protected String internals ()
     {
-        return super.internals() + " " + kind;
+        return super.internals() + " " + shape + " " + kind;
     }
 
     //------------//
@@ -572,6 +310,273 @@ public class ClefInter
             logger.error("No note octave defined for {}", this);
 
             return 0; // To keep compiler happy
+        }
+    }
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create a Clef inter.
+     *
+     * @param glyph underlying glyph
+     * @param shape precise shape
+     * @param grade evaluation value
+     * @param staff related staff
+     * @return the created instance or null if failed
+     */
+    public static ClefInter create (Glyph glyph,
+                                    Shape shape,
+                                    double grade,
+                                    Staff staff)
+    {
+        switch (shape) {
+        case G_CLEF:
+        case G_CLEF_SMALL:
+        case G_CLEF_8VA:
+        case G_CLEF_8VB:
+            return new ClefInter(glyph, shape, grade, staff, 2.0, ClefKind.TREBLE);
+
+        case C_CLEF:
+
+            // Depending on precise clef position, we can have
+            // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2)
+            Point center = glyph.getCenter();
+            double pp = Math.rint(staff.pitchPositionOf(center));
+            ClefKind kind = (pp >= -1) ? ClefKind.ALTO : ClefKind.TENOR;
+
+            return new ClefInter(glyph, shape, grade, staff, pp, kind);
+
+        case F_CLEF:
+        case F_CLEF_SMALL:
+        case F_CLEF_8VA:
+        case F_CLEF_8VB:
+            return new ClefInter(glyph, shape, grade, staff, -2.0, ClefKind.BASS);
+
+        case PERCUSSION_CLEF:
+            return new ClefInter(glyph, shape, grade, staff, 0.0, ClefKind.PERCUSSION);
+
+        default:
+            return null;
+        }
+    }
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create a Clef inter.
+     *
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       clef bounds
+     * @param omrShape     precise OMR shape
+     * @param grade        evaluation value
+     * @param staff        related staff
+     * @return the created instance
+     * @throws IllegalArgumentException if provided omrShape is not supported
+     */
+    public static ClefInter create (int annotationId,
+                                    Rectangle bounds,
+                                    OmrShape omrShape,
+                                    double grade,
+                                    Staff staff)
+    {
+        switch (omrShape) {
+        case gClef:
+        case gClef8vb:
+        case gClef8va:
+        case gClef15mb:
+        case gClef15ma:
+            return new ClefInter(
+                    annotationId,
+                    bounds,
+                    omrShape,
+                    grade,
+                    staff,
+                    2.0,
+                    ClefKind.TREBLE);
+
+        case cClefAlto:
+            return new ClefInter(annotationId, bounds, omrShape, grade, staff, 0.0, ClefKind.ALTO);
+
+        case cClefTenor:
+            return new ClefInter(
+                    annotationId,
+                    bounds,
+                    omrShape,
+                    grade,
+                    staff,
+                    -2.0,
+                    ClefKind.TENOR);
+
+        case fClef:
+        case fClef8vb:
+        case fClef8va:
+        case fClef15mb:
+        case fClef15ma:
+            return new ClefInter(annotationId, bounds, omrShape, grade, staff, -2.0, ClefKind.BASS);
+
+        case unpitchedPercussionClef1:
+            return new ClefInter(
+                    annotationId,
+                    bounds,
+                    omrShape,
+                    grade,
+                    staff,
+                    0.0,
+                    ClefKind.PERCUSSION);
+        }
+
+        throw new IllegalArgumentException("Cannot create ClefInter for " + omrShape);
+    }
+
+    //--------//
+    // kindOf //
+    //--------//
+    /**
+     * Guess the clef kind, based on shape and location.
+     *
+     * @param center area center of the clef
+     * @param shape  clef shape
+     * @param staff  the containing shape
+     * @return the precise clef kind
+     */
+    public static ClefKind kindOf (Point center,
+                                   Shape shape,
+                                   Staff staff)
+    {
+        switch (shape) {
+        case G_CLEF:
+        case G_CLEF_SMALL:
+        case G_CLEF_8VA:
+        case G_CLEF_8VB:
+            return ClefKind.TREBLE;
+
+        case C_CLEF:
+
+            // Disambiguate between Alto C-clef (pp=0) and Tenor C-clef (pp=-2)
+            int pp = (int) Math.rint(staff.pitchPositionOf(center));
+
+            return (pp >= -1) ? ClefKind.ALTO : ClefKind.TENOR;
+
+        case F_CLEF:
+        case F_CLEF_SMALL:
+        case F_CLEF_8VA:
+        case F_CLEF_8VB:
+            return ClefKind.BASS;
+
+        case PERCUSSION_CLEF:
+            return ClefKind.PERCUSSION;
+
+        default:
+            return null;
+        }
+    }
+
+    //--------//
+    // kindOf //
+    //--------//
+    /**
+     * Report the ClefKind for a provided OmrShape
+     *
+     * @param omrShape provided OmrShape
+     * @return related ClefKind
+     * @throws IllegalArgumentException if provided omrShape is not mapped
+     */
+    public static ClefKind kindOf (OmrShape omrShape)
+    {
+        switch (omrShape) {
+        case gClef:
+        case gClef8vb:
+        case gClef8va:
+        case gClef15mb:
+        case gClef15ma:
+            return ClefKind.TREBLE;
+
+        case cClefAlto:
+            return ClefKind.ALTO;
+
+        case cClefTenor:
+            return ClefKind.TENOR;
+
+        case fClef:
+        case fClef8vb:
+        case fClef8va:
+        case fClef15mb:
+        case fClef15ma:
+            return ClefKind.BASS;
+
+        case unpitchedPercussionClef1:
+            return ClefKind.PERCUSSION;
+        }
+
+        throw new IllegalArgumentException("No ClefKind for " + omrShape);
+    }
+
+    //------------//
+    // noteStepOf //
+    //------------//
+    /**
+     * Report the note step that corresponds to a note in the provided pitch position,
+     * using the current clef if any, otherwise using the default clef (G_CLEF)
+     *
+     * @param clef          the provided current clef
+     * @param pitchPosition the pitch position of the provided note
+     * @return the corresponding note step
+     */
+    public static HeadInter.Step noteStepOf (ClefInter clef,
+                                             int pitchPosition)
+    {
+        if (clef == null) {
+            return defaultClef.noteStepOf(pitchPosition);
+        } else {
+            return clef.noteStepOf(pitchPosition);
+        }
+    }
+
+    //----------//
+    // octaveOf //
+    //----------//
+    /**
+     * Report the octave corresponding to a note at the provided pitch position,
+     * assuming we are governed by the provided clef, otherwise (if clef is null)
+     * we use the default clef (G_CLEF)
+     *
+     * @param clef  the current clef if any
+     * @param pitch the pitch position of the note
+     * @return the corresponding octave
+     */
+    public static int octaveOf (ClefInter clef,
+                                double pitch)
+    {
+        if (clef == null) {
+            return defaultClef.octaveOf(pitch);
+        } else {
+            return clef.octaveOf(pitch);
+        }
+    }
+
+    /**
+     * Clef kind, based on shape and pitch.
+     */
+    public static enum ClefKind
+    {
+        TREBLE(Shape.G_CLEF, 2),
+        BASS(Shape.F_CLEF, -2),
+        ALTO(Shape.C_CLEF, 0),
+        TENOR(Shape.C_CLEF, -2),
+        PERCUSSION(Shape.PERCUSSION_CLEF, 0);
+
+        /** Symbol shape class. (regardless of ottava mark if any) */
+        public final Shape shape;
+
+        /** Pitch of reference line. */
+        public final int pitch;
+
+        ClefKind (Shape shape,
+                  int pitch)
+        {
+            this.shape = shape;
+            this.pitch = pitch;
         }
     }
 }

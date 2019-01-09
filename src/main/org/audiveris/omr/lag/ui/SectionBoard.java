@@ -46,11 +46,9 @@ import java.awt.Rectangle;
 public class SectionBoard
         extends EntityBoard<Section>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SectionBoard.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying lag */
     protected final Lag lag;
 
@@ -78,7 +76,6 @@ public class SectionBoard
             "Weight",
             "Number of pixels in this section");
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a Section Board
      *
@@ -90,10 +87,10 @@ public class SectionBoard
     {
         super(
                 new Desc(
-                        Board.SECTION.name
-                        + ((lag.getOrientation() == Orientation.VERTICAL) ? " Vert" : " Hori"),
-                        Board.SECTION.position
-                        + ((lag.getOrientation() == Orientation.VERTICAL) ? 100 : 0)),
+                        Board.SECTION.name + ((lag.getOrientation() == Orientation.VERTICAL)
+                        ? " Vert" : " Hori"),
+                        Board.SECTION.position + ((lag.getOrientation() == Orientation.VERTICAL)
+                        ? 100 : 0)),
                 lag.getEntityService(),
                 selected);
 
@@ -107,32 +104,6 @@ public class SectionBoard
         height.setEnabled(false);
 
         defineLayout();
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // defineLayout //
-    //--------------//
-    private void defineLayout ()
-    {
-        CellConstraints cst = new CellConstraints();
-
-        int r = 1; // --------------------------------
-        builder.add(x.getLabel(), cst.xy(5, r));
-        builder.add(x.getField(), cst.xy(7, r));
-
-        builder.add(width.getLabel(), cst.xy(9, r));
-        builder.add(width.getField(), cst.xy(11, r));
-
-        r += 2; // --------------------------------
-        builder.add(weight.getLabel(), cst.xy(1, r));
-        builder.add(weight.getField(), cst.xy(3, r));
-
-        builder.add(y.getLabel(), cst.xy(5, r));
-        builder.add(y.getField(), cst.xy(7, r));
-
-        builder.add(height.getLabel(), cst.xy(9, r));
-        builder.add(height.getField(), cst.xy(11, r));
     }
 
     //-----------------------//
@@ -169,5 +140,30 @@ public class SectionBoard
         weight.setEnabled(section != null);
         width.setEnabled(section != null);
         height.setEnabled(section != null);
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout ()
+    {
+        CellConstraints cst = new CellConstraints();
+
+        int r = 1; // --------------------------------
+        builder.add(x.getLabel(), cst.xy(5, r));
+        builder.add(x.getField(), cst.xy(7, r));
+
+        builder.add(width.getLabel(), cst.xy(9, r));
+        builder.add(width.getField(), cst.xy(11, r));
+
+        r += 2; // --------------------------------
+        builder.add(weight.getLabel(), cst.xy(1, r));
+        builder.add(weight.getField(), cst.xy(3, r));
+
+        builder.add(y.getLabel(), cst.xy(5, r));
+        builder.add(y.getField(), cst.xy(7, r));
+
+        builder.add(height.getLabel(), cst.xy(9, r));
+        builder.add(height.getField(), cst.xy(11, r));
     }
 }

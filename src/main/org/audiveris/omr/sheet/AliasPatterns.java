@@ -56,7 +56,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "alias-patterns")
 public class AliasPatterns
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -64,10 +63,8 @@ public class AliasPatterns
 
     private static final String ALIAS_PATTERNS_FILENAME = "alias-patterns.xml";
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final List<Pattern> patterns = loadAliasPatterns();
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getAlias //
     //----------//
@@ -94,14 +91,6 @@ public class AliasPatterns
         return null;
     }
 
-    //------------------//
-    // useAliasPatterns //
-    //------------------//
-    public static boolean useAliasPatterns ()
-    {
-        return constants.useAliasPatterns.isSet();
-    }
-
     //-------------------//
     // loadAliasPatterns //
     //-------------------//
@@ -114,14 +103,12 @@ public class AliasPatterns
      */
     private List<Pattern> loadAliasPatterns ()
     {
-        final List<Pattern> patternList = new ArrayList<Pattern>();
+        final List<Pattern> patternList = new ArrayList<>();
 
         if (useAliasPatterns()) {
             URI[] uris = new URI[]{
-                WellKnowns.CONFIG_FOLDER.resolve(ALIAS_PATTERNS_FILENAME).toUri()
-                .normalize(),
-                UriUtil.toURI(WellKnowns.RES_URI, ALIAS_PATTERNS_FILENAME)
-            };
+                WellKnowns.CONFIG_FOLDER.resolve(ALIAS_PATTERNS_FILENAME).toUri().normalize(),
+                UriUtil.toURI(WellKnowns.RES_URI, ALIAS_PATTERNS_FILENAME)};
 
             for (int i = 0; i < uris.length; i++) {
                 URI uri = uris[i];
@@ -130,20 +117,19 @@ public class AliasPatterns
                     URL url = uri.toURL();
 
                     // Retrieve the raw strings
-                    JAXBContext jaxbContext = JAXBContext.newInstance(Strings.class);
-                    InputStream input = url.openStream();
-                    Unmarshaller um = jaxbContext.createUnmarshaller();
-                    Strings strings = (Strings) um.unmarshal(input);
-                    input.close();
+                    try (InputStream input = url.openStream()) {
+                        JAXBContext jaxbContext = JAXBContext.newInstance(Strings.class);
+                        Unmarshaller um = jaxbContext.createUnmarshaller();
+                        Strings strings = (Strings) um.unmarshal(input);
+                        List<String> stringList = strings.list;
 
-                    List<String> stringList = strings.list;
+                        // Compile strings into patterns
+                        if (!stringList.isEmpty()) {
+                            logger.info("Alias patterns: {}", stringList);
 
-                    // Compile strings into patterns
-                    if (!stringList.isEmpty()) {
-                        logger.info("Alias patterns: {}", stringList);
-
-                        for (String raw : stringList) {
-                            patternList.add(Pattern.compile(raw));
+                            for (String raw : stringList) {
+                                patternList.add(Pattern.compile(raw));
+                            }
                         }
                     }
                 } catch (IOException ex) {
@@ -160,14 +146,25 @@ public class AliasPatterns
         return patternList;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //------------------//
+    // useAliasPatterns //
+    //------------------//
+    /**
+     * Tell whether we should use patterns.
+     *
+     * @return true if so
+     */
+    public static boolean useAliasPatterns ()
+    {
+        return constants.useAliasPatterns.isSet();
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean useAliasPatterns = new Constant.Boolean(
                 true,
@@ -181,13 +178,11 @@ public class AliasPatterns
     @XmlRootElement(name = "alias-patterns")
     private static class Strings
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** List of patterns on input names. */
         @XmlElement(name = "pattern")
-        private List<String> list = new ArrayList<String>();
+        private List<String> list = new ArrayList<>();
 
-        //~ Constructors ---------------------------------------------------------------------------
         /** No-arg constructor meant for JAXB. */
         private Strings ()
         {

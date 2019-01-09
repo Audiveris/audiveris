@@ -39,13 +39,11 @@ import java.awt.Graphics;
 public class SheetGradedPainter
         extends SheetPainter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private final boolean withVoices;
 
     private final boolean withTranslucency;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SheetGradedPainter} object.
      *
@@ -65,7 +63,6 @@ public class SheetGradedPainter
         this.withTranslucency = withTranslucency;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getSigPainter //
     //---------------//
@@ -75,14 +72,12 @@ public class SheetGradedPainter
         return new GradedSigPainter(g, sheet.getScale());
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------//
     // GradedSigPainter //
     //------------------//
     private class GradedSigPainter
             extends SigPainter
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public GradedSigPainter (Graphics g,
                                  Scale scale)
@@ -90,7 +85,6 @@ public class SheetGradedPainter
             super(g, scale);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //----------//
         // setColor //
         //----------//
@@ -131,6 +125,12 @@ public class SheetGradedPainter
             }
 
             g.setColor(color);
+        }
+
+        @Override
+        protected boolean splitMirrors ()
+        {
+            return viewParams.isVoicePainting();
         }
     }
 }

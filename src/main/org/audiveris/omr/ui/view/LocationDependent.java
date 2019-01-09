@@ -31,9 +31,9 @@ import java.awt.Rectangle;
  */
 public interface LocationDependent
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
-    /** Update the entity with user current location.
+    /**
+     * Update the entity with user current location.
      *
      * @param rect the user selected location
      */

@@ -30,7 +30,6 @@ package org.audiveris.omr.image;
 public class ImageFormatException
         extends Exception
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Construct an {@code ImageFormatException} with provided detail message.

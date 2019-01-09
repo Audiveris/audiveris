@@ -49,7 +49,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AugmentationRelation
         extends AbstractConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -57,10 +56,8 @@ public class AugmentationRelation
 
     private static final double[] OUT_WEIGHTS = new double[]{
         constants.xOutWeight.getValue(),
-        constants.yWeight.getValue()
-    };
+        constants.yWeight.getValue()};
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -69,6 +66,13 @@ public class AugmentationRelation
     {
         final AugmentationDotInter dot = (AugmentationDotInter) e.getEdgeSource();
         dot.checkAbnormal();
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 
     //-------------------//
@@ -159,14 +163,12 @@ public class AugmentationRelation
         return getYGapMaximum(manual);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio dotSupportCoeff = new Constant.Ratio(
                 0.5,

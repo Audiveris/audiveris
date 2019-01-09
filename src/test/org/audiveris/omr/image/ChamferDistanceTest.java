@@ -33,7 +33,6 @@ import org.junit.Test;
  */
 public class ChamferDistanceTest
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new ChamferDistanceTest object.
@@ -42,7 +41,6 @@ public class ChamferDistanceTest
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of compute method, of class ChamferDistance.
      */

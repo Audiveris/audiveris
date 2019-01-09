@@ -96,18 +96,19 @@ import javax.swing.event.ChangeListener;
  */
 public class SampleRepository
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SampleRepository.class);
-
-    /** Should we support tribes?. */
-    public static final boolean USE_TRIBES = constants.useTribes.isSet();
+    private static final Logger logger = LoggerFactory.getLogger(SampleRepository.class);
 
     /** Standard interline value: {@value}. (Any value could fit, if used consistently) */
     public static final int STANDARD_INTERLINE = 20;
+
+    /** File name for samples material: {@value}. */
+    public static final String SAMPLES_FILE_NAME = "samples.zip";
+
+    /** Should we support tribes?. */
+    public static final boolean USE_TRIBES = constants.useTribes.isSet();
 
     /** The global repository instance, if any. */
     private static volatile SampleRepository GLOBAL;
@@ -115,11 +116,8 @@ public class SampleRepository
     /** File name for images material: {@value}. */
     private static final String IMAGES_FILE_NAME = "images.zip";
 
-    /** File name for samples material: {@value}. */
-    public static final String SAMPLES_FILE_NAME = "samples.zip";
-
     /** Special name to refer to font-based samples: {@value}. */
-    private static final String SYMBOLS = "AAA_FONT_SYMBOLS";
+    private static final String SYMBOLS = "ALL_FONT_BASED_SYMBOLS";
 
     /**
      * Regex pattern for samples archive file name.
@@ -130,15 +128,14 @@ public class SampleRepository
      */
     private static final Pattern SAMPLES_PATTERN = Pattern.compile("(.*-)?(samples\\.zip)");
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Sheets, mapped by their unique name. */
-    private final Map<String, SampleSheet> nameMap = new TreeMap<String, SampleSheet>();
+    private final Map<String, SampleSheet> nameMap = new TreeMap<>();
 
     /** Sheets, mapped by their image. */
-    private final Map<RunTable, SampleSheet> imageMap = new HashMap<RunTable, SampleSheet>();
+    private final Map<RunTable, SampleSheet> imageMap = new HashMap<>();
 
     /** Sheets, mapped by their samples. */
-    private final Map<Sample, SampleSheet> sampleMap = new HashMap<Sample, SampleSheet>();
+    private final Map<Sample, SampleSheet> sampleMap = new HashMap<>();
 
     /** Container for sheet descriptors. */
     private SheetContainer sheetContainer = new SheetContainer();
@@ -150,7 +147,7 @@ public class SampleRepository
     private boolean imagesLoaded;
 
     /** Listeners on repository modifications. */
-    private final Set<ChangeListener> listeners = new LinkedHashSet<ChangeListener>();
+    private final Set<ChangeListener> listeners = new LinkedHashSet<>();
 
     /** Book radix for this repository (empty string for the global repository). */
     private final String bookRadix;
@@ -164,7 +161,6 @@ public class SampleRepository
     /** To handle save on close. */
     private Application.ExitListener exitListener;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * (Private) constructor.
      * <p>
@@ -198,7 +194,6 @@ public class SampleRepository
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // addListener //
     //-------------//
@@ -328,23 +323,21 @@ public class SampleRepository
         List<Sample> allSamples = getAllSamples();
 
         // Sort by weight, then by sheet ID
-        Collections.sort(
-                allSamples,
-                new Comparator<Sample>()
-        {
-            @Override
-            public int compare (Sample s1,
-                                Sample s2)
-            {
-                int comp = Integer.compare(s1.getWeight(), s2.getWeight());
+        Collections.sort(allSamples, new Comparator<Sample>()
+                 {
+                     @Override
+                     public int compare (Sample s1,
+                                         Sample s2)
+                     {
+                         int comp = Integer.compare(s1.getWeight(), s2.getWeight());
 
-                if (comp != 0) {
-                    return comp;
-                }
+                         if (comp != 0) {
+                             return comp;
+                         }
 
-                return getSheetName(s1).compareTo(getSheetName(s2));
-            }
-        });
+                         return getSheetName(s1).compareTo(getSheetName(s2));
+                     }
+                 });
 
         int n = allSamples.size();
         logger.debug("Checking {} samples...", n);
@@ -423,6 +416,9 @@ public class SampleRepository
     //-------//
     // close //
     //-------//
+    /**
+     * Close the repository.
+     */
     public synchronized void close ()
     {
         if (isGlobal()) {
@@ -504,8 +500,9 @@ public class SampleRepository
      * Find out (or create) the SampleSheet that corresponds to provided name and/or
      * image.
      * <p>
-     * If sheet image is provided, the repository is searched for the image:<ul>
-     * <li> If an identical sheet image already exists, it is used and the provided name is kept as
+     * If sheet image is provided, the repository is searched for the image:
+     * <ul>
+     * <li>If an identical sheet image already exists, it is used and the provided name is kept as
      * an alias.
      * <li>Otherwise, a new sample sheet is created. If the provided name is already used, a suffix
      * is appended to the name to make it unique within the repository.
@@ -627,7 +624,7 @@ public class SampleRepository
      */
     public List<Sample> getAllSamples ()
     {
-        final List<Sample> allSamples = new ArrayList<Sample>();
+        final List<Sample> allSamples = new ArrayList<>();
 
         for (SampleSheet sheet : nameMap.values()) {
             allSamples.addAll(sheet.getAllSamples());
@@ -646,7 +643,7 @@ public class SampleRepository
      */
     public List<Tribe> getAllTribes ()
     {
-        final List<Tribe> allTribes = new ArrayList<Tribe>();
+        final List<Tribe> allTribes = new ArrayList<>();
 
         for (SampleSheet sheet : nameMap.values()) {
             allTribes.addAll(sheet.getTribes());
@@ -673,87 +670,6 @@ public class SampleRepository
         }
 
         return null;
-    }
-
-    //-------------------//
-    // getGlobalInstance //
-    //-------------------//
-    /**
-     * Report the (loaded) global repository, after creating it if needed.
-     *
-     * @return the global instance of SampleRepository
-     */
-    public static SampleRepository getGlobalInstance ()
-    {
-        return getGlobalInstance(true);
-    }
-
-    //-------------------//
-    // getGlobalInstance //
-    //-------------------//
-    /**
-     * Report the global repository, after creating it if needed.
-     *
-     * @param load true for a loaded repository
-     * @return the global instance of SampleRepository
-     */
-    public static synchronized SampleRepository getGlobalInstance (boolean load)
-    {
-        if (GLOBAL == null) {
-            GLOBAL = getInstance(WellKnowns.TRAIN_FOLDER.resolve(SAMPLES_FILE_NAME), load);
-        }
-
-        if (load && (GLOBAL != null) && !GLOBAL.isLoaded()) {
-            GLOBAL.loadRepository(null);
-        }
-
-        return GLOBAL;
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the repository specifically related to the provided book.
-     *
-     * @param book the provided book
-     * @param load true for a loaded repository
-     * @return the specific sample repository for the provided book, or null
-     */
-    public static synchronized SampleRepository getInstance (Book book,
-                                                             boolean load)
-    {
-        return getInstance(getSamplesFile(book), load);
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the repository specifically related to the provided samples archives.
-     *
-     * @param samplesFile path to the global or specific samples .zip archive
-     * @param load        true for a loaded repository
-     * @return the specific sample repository, or null
-     */
-    public static synchronized SampleRepository getInstance (Path samplesFile,
-                                                             boolean load)
-    {
-        try {
-            final SampleRepository repo = new SampleRepository(samplesFile);
-
-            if (load && !repo.isLoaded()) {
-                logger.info("Repository loading...");
-                repo.loadRepository(null);
-                logger.info("Repository loaded.");
-            }
-
-            return repo;
-        } catch (Exception ex) {
-            logger.warn("Could not get repository instance at {} " + ex, samplesFile, ex);
-
-            return null;
-        }
     }
 
     //----------------//
@@ -797,12 +713,12 @@ public class SampleRepository
     public List<Sample> getSamples (Collection<Descriptor> descriptors,
                                     Collection<Shape> shapes)
     {
-        List<Sample> found = new ArrayList<Sample>();
+        List<Sample> found = new ArrayList<>();
 
         for (Descriptor descriptor : descriptors) {
             SampleSheet sampleSheet = nameMap.get(descriptor.getName());
 
-            List<Shape> sheetShapes = new ArrayList<Shape>(sampleSheet.getShapes());
+            List<Shape> sheetShapes = new ArrayList<>(sampleSheet.getShapes());
             sheetShapes.retainAll(shapes);
 
             for (Shape shape : sheetShapes) {
@@ -882,50 +798,14 @@ public class SampleRepository
         return null;
     }
 
-    //-------------//
-    // hasInstance //
-    //-------------//
-    /**
-     * Report whether the global repository has been allocated.
-     *
-     * @return true if GLOBAL exists
-     */
-    public static boolean hasInstance ()
-    {
-        return GLOBAL != null;
-    }
-
-    //-----------//
-    // isSymbols //
-    //-----------//
-    /**
-     * Report whether the provided sheet name is a font-based symbols sheet
-     *
-     * @param name provided sheet name
-     * @return true if font-based symbols
-     */
-    public static boolean isSymbols (String name)
-    {
-        return SYMBOLS.equals(name);
-    }
-
-    //------------------//
-    // repositoryExists //
-    //------------------//
-    /**
-     * Report whether a repository exists on disk for the provided book.
-     *
-     * @param book the provided book
-     * @return true if repository file(s) exist(s)
-     */
-    public static boolean repositoryExists (Book book)
-    {
-        return Files.exists(getSamplesFile(book));
-    }
-
     //-----------------//
     // getExitListener //
     //-----------------//
+    /**
+     * Report the ExitListener called at closing time.
+     *
+     * @return specific exit listener that check if repository has unsaved modifications
+     */
     public final synchronized Application.ExitListener getExitListener ()
     {
         if (exitListener == null) {
@@ -951,12 +831,20 @@ public class SampleRepository
     //-------------------//
     // includeRepository //
     //-------------------//
+    /**
+     * Include the content of another repository into this one.
+     *
+     * @param source the other repository to include
+     */
     public void includeRepository (SampleRepository source)
     {
         source.loadAllImages();
 
         for (SampleSheet sampleSheet : source.nameMap.values()) {
-            includeSampleSheet(sampleSheet);
+            // We process all but font-based samples
+            if (!isSymbols(sampleSheet.getDescriptor().getName())) {
+                includeSampleSheet(sampleSheet);
+            }
         }
     }
 
@@ -1052,6 +940,11 @@ public class SampleRepository
     //------------//
     // isModified //
     //------------//
+    /**
+     * Report whether the repository has unsaved modifications.
+     *
+     * @return true if any modification has not been saved
+     */
     public boolean isModified ()
     {
         if (sheetContainer.isModified()) {
@@ -1065,6 +958,18 @@ public class SampleRepository
         }
 
         return false;
+    }
+
+    //-------------//
+    // setModified //
+    //-------------//
+    private void setModified (boolean bool)
+    {
+        sheetContainer.setModified(bool);
+
+        for (SampleSheet sampleSheet : nameMap.values()) {
+            sampleSheet.setModified(bool);
+        }
     }
 
     //---------------//
@@ -1095,6 +1000,12 @@ public class SampleRepository
     //-----------//
     // loadImage //
     //-----------//
+    /**
+     * Load the background image, if any, of a sample sheet
+     *
+     * @param sampleSheet the sheet of samples
+     * @return the related image, or null if not found
+     */
     public RunTable loadImage (SampleSheet sampleSheet)
     {
         final Descriptor descriptor = sampleSheet.getDescriptor();
@@ -1167,11 +1078,13 @@ public class SampleRepository
                     }
                 }
 
-                //            watch.start("buildSymbols");
-                //            buildSymbols();
-                //
                 watch.start("loadSamples");
                 loadSamples(samplesRoot, loadListener);
+
+                // Build all font-based symbols only *after* samples have been loaded,
+                // this allows to cope with new shapes being defined in Shape class.
+                watch.start("buildSymbols");
+                buildSymbols();
 
                 // Tribes?
                 if (USE_TRIBES) {
@@ -1216,9 +1129,12 @@ public class SampleRepository
     //------------------------//
     // purgeOrphanDescriptors //
     //------------------------//
+    /**
+     *
+     */
     public void purgeOrphanDescriptors ()
     {
-        for (Descriptor descriptor : new ArrayList<Descriptor>(getAllDescriptors())) {
+        for (Descriptor descriptor : new ArrayList<>(getAllDescriptors())) {
             final SampleSheet sampleSheet = getSampleSheet(descriptor);
 
             if (sampleSheet == null) {
@@ -1252,6 +1168,12 @@ public class SampleRepository
     //----------------//
     // removeListener //
     //----------------//
+    /**
+     * remove a ChangeListener
+     *
+     * @param listener the listener to remove
+     * @return true if actually removed
+     */
     public boolean removeListener (ChangeListener listener)
     {
         return listeners.remove(listener);
@@ -1269,6 +1191,13 @@ public class SampleRepository
     public void removeSample (Sample sample)
     {
         SampleSheet sampleSheet = getSampleSheet(sample);
+
+        if (isSymbols(sampleSheet.getDescriptor().getName())) {
+            logger.info("A font-based symbol cannot be removed");
+
+            return;
+        }
+
         sampleSheet.privateRemoveSample(sample);
         sampleMap.remove(sample);
 
@@ -1313,14 +1242,14 @@ public class SampleRepository
     public void shrink (int maxCount)
     {
         // Gather samples by shape
-        EnumMap<Shape, List<Sample>> shapeSamples = new EnumMap<Shape, List<Sample>>(Shape.class);
+        EnumMap<Shape, List<Sample>> shapeSamples = new EnumMap<>(Shape.class);
 
         for (Sample sample : getAllSamples()) {
             Shape shape = sample.getShape();
             List<Sample> list = shapeSamples.get(shape);
 
             if (list == null) {
-                shapeSamples.put(shape, list = new ArrayList<Sample>());
+                shapeSamples.put(shape, list = new ArrayList<>());
             }
 
             list.add(sample);
@@ -1356,14 +1285,14 @@ public class SampleRepository
                                    int maxCount)
     {
         // Gather samples by shape
-        EnumMap<Shape, List<Sample>> shapeSamples = new EnumMap<Shape, List<Sample>>(Shape.class);
+        EnumMap<Shape, List<Sample>> shapeSamples = new EnumMap<>(Shape.class);
 
         for (Sample sample : getAllSamples()) {
             Shape shape = sample.getShape();
             List<Sample> list = shapeSamples.get(shape);
 
             if (list == null) {
-                shapeSamples.put(shape, list = new ArrayList<Sample>());
+                shapeSamples.put(shape, list = new ArrayList<>());
             }
 
             list.add(sample);
@@ -1413,7 +1342,7 @@ public class SampleRepository
 
             setModified(false);
             logger.info("{} stored to {}", this, samplesFile);
-        } catch (Throwable ex) {
+        } catch (IOException ex) {
             logger.warn("Error storing " + this + " to " + samplesFile + " " + ex, ex);
         }
     }
@@ -1427,22 +1356,6 @@ public class SampleRepository
         String name = isGlobal() ? "GLOBAL" : bookRadix;
 
         return name + " repository";
-    }
-
-    //----------------//
-    // getSamplesFile //
-    //----------------//
-    /**
-     * Report the path to the (theoretical) samples file for the provided book.
-     *
-     * @param book the provided book
-     * @return the theoretical path to samples file
-     */
-    private static Path getSamplesFile (Book book)
-    {
-        final Path bookFolder = BookManager.getDefaultBookFolder(book);
-
-        return bookFolder.resolve(book.getRadix() + "-" + SAMPLES_FILE_NAME);
     }
 
     //-------------------//
@@ -1524,62 +1437,60 @@ public class SampleRepository
     private void loadAllImages (final Path root)
     {
         try {
-            Files.walkFileTree(
-                    root,
-                    new SimpleFileVisitor<Path>()
-            {
-                @Override
-                public FileVisitResult preVisitDirectory (Path dir,
-                                                          BasicFileAttributes attrs)
-                        throws IOException
-                {
-                    // Check whether we already have an image for this folder
-                    final Path dirFile = dir.getFileName();
+            Files.walkFileTree(root, new SimpleFileVisitor<Path>()
+                       {
+                           @Override
+                           public FileVisitResult preVisitDirectory (Path dir,
+                                                                     BasicFileAttributes attrs)
+                                   throws IOException
+                           {
+                               // Check whether we already have an image for this folder
+                               final Path dirFile = dir.getFileName();
 
-                    if (dirFile != null) {
-                        String dirName = dirFile.toString();
+                               if (dirFile != null) {
+                                   String dirName = dirFile.toString();
 
-                        if (dirName.endsWith("/")) {
-                            dirName = dirName.substring(0, dirName.length() - 1);
-                        }
+                                   if (dirName.endsWith("/")) {
+                                       dirName = dirName.substring(0, dirName.length() - 1);
+                                   }
 
-                        final SampleSheet sampleSheet = nameMap.get(dirName);
+                                   final SampleSheet sampleSheet = nameMap.get(dirName);
 
-                        if ((sampleSheet != null) && (sampleSheet.getImage() != null)) {
-                            return FileVisitResult.SKIP_SUBTREE;
-                        }
-                    }
+                                   if ((sampleSheet != null) && (sampleSheet.getImage() != null)) {
+                                       return FileVisitResult.SKIP_SUBTREE;
+                                   }
+                               }
 
-                    return FileVisitResult.CONTINUE;
-                }
+                               return FileVisitResult.CONTINUE;
+                           }
 
-                @Override
-                public FileVisitResult visitFile (Path file,
-                                                  BasicFileAttributes attrs)
-                        throws IOException
-                {
-                    final String fileName = file.getFileName().toString();
+                           @Override
+                           public FileVisitResult visitFile (Path file,
+                                                             BasicFileAttributes attrs)
+                                   throws IOException
+                           {
+                               final String fileName = file.getFileName().toString();
 
-                    if (fileName.equals(SampleSheet.IMAGE_FILE_NAME)) {
-                        RunTable runTable = RunTable.unmarshal(file);
+                               if (fileName.equals(SampleSheet.IMAGE_FILE_NAME)) {
+                                   RunTable runTable = RunTable.unmarshal(file);
 
-                        if (runTable != null) {
-                            Path folder = file.getParent().getFileName();
-                            SampleSheet sampleSheet = nameMap.get(folder.toString());
+                                   if (runTable != null) {
+                                       Path folder = file.getParent().getFileName();
+                                       SampleSheet sampleSheet = nameMap.get(folder.toString());
 
-                            if (sampleSheet != null) {
-                                sampleSheet.setImage(runTable, true);
-                                logger.debug("Loaded {}", file);
-                            } else {
-                                logger.warn("No SampleSheet found for image {}", file);
-                            }
-                        }
-                    }
+                                       if (sampleSheet != null) {
+                                           sampleSheet.setImage(runTable, true);
+                                           logger.debug("Loaded {}", file);
+                                       } else {
+                                           logger.warn("No SampleSheet found for image {}", file);
+                                       }
+                                   }
+                               }
 
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (Throwable ex) {
+                               return FileVisitResult.CONTINUE;
+                           }
+                       });
+        } catch (IOException ex) {
             logger.warn("Error loading binaries from " + imagesFile + " " + ex, ex);
         }
     }
@@ -1594,48 +1505,52 @@ public class SampleRepository
                               final LoadListener loadListener)
     {
         try {
-            Files.walkFileTree(
-                    root,
-                    new SimpleFileVisitor<Path>()
-            {
-                @Override
-                public FileVisitResult visitFile (Path file,
-                                                  BasicFileAttributes attrs)
-                        throws IOException
-                {
-                    final String fileName = file.getFileName().toString();
+            Files.walkFileTree(root, new SimpleFileVisitor<Path>()
+                       {
+                           @Override
+                           public FileVisitResult visitFile (Path file,
+                                                             BasicFileAttributes attrs)
+                                   throws IOException
+                           {
+                               final String fileName = file.getFileName().toString();
 
-                    if (fileName.equals(SampleSheet.SAMPLES_FILE_NAME)) {
-                        Path folder = file.getParent().getFileName();
-                        Descriptor desc = sheetContainer.getDescriptor(folder.toString());
-                        SampleSheet sampleSheet = null;
+                               if (fileName.equals(SampleSheet.SAMPLES_FILE_NAME)) {
+                                   Path folder = file.getParent().getFileName();
+                                   Descriptor desc = sheetContainer.getDescriptor(folder.toString());
+                                   SampleSheet sampleSheet = null;
 
-                        if (desc == null) {
-                            logger.warn(
-                                    "Samples entry {} not declared in {} is ignored.",
-                                    folder,
-                                    SheetContainer.CONTAINER_ENTRY_NAME);
-                        } else {
-                            sampleSheet = SampleSheet.unmarshal(file, desc);
+                                   if (desc == null) {
+                                       logger.warn(
+                                               "Samples entry {} not declared in {} is ignored.",
+                                               folder,
+                                               SheetContainer.CONTAINER_ENTRY_NAME);
+                                   } else {
+                                       boolean isSymbol = isSymbols(desc.getName());
 
-                            boolean isSymbol = isSymbols(desc.getName());
-                            nameMap.put(desc.getName(), sampleSheet);
+                                       if (isSymbol) {
+                                           logger.info("Skipping symbols entry");
 
-                            for (Sample sample : sampleSheet.getAllSamples()) {
-                                sample.setSymbol(isSymbol);
-                                sampleMap.put(sample, sampleSheet);
-                            }
-                        }
+                                           return FileVisitResult.CONTINUE;
+                                       }
 
-                        if (loadListener != null) {
-                            loadListener.loadedSheet(sampleSheet);
-                        }
-                    }
+                                       sampleSheet = SampleSheet.unmarshal(file, desc);
+                                       nameMap.put(desc.getName(), sampleSheet);
 
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (Throwable ex) {
+                                       for (Sample sample : sampleSheet.getAllSamples()) {
+                                           sample.setSymbol(isSymbol);
+                                           sampleMap.put(sample, sampleSheet);
+                                       }
+                                   }
+
+                                   if (loadListener != null) {
+                                       loadListener.loadedSheet(sampleSheet);
+                                   }
+                               }
+
+                               return FileVisitResult.CONTINUE;
+                           }
+                       });
+        } catch (IOException ex) {
             logger.warn("Error loading " + samplesFile + " " + ex, ex);
         }
     }
@@ -1649,159 +1564,172 @@ public class SampleRepository
     private void loadTribes (final Path root)
     {
         try {
-            Files.walkFileTree(
-                    root,
-                    new SimpleFileVisitor<Path>()
-            {
-                @Override
-                public FileVisitResult visitFile (Path file,
-                                                  BasicFileAttributes attrs)
-                        throws IOException
-                {
-                    final String fileName = file.getFileName().toString();
+            Files.walkFileTree(root, new SimpleFileVisitor<Path>()
+                       {
+                           @Override
+                           public FileVisitResult visitFile (Path file,
+                                                             BasicFileAttributes attrs)
+                                   throws IOException
+                           {
+                               final String fileName = file.getFileName().toString();
 
-                    if (fileName.equals(SampleSheet.TRIBES_FILE_NAME)) {
-                        Path folder = file.getParent().getFileName();
-                        SampleSheet sampleSheet = nameMap.get(folder.toString());
+                               if (fileName.equals(SampleSheet.TRIBES_FILE_NAME)) {
+                                   Path folder = file.getParent().getFileName();
+                                   SampleSheet sampleSheet = nameMap.get(folder.toString());
 
-                        if (sampleSheet != null) {
-                            TribeList tribeList = TribeList.unmarshal(file);
-                            sampleSheet.setTribes(tribeList.getTribes());
-                            logger.debug("Loaded {}", file);
-                        } else {
-                            logger.warn("No SampleSheet found for tribes {}", file);
-                        }
-                    }
+                                   if (sampleSheet != null) {
+                                       TribeList tribeList = TribeList.unmarshal(file);
+                                       sampleSheet.setTribes(tribeList.getTribes());
+                                       logger.debug("Loaded {}", file);
+                                   } else {
+                                       logger.warn("No SampleSheet found for tribes {}", file);
+                                   }
+                               }
 
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (Throwable ex) {
+                               return FileVisitResult.CONTINUE;
+                           }
+                       });
+        } catch (IOException ex) {
             logger.warn("Error loading tribes " + ex, ex);
         }
     }
 
-    //-------------//
-    // setModified //
-    //-------------//
-    private void setModified (boolean bool)
-    {
-        sheetContainer.setModified(bool);
-
-        for (SampleSheet sampleSheet : nameMap.values()) {
-            sampleSheet.setModified(bool);
-        }
-    }
-
-    //~ Inner Interfaces ---------------------------------------------------------------------------
-    //--------------//
-    // LoadListener //
-    //-------------//
+    //-------------------//
+    // getGlobalInstance //
+    //-------------------//
     /**
-     * Interface {@code LoadListener} defines the entries to a UI entity
-     * which monitors the loading of samples by the sample repository.
+     * Report the (loaded) global repository, after creating it if needed.
+     *
+     * @return the global instance of SampleRepository
      */
-    public static interface LoadListener
+    public static SampleRepository getGlobalInstance ()
     {
-        //~ Methods --------------------------------------------------------------------------------
-
-        /**
-         * Called whenever a new sample sheet has been loaded.
-         *
-         * @param sampleSheet the sample sheet loaded
-         */
-        void loadedSheet (SampleSheet sampleSheet);
-
-        /**
-         * Called to pass the total number of sample sheets in repository
-         *
-         * @param total total number of sample sheets
-         */
-        void totalSheets (int total);
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //---------------//
-    // AdditionEvent //
-    //---------------//
-    /**
-     * Event used to carry information about sample addition performed.
-     */
-    public static class AdditionEvent
-            extends ChangeEvent
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        public final Sample sample; // The added sample
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public AdditionEvent (Sample sample,
-                              SampleRepository repo)
-        {
-            super(repo);
-            this.sample = sample;
-        }
-    }
-
-    //--------------//
-    // RemovalEvent //
-    //--------------//
-    /**
-     * Event used to carry information about sample removal performed.
-     */
-    public static class RemovalEvent
-            extends ChangeEvent
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        public final Sample sample; // The removed sample
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public RemovalEvent (Sample sample,
-                             SampleRepository repo)
-        {
-            super(repo);
-            this.sample = sample;
-        }
+        return getGlobalInstance(true);
     }
 
     //-------------------//
-    // SheetRemovalEvent //
+    // getGlobalInstance //
     //-------------------//
     /**
-     * Event used to carry information about sheet removal performed.
+     * Report the global repository, after creating it if needed.
+     *
+     * @param load true for a loaded repository
+     * @return the global instance of SampleRepository
      */
-    public static class SheetRemovalEvent
-            extends ChangeEvent
+    public static synchronized SampleRepository getGlobalInstance (boolean load)
     {
-        //~ Instance fields ------------------------------------------------------------------------
+        if (GLOBAL == null) {
+            GLOBAL = getInstance(WellKnowns.TRAIN_FOLDER.resolve(SAMPLES_FILE_NAME), load);
+        }
 
-        public final Descriptor descriptor; // Descriptor of the removed sheet
+        if (load && (GLOBAL != null) && !GLOBAL.isLoaded()) {
+            GLOBAL.loadRepository(null);
+        }
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public SheetRemovalEvent (Descriptor descriptor,
-                                  SampleRepository repo)
-        {
-            super(repo);
-            this.descriptor = descriptor;
+        return GLOBAL;
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the repository specifically related to the provided book.
+     *
+     * @param book the provided book
+     * @param load true for a loaded repository
+     * @return the specific sample repository for the provided book, or null
+     */
+    public static synchronized SampleRepository getInstance (Book book,
+                                                             boolean load)
+    {
+        return getInstance(getSamplesFile(book), load);
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the repository specifically related to the provided samples archives.
+     *
+     * @param samplesFile path to the global or specific samples .zip archive
+     * @param load        true for a loaded repository
+     * @return the specific sample repository, or null
+     */
+    public static synchronized SampleRepository getInstance (Path samplesFile,
+                                                             boolean load)
+    {
+        try {
+            final SampleRepository repo = new SampleRepository(samplesFile);
+
+            if (load && !repo.isLoaded()) {
+                logger.info("Repository loading...");
+                repo.loadRepository(null);
+                logger.info("Repository loaded.");
+            }
+
+            return repo;
+        } catch (Exception ex) {
+            logger.warn("Could not get repository instance at {} " + ex, samplesFile, ex);
+
+            return null;
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
+    //-------------//
+    // hasInstance //
+    //-------------//
+    /**
+     * Report whether the global repository has been allocated.
+     *
+     * @return true if GLOBAL exists
+     */
+    public static boolean hasInstance ()
     {
-        //~ Instance fields ------------------------------------------------------------------------
+        return GLOBAL != null;
+    }
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+    //-----------//
+    // isSymbols //
+    //-----------//
+    /**
+     * Report whether the provided sheet name is a font-based symbols sheet
+     *
+     * @param name provided sheet name
+     * @return true if font-based symbols
+     */
+    public static boolean isSymbols (String name)
+    {
+        return SYMBOLS.equals(name);
+    }
 
-        private final Constant.Boolean useTribes = new Constant.Boolean(
-                false,
-                "Should we support tribes?");
+    //------------------//
+    // repositoryExists //
+    //------------------//
+    /**
+     * Report whether a repository exists on disk for the provided book.
+     *
+     * @param book the provided book
+     * @return true if repository file(s) exist(s)
+     */
+    public static boolean repositoryExists (Book book)
+    {
+        return Files.exists(getSamplesFile(book));
+    }
+
+    //----------------//
+    // getSamplesFile //
+    //----------------//
+    /**
+     * Report the path to the (theoretical) samples file for the provided book.
+     *
+     * @param book the provided book
+     * @return the theoretical path to samples file
+     */
+    private static Path getSamplesFile (Book book)
+    {
+        final Path bookFolder = BookManager.getDefaultBookFolder(book);
+
+        return bookFolder.resolve(book.getRadix() + "-" + SAMPLES_FILE_NAME);
     }
 
     //------------------------//
@@ -1813,13 +1741,11 @@ public class SampleRepository
     private class RepositoryExitListener
             implements Application.ExitListener
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public RepositoryExitListener ()
+        RepositoryExitListener ()
         {
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean canExit (EventObject eo)
         {
@@ -1848,5 +1774,127 @@ public class SampleRepository
         public void willExit (EventObject eo)
         {
         }
+    }
+
+    //--------------//
+    // LoadListener //
+    //-------------//
+    /**
+     * Interface {@code LoadListener} defines the entries to a UI entity
+     * which monitors the loading of samples by the sample repository.
+     */
+    public static interface LoadListener
+    {
+
+        /**
+         * Called whenever a new sample sheet has been loaded.
+         *
+         * @param sampleSheet the sample sheet loaded
+         */
+        void loadedSheet (SampleSheet sampleSheet);
+
+        /**
+         * Called to pass the total number of sample sheets in repository
+         *
+         * @param total total number of sample sheets
+         */
+        void totalSheets (int total);
+    }
+
+    //---------------//
+    // AdditionEvent //
+    //---------------//
+    /**
+     * Event used to carry information about sample addition performed.
+     */
+    public static class AdditionEvent
+            extends ChangeEvent
+    {
+
+        /** The sample added. */
+        public final Sample sample;
+
+        /**
+         * Create an [@code AdditionEvent}.
+         *
+         * @param sample the sample added
+         * @param repo   the repository where sample is added
+         */
+        public AdditionEvent (Sample sample,
+                              SampleRepository repo)
+        {
+            super(repo);
+            this.sample = sample;
+        }
+    }
+
+    //--------------//
+    // RemovalEvent //
+    //--------------//
+    /**
+     * Event used to carry information about sample removal performed.
+     */
+    public static class RemovalEvent
+            extends ChangeEvent
+    {
+
+        /** The removed sample. */
+        public final Sample sample;
+
+        /**
+         * Create a removal event.
+         *
+         * @param sample the removed sample
+         * @param repo   the impacted repository
+         */
+        public RemovalEvent (Sample sample,
+                             SampleRepository repo)
+        {
+            super(repo);
+            this.sample = sample;
+        }
+    }
+
+    //-------------------//
+    // SheetRemovalEvent //
+    //-------------------//
+    /**
+     * Event used to carry information about sheet removal performed.
+     */
+    public static class SheetRemovalEvent
+            extends ChangeEvent
+    {
+
+        /** Descriptor of the removed sheet. */
+        public final Descriptor descriptor;
+
+        /**
+         * Create a event to remove a sample sheet.
+         *
+         * @param descriptor sample sheet descriptor
+         * @param repo       impacted repository
+         */
+        public SheetRemovalEvent (Descriptor descriptor,
+                                  SampleRepository repo)
+        {
+            super(repo);
+            this.descriptor = descriptor;
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        private final Constant.Boolean useTribes = new Constant.Boolean(
+                false,
+                "Should we support tribes?");
     }
 }

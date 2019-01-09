@@ -35,7 +35,6 @@ import java.awt.Rectangle;
  */
 public interface MouseMonitor
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Contextual action (by right button click + control) of an

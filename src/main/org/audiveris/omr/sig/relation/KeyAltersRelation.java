@@ -36,11 +36,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class KeyAltersRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code KeyAltersRelation} object.
      */
@@ -48,7 +46,6 @@ public class KeyAltersRelation
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -85,14 +82,19 @@ public class KeyAltersRelation
         return constants.targetSupportCoeff.getValue();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio sourceSupportCoeff = new Constant.Ratio(
                 5,

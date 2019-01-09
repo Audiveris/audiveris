@@ -84,17 +84,14 @@ import java.util.Set;
  */
 public class SlurLinker
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SlurLinker.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Scale-dependent parameters. */
     private final Parameters params;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SlurLinker} object.
      *
@@ -105,7 +102,6 @@ public class SlurLinker
         params = new Parameters(sheet.getScale());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // defineAreaPair //
     //----------------//
@@ -140,7 +136,7 @@ public class SlurLinker
 
         // Qualify the slur as horizontal or vertical
         if ((abs(LineUtil.getSlope(first, last)) <= params.slopeSeparator)
-            || (slurWidth >= params.wideSlurWidth)) {
+                    || (slurWidth >= params.wideSlurWidth)) {
             // Horizontal: Use base parallel to slur
             info.setHorizontal(true);
             firstExt = extension(mid, first, params.coverageHExt);
@@ -222,7 +218,7 @@ public class SlurLinker
         firstPath.closePath();
         lastPath.closePath();
 
-        Map<HorizontalSide, Area> areaMap = new EnumMap<HorizontalSide, Area>(HorizontalSide.class);
+        Map<HorizontalSide, Area> areaMap = new EnumMap<>(HorizontalSide.class);
         Area firstArea = new Area(firstPath);
         ///info.setArea(firstArea, true);
         areaMap.put(LEFT, firstArea);
@@ -247,8 +243,8 @@ public class SlurLinker
      * <li>Left and right chords must differ enough in abscissa.</li>
      * <li>To be really accepted, a chord candidate must contain a head suitable to be linked on
      * proper slur side.</li>
-     *
-     * <li>Special heuristics for mirrored chords:<ul>
+     * <li>Special heuristics for mirrored chords:
+     * <ul>
      * <li>If the slur goes to another staff, select the mirror chord whose stem points towards
      * the other staff.</li>
      * <li>If the slur stays in its staff, select the mirror chord with same stem direction as
@@ -272,8 +268,7 @@ public class SlurLinker
                                                              Map<HorizontalSide, List<Inter>> chords)
     {
         // The pair to populate
-        final Map<HorizontalSide, SlurHeadLink> linkPair = new EnumMap<HorizontalSide, SlurHeadLink>(
-                HorizontalSide.class);
+        final Map<HorizontalSide, SlurHeadLink> linkPair = new EnumMap<>(HorizontalSide.class);
 
         // Slur target locations on each side
         final Point leftTarget = getTargetPoint(slur, LEFT);
@@ -285,7 +280,7 @@ public class SlurLinker
 
         // The same chord cannot be linked to both slur ends
         // Keep it only where it is closer to slur target
-        Set<Inter> commons = new LinkedHashSet<Inter>();
+        Set<Inter> commons = new LinkedHashSet<>();
         commons.addAll(lefts.keySet());
         commons.retainAll(rights.keySet());
 
@@ -301,12 +296,11 @@ public class SlurLinker
         }
 
         // Reduce each side, except for couple [chord / mirrored chord]
-        Map<HorizontalSide, SlurHeadLink> mirrors = new EnumMap<HorizontalSide, SlurHeadLink>(
-                HorizontalSide.class);
+        Map<HorizontalSide, SlurHeadLink> mirrors = new EnumMap<>(HorizontalSide.class);
 
         for (HorizontalSide side : HorizontalSide.values()) {
             Map<Inter, SlurHeadLink> links = (side == LEFT) ? lefts : rights;
-            List<SlurHeadLink> list = new ArrayList<SlurHeadLink>(links.values());
+            List<SlurHeadLink> list = new ArrayList<>(links.values());
 
             if (!list.isEmpty()) {
                 Collections.sort(list, SlurHeadLink.byEuclidean);
@@ -486,7 +480,7 @@ public class SlurLinker
                                              Area area,
                                              List<Inter> chords)
     {
-        final Map<Inter, SlurHeadLink> found = new HashMap<Inter, SlurHeadLink>();
+        final Map<Inter, SlurHeadLink> found = new HashMap<>();
         final SlurInfo info = slur.getInfo();
         final Point end = info.getEnd(side == LEFT);
         final Point target = getTargetPoint(slur, side);
@@ -567,14 +561,12 @@ public class SlurLinker
         return bestHead;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction coverageHExt = new Scale.Fraction(
                 1.25,
@@ -639,7 +631,6 @@ public class SlurLinker
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int coverageHExt;
 
@@ -667,13 +658,12 @@ public class SlurLinker
 
         final int maxSmallSlurWidth;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
          *
          * @param scale the scaling factor
          */
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             coverageHExt = scale.toPixels(constants.coverageHExt);
             coverageHIn = scale.toPixels(constants.coverageHIn);

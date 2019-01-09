@@ -50,11 +50,11 @@ import java.util.Set;
  */
 public abstract class Glyphs
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Glyphs.class);
 
-    /** To compare glyphs according to their id.
+    /**
+     * To compare glyphs according to their id.
      * This comparator, which requires that all handled glyphs have an ID, can be used for a set.
      */
     public static final Comparator<Glyph> byId = new Comparator<Glyph>()
@@ -82,7 +82,8 @@ public abstract class Glyphs
         }
     };
 
-    /** To compare glyphs according to their left abscissa (then top ordinate, then id).
+    /**
+     * To compare glyphs according to their left abscissa (then top ordinate, then id).
      * This comparator, which requires that all handled glyphs have an ID, can be used for a set.
      */
     public static final Comparator<Glyph> byFullAbscissa = new Comparator<Glyph>()
@@ -189,13 +190,11 @@ public abstract class Glyphs
         }
     };
 
-    //~ Constructors -------------------------------------------------------------------------------
     // Class is not meant to be instantiated.
     private Glyphs ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildLinks //
     //------------//
@@ -210,11 +209,11 @@ public abstract class Glyphs
                                                             double maxGap)
     {
         final int gapInt = (int) Math.ceil(maxGap);
-        final List<Glyph> sortedGlyphs = new ArrayList<Glyph>(glyphs);
+        final List<Glyph> sortedGlyphs = new ArrayList<>(glyphs);
         Collections.sort(sortedGlyphs, byAbscissa);
 
         /** Graph of glyph instances, linked by their distance. */
-        SimpleGraph<Glyph, GlyphLink> graph = new SimpleGraph<Glyph, GlyphLink>(GlyphLink.class);
+        SimpleGraph<Glyph, GlyphLink> graph = new SimpleGraph<>(GlyphLink.class);
 
         // Populate graph with all glyphs as vertices
         for (Glyph glyph : sortedGlyphs) {
@@ -271,7 +270,7 @@ public abstract class Glyphs
     public static Set<Glyph> containedActualGlyphs (Collection<? extends WeakGlyph> collection,
                                                     Rectangle rect)
     {
-        Set<Glyph> set = new LinkedHashSet<Glyph>();
+        Set<Glyph> set = new LinkedHashSet<>();
 
         for (WeakGlyph weak : collection) {
             final Glyph glyph = weak.get();
@@ -298,7 +297,7 @@ public abstract class Glyphs
     public static Set<Glyph> containedGlyphs (Collection<? extends Glyph> collection,
                                               Rectangle rect)
     {
-        Set<Glyph> set = new LinkedHashSet<Glyph>();
+        Set<Glyph> set = new LinkedHashSet<>();
 
         for (Glyph glyph : collection) {
             if (rect.contains(glyph.getBounds())) {
@@ -323,7 +322,7 @@ public abstract class Glyphs
     public static Set<Glyph> containedGlyphs (Collection<? extends Glyph> collection,
                                               Polygon polygon)
     {
-        Set<Glyph> set = new LinkedHashSet<Glyph>();
+        Set<Glyph> set = new LinkedHashSet<>();
 
         for (Glyph glyph : collection) {
             if (polygon.contains(glyph.getBounds())) {
@@ -371,7 +370,7 @@ public abstract class Glyphs
     public static Set<Glyph> containingGlyphs (Collection<? extends Glyph> collection,
                                                Point point)
     {
-        Set<Glyph> set = new LinkedHashSet<Glyph>();
+        Set<Glyph> set = new LinkedHashSet<>();
 
         for (Glyph glyph : collection) {
             if (glyph.contains(point)) {
@@ -402,6 +401,13 @@ public abstract class Glyphs
     //------------//
     // containsId //
     //------------//
+    /**
+     * Tell whether the provided ID appears in the glyph collection.
+     *
+     * @param glyphs glyph collection
+     * @param id     provided ID
+     * @return true if so
+     */
     public static boolean containsId (Collection<Glyph> glyphs,
                                       int id)
     {
@@ -588,7 +594,7 @@ public abstract class Glyphs
     public static Set<Glyph> intersectedActualGlyphs (Collection<? extends WeakGlyph> collection,
                                                       Rectangle rect)
     {
-        Set<Glyph> set = new LinkedHashSet<Glyph>();
+        Set<Glyph> set = new LinkedHashSet<>();
 
         for (WeakGlyph weak : collection) {
             final Glyph glyph = weak.get();
@@ -615,7 +621,7 @@ public abstract class Glyphs
     public static Set<Glyph> intersectedGlyphs (Collection<? extends Glyph> collection,
                                                 Rectangle rect)
     {
-        Set<Glyph> set = new LinkedHashSet<Glyph>();
+        Set<Glyph> set = new LinkedHashSet<>();
 
         for (Glyph glyph : collection) {
             if (rect.intersects(glyph.getBounds())) {
@@ -640,7 +646,7 @@ public abstract class Glyphs
     public static Set<Glyph> intersectedGlyphs (Collection<? extends Glyph> collection,
                                                 Area area)
     {
-        Set<Glyph> set = new LinkedHashSet<Glyph>();
+        Set<Glyph> set = new LinkedHashSet<>();
 
         for (Glyph glyph : collection) {
             if (area.intersects(glyph.getBounds())) {
@@ -666,7 +672,7 @@ public abstract class Glyphs
     public static Set<Glyph> lookupGlyphs (Collection<? extends Glyph> collection,
                                            Predicate<Glyph> predicate)
     {
-        Set<Glyph> set = new LinkedHashSet<Glyph>();
+        Set<Glyph> set = new LinkedHashSet<>();
 
         for (Glyph glyph : collection) {
             if ((predicate == null) || predicate.check(glyph)) {
@@ -732,7 +738,6 @@ public abstract class Glyphs
 //     */
 //    public static interface LinkAdapter
 //    {
-//        //~ Methods --------------------------------------------------------------------------------
 //
 //        /**
 //         * Report the maximum acceptable distance around the provided glyph.

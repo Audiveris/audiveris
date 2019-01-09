@@ -51,20 +51,17 @@ import java.util.TreeMap;
  */
 public class LagManager
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            LagManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(LagManager.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
     /** Map of all public lags. */
-    private final Map<String, Lag> lagMap = new TreeMap<String, Lag>();
+    private final Map<String, Lag> lagMap = new TreeMap<>();
 
     /** Id of last long horizontal section. */
     private int lastLongHSectionId;
@@ -72,7 +69,6 @@ public class LagManager
     /** (Debug)Predefined IDs for VIP sections. */
     private final EnumMap<Orientation, List<Integer>> vipMap;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code LagManager} object.
      *
@@ -85,7 +81,6 @@ public class LagManager
         vipMap = getVipSections();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // buildHorizontalLag //
     //--------------------//
@@ -159,21 +154,18 @@ public class LagManager
             return null;
         }
 
-        final int minVerticalRunLength = 1
-                                         + (int) Math.rint(
-                        sheet.getScale().getMaxFore() * constants.ledgerThickness.getValue());
+        final int minVerticalRunLength = 1 + (int) Math.rint(
+                sheet.getScale().getMaxFore() * constants.ledgerThickness.getValue());
 
         // Remove runs whose height is larger than line thickness
-        RunTable shortVertTable = sourceTable.copy().purge(
-                new Predicate<Run>()
+        RunTable shortVertTable = sourceTable.copy().purge(new Predicate<Run>()
         {
             @Override
             public final boolean check (Run run)
             {
                 return run.getLength() >= minVerticalRunLength;
             }
-        },
-                vertTable);
+        }, vertTable);
         RunTableFactory runFactory = new RunTableFactory(HORIZONTAL);
         RunTable horiTable = runFactory.createTable(shortVertTable.getBuffer());
 
@@ -239,6 +231,19 @@ public class LagManager
         return lastLongHSectionId;
     }
 
+    //---------------------//
+    // setLongSectionMaxId //
+    //---------------------//
+    /**
+     * Remember the id of the last long horizontal section
+     *
+     * @param id the id of the last long horizontal section
+     */
+    public void setLongSectionMaxId (int id)
+    {
+        lastLongHSectionId = id;
+    }
+
     //-------------//
     // rebuildHLag //
     //-------------//
@@ -281,22 +286,14 @@ public class LagManager
         }
     }
 
-    //---------------------//
-    // setLongSectionMaxId //
-    //---------------------//
-    /**
-     * Remember the id of the last long horizontal section
-     *
-     * @param id the id of the last long horizontal section
-     */
-    public void setLongSectionMaxId (int id)
-    {
-        lastLongHSectionId = id;
-    }
-
     //----------------//
     // setVipSections //
     //----------------//
+    /**
+     * Assign VIP flag to sections based on map of sections IDs.
+     *
+     * @param orientation section orientation to be processed
+     */
     public void setVipSections (Orientation orientation)
     {
         List<Integer> ids = vipMap.get(orientation);
@@ -318,12 +315,10 @@ public class LagManager
     //----------------//
     private EnumMap<Orientation, List<Integer>> getVipSections ()
     {
-        EnumMap<Orientation, List<Integer>> map = new EnumMap<Orientation, List<Integer>>(
-                Orientation.class);
+        EnumMap<Orientation, List<Integer>> map = new EnumMap<>(Orientation.class);
 
         for (Orientation orientation : Orientation.values()) {
-            String vipStr = orientation.isVertical()
-                    ? constants.verticalVipSections.getValue()
+            String vipStr = orientation.isVertical() ? constants.verticalVipSections.getValue()
                     : constants.horizontalVipSections.getValue();
             List<Integer> ids = IntUtil.parseInts(vipStr);
 
@@ -360,14 +355,12 @@ public class LagManager
         buildVerticalLag(vertTable);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction maxVerticalRunShift = new Scale.Fraction(
                 0.05,

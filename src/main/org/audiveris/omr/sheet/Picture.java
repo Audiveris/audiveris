@@ -85,11 +85,9 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Any instance of this class is registered on the related Sheet location service, so that each time
  * a location event is received, the corresponding pixel gray value of the INITIAL sources is
  * published.
- *
  * <p>
  * TODO: When an alpha channel is involved, perform the alpha multiplication if the components are
  * not yet premultiplied.
- *
  * <h1>Overview of transforms:<br>
  * <img src="../image/doc-files/transforms.png" alt="Image Transforms UML">
  * </h1>
@@ -102,49 +100,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Picture
         implements EventSubscriber<LocationEvent>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(Picture.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /**
-     * The set of handled sources.
-     */
-    public static enum SourceKey
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
+    public static final String INITIAL_FILE_NAME = "initial.png";
 
-        /** The initial gray-level source. */
-        INITIAL,
-        /** The binarized (black &amp; white) source. */
-        BINARY,
-        /** The Gaussian-filtered source. */
-        GAUSSIAN,
-        /** The Median-filtered source. */
-        MEDIAN,
-        /** The source with staff lines removed. */
-        NO_STAFF,
-        /** The source for classifier on small staves, if any. */
-        SMALL_TARGET,
-        /** The source for classifier on large staves. */
-        LARGE_TARGET;
-    }
-
-    /**
-     * The set of handled tables.
-     */
-    public static enum TableKey
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        BINARY,
-        HEAD_SPOTS;
-    }
-
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
@@ -158,23 +120,22 @@ public class Picture
 
     /** Map of all handled run tables. */
     @XmlElement(name = "tables")
-    private final EnumMap<TableKey, RunTableHolder> tables = new EnumMap<TableKey, RunTableHolder>(
-            TableKey.class);
+    private final EnumMap<TableKey, RunTableHolder> tables = new EnumMap<>(TableKey.class);
 
     // Transient data
     //---------------
     //
     /** Map of all handled sources. */
-    private final ConcurrentSkipListMap<SourceKey, WeakReference<ByteProcessor>> sources = new ConcurrentSkipListMap<SourceKey, WeakReference<ByteProcessor>>();
+    private final ConcurrentSkipListMap<SourceKey, WeakReference<ByteProcessor>> sources
+            = new ConcurrentSkipListMap<>();
 
     /** Related sheet. */
     @Navigable(false)
     private Sheet sheet;
 
     /** The initial (gray-level) image, if any. */
-    private final ImageHolder initialHolder = new ImageHolder("initial.png");
+    private final ImageHolder initialHolder = new ImageHolder(INITIAL_FILE_NAME);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Build a picture instance from a binary table.
      *
@@ -229,10 +190,14 @@ public class Picture
         logger.debug("Picture unmarshalled by JAXB");
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // buildNoStaffTable //
     //-------------------//
+    /**
+     * Build the table without staff lines.
+     *
+     * @return the no-staff table
+     */
     public RunTable buildNoStaffTable ()
     {
         ByteProcessor source = getSource(SourceKey.NO_STAFF);
@@ -247,6 +212,11 @@ public class Picture
     //---------------------------//
     // buildStaffLineGlyphsImage //
     //---------------------------//
+    /**
+     * Build an image containing just the removed staff lines.
+     *
+     * @return image of staff lines
+     */
     public BufferedImage buildStaffLineGlyphsImage ()
     {
         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
@@ -272,7 +242,9 @@ public class Picture
         return img;
     }
 
-    // For debug only
+    /**
+     * For debug only.
+     */
     public void checkSources ()
     {
         for (SourceKey key : SourceKey.values()) {
@@ -283,26 +255,16 @@ public class Picture
     //---------------//
     // disposeSource //
     //---------------//
+    /**
+     * Dispose of the source related to the provided key.
+     *
+     * @param key provided key
+     */
     public void disposeSource (SourceKey key)
     {
         sources.remove(key);
     }
 
-    //
-    //    //--------------//
-    //    // disposeTable //
-    //    //--------------//
-    //    public void disposeTable (TableKey key)
-    //    {
-    //        RunTableHolder tableHolder = tables.get(key);
-    //
-    //        if (tableHolder != null) {
-    //            tableHolder.store();
-    //            tableHolder.setData(null);
-    //            logger.debug("{} table disposed.", key);
-    //        }
-    //    }
-    //
     //---------------//
     // dumpRectangle //
     //---------------//
@@ -374,6 +336,12 @@ public class Picture
     //------------------//
     // gaussianFiltered //
     //------------------//
+    /**
+     * Apply a Gaussian filter on the provided source.
+     *
+     * @param src provided source
+     * @return filtered buffer
+     */
     public ByteProcessor gaussianFiltered (ByteProcessor src)
     {
         StopWatch watch = new StopWatch("Gaussian");
@@ -421,7 +389,7 @@ public class Picture
      */
     public BufferedImage getImage (Rectangle rect)
     {
-        BufferedImage img = initialHolder.getData(sheet.getStub());
+        BufferedImage img = getInitialImage();
 
         if (img == null) {
             ByteProcessor buffer = getSource(SourceKey.BINARY);
@@ -438,7 +406,8 @@ public class Picture
     //-----------------//
     // getInitialImage //
     //-----------------//
-    /** Report the initial (BufferedImage) image.
+    /**
+     * Report the initial (BufferedImage) image.
      *
      * @return the initial image
      */
@@ -450,7 +419,8 @@ public class Picture
     //------------------//
     // getInitialSource //
     //------------------//
-    /** Report the initial source.
+    /**
+     * Report the initial source.
      *
      * @param img the initial image
      * @return the initial source
@@ -570,7 +540,7 @@ public class Picture
 
             if (src != null) {
                 // Store in cache
-                sources.put(key, new WeakReference<ByteProcessor>(src));
+                sources.put(key, new WeakReference<>(src));
                 logger.debug("{} source built as {}", key, src);
             }
         }
@@ -650,6 +620,12 @@ public class Picture
     //----------------//
     // medianFiltered //
     //----------------//
+    /**
+     * Apply a median filter on the provided source buffer.
+     *
+     * @param src provided source
+     * @return filtered buffer
+     */
     public ByteProcessor medianFiltered (ByteProcessor src)
     {
         StopWatch watch = new StopWatch("Median");
@@ -761,6 +737,12 @@ public class Picture
     //-------//
     // store //
     //-------//
+    /**
+     * Store the picture tables
+     *
+     * @param sheetFolder    target sheet folder
+     * @param oldSheetFolder optional source sheet folder (or null)
+     */
     public void store (Path sheetFolder,
                        Path oldSheetFolder)
     {
@@ -780,20 +762,6 @@ public class Picture
     public String toString ()
     {
         return getName();
-    }
-
-    //----------------//
-    // initTransients //
-    //----------------//
-    /**
-     * (package private) method to initialize needed transient members.
-     * (which by definition have not been set by the unmarshalling).
-     *
-     * @param sheet the containing sheet
-     */
-    final void initTransients (Sheet sheet)
-    {
-        this.sheet = sheet;
     }
 
     //-------------------//
@@ -898,7 +866,7 @@ public class Picture
     /**
      * Build a scaled buffer meant for page / patch classifier.
      * <p>
-     * We use the initial image if available, otherwise the binary image.
+     * We use the binary image.
      *
      * @param size the target staff size, either LARGE or SMALL
      * @return the properly scaled buffer
@@ -913,12 +881,20 @@ public class Picture
             return null;
         }
 
-        ByteProcessor source = getSource(SourceKey.INITIAL);
+        // Which source to use: INITIAL or BINARY?
+        ByteProcessor source = null;
 
-        if (source != null) {
-            logger.info("Building classifier target from initial image");
-        } else {
-            logger.info("Building classifier target from binary image");
+        if (constants.classifiersUseInitial.isSet()) {
+            source = getSource(SourceKey.INITIAL);
+            if (source == null) {
+                logger.info("No initial image for classifiers, using binary image");
+            } else {
+                logger.info("Using initial image for classifiers");
+            }
+        }
+
+        if (source == null) {
+            logger.debug("Using binary image for classifiers");
             source = getSource(SourceKey.BINARY);
         }
 
@@ -994,14 +970,61 @@ public class Picture
         return scaledBuffer;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
+    //----------------//
+    // initTransients //
+    //----------------//
+    /**
+     * (package private) method to initialize needed transient members.
+     * (which by definition have not been set by the unmarshalling).
+     *
+     * @param sheet the containing sheet
+     */
+    final void initTransients (Sheet sheet)
+    {
+        this.sheet = sheet;
+
+    }
+
+    /**
+     * The set of handled sources.
+     */
+    public static enum SourceKey
+    {
+        /** The initial gray-level source. */
+        INITIAL,
+        /** The binarized (black &amp; white) source. */
+        BINARY,
+        /** The Gaussian-filtered source. */
+        GAUSSIAN,
+        /** The Median-filtered source. */
+        MEDIAN,
+        /** The source with staff lines removed. */
+        NO_STAFF,
+        /** The source for classifier on small staves, if any. */
+        SMALL_TARGET,
+        /** The source for classifier on large staves. */
+        LARGE_TARGET;
+    }
+
+    /**
+     * The set of handled tables.
+     */
+    public static enum TableKey
+    {
+        BINARY,
+        HEAD_SPOTS;
+    }
+
+//-----------//
+// Constants //
+//-----------//
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean classifiersUseInitial = new Constant.Boolean(
+                false,
+                "Should classifiers operate on INITIAL (vs BINARY) image?");
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,

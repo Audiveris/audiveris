@@ -62,33 +62,27 @@ import java.util.concurrent.ConcurrentSkipListSet;
 @ThreadSafe
 public class UnitManager
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(UnitManager.class);
 
     /** The single instance of this class. */
     private static final UnitManager INSTANCE = new UnitManager();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            UnitManager.class);
-
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** The root node. */
     private final PackageNode root = new PackageNode("<root>", null);
 
     /** Map of PackageNodes and UnitNodes. */
-    private final ConcurrentHashMap<String, Node> mapOfNodes = new ConcurrentHashMap<String, Node>();
+    private final ConcurrentHashMap<String, Node> mapOfNodes = new ConcurrentHashMap<>();
 
     /** Set of names of ConstantSets that still need to be initialized. */
-    private final ConcurrentSkipListSet<String> dirtySets = new ConcurrentSkipListSet<String>();
+    private final ConcurrentSkipListSet<String> dirtySets = new ConcurrentSkipListSet<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /** This is a singleton. */
     private UnitManager ()
     {
         mapOfNodes.put("<root>", root);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -128,7 +122,7 @@ public class UnitManager
      */
     public void checkAllUnits ()
     {
-        SortedSet<String> constants = new TreeSet<String>();
+        SortedSet<String> constants = new TreeSet<>();
 
         for (Node node : mapOfNodes.values()) {
             if (node instanceof UnitNode) {
@@ -150,9 +144,8 @@ public class UnitManager
         props.removeAll(constants);
         dumpStrings("Non set-enclosed properties", props);
 
-        dumpStrings(
-                "Unused User properties",
-                ConstantManager.getInstance().getUnusedUserProperties());
+        dumpStrings("Unused User properties", ConstantManager.getInstance()
+                    .getUnusedUserProperties());
     }
 
     //----------------//
@@ -199,7 +192,7 @@ public class UnitManager
         sb.append(String.format("UnitManager. All Units:%n"));
 
         // Use alphabetical order for easier reading
-        List<Node> nodes = new ArrayList<Node>(mapOfNodes.values());
+        List<Node> nodes = new ArrayList<>(mapOfNodes.values());
         Collections.sort(nodes, Node.nameComparator);
 
         for (Node node : nodes) {
@@ -323,7 +316,7 @@ public class UnitManager
     public Set<Object> searchUnits (String string)
     {
         String str = string.toLowerCase(Locale.ENGLISH);
-        Set<Object> found = new LinkedHashSet<Object>();
+        Set<Object> found = new LinkedHashSet<>();
 
         for (Node node : mapOfNodes.values()) {
             if (node instanceof UnitNode) {
@@ -341,8 +334,8 @@ public class UnitManager
                     for (int i = 0; i < set.size(); i++) {
                         Constant constant = set.getConstant(i);
 
-                        if (constant.getName().toLowerCase(Locale.US).contains(str)
-                            || constant.getDescription().toLowerCase(Locale.US).contains(str)) {
+                        if (constant.getName().toLowerCase(Locale.US).contains(str) || constant
+                                .getDescription().toLowerCase(Locale.US).contains(str)) {
                             found.add(constant);
                         }
                     }
@@ -457,8 +450,8 @@ public class UnitManager
 
                 return;
             } else {
-                Exception e = new IllegalStateException(
-                        "unexpected node type " + obj.getClass() + " in map.");
+                Exception e = new IllegalStateException("unexpected node type " + obj.getClass()
+                                                                + " in map.");
                 e.printStackTrace();
 
                 return;

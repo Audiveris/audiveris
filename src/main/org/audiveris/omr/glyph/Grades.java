@@ -33,66 +33,63 @@ import org.audiveris.omr.constant.ConstantSet;
  */
 public abstract class Grades
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    /** Ratio applied on intrinsic value, to leave room for contextual. */
-    public static final double intrinsicRatio = constants.intrinsicRatio.getValue();
+    /** Minimum grade for a validation (during training phase). */
+    public static final double validationMinGrade = constants.validationMinGrade.getValue();
 
-    // Minimum global values
-    //----------------------
-    /** The minimum grade to consider an interpretation as acceptable. */
-    public static final double minInterGrade = intrinsicRatio * constants.minInterGrade.getValue();
+    /** Minimum grade for a time glyph. */
+    public static final double timeMinGrade = constants.timeMinGrade.getValue();
 
-    /** The minimum contextual grade for an interpretation. */
-    public static final double minContextualGrade = constants.minContextualGrade.getValue();
+    /** Minimum grade for a symbol glyph. */
+    public static final double symbolMinGrade = constants.symbolMinGrade.getValue();
 
-    /** The minimum grade to consider an interpretation as good. */
-    public static final double goodInterGrade = intrinsicRatio * constants.goodInterGrade.getValue();
+    /** Minimum grade for a key signature item, phase #2 (staff slice-based). */
+    public static final double keyAlterMinGrade2 = constants.keyAlterMinGrade2.getValue();
 
-    /** The minimum grade to consider a relation as good. */
-    public static final double goodRelationGrade = constants.goodRelationGrade.getValue();
+    /** Minimum grade for a key signature item, phase #1 (component-based). */
+    public static final double keyAlterMinGrade1 = constants.keyAlterMinGrade1.getValue();
 
-    /** The minimum grade to consider a BarConnector as good. */
-    public static final double goodBarConnectorGrade = constants.goodBarConnectorGrade.getValue();
+    /** Minimum grade for a key signature. */
+    public static final double keySigMinGrade = constants.keySigMinGrade.getValue();
 
     // Minimum specific values
     //------------------------
     /** Minimum grade for a clef glyph. */
     public static final double clefMinGrade = constants.clefMinGrade.getValue();
 
-    /** Minimum grade for a key signature. */
-    public static final double keySigMinGrade = constants.keySigMinGrade.getValue();
+    /** The minimum grade to consider a BarConnector as good. */
+    public static final double goodBarConnectorGrade = constants.goodBarConnectorGrade.getValue();
 
-    /** Minimum grade for a key signature item, phase #1 (component-based). */
-    public static final double keyAlterMinGrade1 = constants.keyAlterMinGrade1.getValue();
+    /** The minimum grade to consider a relation as good. */
+    public static final double goodRelationGrade = constants.goodRelationGrade.getValue();
 
-    /** Minimum grade for a key signature item, phase #2 (staff slice-based). */
-    public static final double keyAlterMinGrade2 = constants.keyAlterMinGrade2.getValue();
+    /** The minimum contextual grade for an interpretation. */
+    public static final double minContextualGrade = constants.minContextualGrade.getValue();
 
-    /** Minimum grade for a symbol glyph. */
-    public static final double symbolMinGrade = constants.symbolMinGrade.getValue();
+    /** Ratio applied on intrinsic value, to leave room for contextual. */
+    public static final double intrinsicRatio = constants.intrinsicRatio.getValue();
 
-    /** Minimum grade for a time glyph. */
-    public static final double timeMinGrade = constants.timeMinGrade.getValue();
+    /** The minimum grade to consider an interpretation as good. */
+    public static final double goodInterGrade = intrinsicRatio * constants.goodInterGrade
+            .getValue();
 
-    /** Minimum grade for a validation (during training phase). */
-    public static final double validationMinGrade = constants.validationMinGrade.getValue();
+    // Minimum global values
+    //----------------------
+    /** The minimum grade to consider an interpretation as acceptable. */
+    public static final double minInterGrade = intrinsicRatio * constants.minInterGrade.getValue();
 
-    //~ Constructors -------------------------------------------------------------------------------
     private Grades ()
     {
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio intrinsicRatio = new Constant.Ratio(
                 0.8,

@@ -72,12 +72,10 @@ import java.util.Set;
 public abstract class CurvesBuilder
         implements ItemRenderer
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            CurvesBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(CurvesBuilder.class);
 
     /** To sort Extension instances by decreasing grade. */
     private static final Comparator<Extension> byReverseGrade = new Comparator<Extension>()
@@ -90,7 +88,6 @@ public abstract class CurvesBuilder
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
     protected final Sheet sheet;
@@ -104,12 +101,6 @@ public abstract class CurvesBuilder
     /** Image skeleton. */
     protected final Skeleton skeleton;
 
-    /** Binary image (with staff lines). */
-    private final ByteProcessor binaryBuf;
-
-    /** Scale-dependent parameters. */
-    private final Parameters params;
-
     /** For unique curve IDs. (per page and per type of curve: slur or segment) */
     protected int globalId = 0;
 
@@ -120,9 +111,17 @@ public abstract class CurvesBuilder
     protected boolean debugArc;
 
     // Debug, to be removed ASAP.
+    /**
+     *
+     */
     protected int maxClumpSize = 0;
 
-    //~ Constructors -------------------------------------------------------------------------------
+    /** Binary image (with staff lines). */
+    private final ByteProcessor binaryBuf;
+
+    /** Scale-dependent parameters. */
+    private final Parameters params;
+
     /**
      * Creates a new SequencesBuilder object.
      *
@@ -139,7 +138,6 @@ public abstract class CurvesBuilder
         params = new Parameters(sheet.getScale());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Try to append one arc to an existing curve and thus create a new curve.
      *
@@ -223,7 +221,7 @@ public abstract class CurvesBuilder
             points = curve.getAllPoints(arcView, reverse);
         }
 
-        Set<Arc> parts = new LinkedHashSet<Arc>(curve.getParts());
+        Set<Arc> parts = new LinkedHashSet<>(curve.getParts());
         parts.add(arcView.getArc());
 
         return createInstance(firstJunction, lastJunction, points, model, parts);
@@ -300,7 +298,7 @@ public abstract class CurvesBuilder
                                   ArcView arcView)
     {
         // First, determine the collection of points to measure (junction + first arc points)
-        List<Point> points = new ArrayList<Point>();
+        List<Point> points = new ArrayList<>();
         Point junction = arcView.getJunction(!reverse);
 
         if (junction != null) {
@@ -338,8 +336,8 @@ public abstract class CurvesBuilder
         }
 
         // Try to extend the trunk as much as possible, on right end then on left end.
-        final Set<Curve> leftClump = new LinkedHashSet<Curve>();
-        final Set<Curve> rightClump = new LinkedHashSet<Curve>();
+        final Set<Curve> leftClump = new LinkedHashSet<>();
+        final Set<Curve> rightClump = new LinkedHashSet<>();
 
         for (boolean rev : new boolean[]{false, true}) {
             Set<Curve> clump = rev ? leftClump : rightClump;
@@ -351,7 +349,7 @@ public abstract class CurvesBuilder
         }
 
         // Combine candidates from both sides
-        Set<Inter> clump = new LinkedHashSet<Inter>();
+        Set<Inter> clump = new LinkedHashSet<>();
 
         // Connect lefts & rights
         // Both endings must be OK, hence none of the side clumps is allowed to be empty
@@ -391,7 +389,7 @@ public abstract class CurvesBuilder
         }
 
         // Build the list of points with no duplicates
-        List<Point> points = new ArrayList<Point>(left.getPoints());
+        List<Point> points = new ArrayList<>(left.getPoints());
 
         for (Point p : right.getPoints()) {
             if (!points.contains(p)) {
@@ -400,7 +398,7 @@ public abstract class CurvesBuilder
         }
 
         // Build the set of parts
-        Set<Arc> parts = new LinkedHashSet<Arc>(left.getParts());
+        Set<Arc> parts = new LinkedHashSet<>(left.getParts());
         parts.addAll(right.getParts());
 
         return createInstance(
@@ -457,12 +455,16 @@ public abstract class CurvesBuilder
         double dl1 = params.gapBoxDeltaIn;
         Point2D dlVect = new Point2D.Double(-dl1 * uv.getY(), dl1 * uv.getX());
         path = new GeoPath(
-                new Line2D.Double(PointUtil.addition(ce, dlVect), PointUtil.subtraction(ce, dlVect)));
+                new Line2D.Double(
+                        PointUtil.addition(ce, dlVect),
+                        PointUtil.subtraction(ce, dlVect)));
 
         double dl2 = params.gapBoxDeltaOut;
         dlVect = new Point2D.Double(-dl2 * uv.getY(), dl2 * uv.getX());
         path.append(
-                new Line2D.Double(PointUtil.subtraction(ce2, dlVect), PointUtil.addition(ce2, dlVect)),
+                new Line2D.Double(
+                        PointUtil.subtraction(ce2, dlVect),
+                        PointUtil.addition(ce2, dlVect)),
                 true);
         //        }
         path.closePath();
@@ -541,7 +543,7 @@ public abstract class CurvesBuilder
                                      Rectangle box,
                                      boolean crossable)
     {
-        Set<Inter> found = new LinkedHashSet<Inter>();
+        Set<Inter> found = new LinkedHashSet<>();
         List<Inter> inters = skeleton.getErasedInters(crossable).get(system);
 
         for (Inter inter : inters) {
@@ -577,13 +579,13 @@ public abstract class CurvesBuilder
         clump.add(trunk);
 
         // Extensions kept for clump
-        final Set<Extension> candidates = new LinkedHashSet<Extension>();
+        final Set<Extension> candidates = new LinkedHashSet<>();
 
         // Map of pivot points reached so far
-        final Map<Point, Extension> pivots = new LinkedHashMap<Point, Extension>();
+        final Map<Point, Extension> pivots = new LinkedHashMap<>();
 
         // Extensions created in last pass
-        List<Extension> rookies = new ArrayList<Extension>();
+        List<Extension> rookies = new ArrayList<>();
         Extension trunkExt = new Extension(trunk, trunk.getParts());
         Point trunkPivot = trunk.getJunction(reverse);
 
@@ -597,7 +599,7 @@ public abstract class CurvesBuilder
         // We use a breadth-first strategy, to detect converging extensions ASAP
         do {
             final List<Extension> actives = rookies;
-            rookies = new ArrayList<Extension>();
+            rookies = new ArrayList<>();
 
             for (Extension ext : actives) {
                 Point pivot = ext.curve.getJunction(reverse);
@@ -743,7 +745,7 @@ public abstract class CurvesBuilder
      */
     private Set<ArcView> findReachableArcs (Extension ext)
     {
-        final Set<ArcView> reachableArcs = new LinkedHashSet<ArcView>();
+        final Set<ArcView> reachableArcs = new LinkedHashSet<>();
         final Area area = defineExtArea(ext.curve);
 
         if (area != null) {
@@ -906,7 +908,8 @@ public abstract class CurvesBuilder
      * <p>
      * The gap may be due to actual lack of black pixels but also to hidden items, some of which
      * being crossable (like bar line or stem) and some not (like note or beam). So the improved
-     * strategy for handling gaps is the following:<ol>
+     * strategy for handling gaps is the following:
+     * <ol>
      * <li>Using large gap window, check whether there is at least one reachable arc. If not, scan
      * is stopped.</li>
      * <li>If line between curve end and reachable arc would hit a non-crossable item, this
@@ -968,10 +971,10 @@ public abstract class CurvesBuilder
         final int lastDir = getDir(prevPoint, pivot);
 
         // Try to go past this pivot, keeping only the acceptable possibilities
-        List<Curve> newCurves = new ArrayList<Curve>();
+        List<Curve> newCurves = new ArrayList<>();
         final Point np = new Point();
         boolean sideJunctionMet = false;
-        List<Arc> arcs = new ArrayList<Arc>();
+        List<Arc> arcs = new ArrayList<>();
 
         for (int dir : scans[lastDir]) {
             // If junction has already been met on side dir, stop here
@@ -1030,14 +1033,63 @@ public abstract class CurvesBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Extension //
+    //-----------//
+    private class Extension
+    {
+
+        /** Curve quality. */
+        private Double grade;
+
+        /** Curve as defined so far. */
+        Curve curve;
+
+        /** Arcs considered for curve immediate extension. */
+        Set<Arc> browsed;
+
+        Extension (Curve curve,
+                   Set<Arc> browsed)
+        {
+            this.curve = curve;
+            this.browsed = new LinkedHashSet<>(browsed); // Copy is needed
+        }
+
+        public double getGrade ()
+        {
+            if (grade == null) {
+                GradeImpacts impacts = computeImpacts(curve, false);
+
+                if (impacts != null) {
+                    grade = impacts.getGrade();
+                } else {
+                    grade = 0.0;
+                }
+            }
+
+            return grade;
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("{Ext ");
+            sb.append(String.format("%.3f", getGrade()));
+            sb.append(curve);
+            ///sb.append(" browsed:").append(browsed);
+            sb.append('}');
+
+            return sb.toString();
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction gapMaxLength = new Scale.Fraction(
                 0.25,
@@ -1085,7 +1137,6 @@ public abstract class CurvesBuilder
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final double gapMaxLength;
 
@@ -1105,13 +1156,12 @@ public abstract class CurvesBuilder
 
         final int maxExtensionRookies;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
          *
          * @param scale the scaling factor
          */
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             gapMaxLength = scale.toPixels(constants.gapMaxLength);
             gapBoxLength = scale.toPixels(constants.gapBoxLength);
@@ -1129,61 +1179,4 @@ public abstract class CurvesBuilder
         }
     }
 
-    //-----------//
-    // Extension //
-    //-----------//
-    /**
-     * Meant to handle the process of extending a curve, by keeping track of arcs
-     * already browsed (regardless whether these arcs were actually kept or not).
-     */
-    private class Extension
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Curve as defined so far. */
-        Curve curve;
-
-        /** Arcs considered for curve immediate extension. */
-        Set<Arc> browsed;
-
-        /** Curve quality. */
-        private Double grade;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Extension (Curve curve,
-                          Set<Arc> browsed)
-        {
-            this.curve = curve;
-            this.browsed = new LinkedHashSet<Arc>(browsed); // Copy is needed
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public double getGrade ()
-        {
-            if (grade == null) {
-                GradeImpacts impacts = computeImpacts(curve, false);
-
-                if (impacts != null) {
-                    grade = impacts.getGrade();
-                } else {
-                    grade = 0.0;
-                }
-            }
-
-            return grade;
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append("{Ext ");
-            sb.append(String.format("%.3f", getGrade()));
-            sb.append(curve);
-            ///sb.append(" browsed:").append(browsed);
-            sb.append('}');
-
-            return sb.toString();
-        }
-    }
 }

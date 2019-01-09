@@ -62,24 +62,19 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BeamStemRelation
         extends AbstractStemConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            BeamStemRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(BeamStemRelation.class);
 
     private static final double[] OUT_WEIGHTS = new double[]{
         constants.xOutWeight.getValue(),
-        constants.yWeight.getValue()
-    };
+        constants.yWeight.getValue()};
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Which portion of beam is used?. */
     @XmlAttribute(name = "beam-portion")
     private BeamPortion beamPortion;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BeamStemRelation} object.
      */
@@ -87,7 +82,13 @@ public class BeamStemRelation
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
     //-----------------------//
     // computeExtensionPoint //
     //-----------------------//
@@ -339,14 +340,12 @@ public class BeamStemRelation
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio beamSupportCoeff = new Constant.Ratio(
                 4,

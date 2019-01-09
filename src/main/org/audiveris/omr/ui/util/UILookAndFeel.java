@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  * Class {@code UILookAndFeel} enables to select the UI Look and Feel to be used in this
@@ -38,7 +39,6 @@ import javax.swing.UIManager;
  */
 public class UILookAndFeel
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -53,12 +53,10 @@ public class UILookAndFeel
         }
     }
 
-    //~ Constructors -------------------------------------------------------------------------------
     private UILookAndFeel ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     // Available Themes:
     //
     // AbstractSkyTheme
@@ -114,20 +112,21 @@ public class UILookAndFeel
             } else {
                 UIManager.setLookAndFeel(constants.lookAndFeel.getValue());
             }
-        } catch (Exception ex) {
+        } catch (ClassNotFoundException |
+                 IllegalAccessException |
+                 InstantiationException |
+                 UnsupportedLookAndFeelException ex) {
             //ex.printStackTrace();
             logger.warn(ex.toString());
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.String lookAndFeel = new Constant.String(
                 "com.jgoodies.looks.plastic.Plastic3DLookAndFeel",

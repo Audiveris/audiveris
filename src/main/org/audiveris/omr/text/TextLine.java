@@ -45,14 +45,11 @@ import java.util.List;
 public class TextLine
         extends TextBasedItem
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TextLine.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** Words that compose this line. */
-    private final List<TextWord> words = new ArrayList<TextWord>();
+    private final List<TextWord> words = new ArrayList<>();
 
     /** Average font for the line. */
     private FontInfo meanFont;
@@ -63,7 +60,6 @@ public class TextLine
     /** Temporary processed flag. */
     private boolean processed;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TextLine object from a sequence of words.
      *
@@ -89,7 +85,6 @@ public class TextLine
         super(null, null, null, null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addWords //
     //----------//
@@ -113,7 +108,6 @@ public class TextLine
         }
     }
 
-    //
     //------------//
     // appendWord //
     //------------//
@@ -127,48 +121,6 @@ public class TextLine
         words.add(word);
         word.setTextLine(this);
         invalidateCache();
-    }
-
-    /**
-     * Give a Line comparator by de-skewed abscissa.
-     *
-     * @param skew the global sheet skew
-     * @return the skew-based abscissa comparator
-     */
-    public static Comparator<TextLine> byAbscissa (final Skew skew)
-    {
-        return new Comparator<TextLine>()
-        {
-            @Override
-            public int compare (TextLine line1,
-                                TextLine line2)
-            {
-                return Double.compare(
-                        line1.getDskOrigin(skew).getX(),
-                        line2.getDskOrigin(skew).getX());
-            }
-        };
-    }
-
-    /**
-     * Give a Line comparator by de-skewed ordinate.
-     *
-     * @param skew the global sheet skew
-     * @return the skew-based ordinate comparator
-     */
-    public static Comparator<TextLine> byOrdinate (final Skew skew)
-    {
-        return new Comparator<TextLine>()
-        {
-            @Override
-            public int compare (TextLine line1,
-                                TextLine line2)
-            {
-                return Double.compare(
-                        line1.getDskOrigin(skew).getY(),
-                        line2.getDskOrigin(skew).getY());
-            }
-        };
     }
 
     //------//
@@ -236,7 +188,7 @@ public class TextLine
      */
     public List<TextChar> getChars ()
     {
-        List<TextChar> chars = new ArrayList<TextChar>();
+        List<TextChar> chars = new ArrayList<>();
 
         for (TextWord word : words) {
             chars.addAll(word.getChars());
@@ -393,6 +345,19 @@ public class TextLine
         return role;
     }
 
+    //---------//
+    // setRole //
+    //---------//
+    /**
+     * Assign role information.
+     *
+     * @param role the role to set
+     */
+    public void setRole (TextRole role)
+    {
+        this.role = role;
+    }
+
     //----------//
     // getValue //
     //----------//
@@ -434,7 +399,7 @@ public class TextLine
      */
     public List<Glyph> getWordGlyphs ()
     {
-        List<Glyph> glyphs = new ArrayList<Glyph>(words.size());
+        List<Glyph> glyphs = new ArrayList<>(words.size());
 
         for (TextWord word : words) {
             Glyph glyph = word.getGlyph();
@@ -491,9 +456,27 @@ public class TextLine
     //-------------//
     // isProcessed //
     //-------------//
+    /**
+     * Tell whether this line has already beet processed.
+     *
+     * @return true if so
+     */
     public boolean isProcessed ()
     {
         return processed;
+    }
+
+    //--------------//
+    // setProcessed //
+    //--------------//
+    /**
+     * Set the processed flag for this line
+     *
+     * @param processed true if processed
+     */
+    public void setProcessed (boolean processed)
+    {
+        this.processed = processed;
     }
 
     //-------------//
@@ -510,27 +493,6 @@ public class TextLine
             this.words.removeAll(words);
             invalidateCache();
         }
-    }
-
-    //--------------//
-    // setProcessed //
-    //--------------//
-    public void setProcessed (boolean processed)
-    {
-        this.processed = processed;
-    }
-
-    //---------//
-    // setRole //
-    //---------//
-    /**
-     * Assign role information.
-     *
-     * @param role the role to set
-     */
-    public void setRole (TextRole role)
-    {
-        this.role = role;
     }
 
     //-----------//
@@ -582,5 +544,47 @@ public class TextLine
 
         role = null;
         meanFont = null;
+    }
+
+    /**
+     * Give a Line comparator by de-skewed abscissa.
+     *
+     * @param skew the global sheet skew
+     * @return the skew-based abscissa comparator
+     */
+    public static Comparator<TextLine> byAbscissa (final Skew skew)
+    {
+        return new Comparator<TextLine>()
+        {
+            @Override
+            public int compare (TextLine line1,
+                                TextLine line2)
+            {
+                return Double.compare(
+                        line1.getDskOrigin(skew).getX(),
+                        line2.getDskOrigin(skew).getX());
+            }
+        };
+    }
+
+    /**
+     * Give a Line comparator by de-skewed ordinate.
+     *
+     * @param skew the global sheet skew
+     * @return the skew-based ordinate comparator
+     */
+    public static Comparator<TextLine> byOrdinate (final Skew skew)
+    {
+        return new Comparator<TextLine>()
+        {
+            @Override
+            public int compare (TextLine line1,
+                                TextLine line2)
+            {
+                return Double.compare(
+                        line1.getDskOrigin(skew).getY(),
+                        line2.getDskOrigin(skew).getY());
+            }
+        };
     }
 }

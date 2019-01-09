@@ -28,8 +28,6 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.NeuralNetwork;
 
-import org.deeplearning4j.optimize.api.IterationListener;
-
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
@@ -64,7 +62,6 @@ import javax.xml.bind.annotation.XmlValue;
 public class BasicClassifier
         extends AbstractClassifier<NeuralNetwork>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -79,14 +76,12 @@ public class BasicClassifier
     /** Model entry name. */
     public static final String MODEL_ENTRY_NAME = "model.xml";
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying (old) neural network. */
     private NeuralNetwork model;
 
     /** Training listener, if any. */
     private TrainingMonitor listener;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Private constructor, to create a glyph neural network.
      */
@@ -102,7 +97,6 @@ public class BasicClassifier
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -151,9 +145,9 @@ public class BasicClassifier
     // addListener //
     //-------------//
     @Override
-    public void addListener (IterationListener listener)
+    public void addListener (TrainingMonitor listener)
     {
-        this.listener = (TrainingMonitor) listener;
+        this.listener = listener;
     }
 
     //-----------------------//
@@ -184,8 +178,7 @@ public class BasicClassifier
         return evals;
     }
 
-    @Override
-    public void removeListener (IterationListener listener)
+    public void removeListener (TrainingMonitor listener)
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -379,14 +372,12 @@ public class BasicClassifier
         features.diviRowVector(norms.stds);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio amplitude = new Constant.Ratio(
                 0.5,
@@ -408,15 +399,12 @@ public class BasicClassifier
     @XmlRootElement(name = "features")
     private static class FeatureNames
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static volatile JAXBContext jaxbContext;
 
-        //~ Instance fields ------------------------------------------------------------------------
         @XmlElement(name = "names")
         private final StringArray names;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public FeatureNames (String[] strs)
         {
             names = new StringArray(strs);
@@ -428,7 +416,6 @@ public class BasicClassifier
             this.names = null;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         private static JAXBContext getJaxbContext ()
                 throws JAXBException
         {
@@ -446,12 +433,10 @@ public class BasicClassifier
     //-------------//
     private static class StringArray
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlValue
         String[] strings;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public StringArray ()
         {
         }

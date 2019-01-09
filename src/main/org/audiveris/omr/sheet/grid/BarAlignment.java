@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.grid;
 
-import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.util.VerticalSide;
 
@@ -37,7 +36,6 @@ import java.util.Objects;
 public class BarAlignment
         implements Comparable<BarAlignment>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Bar peak in the upper staff. */
     protected final StaffPeak topPeak;
@@ -57,7 +55,6 @@ public class BarAlignment
     /** Alignment grade. */
     protected double grade;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarAlignment object.
      *
@@ -80,44 +77,6 @@ public class BarAlignment
         this.impacts = impacts;
 
         grade = impacts.getGrade();
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // bestOf //
-    //--------//
-    /**
-     * Report the best (connection or alignment) among the provided collection.
-     *
-     * @param alignments the collection to filter
-     * @param side       which side of alignment to consider
-     * @return the best one, or null if collection is empty
-     */
-    public static BarAlignment bestOf (Collection<? extends BarAlignment> alignments,
-                                       VerticalSide side)
-    {
-        BarAlignment best = null;
-        double bestCtxGrade = 0;
-
-        for (final BarAlignment align : alignments) {
-            final StaffPeak partner = (side == VerticalSide.TOP) ? align.topPeak : align.bottomPeak;
-            final double ctxGrade = align.getGrade() * partner.getImpacts().getGrade();
-
-            if (best == null) {
-                best = align;
-                bestCtxGrade = ctxGrade;
-            } else if (best instanceof BarConnection) {
-                if (align instanceof BarConnection && (ctxGrade > bestCtxGrade)) {
-                    best = align;
-                    bestCtxGrade = ctxGrade;
-                }
-            } else if (align instanceof BarConnection || (ctxGrade > bestCtxGrade)) {
-                best = align;
-                bestCtxGrade = ctxGrade;
-            }
-        }
-
-        return best;
     }
 
     //-----------//
@@ -164,6 +123,11 @@ public class BarAlignment
     //----------//
     // getGrade //
     //----------//
+    /**
+     * Report quality of this alignment.
+     *
+     * @return alignment grade value
+     */
     public double getGrade ()
     {
         return grade;
@@ -172,6 +136,11 @@ public class BarAlignment
     //------------//
     // getImpacts //
     //------------//
+    /**
+     * Report evaluation details.
+     *
+     * @return the grade detailed impacts
+     */
     public GradeImpacts getImpacts ()
     {
         return impacts;
@@ -180,6 +149,12 @@ public class BarAlignment
     //---------//
     // getPeak //
     //---------//
+    /**
+     * Report the peak on desired vertical side of this peak alignment.
+     *
+     * @param side desired vertical side
+     * @return top or bottom peak
+     */
     public StaffPeak getPeak (VerticalSide side)
     {
         if (side == VerticalSide.TOP) {
@@ -221,6 +196,11 @@ public class BarAlignment
     //-----------//
     // internals //
     //-----------//
+    /**
+     * String description of internals.
+     *
+     * @return description of internals
+     */
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder();
@@ -230,20 +210,63 @@ public class BarAlignment
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------//
+    // bestOf //
+    //--------//
+    /**
+     * Report the best (connection or alignment) among the provided collection.
+     *
+     * @param alignments the collection to filter
+     * @param side       which side of alignment to consider
+     * @return the best one, or null if collection is empty
+     */
+    public static BarAlignment bestOf (Collection<? extends BarAlignment> alignments,
+                                       VerticalSide side)
+    {
+        BarAlignment best = null;
+        double bestCtxGrade = 0;
+
+        for (final BarAlignment align : alignments) {
+            final StaffPeak partner = (side == VerticalSide.TOP) ? align.topPeak : align.bottomPeak;
+            final double ctxGrade = align.getGrade() * partner.getImpacts().getGrade();
+
+            if (best == null) {
+                best = align;
+                bestCtxGrade = ctxGrade;
+            } else if (best instanceof BarConnection) {
+                if (align instanceof BarConnection && (ctxGrade > bestCtxGrade)) {
+                    best = align;
+                    bestCtxGrade = ctxGrade;
+                }
+            } else if (align instanceof BarConnection || (ctxGrade > bestCtxGrade)) {
+                best = align;
+                bestCtxGrade = ctxGrade;
+            }
+        }
+
+        return best;
+    }
+
     //---------//
     // Impacts //
     //---------//
+    /**
+     * Evaluation details.
+     */
     public static class Impacts
-            extends BasicImpacts
+            extends GradeImpacts
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{"align", "dWidth"};
 
         private static final double[] WEIGHTS = new double[]{2, 1};
 
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create Impacts.
+         *
+         * @param align  alignment contribution
+         * @param dWidth width contribution
+         */
         public Impacts (double align,
                         double dWidth)
         {
@@ -252,12 +275,21 @@ public class BarAlignment
             setImpact(1, dWidth);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Report contribution of alignment.
+         *
+         * @return impact of alignment
+         */
         public double getAlignImpact ()
         {
             return impacts[0];
         }
 
+        /**
+         * Report contribution of width.
+         *
+         * @return impact of width
+         */
         public double getWidthImpact ()
         {
             return impacts[1];

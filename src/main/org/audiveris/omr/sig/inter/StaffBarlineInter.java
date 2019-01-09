@@ -76,21 +76,18 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "staff-barline")
-public class StaffBarlineInter
+public final class StaffBarlineInter
         extends AbstractInter
         implements InterEnsemble
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StaffBarlineInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     // Transient data
     //---------------
     //
     private Style style;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StaffBarlineInter} object from a shape.
      *
@@ -150,7 +147,6 @@ public class StaffBarlineInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -177,6 +173,12 @@ public class StaffBarlineInter
     //----------//
     // contains //
     //----------//
+    /**
+     * Tell whether this StaffBarlineInter contains the provided barline.
+     *
+     * @param barline provided barline
+     * @return true if so
+     */
     public boolean contains (BarlineInter barline)
     {
         return sig.getRelation(this, barline, Containment.class) != null;
@@ -193,35 +195,6 @@ public class StaffBarlineInter
         }
 
         return new Rectangle(bounds);
-    }
-
-    //------------------------//
-    // getClosestStaffBarline //
-    //------------------------//
-    /**
-     * From a provided StaffBarline collection, report the one which has the closest
-     * abscissa to a provided point.
-     *
-     * @param bars  the collection of StaffBarlineInter to browse
-     * @param point the reference point
-     * @return the abscissa-wise closest barline
-     */
-    public static StaffBarlineInter getClosestStaffBarline (Collection<StaffBarlineInter> bars,
-                                                            Point point)
-    {
-        StaffBarlineInter bestBar = null;
-        int bestDx = Integer.MAX_VALUE;
-
-        for (StaffBarlineInter bar : bars) {
-            int dx = Math.abs(bar.getCenter().x - point.x);
-
-            if (dx < bestDx) {
-                bestDx = dx;
-                bestBar = bar;
-            }
-        }
-
-        return bestBar;
     }
 
     //-----------//
@@ -279,7 +252,7 @@ public class StaffBarlineInter
 
             for (Relation rel : sig.getRelations(bar, FermataBarRelation.class)) {
                 if (fermatas == null) {
-                    fermatas = new LinkedHashSet<FermataInter>();
+                    fermatas = new LinkedHashSet<>();
                 }
 
                 fermatas.add((FermataInter) sig.getOppositeInter(bar, rel));
@@ -290,7 +263,7 @@ public class StaffBarlineInter
             // Use of direct relation
             for (Relation rel : sig.getRelations(this, FermataBarRelation.class)) {
                 if (fermatas == null) {
-                    fermatas = new LinkedHashSet<FermataInter>();
+                    fermatas = new LinkedHashSet<>();
                 }
 
                 fermatas.add((FermataInter) sig.getOppositeInter(this, rel));
@@ -307,6 +280,11 @@ public class StaffBarlineInter
     //------------//
     // getLeftBar //
     //------------//
+    /**
+     * Report the starting Barline in this StaffBarlineInter.
+     *
+     * @return first barline
+     */
     public BarlineInter getLeftBar ()
     {
         final List<Inter> bars = getMembers();
@@ -343,6 +321,11 @@ public class StaffBarlineInter
     //------------//
     // getMeasure //
     //------------//
+    /**
+     * Report the containing measure.
+     *
+     * @return containing measure
+     */
     public Measure getMeasure ()
     {
         getPart();
@@ -376,6 +359,11 @@ public class StaffBarlineInter
     //--------------//
     // getMiddleBar //
     //--------------//
+    /**
+     * Report the middle barline if any.
+     *
+     * @return middle barline or null
+     */
     public BarlineInter getMiddleBar ()
     {
         final List<Inter> bars = getMembers();
@@ -480,7 +468,7 @@ public class StaffBarlineInter
         for (Inter bar : bars) {
             for (Relation rel : sig.getRelations(bar, relationClass)) {
                 if (related == null) {
-                    related = new ArrayList<Inter>();
+                    related = new ArrayList<>();
                 }
 
                 related.add(sig.getOppositeInter(bar, rel));
@@ -490,7 +478,7 @@ public class StaffBarlineInter
         if (bars.isEmpty()) {
             for (Relation rel : sig.getRelations(this, relationClass)) {
                 if (related == null) {
-                    related = new ArrayList<Inter>();
+                    related = new ArrayList<>();
                 }
 
                 related.add(sig.getOppositeInter(this, rel));
@@ -507,6 +495,11 @@ public class StaffBarlineInter
     //-------------//
     // getRightBar //
     //-------------//
+    /**
+     * report the stopping barline
+     *
+     * @return last barline in StaffBarline
+     */
     public BarlineInter getRightBar ()
     {
         final List<Inter> bars = getMembers();
@@ -543,6 +536,11 @@ public class StaffBarlineInter
     //----------//
     // getStyle //
     //----------//
+    /**
+     * Report the StaffBarline style.
+     *
+     * @return style (like LIGHT_HEAVY, ...) in line with MusicXML definitions
+     */
     public Style getStyle ()
     {
         if (style == null) {
@@ -562,7 +560,7 @@ public class StaffBarlineInter
      */
     public List<PartBarline> getSystemBarline ()
     {
-        final List<PartBarline> systemBarline = new ArrayList<PartBarline>();
+        final List<PartBarline> systemBarline = new ArrayList<>();
         Measure measure = getMeasure();
 
         // Measure barline?
@@ -613,6 +611,11 @@ public class StaffBarlineInter
     //---------------//
     // hasDotsOnLeft //
     //---------------//
+    /**
+     * Tell whether there are repeat dots on the left side of this bar.
+     *
+     * @return true if so
+     */
     public boolean hasDotsOnLeft ()
     {
         if ((shape == Shape.RIGHT_REPEAT_SIGN) || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
@@ -638,6 +641,11 @@ public class StaffBarlineInter
     //----------------//
     // hasDotsOnRight //
     //----------------//
+    /**
+     * Tell whether there are repeat dots on the right side of this bar.
+     *
+     * @return true if so
+     */
     public boolean hasDotsOnRight ()
     {
         if ((shape == Shape.LEFT_REPEAT_SIGN) || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
@@ -688,19 +696,29 @@ public class StaffBarlineInter
     //--------------//
     // isLeftRepeat //
     //--------------//
+    /**
+     * Tell whether this barline is a measure left repeat (dots on right of barline).
+     *
+     * @return true if so
+     */
     public boolean isLeftRepeat ()
     {
         return ((getStyle() == HEAVY_LIGHT) || (getStyle() == LIGHT_HEAVY_LIGHT))
-               && hasDotsOnRight();
+                       && hasDotsOnRight();
     }
 
     //---------------//
     // isRightRepeat //
     //---------------//
+    /**
+     * Tell whether this barline is a measure right repeat (dots on left of barline).
+     *
+     * @return true if so
+     */
     public boolean isRightRepeat ()
     {
         return ((getStyle() == LIGHT_HEAVY) || (getStyle() == LIGHT_HEAVY_LIGHT))
-               && hasDotsOnLeft();
+                       && hasDotsOnLeft();
     }
 
     //--------------//
@@ -760,9 +778,9 @@ public class StaffBarlineInter
 
         case 3:
 
-            if ((getLeftBar().getShape() == Shape.THIN_BARLINE)
-                && (getMiddleBar().getShape() == Shape.THICK_BARLINE)
-                && (getRightBar().getShape() == Shape.THIN_BARLINE)) {
+            if ((getLeftBar().getShape() == Shape.THIN_BARLINE) && (getMiddleBar()
+                    .getShape() == Shape.THICK_BARLINE)
+                        && (getRightBar().getShape() == Shape.THIN_BARLINE)) {
                 return LIGHT_HEAVY_LIGHT;
             }
 
@@ -808,5 +826,34 @@ public class StaffBarlineInter
 
             return null;
         }
+    }
+
+    //------------------------//
+    // getClosestStaffBarline //
+    //------------------------//
+    /**
+     * From a provided StaffBarline collection, report the one which has the closest
+     * abscissa to a provided point.
+     *
+     * @param bars  the collection of StaffBarlineInter to browse
+     * @param point the reference point
+     * @return the abscissa-wise closest barline
+     */
+    public static StaffBarlineInter getClosestStaffBarline (Collection<StaffBarlineInter> bars,
+                                                            Point point)
+    {
+        StaffBarlineInter bestBar = null;
+        int bestDx = Integer.MAX_VALUE;
+
+        for (StaffBarlineInter bar : bars) {
+            int dx = Math.abs(bar.getCenter().x - point.x);
+
+            if (dx < bestDx) {
+                bestDx = dx;
+                bestBar = bar;
+            }
+        }
+
+        return bestBar;
     }
 }

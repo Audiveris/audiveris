@@ -44,7 +44,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class MarkerInter
         extends AbstractInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code MarkerInter} object.
@@ -83,7 +82,6 @@ public class MarkerInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -91,6 +89,29 @@ public class MarkerInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //----------------------//
+    // linkWithStaffBarline //
+    //----------------------//
+    /**
+     * (Try to) connect this marker with a suitable StaffBarline.
+     *
+     * @return true if successful
+     */
+    public boolean linkWithStaffBarline ()
+    {
+        Point center = getCenter();
+        List<StaffBarlineInter> staffBars = getStaff().getStaffBarlines();
+        StaffBarlineInter staffBar = StaffBarlineInter.getClosestStaffBarline(staffBars, center);
+
+        if ((staffBar != null) && (GeoUtil.xOverlap(getBounds(), staffBar.getBounds()) > 0)) {
+            sig.addEdge(this, staffBar, new MarkerBarRelation());
+
+            return true;
+        }
+
+        return false;
     }
 
     //--------//
@@ -139,30 +160,5 @@ public class MarkerInter
         marker.setStaff(staff);
 
         return marker;
-    }
-
-    //----------------------//
-    // linkWithStaffBarline //
-    //----------------------//
-    /**
-     * (Try to) connect this marker with a suitable StaffBarline.
-     *
-     * @return true if successful
-     */
-    public boolean linkWithStaffBarline ()
-    {
-        Point center = getCenter();
-        List<StaffBarlineInter> staffBars = getStaff().getStaffBarlines();
-        StaffBarlineInter staffBar = StaffBarlineInter.getClosestStaffBarline(
-                staffBars,
-                center);
-
-        if ((staffBar != null) && (GeoUtil.xOverlap(getBounds(), staffBar.getBounds()) > 0)) {
-            sig.addEdge(this, staffBar, new MarkerBarRelation());
-
-            return true;
-        }
-
-        return false;
     }
 }

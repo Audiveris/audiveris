@@ -30,11 +30,12 @@ import java.awt.Stroke;
 
 /**
  * Class {@code DecrescendoSymbol} displays a decrescendo symbol: {@literal ">"}.
+ *
+ * @author Hervé Bitteur
  */
 public class DecrescendoSymbol
         extends CrescendoSymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new DecrescendoSymbol object.
@@ -48,7 +49,6 @@ public class DecrescendoSymbol
         super(isIcon, shape);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//

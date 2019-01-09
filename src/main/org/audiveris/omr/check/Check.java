@@ -32,9 +32,10 @@ import org.slf4j.LoggerFactory;
  * Class {@code Check} encapsulates the <b>definition</b> of a check,
  * which can later be used on a whole population of objects.
  * <p>
- * Checks are generally gathered in {@link CheckSuite} instances. </p>
+ * Checks are generally gathered in {@link CheckSuite} instances.
  * <p>
- * The strategy is the following:<ul>
+ * The strategy is the following:
+ * <ul>
  * <li>A successful individual check may eventually result in an interpretation checked object (if
  * the suite of checks ends with an acceptable grade).</li>
  * <li>Any failed individual check triggers the immediate end of the containing suite but records
@@ -42,16 +43,13 @@ import org.slf4j.LoggerFactory;
  * </ul>
  *
  * @param <C> precise type of the objects to be checked
- *
  * @author Hervé Bitteur
  */
 public abstract class Check<C>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Check.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Specifies the Failure to be assigned to the Checkable object,
      * when the result of this individual check is not acceptable.
@@ -73,7 +71,6 @@ public abstract class Check<C>
     /** Covariant: higher is better, contravariant: lower is better. */
     private final boolean covariant;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Check object.
      *
@@ -121,7 +118,6 @@ public abstract class Check<C>
         this(name, description, new NamedDouble(low), new NamedDouble(high), covariant, redResult);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getDescription //
     //----------------//
@@ -298,7 +294,6 @@ public abstract class Check<C>
      * proper data value from the given object passed as a parameter.
      *
      * @param obj the object to be checked
-     *
      * @return the data value relevant for the check
      */
     protected abstract double getValue (C obj);
@@ -316,7 +311,6 @@ public abstract class Check<C>
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Grade //
     //-------//
@@ -326,7 +320,6 @@ public abstract class Check<C>
     public static class Grade
             extends Constant.Double
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later

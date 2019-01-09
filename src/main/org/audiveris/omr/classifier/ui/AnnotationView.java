@@ -37,13 +37,11 @@ import java.awt.Graphics2D;
 public class AnnotationView
         extends EntityView<Annotation>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Containing sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AnnotationView} object.
      *
@@ -62,7 +60,6 @@ public class AnnotationView
         setName("AnnotationView");
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // render //
     //--------//

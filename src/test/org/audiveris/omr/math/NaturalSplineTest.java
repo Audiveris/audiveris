@@ -15,7 +15,6 @@ import org.junit.Test;
 public class NaturalSplineTest
         extends BaseTestCase
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new NaturalSplineTest object.
@@ -24,7 +23,6 @@ public class NaturalSplineTest
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of interpolate method, of class NaturalSpline.
      */

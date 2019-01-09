@@ -34,18 +34,16 @@ import javax.media.jai.WarpGrid;
 
 /**
  * Class {@code JaiDewarper} is meant to keep JAI-based de-warping features separate
- * from the rest of Audiveris application, and thus saving on jar download.
+ * from the rest of Audiveris application, and thus save on jar download.
  *
  * @author Hervé Bitteur
  */
 public class JaiDewarper
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The dewarp grid. */
     private Warp dewarpGrid;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new JaiDewarper object.
      */
@@ -53,11 +51,18 @@ public class JaiDewarper
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //
     //----------------//
     // createWarpGrid //
     //----------------//
+    /**
+     * @param xStart        starting abscissa
+     * @param xStep         cell width
+     * @param xNumCells     horizontal number of cells
+     * @param yStart        starting ordinate
+     * @param yStep         cell height
+     * @param yNumCells     vertical number of cells
+     * @param warpPositions all source (warped) positions as a flat array of (x, y) float values
+     */
     public void createWarpGrid (int xStart,
                                 int xStep,
                                 int xNumCells,
@@ -79,6 +84,12 @@ public class JaiDewarper
     //-------------//
     // dewarpImage //
     //-------------//
+    /**
+     * Actually de-warp the provided image.
+     *
+     * @param image the provided (warped) image
+     * @return a de-warped version of input image
+     */
     public BufferedImage dewarpImage (BufferedImage image)
     {
         assert dewarpGrid != null : "dewarpGrid not defined";

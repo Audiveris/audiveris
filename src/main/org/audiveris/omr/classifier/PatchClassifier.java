@@ -30,15 +30,17 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.util.UriUtil;
 import org.audiveris.omr.util.Wrapper;
 import org.audiveris.omrdataset.api.OmrShape;
+
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.modelimport.keras.KerasModelImport;
+
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
@@ -47,6 +49,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 /**
  * Class {@code PatchClassifier} is the first shot of a patch classifier.
@@ -59,7 +63,6 @@ import java.util.List;
  */
 public class PatchClassifier
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PatchClassifier.class);
 
@@ -87,13 +90,11 @@ public class PatchClassifier
     /** The singleton. */
     private static volatile PatchClassifier INSTANCE;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying network.
      * To my knowledge, the ComputationGraph would better fit our needs.
      */
     private final ComputationGraph model;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Private constructor to create a classifier from a existing model.
      */
@@ -103,7 +104,6 @@ public class PatchClassifier
         model = load(FILE_NAME);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//

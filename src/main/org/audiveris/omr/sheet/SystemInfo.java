@@ -89,10 +89,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class SystemInfo
         implements Comparable<SystemInfo>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SystemInfo.class);
+    private static final Logger logger = LoggerFactory.getLogger(SystemInfo.class);
 
     /** To sort by system id. */
     public static final Comparator<SystemInfo> byId = new Comparator<SystemInfo>()
@@ -105,8 +103,6 @@ public class SystemInfo
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
@@ -121,17 +117,18 @@ public class SystemInfo
 
     /** Horizontal sequence of measure stacks in this system. */
     @XmlElement(name = "stack")
-    private final List<MeasureStack> stacks = new ArrayList<MeasureStack>();
+    private final List<MeasureStack> stacks = new ArrayList<>();
 
     /** Vertical sequence of real parts in this system (no dummy parts included). */
     @XmlElement(name = "part")
-    private final List<Part> parts = new ArrayList<Part>();
+    private final List<Part> parts = new ArrayList<>();
 
     /** PartGroups in this system. */
     @XmlElement(name = "part-group")
-    private final List<PartGroup> partGroups = new ArrayList<PartGroup>();
+    private final List<PartGroup> partGroups = new ArrayList<>();
 
-    /** Collection of stand-alone glyphs in this system.
+    /**
+     * Collection of stand-alone glyphs in this system.
      * This should be limited to glyphs not referenced elsewhere, to avoid garbage collection.
      */
     @XmlList
@@ -154,16 +151,16 @@ public class SystemInfo
     private Sheet sheet;
 
     /** Real staves of this system (no dummy staves included). */
-    private List<Staff> staves = new ArrayList<Staff>();
+    private List<Staff> staves = new ArrayList<>();
 
     /** Assigned page, if any. */
     private Page page;
 
     /** Horizontal sections. */
-    private final List<Section> hSections = new ArrayList<Section>();
+    private final List<Section> hSections = new ArrayList<>();
 
     /** Vertical sections. */
-    private final List<Section> vSections = new ArrayList<Section>();
+    private final List<Section> vSections = new ArrayList<>();
 
     /** Area that encloses all items related to this system. */
     private Area area;
@@ -189,7 +186,6 @@ public class SystemInfo
     /** Width of the system. */
     private int width = -1;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a SystemInfo entity, to register the provided parameters.
      *
@@ -218,7 +214,6 @@ public class SystemInfo
         this.id = 0;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // addFreeGlyph //
     //--------------//
@@ -230,7 +225,7 @@ public class SystemInfo
     public void addFreeGlyph (Glyph glyph)
     {
         if (freeGlyphs == null) {
-            freeGlyphs = new LinkedHashSet<Glyph>();
+            freeGlyphs = new LinkedHashSet<>();
         }
 
         freeGlyphs.add(glyph);
@@ -280,6 +275,9 @@ public class SystemInfo
     //-------------//
     // afterReload //
     //-------------//
+    /**
+     * To be called right after unmarshalling.
+     */
     public void afterReload ()
     {
         try {
@@ -311,7 +309,7 @@ public class SystemInfo
                 }
 
                 if (upgraded) {
-                    sheet.getStub().setModified(true);
+                    sheet.getStub().setUpgraded(true);
                 }
             }
 
@@ -428,9 +426,28 @@ public class SystemInfo
         return area;
     }
 
+    //---------//
+    // setArea //
+    //---------//
+    /**
+     * Assign the system area.
+     *
+     * @param area the underlying system area
+     */
+    public void setArea (Area area)
+    {
+        this.area = area;
+    }
+
     //------------//
     // getAreaEnd //
     //------------//
+    /**
+     * Report area side abscissa.
+     *
+     * @param side desired side
+     * @return abscissa value
+     */
     public int getAreaEnd (HorizontalSide side)
     {
         if (side == LEFT) {
@@ -583,7 +600,7 @@ public class SystemInfo
      */
     public List<Glyph> getGroupedGlyphs (GlyphGroup group)
     {
-        List<Glyph> found = new ArrayList<Glyph>();
+        List<Glyph> found = new ArrayList<>();
 
         if (freeGlyphs != null) {
             for (Glyph glyph : freeGlyphs) {
@@ -627,6 +644,11 @@ public class SystemInfo
     //----------------//
     // getIndexInPage //
     //----------------//
+    /**
+     * Report 0-based index of this system within containing page.
+     *
+     * @return index in page
+     */
     public int getIndexInPage ()
     {
         return getPage().getSystems().indexOf(this);
@@ -764,8 +786,8 @@ public class SystemInfo
                 if (otherPos.getLedger() != null) {
                     // Delta pitch from closest reference ledger
                     double otherDp = Math.abs(
-                            otherPos.getPitchPosition()
-                            - Staff.getLedgerPitchPosition(otherPos.getLedger().index));
+                            otherPos.getPitchPosition() - Staff.getLedgerPitchPosition(
+                            otherPos.getLedger().index));
 
                     if (otherDp < dp) {
                         logger.debug("   otherPos: {}", pos);
@@ -789,6 +811,19 @@ public class SystemInfo
     public Page getPage ()
     {
         return page;
+    }
+
+    //---------//
+    // setPage //
+    //---------//
+    /**
+     * Assign the containing page.
+     *
+     * @param page the containing page
+     */
+    public void setPage (Page page)
+    {
+        this.page = page;
     }
 
     //------------------//
@@ -972,9 +1007,8 @@ public class SystemInfo
         for (MeasureStack stack : stacks) {
             final Measure measure = stack.getMeasureAt(staff);
 
-            if ((measure != null)
-                && (x >= measure.getAbscissa(LEFT, staff))
-                && (x <= measure.getAbscissa(RIGHT, staff))) {
+            if ((measure != null) && (x >= measure.getAbscissa(LEFT, staff)) && (x <= measure
+                    .getAbscissa(RIGHT, staff))) {
                 return stack;
             }
         }
@@ -996,6 +1030,13 @@ public class SystemInfo
     //-------------------//
     // getStaffAtOrAbove //
     //-------------------//
+    /**
+     * Report the staff (within this system) which either embraces or is above the
+     * provided point.
+     *
+     * @param point provided point
+     * @return staff here or above (within system), null otherwise
+     */
     public Staff getStaffAtOrAbove (Point2D point)
     {
         final Staff closest = getClosestStaff(point);
@@ -1024,6 +1065,13 @@ public class SystemInfo
     //-------------------//
     // getStaffAtOrBelow //
     //-------------------//
+    /**
+     * Report the staff (within this system) which either embraces or is below the
+     * provided point.
+     *
+     * @param point provided point
+     * @return staff here or below (within system), null otherwise
+     */
     public Staff getStaffAtOrBelow (Point2D point)
     {
         final Staff closest = getClosestStaff(point);
@@ -1083,6 +1131,23 @@ public class SystemInfo
     public List<Staff> getStaves ()
     {
         return staves;
+    }
+
+    //-----------//
+    // setStaves //
+    //-----------//
+    /**
+     * @param staves the range of staves
+     */
+    public final void setStaves (List<Staff> staves)
+    {
+        this.staves = staves;
+
+        for (Staff staff : staves) {
+            staff.setSystem(this);
+        }
+
+        updateCoordinates();
     }
 
     //-----------------//
@@ -1183,7 +1248,8 @@ public class SystemInfo
     public int hashCode ()
     {
         int hash = 7;
-        hash = 67 * hash + this.id;
+        hash = (67 * hash) + this.id;
+
         return hash;
     }
 
@@ -1191,11 +1257,24 @@ public class SystemInfo
     // isIndented //
     //------------//
     /**
-     * @return the indented
+     * Report whether this system is indented, WRT other systems in sheet.
+     *
+     * @return true if indented
      */
     public boolean isIndented ()
     {
         return indented;
+    }
+
+    //-------------//
+    // setIndented //
+    //-------------//
+    /**
+     * @param indented the indented to set
+     */
+    public void setIndented (boolean indented)
+    {
+        this.indented = indented;
     }
 
     //--------------//
@@ -1310,17 +1389,15 @@ public class SystemInfo
         stacks.remove(stack);
     }
 
-    //---------//
-    // setArea //
-    //---------//
-    public void setArea (Area area)
-    {
-        this.area = area;
-    }
-
     //------------//
     // setAreaEnd //
     //------------//
+    /**
+     * Set the abscissa value of the area side
+     *
+     * @param side desired side
+     * @param x    side abscissa value
+     */
     public void setAreaEnd (HorizontalSide side,
                             int x)
     {
@@ -1331,37 +1408,12 @@ public class SystemInfo
         }
     }
 
-    //-------------//
-    // setIndented //
-    //-------------//
-    /**
-     * @param indented the indented to set
-     */
-    public void setIndented (boolean indented)
-    {
-        this.indented = indented;
-    }
-
-    //-----------//
-    // setStaves //
-    //-----------//
-    /**
-     * @param staves the range of staves
-     */
-    public final void setStaves (List<Staff> staves)
-    {
-        this.staves = staves;
-
-        for (Staff staff : staves) {
-            staff.setSystem(this);
-        }
-
-        updateCoordinates();
-    }
-
     //-------------------//
     // updateCoordinates //
     //-------------------//
+    /**
+     *
+     */
     public final void updateCoordinates ()
     {
         try {
@@ -1392,42 +1444,6 @@ public class SystemInfo
         }
     }
 
-    //---------//
-    // setPage //
-    //---------//
-    public void setPage (Page page)
-    {
-        this.page = page;
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Convenient method, to build a string with just the IDs of the system collection.
-     *
-     * @param systems the collection of systems
-     * @return the string built
-     */
-    public static String toString (Collection<SystemInfo> systems)
-    {
-        if (systems == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(" systems[");
-
-        for (SystemInfo system : systems) {
-            sb.append("#").append(system.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
-    //
     //    //-------------//
     //    // swapVoiceId //
     //    //-------------//
@@ -1514,5 +1530,32 @@ public class SystemInfo
     {
         this.sheet = sheet;
         this.page = page;
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Convenient method, to build a string with just the IDs of the system collection.
+     *
+     * @param systems the collection of systems
+     * @return the string built
+     */
+    public static String toString (Collection<SystemInfo> systems)
+    {
+        if (systems == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(" systems[");
+
+        for (SystemInfo system : systems) {
+            sb.append("#").append(system.getId());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
     }
 }

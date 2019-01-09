@@ -36,14 +36,12 @@ import java.util.Collection;
  *
  * @author Hervé Bitteur
  */
-public class BasicLine
+public final class BasicLine
         implements Line
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BasicLine.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Flag to indicate that data needs to be recomputed. */
     private boolean dirty;
 
@@ -89,7 +87,6 @@ public class BasicLine
     /** Maximum ordinate among all defining points. */
     private double yMax = Double.MIN_VALUE;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a line, with no data.
      * The line is no yet usable, except for including further defining points.
@@ -157,7 +154,6 @@ public class BasicLine
         checkLineParameters();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------------//
     // checkLineParameters //
     //---------------------//
@@ -192,6 +188,12 @@ public class BasicLine
     //------------//
     // distanceOf //
     //------------//
+    /**
+     * Report the algebraic distance from the provided Point2D to the line.
+     *
+     * @param point the provided point
+     * @return the algebraic distance
+     */
     public double distanceOf (Point2D point)
     {
         return distanceOf(point.getX(), point.getY());
@@ -252,8 +254,10 @@ public class BasicLine
 
         checkLineParameters();
 
-        double distSq = ((a * a * sx2) + (b * b * sy2) + (c * c * n) + (2 * a * b * sxy)
-                         + (2 * a * c * sx) + (2 * b * c * sy)) / n;
+        double distSq = ((a * a * sx2) + (b * b * sy2) + (c * c * n) + (2 * a * b * sxy) + (2 * a
+                                                                                                    * c
+                                                                                            * sx)
+                                 + (2 * b * c * sy)) / n;
 
         if (distSq < 0) {
             distSq = 0;
@@ -336,6 +340,11 @@ public class BasicLine
     //--------------//
     // includePoint //
     //--------------//
+    /**
+     * Add a defining point to the line.
+     *
+     * @param point the point to include
+     */
     public void includePoint (Point2D point)
     {
         includePoint(point.getX(), point.getY());
@@ -554,36 +563,6 @@ public class BasicLine
         return yAtX(x);
     }
 
-    //------//
-    // getA // Meant for test
-    //------//
-    double getA ()
-    {
-        checkLineParameters();
-
-        return a;
-    }
-
-    //------//
-    // getB // Meant for test
-    //------//
-    double getB ()
-    {
-        checkLineParameters();
-
-        return b;
-    }
-
-    //------//
-    // getC // Meant for test
-    //------//
-    double getC ()
-    {
-        checkLineParameters();
-
-        return c;
-    }
-
     //---------//
     // compute //
     //---------//
@@ -633,4 +612,35 @@ public class BasicLine
         b /= norm;
         c /= norm;
     }
+
+    //------//
+    // getA // Meant for test
+    //------//
+    double getA ()
+    {
+        checkLineParameters();
+
+        return a;
+    }
+
+    //------//
+    // getB // Meant for test
+    //------//
+    double getB ()
+    {
+        checkLineParameters();
+
+        return b;
+    }
+
+    //------//
+    // getC // Meant for test
+    //------//
+    double getC ()
+    {
+        checkLineParameters();
+
+        return c;
+    }
+
 }

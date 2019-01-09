@@ -50,7 +50,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "actions")
 public class Actions
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Actions.class);
 
@@ -58,55 +57,17 @@ public class Actions
     private static volatile JAXBContext jaxbContext;
 
     /** The collection of all actions loaded so far. */
-    private static final Set<ActionDescriptor> allDescriptors = new LinkedHashSet<ActionDescriptor>();
+    private static final Set<ActionDescriptor> allDescriptors = new LinkedHashSet<>();
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /**
-     * Predefined list of domain names.
-     * Through the action list files, the user will be able to add new domain names.
-     * This classification is mainly used to define the related pull-down menus.
-     */
-    public static enum Domain
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        /** Domain of file actions */
-        FILE,
-        /** Domain of book actions */
-        BOOK,
-        /** Domain of sheet actions */
-        SHEET,
-        /** Domain of individual steps */
-        STEP,
-        /** Domain of various view features */
-        VIEW,
-        /** Domain of utilities */
-        TOOL,
-        /** Domain of plugins */
-        PLUGIN,
-        /** Domain of help information */
-        HELP;
-        //~ Constructors ---------------------------------------------------------------------------
-
-        Domain ()
-        {
-        }
-    }
-
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** Collection of descriptors loaded by unmarshalling one file. */
     @XmlElement(name = "action")
-    private List<ActionDescriptor> descriptors = new ArrayList<ActionDescriptor>();
+    private final List<ActionDescriptor> descriptors = new ArrayList<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /** No-arg constructor meant for JAXB. */
     private Actions ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //
     //-------------------//
     // getAllDescriptors //
     //-------------------//
@@ -131,7 +92,7 @@ public class Actions
      */
     public static Set<String> getDomainNames ()
     {
-        Set<String> names = new LinkedHashSet<String>();
+        Set<String> names = new LinkedHashSet<>();
 
         // Predefined ones, except HELP
         for (Domain domain : Domain.values()) {
@@ -163,7 +124,7 @@ public class Actions
      */
     public static SortedSet<Integer> getSections ()
     {
-        SortedSet<Integer> sections = new TreeSet<Integer>();
+        SortedSet<Integer> sections = new TreeSet<>();
 
         for (ActionDescriptor desc : allDescriptors) {
             sections.add(desc.section);
@@ -212,10 +173,38 @@ public class Actions
                 logger.warn("No section specified for {}", desc);
                 it.remove();
 
-                continue;
             }
         }
 
         allDescriptors.addAll(actions.descriptors);
+    }
+
+    /**
+     * Predefined list of domain names.
+     * Through the action list files, the user will be able to add new domain names.
+     * This classification is mainly used to define the related pull-down menus.
+     */
+    public static enum Domain
+    {
+        /** Domain of file actions */
+        FILE,
+        /** Domain of book actions */
+        BOOK,
+        /** Domain of sheet actions */
+        SHEET,
+        /** Domain of individual steps */
+        STEP,
+        /** Domain of various view features */
+        VIEW,
+        /** Domain of utilities */
+        TOOL,
+        /** Domain of plugins */
+        PLUGIN,
+        /** Domain of help information */
+        HELP;
+
+        Domain ()
+        {
+        }
     }
 }

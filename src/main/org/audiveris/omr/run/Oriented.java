@@ -28,7 +28,6 @@ package org.audiveris.omr.run;
  */
 public interface Oriented
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report the orientation constant

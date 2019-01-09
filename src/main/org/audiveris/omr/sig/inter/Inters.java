@@ -43,7 +43,6 @@ import java.util.List;
  */
 public abstract class Inters
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /**
      * Comparator to put members first and ensembles last.
@@ -306,7 +305,8 @@ public abstract class Inters
     /**
      * For comparing inter instances by decreasing mean grade.
      */
-    public static final Comparator<Collection<Inter>> byReverseMeanGrade = new Comparator<Collection<Inter>>()
+    public static final Comparator<Collection<Inter>> byReverseMeanGrade
+            = new Comparator<Collection<Inter>>()
     {
         @Override
         public int compare (Collection<Inter> c1,
@@ -319,7 +319,8 @@ public abstract class Inters
     /**
      * For comparing inter instances by decreasing mean contextual grade.
      */
-    public static final Comparator<Collection<Inter>> byReverseMeanContextualGrade = new Comparator<Collection<Inter>>()
+    public static final Comparator<Collection<Inter>> byReverseMeanContextualGrade
+            = new Comparator<Collection<Inter>>()
     {
         @Override
         public int compare (Collection<Inter> c1,
@@ -329,7 +330,11 @@ public abstract class Inters
         }
     };
 
-    //~ Methods ------------------------------------------------------------------------------------
+    /** Not meant to be instantiated. */
+    private Inters ()
+    {
+    }
+
     //-----------//
     // getBounds //
     //-----------//
@@ -389,6 +394,12 @@ public abstract class Inters
     //------------------//
     // getMeanBestGrade //
     //------------------//
+    /**
+     * Report the average of inters best grade value.
+     *
+     * @param col inters collection
+     * @return average best grade
+     */
     public static double getMeanBestGrade (Collection<Inter> col)
     {
         if (col.isEmpty()) {
@@ -407,6 +418,12 @@ public abstract class Inters
     //--------------//
     // getMeanGrade //
     //--------------//
+    /**
+     * Report the average grade of provided inters.
+     *
+     * @param col inters collection
+     * @return average grade
+     */
     public static double getMeanGrade (Collection<Inter> col)
     {
         if (col.isEmpty()) {
@@ -446,6 +463,12 @@ public abstract class Inters
     //-----//
     // ids //
     //-----//
+    /**
+     * Report a string of inter IDs.
+     *
+     * @param inters collection of inters
+     * @return string of IDs
+     */
     public static String ids (Collection<? extends Inter> inters)
     {
         if (inters == null) {
@@ -478,7 +501,7 @@ public abstract class Inters
     public static List<Inter> inters (Collection<? extends Inter> collection,
                                       Predicate<Inter> predicate)
     {
-        List<Inter> found = new ArrayList<Inter>();
+        List<Inter> found = new ArrayList<>();
 
         for (Inter inter : collection) {
             if ((predicate == null) || predicate.check(inter)) {
@@ -518,7 +541,7 @@ public abstract class Inters
     public static List<Inter> inters (Staff staff,
                                       Collection<? extends Inter> inters)
     {
-        List<Inter> filtered = new ArrayList<Inter>();
+        List<Inter> filtered = new ArrayList<>();
 
         for (Inter inter : inters) {
             if (inter.getStaff() == staff) {
@@ -545,7 +568,7 @@ public abstract class Inters
                                                  GeoOrder order,
                                                  Area area)
     {
-        List<Inter> found = new ArrayList<Inter>();
+        List<Inter> found = new ArrayList<>();
         Rectangle bounds = area.getBounds();
         double xMax = bounds.getMaxX();
         double yMax = bounds.getMaxY();
@@ -601,7 +624,7 @@ public abstract class Inters
                                                  GeoOrder order,
                                                  Rectangle box)
     {
-        List<Inter> found = new ArrayList<Inter>();
+        List<Inter> found = new ArrayList<>();
         int xMax = (box.x + box.width) - 1;
         int yMax = (box.y + box.height) - 1;
 
@@ -624,24 +647,28 @@ public abstract class Inters
         return found;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------------//
     // ClassPredicate //
     //----------------//
+    /**
+     * Predicate to filter Inter instance of a certain class (or subclass thereof).
+     */
     public static class ClassPredicate
             implements Predicate<Inter>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Class classe;
 
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create class predicate
+         *
+         * @param classe Filtering class
+         */
         public ClassPredicate (Class classe)
         {
             this.classe = classe;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean check (Inter inter)
         {
@@ -652,20 +679,25 @@ public abstract class Inters
     //------------------//
     // ClassesPredicate //
     //------------------//
+    /**
+     * Predicate to filter Inter instance of provided classes.
+     */
     public static class ClassesPredicate
             implements Predicate<Inter>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Class[] classes;
 
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create classes predicate
+         *
+         * @param classes filtering classes
+         */
         public ClassesPredicate (Class[] classes)
         {
             this.classes = classes;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean check (Inter inter)
         {

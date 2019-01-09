@@ -39,11 +39,9 @@ import org.slf4j.LoggerFactory;
 public class DeltaStep
         extends AbstractStep
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(DeltaStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new DeltaStep object.
      */
@@ -52,7 +50,6 @@ public class DeltaStep
         ///super(Steps.DELTA, DATA_TAB, "Compute page delta");
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // doit //
     //------//

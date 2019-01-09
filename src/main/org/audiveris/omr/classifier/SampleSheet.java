@@ -22,7 +22,6 @@
 package org.audiveris.omr.classifier;
 
 import org.audiveris.omr.classifier.SheetContainer.Descriptor;
-import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.util.FileUtil;
@@ -51,6 +50,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * Class {@code SampleSheet} gathers samples from the same sheet.
@@ -61,10 +61,11 @@ import javax.xml.bind.annotation.XmlRootElement;
  * display each sample within its context.
  * Real sheet uniqueness is provided via its binary image, since several names could refer to the
  * same image.
+ *
+ * @author Hervé Bitteur
  */
 public class SampleSheet
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleSheet.class);
 
@@ -80,20 +81,6 @@ public class SampleSheet
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    public enum ImageStatus
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        /** There is no recorded image for this sheet. */
-        NO_IMAGE,
-        /** Sheet image is available on disk. */
-        ON_DISK,
-        /** Sheet image is available in memory. */
-        LOADED;
-    }
-
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Full descriptor. */
     private final Descriptor descriptor;
 
@@ -107,8 +94,7 @@ public class SampleSheet
     private boolean imageSaved = true;
 
     /** Samples gathered by shape. */
-    private final EnumMap<Shape, ArrayList<Sample>> shapeMap = new EnumMap<Shape, ArrayList<Sample>>(
-            Shape.class);
+    private final EnumMap<Shape, ArrayList<Sample>> shapeMap = new EnumMap<>(Shape.class);
 
     /** Has this sheet been modified?. */
     private boolean modified;
@@ -119,7 +105,6 @@ public class SampleSheet
     /** Tribe being created by user. */
     private Tribe currentTribe;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleSheet} object.
      *
@@ -146,82 +131,10 @@ public class SampleSheet
             ArrayList<Sample> list = shapeMap.get(shape);
 
             if (list == null) {
-                shapeMap.put(shape, list = new ArrayList<Sample>());
+                shapeMap.put(shape, list = new ArrayList<>());
             }
 
             list.add(sample);
-        }
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Delete from disk the samples, tribes and image if any of a defunct sheet.
-     *
-     * @param descriptor  descriptor of the defunct sheet
-     * @param samplesRoot root for samples (&amp; tribes)
-     * @param imagesRoot  root for images
-     */
-    public static void delete (SheetContainer.Descriptor descriptor,
-                               Path samplesRoot,
-                               Path imagesRoot)
-    {
-        try {
-            logger.info("Deleting material for sheet {}", descriptor);
-
-            {
-                // Samples (and tribes)
-                final Path folderPath = samplesRoot.resolve(descriptor.getName());
-
-                if (Files.exists(folderPath)) {
-                    FileUtil.deleteDirectory(folderPath);
-                    logger.info("   Samples: deleted {} folder", folderPath);
-                }
-            }
-
-            {
-                // Images
-                final Path folderPath = imagesRoot.resolve(descriptor.getName());
-
-                if (Files.exists(folderPath)) {
-                    FileUtil.deleteDirectory(folderPath);
-                    logger.info("   Images: deleted {} folder", folderPath);
-                }
-            }
-        } catch (Exception ex) {
-            logger.error("Error deleting material for sheet " + descriptor + " " + ex, ex);
-        }
-    }
-
-    //-----------//
-    // unmarshal //
-    //-----------//
-    /**
-     * Load a SampleSheet instance from the provided path.
-     *
-     * @param path the source path
-     * @param desc sheet descriptor
-     * @return the unmarshalled instance
-     * @throws IOException if something goes wrong during IO operations
-     */
-    public static SampleSheet unmarshal (Path path,
-                                         Descriptor desc)
-            throws IOException
-    {
-        logger.debug("SampleSheet unmarshalling {}", path);
-
-        try {
-            InputStream is = Files.newInputStream(path, StandardOpenOption.READ);
-            Unmarshaller um = getJaxbContext().createUnmarshaller();
-            SampleList sampleList = (SampleList) um.unmarshal(is);
-            SampleSheet sampleSheet = new SampleSheet(sampleList, desc);
-            logger.debug("Unmarshalled {}", sampleSheet);
-            is.close();
-
-            return sampleSheet;
-        } catch (JAXBException ex) {
-            logger.warn("Error unmarshalling " + path + " " + ex, ex);
-
-            return null;
         }
     }
 
@@ -235,7 +148,7 @@ public class SampleSheet
      */
     public List<Sample> getAllSamples ()
     {
-        List<Sample> allSamples = new ArrayList<Sample>();
+        List<Sample> allSamples = new ArrayList<>();
 
         for (List<Sample> sampleList : shapeMap.values()) {
             allSamples.addAll(sampleList);
@@ -247,6 +160,11 @@ public class SampleSheet
     //-----------------//
     // getCurrentTribe //
     //-----------------//
+    /**
+     * Report the current tribe.
+     *
+     * @return current tribe
+     */
     public Tribe getCurrentTribe ()
     {
         return currentTribe;
@@ -256,6 +174,8 @@ public class SampleSheet
     // getDescriptor //
     //---------------//
     /**
+     * Report the sheet descriptor.
+     *
      * @return the descriptor
      */
     public Descriptor getDescriptor ()
@@ -267,7 +187,9 @@ public class SampleSheet
     // getImage //
     //----------//
     /**
-     * @return the image
+     * Report the sheet underlying image, if any.
+     *
+     * @return the image or null
      */
     public RunTable getImage ()
     {
@@ -349,7 +271,7 @@ public class SampleSheet
         for (Tribe tribe : getTribes()) {
             Sample tribeBest = tribe.getHead();
 
-            if (((Glyph) tribeBest).equals(best) && (tribeBest.shape == best.shape)) {
+            if (tribeBest.equals(best) && (tribeBest.shape == best.shape)) {
                 currentTribe = tribe;
 
                 break;
@@ -359,7 +281,7 @@ public class SampleSheet
         if (currentTribe == null) {
             // Create a brand new one
             if (tribes == null) {
-                tribes = new ArrayList<Tribe>();
+                tribes = new ArrayList<>();
             }
 
             currentTribe = new Tribe(best);
@@ -386,6 +308,19 @@ public class SampleSheet
         return Collections.emptyList();
     }
 
+    //-----------//
+    // setTribes //
+    //-----------//
+    /**
+     * Assign the set of tribes.
+     *
+     * @param tribes the tribes to set
+     */
+    public void setTribes (List<Tribe> tribes)
+    {
+        this.tribes = tribes;
+    }
+
     //------------//
     // isModified //
     //------------//
@@ -395,6 +330,19 @@ public class SampleSheet
     public boolean isModified ()
     {
         return modified || !imageSaved;
+    }
+
+    //-------------//
+    // setModified //
+    //-------------//
+    /**
+     * Flag the sample sheet as modified.
+     *
+     * @param modified the value to assign
+     */
+    public void setModified (boolean modified)
+    {
+        this.modified = modified;
     }
 
     //---------//
@@ -439,7 +387,9 @@ public class SampleSheet
                 imageSaved = true;
                 logger.info("Stored {}", imagePath);
             }
-        } catch (Exception ex) {
+        } catch (IOException |
+                 JAXBException |
+                 XMLStreamException ex) {
             logger.error("Error marshalling " + this + " " + ex, ex);
         }
     }
@@ -459,28 +409,6 @@ public class SampleSheet
         this.image = image;
         this.imageSaved = saved;
         imageStatus = ImageStatus.LOADED;
-    }
-
-    //-------------//
-    // setModified //
-    //-------------//
-    /**
-     * @param modified the value to assign
-     */
-    public void setModified (boolean modified)
-    {
-        this.modified = modified;
-    }
-
-    //-----------//
-    // setTribes //
-    //-----------//
-    /**
-     * @param tribes the tribes to set
-     */
-    public void setTribes (List<Tribe> tribes)
-    {
-        this.tribes = tribes;
     }
 
     //----------//
@@ -516,7 +444,7 @@ public class SampleSheet
         ArrayList<Sample> list = shapeMap.get(shape);
 
         if (list == null) {
-            shapeMap.put(shape, list = new ArrayList<Sample>());
+            shapeMap.put(shape, list = new ArrayList<>());
         }
 
         list.add(sample);
@@ -556,6 +484,75 @@ public class SampleSheet
         setModified(true);
     }
 
+    /**
+     * Delete from disk the samples, tribes and image if any of a defunct sheet.
+     *
+     * @param descriptor  descriptor of the defunct sheet
+     * @param samplesRoot root for samples (&amp; tribes)
+     * @param imagesRoot  root for images
+     */
+    public static void delete (SheetContainer.Descriptor descriptor,
+                               Path samplesRoot,
+                               Path imagesRoot)
+    {
+        try {
+            logger.info("Deleting material for sheet {}", descriptor);
+
+            {
+                // Samples (and tribes)
+                final Path folderPath = samplesRoot.resolve(descriptor.getName());
+
+                if (Files.exists(folderPath)) {
+                    FileUtil.deleteDirectory(folderPath);
+                    logger.info("   Samples: deleted {} folder", folderPath);
+                }
+            }
+
+            {
+                // Images
+                final Path folderPath = imagesRoot.resolve(descriptor.getName());
+
+                if (Files.exists(folderPath)) {
+                    FileUtil.deleteDirectory(folderPath);
+                    logger.info("   Images: deleted {} folder", folderPath);
+                }
+            }
+        } catch (IOException ex) {
+            logger.error("Error deleting material for sheet " + descriptor + " " + ex, ex);
+        }
+    }
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Load a SampleSheet instance from the provided path.
+     *
+     * @param path the source path
+     * @param desc sheet descriptor
+     * @return the unmarshalled instance
+     * @throws IOException if something goes wrong during IO operations
+     */
+    public static SampleSheet unmarshal (Path path,
+                                         Descriptor desc)
+            throws IOException
+    {
+        logger.debug("SampleSheet unmarshalling {}", path);
+
+        try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ)) {
+            Unmarshaller um = getJaxbContext().createUnmarshaller();
+            SampleList sampleList = (SampleList) um.unmarshal(is);
+            SampleSheet sampleSheet = new SampleSheet(sampleList, desc);
+            logger.debug("Unmarshalled {}", sampleSheet);
+
+            return sampleSheet;
+        } catch (JAXBException ex) {
+            logger.warn("Error unmarshalling " + path + " " + ex, ex);
+
+            return null;
+        }
+    }
+
     //----------------//
     // getJaxbContext //
     //----------------//
@@ -570,7 +567,19 @@ public class SampleSheet
         return jaxbContext;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    /**
+     * Formalizes the status of sheet image, to avoid endless load attempts.
+     */
+    public enum ImageStatus
+    {
+        /** There is no recorded image for this sheet. */
+        NO_IMAGE,
+        /** Sheet image is available on disk. */
+        ON_DISK,
+        /** Sheet image is available in memory. */
+        LOADED
+    }
+
     //------------//
     // SampleList //
     //------------//
@@ -581,7 +590,6 @@ public class SampleSheet
     @XmlRootElement(name = "samples")
     private static class SampleList
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // Persistent data
         //----------------
@@ -590,10 +598,9 @@ public class SampleSheet
         private final String name;
 
         @XmlElement(name = "sample")
-        private final ArrayList<Sample> samples = new ArrayList<Sample>();
+        private final ArrayList<Sample> samples = new ArrayList<>();
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public SampleList (SampleSheet sampleSheet)
+        SampleList (SampleSheet sampleSheet)
         {
             name = sampleSheet.getDescriptor().getName();
 

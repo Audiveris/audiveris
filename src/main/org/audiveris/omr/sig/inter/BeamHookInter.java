@@ -50,18 +50,15 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Class {@code BeamHookInter} represents a beam hook interpretation.
  *
  * @see BeamInter
- *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "beam-hook")
 public class BeamHookInter
         extends AbstractBeamInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new HookInter object.
      *
@@ -94,7 +91,6 @@ public class BeamHookInter
         super(null, null, null, 0);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -224,14 +220,12 @@ public class BeamHookInter
         return new Link(bestStem, bestRel, true);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.Fraction xMargin = new Scale.Fraction(0.5, "Width of lookup area for stem");
 

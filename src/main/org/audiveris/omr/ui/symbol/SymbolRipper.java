@@ -72,7 +72,6 @@ import javax.swing.event.ChangeListener;
  */
 public class SymbolRipper
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolRipper.class);
 
@@ -81,7 +80,6 @@ public class SymbolRipper
         UILookAndFeel.setUI(null);
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related frame */
     private final JFrame frame;
 
@@ -91,7 +89,7 @@ public class SymbolRipper
     //---------------//
     // paramListener //
     //---------------//
-    private ChangeListener paramListener = new ChangeListener()
+    private final ChangeListener paramListener = new ChangeListener()
     {
         @Override
         public void stateChanged (ChangeEvent e)
@@ -127,7 +125,7 @@ public class SymbolRipper
     };
 
     // Panel where the icon is drawn
-    private JPanel drawing;
+    private final JPanel drawing;
 
     // String used to draw the symbol
     private String string;
@@ -165,18 +163,17 @@ public class SymbolRipper
     // x symbol
     private final String f = "%.3f";
 
-    private LDoubleField xSym = new LDoubleField(false, "xSym", "x symbol", f);
+    private final LDoubleField xSym = new LDoubleField(false, "xSym", "x symbol", f);
 
     // w symbol
-    private LDoubleField wSym = new LDoubleField(false, "wSym", "w symbol", f);
+    private final LDoubleField wSym = new LDoubleField(false, "wSym", "w symbol", f);
 
     // y symbol
-    private LDoubleField ySym = new LDoubleField(false, "ySym", "y symbol", f);
+    private final LDoubleField ySym = new LDoubleField(false, "ySym", "y symbol", f);
 
     // y symbol
-    private LDoubleField hSym = new LDoubleField(false, "hSym", "h symbol", f);
+    private final LDoubleField hSym = new LDoubleField(false, "hSym", "h symbol", f);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolRipper object.
      */
@@ -189,20 +186,21 @@ public class SymbolRipper
         // Actors
         drawing = new Drawing();
 
-        fontBase.setModel(new SpinnerListModel(new Integer[]{0, 0xf000, 0x1d100}));
+        fontBase.setModel(new SpinnerListModel(new Integer[]{0, 0xf000, 0x1_d100}));
         SpinnerUtil.setRightAlignment(fontBase);
         SpinnerUtil.fixIntegerList(fontBase);
 
         fontName.setModel(
                 new SpinnerListModel(
-                        GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
+                        GraphicsEnvironment.getLocalGraphicsEnvironment()
+                                .getAvailableFontFamilyNames()));
 
         // Initial values
         ///fontName.getSpinner().setValue("MusicalSymbols");
         fontName.getSpinner().setValue("Symbola");
         fontBase.setValue(0); //0);
         fontSize.setValue(200);
-        pointCode.setModel(new SpinnerNumberModel(0x1d100, 0, 0x1d1ff, 1));
+        pointCode.setModel(new SpinnerNumberModel(0x1_d100, 0, 0x1_d1ff, 1));
         width.setValue(400);
         height.setValue(500);
         xOffset.setValue(200);
@@ -234,7 +232,6 @@ public class SymbolRipper
         frame.repaint();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getFrame //
     //----------//
@@ -246,19 +243,6 @@ public class SymbolRipper
     public JFrame getFrame ()
     {
         return frame;
-    }
-
-    //------//
-    // main //
-    //------//
-    /**
-     * Command line entry point, no arguments are used today.
-     *
-     * @param args unused
-     */
-    public static void main (String... args)
-    {
-        new SymbolRipper();
     }
 
     //------------//
@@ -418,14 +402,25 @@ public class SymbolRipper
         drawing.revalidate();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //------//
+    // main //
+    //------//
+    /**
+     * Command line entry point, no arguments are used today.
+     *
+     * @param args unused
+     */
+    public static void main (String... args)
+    {
+        new SymbolRipper();
+    }
+
     //---------//
     // Drawing //
     //---------//
     private class Drawing
             extends Panel
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void paintComponent (Graphics g)

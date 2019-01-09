@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory;
 public class AnnotationService
         extends EntityService<Annotation>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AnnotationService.class);
 
@@ -48,7 +47,6 @@ public class AnnotationService
         IdEvent.class, EntityListEvent.class
     };
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AnnotationService} object.
      *

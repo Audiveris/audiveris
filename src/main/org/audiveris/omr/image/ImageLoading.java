@@ -59,16 +59,19 @@ import javax.media.jai.JAI;
  * Class {@code ImageLoading} handles the loading of one or several images out of an
  * input file.
  * <p>
- * It works in two phases:<ol>
+ * It works in two phases:
+ * <ol>
  * <li>An initial call to {@link #getLoader(Path)} tries to return a {@link Loader} instance that
  * fits the provided input file.</li>
- * <li>Then this Loader instance can be used via:<ul>
+ * <li>Then this Loader instance can be used via:
+ * <ul>
  * <li>{@link Loader#getImageCount()} to know how many images are available in the input file,</li>
  * <li>{@link Loader#getImage(int)} to return any specific image,</li>
  * <li>{@link Loader#dispose()} to finally release any resources.</li>
  * </ul>
  * </ol>
- * This class leverages several software pieces, each with its own Loader subclass:<ul>
+ * This class leverages several software pieces, each with its own Loader subclass:
+ * <ul>
  * <li><b>JPod</b> for PDF files. This replaces former use of GhostScript sub-process.</li>
  * <li><b>ImageIO</b> for all files except PDF.</li>
  * <li><b>JAI</b> if ImageIO failed. Note that JAI can find only one image per file.</li>
@@ -80,13 +83,11 @@ import javax.media.jai.JAI;
  */
 public abstract class ImageLoading
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ImageLoading.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * To disallow instantiation.
      */
@@ -94,7 +95,6 @@ public abstract class ImageLoading
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getLoader //
     //-----------//
@@ -185,7 +185,7 @@ public abstract class ImageLoading
             int imageCount = reader.getNumImages(true);
 
             return new ImageIOLoader(reader, imageCount);
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             logger.warn("ImageIO failed for " + imgPath, ex);
 
             return null;
@@ -253,7 +253,6 @@ public abstract class ImageLoading
         return null;
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
     //--------//
     // Loader //
     //--------//
@@ -262,7 +261,6 @@ public abstract class ImageLoading
      */
     public static interface Loader
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Release any loader resources.
@@ -287,14 +285,12 @@ public abstract class ImageLoading
         int getImageCount ();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Integer pdfResolution = new Constant.Integer(
                 "DPI",
@@ -308,18 +304,15 @@ public abstract class ImageLoading
     private abstract static class AbstractLoader
             implements Loader
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Count of images available in input file. */
         protected final int imageCount;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public AbstractLoader (int imageCount)
+        AbstractLoader (int imageCount)
         {
             this.imageCount = imageCount;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void dispose ()
         {
@@ -345,19 +338,16 @@ public abstract class ImageLoading
     private static class ImageIOLoader
             extends AbstractLoader
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final ImageReader reader;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public ImageIOLoader (ImageReader reader,
-                              int imageCount)
+        ImageIOLoader (ImageReader reader,
+                       int imageCount)
         {
             super(imageCount);
             this.reader = reader;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void dispose ()
         {
@@ -382,19 +372,16 @@ public abstract class ImageLoading
     private static class JPodLoader
             extends AbstractLoader
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final PDDocument doc;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public JPodLoader (PDDocument doc,
-                           int imageCount)
+        JPodLoader (PDDocument doc,
+                    int imageCount)
         {
             super(imageCount);
             this.doc = doc;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void dispose ()
         {
@@ -489,18 +476,15 @@ public abstract class ImageLoading
     private static class JaiLoader
             extends AbstractLoader
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final BufferedImage image; // The single image
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public JaiLoader (BufferedImage image)
+        JaiLoader (BufferedImage image)
         {
             super(1); // JAI can return just one image
             this.image = image;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public BufferedImage getImage (int id)
                 throws IOException

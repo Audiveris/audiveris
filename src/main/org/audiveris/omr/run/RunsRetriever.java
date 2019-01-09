@@ -43,19 +43,15 @@ import java.util.concurrent.Callable;
  */
 public class RunsRetriever
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(RunsRetriever.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     /** The orientation of desired runs */
     private final Orientation orientation;
 
     /** The adapter for pixel access and call-backs at run level */
     private final Adapter adapter;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new RunsRetriever object.
      *
@@ -70,8 +66,6 @@ public class RunsRetriever
         this.adapter = adapter;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //
     //--------------//
     // retrieveRuns //
     //--------------//
@@ -106,7 +100,7 @@ public class RunsRetriever
                                   int cMax)
     {
         /** Buffer of runs for current position. */
-        final List<Run> posRuns = new ArrayList<Run>();
+        final List<Run> posRuns = new ArrayList<>();
 
         // Current run is FOREGROUND or BACKGROUND
         boolean isFore = false;
@@ -180,7 +174,7 @@ public class RunsRetriever
             // Parallel (TODO: should use Java 7 fork/join someday...)
             try {
                 // Browse one dimension
-                List<Callable<Void>> tasks = new ArrayList<Callable<Void>>(pMax - pMin + 1);
+                List<Callable<Void>> tasks = new ArrayList<>(pMax - pMin + 1);
 
                 for (int p = pMin; p <= pMax; p++) {
                     final int pp = p;
@@ -212,8 +206,6 @@ public class RunsRetriever
         }
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
-    //
     //---------//
     // Adapter //
     //---------//
@@ -223,7 +215,6 @@ public class RunsRetriever
     public static interface Adapter
             extends Concurrency
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Called at end of position.
@@ -251,7 +242,6 @@ public class RunsRetriever
          *
          * @param coord x for horizontal runs, y for vertical runs
          * @param pos   y for horizontal runs, x for vertical runs
-         *
          * @return true if pixel is foreground, false otherwise
          */
         boolean isFore (int coord,

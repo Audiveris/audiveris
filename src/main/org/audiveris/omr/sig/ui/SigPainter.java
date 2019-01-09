@@ -35,9 +35,12 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
+import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractFlagInter;
 import org.audiveris.omr.sig.inter.AbstractInterVisitor;
+import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
+import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BraceInter;
@@ -57,6 +60,8 @@ import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.sig.relation.AlterHeadRelation;
+import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.text.FontInfo;
@@ -66,11 +71,11 @@ import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
+import org.audiveris.omr.ui.symbol.TextFont;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
-import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
 
@@ -89,6 +94,9 @@ import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -101,7 +109,8 @@ import javax.swing.JPanel;
  * <p>
  * Its life cycle ends with the painting of a sheet.
  * <p>
- * Remarks on no-op visit() for:<ul>
+ * Remarks on no-op visit() for:
+ * <ul>
  * <li>AbstractChordInter: Notes and stem are painted on their own
  * <li>KeyInter: Each key item is painted on its own
  * <li>WordInter: Painting is handled from sentence
@@ -112,7 +121,6 @@ import javax.swing.JPanel;
 public abstract class SigPainter
         extends AbstractInterVisitor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SigPainter.class);
 
@@ -135,10 +143,8 @@ public abstract class SigPainter
         /** 7 Pink */
         new Color(255, 150, 150, alpha),
         /** 8 BlueGreen */
-        new Color(0, 128, 128, alpha)
-    };
+        new Color(0, 128, 128, alpha)};
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Graphic context. */
     protected final Graphics2D g;
 
@@ -166,7 +172,6 @@ public abstract class SigPainter
     /** Global stroke for ledgers, with no glyph. */
     private final Stroke ledgerStroke;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SigPainter} object.
      *
@@ -204,12 +209,13 @@ public abstract class SigPainter
         ledgerStroke = new BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getVoicePanel //
     //---------------//
     /**
      * Build a panel which displays all defined voice ID colors.
+     * <p>
+     * Separate numbers for first staff and second staff as: 1234 - 5678
      *
      * @return the populated voice panel
      */
@@ -217,8 +223,18 @@ public abstract class SigPainter
     {
         final int length = voiceColors.length;
         final Font font = new Font("SansSerif", Font.BOLD, 22);
-        final Color background = Color.WHITE; //new Color(220, 220, 220);
-        final FormLayout layout = Panel.makeLabelsLayout(1, length, "0dlu", "10dlu");
+        final Color background = Color.WHITE;
+        final StringBuilder sbc = new StringBuilder();
+
+        for (int i = 0; i <= length; i++) {
+            if (i != 0) {
+                sbc.append(",");
+            }
+
+            sbc.append("10dlu");
+        }
+
+        final FormLayout layout = new FormLayout(sbc.toString(), "pref");
         final Panel panel = new Panel();
         final PanelBuilder builder = new PanelBuilder(layout, panel);
         final CellConstraints cst = new CellConstraints();
@@ -226,6 +242,8 @@ public abstract class SigPainter
         // Adjust dimensions
         final Dimension cellDim = new Dimension(5, 22);
         panel.setInsets(3, 0, 0, 3); // TLBR
+
+        final int mid = length / 2;
 
         for (int c = 1; c <= length; c++) {
             final Color color = new Color(voiceColors[c - 1].getRGB()); // Remove alpha
@@ -235,7 +253,20 @@ public abstract class SigPainter
             label.setOpaque(true);
             label.setBackground(background);
             label.setForeground(color);
-            builder.add(label, cst.xy((2 * c) - 1, 1));
+
+            int col = (c <= mid) ? c : (c + 1);
+            builder.add(label, cst.xy(col, 1));
+        }
+        // Separation between staves
+        {
+            final Color color = Color.BLACK;
+            final JLabel label = new JLabel("=");
+            label.setPreferredSize(cellDim);
+            label.setFont(font);
+            label.setOpaque(true);
+            label.setBackground(background);
+            label.setForeground(color);
+            builder.add(label, cst.xy(mid + 1, 1));
         }
 
         return panel;
@@ -249,7 +280,7 @@ public abstract class SigPainter
         final int bracketGrowth = 2 * sig.getSystem().getSheet().getInterline();
 
         // Use a COPY of vertices, to reduce risks of concurrent modifications (but not all...)
-        Set<Inter> copy = new LinkedHashSet<Inter>(sig.vertexSet());
+        Set<Inter> copy = new LinkedHashSet<>(sig.vertexSet());
 
         for (Inter inter : copy) {
             if (!inter.isRemoved()) {
@@ -317,6 +348,15 @@ public abstract class SigPainter
     // visit //
     //-------//
     @Override
+    public void visit (AlterInter inter)
+    {
+        paintHalf(inter, AlterHeadRelation.class);
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
     public void visit (ArpeggiatoInter arpeggiato)
     {
         setColor(arpeggiato);
@@ -339,6 +379,15 @@ public abstract class SigPainter
         }
 
         g.setClip(clip);
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (AugmentationDotInter inter)
+    {
+        paintHalf(inter, AugmentationRelation.class);
     }
 
     //-------//
@@ -490,17 +539,35 @@ public abstract class SigPainter
     @Override
     public void visit (HeadInter head)
     {
-        // Consider it as a plain inter
-        visit((Inter) head);
+        final Line2D midLine = head.getMidLine();
 
-        if (head.getMirror() != null) {
-            // Draw a sign using complementary color of head
+        if (midLine != null) {
+            if (splitMirrors()) {
+                // Draw head proper half
+                int width = head.getBounds().width;
+                int xDir = midLine.getY2() > midLine.getY1() ? -1 : +1;
+                Path2D p = new Path2D.Double();
+                p.append(midLine, false);
+                p.lineTo(midLine.getX2() + xDir * width, midLine.getY2());
+                p.lineTo(midLine.getX1() + xDir * width, midLine.getY1());
+                p.closePath();
+
+                java.awt.Shape oldClip = g.getClip();
+                g.clip(p);
+                visit((Inter) head);
+                g.setClip(oldClip);
+            } else {
+                visit((Inter) head);
+            }
+
+            // Draw midLine using complementary color of head
             Color compColor = UIUtil.complementaryColor(g.getColor());
             Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
-            Rectangle box = head.getBounds();
             g.setColor(compColor);
-            g.drawLine(box.x, box.y, box.x + box.width, box.y + box.height);
+            g.draw(midLine);
             g.setStroke(oldStroke);
+        } else {
+            visit((Inter) head);
         }
     }
 
@@ -690,6 +757,26 @@ public abstract class SigPainter
         g.draw(wedge.getLine2());
     }
 
+    //----------//
+    // setColor //
+    //----------//
+    /**
+     * Use color adapted to current inter and global viewing parameters.
+     *
+     * @param inter the interpretation to colorize
+     */
+    protected abstract void setColor (Inter inter);
+
+    //--------------//
+    // splitMirrors //
+    //--------------//
+    /**
+     * Tell whether shared heads are split.
+     *
+     * @return true if so
+     */
+    protected abstract boolean splitMirrors ();
+
     //---------//
     // colorOf //
     //---------//
@@ -798,15 +885,75 @@ public abstract class SigPainter
         OmrFont.paint(g, layout, location, alignment);
     }
 
-    //----------//
-    // setColor //
-    //----------//
+    //-----------//
+    // paintHalf //
+    //-----------//
     /**
-     * Use color adapted to current inter and global viewing parameters.
+     * Paint upper and lower parts of a symbol, if it is linked to two shared heads.
+     * Otherwise, paint it normally as a whole.
      *
-     * @param inter the interpretation to colorize
+     * @param inter  the inter to paint
+     *               (AugmentationDotInter or AlterInter)
+     * @param classe the relation class to search between inter and head
+     *               (AugmentationRelation or AlterHeadRelation)
      */
-    protected abstract void setColor (Inter inter);
+    private void paintHalf (Inter inter,
+                            Class<? extends Relation> classe)
+    {
+        if (!splitMirrors()) {
+            visit(inter);
+
+            return;
+        }
+
+        final SIGraph sig = inter.getSig();
+        final List<HeadInter> heads = new ArrayList<>();
+
+        for (Relation rel : sig.getRelations(inter, classe)) {
+            Inter opposite = sig.getOppositeInter(inter, rel);
+
+            if (opposite instanceof HeadInter) {
+                heads.add((HeadInter) opposite);
+            }
+        }
+
+        if ((heads.size() != 2) || (heads.get(0).getMirror() != heads.get(1))) {
+            // Standard case where symbol is painted as a whole
+            visit(inter);
+        } else {
+            // Split according to linked shared heads
+            final Rectangle box = inter.getBounds();
+            final int height = box.height;
+            final Point center = inter.getCenter();
+            final Point ref = inter.getRelationCenter(); // Not always the area center
+            final Shape shape = inter.getShape();
+            final Staff staff = inter.getStaff();
+            final ShapeSymbol symbol = Symbols.getSymbol(shape);
+            final MusicFont font = getMusicFont(staff);
+            final Dimension dim = symbol.getDimension(font);
+            final int w = dim.width;
+            final Line2D line = new Line2D.Double(ref.x - w, ref.y, ref.x + w, ref.y);
+
+            // Draw each inter half
+            for (HeadInter h : heads) {
+                final AbstractChordInter ch = h.getChord();
+                final int yDir = ch.getCenter().y > h.getCenter().y ? +1 : -1;
+                final Path2D p = new Path2D.Double();
+                p.append(line, false);
+                p.lineTo(line.getX2(), line.getY2() + yDir * height);
+                p.lineTo(line.getX1(), line.getY1() + yDir * height);
+                p.closePath();
+
+                final java.awt.Shape oldClip = g.getClip();
+                g.clip(p);
+
+                setColor(ch);
+                symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
+
+                g.setClip(oldClip);
+            }
+        }
+    }
 
     //-----------//
     // paintWord //

@@ -29,13 +29,11 @@ package org.audiveris.omr.sig.inter;
  */
 public interface VisitableInter
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
-     * General entry for any visiting
+     * General entry for any visiting.
      *
-     * @param visitor the concrete visitor object which defines the actual
-     *                processing
+     * @param visitor the concrete visitor object which defines the actual processing
      */
     void accept (InterVisitor visitor);
 }

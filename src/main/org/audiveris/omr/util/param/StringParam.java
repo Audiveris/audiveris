@@ -31,12 +31,13 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 public class StringParam
         extends Param<String>
 {
-    //~ Inner Classes ------------------------------------------------------------------------------
 
+    /**
+     * JAXB adapter for StringParam type.
+     */
     public static class Adapter
             extends XmlAdapter<String, StringParam>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String marshal (StringParam val)

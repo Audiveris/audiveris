@@ -49,7 +49,6 @@ public class Panel
         extends JPanel ///FormDebugPanel
 
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -58,244 +57,15 @@ public class Panel
     /** Default Insets */
     private static Insets DEFAULT_INSETS;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Room for potential specific insets */
     private Insets insets;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Panel object.
      */
     public Panel ()
     {
         setBorder(null);
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Selector to the default button width.
-     *
-     * @return default distance in JGoodies/Forms units (such as DLUs)
-     */
-    public static String getButtonWidth ()
-    {
-        return constants.buttonWidth.getValue();
-    }
-
-    /**
-     * Selector to the default vertical interval between two rows.
-     *
-     * @return default distance in JGoodies/Forms units (such as DLUs)
-     */
-    public static String getFieldInterline ()
-    {
-        return constants.fieldInterline.getValue();
-    }
-
-    /**
-     * Selector to the default interval between two label/field.
-     *
-     * @return default distance in JGoodies/Forms units (such as DLUs)
-     */
-    public static String getFieldInterval ()
-    {
-        return constants.fieldInterval.getValue();
-    }
-
-    /**
-     * Selector to the default label width.
-     *
-     * @return default distance in JGoodies/Forms units (such as DLUs)
-     */
-    public static String getFieldWidth ()
-    {
-        return constants.fieldWidth.getValue();
-    }
-
-    /**
-     * Selector to the default label - field interval.
-     *
-     * @return default distance in JGoodies/Forms units (such as DLUs)
-     */
-    public static String getLabelInterval ()
-    {
-        return constants.labelInterval.getValue();
-    }
-
-    /**
-     * Selector to the default label width.
-     *
-     * @return default distance in JGoodies/Forms units (such as DLUs)
-     */
-    public static String getLabelWidth ()
-    {
-        return constants.labelWidth.getValue();
-    }
-
-    /**
-     * Selector to the default vertical interval between two Panels.
-     *
-     * @return default distance in JGoodies/Forms units (such as DLUs)
-     */
-    public static String getPanelInterline ()
-    {
-        return constants.panelInterline.getValue();
-    }
-
-    //-------------//
-    // makeColumns //
-    //-------------//
-    public static String makeColumns (int cols)
-    {
-        return makeColumns(cols, "right:", Panel.getLabelWidth(), Panel.getFieldWidth());
-    }
-
-    //-------------//
-    // makeColumns //
-    //-------------//
-    public static String makeColumns (int cols,
-                                      String labelAlignment,
-                                      String labelWidth,
-                                      String fieldWidth)
-    {
-        final String labelInterval = Panel.getLabelInterval();
-        final String fieldInterval = Panel.getFieldInterval();
-
-        StringBuilder sbc = new StringBuilder();
-
-        for (int i = 0; i < cols; i++) {
-            if (i != 0) {
-                sbc.append(",").append(fieldInterval).append(",");
-            }
-
-            sbc.append(labelAlignment).append(labelWidth).append(",").append(labelInterval)
-                    .append(",").append(fieldWidth);
-        }
-
-        return sbc.toString();
-    }
-
-    //----------------//
-    // makeFormLayout //
-    //----------------//
-    /**
-     * Build a JGoodies Forms layout, based on the provided number of
-     * rows and number of columns, using default values for label
-     * alignment, and for widths of labels and fields.
-     *
-     * @param rows number of logical rows (not counting the interlines)
-     * @param cols number of logical columns (counting the combination of a
-     *             label and its related field as just one column)
-     * @return the FormLayout ready to use
-     */
-    public static FormLayout makeFormLayout (int rows,
-                                             int cols)
-    {
-        return makeFormLayout(rows, cols, "right:", Panel.getLabelWidth(), Panel.getFieldWidth());
-    }
-
-    //----------------//
-    // makeFormLayout //
-    //----------------//
-    /**
-     * A more versatile way to prepare a JGoodies FormLayout.
-     *
-     * @param rows           number of rows
-     * @param cols           number of columns
-     * @param labelAlignment horizontal alignment for labels
-     * @param labelWidth     width for labels
-     * @param fieldWidth     width for text fields
-     * @return the FormLayout ready to use
-     */
-    public static FormLayout makeFormLayout (int rows,
-                                             int cols,
-                                             String labelAlignment,
-                                             String labelWidth,
-                                             String fieldWidth)
-    {
-        return new FormLayout(
-                makeColumns(cols, labelAlignment, labelWidth, fieldWidth),
-                makeRows(rows));
-    }
-
-    //-------------------//
-    // makeLabelsColumns //
-    //-------------------//
-    public static String makeLabelsColumns (int cols,
-                                            String labelInterval,
-                                            String labelWidth)
-    {
-        StringBuilder sbc = new StringBuilder();
-
-        for (int i = 0; i < cols; i++) {
-            if (i != 0) {
-                sbc.append(",").append(labelInterval).append(",");
-            }
-
-            sbc.append(labelWidth);
-        }
-
-        return sbc.toString();
-    }
-
-    //------------------//
-    // makeLabelsLayout //
-    //------------------//
-    /**
-     * A more versatile way to prepare a JGoodies FormLayout for labels.
-     *
-     * @param rows          number of rows
-     * @param cols          number of columns
-     * @param labelInterval horizontal gap between labels
-     * @param labelWidth    width for labels
-     * @return the FormLayout ready to use
-     */
-    public static FormLayout makeLabelsLayout (int rows,
-                                               int cols,
-                                               String labelInterval,
-                                               String labelWidth)
-    {
-        return new FormLayout(makeLabelsColumns(cols, labelInterval, labelWidth), makeRows(rows));
-    }
-
-    //----------//
-    // makeRows //
-    //----------//
-    /**
-     * Build the row spec for 'rows' separated by standard field interline.
-     *
-     * @param rows number of rows
-     * @return row spec
-     */
-    public static String makeRows (int rows)
-    {
-        return makeRows(rows, getFieldInterline());
-    }
-
-    //----------//
-    // makeRows //
-    //----------//
-    /**
-     * Build the row spec for 'rows' separated by 'interline' spec.
-     *
-     * @param rows      number of rows
-     * @param interline interline value
-     * @return row spec
-     */
-    public static String makeRows (int rows,
-                                   String interline)
-    {
-        final StringBuilder sbr = new StringBuilder();
-
-        for (int i = 0; i < rows; i++) {
-            if (i != 0) {
-                sbr.append(",").append(interline).append(",");
-            }
-
-            sbr.append("pref");
-        }
-
-        return sbr.toString();
     }
 
     //-----------//
@@ -379,14 +149,261 @@ public class Panel
         return DEFAULT_INSETS;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    /**
+     * Selector to the default button width.
+     *
+     * @return default distance in JGoodies/Forms units (such as DLUs)
+     */
+    public static String getButtonWidth ()
+    {
+        return constants.buttonWidth.getValue();
+    }
+
+    /**
+     * Selector to the default vertical interval between two rows.
+     *
+     * @return default distance in JGoodies/Forms units (such as DLUs)
+     */
+    public static String getFieldInterline ()
+    {
+        return constants.fieldInterline.getValue();
+    }
+
+    /**
+     * Selector to the default interval between two label/field.
+     *
+     * @return default distance in JGoodies/Forms units (such as DLUs)
+     */
+    public static String getFieldInterval ()
+    {
+        return constants.fieldInterval.getValue();
+    }
+
+    /**
+     * Selector to the default label width.
+     *
+     * @return default distance in JGoodies/Forms units (such as DLUs)
+     */
+    public static String getFieldWidth ()
+    {
+        return constants.fieldWidth.getValue();
+    }
+
+    /**
+     * Selector to the default label - field interval.
+     *
+     * @return default distance in JGoodies/Forms units (such as DLUs)
+     */
+    public static String getLabelInterval ()
+    {
+        return constants.labelInterval.getValue();
+    }
+
+    /**
+     * Selector to the default label width.
+     *
+     * @return default distance in JGoodies/Forms units (such as DLUs)
+     */
+    public static String getLabelWidth ()
+    {
+        return constants.labelWidth.getValue();
+    }
+
+    /**
+     * Selector to the default vertical interval between two Panels.
+     *
+     * @return default distance in JGoodies/Forms units (such as DLUs)
+     */
+    public static String getPanelInterline ()
+    {
+        return constants.panelInterline.getValue();
+    }
+
+    //-------------//
+    // makeColumns //
+    //-------------//
+    /**
+     * Build the columns specification, with default options.
+     *
+     * @param cols number of logical columns.
+     * @return proper col spec
+     */
+    public static String makeColumns (int cols)
+    {
+        return makeColumns(cols, "right:", Panel.getLabelWidth(), Panel.getFieldWidth());
+    }
+
+    //-------------//
+    // makeColumns //
+    //-------------//
+    /**
+     * Build the columns specification.
+     *
+     * @param cols           number of logical columns
+     * @param labelAlignment horizontal alignment to apply to label
+     * @param labelWidth     width specification for labels
+     * @param fieldWidth     width specification for fields
+     * @return proper columns specification
+     */
+    public static String makeColumns (int cols,
+                                      String labelAlignment,
+                                      String labelWidth,
+                                      String fieldWidth)
+    {
+        final String labelInterval = Panel.getLabelInterval();
+        final String fieldInterval = Panel.getFieldInterval();
+
+        StringBuilder sbc = new StringBuilder();
+
+        for (int i = 0; i < cols; i++) {
+            if (i != 0) {
+                sbc.append(",").append(fieldInterval).append(",");
+            }
+
+            sbc.append(labelAlignment).append(labelWidth).append(",").append(labelInterval).append(
+                    ",").append(fieldWidth);
+        }
+
+        return sbc.toString();
+    }
+
+    //----------------//
+    // makeFormLayout //
+    //----------------//
+    /**
+     * Build a JGoodies Forms layout, based on the provided number of
+     * rows and number of columns, using default values for label
+     * alignment, and for widths of labels and fields.
+     *
+     * @param rows number of logical rows (not counting the interlines)
+     * @param cols number of logical columns (counting the combination of a
+     *             label and its related field as just one column)
+     * @return the FormLayout ready to use
+     */
+    public static FormLayout makeFormLayout (int rows,
+                                             int cols)
+    {
+        return makeFormLayout(rows, cols, "right:", Panel.getLabelWidth(), Panel.getFieldWidth());
+    }
+
+    //----------------//
+    // makeFormLayout //
+    //----------------//
+    /**
+     * A more versatile way to prepare a JGoodies FormLayout.
+     *
+     * @param rows           number of rows
+     * @param cols           number of columns
+     * @param labelAlignment horizontal alignment for labels
+     * @param labelWidth     width for labels
+     * @param fieldWidth     width for text fields
+     * @return the FormLayout ready to use
+     */
+    public static FormLayout makeFormLayout (int rows,
+                                             int cols,
+                                             String labelAlignment,
+                                             String labelWidth,
+                                             String fieldWidth)
+    {
+        return new FormLayout(
+                makeColumns(cols, labelAlignment, labelWidth, fieldWidth),
+                makeRows(rows));
+    }
+
+    //-------------------//
+    // makeLabelsColumns //
+    //-------------------//
+    /**
+     * Build a column specification for just labels.
+     *
+     * @param cols          number of columns.
+     * @param labelInterval horizontal gap specification between labels
+     * @param labelWidth    width specification for labels
+     * @return proper columns specification
+     */
+    public static String makeLabelsColumns (int cols,
+                                            String labelInterval,
+                                            String labelWidth)
+    {
+        StringBuilder sbc = new StringBuilder();
+
+        for (int i = 0; i < cols; i++) {
+            if (i != 0) {
+                sbc.append(",").append(labelInterval).append(",");
+            }
+
+            sbc.append(labelWidth);
+        }
+
+        return sbc.toString();
+    }
+
+    //------------------//
+    // makeLabelsLayout //
+    //------------------//
+    /**
+     * A more versatile way to prepare a JGoodies FormLayout for labels.
+     *
+     * @param rows          number of rows
+     * @param cols          number of columns
+     * @param labelInterval horizontal gap between labels
+     * @param labelWidth    width for labels
+     * @return the FormLayout ready to use
+     */
+    public static FormLayout makeLabelsLayout (int rows,
+                                               int cols,
+                                               String labelInterval,
+                                               String labelWidth)
+    {
+        return new FormLayout(makeLabelsColumns(cols, labelInterval, labelWidth), makeRows(rows));
+    }
+
+    //----------//
+    // makeRows //
+    //----------//
+    /**
+     * Build the row spec for 'rows' separated by standard field interline.
+     *
+     * @param rows number of rows
+     * @return row spec
+     */
+    public static String makeRows (int rows)
+    {
+        return makeRows(rows, getFieldInterline());
+    }
+
+    //----------//
+    // makeRows //
+    //----------//
+    /**
+     * Build the row spec for 'rows' separated by 'interline' spec.
+     *
+     * @param rows      number of rows
+     * @param interline interline value
+     * @return row spec
+     */
+    public static String makeRows (int rows,
+                                   String interline)
+    {
+        final StringBuilder sbr = new StringBuilder();
+
+        for (int i = 0; i < rows; i++) {
+            if (i != 0) {
+                sbr.append(",").append(interline).append(",");
+            }
+
+            sbr.append("pref");
+        }
+
+        return sbr.toString();
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.String buttonWidth = new Constant.String(
                 "45dlu",

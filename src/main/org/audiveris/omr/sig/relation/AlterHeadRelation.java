@@ -44,7 +44,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AlterHeadRelation
         extends AbstractConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -52,15 +51,12 @@ public class AlterHeadRelation
 
     private static final double[] IN_WEIGHTS = new double[]{
         constants.xInWeight.getValue(),
-        constants.yWeight.getValue()
-    };
+        constants.yWeight.getValue()};
 
     private static final double[] OUT_WEIGHTS = new double[]{
         constants.xOutWeight.getValue(),
-        constants.yWeight.getValue()
-    };
+        constants.yWeight.getValue()};
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -69,6 +65,13 @@ public class AlterHeadRelation
     {
         final AlterInter alter = (AlterInter) e.getEdgeSource();
         alter.checkAbnormal();
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 
     //------------------//
@@ -176,14 +179,12 @@ public class AlterHeadRelation
         return getYGapMaximum(manual);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio AccidentalCoeff = new Constant.Ratio(
                 3,

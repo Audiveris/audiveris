@@ -33,7 +33,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordSyllableRelation
         extends Support
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     //----------------//
     // isSingleSource //
@@ -51,5 +50,12 @@ public class ChordSyllableRelation
     public boolean isSingleTarget ()
     {
         return true;
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -36,17 +36,14 @@ import java.util.List;
 /**
  * Class {@code FilamentView} handles a view on sheet filaments.
  *
- *
  * @author Hervé Bitteur
  */
 public class FilamentView
         extends EntityView<Filament>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(FilamentView.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code FilamentView} object.
      *
@@ -57,7 +54,6 @@ public class FilamentView
         super(entityService);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     protected void render (Graphics2D g)
     {

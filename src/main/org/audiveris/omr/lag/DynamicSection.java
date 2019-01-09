@@ -41,11 +41,9 @@ import java.awt.Rectangle;
 public class DynamicSection
         extends BasicSection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(DynamicSection.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code DynamicSection} object.
      *
@@ -56,7 +54,6 @@ public class DynamicSection
         super(orientation);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // append //
     //--------//
@@ -221,6 +218,11 @@ public class DynamicSection
     //-----------------//
     // computeCentroid //
     //-----------------//
+    /**
+     * Compute section centroid.
+     *
+     * @return absolute centroid
+     */
     protected Point computeCentroid ()
     {
         Point orientedPoint = new Point(0, 0);
@@ -242,6 +244,9 @@ public class DynamicSection
     //-------------------//
     // computeParameters //
     //-------------------//
+    /**
+     * Update cached data for this section.
+     */
     protected void computeParameters ()
     {
         // weight & maxRunLength
@@ -296,6 +301,11 @@ public class DynamicSection
     //------------------------//
     // computeRunContribution //
     //------------------------//
+    /**
+     * Compute the contribution of provided run to section data.
+     *
+     * @param run provided run
+     */
     protected void computeRunContribution (Run run)
     {
         final int length = run.getLength();
@@ -306,6 +316,9 @@ public class DynamicSection
     //-----------------//
     // invalidateCache //
     //-----------------//
+    /**
+     * Nullify all cached data.
+     */
     protected void invalidateCache ()
     {
         orientedBounds = null;

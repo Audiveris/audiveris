@@ -44,13 +44,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordWedgeRelation
         extends Support
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Left or right side of the wedge. */
     @XmlAttribute
     private HorizontalSide side;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ChordWedgeRelation} object.
      *
@@ -68,7 +66,6 @@ public class ChordWedgeRelation
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -123,5 +120,12 @@ public class ChordWedgeRelation
     public String toString ()
     {
         return super.toString() + "/" + side;
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 }

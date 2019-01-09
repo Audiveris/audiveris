@@ -46,33 +46,30 @@ import java.util.Objects;
  * <p>
  * Internally the spline is composed of a sequence of curves, one curve between two consecutive
  * knots. Each curve is a bezier curve defined by the 2 related knots separated by 2 control
- * points.</p>
+ * points.
  * <p>
  * At each knot, continuity in ensured up to the second derivative.
- * The second derivative is set to zero at first and last knots of the whole spline.</p>
+ * The second derivative is set to zero at first and last knots of the whole spline.
  * <p>
  * Degenerated cases: When the sequence of knots contains only 3 or 2 points, the spline degenerates
  * to a quadratic or a straight line respectively. If less than two points are provided, the spline
- * cannot be created.</p>
+ * cannot be created.
  * <p>
  * Cf <a href="http://www.cse.unsw.edu.au/~lambert/splines/">
- * http://www.cse.unsw.edu.au/~lambert/splines/</a></p>
+ * http://www.cse.unsw.edu.au/~lambert/splines/</a>
  *
  * @author Hervé Bitteur
  */
 public class NaturalSpline
         extends GeoPath
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(NaturalSpline.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private Point2D first; // Cached for faster access. Really useful???
 
     private Point2D last; // Cached for faster access. Really useful???
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new NaturalSpline object from a sequence of connected shapes.
      *
@@ -85,7 +82,204 @@ public class NaturalSpline
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //---------------//
+    // getFirstPoint //
+    //---------------//
+    @Override
+    public Point2D getFirstPoint ()
+    {
+        if (first == null) {
+            first = super.getFirstPoint();
+        }
+
+        return new Point2D.Double(first.getX(), first.getY());
+    }
+
+    //--------------//
+    // getLastPoint //
+    //--------------//
+    @Override
+    public Point2D getLastPoint ()
+    {
+        if (last == null) {
+            last = super.getLastPoint();
+        }
+
+        return new Point2D.Double(last.getX(), last.getY());
+    }
+
+    //--------//
+    // render //
+    //--------//
+    /**
+     * Paint the spline on the provided environment, perhaps with its defining points.
+     *
+     * @param g          the graphics context
+     * @param showPoints true to show the defining points
+     * @param pointWidth width for any displayed defining point
+     */
+    public void render (Graphics2D g,
+                        boolean showPoints,
+                        double pointWidth)
+    {
+        final Rectangle clip = g.getClipBounds();
+
+        if (clip != null) {
+            final Rectangle bounds = getBounds();
+            bounds.grow(1, 1); // Since interior of a perfect vertical or horizontal line is void!
+
+            if (!clip.intersects(bounds)) {
+                return;
+            }
+        }
+
+        // The spline itself
+        g.draw(this);
+
+        // Then the defining points?
+        if (showPoints) {
+            Color oldColor = g.getColor();
+            g.setColor(Color.RED);
+
+            final double r = pointWidth / 2; // Point radius
+            final Ellipse2D ellipse = new Ellipse2D.Double();
+            final double[] coords = new double[6];
+            final PathIterator it = getPathIterator(null);
+
+            while (!it.isDone()) {
+                final int segmentKind = it.currentSegment(coords);
+                final int count = countOf(segmentKind);
+                final double x = coords[count - 2];
+                final double y = coords[count - 1];
+                ellipse.setFrame(x - r, y - r, 2 * r, 2 * r);
+                g.fill(ellipse);
+                it.next();
+            }
+
+            g.setColor(oldColor);
+        }
+    }
+
+    //------//
+    // xAtY //
+    //------//
+    /**
+     * Report x abscissa value at provided y ordinate.
+     *
+     * @param y provided ordinate
+     * @return x
+     */
+    public int xAtY (int y)
+    {
+        return (int) Math.rint(xAtY((double) y));
+    }
+
+    //----------------//
+    // xDerivativeAtY //
+    //----------------//
+    /**
+     * Report the abscissa derivative value of the spline at provided ordinate
+     * (assuming true function).
+     *
+     * @param y the provided ordinate
+     * @return the x derivative value at this ordinate
+     */
+    public double xDerivativeAtY (double y)
+    {
+        final double[] coords = new double[6];
+        final Point2D.Double p1 = new Point2D.Double();
+        final Point2D.Double p2 = new Point2D.Double();
+        final int segmentKind = getYSegment(y, coords, p1, p2);
+        final double deltaY = p2.y - p1.y;
+        final double t = (y - p1.y) / deltaY;
+        final double u = 1 - t;
+
+        // dx/dy = dx/dt * dt/dy
+        // dt/dy = 1/deltaY
+        switch (segmentKind) {
+        case SEG_LINETO:
+            return (p2.x - p1.x) / deltaY;
+
+        case SEG_QUADTO: {
+            double cpx = coords[0];
+
+            return ((-2 * p1.x * u) + (2 * cpx * (1 - (2 * t))) + (2 * p2.x * t)) / deltaY;
+        }
+
+        case SEG_CUBICTO: {
+            double cpx1 = coords[0];
+            double cpx2 = coords[2];
+
+            return ((-3 * p1.x * u * u) + (3 * cpx1 * ((u * u) - (2 * u * t)))
+                            + (3 * cpx2 * ((2 * t * u) - (t * t)))
+                            + (3 * p2.x * t * t)) / deltaY;
+        }
+
+        default:
+            throw new RuntimeException("Illegal currentSegment " + segmentKind);
+        }
+    }
+
+    //------//
+    // yAtX //
+    //------//
+    /**
+     * Report y ordinate at provided x abscissa.
+     *
+     * @param x provided abscissa
+     * @return y
+     */
+    public int yAtX (int x)
+    {
+        return (int) Math.rint(yAtX((double) x));
+    }
+
+    //----------------//
+    // yDerivativeAtX //
+    //----------------//
+    /**
+     * Report the ordinate derivative value of the spline at provided abscissa
+     * (assuming true function).
+     *
+     * @param x the provided abscissa
+     * @return the y derivative value at this abscissa
+     */
+    public double yDerivativeAtX (double x)
+    {
+        final double[] buffer = new double[6];
+        final Point2D.Double p1 = new Point2D.Double();
+        final Point2D.Double p2 = new Point2D.Double();
+        final int segmentKind = getXSegment(x, buffer, p1, p2);
+        final double deltaX = p2.x - p1.x;
+        final double t = (x - p1.x) / deltaX;
+        final double u = 1 - t;
+
+        // dy/dx = dy/dt * dt/dx
+        // dt/dx = 1/deltaX
+        switch (segmentKind) {
+        case SEG_LINETO:
+            return (p2.y - p1.y) / deltaX;
+
+        case SEG_QUADTO: {
+            double cpy = buffer[1];
+
+            return ((-2 * p1.y * u) + (2 * cpy * (1 - (2 * t))) + (2 * p2.y * t)) / deltaX;
+        }
+
+        case SEG_CUBICTO: {
+            double cpy1 = buffer[1];
+            double cpy2 = buffer[3];
+
+            return ((-3 * p1.y * u * u) + (3 * cpy1 * ((u * u) - (2 * u * t)))
+                            + (3 * cpy2 * ((2 * t * u) - (t * t)))
+                            + (3 * p2.y * t * t)) / deltaX;
+        }
+
+        default:
+            throw new RuntimeException("Illegal currentSegment " + segmentKind);
+        }
+    }
+
     //-------------//
     // interpolate //
     //-------------//
@@ -182,190 +376,6 @@ public class NaturalSpline
         }
     }
 
-    //---------------//
-    // getFirstPoint //
-    //---------------//
-    @Override
-    public Point2D getFirstPoint ()
-    {
-        if (first == null) {
-            first = super.getFirstPoint();
-        }
-
-        return new Point2D.Double(first.getX(), first.getY());
-    }
-
-    //--------------//
-    // getLastPoint //
-    //--------------//
-    @Override
-    public Point2D getLastPoint ()
-    {
-        if (last == null) {
-            last = super.getLastPoint();
-        }
-
-        return new Point2D.Double(last.getX(), last.getY());
-    }
-
-    //--------//
-    // render //
-    //--------//
-    /**
-     * Paint the spline on the provided environment, perhaps with its defining points.
-     *
-     * @param g          the graphics context
-     * @param showPoints true to show the defining points
-     * @param pointWidth width for any displayed defining point
-     */
-    public void render (Graphics2D g,
-                        boolean showPoints,
-                        double pointWidth)
-    {
-        final Rectangle clip = g.getClipBounds();
-
-        if (clip != null) {
-            final Rectangle bounds = getBounds();
-            bounds.grow(1, 1); // Since interior of a perfect vertical or horizontal line is void!
-
-            if (!clip.intersects(bounds)) {
-                return;
-            }
-        }
-
-        // The spline itself
-        g.draw(this);
-
-        // Then the defining points?
-        if (showPoints) {
-            Color oldColor = g.getColor();
-            g.setColor(Color.RED);
-
-            final double r = pointWidth / 2; // Point radius
-            final Ellipse2D ellipse = new Ellipse2D.Double();
-            final double[] coords = new double[6];
-            final PathIterator it = getPathIterator(null);
-
-            while (!it.isDone()) {
-                final int segmentKind = it.currentSegment(coords);
-                final int count = countOf(segmentKind);
-                final double x = coords[count - 2];
-                final double y = coords[count - 1];
-                ellipse.setFrame(x - r, y - r, 2 * r, 2 * r);
-                g.fill(ellipse);
-                it.next();
-            }
-
-            g.setColor(oldColor);
-        }
-    }
-
-    //------//
-    // xAtY //
-    //------//
-    public int xAtY (int y)
-    {
-        return (int) Math.rint(xAtY((double) y));
-    }
-
-    //----------------//
-    // xDerivativeAtY //
-    //----------------//
-    /**
-     * Report the abscissa derivative value of the spline at provided ordinate
-     * (assuming true function).
-     *
-     * @param y the provided ordinate
-     * @return the x derivative value at this ordinate
-     */
-    public double xDerivativeAtY (double y)
-    {
-        final double[] coords = new double[6];
-        final Point2D.Double p1 = new Point2D.Double();
-        final Point2D.Double p2 = new Point2D.Double();
-        final int segmentKind = getYSegment(y, coords, p1, p2);
-        final double deltaY = p2.y - p1.y;
-        final double t = (y - p1.y) / deltaY;
-        final double u = 1 - t;
-
-        // dx/dy = dx/dt * dt/dy
-        // dt/dy = 1/deltaY
-        switch (segmentKind) {
-        case SEG_LINETO:
-            return (p2.x - p1.x) / deltaY;
-
-        case SEG_QUADTO: {
-            double cpx = coords[0];
-
-            return ((-2 * p1.x * u) + (2 * cpx * (1 - (2 * t))) + (2 * p2.x * t)) / deltaY;
-        }
-
-        case SEG_CUBICTO: {
-            double cpx1 = coords[0];
-            double cpx2 = coords[2];
-
-            return ((-3 * p1.x * u * u) + (3 * cpx1 * ((u * u) - (2 * u * t)))
-                    + (3 * cpx2 * ((2 * t * u) - (t * t))) + (3 * p2.x * t * t)) / deltaY;
-        }
-
-        default:
-            throw new RuntimeException("Illegal currentSegment " + segmentKind);
-        }
-    }
-
-    //------//
-    // yAtX //
-    //------//
-    public int yAtX (int x)
-    {
-        return (int) Math.rint(yAtX((double) x));
-    }
-
-    //----------------//
-    // yDerivativeAtX //
-    //----------------//
-    /**
-     * Report the ordinate derivative value of the spline at provided abscissa
-     * (assuming true function).
-     *
-     * @param x the provided abscissa
-     * @return the y derivative value at this abscissa
-     */
-    public double yDerivativeAtX (double x)
-    {
-        final double[] buffer = new double[6];
-        final Point2D.Double p1 = new Point2D.Double();
-        final Point2D.Double p2 = new Point2D.Double();
-        final int segmentKind = getXSegment(x, buffer, p1, p2);
-        final double deltaX = p2.x - p1.x;
-        final double t = (x - p1.x) / deltaX;
-        final double u = 1 - t;
-
-        // dy/dx = dy/dt * dt/dx
-        // dt/dx = 1/deltaX
-        switch (segmentKind) {
-        case SEG_LINETO:
-            return (p2.y - p1.y) / deltaX;
-
-        case SEG_QUADTO: {
-            double cpy = buffer[1];
-
-            return ((-2 * p1.y * u) + (2 * cpy * (1 - (2 * t))) + (2 * p2.y * t)) / deltaX;
-        }
-
-        case SEG_CUBICTO: {
-            double cpy1 = buffer[1];
-            double cpy2 = buffer[3];
-
-            return ((-3 * p1.y * u * u) + (3 * cpy1 * ((u * u) - (2 * u * t)))
-                    + (3 * cpy2 * ((2 * t * u) - (t * t))) + (3 * p2.y * t * t)) / deltaX;
-        }
-
-        default:
-            throw new RuntimeException("Illegal currentSegment " + segmentKind);
-        }
-    }
-
     //---------------------//
     // getCubicDerivatives //
     //---------------------//
@@ -394,6 +404,7 @@ public class NaturalSpline
          *       |     1 4 1| | .  |   |3(z[n] - z[n-2])|
          *       [       1 2] [D[n]]   [3(z[n] - z[n-1])]
          * </pre>
+         * <p>
          * by using row operations to convert the matrix to upper triangular
          * and then back substitution.
          */

@@ -34,7 +34,6 @@ import java.util.Arrays;
  */
 public interface Table
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Dump the table content, with a title.
@@ -121,14 +120,12 @@ public interface Table
                    int y,
                    int val);
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // Abstract //
     //----------//
     public abstract class Abstract
             implements Table
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Width of the whole data. */
         protected final int width;
@@ -139,7 +136,6 @@ public interface Table
         /** Rectangular region of interest, if any. */
         protected final Rectangle roi;
 
-        //~ Constructors ---------------------------------------------------------------------------
         protected Abstract (int width,
                             int height,
                             Rectangle roi)
@@ -149,7 +145,6 @@ public interface Table
             this.roi = (roi != null) ? new Rectangle(roi) : null;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void dump (String title)
         {
@@ -211,12 +206,10 @@ public interface Table
     public static class Integer
             extends Abstract
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Underlying array. */
         private final int[] data;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Integer (int width,
                         int height)
         {
@@ -231,7 +224,6 @@ public interface Table
             data = table.data;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void fill (int val)
         {
@@ -326,12 +318,10 @@ public interface Table
     public static class Short
             extends Abstract
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Underlying array. */
         private final short[] data;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Short (int width,
                       int height)
         {
@@ -346,7 +336,6 @@ public interface Table
             data = table.data;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void fill (int val)
         {
@@ -441,12 +430,10 @@ public interface Table
     public static class UnsignedByte
             extends Abstract
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Underlying array. */
         protected final byte[] data;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public UnsignedByte (int width,
                              int height)
         {
@@ -461,7 +448,6 @@ public interface Table
             data = table.data;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void fill (int val)
         {

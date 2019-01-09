@@ -61,18 +61,15 @@ import java.util.Set;
  */
 public class ClumpPruner
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ClumpLinker.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     @Navigable(false)
     private final Sheet sheet;
 
     /** The engine which selects the best link pair for a given slur. */
     private final SlurLinker slurLinker;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SlursLinker object.
      *
@@ -85,7 +82,6 @@ public class ClumpPruner
         slurLinker = new SlurLinker(sheet);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // prune //
     //-------//
@@ -100,7 +96,7 @@ public class ClumpPruner
     {
         // Compute lookup areas for each slur in clump
         // If we cannot compute areas for a slur, we simply discard the slur
-        Map<Inter, Map<HorizontalSide, Area>> areas = new LinkedHashMap<Inter, Map<HorizontalSide, Area>>();
+        Map<Inter, Map<HorizontalSide, Area>> areas = new LinkedHashMap<>();
 
         for (Iterator<Inter> it = clump.iterator(); it.hasNext();) {
             SlurInter slur = (SlurInter) it.next();
@@ -147,8 +143,8 @@ public class ClumpPruner
                     final HeadInter leftMirror = (HeadInter) leftHead.getMirror();
                     final HeadInter rightMirror = (HeadInter) rightHead.getMirror();
 
-                    if ((leftHead.getIntegerPitch() == rightHead.getIntegerPitch())
-                        && (leftHead.getStaff() == rightHead.getStaff())) {
+                    if ((leftHead.getIntegerPitch() == rightHead.getIntegerPitch()) && (leftHead
+                            .getStaff() == rightHead.getStaff())) {
                         final SlurInter slur = selected.slur;
 
                         // Check there is no other chords in between
@@ -190,8 +186,7 @@ public class ClumpPruner
     private Map<HorizontalSide, Rectangle> getBounds (Set<Inter> clump,
                                                       Map<Inter, Map<HorizontalSide, Area>> areas)
     {
-        Map<HorizontalSide, Rectangle> bounds = new EnumMap<HorizontalSide, Rectangle>(
-                HorizontalSide.class);
+        Map<HorizontalSide, Rectangle> bounds = new EnumMap<>(HorizontalSide.class);
 
         for (HorizontalSide side : HorizontalSide.values()) {
             // Take union of areas for this side
@@ -230,7 +225,6 @@ public class ClumpPruner
         link.partner = mirror;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ClumpLinker //
     //-------------//
@@ -239,7 +233,6 @@ public class ClumpPruner
      */
     private class ClumpLinker
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final SystemInfo system;
 
@@ -251,14 +244,12 @@ public class ClumpPruner
         private final List<Inter> sysChords;
 
         /** Head-chords found around clump. */
-        private final Map<HorizontalSide, List<Inter>> chords = new EnumMap<HorizontalSide, List<Inter>>(
-                HorizontalSide.class);
+        private final Map<HorizontalSide, List<Inter>> chords = new EnumMap<>(HorizontalSide.class);
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public ClumpLinker (SystemInfo system,
-                            Set<Inter> clump,
-                            Map<HorizontalSide, Rectangle> bounds,
-                            List<Inter> sysChords)
+        ClumpLinker (SystemInfo system,
+                     Set<Inter> clump,
+                     Map<HorizontalSide, Rectangle> bounds,
+                     List<Inter> sysChords)
         {
             this.system = system;
             this.clump = clump;
@@ -269,7 +260,6 @@ public class ClumpPruner
             filterChords(bounds);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //--------//
         // doLink //
         //--------//
@@ -306,7 +296,7 @@ public class ClumpPruner
         public SlurEntry selectSlur (Map<Inter, Map<HorizontalSide, Area>> areas)
         {
             // Determine the pair of best links for every slur candidate
-            List<SlurEntry> entries = new ArrayList<SlurEntry>();
+            List<SlurEntry> entries = new ArrayList<>();
 
             for (Inter inter : clump) {
                 SlurInter slur = (SlurInter) inter;
@@ -366,7 +356,7 @@ public class ClumpPruner
          */
         private List<SlurEntry> getNonOrphans (List<SlurEntry> entries)
         {
-            List<SlurEntry> nonOrphans = new ArrayList<SlurEntry>();
+            List<SlurEntry> nonOrphans = new ArrayList<>();
             EntryLoop:
             for (SlurEntry entry : entries) {
                 for (HorizontalSide side : HorizontalSide.values()) {
@@ -426,15 +416,13 @@ public class ClumpPruner
                     logger.debug("   {} euclide:{}", entry, bestDist);
                 } else {
                     // Check whether embraced chords are still the same
-                    if ((bestLeft != null)
-                        && (left != null)
-                        && (left.getChord() != bestLeft.getChord())) {
+                    if ((bestLeft != null) && (left != null) && (left.getChord() != bestLeft
+                            .getChord())) {
                         break;
                     }
 
-                    if ((bestRight != null)
-                        && (right != null)
-                        && (right.getChord() != bestRight.getChord())) {
+                    if ((bestRight != null) && (right != null) && (right.getChord() != bestRight
+                            .getChord())) {
                         break;
                     }
 
@@ -461,7 +449,6 @@ public class ClumpPruner
      */
     private static class SlurEntry
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         public static Comparator<SlurEntry> byWeightedDist = new Comparator<SlurEntry>()
         {
@@ -473,22 +460,19 @@ public class ClumpPruner
             }
         };
 
-        //~ Instance fields ------------------------------------------------------------------------
         /** The slur concerned. */
         public final SlurInter slur;
 
         /** The two best head links (left and right). */
         public final Map<HorizontalSide, SlurHeadLink> links;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public SlurEntry (SlurInter slur,
-                          Map<HorizontalSide, SlurHeadLink> links)
+        SlurEntry (SlurInter slur,
+                   Map<HorizontalSide, SlurHeadLink> links)
         {
             this.slur = slur;
             this.links = links;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Compute the mean euclidian-distance of this entry
          *

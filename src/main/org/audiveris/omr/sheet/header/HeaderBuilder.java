@@ -58,7 +58,8 @@ import java.util.ArrayList;
  * of components among system staves, and even the horizontal limits of items slices within the
  * key-sig components.
  * <p>
- * Cross-validation at system level: <ul>
+ * Cross-validation at system level:
+ * <ul>
  * <li>Clefs:
  * A clef is mandatory at the beginning of each staff (in the header) and may be different from one
  * staff to the other.
@@ -76,13 +77,11 @@ import java.util.ArrayList;
  */
 public class HeaderBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(HeaderBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -102,7 +101,6 @@ public class HeaderBuilder
     /** Manager for column of time signatures. */
     private final HeaderTimeColumn timeColumn;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new HeaderBuilder object.
      *
@@ -119,7 +117,6 @@ public class HeaderBuilder
         timeColumn = new HeaderTimeColumn(system);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // plot //
     //------//
@@ -283,7 +280,7 @@ public class HeaderBuilder
             final int start = staff.getHeaderStart();
             final int stop = staff.getHeaderStop();
 
-            for (BarlineInter bar : new ArrayList<BarlineInter>(staff.getBarlines())) {
+            for (BarlineInter bar : new ArrayList<>(staff.getBarlines())) {
                 final Point center = bar.getCenter();
 
                 if ((center.x > start) && (center.x < stop) && !bar.isStaffEnd(LEFT)) {
@@ -348,14 +345,12 @@ public class HeaderBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction maxHeaderWidth = new Scale.Fraction(
                 15.0,

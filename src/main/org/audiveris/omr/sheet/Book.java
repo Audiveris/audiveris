@@ -68,6 +68,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -81,6 +82,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -117,7 +119,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Methods are organized as follows:
  * <dl>
  * <dt>Administration</dt>
- * <dd><ul>
+ * <dd>
+ * <ul>
  * <li>{@link #getInputPath}</li>
  * <li>{@link #getAlias}</li>
  * <li>{@link #setAlias}</li>
@@ -136,10 +139,12 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getLock}</li>
  * <li>{@link #openBookFile}</li>
  * <li>{@link #openSheetFolder}</li>
- * </ul></dd>
+ * </ul>
+ * </dd>
  *
  * <dt>SheetStubs</dt>
- * <dd><ul>
+ * <dd>
+ * <ul>
  * <li>{@link #createStubs}</li>
  * <li>{@link #createStubsTabs}</li>
  * <li>{@link #loadSheetImage}</li>
@@ -152,17 +157,21 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #hideInvalidStubs}</li>
  * <li>{@link #ids}</li>
  * <li>{@link #swapAllSheets}</li>
- * </ul></dd>
+ * </ul>
+ * </dd>
  *
  * <dt>Parameters</dt>
- * <dd><ul>
+ * <dd>
+ * <ul>
  * <li>{@link #getBinarizationFilter}</li>
  * <li>{@link #getOcrLanguages}</li>
  * <li>{@link #getProcessingSwitches}</li>
- * </ul></dd>
+ * </ul>
+ * </dd>
  *
  * <dt>Transcription</dt>
- * <dd><ul>
+ * <dd>
+ * <ul>
  * <li>{@link #reset}</li>
  * <li>{@link #resetToBinary}</li>
  * <li>{@link #resetToAnnotations}</li>
@@ -172,20 +181,24 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #reduceScores}</li>
  * <li>{@link #getScore}</li>
  * <li>{@link #getScores}</li>
- * </ul></dd>
+ * </ul>
+ * </dd>
  *
  * <dt>Samples</dt>
- * <dd><ul>
+ * <dd>
+ * <ul>
  * <li>{@link #getSampleRepository}</li>
  * <li>{@link #getSpecificSampleRepository}</li>
  * <li>{@link #hasAllocatedRepository}</li>
  * <li>{@link #hasSpecificRepository}</li>
  * <li>{@link #sample}</li>
  * <li>{@link #annotate}</li>
- * </ul></dd>
+ * </ul>
+ * </dd>
  *
  * <dt>Artifacts</dt>
- * <dd><ul>
+ * <dd>
+ * <ul>
  * <li>{@link #getBrowserFrame}</li>
  * <li>{@link #getExportPathSansExt}</li>
  * <li>{@link #setExportPathSansExt}</li>
@@ -200,9 +213,10 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #store(java.nio.file.Path, boolean)}</li>
  * <li>{@link #storeBookInfo}</li>
  * <li>{@link #loadBook}</li>
- * </ul></dd>
+ * </ul>
+ * </dd>
  * </dl>
- * <p>
+ *
  * <img src="doc-files/Book-Detail.png" alt="Book detals UML">
  *
  * @author Hervé Bitteur
@@ -211,21 +225,17 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "book")
 public class Book
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(Book.class);
 
     /** File name for book internals in book file system: {@value}. */
     public static final String BOOK_INTERNALS = "book.xml";
 
-    private static final Constants constants = new Constants();
-
-    private static final Logger logger = LoggerFactory.getLogger(
-            Book.class);
-
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
@@ -247,6 +257,7 @@ public class Book
 
     /** Input path of the related image(s) file, if any. */
     @XmlAttribute(name = "path")
+    @XmlJavaTypeAdapter(Jaxb.PathAdapter.class)
     private final Path path;
 
     /** Sheet offset of image file with respect to full work, if any. */
@@ -275,11 +286,11 @@ public class Book
 
     /** Sequence of all sheets stubs got from image file. */
     @XmlElement(name = "sheet")
-    private final List<SheetStub> stubs = new ArrayList<SheetStub>();
+    private final List<SheetStub> stubs = new ArrayList<>();
 
     /** Logical scores for this book. */
     @XmlElement(name = "score")
-    private final List<Score> scores = new ArrayList<Score>();
+    private final List<Score> scores = new ArrayList<>();
 
     // Transient data
     //---------------
@@ -311,7 +322,6 @@ public class Book
     /** Book-level sample repository. */
     private SampleRepository repository;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a Book with a path to an input images file.
      *
@@ -339,7 +349,7 @@ public class Book
         Objects.requireNonNull(nameSansExt, "Trying to create a meta Book with null name");
 
         path = null;
-        subBooks = new ArrayList<Book>();
+        subBooks = new ArrayList<>();
 
         initTransients(nameSansExt, null);
     }
@@ -353,7 +363,6 @@ public class Book
         subBooks = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // annotate //
     //----------//
@@ -388,13 +397,13 @@ public class Book
             }
 
             logger.info("Book annotated as {}", path);
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             logger.warn("Error annotating book {} {}", this, ex.toString(), ex);
         } finally {
             if (root != null) {
                 try {
                     root.getFileSystem().close();
-                } catch (Exception ignored) {
+                } catch (IOException ignored) {
                 }
             }
         }
@@ -412,8 +421,7 @@ public class Book
 
         // Close contained stubs/sheets
         if (OMR.gui != null) {
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
@@ -421,7 +429,7 @@ public class Book
                     try {
                         LogUtil.start(Book.this);
 
-                        for (SheetStub stub : new ArrayList<SheetStub>(stubs)) {
+                        for (SheetStub stub : new ArrayList<>(stubs)) {
                             LogUtil.start(stub);
 
                             // Close stub UI, if any
@@ -451,147 +459,6 @@ public class Book
         logger.debug("Book closed.");
     }
 
-    //-----------------//
-    // closeFileSystem //
-    //-----------------//
-    /**
-     * Close the provided (book) file system.
-     *
-     * @param fileSystem the book file system
-     */
-    public static void closeFileSystem (FileSystem fileSystem)
-    {
-        try {
-            fileSystem.close();
-
-            logger.info("Book file system closed.");
-        } catch (Exception ex) {
-            logger.warn("Could not close book file system " + ex, ex);
-        }
-    }
-
-    //-----//
-    // ids //
-    //-----//
-    /**
-     * Build a string with just the IDs of the stub collection.
-     *
-     * @param stubs the collection of stub instances
-     * @return the string built
-     */
-    public static String ids (List<SheetStub> stubs)
-    {
-        if (stubs == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-
-        for (SheetStub entity : stubs) {
-            sb.append("#").append(entity.getNumber());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
-    //----------//
-    // loadBook //
-    //----------//
-    /**
-     * Load a book out of a provided book file.
-     *
-     * @param bookPath path to the (zipped) book file
-     * @return the loaded book if successful
-     */
-    public static Book loadBook (Path bookPath)
-    {
-        StopWatch watch = new StopWatch("loadBook " + bookPath);
-        Book book = null;
-
-        try {
-            logger.info("Loading book {}", bookPath);
-            watch.start("book");
-
-            // Open book file
-            Path rootPath = ZipFileSystem.open(bookPath);
-
-            // Load book internals (just the stubs) out of book.xml
-            Path internalsPath = rootPath.resolve(BOOK_INTERNALS);
-            InputStream is = Files.newInputStream(internalsPath, StandardOpenOption.READ);
-
-            Unmarshaller um = getJaxbContext().createUnmarshaller();
-            book = (Book) um.unmarshal(is);
-            book.getLock().lock();
-            LogUtil.start(book);
-
-            boolean ok = book.initTransients(null, bookPath);
-
-            is.close(); // Close input stream
-            rootPath.getFileSystem().close(); // Close book file
-
-            if (!ok) {
-                logger.info("Discarded {}", bookPath);
-
-                return null;
-            }
-
-            book.checkScore(); // TODO: remove ASAP
-
-            return book;
-        } catch (Exception ex) {
-            logger.warn("Error loading book " + bookPath + " " + ex, ex);
-
-            return null;
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-
-            if (book != null) {
-                book.getLock().unlock();
-            }
-
-            LogUtil.stopBook();
-        }
-    }
-
-    //--------------//
-    // openBookFile //
-    //--------------//
-    /**
-     * Open the book file (supposed to already exist at location provided by
-     * '{@code bookPath}' parameter) for reading or writing.
-     * <p>
-     * When IO operations are finished, the book file must be closed via
-     * {@link #closeFileSystem(java.nio.file.FileSystem)}
-     *
-     * @param bookPath book path name
-     * @return the root path of the (zipped) book file system
-     */
-    public static Path openBookFile (Path bookPath)
-    {
-        if (bookPath == null) {
-            throw new IllegalStateException("bookPath is null");
-        }
-
-        try {
-            logger.debug("Book file system opened");
-
-            FileSystem fileSystem = FileSystems.newFileSystem(bookPath, null);
-
-            return fileSystem.getPath(fileSystem.getSeparator());
-        } catch (FileNotFoundException ex) {
-            logger.warn("File not found: " + bookPath, ex);
-        } catch (IOException ex) {
-            logger.warn("Error reading book:" + bookPath, ex);
-        }
-
-        return null;
-    }
-
     //-------------//
     // createStubs //
     //-------------//
@@ -611,7 +478,7 @@ public class Book
             logger.info("{} sheet{} in {}", imageCount, ((imageCount > 1) ? "s" : ""), path);
 
             if (sheetNumbers == null) {
-                sheetNumbers = new TreeSet<Integer>();
+                sheetNumbers = new TreeSet<>();
             }
 
             if (sheetNumbers.isEmpty()) {
@@ -701,7 +568,8 @@ public class Book
 
         try {
             SwingUtilities.invokeAndWait(doRun);
-        } catch (Exception ex) {
+        } catch (InterruptedException |
+                 InvocationTargetException ex) {
             logger.warn("Error in createStubsTabs, {}", ex, ex);
         }
     }
@@ -777,6 +645,20 @@ public class Book
         return alias;
     }
 
+    //----------//
+    // setAlias //
+    //----------//
+    /**
+     * Set the book alias
+     *
+     * @param alias the book alias
+     */
+    public void setAlias (String alias)
+    {
+        this.alias = alias;
+        radix = alias;
+    }
+
     //-----------------------//
     // getBinarizationFilter //
     //-----------------------//
@@ -801,7 +683,7 @@ public class Book
     /**
      * Report where the book is kept.
      *
-     * @return the book path
+     * @return the path to book .omr file
      */
     public Path getBookPath ()
     {
@@ -837,6 +719,19 @@ public class Book
     public Path getExportPathSansExt ()
     {
         return exportPathSansExt;
+    }
+
+    //----------------------//
+    // setExportPathSansExt //
+    //----------------------//
+    /**
+     * Remember the path (without extension) where the book is to be exported.
+     *
+     * @param exportPathSansExt the book export path (without extension)
+     */
+    public void setExportPathSansExt (Path exportPathSansExt)
+    {
+        this.exportPathSansExt = exportPathSansExt;
     }
 
     //-------------------//
@@ -915,6 +810,19 @@ public class Book
         return offset;
     }
 
+    //-----------//
+    // setOffset //
+    //-----------//
+    /**
+     * Assign this book offset (WRT containing super-book)
+     *
+     * @param offset the offset to set
+     */
+    public void setOffset (Integer offset)
+    {
+        this.offset = offset;
+    }
+
     //--------------//
     // getPrintPath //
     //--------------//
@@ -926,6 +834,19 @@ public class Book
     public Path getPrintPath ()
     {
         return printPath;
+    }
+
+    //--------------//
+    // setPrintPath //
+    //--------------//
+    /**
+     * Remember to which path book print data is to be written.
+     *
+     * @param printPath the print path
+     */
+    public void setPrintPath (Path printPath)
+    {
+        this.printPath = printPath;
     }
 
     //-----------------------//
@@ -1069,7 +990,7 @@ public class Book
      */
     public List<SheetStub> getValidStubs ()
     {
-        List<SheetStub> valids = new ArrayList<SheetStub>();
+        List<SheetStub> valids = new ArrayList<>();
 
         for (SheetStub stub : stubs) {
             if (stub.isValid()) {
@@ -1119,8 +1040,7 @@ public class Book
      */
     public void hideInvalidStubs ()
     {
-        SwingUtilities.invokeLater(
-                new Runnable()
+        SwingUtilities.invokeLater(new Runnable()
         {
             @Override
             public void run ()
@@ -1162,6 +1082,19 @@ public class Book
         return closing;
     }
 
+    //------------//
+    // setClosing //
+    //------------//
+    /**
+     * Flag this book as closing.
+     *
+     * @param closing the closing to set
+     */
+    public void setClosing (boolean closing)
+    {
+        this.closing = closing;
+    }
+
     //---------//
     // isDirty //
     //---------//
@@ -1175,11 +1108,24 @@ public class Book
         return dirty;
     }
 
+    //----------//
+    // setDirty //
+    //----------//
+    /**
+     * Set the dirty flag.
+     *
+     * @param dirty the new flag value
+     */
+    public void setDirty (boolean dirty)
+    {
+        this.dirty = dirty;
+    }
+
     //------------//
     // isModified //
     //------------//
     /**
-     * Report whether the book has been modified with respect to its book data.
+     * Report whether the book has been modified with respect to its persisted data.
      *
      * @return true if modified
      */
@@ -1196,6 +1142,54 @@ public class Book
         for (SheetStub stub : stubs) {
             if (stub.isModified()) {
                 return true; // This sheet is modified
+            }
+        }
+
+        return false;
+    }
+
+    //-------------//
+    // setModified //
+    //-------------//
+    /**
+     * Set the modified flag.
+     *
+     * @param modified the new flag value
+     */
+    public void setModified (boolean modified)
+    {
+        this.modified = modified;
+
+        if (OMR.gui != null) {
+            SwingUtilities.invokeLater(new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    final StubsController controller = StubsController.getInstance();
+                    final SheetStub stub = controller.getSelectedStub();
+
+                    if ((stub != null) && (stub.getBook() == Book.this)) {
+                        controller.refresh();
+                    }
+                }
+            });
+        }
+    }
+
+    //------------//
+    // isUpgraded //
+    //------------//
+    /**
+     * Report whether the book has been upgraded with respect to its persisted data.
+     *
+     * @return true if upgraded
+     */
+    public boolean isUpgraded ()
+    {
+        for (SheetStub stub : stubs) {
+            if (stub.isUpgraded()) {
+                return true; // This sheet is upgraded
             }
         }
 
@@ -1379,15 +1373,13 @@ public class Book
                 boolean someFailure = false;
                 StepMonitoring.notifyStart();
 
-                if (isMultiSheet()
-                    && constants.processAllStubsInParallel.isSet()
-                    && (OmrExecutors.defaultParallelism.getValue() == true)) {
+                if (isMultiSheet() && constants.processAllStubsInParallel.isSet()
+                            && (OmrExecutors.defaultParallelism.getValue() == true)) {
                     // Process all stubs in parallel
-                    List<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>();
+                    List<Callable<Boolean>> tasks = new ArrayList<>();
 
                     for (final SheetStub stub : concernedStubs) {
-                        tasks.add(
-                                new Callable<Boolean>()
+                        tasks.add(new Callable<Boolean>()
                         {
                             @Override
                             public Boolean call ()
@@ -1419,7 +1411,8 @@ public class Book
                                 if (!future.get()) {
                                     someFailure = true;
                                 }
-                            } catch (Exception ex) {
+                            } catch (InterruptedException |
+                                     ExecutionException ex) {
                                 logger.warn("Future exception", ex);
                                 someFailure = true;
                             }
@@ -1579,116 +1572,6 @@ public class Book
         }
     }
 
-    //----------//
-    // setAlias //
-    //----------//
-    /**
-     * Set the book alias
-     *
-     * @param alias the book alias
-     */
-    public void setAlias (String alias)
-    {
-        this.alias = alias;
-        radix = alias;
-    }
-
-    //------------//
-    // setClosing //
-    //------------//
-    /**
-     * Flag this book as closing.
-     *
-     * @param closing the closing to set
-     */
-    public void setClosing (boolean closing)
-    {
-        this.closing = closing;
-    }
-
-    //----------//
-    // setDirty //
-    //----------//
-    /**
-     * Set the dirty flag.
-     *
-     * @param dirty the new flag value
-     */
-    public void setDirty (boolean dirty)
-    {
-        this.dirty = dirty;
-    }
-
-    //----------------------//
-    // setExportPathSansExt //
-    //----------------------//
-    /**
-     * Remember the path (without extension) where the book is to be exported.
-     *
-     * @param exportPathSansExt the book export path (without extension)
-     */
-    public void setExportPathSansExt (Path exportPathSansExt)
-    {
-        this.exportPathSansExt = exportPathSansExt;
-    }
-
-    //-------------//
-    // setModified //
-    //-------------//
-    /**
-     * Set the modified flag.
-     *
-     * @param modified the new flag value
-     */
-    public void setModified (boolean modified)
-    {
-        ///logger.info("{} setModified {}", this, modified);
-        this.modified = modified;
-
-        if (OMR.gui != null) {
-            SwingUtilities.invokeLater(
-                    new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    final StubsController controller = StubsController.getInstance();
-                    final SheetStub stub = controller.getSelectedStub();
-
-                    if ((stub != null) && (stub.getBook() == Book.this)) {
-                        controller.refresh();
-                    }
-                }
-            });
-        }
-    }
-
-    //-----------//
-    // setOffset //
-    //-----------//
-    /**
-     * Assign this book offset (WRT containing super-book)
-     *
-     * @param offset the offset to set
-     */
-    public void setOffset (Integer offset)
-    {
-        this.offset = offset;
-    }
-
-    //--------------//
-    // setPrintPath //
-    //--------------//
-    /**
-     * Remember to which path book print data is to be written.
-     *
-     * @param printPath the print path
-     */
-    public void setPrintPath (Path printPath)
-    {
-        this.printPath = printPath;
-    }
-
     //-------//
     // store //
     //-------//
@@ -1721,8 +1604,8 @@ public class Book
             checkRadixChange(bookPath);
             logger.debug("Storing book...");
 
-            if ((this.bookPath == null)
-                || this.bookPath.toAbsolutePath().equals(bookPath.toAbsolutePath())) {
+            if ((this.bookPath == null) || this.bookPath.toAbsolutePath().equals(
+                    bookPath.toAbsolutePath())) {
                 if (this.bookPath == null) {
                     root = ZipFileSystem.create(bookPath);
                     diskWritten = true;
@@ -1737,7 +1620,7 @@ public class Book
 
                 // Contained sheets
                 for (SheetStub stub : stubs) {
-                    if (stub.isModified()) {
+                    if (stub.isModified() || stub.isUpgraded()) {
                         final Path sheetFolder = root.resolve(INTERNALS_RADIX + stub.getNumber());
                         stub.getSheet().store(sheetFolder, null);
                         diskWritten = true;
@@ -1768,7 +1651,7 @@ public class Book
                     }
 
                     // Update modified sheet files
-                    if (stub.isModified()) {
+                    if (stub.isModified() || stub.isUpgraded()) {
                         stub.getSheet().store(sheetFolder, oldSheetFolder);
                     }
                 }
@@ -1783,7 +1666,7 @@ public class Book
             if (diskWritten) {
                 logger.info("Book stored as {}", bookPath);
             }
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             logger.warn("Error storing " + this + " to " + bookPath + " ex:" + ex, ex);
         } finally {
             if (root != null) {
@@ -1839,7 +1722,7 @@ public class Book
      */
     public void swapAllSheets ()
     {
-        if (isModified()) {
+        if (isModified() || isUpgraded()) {
             logger.info("{} storing", this);
             store();
         }
@@ -1917,7 +1800,7 @@ public class Book
         } else {
             try {
                 // Determine just the impacted pageRefs
-                final SortedSet<PageRef> impactedRefs = new TreeSet<PageRef>();
+                final SortedSet<PageRef> impactedRefs = new TreeSet<>();
                 final int stubNumber = currentStub.getNumber();
 
                 if (!currentStub.getPageRefs().isEmpty()) {
@@ -1925,7 +1808,8 @@ public class Book
                     final PageRef firstPageRef = currentStub.getFirstPageRef();
 
                     if (!firstPageRef.isMovementStart()) {
-                        final SheetStub prevStub = (stubNumber > 1) ? stubs.get(stubNumber - 2) : null;
+                        final SheetStub prevStub = (stubNumber > 1) ? stubs.get(stubNumber - 2)
+                                : null;
 
                         if (prevStub != null) {
                             final PageRef prevPageRef = prevStub.getLastPageRef();
@@ -2034,7 +1918,7 @@ public class Book
             }
 
             return true;
-        } catch (Throwable ex) {
+        } catch (IllegalArgumentException ex) {
             logger.error("Error while checking versions " + ex, ex);
 
             return false; // Safer
@@ -2060,21 +1944,6 @@ public class Book
         }
     }
 
-    //------------//
-    // checkAlias //
-    //------------//
-    private static String checkAlias (Path path)
-    {
-        // Alias?
-        if (AliasPatterns.useAliasPatterns()) {
-            final String nameSansExt = FileUtil.getNameSansExtension(path);
-
-            return BookManager.getInstance().getAlias(nameSansExt);
-        }
-
-        return null;
-    }
-
     //------------------//
     // checkRadixChange //
     //------------------//
@@ -2087,9 +1956,8 @@ public class Book
     private void checkRadixChange (Path bookPath)
     {
         // Are we changing the target name WRT the default name?
-        final String newRadix = FileUtil.avoidExtensions(
-                bookPath.getFileName(),
-                OMR.BOOK_EXTENSION).toString();
+        final String newRadix = FileUtil.avoidExtensions(bookPath.getFileName(), OMR.BOOK_EXTENSION)
+                .toString();
 
         if (!newRadix.equals(radix)) {
             // Update book radix
@@ -2100,8 +1968,7 @@ public class Book
 
             if (OMR.gui != null) {
                 // Update UI first sheet tab
-                SwingUtilities.invokeLater(
-                        new Runnable()
+                SwingUtilities.invokeLater(new Runnable()
                 {
                     @Override
                     public void run ()
@@ -2128,57 +1995,6 @@ public class Book
                 break;
             }
         }
-    }
-
-    //----------------//
-    // createBookFile //
-    //----------------//
-    /**
-     * Create a new book file system dedicated to this book at the location provided
-     * by '{@code bookpath}' member.
-     * If such file already exists, it is deleted beforehand.
-     * <p>
-     * When IO operations are finished, the book file must be closed via
-     * {@link #closeFileSystem(java.nio.file.FileSystem)}
-     *
-     * @return the root path of the (zipped) book file system
-     */
-    private static Path createBookFile (Path bookPath)
-            throws IOException
-    {
-        if (bookPath == null) {
-            throw new IllegalStateException("bookPath is null");
-        }
-
-        try {
-            Files.deleteIfExists(bookPath);
-        } catch (IOException ex) {
-            logger.warn("Error deleting book: " + bookPath, ex);
-        }
-
-        // Make sure the containing folder exists
-        Files.createDirectories(bookPath.getParent());
-
-        // Make it a zip file
-        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(bookPath.toFile()));
-        zos.close();
-
-        // Finally open the book file just created
-        return ZipFileSystem.open(bookPath);
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(Book.class, RunTable.class);
-        }
-
-        return jaxbContext;
     }
 
     //--------------//
@@ -2216,7 +2032,7 @@ public class Book
     //-------------------//
     private List<SheetStub> getConcernedStubs (Set<Integer> sheetIds)
     {
-        List<SheetStub> list = new ArrayList<SheetStub>();
+        List<SheetStub> list = new ArrayList<>();
 
         for (SheetStub stub : getValidStubs()) {
             if ((sheetIds == null) || sheetIds.contains(stub.getNumber())) {
@@ -2336,10 +2152,9 @@ public class Book
                         logger.warn(msg);
 
                         // Prompt user for resetting project sheets?
-                        if ((OMR.gui == null)
-                            || OMR.gui.displayConfirmation(
-                                        msg + "\nConfirm reset to binary?",
-                                        "Non compatible book version")) {
+                        if ((OMR.gui == null) || OMR.gui.displayConfirmation(
+                                msg + "\nConfirm reset to binary?",
+                                "Non compatible book version")) {
                             resetToBinary();
                             logger.info("Book {} reset to binary.", radix);
                             version = WellKnowns.TOOL_REF;
@@ -2414,7 +2229,7 @@ public class Book
      */
     private List<Score> scoresOf (SortedSet<PageRef> refs)
     {
-        final List<Score> impacted = new ArrayList<Score>();
+        final List<Score> impacted = new ArrayList<>();
 
         if (!refs.isEmpty()) {
             final int firstNumber = refs.first().getSheetNumber();
@@ -2429,7 +2244,7 @@ public class Book
                     break;
                 }
 
-                List<PageRef> scoreRefs = new ArrayList<PageRef>(score.getPageRefs());
+                List<PageRef> scoreRefs = new ArrayList<>(score.getPageRefs());
                 scoreRefs.retainAll(refs);
 
                 if (!scoreRefs.isEmpty()) {
@@ -2441,14 +2256,221 @@ public class Book
         return impacted;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------------//
+    // closeFileSystem //
+    //-----------------//
+    /**
+     * Close the provided (book) file system.
+     *
+     * @param fileSystem the book file system
+     */
+    public static void closeFileSystem (FileSystem fileSystem)
+    {
+        try {
+            fileSystem.close();
+
+            logger.info("Book file system closed.");
+        } catch (IOException ex) {
+            logger.warn("Could not close book file system " + ex, ex);
+        }
+    }
+
+    //-----//
+    // ids //
+    //-----//
+    /**
+     * Build a string with just the IDs of the stub collection.
+     *
+     * @param stubs the collection of stub instances
+     * @return the string built
+     */
+    public static String ids (List<SheetStub> stubs)
+    {
+        if (stubs == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+
+        for (SheetStub entity : stubs) {
+            sb.append("#").append(entity.getNumber());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
+    //----------//
+    // loadBook //
+    //----------//
+    /**
+     * Load a book out of a provided book file.
+     *
+     * @param bookPath path to the (zipped) book file
+     * @return the loaded book if successful
+     */
+    public static Book loadBook (Path bookPath)
+    {
+        StopWatch watch = new StopWatch("loadBook " + bookPath);
+        Book book = null;
+
+        try {
+            logger.info("Loading book {}", bookPath);
+            watch.start("book");
+
+            // Open book file
+            Path rootPath = ZipFileSystem.open(bookPath);
+
+            // Load book internals (just the stubs) out of book.xml
+            Path internalsPath = rootPath.resolve(BOOK_INTERNALS);
+
+            try (InputStream is = Files.newInputStream(internalsPath, StandardOpenOption.READ)) {
+                JAXBContext ctx = getJaxbContext();
+                Unmarshaller um = ctx.createUnmarshaller();
+                ///Unmarshaller um = getJaxbContext().createUnmarshaller();
+                book = (Book) um.unmarshal(is);
+                LogUtil.start(book);
+                book.getLock().lock();
+                rootPath.getFileSystem().close(); // Close book file
+
+                boolean ok = book.initTransients(null, bookPath);
+
+                if (!ok) {
+                    logger.info("Discarded {}", bookPath);
+
+                    return null;
+                }
+
+                book.checkScore(); // TODO: remove ASAP
+
+                return book;
+            }
+        } catch (IOException |
+                 JAXBException ex) {
+            logger.warn("Error loading book " + bookPath + " " + ex, ex);
+
+            return null;
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+
+            if (book != null) {
+                book.getLock().unlock();
+            }
+
+            LogUtil.stopBook();
+        }
+    }
+
+    //--------------//
+    // openBookFile //
+    //--------------//
+    /**
+     * Open the book file (supposed to already exist at location provided by
+     * '{@code bookPath}' parameter) for reading or writing.
+     * <p>
+     * When IO operations are finished, the book file must be closed via
+     * {@link #closeFileSystem(java.nio.file.FileSystem)}
+     *
+     * @param bookPath book path name
+     * @return the root path of the (zipped) book file system
+     */
+    public static Path openBookFile (Path bookPath)
+    {
+        if (bookPath == null) {
+            throw new IllegalStateException("bookPath is null");
+        }
+
+        try {
+            logger.debug("Book file system opened");
+
+            FileSystem fileSystem = FileSystems.newFileSystem(bookPath, null);
+
+            return fileSystem.getPath(fileSystem.getSeparator());
+        } catch (FileNotFoundException ex) {
+            logger.warn("File not found: " + bookPath, ex);
+        } catch (IOException ex) {
+            logger.warn("Error reading book:" + bookPath, ex);
+        }
+
+        return null;
+    }
+
+    //------------//
+    // checkAlias //
+    //------------//
+    private static String checkAlias (Path path)
+    {
+        // Alias?
+        if (AliasPatterns.useAliasPatterns()) {
+            final String nameSansExt = FileUtil.getNameSansExtension(path);
+
+            return BookManager.getInstance().getAlias(nameSansExt);
+        }
+
+        return null;
+    }
+
+    //----------------//
+    // createBookFile //
+    //----------------//
+    /**
+     * Create a new book file system dedicated to this book at the location provided
+     * by '{@code bookpath}' member.
+     * If such file already exists, it is deleted beforehand.
+     * <p>
+     * When IO operations are finished, the book file must be closed via
+     * {@link #closeFileSystem(java.nio.file.FileSystem)}
+     *
+     * @return the root path of the (zipped) book file system
+     */
+    private static Path createBookFile (Path bookPath)
+            throws IOException
+    {
+        if (bookPath == null) {
+            throw new IllegalStateException("bookPath is null");
+        }
+
+        try {
+            Files.deleteIfExists(bookPath);
+        } catch (IOException ex) {
+            logger.warn("Error deleting book: " + bookPath, ex);
+        }
+
+        // Make sure the containing folder exists
+        Files.createDirectories(bookPath.getParent());
+
+        // Make it a zip file
+        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(bookPath.toFile()));
+        zos.close();
+
+        // Finally open the book file just created
+        return ZipFileSystem.open(bookPath);
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(Book.class, RunTable.class);
+        }
+
+        return jaxbContext;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
@@ -2470,10 +2492,9 @@ public class Book
     //------------------//
     // OcrBookLanguages //
     //------------------//
-    private static final class OcrBookLanguages
+    private static class OcrBookLanguages
             extends Param<String>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public boolean setSpecific (String specific)
@@ -2485,14 +2506,12 @@ public class Book
             return super.setSpecific(specific);
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         /**
          * JAXB adapter to mimic XmlValue.
          */
         public static class Adapter
                 extends XmlAdapter<String, OcrBookLanguages>
         {
-            //~ Methods ----------------------------------------------------------------------------
 
             @Override
             public String marshal (OcrBookLanguages val)

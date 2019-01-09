@@ -43,20 +43,17 @@ import javax.swing.SwingUtilities;
  */
 public class StepMonitor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StepMonitor.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Progress bar for actions performed on sheet. */
     private final JProgressBar bar = new MyJProgressBar();
 
     /** Total active actions. */
     private int actives = 0;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a user monitor on step processing.
      * There is exactly one instance of this class (and no instance when running in batch mode)
@@ -70,8 +67,6 @@ public class StepMonitor
         bar.setForeground(Colors.PROGRESS_BAR);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //
     //--------------//
     // getComponent //
     //--------------//
@@ -96,13 +91,38 @@ public class StepMonitor
     public void notifyMsg (final String msg)
     {
         logger.debug("notifyMsg '{}'", msg);
-        SwingUtilities.invokeLater(
-                new Runnable()
+        SwingUtilities.invokeLater(new Runnable()
         {
             @Override
             public void run ()
             {
                 bar.setString(msg);
+            }
+        });
+    }
+
+    //--------//
+    // setBar //
+    //--------//
+    /**
+     * Sets the progress bar to show a percentage.
+     *
+     * @param amount percentage, in decimal form, from 0.0 to 1.0
+     */
+    private void setBar (final double amount)
+    {
+        logger.debug("setBar amount:{}", amount);
+        SwingUtilities.invokeLater(new Runnable()
+        {
+            @Override
+            public void run ()
+            {
+                int divisions = constants.divisions.getValue();
+                bar.setMinimum(0);
+                bar.setMaximum(divisions);
+
+                int val = (int) Math.round(divisions * amount);
+                bar.setValue(val);
             }
         });
     }
@@ -151,8 +171,7 @@ public class StepMonitor
     {
         if (!constants.useIndeterminate.isSet()) {
             logger.debug("animate");
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
@@ -170,45 +189,16 @@ public class StepMonitor
         }
     }
 
-    //--------//
-    // setBar //
-    //--------//
-    /**
-     * Sets the progress bar to show a percentage.
-     *
-     * @param amount percentage, in decimal form, from 0.0 to 1.0
-     */
-    private void setBar (final double amount)
-    {
-        logger.debug("setBar amount:{}", amount);
-        SwingUtilities.invokeLater(
-                new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                int divisions = constants.divisions.getValue();
-                bar.setMinimum(0);
-                bar.setMaximum(divisions);
-
-                int val = (int) Math.round(divisions * amount);
-                bar.setValue(val);
-            }
-        });
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Integer divisions = new Constant.Integer(
                 "divisions",
-                1000,
+                1_000,
                 "Number of divisions (amount of precision) of step monitor, minimum 10");
 
         private final Ratio ratio = new Ratio(
@@ -226,7 +216,6 @@ public class StepMonitor
     private static class MyJProgressBar
             extends JProgressBar
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void paintComponent (Graphics g)

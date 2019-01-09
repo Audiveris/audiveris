@@ -42,10 +42,8 @@ import java.nio.file.Path;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
-
 import static javax.swing.Action.NAME;
 import static javax.swing.Action.SHORT_DESCRIPTION;
-
 import javax.swing.JMenuItem;
 
 /**
@@ -57,15 +55,12 @@ import javax.swing.JMenuItem;
 public class ExtractionMenu
         extends LocationDependentMenu
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ExtractionMenu.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying sheet. */
     private final Sheet sheet;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the extraction menu
      *
@@ -80,7 +75,6 @@ public class ExtractionMenu
         add(new JMenuItem(new AreaAction())); // Save just a rectangle of sheet
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // save //
     //------//
@@ -110,7 +104,6 @@ public class ExtractionMenu
         logger.info("Extraction stored as {}", file);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // AreaAction //
     //------------//
@@ -121,26 +114,23 @@ public class ExtractionMenu
             extends AbstractAction
             implements LocationDependent
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Clamped area. */
         private Rectangle area;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public AreaAction ()
+        AreaAction ()
         {
             putValue(SHORT_DESCRIPTION, "Save the selected area to disk");
             setEnabled(false); // By default
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
             try {
                 // Extract the area selected from initial image
                 save(sheet.getPicture().getImage(area));
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 logger.warn("Error in area extraction, " + ex, ex);
             }
         }
@@ -163,6 +153,13 @@ public class ExtractionMenu
                 putValue(NAME, "no area selected");
             }
         }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     //-------------//
@@ -174,24 +171,29 @@ public class ExtractionMenu
     private class WholeAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public WholeAction ()
+        WholeAction ()
         {
             putValue(NAME, "Whole sheet");
             putValue(SHORT_DESCRIPTION, "Save the whole sheet to disk");
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
             try {
                 // Extract the whole initial image
                 save(sheet.getPicture().getImage(null));
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 logger.warn("Error in sheet extraction, " + ex, ex);
             }
+        }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 }

@@ -36,7 +36,6 @@ import java.awt.geom.Point2D;
 public class GeoPath
         extends Path2D.Double
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new GeoPath object.
@@ -67,7 +66,6 @@ public class GeoPath
         super(s, at);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getFirstPoint //
     //---------------//
@@ -128,38 +126,6 @@ public class GeoPath
         return new Point2D.Double(x, y);
     }
 
-    //---------//
-    // labelOf //
-    //---------//
-    /**
-     * Report the kind label of a segment.
-     *
-     * @param segmentKind the int-based segment kind
-     * @return the label for the curve
-     */
-    public static String labelOf (int segmentKind)
-    {
-        switch (segmentKind) {
-        case SEG_MOVETO:
-            return "SEG_MOVETO";
-
-        case SEG_LINETO:
-            return "SEG_LINETO";
-
-        case SEG_QUADTO:
-            return "SEG_QUADTO";
-
-        case SEG_CUBICTO:
-            return "SEG_CUBICTO";
-
-        case SEG_CLOSE:
-            return "SEG_CLOSE";
-
-        default:
-            throw new RuntimeException("Illegal segmentKind " + segmentKind);
-        }
-    }
-
     //----------//
     // toString //
     //----------//
@@ -185,8 +151,8 @@ public class GeoPath
                     firstCoord = false;
                 }
 
-                sb.append("[").append((float) buffer[ic]).append(",").append(
-                        (float) buffer[ic + 1]).append("]");
+                sb.append("[").append((float) buffer[ic]).append(",").append((float) buffer[ic + 1])
+                        .append("]");
             }
 
             sb.append(")");
@@ -230,8 +196,9 @@ public class GeoPath
             double cpx1 = coords[0];
             double cpx2 = coords[2];
 
-            return (p1.x * u * u * u) + (3 * cpx1 * t * u * u) + (3 * cpx2 * t * t * u)
-                   + (p2.x * t * t * t);
+            return (p1.x * u * u * u) + (3 * cpx1 * t * u * u) + (3 * cpx2 * t * t * u) + (p2.x * t
+                                                                                                   * t
+                                                                                           * t);
         }
 
         default:
@@ -255,8 +222,8 @@ public class GeoPath
         Point2D stopPoint = getLastPoint();
 
         if ((y < startPoint.getY()) || (y > stopPoint.getY())) {
-            double sl = (stopPoint.getX() - startPoint.getX()) / (stopPoint.getY()
-                                                                  - startPoint.getY());
+            double sl = (stopPoint.getX() - startPoint.getX()) / (stopPoint.getY() - startPoint
+                    .getY());
 
             return startPoint.getX() + (sl * (y - startPoint.getY()));
         } else {
@@ -297,8 +264,9 @@ public class GeoPath
             double cpy1 = coords[1];
             double cpy2 = coords[3];
 
-            return (p1.y * u * u * u) + (3 * cpy1 * t * u * u) + (3 * cpy2 * t * t * u)
-                   + (p2.y * t * t * t);
+            return (p1.y * u * u * u) + (3 * cpy1 * t * u * u) + (3 * cpy2 * t * t * u) + (p2.y * t
+                                                                                                   * t
+                                                                                           * t);
         }
 
         default:
@@ -322,42 +290,12 @@ public class GeoPath
         Point2D stopPoint = getLastPoint();
 
         if ((x < startPoint.getX()) || (x > stopPoint.getX())) {
-            double sl = (stopPoint.getY() - startPoint.getY()) / (stopPoint.getX()
-                                                                  - startPoint.getX());
+            double sl = (stopPoint.getY() - startPoint.getY()) / (stopPoint.getX() - startPoint
+                    .getX());
 
             return startPoint.getY() + (sl * (x - startPoint.getX()));
         } else {
             return yAtX(x);
-        }
-    }
-
-    //---------//
-    // countOf //
-    //---------//
-    /**
-     * Report how many coordinate values a path segment contains.
-     *
-     * @param segmentKind the int-based segment kind
-     * @return the number of coordinates values
-     */
-    protected static int countOf (int segmentKind)
-    {
-        switch (segmentKind) {
-        case SEG_MOVETO:
-        case SEG_LINETO:
-            return 2;
-
-        case SEG_QUADTO:
-            return 4;
-
-        case SEG_CUBICTO:
-            return 6;
-
-        case SEG_CLOSE:
-            return 0;
-
-        default:
-            throw new RuntimeException("Illegal segmentKind " + segmentKind);
         }
     }
 
@@ -451,5 +389,67 @@ public class GeoPath
 
         // Not found
         throw new RuntimeException("Ordinate not in range: " + y);
+    }
+
+    //---------//
+    // labelOf //
+    //---------//
+    /**
+     * Report the kind label of a segment.
+     *
+     * @param segmentKind the int-based segment kind
+     * @return the label for the curve
+     */
+    public static String labelOf (int segmentKind)
+    {
+        switch (segmentKind) {
+        case SEG_MOVETO:
+            return "SEG_MOVETO";
+
+        case SEG_LINETO:
+            return "SEG_LINETO";
+
+        case SEG_QUADTO:
+            return "SEG_QUADTO";
+
+        case SEG_CUBICTO:
+            return "SEG_CUBICTO";
+
+        case SEG_CLOSE:
+            return "SEG_CLOSE";
+
+        default:
+            throw new RuntimeException("Illegal segmentKind " + segmentKind);
+        }
+    }
+
+    //---------//
+    // countOf //
+    //---------//
+    /**
+     * Report how many coordinate values a path segment contains.
+     *
+     * @param segmentKind the int-based segment kind
+     * @return the number of coordinates values
+     */
+    protected static int countOf (int segmentKind)
+    {
+        switch (segmentKind) {
+        case SEG_MOVETO:
+        case SEG_LINETO:
+            return 2;
+
+        case SEG_QUADTO:
+            return 4;
+
+        case SEG_CUBICTO:
+            return 6;
+
+        case SEG_CLOSE:
+            return 0;
+
+        default:
+            throw new RuntimeException("Illegal segmentKind " + segmentKind);
+        }
     }
 }

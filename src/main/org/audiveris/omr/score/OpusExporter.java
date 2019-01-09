@@ -46,15 +46,12 @@ import java.util.List;
  */
 public class OpusExporter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(OpusExporter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related book. */
     private final Book book;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code OpusExporter} object on a related book.
      *
@@ -65,7 +62,6 @@ public class OpusExporter
         this.book = book;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // export //
     //--------//
@@ -82,10 +78,10 @@ public class OpusExporter
                         boolean signed)
             throws Exception
     {
-        final OutputStream os = new FileOutputStream(path.toString());
-        export(os, signed, rootName);
-        os.close();
-        logger.info("Opus {} exported to {}", rootName, path);
+        try (OutputStream os = new FileOutputStream(path.toString())) {
+            export(os, signed, rootName);
+            logger.info("Opus {} exported to {}", rootName, path);
+        }
     }
 
     //--------//
@@ -127,9 +123,8 @@ public class OpusExporter
 
         for (Score score : scores) {
             // Reference each score/movement in opus
-            String entryName = rootName
-                               + (multi ? (".mvt" + score.getId()) : "")
-                               + OMR.SCORE_EXTENSION;
+            String entryName = rootName + (multi ? (".mvt" + score.getId()) : "")
+                                       + OMR.SCORE_EXTENSION;
             org.audiveris.proxymusic.opus.Score oScore = opusFactory.createScore();
             oScore.setHref(entryName);
             oScore.setNewPage(YesNo.YES);

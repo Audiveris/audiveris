@@ -73,12 +73,14 @@ import javax.swing.border.TitledBorder;
 public class Trainer
         extends SingleFrameApplication
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
+    // Don't move this statement
+    // @formatter:off
     static {
         // We need class WellKnowns to be elaborated before anything else (when in standalone mode)
         WellKnowns.ensureLoaded();
     }
+    // @formatter:on
 
     private static final Logger logger = LoggerFactory.getLogger(Trainer.class);
 
@@ -87,12 +89,6 @@ public class Trainer
 
     /** Stand-alone run (vs part of Audiveris). */
     private static boolean standAlone = false;
-
-    /** Standard width for labels in DLUs. */
-    static final String LABEL_WIDTH = "50dlu";
-
-    /** Standard width for fields/buttons in DLUs. */
-    static final String FIELD_WIDTH = "30dlu";
 
     /** An adapter triggered on window closing. */
     private static final WindowAdapter windowCloser = new WindowAdapter()
@@ -108,14 +104,18 @@ public class Trainer
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
+    /** Standard width for labels in DLUs. */
+    static final String LABEL_WIDTH = "50dlu";
+
+    /** Standard width for fields/buttons in DLUs. */
+    static final String FIELD_WIDTH = "30dlu";
+
     /** Related frame. */
     private JFrame frame;
 
     /** Panel for selection in repository. */
     private final SelectionPanel selectionPanel;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of Glyph Trainer (there should be just one)
      */
@@ -132,10 +132,127 @@ public class Trainer
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // initialize //
+    //------------//
+    @Override
+    protected void initialize (String[] args)
+    {
+        logger.debug("Trainer. 1/initialize");
+    }
+
+    //-------//
+    // ready //
+    //-------//
+    @Override
+    protected void ready ()
+    {
+        logger.debug("Trainer. 3/ready");
+
+        frame.addWindowListener(windowCloser);
+    }
+
+    //---------//
+    // startup //
+    //---------//
+    @Override
+    protected void startup ()
+    {
+        logger.debug("Trainer. 2/startup");
+
+        frame = defineLayout(getMainFrame());
+
+        show(frame); // Here we go...
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    /**
+     * Define the layout of components within the provided frame.
+     *
+     * @param frame the bare frame
+     * @return the populated frame
+     */
+    private JFrame defineLayout (final JFrame frame)
+    {
+        frame.setName("TrainerFrame"); // For SAF life cycle
+
+        // +=============================+
+        // | . . . . . . . . . . . . . . |
+        // | . Selection . . . . . . . . |
+        // | . . . . . . . . . . . . . . |
+        // |-----------------------------|
+        // | . . . . . . . . . . . . . . |
+        // | . Training. . . . . . . . . |
+        // | . . . . . . . . . . . . . . |
+        // |-----------------------------|
+        // | . . . . . . . . . . . . . . |
+        // | . Validation [train set]. . |
+        // | . . . . . . . . . . . . . . |
+        // |-----------------------------|
+        // | . . . . . . . . . . . . . . |
+        // | . Validation [test set] . . |
+        // | . . . . . . . . . . . . . . |
+        // +=============================+
+        //
+        FormLayout layout = new FormLayout("pref, 10dlu, pref", "pref, 10dlu, pref");
+        CellConstraints cst = new CellConstraints();
+        PanelBuilder builder = new PanelBuilder(layout, new Panel());
+
+        int r = 1; // --------------------------------
+        builder.add(selectionPanel.getComponent(), cst.xyw(1, r, 3, "center, fill"));
+
+        r += 2; // --------------------------------
+        builder.add(definePanel(ShapeClassifier.getInstance()), cst.xy(1, r));
+        //        builder.add(definePanel(ShapeClassifier.getSecondInstance()), cst.xy(3, r));
+        //
+        frame.add(builder.getPanel());
+
+        // Resource injection
+        ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(getClass());
+        resource.injectComponents(frame);
+
+        return frame;
+    }
+
+    private JPanel definePanel (Classifier classifier)
+    {
+        final String pi = Panel.getPanelInterline();
+        FormLayout layout = new FormLayout("pref", "pref," + pi + ",pref," + pi + ",pref");
+
+        CellConstraints cst = new CellConstraints();
+        PanelBuilder builder = new PanelBuilder(layout, new TitledPanel(classifier.getName()));
+        Task task = new Task(classifier);
+
+        int r = 1; // --------------------------------
+        builder.add(new TrainingPanel(task, selectionPanel).getComponent(), cst.xy(1, r));
+
+        r += 2; // --------------------------------
+        builder.add(new ValidationPanel(task, selectionPanel, true).getComponent(), cst.xy(1, r));
+
+        r += 2; // --------------------------------
+        builder.add(new ValidationPanel(task, selectionPanel, false).getComponent(), cst.xy(1, r));
+
+        return builder.getPanel();
+    }
+
+    //--------------//
+    // displayFrame //
+    //--------------//
+    void displayFrame ()
+    {
+        frame.toFront();
+    }
+
     //-------------//
     // getInstance //
     //-------------//
+    /**
+     * Report the singleton.
+     *
+     * @return the single Trainer instance
+     */
     public static synchronized Trainer getInstance ()
     {
         if (INSTANCE == null) {
@@ -181,163 +298,26 @@ public class Trainer
         Application.launch(Trainer.class, args);
     }
 
-    //------------//
-    // initialize //
-    //------------//
-    @Override
-    protected void initialize (String[] args)
-    {
-        logger.debug("Trainer. 1/initialize");
-    }
-
-    //-------//
-    // ready //
-    //-------//
-    @Override
-    protected void ready ()
-    {
-        logger.debug("Trainer. 3/ready");
-
-        frame.addWindowListener(windowCloser);
-    }
-
-    //---------//
-    // startup //
-    //---------//
-    @Override
-    protected void startup ()
-    {
-        logger.debug("Trainer. 2/startup");
-
-        frame = defineLayout(getMainFrame());
-
-        show(frame); // Here we go...
-    }
-
-    //--------------//
-    // displayFrame //
-    //--------------//
-    void displayFrame ()
-    {
-        frame.toFront();
-    }
-
-    //--------------//
-    // defineLayout //
-    //--------------//
-    /**
-     * Define the layout of components within the provided frame.
-     *
-     * @param frame the bare frame
-     * @return the populated frame
-     *
-     */
-    private JFrame defineLayout (final JFrame frame)
-    {
-        frame.setName("TrainerFrame"); // For SAF life cycle
-
-        /*
-         * +=============================================================+
-         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
-         * | . . . . . . . . . . . . Selection . . . . . . . . . . . . . |
-         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
-         * |-------------------------------------------------------------|
-         * | . . . . . . . . . . . . . . || . . . . . . . . . . . . . . .|
-         * | . Training. . . . . . . . . || . Training. . . . . . . . . .|
-         * | . . . . . . . . . . . . . . || . . . . . . . . . . . . . . .|
-         * |-----------------------------||------------------------------|
-         * | . . . . . . . . . . . . . . || . . . . . . . . . . . . . . .|
-         * | . Validation [train set]. . || . Validation [train set]. . .|
-         * | . . . . . . . . . . . . . . || . . . . . . . . . . . . . . .|
-         * |-----------------------------||------------------------------|
-         * | . . . . . . . . . . . . . . || . . . . . . . . . . . . . . .|
-         * | . Validation [test set] . . || . Validation [test set] . . .|
-         * | . . . . . . . . . . . . . . || . . . . . . . . . . . . . . .|
-         * +=============================================================+
-         */
-        FormLayout layout = new FormLayout("pref, 10dlu, pref", "pref, 10dlu, pref");
-        CellConstraints cst = new CellConstraints();
-        PanelBuilder builder = new PanelBuilder(layout, new Panel());
-
-        int r = 1; // --------------------------------
-        builder.add(selectionPanel.getComponent(), cst.xyw(1, r, 3, "center, fill"));
-
-        r += 2; // --------------------------------
-        builder.add(definePanel(ShapeClassifier.getInstance()), cst.xy(1, r));
-        builder.add(definePanel(ShapeClassifier.getSecondInstance()), cst.xy(3, r));
-
-        frame.add(builder.getPanel());
-
-        // Resource injection
-        ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(getClass());
-        resource.injectComponents(frame);
-
-        return frame;
-    }
-
-    private JPanel definePanel (Classifier classifier)
-    {
-        final String pi = Panel.getPanelInterline();
-        FormLayout layout = new FormLayout("pref", "pref," + pi + ",pref," + pi + ",pref");
-
-        CellConstraints cst = new CellConstraints();
-        PanelBuilder builder = new PanelBuilder(layout, new TitledPanel(classifier.getName()));
-        Task task = new Task(classifier);
-
-        int r = 1; // --------------------------------
-        builder.add(new TrainingPanel(task, selectionPanel).getComponent(), cst.xy(1, r));
-
-        r += 2; // --------------------------------
-        builder.add(new ValidationPanel(task, selectionPanel, true).getComponent(), cst.xy(1, r));
-
-        r += 2; // --------------------------------
-        builder.add(new ValidationPanel(task, selectionPanel, false).getComponent(), cst.xy(1, r));
-
-        return builder.getPanel();
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //------//
-    // Task //
-    //------//
-    /**
-     * Class {@code Task} handles, for a given classifier, which activity is currently
-     * being carried out, only one being current at any time.
-     */
     public static class Task
             extends Observable
     {
-        //~ Enumerations ---------------------------------------------------------------------------
 
-        /**
-         * Enum {@code Activity} defines all activities in training.
-         */
-        static enum Activity
-        {
-            //~ Enumeration constant initializers --------------------------------------------------
-
-            /** No ongoing activity */
-            INACTIVE,
-            /** Training on samples */
-            TRAINING,
-            /** Validating classifier */
-            VALIDATION;
-        }
-
-        //~ Instance fields ------------------------------------------------------------------------
         /** Managed classifier. */
         public final Classifier classifier;
 
         /** Current activity. */
         private Activity activity = Activity.INACTIVE;
 
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * The shape classifier to use
+         *
+         * @param classifier selected classifier
+         */
         public Task (Classifier classifier)
         {
             this.classifier = classifier;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Report the current training activity
          *
@@ -359,6 +339,19 @@ public class Trainer
             setChanged();
             notifyObservers();
         }
+
+        /**
+         * Enum {@code Activity} defines all activities in training.
+         */
+        static enum Activity
+        {
+            /** No ongoing activity */
+            INACTIVE,
+            /** Training on samples */
+            TRAINING,
+            /** Validating classifier */
+            VALIDATION;
+        }
     }
 
     //-------------//
@@ -367,9 +360,8 @@ public class Trainer
     private static class TitledPanel
             extends Panel
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public TitledPanel (String title)
+        TitledPanel (String title)
         {
             setBorder(
                     BorderFactory.createTitledBorder(

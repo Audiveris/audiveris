@@ -32,11 +32,12 @@ import java.awt.font.TextLayout;
 /**
  * Class {@code CustomNumDenSymbol} displays a custom time signature, with just the N
  * and D letters.
+ *
+ * @author Hervé Bitteur
  */
 public class CustomNumDenSymbol
         extends ShapeSymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new CustomNumDenSymbol object, standard size
@@ -56,7 +57,6 @@ public class CustomNumDenSymbol
         super(isIcon, Shape.CUSTOM_TIME, true);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -102,14 +102,12 @@ public class CustomNumDenSymbol
         OmrFont.paint(g, p.dLayout, loc, BOTTOM_CENTER);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // layout not used
         // rect for global image

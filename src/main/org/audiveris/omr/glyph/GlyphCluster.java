@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.glyph;
 
-import org.audiveris.omr.glyph.GlyphGroup;
-
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.SimpleGraph;
 
@@ -41,29 +39,28 @@ import java.util.Set;
  * Class {@code GlyphCluster} handles a cluster of connected glyphs, to retrieve all
  * acceptable compounds built on subsets of these glyphs.
  * <p>
- * The processing of any given subset consists in the following:<ol>
+ * The processing of any given subset consists in the following:
+ * <ol>
  * <li>Build the compound of chosen vertices, and record acceptable evaluations.</li>
  * <li>Build the set of new reachable vertices.</li>
  * <li>For each reachable vertex, recursively process the new set composed of current set + the
- * reachable vertex.</li></ol>
+ * reachable vertex.</li>
+ * </ol>
  * TODO: implement a non-recursive version for better efficiency?
  *
  * @author Hervé Bitteur
  */
 public class GlyphCluster
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphCluster.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Environment adapter. */
     private final Adapter adapter;
 
     /** Group, if any, to be assigned to created glyphs. */
     private final GlyphGroup group;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Cluster object, with an adapter to the environment.
      *
@@ -77,49 +74,6 @@ public class GlyphCluster
         this.group = group;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // getSubGraph //
-    //-------------//
-    /**
-     * Extract a subgraph limited to the provided set of glyphs.
-     *
-     * @param set        the provided set of glyphs
-     * @param graph      the global graph to extract from
-     * @param checkEdges true if glyph edges may point outside the provided set.
-     * @return the graph limited to glyph set and related edges
-     */
-    public static SimpleGraph<Glyph, GlyphLink> getSubGraph (Set<Glyph> set,
-                                                             SimpleGraph<Glyph, GlyphLink> graph,
-                                                             boolean checkEdges)
-    {
-        // Which edges should be extracted for this set?
-        Set<GlyphLink> setEdges = new LinkedHashSet<GlyphLink>();
-
-        for (Glyph glyph : set) {
-            Set<GlyphLink> glyphEdges = graph.edgesOf(glyph);
-
-            if (!checkEdges) {
-                setEdges.addAll(glyphEdges); // Take all edges
-            } else {
-                // Keep only the edges that link within the set
-                for (GlyphLink link : glyphEdges) {
-                    Glyph opposite = Graphs.getOppositeVertex(graph, link, glyph);
-
-                    if (set.contains(opposite)) {
-                        setEdges.add(link);
-                    }
-                }
-            }
-        }
-
-        SimpleGraph<Glyph, GlyphLink> subGraph = new SimpleGraph<Glyph, GlyphLink>(GlyphLink.class);
-        Graphs.addAllVertices(subGraph, set);
-        Graphs.addAllEdges(subGraph, graph, setEdges);
-
-        return subGraph;
-    }
-
     //-----------//
     // decompose //
     //-----------//
@@ -128,7 +82,7 @@ public class GlyphCluster
      */
     public void decompose ()
     {
-        final Set<Glyph> considered = new LinkedHashSet<Glyph>(); // Parts considered so far
+        final Set<Glyph> considered = new LinkedHashSet<>(); // Parts considered so far
 
         //TODO: we could truncate this list by discarding the smallest items
         // since a too large list would result in explosion of combinations
@@ -151,7 +105,7 @@ public class GlyphCluster
      */
     private Set<Glyph> getOutliers (Set<Glyph> set)
     {
-        Set<Glyph> outliers = new LinkedHashSet<Glyph>();
+        Set<Glyph> outliers = new LinkedHashSet<>();
 
         for (Glyph part : set) {
             outliers.addAll(adapter.getNeighbors(part));
@@ -212,7 +166,7 @@ public class GlyphCluster
 
         ///logger.debug("      {}", Glyphs.ids("outliers", outliers));
         Rectangle setBox = Glyphs.getBounds(parts);
-        Set<Glyph> newConsidered = new LinkedHashSet<Glyph>(seen);
+        Set<Glyph> newConsidered = new LinkedHashSet<>(seen);
 
         for (Glyph outlier : outliers) {
             newConsidered.add(outlier);
@@ -221,20 +175,60 @@ public class GlyphCluster
             Rectangle symBox = outlier.getBounds().union(setBox);
 
             if (!adapter.isTooLarge(symBox)) {
-                Set<Glyph> largerSet = new LinkedHashSet<Glyph>(parts);
+                Set<Glyph> largerSet = new LinkedHashSet<>(parts);
                 largerSet.add(outlier);
                 process(largerSet, newConsidered);
             }
         }
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
+    //-------------//
+    // getSubGraph //
+    //-------------//
+    /**
+     * Extract a subgraph limited to the provided set of glyphs.
+     *
+     * @param set        the provided set of glyphs
+     * @param graph      the global graph to extract from
+     * @param checkEdges true if glyph edges may point outside the provided set.
+     * @return the graph limited to glyph set and related edges
+     */
+    public static SimpleGraph<Glyph, GlyphLink> getSubGraph (Set<Glyph> set,
+                                                             SimpleGraph<Glyph, GlyphLink> graph,
+                                                             boolean checkEdges)
+    {
+        // Which edges should be extracted for this set?
+        Set<GlyphLink> setEdges = new LinkedHashSet<>();
+        for (Glyph glyph : set) {
+            Set<GlyphLink> glyphEdges = graph.edgesOf(glyph);
+
+            if (!checkEdges) {
+                setEdges.addAll(glyphEdges); // Take all edges
+            } else {
+                // Keep only the edges that link within the set
+                for (GlyphLink link : glyphEdges) {
+                    Glyph opposite = Graphs.getOppositeVertex(graph, link, glyph);
+
+                    if (set.contains(opposite)) {
+                        setEdges.add(link);
+                    }
+                }
+            }
+        }
+        SimpleGraph<Glyph, GlyphLink> subGraph = new SimpleGraph<>(GlyphLink.class);
+        Graphs.addAllVertices(subGraph, set);
+        Graphs.addAllEdges(subGraph, graph, setEdges);
+        return subGraph;
+    }
+
     //---------//
     // Adapter //
     //---------//
+    /**
+     * Interface to be implemented by a user of GlyphCluster.
+     */
     public static interface Adapter
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Evaluate a provided glyph and create all acceptable inter instances.
@@ -293,25 +287,16 @@ public class GlyphCluster
         boolean isTooSmall (Rectangle bounds);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------------//
-    // AbstractAdapter //
-    //-----------------//
-    /**
-     * Basis for implementing an adapter.
-     */
     public abstract static class AbstractAdapter
             implements Adapter
     {
-        //~ Instance fields ------------------------------------------------------------------------
+
+        /** For debug only */
+        public int trials = 0;
 
         /** Graph of the connected glyphs, with their distance edges if any. */
         protected final SimpleGraph<Glyph, GlyphLink> graph;
 
-        // For debug only
-        public int trials = 0;
-
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Build an adapter from a set of parts and the maximum gap between parts.
          * The connectivity graph is built internally.
@@ -336,7 +321,6 @@ public class GlyphCluster
             this.graph = graph;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public List<Glyph> getNeighbors (Glyph part)
         {
@@ -346,7 +330,7 @@ public class GlyphCluster
         @Override
         public List<Glyph> getParts ()
         {
-            return new ArrayList<Glyph>(graph.vertexSet());
+            return new ArrayList<>(graph.vertexSet());
         }
 
         @Override

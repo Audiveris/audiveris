@@ -42,16 +42,21 @@ import javax.xml.stream.XMLStreamException;
 public class BasicTest
         extends BaseTestCase
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     public static void main (String... args)
-            throws JAXBException, FileNotFoundException, IOException, XMLStreamException
+            throws JAXBException,
+                   FileNotFoundException,
+                   IOException,
+                   XMLStreamException
     {
         new BasicTest().play(args[0]);
     }
 
     public void play (String fileName)
-            throws JAXBException, FileNotFoundException, IOException, XMLStreamException
+            throws JAXBException,
+                   FileNotFoundException,
+                   IOException,
+                   XMLStreamException
     {
         JAXBContext jaxbContext = JAXBContext.newInstance(Waiter.class);
 
@@ -117,7 +122,10 @@ public class BasicTest
     }
 
     public void testMarshall ()
-            throws JAXBException, FileNotFoundException, IOException, XMLStreamException
+            throws JAXBException,
+                   FileNotFoundException,
+                   IOException,
+                   XMLStreamException
     {
         File dir = new File("data/temp");
         dir.mkdirs();

@@ -25,11 +25,12 @@ import org.audiveris.omr.glyph.Shape;
 
 /**
  * Class {@code KeySharpSymbol} displays a Key Signature symbol.
+ *
+ * @author Hervé Bitteur
  */
 public class KeySharpSymbol
         extends KeySymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new KeySharpSymbol object.
@@ -45,7 +46,6 @@ public class KeySharpSymbol
         super(key, isIcon, shape, 35);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//

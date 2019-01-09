@@ -33,7 +33,6 @@ import static junit.framework.Assert.*;
 public class BaseTestCase
         extends TestCase
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new BaseTestCase object.
@@ -52,7 +51,6 @@ public class BaseTestCase
         super(name);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // assertNears //
     //-------------//
@@ -100,7 +98,6 @@ public class BaseTestCase
     //---------//
     // runTest //
     //---------//
-
     @Override
     protected void runTest ()
             throws Throwable

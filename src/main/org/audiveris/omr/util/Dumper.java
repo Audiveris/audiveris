@@ -35,28 +35,26 @@ import java.util.Map;
  * When used on a class instance, all class internal fields which are considered as "relevant" are
  * printed using their toString() method, then we walk up the inheritance tree and repeat the same
  * actions, until there is no more superclass or until the superclass we have reached is considered
- * as non-relevant. </p>
+ * as non-relevant.
  * <p>
  * A (super)class is considered "relevant" if the static method {@code isClassRelevant(class)}
- * returns true. This method can be overridden in a subclass of Dumper to adapt to local needs. </p>
+ * returns true. This method can be overridden in a subclass of Dumper to adapt to local needs.
  * <p>
  * A field is considered "relevant" if the following condition if the method
  * {@code isFieldRelevant(field)} returns true. Similarly, the behavior of this predicate can be
- * customized by subclassing the Dumper class. </p>
+ * customized by subclassing the Dumper class.
  * <p>
  * There are several kinds of print outs available through subclassing. Each of them export two
  * public methods: {@code dump()} which prints the result on default output stream, and
  * {@code dumpOf()} which simply returns the generated dump string.
- *
- * <ul> <li> <b>Column</b> a dump with one line per field </li>
- *
- * <li> <b>Row</b> a dump with all information on one row </li>
- *
- * <li> <b>Html</b> an Html stream with fields arranged in tables </li>
- *
+ * <ul>
+ * <li><b>Column</b>: a dump with one line per field</li>
+ * <li><b>Row</b>: a dump with all information on one row</li>
+ * <li><b>Html</b>: an Html stream with fields arranged in tables</li>
  * </ul>
- *
+ * <p>
  * Here are some examples of use:
+ *
  * <pre>
  * // Using the predefined static helper methods
  * Dumper.dump(myinstance);
@@ -65,7 +63,7 @@ import java.util.Map;
  * System.out.println(Dumper.dumpOf(myinstance));
  * System.out.println(Dumper.htmlDumpOf(myinstance));
  *
- *  // Using directly the Dumper subclasses
+ * // Using directly the Dumper subclasses
  * new Dumper.Column(myinstance).print();
  * System.out.println(new Dumper.Row(myinstance).toString());
  * display(new Dumper.Html(myinstance).toString());
@@ -75,12 +73,10 @@ import java.util.Map;
  */
 public class Dumper
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Maximum number of collection items printed */
     private static final int MAX_COLLECTION_INDEX = 9;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** To filter classes and fields */
     protected final Relevance relevance;
 
@@ -104,7 +100,6 @@ public class Dumper
      */
     protected Class<?> classe;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Dumper.
      *
@@ -119,7 +114,7 @@ public class Dumper
         this.relevance = relevance;
 
         // (re)Allocate the string buffer
-        sb = new StringBuilder(1024);
+        sb = new StringBuilder(1_024);
 
         // Cache the object & the related class
         this.object = object;
@@ -127,7 +122,6 @@ public class Dumper
         classe = object.getClass();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // print //
     //-------//
@@ -136,7 +130,6 @@ public class Dumper
      */
     public void print ()
     {
-        System.out.println(this);
     }
 
     //----------//
@@ -180,6 +173,11 @@ public class Dumper
     //----------------------//
     // printCollectionValue //
     //----------------------//
+    /**
+     * Print the provided collection to the dump.
+     *
+     * @param collection the collection object to print
+     */
     protected void printCollectionValue (Collection<?> collection)
     {
         sb.append("[");
@@ -323,30 +321,35 @@ public class Dumper
         } while (relevance.isClassRelevant(classe));
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Column //
     //--------//
     /**
      * Class {@code Column} implements a Dumper where all fields are
-     * presented in one column, each field on a separate line. The column can be
-     * left indented, according to the specified indentation level.
+     * presented in one column, each field on a separate line.
+     * <p>
+     * The column can be left indented, according to the specified indentation level.
      */
     public static class Column
             extends Dumper
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String MEMBER_GAP = "   ";
 
         private static final String INDENT_GAP = ".  ";
 
-        //~ Instance fields ------------------------------------------------------------------------
         private final String title;
 
         private final StringBuilder prefix;
 
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create a Column.
+         *
+         * @param relevance selection policy
+         * @param object    the object to dump
+         * @param title     title of the dump
+         * @param level     initial indentation level
+         */
         public Column (Relevance relevance,
                        Object object,
                        String title,
@@ -369,12 +372,10 @@ public class Dumper
             }
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void printClassProlog ()
         {
-            // We print the class name only for the lowest class in
-            // heritance hierarchy
+            // We print the class name only for the lowest class in heritance hierarchy
             if (object.getClass() == classe) {
                 sb.append("\n");
                 sb.append(prefix).append(classe.getName());
@@ -403,21 +404,25 @@ public class Dumper
     public static class Html
             extends Dumper
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
+        /**
+         * Create an Html object.
+         *
+         * @param relevance selection policy
+         * @param object    the object to dump
+         */
         public Html (Relevance relevance,
                      Object object)
         {
             super(relevance, object, true);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
             // Style
-            sb.append("<style> td {").append(" font-family: Lucida Console, Verdana, sans-serif;").append(
-                    " font-size: 9px;").append(" font-style: normal;").append("} </style>");
+            sb.append("<style> td {").append(" font-family: Lucida Console, Verdana, sans-serif;")
+                    .append(" font-size: 9px;").append(" font-style: normal;").append("} </style>");
 
             // Table begin
             sb.append("<table border=0 cellpadding=3>");
@@ -468,15 +473,19 @@ public class Dumper
     public static class Row
             extends Dumper
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
+        /**
+         * Create a Row object.
+         *
+         * @param relevance selection policy
+         * @param object    the object to dump
+         */
         public Row (Relevance relevance,
                     Object object)
         {
             super(relevance, object, false);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void printClassEpilog ()
         {

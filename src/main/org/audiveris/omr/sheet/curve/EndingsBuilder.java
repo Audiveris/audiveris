@@ -75,13 +75,11 @@ import java.util.Set;
  */
 public class EndingsBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(EndingsBuilder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
     protected final Sheet sheet;
@@ -92,7 +90,6 @@ public class EndingsBuilder
     /** Scale-dependent parameters. */
     private final Parameters params;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new WedgesBuilder object.
      *
@@ -105,7 +102,6 @@ public class EndingsBuilder
         params = new Parameters(sheet.getScale());
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // buildEndings //
     //--------------//
@@ -139,7 +135,7 @@ public class EndingsBuilder
                               Filament leftLeg,
                               Filament rightLeg)
     {
-        final List<Glyph> parts = new ArrayList<Glyph>(3);
+        final List<Glyph> parts = new ArrayList<>(3);
         parts.add(segment.getGlyph());
         parts.add(leftLeg.toGlyph(null));
 
@@ -162,7 +158,7 @@ public class EndingsBuilder
     {
         Rectangle box = ending.getBounds();
         SIGraph sig = ending.getSig();
-        List<SentenceInter> found = new ArrayList<SentenceInter>();
+        List<SentenceInter> found = new ArrayList<>();
         List<Inter> systemSentences = sig.inters(SentenceInter.class);
 
         for (Inter si : systemSentences) {
@@ -243,11 +239,9 @@ public class EndingsBuilder
                 staff.getFirstLine().yAt(end.x) - end.y - (2 * params.legYMargin));
 
         SystemInfo system = staff.getSystem();
-        Set<Section> sections = Sections.intersectedSections(
-                box,
-                system.getVerticalSections());
+        Set<Section> sections = Sections.intersectedSections(box, system.getVerticalSections());
         Scale scale = sheet.getScale();
-        FilamentFactory<StraightFilament> factory = new FilamentFactory<StraightFilament>(
+        FilamentFactory<StraightFilament> factory = new FilamentFactory<>(
                 scale,
                 sheet.getFilamentIndex(),
                 VERTICAL,
@@ -271,8 +265,9 @@ public class EndingsBuilder
         for (Iterator<StraightFilament> it = filaments.iterator(); it.hasNext();) {
             StraightFilament fil = it.next();
 
-            if ((fil.getLength(VERTICAL) < params.minLegLow)
-                || ((fil.getStartPoint().getY() - end.y) > params.maxLegYGap)) {
+            if ((fil.getLength(VERTICAL) < params.minLegLow) || ((fil.getStartPoint().getY()
+                                                                          - end.y)
+                                                                 > params.maxLegYGap)) {
                 it.remove();
             }
         }
@@ -412,9 +407,7 @@ public class EndingsBuilder
                         leftLeg.getStartPoint(),
                         leftLeg.getStopPoint());
                 Line2D rightLine = (rightLeg == null) ? null
-                        : new Line2D.Double(
-                                rightLeg.getStartPoint(),
-                                rightLeg.getStopPoint());
+                        : new Line2D.Double(rightLeg.getStartPoint(), rightLeg.getStopPoint());
                 EndingInter endingInter = new EndingInter(
                         segment,
                         line,
@@ -440,14 +433,12 @@ public class EndingsBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction minLengthLow = new Scale.Fraction(
                 6,
@@ -457,9 +448,7 @@ public class EndingsBuilder
                 10,
                 "High minimum ending length");
 
-        private final Scale.Fraction minLegLow = new Scale.Fraction(
-                1.0,
-                "Low minimum leg length");
+        private final Scale.Fraction minLegLow = new Scale.Fraction(1.0, "Low minimum leg length");
 
         private final Scale.Fraction minLegHigh = new Scale.Fraction(
                 2.5,
@@ -507,7 +496,6 @@ public class EndingsBuilder
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final int minLengthLow;
 
@@ -527,8 +515,7 @@ public class EndingsBuilder
 
         final double maxSlope;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             minLengthLow = scale.toPixels(constants.minLengthLow);
             minLengthHigh = scale.toPixels(constants.minLengthHigh);

@@ -37,6 +37,7 @@ import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Convenient class meant to temporarily inject some debugging.
@@ -47,11 +48,9 @@ import java.io.PrintWriter;
 public class Debug
         extends StubDependent
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Debug.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // checkSources //
     //--------------//
@@ -96,7 +95,6 @@ public class Debug
     //    private static class ChordInjector
     //        extends AbstractScoreVisitor
     //    {
-    //        //~ Static fields/initializers -----------------------------------------
     //
     //        /** List of symbols to inject. */
     //        private static final String[] shelf = new String[] {
@@ -104,12 +102,10 @@ public class Debug
     //                                                  "F#", "C#7sus4", "F#"
     //                                              };
     //
-    //        //~ Instance fields ----------------------------------------------------
     //
     //        /** Current index to symbol to inject. */
     //        private int symbolCount = 0;
     //
-    //        //~ Methods ------------------------------------------------------------
     //
     //        @Override
     //        public boolean visit (ChordSymbol symbol)
@@ -153,7 +149,7 @@ public class Debug
                     new OutputStreamWriter(os, WellKnowns.FILE_ENCODING));
 
             return new PrintWriter(bw);
-        } catch (Exception ex) {
+        } catch (UnsupportedEncodingException ex) {
             logger.warn("Error creating PrintWriter " + ex, ex);
 
             return null;

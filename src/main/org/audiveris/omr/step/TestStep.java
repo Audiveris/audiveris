@@ -31,9 +31,11 @@ import org.audiveris.omr.sig.inter.BracketInter;
 import org.audiveris.omr.sig.inter.Inter;
 
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -48,7 +50,6 @@ import java.util.List;
 public class TestStep
         extends AbstractStep
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code TestStep} object.
@@ -61,7 +62,6 @@ public class TestStep
         //            "Placeholder for specific tests");
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void doit (Sheet aSheet)
             throws StepException
@@ -131,7 +131,8 @@ public class TestStep
                             WellKnowns.FILE_ENCODING));
 
             return new PrintWriter(bw);
-        } catch (Exception ex) {
+        } catch (FileNotFoundException |
+                 UnsupportedEncodingException ex) {
             System.err.println("Error creating " + path + ex);
 
             return null;
@@ -159,13 +160,11 @@ public class TestStep
         return formatter.format(now);
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
     //--------//
     // Holder //
     //--------//
     private static interface Holder
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         public static final PrintWriter writer = getPrintWriter(getTestFile());
     }

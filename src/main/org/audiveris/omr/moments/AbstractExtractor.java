@@ -27,13 +27,11 @@ import java.awt.geom.Point2D;
  * Class {@code AbstractExtractor} provides the basis for moments extraction.
  *
  * @param <D> actual descriptor type
- *
  * @author Hervé Bitteur
  */
 public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
         implements MomentsExtractor<D>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Input abscissae. */
     protected int[] xx;
@@ -53,7 +51,6 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
     /** The target descriptor. */
     protected D descriptor;
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // extract //
     //---------//
@@ -121,7 +118,7 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
             m01 += yy[i];
         }
 
-        return new Point2D.Double((double) m10 / (double) mass, (double) m01 / (double) mass);
+        return new Point2D.Double(m10 / (double) mass, m01 / (double) mass);
     }
 
     //------------//

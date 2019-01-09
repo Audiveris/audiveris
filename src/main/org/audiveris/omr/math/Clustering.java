@@ -12,14 +12,14 @@ import org.slf4j.LoggerFactory;
  * Class {@code Clustering} gathers objects according to their similarity.
  * It uses the implementation of Expectation-Maximization algorithm published by Xavier Philippeau
  * on <a
- * href="http://www.developpez.net/forums/d740672/autres-langages/algorithmes/contribuez/java-algorithme-expectation-maximization-em/">
+ * href=
+ * "http://www.developpez.net/forums/d740672/autres-langages/algorithmes/contribuez/java-algorithme-expectation-maximization-em/">
  * this site</a>
  *
  * @author Xavier Philippeau
  */
 public class Clustering
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Clustering.class);
 
@@ -29,7 +29,11 @@ public class Clustering
 
     private static final int MAX_ITER = 10;
 
-    //~ Methods ------------------------------------------------------------------------------------
+    // Not meant to be instantiated.
+    private Clustering ()
+    {
+    }
+
     /**
      * Compute the mixture coefficients using Expectation-Maximization algorithm.
      *
@@ -104,10 +108,11 @@ public class Clustering
         return pi;
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
+    /**
+     * Model description.
+     */
     public static interface Law
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * improve law parameters
@@ -127,17 +132,17 @@ public class Clustering
         double proba (double x);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    /**
+     * Gaussian implementation of Law.
+     */
     public static class Gaussian
             implements Law
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private double mean = 0;
 
         private double sigma = 0;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Gaussian object.
          *
@@ -151,7 +156,11 @@ public class Clustering
             this.sigma = sigma;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Report gaussian mean value
+         *
+         * @return mean value
+         */
         public double getMean ()
         {
             return mean;

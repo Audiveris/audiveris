@@ -48,7 +48,6 @@ import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.SigPainter;
 import org.audiveris.omr.ui.Colors;
-import org.audiveris.omr.ui.ViewParameters;
 import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
 import org.audiveris.omr.ui.util.UIUtil;
@@ -83,10 +82,8 @@ import java.awt.geom.Point2D;
 public class SheetResultPainter
         extends SheetPainter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SheetResultPainter.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetResultPainter.class);
 
     /** Abscissa offset, in pixels, for annotation near system. */
     protected static final int annotationDx = 15;
@@ -94,10 +91,6 @@ public class SheetResultPainter
     /** Ordinate offset, in pixels, for annotation near staff or system. */
     protected static final int annotationDy = 15;
 
-    /** View parameters. */
-    protected static final ViewParameters viewParams = ViewParameters.getInstance();
-
-    //~ Instance fields ----------------------------------------------------------------------------
     /** For staff lines. */
     protected Stroke lineStroke;
 
@@ -113,7 +106,6 @@ public class SheetResultPainter
     /** Should we draw annotations?. */
     protected final boolean annotated;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SheetResultPainter} object.
      *
@@ -141,7 +133,6 @@ public class SheetResultPainter
         g.setFont(basicFont);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // drawSlot //
     //----------//
@@ -299,7 +290,7 @@ public class SheetResultPainter
 
             if (scale != null) {
                 lineStroke = new BasicStroke(
-                        (float) sheet.getScale().getFore(),
+                        sheet.getScale().getFore(),
                         BasicStroke.CAP_ROUND,
                         BasicStroke.JOIN_ROUND);
                 g.setStroke(lineStroke);
@@ -386,14 +377,12 @@ public class SheetResultPainter
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------//
     // PdfResultPainter //
     //------------------//
     public static class PdfResultPainter
             implements SimpleSheetPainter
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void paint (Sheet sheet,
@@ -415,15 +404,13 @@ public class SheetResultPainter
     private class ResultSigPainter
             extends SigPainter
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
-        public ResultSigPainter (Graphics g,
-                                 Scale scale)
+        ResultSigPainter (Graphics g,
+                          Scale scale)
         {
             super(g, scale);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void setColor (Inter inter)
         {
@@ -438,6 +425,12 @@ public class SheetResultPainter
             } else {
                 g.setColor(defaultColor);
             }
+        }
+
+        @Override
+        protected boolean splitMirrors ()
+        {
+            return coloredVoices;
         }
     }
 }

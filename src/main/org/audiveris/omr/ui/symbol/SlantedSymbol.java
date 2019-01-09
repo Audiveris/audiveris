@@ -34,11 +34,12 @@ import java.awt.geom.Rectangle2D;
  * Class {@code SlantedSymbol} draws symbols made of several slanted parts.
  * (such as in DYNAMICS_FP, where both the F and the P are slanted and appear too far from each
  * other)
+ *
+ * @author Hervé Bitteur
  */
 public class SlantedSymbol
         extends ShapeSymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new SlantedSymbol object, standard size
@@ -66,7 +67,6 @@ public class SlantedSymbol
         super(isIcon, shape, false, codes);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -102,14 +102,10 @@ public class SlantedSymbol
             float dx;
             int c = code - MusicFont.CODE_OFFSET;
 
-            if ((c == 102)
-                || // F
-                    (c == 196)
-                || // FF
-                    (c == 236)
-                || // FFF
-                    (c == 83)
-                || // SF
+            if ((c == 102) || // F
+                    (c == 196) || // FF
+                    (c == 236) || // FFF
+                    (c == 83) || // SF
                     (c == 90)) { // FZ
                 dx = (float) r.getHeight() * 0.215f; // Measured
             } else {
@@ -170,14 +166,12 @@ public class SlantedSymbol
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // layout not used
         // rect for global image
@@ -189,9 +183,11 @@ public class SlantedSymbol
     //-------------//
     // SmartLayout //
     //-------------//
+    /**
+     * A trick to remove useless dx margin before and after the symbol is drawn.
+     */
     protected static class SmartLayout
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         // The standard character glyph
         final TextLayout layout;
@@ -199,9 +195,8 @@ public class SlantedSymbol
         // Translation before and after
         final float dx;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public SmartLayout (TextLayout layout,
-                            float dx)
+        SmartLayout (TextLayout layout,
+                     float dx)
         {
             this.layout = layout;
             this.dx = dx;

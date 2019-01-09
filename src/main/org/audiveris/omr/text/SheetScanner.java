@@ -78,20 +78,17 @@ import java.util.List;
  */
 public class SheetScanner
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SheetScanner.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
     /** Buffer used by OCR. */
     private ByteProcessor buffer;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TextPageScanner} object.
      *
@@ -102,7 +99,6 @@ public class SheetScanner
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getBuffer //
     //-----------//
@@ -171,16 +167,14 @@ public class SheetScanner
         if (constants.displayTexts.isSet() && (OMR.gui != null)) {
             sheet.getStub().getAssembly().addViewTab(
                     "Texts",
-                    new ScrollImageView(
-                            sheet,
-                            new ImageView(img)
-                    {
-                        @Override
-                        protected void renderItems (Graphics2D g)
-                        {
-                            sheet.renderItems(g); // Apply registered sheet renderers
-                        }
-                    }),
+                    new ScrollImageView(sheet, new ImageView(img)
+                                {
+                                    @Override
+                                    protected void renderItems (Graphics2D g)
+                                    {
+                                        sheet.renderItems(g); // Apply registered sheet renderers
+                                    }
+                                }),
                     new BoardsPane(new PixelBoard(sheet)));
         }
 
@@ -192,14 +186,12 @@ public class SheetScanner
         return img;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
@@ -236,12 +228,10 @@ public class SheetScanner
     private static class TextsCleaner
             extends PageCleaner
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Scale-dependent parameters. */
         private final Parameters params;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new {@code TextsCleaner} object.
          *
@@ -249,15 +239,14 @@ public class SheetScanner
          * @param g      graphics context on buffer
          * @param sheet  related sheet
          */
-        public TextsCleaner (ByteProcessor buffer,
-                             Graphics2D g,
-                             Sheet sheet)
+        TextsCleaner (ByteProcessor buffer,
+                      Graphics2D g,
+                      Sheet sheet)
         {
             super(buffer, g, sheet);
             params = new Parameters(sheet.getScale());
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         //-------------//
         // eraseInters //
         //-------------//
@@ -266,11 +255,11 @@ public class SheetScanner
          */
         public void eraseInters ()
         {
-            List<Area> cores = new ArrayList<Area>();
+            List<Area> cores = new ArrayList<>();
 
             for (SystemInfo system : sheet.getSystems()) {
                 final SIGraph sig = system.getSig();
-                final List<Inter> erased = new ArrayList<Inter>();
+                final List<Inter> erased = new ArrayList<>();
 
                 for (Inter inter : sig.vertexSet()) {
                     if (!inter.isRemoved()) {
@@ -333,8 +322,7 @@ public class SheetScanner
             // Thicken the ledgerline 1 pixel above & 1 pixel below
             final Stroke oldStroke = g.getStroke();
             final Glyph glyph = ledger.getGlyph();
-            float thickness = (float) ledger.getGlyph()
-                    .getMeanThickness(Orientation.HORIZONTAL);
+            float thickness = (float) ledger.getGlyph().getMeanThickness(Orientation.HORIZONTAL);
             thickness += 2;
             g.setStroke(new BasicStroke(thickness, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
             glyph.renderLine(g);
@@ -370,20 +358,17 @@ public class SheetScanner
             }
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         //------------//
         // Parameters //
         //------------//
         private static class Parameters
         {
-            //~ Instance fields --------------------------------------------------------------------
 
             final int hMargin;
 
             final int vMargin;
 
-            //~ Constructors -----------------------------------------------------------------------
-            public Parameters (Scale scale)
+            Parameters (Scale scale)
             {
                 hMargin = scale.toPixels(constants.staffHorizontalMargin);
                 vMargin = scale.toPixels(constants.staffVerticalMargin);

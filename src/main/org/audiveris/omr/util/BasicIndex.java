@@ -66,20 +66,16 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class BasicIndex<E extends Entity>
         implements EntityIndex<E>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            BasicIndex.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicIndex.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
     /** Collection of all entities registered in this index, sorted on ID. */
     @XmlElement(name = "entities")
     @XmlJavaTypeAdapter(Adapter.class)
-    protected final ConcurrentSkipListMap<Integer, E> entities = new ConcurrentSkipListMap<Integer, E>();
+    protected final ConcurrentSkipListMap<Integer, E> entities = new ConcurrentSkipListMap<>();
 
     // Transient data
     //---------------
@@ -96,7 +92,6 @@ public class BasicIndex<E extends Entity>
     /** (debug) for easy inspection via browser. */
     private Collection<E> values;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BasicIndex} object.
      *
@@ -116,7 +111,6 @@ public class BasicIndex<E extends Entity>
         values = entities.values(); // Useful for debugging only
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------------//
     // getContainedEntities //
     //----------------------//
@@ -160,6 +154,16 @@ public class BasicIndex<E extends Entity>
     public EntityService<E> getEntityService ()
     {
         return entityService;
+    }
+
+    //------------------//
+    // setEntityService //
+    //------------------//
+    @Override
+    public void setEntityService (EntityService<E> entityService)
+    {
+        this.entityService = entityService;
+        entityService.connect();
     }
 
     //------------//
@@ -232,6 +236,15 @@ public class BasicIndex<E extends Entity>
         return lastId.get();
     }
 
+    //-----------//
+    // setLastId //
+    //-----------//
+    @Override
+    public void setLastId (int lastId)
+    {
+        this.lastId.set(lastId);
+    }
+
     //---------//
     // getName //
     //---------//
@@ -297,8 +310,7 @@ public class BasicIndex<E extends Entity>
         final EntityService<E> interService = this.getEntityService();
 
         if (interService != null) {
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
@@ -368,25 +380,6 @@ public class BasicIndex<E extends Entity>
         }
     }
 
-    //------------------//
-    // setEntityService //
-    //------------------//
-    @Override
-    public void setEntityService (EntityService<E> entityService)
-    {
-        this.entityService = entityService;
-        entityService.connect();
-    }
-
-    //-----------//
-    // setLastId //
-    //-----------//
-    @Override
-    public void setLastId (int lastId)
-    {
-        this.lastId.set(lastId);
-    }
-
     //-----------//
     // setVipIds //
     //-----------//
@@ -427,6 +420,11 @@ public class BasicIndex<E extends Entity>
     //------------//
     // generateId //
     //------------//
+    /**
+     * Report the next available ID value.
+     *
+     * @return next available ID
+     */
     protected int generateId ()
     {
         return lastId.incrementAndGet();
@@ -435,6 +433,11 @@ public class BasicIndex<E extends Entity>
     //-----------//
     // internals //
     //-----------//
+    /**
+     * Report a description string of class internals.
+     *
+     * @return description string of internals
+     */
     protected String internals ()
     {
         return getName();
@@ -468,27 +471,50 @@ public class BasicIndex<E extends Entity>
         values = entities.values();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //------------------//
+    // InterfaceAdapter //
+    //------------------//
+    /**
+     * @param <E> precise entity type
+     */
+    public static class InterfaceAdapter<E extends AbstractEntity>
+            extends XmlAdapter<BasicIndex<E>, EntityIndex<E>>
+    {
+
+        @Override
+        public BasicIndex<E> marshal (EntityIndex<E> itf)
+                throws Exception
+        {
+            return (BasicIndex<E>) itf;
+        }
+
+        @Override
+        public EntityIndex<E> unmarshal (BasicIndex<E> basic)
+                throws Exception
+        {
+            return basic;
+        }
+    }
+
     //---------//
     // Adapter //
     //---------//
     /**
-     * This adapter converts an un-mappable ConcurrentHashMap to/from
-     * a JAXB-mappable IndexValue (a flat list).
+     * This adapter converts an un-mappable ConcurrentHashMap<String, E> to/from
+     * a JAXB-mappable IndexValue<E> (a flat list).
      *
      * @param <E> the specific entity type
      */
-    public static class Adapter<E extends AbstractEntity>
+    private static class Adapter<E extends AbstractEntity>
             extends XmlAdapter<IndexValue<E>, ConcurrentSkipListMap<Integer, E>>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public IndexValue<E> marshal (ConcurrentSkipListMap<Integer, E> map)
                 throws Exception
         {
-            IndexValue<E> value = new IndexValue<E>();
-            value.list = new ArrayList<E>(map.values());
+            IndexValue<E> value = new IndexValue<>();
+            value.list = new ArrayList<>(map.values());
 
             return value;
         }
@@ -498,19 +524,17 @@ public class BasicIndex<E extends Entity>
                 throws Exception
         {
             // TODO: is sorting needed?
-            Collections.sort(
-                    value.list,
-                    new Comparator<E>()
-            {
-                @Override
-                public int compare (E e1,
-                                    E e2)
-                {
-                    return Integer.compare(e1.getId(), e2.getId());
-                }
-            });
+            Collections.sort(value.list, new Comparator<E>()
+                     {
+                         @Override
+                         public int compare (E e1,
+                                             E e2)
+                         {
+                             return Integer.compare(e1.getId(), e2.getId());
+                         }
+                     });
 
-            ConcurrentSkipListMap<Integer, E> map = new ConcurrentSkipListMap<Integer, E>();
+            ConcurrentSkipListMap<Integer, E> map = new ConcurrentSkipListMap<>();
 
             for (E entity : value.list) {
                 map.put(entity.getId(), entity);
@@ -529,38 +553,13 @@ public class BasicIndex<E extends Entity>
      *
      * @param <E> the specific entity type
      */
-    public static class IndexValue<E extends AbstractEntity>
+    private static class IndexValue<E extends AbstractEntity>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlElementRefs({
-            @XmlElementRef(type = Glyph.class)
-            , @XmlElementRef(type = BasicSymbol.class)
-            , @XmlElementRef(type = Annotation.class)
-        })
+            @XmlElementRef(type = Glyph.class),
+            @XmlElementRef(type = BasicSymbol.class),
+            @XmlElementRef(type = Annotation.class)})
         ArrayList<E> list; // Flat list of entities (each with its embedded id)
-    }
-
-    //------------------//
-    // InterfaceAdapter //
-    //------------------//
-    public static class InterfaceAdapter<E extends AbstractEntity>
-            extends XmlAdapter<BasicIndex<E>, EntityIndex<E>>
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public BasicIndex<E> marshal (EntityIndex<E> itf)
-                throws Exception
-        {
-            return (BasicIndex<E>) itf;
-        }
-
-        @Override
-        public EntityIndex<E> unmarshal (BasicIndex<E> basic)
-                throws Exception
-        {
-            return basic;
-        }
     }
 }

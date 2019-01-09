@@ -21,7 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
-import org.audiveris.omr.sig.BasicImpacts;
+import org.audiveris.omr.sig.GradeImpacts;
 
 /**
  * Class {@code SupportImpacts} handles impacts for a supporting relation.
@@ -29,9 +29,8 @@ import org.audiveris.omr.sig.BasicImpacts;
  * @author Hervé Bitteur
  */
 public class SupportImpacts
-        extends BasicImpacts
+        extends GradeImpacts
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new RelationImpacts object.
@@ -45,7 +44,6 @@ public class SupportImpacts
         super(names, weights);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // getIntrinsicRatio //
     //-------------------//

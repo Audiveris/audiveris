@@ -92,12 +92,11 @@ import javax.xml.bind.JAXBException;
  */
 public class AnnotationsBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AnnotationsBuilder.class);
 
     /** Inter excluded classes. */
-    private static final Set<Class> excludedInterClasses = new HashSet<Class>();
+    private static final Set<Class> excludedInterClasses = new HashSet<>();
 
     static {
         excludedInterClasses.add(AbstractChordInter.class);
@@ -122,7 +121,6 @@ public class AnnotationsBuilder
         excludedInterClasses.add(WordInter.class);
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The sheet to process. */
     private final Sheet sheet;
 
@@ -132,7 +130,6 @@ public class AnnotationsBuilder
     /** The annotations structure being built. */
     private final SheetAnnotations annotations = new SheetAnnotations();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AnnotationsBuilder} object.
      *
@@ -146,7 +143,6 @@ public class AnnotationsBuilder
         this.path = path;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Process the sheet to generate the corresponding annotations.
      *
@@ -154,7 +150,8 @@ public class AnnotationsBuilder
      * @throws JAXBException for any JAXB error
      */
     public void processSheet ()
-            throws IOException, JAXBException
+            throws IOException,
+                   JAXBException
     {
         // Global informations
         annotations.setVersion("1.0");
@@ -192,7 +189,6 @@ public class AnnotationsBuilder
         return false;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------------//
     // SystemAnnotator //
     //-----------------//
@@ -201,7 +197,6 @@ public class AnnotationsBuilder
      */
     private class SystemAnnotator
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Related system. */
         private final SystemInfo system;
@@ -212,14 +207,12 @@ public class AnnotationsBuilder
         /** All system note heads, sorted by abscissa. */
         private List<Inter> allHeads;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public SystemAnnotator (SystemInfo system)
+        SystemAnnotator (SystemInfo system)
         {
             this.system = system;
             sig = system.getSig();
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Export a barline group, including repeat dots if any.
          * <p>
@@ -251,12 +244,17 @@ public class AnnotationsBuilder
                 annotations.addSymbol(
                         new SymbolInfo(oShape, interline, bar.getId(), null, bar.getBounds()));
             } else {
-                List<SymbolInfo> inners = new ArrayList<SymbolInfo>();
+                List<SymbolInfo> inners = new ArrayList<>();
 
                 for (Inter item : items) {
                     OmrShape oShape = OmrShapeMapping.omrShapeOf(item.getShape());
                     inners.add(
-                            new SymbolInfo(oShape, interline, item.getId(), null, item.getBounds()));
+                            new SymbolInfo(
+                                    oShape,
+                                    interline,
+                                    item.getId(),
+                                    null,
+                                    item.getBounds()));
                 }
 
                 // Determine the outer shape
@@ -381,18 +379,23 @@ public class AnnotationsBuilder
         private void exportTimePair (TimePairInter pair)
         {
             final int interline = pair.getStaff().getSpecificInterline();
-            final List<SymbolInfo> inners = new ArrayList<SymbolInfo>();
+            final List<SymbolInfo> inners = new ArrayList<>();
 
             for (Inter inter : pair.getMembers()) {
                 OmrShape oShape = OmrShapeMapping.omrShapeOf(inter.getShape());
 
                 if (oShape != null) {
                     inners.add(
-                            new SymbolInfo(oShape, interline, inter.getId(), null, inter.getBounds()));
+                            new SymbolInfo(
+                                    oShape,
+                                    interline,
+                                    inter.getId(),
+                                    null,
+                                    inter.getBounds()));
                 }
             }
 
-            final OmrShape pairShape = OmrShapeMapping.getTimeCombo((TimePairInter) pair);
+            final OmrShape pairShape = OmrShapeMapping.getTimeCombo(pair);
 
             if (pairShape != null) {
                 SymbolInfo outer = new SymbolInfo(

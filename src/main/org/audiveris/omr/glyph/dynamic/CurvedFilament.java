@@ -52,11 +52,9 @@ import java.util.List;
 public class CurvedFilament
         extends Filament
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CurvedFilament.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Typical length between points. */
     protected final int segmentLength;
 
@@ -66,7 +64,6 @@ public class CurvedFilament
     /** Curved line across all defining points. */
     protected NaturalSpline spline;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code CurvedFilament} object.
      *
@@ -80,7 +77,6 @@ public class CurvedFilament
         this.segmentLength = segmentLength;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // computeLine //
     //-------------//
@@ -97,8 +93,7 @@ public class CurvedFilament
 
             // We need a rough orientation right now
             Orientation orientation = getRoughOrientation();
-            Point2D orientedStart = (startPoint == null) ? null : orientation.oriented(
-                    startPoint);
+            Point2D orientedStart = (startPoint == null) ? null : orientation.oriented(startPoint);
             Point2D orientedStop = (stopPoint == null) ? null : orientation.oriented(stopPoint);
             Rectangle oBounds = orientation.oriented(getBounds());
             double oStart = (orientedStart != null) ? orientedStart.getX() : oBounds.x;
@@ -113,7 +108,7 @@ public class CurvedFilament
             // Determine the number of segments and their precise length
             int segCount = (int) Math.rint(length / segmentLength);
             double segLength = length / segCount;
-            List<Point2D> newPoints = new ArrayList<Point2D>(segCount + 1);
+            List<Point2D> newPoints = new ArrayList<>(segCount + 1);
 
             // First point
             if (startPoint == null) {
@@ -212,16 +207,16 @@ public class CurvedFilament
 
         if (orientation == Orientation.HORIZONTAL) {
             if ((coord < startPoint.getX()) || (coord > stopPoint.getX())) {
-                double sl = (stopPoint.getY() - startPoint.getY()) / (stopPoint.getX()
-                                                                      - startPoint.getX());
+                double sl = (stopPoint.getY() - startPoint.getY()) / (stopPoint.getX() - startPoint
+                        .getX());
 
                 return startPoint.getY() + (sl * (coord - startPoint.getX()));
             } else {
                 return spline.yAtX(coord);
             }
         } else if ((coord < startPoint.getY()) || (coord > stopPoint.getY())) {
-            double sl = (stopPoint.getX() - startPoint.getX()) / (stopPoint.getY()
-                                                                  - startPoint.getY());
+            double sl = (stopPoint.getX() - startPoint.getX()) / (stopPoint.getY() - startPoint
+                    .getY());
 
             return startPoint.getX() + (sl * (coord - startPoint.getY()));
         } else {
@@ -250,6 +245,11 @@ public class CurvedFilament
     //-----------//
     // getSpline //
     //-----------//
+    /**
+     * Report the underlying NaturalSpline.
+     *
+     * @return the computed spline
+     */
     public NaturalSpline getSpline ()
     {
         if (spline == null) {
@@ -295,7 +295,7 @@ public class CurvedFilament
             final List<Line2D> bisectors = getBisectors();
 
             // Compute radius values (using same index as points)
-            final List<Double> radii = new ArrayList<Double>();
+            final List<Double> radii = new ArrayList<>();
             radii.add(null); // To skip index 0 for which we have no value (???)
 
             for (int i = 1, iBreak = points.size() - 1; i < iBreak; i++) {
@@ -333,9 +333,7 @@ public class CurvedFilament
                 }
 
                 // Lookup corresponding section(s)
-                int probeWidth = InterlineScale.toPixels(
-                        interline,
-                        Filament.getProbeWidth());
+                int probeWidth = InterlineScale.toPixels(interline, Filament.getProbeWidth());
                 Orientation orientation = getRoughOrientation();
                 final Point2D point = points.get(idx);
                 Point2D orientedPt = orientation.oriented(points.get(idx));
@@ -344,7 +342,7 @@ public class CurvedFilament
                         orientedPt.getY() - (probeWidth / 2.0),
                         probeWidth,
                         probeWidth);
-                List<Section> found = new ArrayList<Section>();
+                List<Section> found = new ArrayList<>();
 
                 for (Section section : getMembers()) {
                     if (rect.intersects(section.getOrientedBounds())) {
@@ -354,19 +352,17 @@ public class CurvedFilament
 
                 if (found.size() > 1) {
                     // Pick up the section closest to the point
-                    Collections.sort(
-                            found,
-                            new Comparator<Section>()
-                    {
-                        @Override
-                        public int compare (Section s1,
-                                            Section s2)
-                        {
-                            return Double.compare(
-                                    point.distance(s1.getCentroid()),
-                                    point.distance(s2.getCentroid()));
-                        }
-                    });
+                    Collections.sort(found, new Comparator<Section>()
+                             {
+                                 @Override
+                                 public int compare (Section s1,
+                                                     Section s2)
+                                 {
+                                     return Double.compare(
+                                             point.distance(s1.getCentroid()),
+                                             point.distance(s2.getCentroid()));
+                                 }
+                             });
                 }
 
                 Section section = found.isEmpty() ? null : found.get(0);
@@ -431,19 +427,27 @@ public class CurvedFilament
     //-----------//
     // findPoint //
     //-----------//
+    /**
+     * Report the defining point, if any, near the provided coordinate.
+     *
+     * @param coord       the provided coordinate value
+     * @param orientation the rough filament orientation
+     * @param margin      the maximum acceptable delta on coordinate
+     * @return the defining point or null if none
+     */
     protected Point2D findPoint (int coord,
                                  Orientation orientation,
                                  int margin)
     {
         Point2D best = null;
-        double bestDeltacoord = Integer.MAX_VALUE;
+        double bestDeltaCoord = Integer.MAX_VALUE;
 
         for (Point2D p : points) {
             double dc = Math.abs(
                     coord - ((orientation == Orientation.HORIZONTAL) ? p.getX() : p.getY()));
 
-            if ((dc <= margin) && (dc < bestDeltacoord)) {
-                bestDeltacoord = dc;
+            if ((dc <= margin) && (dc < bestDeltaCoord)) {
+                bestDeltaCoord = dc;
                 best = p;
             }
         }
@@ -454,6 +458,9 @@ public class CurvedFilament
     //-----------------//
     // invalidateCache //
     //-----------------//
+    /**
+     *
+     */
     @Override
     protected void invalidateCache ()
     {
@@ -473,7 +480,7 @@ public class CurvedFilament
      */
     private List<Line2D> getBisectors ()
     {
-        List<Line2D> bisectors = new ArrayList<Line2D>();
+        List<Line2D> bisectors = new ArrayList<>();
 
         for (int i = 0; i < (points.size() - 1); i++) {
             bisectors.add(LineUtil.bisector(new Line2D.Double(points.get(i), points.get(i + 1))));
@@ -513,20 +520,26 @@ public class CurvedFilament
         return Math.hypot(inter.getX() - point.getX(), inter.getY() - point.getY());
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // Constructor //
     //-------------//
-    public static final class Constructor
+    /**
+     * A constructor for a CurvedFilament.
+     */
+    public static class Constructor
             implements CompoundFactory.CompoundConstructor
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final int interline;
 
         private final int segmentLength;
 
-        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Creates the constructor.
+         *
+         * @param interline     related interline value
+         * @param segmentLength typical segmenting length
+         */
         public Constructor (int interline,
                             int segmentLength)
         {
@@ -534,7 +547,11 @@ public class CurvedFilament
             this.segmentLength = segmentLength;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Creates the CurvedFilament instance
+         *
+         * @return CurvedFilament instance
+         */
         @Override
         public SectionCompound newInstance ()
         {

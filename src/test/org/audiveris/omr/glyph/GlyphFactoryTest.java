@@ -20,11 +20,9 @@ import java.awt.Dimension;
  */
 public class GlyphFactoryTest
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Dimension dim = new Dimension(15, 10);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code GlyphFactoryTest} object.
      */
@@ -32,7 +30,6 @@ public class GlyphFactoryTest
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of createGlyphs method, of class GlyphFactory.
      */

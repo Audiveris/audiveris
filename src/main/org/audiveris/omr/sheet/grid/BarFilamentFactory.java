@@ -57,20 +57,17 @@ import java.util.List;
  */
 public class BarFilamentFactory
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BarFilamentFactory.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related scale. */
     private final Scale scale;
 
     /** Scale-dependent constants. */
     private final Parameters params;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BarFilamentFactory} object.
      *
@@ -82,7 +79,6 @@ public class BarFilamentFactory
         params = new Parameters(scale);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // buildBarFilament //
     //------------------//
@@ -150,7 +146,7 @@ public class BarFilamentFactory
                                  Rectangle core,
                                  Collection<Section> source)
     {
-        final List<Section> sections = new ArrayList<Section>(source);
+        final List<Section> sections = new ArrayList<>(source);
         sections.removeAll(fil.getMembers());
 
         boolean expanding;
@@ -216,14 +212,12 @@ public class BarFilamentFactory
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
@@ -246,14 +240,12 @@ public class BarFilamentFactory
      */
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public int minCoreSectionLength;
 
         public int segmentLength;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             minCoreSectionLength = scale.toPixels(constants.minCoreSectionLength);
             segmentLength = scale.toPixels(constants.segmentLength);

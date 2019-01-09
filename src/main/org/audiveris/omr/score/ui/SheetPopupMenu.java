@@ -40,18 +40,15 @@ import javax.swing.JPopupMenu;
  */
 public class SheetPopupMenu
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SheetPopupMenu.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     protected final Sheet sheet;
 
     /** Concrete pop-up menu. */
     protected final JPopupMenu popup = new JPopupMenu();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SheetPopupMenu} object.
      *
@@ -62,7 +59,6 @@ public class SheetPopupMenu
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // addMenu //
     //---------//

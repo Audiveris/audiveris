@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 public class MixGlyphDescriptor
         extends GlyphDescriptor
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MixGlyphDescriptor.class);
 
@@ -49,12 +48,14 @@ public class MixGlyphDescriptor
     /** Use the ART moments + GEO moments + aspect. */
     private static final int LENGTH = artCount + geoCount + 1;
 
+    /**
+     * Creates a new {@code MixGlyphDescriptor} object.
+     */
     public MixGlyphDescriptor ()
     {
         super("mix");
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public String[] getFeatureLabels ()
     {
@@ -98,18 +99,16 @@ public class MixGlyphDescriptor
         return LENGTH;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // LabelsHolder //
     //--------------//
     /**
      * Descriptive strings for glyph characteristics.
-     *
+     * <p>
      * NOTA: Keep in sync method {@link #getFeatures}
      */
     private static class LabelsHolder
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         /** Index -> Label */
         public static final String[] labels = new String[LENGTH];
@@ -135,7 +134,6 @@ public class MixGlyphDescriptor
             labels[i++] = "aspect";
         }
 
-        //~ Constructors ---------------------------------------------------------------------------
         private LabelsHolder ()
         {
         }

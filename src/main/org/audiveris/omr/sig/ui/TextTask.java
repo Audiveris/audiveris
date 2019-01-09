@@ -32,7 +32,6 @@ import org.audiveris.omr.sig.inter.Inter;
 public abstract class TextTask
         extends UITask
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code TextTask} object.
@@ -44,7 +43,6 @@ public abstract class TextTask
         super(sig);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the underlying inter (word or sentence)
      *

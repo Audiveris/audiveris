@@ -84,13 +84,11 @@ import java.util.TreeSet;
 public class PeakGraph
         extends SimpleDirectedGraph<StaffPeak, BarAlignment>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(PeakGraph.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -107,7 +105,6 @@ public class PeakGraph
     /** Specific builder for peak-based filaments. */
     private final BarFilamentBuilder filamentBuilder;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PeakGraph} object.
      *
@@ -127,7 +124,6 @@ public class PeakGraph
         filamentBuilder = new BarFilamentBuilder(sheet);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // buildSystems //
     //--------------//
@@ -271,6 +267,12 @@ public class PeakGraph
         return Math.abs(dx) <= params.maxAlignmentBraceDx;
     }
 
+    @Override
+    public Object clone ()
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
     //-------------------//
     // areRightConnected //
     //-------------------//
@@ -298,7 +300,6 @@ public class PeakGraph
         return false;
     }
 
-    //
     //    //-------------//
     //    // alignGroups //
     //    //-------------//
@@ -374,7 +375,7 @@ public class PeakGraph
         logger.debug("sections:{}", allSections.size());
 
         for (StaffProjector projector : projectors) {
-            List<StaffPeak> toRemove = new ArrayList<StaffPeak>();
+            List<StaffPeak> toRemove = new ArrayList<>();
 
             for (StaffPeak peak : projector.getPeaks()) {
                 // Build filament from proper slice of sections for this peak
@@ -413,8 +414,7 @@ public class PeakGraph
      */
     private BarConnection checkConnection (BarAlignment alignment)
     {
-        ByteProcessor pixelFilter = sheet.getPicture().getSource(
-                Picture.SourceKey.BINARY);
+        ByteProcessor pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
         StaffPeak p1 = alignment.topPeak;
         StaffPeak p2 = alignment.bottomPeak;
         final boolean vip = p1.isVip() && p2.isVip();
@@ -435,7 +435,7 @@ public class PeakGraph
         }
 
         if ((data.gap <= params.maxConnectionGap)
-            && (data.whiteRatio <= params.maxConnectionWhiteRatio)) {
+                    && (data.whiteRatio <= params.maxConnectionWhiteRatio)) {
             double gapImpact = 1 - (data.gap / (double) params.maxConnectionGap);
             double whiteImpact = 1 - (data.whiteRatio / params.maxConnectionWhiteRatio);
             BarConnection connection = new BarConnection(alignment, gapImpact, whiteImpact);
@@ -485,8 +485,7 @@ public class PeakGraph
             logger.info("VIP running checkForSplit for {}", peak);
         }
 
-        final Map<VerticalSide, List<StaffPeak>> map = new EnumMap<VerticalSide, List<StaffPeak>>(
-                VerticalSide.class);
+        final Map<VerticalSide, List<StaffPeak>> map = new EnumMap<>(VerticalSide.class);
         final List<StaffPeak> peakGroup = groupOf(Arrays.asList(peak));
 
         if (peakGroup.size() > 1) {
@@ -582,7 +581,7 @@ public class PeakGraph
                                      HorizontalSide side)
     {
         final Staff staff = peak.getStaff();
-        final List<Section> allSections = new ArrayList<Section>(peak.getFilament().getMembers());
+        final List<Section> allSections = new ArrayList<>(peak.getFilament().getMembers());
 
         StaffPeak p = new StaffPeak(
                 staff,
@@ -617,7 +616,7 @@ public class PeakGraph
      */
     private List<SystemInfo> createSystems (Integer[] systemTops)
     {
-        final List<SystemInfo> newSystems = new ArrayList<SystemInfo>();
+        final List<SystemInfo> newSystems = new ArrayList<>();
         Integer staffTop = null;
         int systemId = 0;
         SystemInfo system = null;
@@ -657,9 +656,9 @@ public class PeakGraph
     private void detectCurvedPeaks ()
     {
         for (StaffProjector projector : projectors) {
-            ///List<StaffPeak> toRemove = new ArrayList<StaffPeak>();
+            ///List<StaffPeak> toRemove = new ArrayList<>();
             for (StaffPeak peak : projector.getPeaks()) {
-                Filament fil = (Filament) peak.getFilament();
+                Filament fil = peak.getFilament();
                 double curvature = fil.getMeanCurvature();
 
                 if (curvature < params.minBarCurvature) {
@@ -694,7 +693,7 @@ public class PeakGraph
     private List<BarAlignment> findAlignmentsAbove (StaffPeak peak,
                                                     Staff staffAbove)
     {
-        List<BarAlignment> alignments = new ArrayList<BarAlignment>();
+        List<BarAlignment> alignments = new ArrayList<>();
 
         for (StaffPeak peakAbove : projectorOf(staffAbove).getPeaks()) {
             BarAlignment alignment = checkAlignment(peakAbove, peak, true, true);
@@ -757,7 +756,7 @@ public class PeakGraph
     private List<BarAlignment> findAlignmentsBelow (StaffPeak peak,
                                                     Staff staffBelow)
     {
-        List<BarAlignment> alignments = new ArrayList<BarAlignment>();
+        List<BarAlignment> alignments = new ArrayList<>();
 
         for (StaffPeak peakBelow : projectorOf(staffBelow).getPeaks()) {
             BarAlignment alignment = checkAlignment(peak, peakBelow, true, true);
@@ -825,7 +824,7 @@ public class PeakGraph
     private void findConnections ()
     {
         // Check among the alignments for peaks connected across staves
-        for (BarAlignment alignment : new ArrayList<BarAlignment>(edgeSet())) {
+        for (BarAlignment alignment : new ArrayList<>(edgeSet())) {
             // Look for concrete connection
             checkConnection(alignment);
         }
@@ -848,9 +847,8 @@ public class PeakGraph
         int degree = (side == TOP) ? inDegreeOf(peak) : outDegreeOf(peak);
 
         if (degree > 0) {
-            SortedSet<StaffPeak> others = new TreeSet<StaffPeak>();
-            Set<BarAlignment> edges = (side == TOP) ? incomingEdgesOf(peak) : outgoingEdgesOf(
-                    peak);
+            SortedSet<StaffPeak> others = new TreeSet<>();
+            Set<BarAlignment> edges = (side == TOP) ? incomingEdgesOf(peak) : outgoingEdgesOf(peak);
 
             for (BarAlignment edge : edges) {
                 if (edge instanceof BarConnection) {
@@ -858,7 +856,7 @@ public class PeakGraph
                 }
             }
 
-            return new ArrayList<StaffPeak>(others);
+            return new ArrayList<>(others);
         }
 
         return Collections.emptyList();
@@ -869,7 +867,7 @@ public class PeakGraph
     //----------------//
     private List<BarConnection> getConnections ()
     {
-        List<BarConnection> list = new ArrayList<BarConnection>();
+        List<BarConnection> list = new ArrayList<>();
 
         for (BarAlignment align : edgeSet()) {
             if (align instanceof BarConnection) {
@@ -893,7 +891,7 @@ public class PeakGraph
      */
     private List<List<StaffPeak>> getGroupsOf (StaffProjector projector)
     {
-        final List<List<StaffPeak>> groups = new ArrayList<List<StaffPeak>>();
+        final List<List<StaffPeak>> groups = new ArrayList<>();
         final List<StaffPeak> peaks = projector.getPeaks();
         int ig = -1; // Index of start of group
 
@@ -951,7 +949,7 @@ public class PeakGraph
      */
     private Set<StaffPeak> getPeaksToSplit (Collection<StaffPeak> peaks)
     {
-        Set<StaffPeak> toSplit = new LinkedHashSet<StaffPeak>();
+        Set<StaffPeak> toSplit = new LinkedHashSet<>();
 
         for (StaffPeak peak : peaks) {
             Map<VerticalSide, List<StaffPeak>> map = checkForSplit(peak);
@@ -980,7 +978,7 @@ public class PeakGraph
      */
     private List<Section> getSectionsByWidth (int maxWidth)
     {
-        List<Section> sections = new ArrayList<Section>();
+        List<Section> sections = new ArrayList<>();
         Lag hLag = sheet.getLagManager().getLag(Lags.HLAG);
         Lag vLag = sheet.getLagManager().getLag(Lags.VLAG);
 
@@ -1031,8 +1029,9 @@ public class PeakGraph
                 final int xOffset = p2.getStart() - p2.getStaff().getAbscissa(LEFT);
 
                 if (xOffset > params.maxFirstConnectionXOffset) {
-                    if ((p2 == projectorOf(p2.getStaff()).getLastPeak())
-                        || !areRightConnected(p1.getStaff(), p2.getStaff())) {
+                    if ((p2 == projectorOf(p2.getStaff()).getLastPeak()) || !areRightConnected(
+                            p1.getStaff(),
+                            p2.getStaff())) {
                         continue;
                     }
                 }
@@ -1141,13 +1140,13 @@ public class PeakGraph
             StaffPeak p1 = g1.get(i);
             StaffPeak p2 = g2.get(i);
 
-            for (BarAlignment align : new ArrayList<BarAlignment>(outgoingEdgesOf(p1))) {
+            for (BarAlignment align : new ArrayList<>(outgoingEdgesOf(p1))) {
                 if (getEdgeTarget(align) != p2) {
                     removeEdge(align);
                 }
             }
 
-            for (BarAlignment align : new ArrayList<BarAlignment>(incomingEdgesOf(p2))) {
+            for (BarAlignment align : new ArrayList<>(incomingEdgesOf(p2))) {
                 if (getEdgeSource(align) != p1) {
                     removeEdge(align);
                 }
@@ -1173,7 +1172,7 @@ public class PeakGraph
      */
     private void purgeAlignments ()
     {
-        Set<BarAlignment> toRemove = new LinkedHashSet<BarAlignment>();
+        Set<BarAlignment> toRemove = new LinkedHashSet<>();
 
         for (StaffPeak peak : vertexSet()) {
             if (peak.isVip()) {
@@ -1181,13 +1180,13 @@ public class PeakGraph
             }
 
             if (inDegreeOf(peak) > 1) {
-                List<BarAlignment> edges = new ArrayList<BarAlignment>(incomingEdgesOf(peak));
+                List<BarAlignment> edges = new ArrayList<>(incomingEdgesOf(peak));
                 edges.remove(BarAlignment.bestOf(edges, TOP));
                 toRemove.addAll(edges);
             }
 
             if (outDegreeOf(peak) > 1) {
-                List<BarAlignment> edges = new ArrayList<BarAlignment>(outgoingEdgesOf(peak));
+                List<BarAlignment> edges = new ArrayList<>(outgoingEdgesOf(peak));
                 edges.remove(BarAlignment.bestOf(edges, BOTTOM));
                 toRemove.addAll(edges);
             }
@@ -1208,7 +1207,7 @@ public class PeakGraph
      */
     private void purgeCrossAlignments ()
     {
-        final Set<BarAlignment> toRemove = new LinkedHashSet<BarAlignment>();
+        final Set<BarAlignment> toRemove = new LinkedHashSet<>();
 
         for (BarAlignment alignment : edgeSet()) {
             final SystemInfo s1 = alignment.getPeak(TOP).getStaff().getSystem();
@@ -1241,8 +1240,8 @@ public class PeakGraph
         for (int i = 0; i < topGroup.size(); i++) {
             StaffPeak top = topGroup.get(i);
             StaffPeak bottom = bottomGroup.get(i);
-            removeAllEdges(new ArrayList<BarAlignment>(outgoingEdgesOf(top)));
-            removeAllEdges(new ArrayList<BarAlignment>(incomingEdgesOf(bottom)));
+            removeAllEdges(new ArrayList<>(outgoingEdgesOf(top)));
+            removeAllEdges(new ArrayList<>(incomingEdgesOf(bottom)));
             addEdge(top, bottom, checkAlignment(top, bottom, false, false));
         }
     }
@@ -1258,10 +1257,10 @@ public class PeakGraph
     private int splitMergedGroups ()
     {
         int count = 0;
-        Set<StaffPeak> toSplit = getPeaksToSplit(new ArrayList<StaffPeak>(vertexSet()));
+        Set<StaffPeak> toSplit = getPeaksToSplit(new ArrayList<>(vertexSet()));
 
         while (!toSplit.isEmpty()) {
-            Set<StaffPeak> impacted = new LinkedHashSet<StaffPeak>();
+            Set<StaffPeak> impacted = new LinkedHashSet<>();
 
             for (StaffPeak peak : toSplit) {
                 if (splitPeak(peak, impacted)) {
@@ -1385,14 +1384,12 @@ public class PeakGraph
         return total;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
@@ -1452,7 +1449,6 @@ public class PeakGraph
     //------------//
     private static class Parameters
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final double maxAlignmentSlope;
 
@@ -1478,13 +1474,12 @@ public class PeakGraph
 
         final int maxFirstConnectionXOffset;
 
-        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
          *
          * @param scale the scaling factor
          */
-        public Parameters (Scale scale)
+        Parameters (Scale scale)
         {
             maxAlignmentSlope = constants.maxAlignmentSlope.getValue();
             maxAlignmentDeltaWidth = scale.toPixels(constants.maxAlignmentDeltaWidth);

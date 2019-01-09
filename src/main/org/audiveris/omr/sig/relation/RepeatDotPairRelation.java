@@ -36,11 +36,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RepeatDotPairRelation
         extends Support
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -77,14 +75,19 @@ public class RepeatDotPairRelation
         return constants.dotSupportCoeff.getValue();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio dotSupportCoeff = new Constant.Ratio(
                 5,

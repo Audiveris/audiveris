@@ -37,11 +37,9 @@ import javax.swing.event.MenuListener;
  */
 public abstract class DynamicMenu
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(DynamicMenu.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The concrete UI menu. */
     private JMenu menu;
 
@@ -59,7 +57,6 @@ public abstract class DynamicMenu
         }
     };
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the dynamic menu.
      *
@@ -75,7 +72,8 @@ public abstract class DynamicMenu
 
             // Listener to menu selection, to modify content on-the-fly
             menu.addMenuListener(menuListener);
-        } catch (Exception ex) {
+        } catch (IllegalAccessException |
+                 InstantiationException ex) {
             logger.error("Could not instantiate " + menuClass, ex);
             menu = null;
         }
@@ -96,13 +94,13 @@ public abstract class DynamicMenu
 
             // Listener to menu selection, to modify content on-the-fly
             menu.addMenuListener(menuListener);
-        } catch (Exception ex) {
+        } catch (IllegalAccessException |
+                 InstantiationException ex) {
             logger.error("Could not instantiate " + menuClass, ex);
             menu = null;
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getMenu //
     //---------//

@@ -37,21 +37,19 @@ import java.util.Set;
 public abstract class GhostDropAdapter<A>
         extends MouseAdapter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The related glasspane */
+    /** The related glasspane. */
     protected final GhostGlassPane glassPane;
 
-    /** The registered listeners */
-    private final Set<GhostDropListener<A>> listeners = new LinkedHashSet<GhostDropListener<A>>();
-
-    /** The event-carried action */
+    /** The event-carried action. */
     protected A action;
 
-    /** The image to be displayed on the glasspane */
+    /** The image to be displayed on the glasspane. */
     protected BufferedImage image;
 
-    //~ Constructors -------------------------------------------------------------------------------
+    /** The registered listeners. */
+    private final Set<GhostDropListener<A>> listeners = new LinkedHashSet<>();
+
     /**
      * Create a new GhostDropAdapter object
      *
@@ -65,7 +63,6 @@ public abstract class GhostDropAdapter<A>
         this.action = action;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // addDropListener //
     //-----------------//
@@ -84,6 +81,11 @@ public abstract class GhostDropAdapter<A>
     //----------//
     // getImage //
     //----------//
+    /**
+     * Report the dragged image.
+     *
+     * @return dragged image
+     */
     public BufferedImage getImage ()
     {
         return image;
@@ -114,7 +116,7 @@ public abstract class GhostDropAdapter<A>
         glassPane.setVisible(false);
         glassPane.setImage(null);
 
-        fireDropEvent(new GhostDropEvent<A>(action, screenPoint));
+        fireDropEvent(new GhostDropEvent<>(action, screenPoint));
     }
 
     //--------------------//

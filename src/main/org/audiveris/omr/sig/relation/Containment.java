@@ -40,7 +40,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Containment
         extends Relation
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     //-------//
     // added //
@@ -81,5 +80,12 @@ public class Containment
         if (!ensemble.isRemoved()) {
             ensemble.invalidateCache();
         }
+    }
+
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -44,6 +44,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,6 +56,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -63,6 +65,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
+import javax.xml.stream.XMLStreamException;
+import org.audiveris.omr.util.Jaxb;
 
 /**
  * Class {@code RunTable} handles a rectangular assembly of oriented runs.
@@ -80,6 +84,7 @@ import javax.xml.bind.annotation.XmlValue;
  * <p>
  * We can have these various kinds of sequence, where 'F' stands for the length of a foreground run
  * and 'B' for the length of a background run:
+ *
  * <pre>
  * null    (for an empty sequence)
  * []      (for an empty sequence as well)
@@ -96,14 +101,12 @@ import javax.xml.bind.annotation.XmlValue;
 public class RunTable
         implements Cloneable, PixelSource, Oriented
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            RunTable.class);
+    private static final Logger logger = LoggerFactory.getLogger(RunTable.class);
 
+    /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     /** Orientation, the same for this table and all contained runs. */
@@ -130,7 +133,6 @@ public class RunTable
     /** Cached total weight. */
     private Integer weight;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new RunTable object.
      *
@@ -162,7 +164,6 @@ public class RunTable
         this.sequences = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // addRun //
     //--------//
@@ -332,6 +333,13 @@ public class RunTable
     //-----------------//
     // computeCentroid //
     //-----------------//
+    /**
+     * Compute the absolute centroid of this runtable, with provided offset.
+     *
+     * @param left abscissa offset
+     * @param top  ordinate offset
+     * @return absolute centroid
+     */
     public Point computeCentroid (int left,
                                   int top)
     {
@@ -951,27 +959,53 @@ public class RunTable
         return weight;
     }
 
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    //---------//
+    // marshal //
+    //---------//
+    /**
+     * Marshal this RunTable to the provided path.
+     *
+     * @param path target path
+     * @throws IOException        on IO error
+     * @throws JAXBException      on JAXB error
+     * @throws XMLStreamException on XML error
+     */
+    public void marshal (Path path)
+            throws IOException,
+                   JAXBException,
+                   XMLStreamException
+    {
+        Jaxb.marshal(this, path, getJaxbContext());
+    }
+
     //-----------//
     // unmarshal //
     //-----------//
+    /**
+     * Unmarshal a RunTable from a file.
+     *
+     * @param path path to file
+     * @return unmarshalled run table
+     */
     public static RunTable unmarshal (Path path)
     {
         logger.debug("RunTable unmarshalling {}", path);
 
-        try {
-            InputStream is = Files.newInputStream(path, StandardOpenOption.READ);
-
-            if (jaxbContext == null) {
-                jaxbContext = JAXBContext.newInstance(RunTable.class);
-            }
-
-            Unmarshaller um = jaxbContext.createUnmarshaller();
+        try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ)) {
+            Unmarshaller um = getJaxbContext().createUnmarshaller();
             RunTable runTable = (RunTable) um.unmarshal(is);
-            is.close();
             logger.debug("Unmarshalled {}", runTable);
 
             return runTable;
-        } catch (Exception ex) {
+        } catch (IOException |
+                 JAXBException ex) {
             logger.warn("RunTable. Error unmarshalling " + path + " " + ex, ex);
 
             return null;
@@ -1283,9 +1317,9 @@ public class RunTable
 
         if (orientation == HORIZONTAL) {
             final int minSeq = (clip != null) ? Math.max(clip.y - offset.y, 0) : 0;
-            final int maxSeq = (clip != null)
-                    ? (Math.min(((clip.y + clip.height) - offset.y), height) - 1)
-                    : (height - 1);
+            final int maxSeq = (clip != null) ? (Math.min(
+                    ((clip.y + clip.height) - offset.y),
+                    height) - 1) : (height - 1);
 
             for (int iSeq = minSeq; iSeq <= maxSeq; iSeq++) {
                 for (Itr it = new Itr(iSeq); it.hasNext();) {
@@ -1295,9 +1329,8 @@ public class RunTable
             }
         } else {
             final int minSeq = (clip != null) ? Math.max(clip.x - offset.x, 0) : 0;
-            final int maxSeq = (clip != null)
-                    ? (Math.min((clip.x + clip.width) - offset.x, width) - 1) : (width
-                                                                                 - 1);
+            final int maxSeq = (clip != null) ? (Math.min((clip.x + clip.width) - offset.x, width)
+                                                         - 1) : (width - 1);
 
             for (int iSeq = minSeq; iSeq <= maxSeq; iSeq++) {
                 for (Itr it = new Itr(iSeq); it.hasNext();) {
@@ -1410,7 +1443,6 @@ public class RunTable
      * Trim this run table, to come up with the smallest bounding box.
      *
      * @param offset (output) resulting offset WRT initial run table
-     *
      * @return the resulting trimmed table
      */
     public RunTable trim (Point offset)
@@ -1526,6 +1558,20 @@ public class RunTable
                 }
             }
         }
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(RunTable.class);
+        }
+
+        return jaxbContext;
     }
 
     //--------//
@@ -1659,7 +1705,6 @@ public class RunTable
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // RunSequence //
     //-------------//
@@ -1670,22 +1715,19 @@ public class RunTable
     @XmlRootElement(name = "runs")
     static class RunSequence
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlValue
         private int[] rle;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public RunSequence (int[] rle)
+        RunSequence (int[] rle)
         {
             this.rle = rle;
         }
 
-        public RunSequence ()
+        RunSequence ()
         {
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean equals (Object obj)
         {
@@ -1747,26 +1789,27 @@ public class RunTable
     private class Itr
             implements Iterator<Run>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** The index of sequence being iterated upon. */
         private final int index;
 
-        /** Current position in sequence array.
+        /**
+         * Current position in sequence array.
          * Always on an even position, pointing to the length of Foreground to be returned by
-         * next() */
+         * next()
+         */
         private int cursor = 0;
 
         /** Start location of foreground run to be returned by next(). */
         private int loc = 0;
 
-        /** <b>Reusable</b> Run structure. This is just a buffer meant to optimize browsing.
+        /**
+         * <b>Reusable</b> Run structure. This is just a buffer meant to optimize browsing.
          * Beware, don't keep a pointer to this Run object, make a copy.
          */
         private final Run run = new Run(-1, -1);
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public Itr (int index)
+        Itr (int index)
         {
             this.index = index;
 
@@ -1788,7 +1831,6 @@ public class RunTable
             }
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Returns true only if there is still a foreground run to return.
          *

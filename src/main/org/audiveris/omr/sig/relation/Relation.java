@@ -33,7 +33,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Abstract class {@code Relation} describes a relation between two Inter instances.
+ * Abstract class {@code Relation} describes a relation between two Inter instances
+ * within the same SIG.
  *
  * @author Hervé Bitteur
  */
@@ -41,7 +42,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class Relation
         implements Cloneable
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     // Persistent data
     //----------------
@@ -51,7 +51,6 @@ public abstract class Relation
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean manual;
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -121,6 +120,19 @@ public abstract class Relation
         return manual;
     }
 
+    //-----------//
+    // setManual //
+    //-----------//
+    /**
+     * Set this relation as a manual one.
+     *
+     * @param manual new value
+     */
+    public void setManual (boolean manual)
+    {
+        this.manual = manual;
+    }
+
     /**
      * Tell if, seen from a given target, there can be at most one source.
      *
@@ -179,19 +191,6 @@ public abstract class Relation
         return sb.toString();
     }
 
-    //-----------//
-    // setManual //
-    //-----------//
-    /**
-     * Set this relation as a manual one.
-     *
-     * @param manual new value
-     */
-    public void setManual (boolean manual)
-    {
-        this.manual = manual;
-    }
-
     //--------------//
     // toLongString //
     //--------------//
@@ -230,6 +229,11 @@ public abstract class Relation
     //-----------//
     // internals //
     //-----------//
+    /**
+     * Report a description string of class internals.
+     *
+     * @return description string of internals
+     */
     protected String internals ()
     {
         return isManual() ? "MANUAL" : "";

@@ -39,12 +39,10 @@ import java.awt.geom.Rectangle2D;
 public class RepeatDotSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Global decorated height WRT dot height. */
     private static final double yRatio = 3.5;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a {@code RepeatDotSymbol} (with decoration?) standard size
      *
@@ -75,7 +73,6 @@ public class RepeatDotSymbol
         super(isIcon, shape, decorated, codes);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//

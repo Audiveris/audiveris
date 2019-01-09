@@ -45,7 +45,6 @@ import java.io.FileOutputStream;
  */
 public class MusicFontTest
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     final int itemsPerLine = 8;
 
@@ -63,7 +62,6 @@ public class MusicFontTest
 
     final int pageHeight = (linesPerPage * cellHeight) + (2 * yMargin);
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Printout of each MusicFont character.
      */

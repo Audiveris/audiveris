@@ -857,12 +857,21 @@ bg=#aaffaa</panel_attributes>
   <element>
     <type>com.baselet.element.old.element.Systemborder</type>
     <coordinates>
+<<<<<<< HEAD
       <x>450</x>
       <y>580</y>
       <w>220</w>
       <h>20</h>
     </coordinates>
     <panel_attributes>fixed-shape symbols, rest-chords</panel_attributes>
+=======
+      <x>510</x>
+      <y>700</y>
+      <w>270</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>fixed-shape symbols, rest-based chords</panel_attributes>
+>>>>>>> development
     <additional_attributes/>
   </element>
   <element>
@@ -1080,6 +1089,7 @@ bg=#aaffaa</panel_attributes>
   <element>
     <type>com.baselet.element.old.element.State</type>
     <coordinates>
+<<<<<<< HEAD
       <x>300</x>
       <y>900</y>
       <w>100</w>
@@ -1087,11 +1097,21 @@ bg=#aaffaa</panel_attributes>
     </coordinates>
     <panel_attributes>*Sheet step*
 bg=#ffaaaa</panel_attributes>
+=======
+      <x>0</x>
+      <y>870</y>
+      <w>120</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>bg=#ffaaaa
+whole sheet</panel_attributes>
+>>>>>>> development
     <additional_attributes/>
   </element>
   <element>
     <type>com.baselet.element.old.element.State</type>
     <coordinates>
+<<<<<<< HEAD
       <x>300</x>
       <y>920</y>
       <w>100</w>
@@ -1099,6 +1119,15 @@ bg=#ffaaaa</panel_attributes>
     </coordinates>
     <panel_attributes>*System step*
 bg=#aaffaa</panel_attributes>
+=======
+      <x>0</x>
+      <y>910</y>
+      <w>120</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>bg=#aaffaa
+system by system</panel_attributes>
+>>>>>>> development
     <additional_attributes/>
   </element>
   <element>

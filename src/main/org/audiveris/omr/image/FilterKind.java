@@ -24,6 +24,8 @@ package org.audiveris.omr.image;
 /**
  * Class {@code FilterKind} handles the various kinds of {@link PixelFilter}
  * implementations.
+ *
+ * @author Hervé Bitteur
  */
 public enum FilterKind
 {

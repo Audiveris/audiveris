@@ -44,7 +44,8 @@ import java.util.Set;
 /**
  * Class {@code SectionFactory} builds a collection of sections out of provided runs.
  * <p>
- * To do so, this factory needs:<ul>
+ * To do so, this factory needs:
+ * <ul>
  * <li>A source of runs, which is generally provided by a {@link RunTable}.
  * Alternatively, a pixel buffer ({@link ByteProcessor}) can be provided, in this case a RunTable
  * instance is then built on the fly from the pixel buffer.</li>
@@ -65,11 +66,9 @@ import java.util.Set;
 @NotThreadSafe
 public class SectionFactory
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SectionFactory.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The lag to populate, if any. */
     private final Lag lag;
 
@@ -80,9 +79,8 @@ public class SectionFactory
     private final JunctionPolicy junctionPolicy;
 
     /** Processed sections. true/false */
-    private final Set<DynamicSection> processedSections = new LinkedHashSet<DynamicSection>();
+    private final Set<DynamicSection> processedSections = new LinkedHashSet<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of SectionFactory with a target lag.
      *
@@ -113,7 +111,6 @@ public class SectionFactory
         lag = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // createSections //
     //----------------//
@@ -196,7 +193,7 @@ public class SectionFactory
      */
     private List<Section> getImmutables (List<DynamicSection> dynSections)
     {
-        final List<Section> sections = new ArrayList<Section>(dynSections.size());
+        final List<Section> sections = new ArrayList<>(dynSections.size());
 
         for (DynamicSection dynSection : dynSections) {
             sections.add(new BasicSection(dynSection));
@@ -221,7 +218,6 @@ public class SectionFactory
         processedSections.add(dynSection);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Build //
     //-------//
@@ -237,27 +233,25 @@ public class SectionFactory
      */
     private class Build
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /** Counter to set dynamicsection ids when no lag is used. */
         private int localId;
 
         /** Global list of all sections created. */
-        private final List<DynamicSection> created = new ArrayList<DynamicSection>();
+        private final List<DynamicSection> created = new ArrayList<>();
 
         /** All Active sections in the next sequence. */
-        private final List<DynamicSection> nextActives = new ArrayList<DynamicSection>();
+        private final List<DynamicSection> nextActives = new ArrayList<>();
 
         /** List of sections in previous sequence that overlap given run in next sequence. */
-        private final List<DynamicSection> overlappingSections = new ArrayList<DynamicSection>();
+        private final List<DynamicSection> overlappingSections = new ArrayList<>();
 
         /**
          * List of all Active sections in the previous sequence, which means only
          * sections that have a run in previous sequence.
          */
-        private final List<DynamicSection> prevActives = new ArrayList<DynamicSection>();
+        private final List<DynamicSection> prevActives = new ArrayList<>();
 
-        //~ Methods --------------------------------------------------------------------------------
         //--------------//
         // buidSections //
         //--------------//

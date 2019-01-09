@@ -52,12 +52,10 @@ import javax.swing.KeyStroke;
  *
  * @param <C> the subtype of Checkable objects used in the homogeneous collection of checks of the
  *            suite
- *
  * @author Hervé Bitteur
  */
 public class CheckPanel<C>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CheckPanel.class);
 
@@ -75,27 +73,24 @@ public class CheckPanel<C>
 
     private static final int FIELD_WIDTH = 4;
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
-    /** The related check suite (the model) */
+    /** The related check suite (the model). */
     private CheckSuite<C> suite;
 
-    /** The swing component that includes all the fields */
+    /** The swing component that includes all the fields. */
     private Panel component;
 
-    /** The field for global result */
+    /** The field for global result. */
     private final JTextField globalField;
 
-    /** Matrix of all value fields */
+    /** Matrix of all value fields. */
     private JTextField[][] values;
 
-    /** Matrix of all bound fields */
+    /** Matrix of all bound fields. */
     private JTextField[][] bounds;
 
-    /** Last object checked */
+    /** Last object checked. */
     private C checkable;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a check panel for a given suite.
      *
@@ -111,7 +106,6 @@ public class CheckPanel<C>
         setSuite(suite);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getComponent //
     //--------------//
@@ -324,7 +318,7 @@ public class CheckPanel<C>
                 field.setText(textOf(constant.getValue()));
                 field.setToolTipText(
                         "<html>" + constant.getName() + "<br/>" + constant.getDescription()
-                        + "</html>");
+                                + "</html>");
             }
         }
     }
@@ -414,15 +408,12 @@ public class CheckPanel<C>
         return Double.NaN;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //
     //-------------//
     // ParamAction //
     //-------------//
     private class ParamAction
             extends AbstractAction
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Method run whenever user presses Return/Enter in one of
@@ -434,7 +425,7 @@ public class CheckPanel<C>
             // Any & several bounds may have been modified by the user
             // Since the same constant can be used in several fields, we have to
             // take a snapshot of all constants values, before modifying any one
-            Map<NamedDouble, Double> values = new HashMap<NamedDouble, Double>();
+            Map<NamedDouble, Double> values = new HashMap<>();
 
             for (Check<C> check : suite.getChecks()) {
                 values.put(check.getLowDouble(), check.getLowDouble().getValue());
@@ -475,8 +466,8 @@ public class CheckPanel<C>
                         try {
                             constant.setValue(valueOf(newString));
                             modified = true;
-                            sb.append(" modified from ").append(oldString).append(" to ")
-                                    .append(newString);
+                            sb.append(" modified from ").append(oldString).append(" to ").append(
+                                    newString);
                             logger.info(sb.toString());
                         } catch (Exception ex) {
                             logger.warn("Error in {}, {}", context, ex.getLocalizedMessage());

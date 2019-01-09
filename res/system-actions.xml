@@ -55,8 +55,8 @@
     <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayBinary"/>
     <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayAnnotations"/>
     <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayData"/>
-    <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayNoStaff"          topic="SPECIFIC_TABS"/>
-    <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayStaffLineGlyphs"  topic="SPECIFIC_TABS"/>
+    <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayNoStaff"          topic="SPECIFIC_VIEWS"/>
+    <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayStaffLineGlyphs"  topic="SPECIFIC_VIEWS"/>
     <action domain="SHEET" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="printSheetAnnotationsAs"/>
     <action domain="SHEET" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="printSheetAs"/>
     <action domain="SHEET" section="35" class="org.audiveris.omr.sheet.ui.BookActions" method="printSheetMixAs"/>

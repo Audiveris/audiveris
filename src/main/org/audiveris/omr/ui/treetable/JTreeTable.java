@@ -51,14 +51,12 @@ import javax.swing.tree.TreePath;
 public class JTreeTable
         extends JTable
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * A subclass of JTree.
      */
     protected TreeTableCellRenderer tree;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new JTreeTable object.
      *
@@ -97,9 +95,8 @@ public class JTreeTable
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-
-    /* Workaround for BasicTableUI anomaly. Make sure the UI never tries to
+    /**
+     * Workaround for BasicTableUI anomaly. Make sure the UI never tries to
      * paint the editor. The UI currently uses different techniques to
      * paint the renderers and editors and overriding setBounds() below
      * is not the right thing to do for an editor. Returning -1 for the
@@ -165,7 +162,6 @@ public class JTreeTable
         LookAndFeel.installColorsAndFont(this, "Tree.background", "Tree.foreground", "Tree.font");
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------------//
     // TreeTableCellEditor //
     //---------------------//
@@ -176,7 +172,6 @@ public class JTreeTable
             extends AbstractCellEditor
             implements TableCellEditor
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Component getTableCellEditorComponent (JTable table,
@@ -244,20 +239,17 @@ public class JTreeTable
             extends JTree
             implements TableCellRenderer
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /**
          * Last table/tree row asked to renderer.
          */
         protected int visibleRow;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public TreeTableCellRenderer (TreeModel model)
         {
             super(model);
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * TreeCellRenderer method. Overridden to update the visible row.
          */
@@ -354,24 +346,21 @@ public class JTreeTable
      * change in the ListSelectionModel happens, the paths are updated in the
      * DefaultTreeSelectionModel.
      */
-    protected class ListToTreeSelectionModelWrapper
+    protected final class ListToTreeSelectionModelWrapper
             extends DefaultTreeSelectionModel
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         /**
          * Set to true when we are updating the ListSelectionModel.
          */
         protected boolean updatingListSelectionModel;
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public ListToTreeSelectionModelWrapper ()
+        ListToTreeSelectionModelWrapper ()
         {
             super();
             getListSelectionModel().addListSelectionListener(createListSelectionListener());
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         /**
          * Returns the list selection model. ListToTreeSelectionModelWrapper
          * listens for changes to this model and updates the selected paths
@@ -407,6 +396,13 @@ public class JTreeTable
             // updatingListSelectionModel is true, it implies the
             // ListSelectionModel has already been updated and the
             // paths are the only thing that needs to be updated.
+        }
+
+        @Override
+        public Object clone ()
+                throws CloneNotSupportedException
+        {
+            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
 
         /**
@@ -454,7 +450,6 @@ public class JTreeTable
             }
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
         /**
          * Class responsible for calling updateSelectedPathsFromSelectedRows
          * when the selection of the list changse.
@@ -462,7 +457,6 @@ public class JTreeTable
         class ListSelectionHandler
                 implements ListSelectionListener
         {
-            //~ Methods ----------------------------------------------------------------------------
 
             @Override
             public void valueChanged (ListSelectionEvent e)

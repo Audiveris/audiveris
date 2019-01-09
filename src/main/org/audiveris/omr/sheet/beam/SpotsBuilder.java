@@ -28,8 +28,8 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
-import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.GlyphGroup;
+import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.image.MorphoProcessor;
 import org.audiveris.omr.image.StructureElement;
@@ -38,7 +38,9 @@ import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.SystemManager;
 import org.audiveris.omr.sheet.ui.ImageView;
@@ -67,7 +69,6 @@ import java.util.List;
  */
 public class SpotsBuilder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -76,12 +77,10 @@ public class SpotsBuilder
     /** Orientation chosen for spot runs. */
     public static final Orientation SPOT_ORIENTATION = Orientation.VERTICAL;
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SpotsBuilder object.
      *
@@ -92,7 +91,6 @@ public class SpotsBuilder
         this.sheet = sheet;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // buildSheetSpots //
     //-----------------//
@@ -115,7 +113,12 @@ public class SpotsBuilder
             // Retrieve major spots
             watch.start("buildSpots");
 
-            int beam = sheet.getScale().getBeamThickness();
+            Integer beam = sheet.getScale().getBeamThickness();
+
+            if (beam == null) {
+                throw new RuntimeException("No scale information on beam thickness");
+            }
+
             List<Glyph> spots = buildSpots(buffer, null, beam, null);
 
             // Dispatch spots per system(s)
@@ -156,6 +159,12 @@ public class SpotsBuilder
                                    String cueId)
     {
         final StopWatch watch = new StopWatch("buildSpots");
+
+        // Erase Header for non-cue buffers
+        if (cueId == null) {
+            eraseHeaderAreas(buffer);
+        }
+
         final double diameter = beam * constants.beamCircleDiameterRatio.getValue();
         final float radius = (float) (diameter - 1) / 2;
         logger.debug(
@@ -239,7 +248,7 @@ public class SpotsBuilder
         int count = 0;
 
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
-        final List<SystemInfo> relevants = new ArrayList<SystemInfo>();
+        final List<SystemInfo> relevants = new ArrayList<>();
         final SystemManager systemManager = sheet.getSystemManager();
 
         for (Glyph glyph : spots) {
@@ -264,6 +273,31 @@ public class SpotsBuilder
         }
 
         logger.debug("Spots retrieved: {}", count);
+    }
+
+    //------------------//
+    // eraseHeaderAreas //
+    //------------------//
+    private void eraseHeaderAreas (ByteProcessor buffer)
+    {
+        final int dmzDyMargin = sheet.getScale().toPixels(constants.staffVerticalMargin);
+
+        buffer.setValue(255);
+
+        for (SystemInfo system : sheet.getSystems()) {
+            Staff firstStaff = system.getFirstStaff();
+            Staff lastStaff = system.getLastStaff();
+            int start = system.getBounds().x;
+            int stop = firstStaff.getHeaderStop();
+            int top = firstStaff.getFirstLine().yAt(stop) - dmzDyMargin;
+            int bot = lastStaff.getLastLine().yAt(stop) + dmzDyMargin;
+
+            buffer.setRoi(start, top, stop - start + 1, bot - top + 1);
+            buffer.fill();
+            buffer.resetRoi();
+        }
+
+        buffer.setValue(0);
     }
 
     //-----------//
@@ -341,14 +375,12 @@ public class SpotsBuilder
         sheet.getPicture().setTable(Picture.TableKey.HEAD_SPOTS, runs, true);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean displayBeamSpots = new Constant.Boolean(
                 false,
@@ -387,5 +419,9 @@ public class SpotsBuilder
                 "pixel",
                 170,
                 "Global binarization threshold for heads");
+
+        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
+                2.0,
+                "Margin erased above & below staff header area");
     }
 }

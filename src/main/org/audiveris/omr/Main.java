@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /**
@@ -52,13 +53,12 @@ import java.util.concurrent.Future;
  * It launches the User Interface, unless batch mode is selected.
  *
  * @see CLI
- *
  * @author Hervé Bitteur
  */
 public class Main
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
+    // Don't move this statement!
     static {
         // We need class WellKnowns to be elaborated before anything else
         WellKnowns.ensureLoaded();
@@ -71,12 +71,10 @@ public class Main
     /** CLI parameters. */
     private static CLI cli;
 
-    //~ Constructors -------------------------------------------------------------------------------
     private Main ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // getCli //
     //--------//
@@ -196,6 +194,11 @@ public class Main
     //--------------------------//
     // processSystemsInParallel //
     //--------------------------//
+    /**
+     * Tell whether we should process systems of a sheet in parallel.
+     *
+     * @return true if so
+     */
     public static boolean processSystemsInParallel ()
     {
         return constants.processSystemsInParallel.isSet();
@@ -288,7 +291,8 @@ public class Main
                     for (Future<Void> future : futures) {
                         try {
                             future.get();
-                        } catch (Exception ex) {
+                        } catch (InterruptedException |
+                                 ExecutionException ex) {
                             CliTask task = tasks.get(futures.indexOf(future));
                             final String radix = task.getRadix();
 
@@ -296,7 +300,7 @@ public class Main
                             failure = true;
                         }
                     }
-                } catch (Exception ex) {
+                } catch (InterruptedException ex) {
                     logger.warn("Error in processing tasks", ex);
                     failure = true;
                 }
@@ -328,26 +332,29 @@ public class Main
     {
         if (constants.showEnvironment.isSet()) {
             logger.info(
-                    "Environment:\n" + "- Audiveris:    {}\n" + "- OS:           {}\n"
-                    + "- Architecture: {}\n" + "- Java VM:      {}\n" + "- OCR Engine:   {}",
+                    "Environment:\n" + "- Audiveris:    {}\n"
+                            + "- OS:           {}\n"
+                            + "- Architecture: {}\n"
+                            + "- Java VM:      {}\n"
+                            + "- OCR Engine:   {}",
                     WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD,
                     System.getProperty("os.name") + " " + System.getProperty("os.version"),
                     System.getProperty("os.arch"),
                     System.getProperty("java.vm.name") + " (build "
-                    + System.getProperty("java.vm.version") + ", " + System.getProperty("java.vm.info")
-                    + ")",
+                            + System.getProperty("java.vm.version")
+                            + ", "
+                            + System.getProperty("java.vm.info")
+                            + ")",
                     TesseractOCR.getInstance().identify());
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean showEnvironment = new Constant.Boolean(
                 true,

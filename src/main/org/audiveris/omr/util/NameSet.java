@@ -43,21 +43,21 @@ import javax.swing.event.MenuListener;
  * <p>
  * Actually, rather than a set, it is a list where the most recently used
  * are kept at the head of the list. There is no duplicate in the set (tests are
- * case-insensitive). </p>
+ * case-insensitive).
+ * </p>
  * <p>
- * The NameSet can additionally be used to dynamically generate and handle a menu. </p>
+ * The NameSet can additionally be used to dynamically generate and handle a menu.
+ * </p>
  *
  * @author Hervé Bitteur
  */
 @ThreadSafe
 public class NameSet
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Separator */
     private static final String SEPARATOR = ";";
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Global name for this set. */
     private final String setName;
 
@@ -65,12 +65,11 @@ public class NameSet
     private final Constant.String constant;
 
     /** List of names in this set. */
-    private final List<String> names = new ArrayList<String>();
+    private final List<String> names = new ArrayList<>();
 
     /** Max number of names in this set. */
     private final int maxNameCount;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new set of names, with some customizing parameters.
      *
@@ -94,7 +93,6 @@ public class NameSet
         }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // add //
     //-----//
@@ -168,6 +166,11 @@ public class NameSet
     //---------//
     // isEmpty //
     //---------//
+    /**
+     * Tell whether the set is empty
+     *
+     * @return true if so
+     */
     public synchronized boolean isEmpty ()
     {
         return names.isEmpty();
@@ -204,7 +207,7 @@ public class NameSet
     //----------------//
     private void updateConstant ()
     {
-        StringBuilder buf = new StringBuilder(1024);
+        StringBuilder buf = new StringBuilder(1_024);
 
         for (String n : names) {
             if (buf.length() > 0) {

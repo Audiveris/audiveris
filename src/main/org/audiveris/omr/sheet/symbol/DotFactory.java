@@ -80,7 +80,8 @@ import java.util.Set;
  * may require symbols nearby and thus can take place only when all other symbols have been built.
  * Hence implementing methods are named "instant*()" or "late*()" respectively.
  * <p>
- * A dot can be:<ul>
+ * A dot can be:
+ * <ul>
  * <li>a part of a repeat sign (upper or lower dot),
  * <li>a staccato sign,
  * <li>an augmentation dot (first or second dot), [TODO: Handle augmentation dot for mirrored notes]
@@ -94,13 +95,11 @@ import java.util.Set;
  */
 public class DotFactory
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(DotFactory.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** The related inter factory. */
     private final InterFactory interFactory;
 
@@ -112,9 +111,8 @@ public class DotFactory
     private final Scale scale;
 
     /** Dot candidates. Sorted top down, then left to right. */
-    private final List<Dot> dots = new ArrayList<Dot>();
+    private final List<Dot> dots = new ArrayList<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new DotFactory object.
      *
@@ -130,7 +128,6 @@ public class DotFactory
         scale = system.getSheet().getScale();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // instantDotChecks //
     //------------------//
@@ -183,7 +180,7 @@ public class DotFactory
         if (omrShape == OmrShape.repeatDot) {
             instantCheckRepeat(dot); // Repeat dot (relation between the two repeat dots is postponed)
         } else if ((omrShape == OmrShape.articStaccatoAbove)
-                   || (omrShape == OmrShape.articStaccatissimoBelow)) {
+                           || (omrShape == OmrShape.articStaccatissimoBelow)) {
             instantCheckStaccato(dot); // Staccato dot
         }
 
@@ -327,7 +324,7 @@ public class DotFactory
     {
         for (MeasureStack stack : system.getStacks()) {
             for (HorizontalSide side : HorizontalSide.values()) {
-                final List<RepeatDotInter> repeatDots = new ArrayList<RepeatDotInter>();
+                final List<RepeatDotInter> repeatDots = new ArrayList<>();
                 int virtualDotCount = 0; // Virtual dots inferred from StaffBarline shape
 
                 for (Measure measure : stack.getMeasures()) {
@@ -364,12 +361,12 @@ public class DotFactory
 
                             if (side == LEFT) {
                                 if ((shape == Shape.LEFT_REPEAT_SIGN)
-                                    || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
+                                            || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
                                     virtualDotCount += 2;
                                 }
                             } else {
                                 if ((shape == Shape.RIGHT_REPEAT_SIGN)
-                                    || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
+                                            || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
                                     virtualDotCount += 2;
                                 }
                             }
@@ -384,7 +381,7 @@ public class DotFactory
                 if (dotCount >= staffCount) {
                     // It's a repeat side, delete inters that conflict with repeat dots
                     // This works for real dots only, not for virtual ones
-                    List<Inter> toDelete = new ArrayList<Inter>();
+                    List<Inter> toDelete = new ArrayList<>();
 
                     for (RepeatDotInter dot : repeatDots) {
                         Rectangle dotBox = dot.getBounds();
@@ -522,11 +519,9 @@ public class DotFactory
             Point barCenter = bar.getCenter();
 
             // Select proper bar reference point (left or right side and proper vertical side)
-            double barY = barCenter.y
-                          + ((box.height / 8d) * Integer.signum(dotPt.y - barCenter.y));
-            double barX = LineUtil.xAtY(bar.getMedian(), barY)
-                          + ((bar.getWidth() / 2) * Integer.signum(
-                    dotPt.x - barCenter.x));
+            double barY = barCenter.y + ((box.height / 8d) * Integer.signum(dotPt.y - barCenter.y));
+            double barX = LineUtil.xAtY(bar.getMedian(), barY) + ((bar.getWidth() / 2) * Integer
+                    .signum(dotPt.x - barCenter.x));
 
             double xGap = Math.abs(barX - dotPt.x);
             double yGap = Math.abs(barY - dotPt.y);
@@ -693,10 +688,10 @@ public class DotFactory
 
                 if (halfBox.intersects(dotBox)) {
                     final Point dotCenter = GeoUtil.centerOf(dotBox);
-                    double xGap = Math.abs(
-                            dotCenter.x - (halfBox.x + (halfBox.width / 2)));
-                    double yTarget = (arc.getShape() == Shape.FERMATA_ARC_BELOW)
-                            ? (halfBox.y + (halfBox.height * 0.25))
+                    double xGap = Math.abs(dotCenter.x - (halfBox.x + (halfBox.width / 2)));
+                    double yTarget = (arc.getShape() == Shape.FERMATA_ARC_BELOW) ? (halfBox.y
+                                                                                            + (halfBox.height
+                                                                                               * 0.25))
                             : (halfBox.y + (halfBox.height * 0.75));
                     double yGap = Math.abs(dotCenter.y - yTarget);
                     DotFermataRelation rel = new DotFermataRelation();
@@ -739,20 +734,11 @@ public class DotFactory
         double grade = Grades.intrinsicRatio * dot.getGrade();
         Glyph glyph = dot.getGlyph();
         AugmentationDotInter aug = (glyph != null) ? new AugmentationDotInter(glyph, grade)
-                : new AugmentationDotInter(
-                        dot.getAnnotationId(),
-                        dot.getBounds(),
-                        grade);
+                : new AugmentationDotInter(dot.getAnnotationId(), dot.getBounds(), grade);
 
-        List<Link> links = new ArrayList<Link>();
-        Link headLink = aug.lookupHeadLink(
-                interFactory.getSystemHeadChords(),
-                system);
-
-        if (headLink != null) {
-            links.add(headLink);
-        }
-
+        List<Link> links = new ArrayList<>();
+        Link headLink = aug.lookupHeadLink(interFactory.getSystemHeadChords(), system);
+        links.addAll(aug.sharedHeadLinks(headLink));
         links.addAll(aug.lookupRestLinks(interFactory.getSystemRests(), system));
 
         if (!links.isEmpty()) {
@@ -761,20 +747,6 @@ public class DotFactory
 
             for (Link link : links) {
                 link.applyTo(aug);
-
-                // Specific case for mirrored head
-                if (link.partner instanceof HeadInter) {
-                    Inter mirror = link.partner.getMirror();
-
-                    if (mirror != null) {
-                        logger.debug(
-                                "Edge from {} to mirrored {} and {}",
-                                aug,
-                                link.partner,
-                                mirror);
-                        sig.addEdge(aug, mirror, link.relation.duplicate());
-                    }
-                }
             }
         }
     }
@@ -794,14 +766,12 @@ public class DotFactory
         checkStackRepeats();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction minDyFromLine = new Scale.Fraction(
                 0.3,
@@ -816,7 +786,6 @@ public class DotFactory
      */
     private abstract static class Dot
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         /**
          * Very specific sorting of dots.
@@ -848,7 +817,6 @@ public class DotFactory
             }
         };
 
-        //~ Methods --------------------------------------------------------------------------------
         public abstract int getAnnotationId ();
 
         public abstract Rectangle getBounds ();
@@ -871,17 +839,14 @@ public class DotFactory
     private static class AnnotationDot
             extends Dot
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Annotation annotation;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public AnnotationDot (Annotation annotation)
         {
             this.annotation = annotation;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int getAnnotationId ()
         {
@@ -940,21 +905,18 @@ public class DotFactory
     private static class GlyphDot
             extends Dot
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Glyph glyph; // Underlying glyph
 
         private final Evaluation eval; // Evaluation result
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public GlyphDot (Evaluation eval,
-                         Glyph glyph)
+        GlyphDot (Evaluation eval,
+                  Glyph glyph)
         {
             this.eval = eval;
             this.glyph = glyph;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int getAnnotationId ()
         {

@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -58,7 +59,8 @@ import java.util.Map.Entry;
  * Class {@code Template} implements a template to be used for matching evaluation on a
  * distance transform image.
  * <p>
- * There are several topics to consider in a template specification:<dl>
+ * There are several topics to consider in a template specification:
+ * <dl>
  * <dt><b>Base shape</b></dt>
  * <dd>Supported shapes are NOTEHEAD_BLACK, NOTEHEAD_VOID and WHOLE_NOTE and possibly their small
  * (cue) counterparts</dd>
@@ -74,7 +76,6 @@ import java.util.Map.Entry;
 public class Template
         implements Anchored
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -83,7 +84,6 @@ public class Template
     /** Ratio applied to small symbols (cue / grace). */
     public static final double smallRatio = constants.smallRatio.getValue();
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Template shape. */
     private final Shape shape;
 
@@ -110,9 +110,8 @@ public class Template
      * An offset is defined as the translation from template upper left corner
      * to the precise anchor location in the symbol.
      */
-    private final Map<Anchor, Point> offsets = new EnumMap<Anchor, Point>(Anchor.class);
+    private final Map<Anchor, Point> offsets = new EnumMap<>(Anchor.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Template object with a provided set of points.
      *
@@ -135,13 +134,12 @@ public class Template
         this.shape = shape;
         this.pointSize = pointSize;
         this.symbol = symbol;
-        this.keyPoints = new ArrayList<PixelDistance>(keyPoints);
+        this.keyPoints = new ArrayList<>(keyPoints);
         this.width = width;
         this.height = height;
         this.symbolBounds = symbolBounds;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // addAnchor //
     //-----------//
@@ -200,7 +198,7 @@ public class Template
             g.drawRoundRect(pt.x * r, pt.y * r, r, r, r / 2, r / 2);
 
             final Anchor anchor = entry.getKey();
-            final String str = anchor.abbreviation().toLowerCase();
+            final String str = anchor.abbreviation().toLowerCase(Locale.US);
             final TextLayout layout = textFont.layout(str);
 
             if ((anchor == Anchor.LEFT_STEM) || (anchor == Anchor.RIGHT_STEM)) {
@@ -256,13 +254,14 @@ public class Template
     //------//
     // dump //
     //------//
+    /**
+     * Print this template on standard output.
+     */
     public void dump ()
     {
         int[][] vals = new int[width][height];
 
-        for (int x = 0; x < vals.length; x++) {
-            int[] col = vals[x];
-
+        for (int[] col : vals) {
             for (int y = 0; y < col.length; y++) {
                 col[y] = -1;
             }
@@ -271,8 +270,6 @@ public class Template
         for (PixelDistance pix : keyPoints) {
             vals[pix.x][pix.y] = (int) Math.rint(pix.d);
         }
-
-        System.out.println("Template " + shape + ":");
 
         final String yFormat = TableUtil.printAbscissae(width, height, 3);
 
@@ -339,7 +336,8 @@ public class Template
                     // pix.d < 0 for expected hole, expected negative distance to nearest foreground
                     // pix.d == 0 for expected foreground, 0 distance
                     // pix.d > 0 for expected background, expected distance to nearest foreground
-                    double weight = (pix.d == 0) ? foreWeight : ((pix.d > 0) ? backWeight : holeWeight);
+                    double weight = (pix.d == 0) ? foreWeight
+                            : ((pix.d > 0) ? backWeight : holeWeight);
                     double expected = (pix.d == 0) ? 0 : 1;
                     double actual = (actualDist == 0) ? 0 : 1;
                     double dist = Math.abs(actual - expected);
@@ -456,7 +454,7 @@ public class Template
     {
         final int imgWidth = image.getWidth();
         final int imgHeight = image.getHeight();
-        final List<Point> fores = new ArrayList<Point>();
+        final List<Point> fores = new ArrayList<>();
 
         for (PixelDistance pix : keyPoints) {
             if (pix.d != 0) {
@@ -543,14 +541,6 @@ public class Template
     }
 
     //--------------//
-    // getPointSize //
-    //--------------//
-    public int getPointSize ()
-    {
-        return pointSize;
-    }
-
-    //--------------//
     // getKeyPoints //
     //--------------//
     /**
@@ -574,6 +564,19 @@ public class Template
         }
 
         return offset;
+    }
+
+    //--------------//
+    // getPointSize //
+    //--------------//
+    /**
+     * Report the pointSize for this template.
+     *
+     * @return pointSize value
+     */
+    public int getPointSize ()
+    {
+        return pointSize;
     }
 
     //----------//
@@ -645,6 +648,56 @@ public class Template
     }
 
     //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder("{Template");
+
+        sb.append(" ").append(shape);
+
+        sb.append(" w:").append(width).append(",h:").append(height);
+
+        if ((symbolBounds.width != width) || (symbolBounds.height != height)) {
+            sb.append(" sym:").append(symbolBounds);
+        }
+
+        for (Entry<Anchor, Point> entry : offsets.entrySet()) {
+            sb.append(" ").append(entry.getKey()).append(":(").append(entry.getValue().x).append(
+                    ",").append(entry.getValue().y).append(")");
+        }
+
+        sb.append(" keyPoints:").append(keyPoints.size());
+
+        sb.append("}");
+
+        return sb.toString();
+    }
+
+    //-----------//
+    // upperLeft //
+    //-----------//
+    private Point upperLeft (int x,
+                             int y,
+                             Anchor anchor)
+    {
+        // Offsets to apply to location?
+        if (anchor != null) {
+            Point offset = getOffset(anchor);
+
+            if (offset != null) {
+                x -= offset.x;
+                y -= offset.y;
+            } else {
+                logger.error("No {} anchor defined for {} template", anchor, shape);
+            }
+        }
+
+        return new Point(x, y);
+    }
+
+    //----------//
     // impactOf //
     //----------//
     /**
@@ -699,64 +752,12 @@ public class Template
         return constants.reallyBadDistance.getValue();
     }
 
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder("{Template");
-
-        sb.append(" ").append(shape);
-
-        sb.append(" w:").append(width).append(",h:").append(height);
-
-        if ((symbolBounds.width != width) || (symbolBounds.height != height)) {
-            sb.append(" sym:").append(symbolBounds);
-        }
-
-        for (Entry<Anchor, Point> entry : offsets.entrySet()) {
-            sb.append(" ").append(entry.getKey()).append(":(").append(entry.getValue().x).append(
-                    ",").append(entry.getValue().y).append(")");
-        }
-
-        sb.append(" keyPoints:").append(keyPoints.size());
-
-        sb.append("}");
-
-        return sb.toString();
-    }
-
-    //-----------//
-    // upperLeft //
-    //-----------//
-    private Point upperLeft (int x,
-                             int y,
-                             Anchor anchor)
-    {
-        // Offsets to apply to location?
-        if (anchor != null) {
-            Point offset = getOffset(anchor);
-
-            if (offset != null) {
-                x -= offset.x;
-                y -= offset.y;
-            } else {
-                logger.error("No {} anchor defined for {} template", anchor, shape);
-            }
-        }
-
-        return new Point(x, y);
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio smallRatio = new Constant.Ratio(
                 0.67,

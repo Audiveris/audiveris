@@ -39,7 +39,6 @@ import java.util.Arrays;
 public interface DistanceTable
         extends Table
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report an image built with distance data.
@@ -57,24 +56,20 @@ public interface DistanceTable
      */
     int getNormalizer ();
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // Abstract //
     //----------//
     public abstract class Abstract
             implements DistanceTable
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         protected final int normalizer;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Abstract (int normalizer)
         {
             this.normalizer = normalizer;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void dump (String title)
         {
@@ -200,11 +195,9 @@ public interface DistanceTable
     public static class Integer
             extends Abstract
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Table.Integer table;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Integer (int width,
                         int height,
                         int normalizer)
@@ -220,7 +213,6 @@ public interface DistanceTable
             this.table = table;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public DistanceTable.Integer getCopy (Rectangle roi)
         {
@@ -246,11 +238,9 @@ public interface DistanceTable
     public static class Short
             extends Abstract
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Table.Short table;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Short (int width,
                       int height,
                       int normalizer)
@@ -266,7 +256,6 @@ public interface DistanceTable
             this.table = table;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public DistanceTable.Short getCopy (Rectangle roi)
         {

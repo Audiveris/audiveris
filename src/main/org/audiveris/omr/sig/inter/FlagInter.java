@@ -30,9 +30,9 @@ import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code FlagInter} represents one or several flags.
@@ -43,7 +43,6 @@ import org.audiveris.omrdataset.api.OmrShape;
 public class FlagInter
         extends AbstractFlagInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new FlagInter object.
@@ -82,7 +81,6 @@ public class FlagInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

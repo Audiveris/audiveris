@@ -36,7 +36,6 @@ import java.util.Map;
  */
 public abstract class OmrShapes
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** OmrShapes as a list a strings. */
     public static final List<String> NAMES = getNames();
@@ -242,7 +241,6 @@ public abstract class OmrShapes
             dynamicRinforzando2
     );
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the list of OmrShape values, to be used by DL4J.
      *
@@ -250,7 +248,7 @@ public abstract class OmrShapes
      */
     public static final List<String> getNames ()
     {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
 
         for (OmrShape shape : OmrShape.values()) {
             list.add(shape.toString());
@@ -320,7 +318,7 @@ public abstract class OmrShapes
 
     private static Map<OmrShape, NumDen> buildComboMap ()
     {
-        final Map<OmrShape, NumDen> map = new EnumMap<OmrShape, NumDen>(OmrShape.class);
+        final Map<OmrShape, NumDen> map = new EnumMap<>(OmrShape.class);
         map.put(OmrShape.timeSig2over4, new NumDen(2, 4));
         map.put(OmrShape.timeSig2over2, new NumDen(2, 2));
         map.put(OmrShape.timeSig3over2, new NumDen(3, 2));
@@ -338,7 +336,6 @@ public abstract class OmrShapes
         return map;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // NumDen //
     //--------//
@@ -347,13 +344,11 @@ public abstract class OmrShapes
      */
     public static class NumDen
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         public final int num;
 
         public final int den;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public NumDen (int num,
                        int den)
         {

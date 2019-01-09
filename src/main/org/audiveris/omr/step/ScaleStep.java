@@ -44,13 +44,11 @@ import org.slf4j.LoggerFactory;
 public class ScaleStep
         extends AbstractStep
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ScaleStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ScaleStep object.
      */
@@ -58,7 +56,6 @@ public class ScaleStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
@@ -98,14 +95,12 @@ public class ScaleStep
         return SheetTab.BINARY_TAB;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean displayDelta = new Constant.Boolean(
                 false,

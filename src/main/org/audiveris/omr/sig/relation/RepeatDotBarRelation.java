@@ -40,7 +40,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RepeatDotBarRelation
         extends AbstractConnection
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -48,10 +47,15 @@ public class RepeatDotBarRelation
 
     private static final double[] OUT_WEIGHTS = new double[]{
         constants.xOutWeight.getValue(),
-        constants.yWeight.getValue()
-    };
+        constants.yWeight.getValue()};
 
-    //~ Methods ------------------------------------------------------------------------------------
+    @Override
+    public Object clone ()
+            throws CloneNotSupportedException
+    {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
@@ -125,14 +129,12 @@ public class RepeatDotBarRelation
         return getYGapMaximum(manual);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio repeatDotSupportCoeff = new Constant.Ratio(
                 5,

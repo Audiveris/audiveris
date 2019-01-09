@@ -60,16 +60,16 @@ import java.util.TreeMap;
  * Class {@code BeamStructure} handles one or several {@link BeamLine} instances,
  * all retrieved from a single glyph.
  * This is a private working companion of {@link BeamsBuilder}.
+ *
+ * @author Hervé Bitteur
  */
 public class BeamStructure
         implements Vip
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            BeamStructure.class);
+    private static final Logger logger = LoggerFactory.getLogger(BeamStructure.class);
 
     /** Comparator on abscissae. */
     public static final Comparator<BeamStructure> byAbscissa = new Comparator<BeamStructure>()
@@ -82,7 +82,6 @@ public class BeamStructure
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying glyph. */
     private final Glyph glyph;
 
@@ -99,12 +98,11 @@ public class BeamStructure
     private final ItemParameters params;
 
     /** Sequence of lines retrieved for the same glyph, from top to bottom. */
-    private final List<BeamLine> lines = new ArrayList<BeamLine>();
+    private final List<BeamLine> lines = new ArrayList<>();
 
     /** VIP flag. */
     private boolean vip;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BeamItems object.
      *
@@ -122,7 +120,6 @@ public class BeamStructure
         center = glyph.getCentroid();
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // adjustSides //
     //-------------//
@@ -272,7 +269,7 @@ public class BeamStructure
         }
 
         // Check straightness
-        List<BasicLine> allLines = new ArrayList<BasicLine>();
+        List<BasicLine> allLines = new ArrayList<>();
         allLines.addAll(topLines);
         allLines.addAll(bottomLines);
 
@@ -536,10 +533,12 @@ public class BeamStructure
                 double xMid = (other.getX1() + other.getX2()) / 2;
                 double yMid = (other.getY1() + other.getY2()) / 2;
                 double height = yMid - LineUtil.yAtX(base, xMid);
-                Point2D p1 = (base.getX1() < other.getX1())
-                        ? new Point2D.Double(base.getX1(), base.getY1() + height) : other.getP1();
-                Point2D p2 = (base.getX2() > other.getX2())
-                        ? new Point2D.Double(base.getX2(), base.getY2() + height) : other.getP2();
+                Point2D p1 = (base.getX1() < other.getX1()) ? new Point2D.Double(
+                        base.getX1(),
+                        base.getY1() + height) : other.getP1();
+                Point2D p2 = (base.getX2() > other.getX2()) ? new Point2D.Double(
+                        base.getX2(),
+                        base.getY2() + height) : other.getP2();
                 double x = (p1.getX() + p2.getX()) / 2;
                 double y = LineUtil.yAtX(p1, p2, x);
                 double offset = y - LineUtil.yAtX(center, globalSlope, x);
@@ -631,7 +630,7 @@ public class BeamStructure
         }
 
         // All sections are vertical, retrieve their border (top or bottom)
-        List<SectionBorder> sectionBorders = new ArrayList<SectionBorder>();
+        List<SectionBorder> sectionBorders = new ArrayList<>();
 
         for (Section section : getGlyphSections()) {
             final Rectangle sectionBox = section.getBounds();
@@ -669,7 +668,7 @@ public class BeamStructure
         // Retrieve groups of offset values, roughly separated by beam height
         // Each group will correspond to a separate beam line
         final double delta = params.typicalHeight * constants.maxBorderJitter.getValue();
-        final List<BasicLine> borderLines = new ArrayList<BasicLine>();
+        final List<BasicLine> borderLines = new ArrayList<>();
         Barycenter dys = new Barycenter();
         BasicLine currentLine = null;
 
@@ -719,7 +718,7 @@ public class BeamStructure
     private SortedMap<Double, Line2D> getLinesMap (double globalSlope,
                                                    List<BasicLine> topLines)
     {
-        SortedMap<Double, Line2D> map = new TreeMap<Double, Line2D>();
+        SortedMap<Double, Line2D> map = new TreeMap<>();
 
         // Use refined value of global slope and flag each line WRT reference line
         for (BasicLine l : topLines) {
@@ -855,14 +854,12 @@ public class BeamStructure
         return bestLine.getSlope();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Double maxSectionSlopeGap = new Constant.Double(
                 "tangent",
@@ -882,7 +879,6 @@ public class BeamStructure
      */
     private static class SectionBorder
     {
-        //~ Static fields/initializers -------------------------------------------------------------
 
         static Comparator<SectionBorder> byOrdinateOffset = new Comparator<SectionBorder>()
         {
@@ -905,22 +901,19 @@ public class BeamStructure
             }
         };
 
-        //~ Instance fields ------------------------------------------------------------------------
         final Section section; // Underlying section
 
         final BasicLine line; // Border line (top or bottom)
 
         double dy; // Ordinate offset WRT glyph reference line
 
-        //~ Constructors ---------------------------------------------------------------------------
-        public SectionBorder (Section section,
-                              BasicLine line)
+        SectionBorder (Section section,
+                       BasicLine line)
         {
             this.section = section;
             this.line = line;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public void setOffset (double dy)
         {
             this.dy = dy;

@@ -57,13 +57,11 @@ import java.util.Map.Entry;
 public class SymbolsStep
         extends AbstractSystemStep<SymbolsStep.Context>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolsStep.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolsStep object.
      */
@@ -71,7 +69,6 @@ public class SymbolsStep
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
@@ -171,13 +168,14 @@ public class SymbolsStep
         return new Context(map);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Context //
     //---------//
+    /**
+     * Context for step processing.
+     */
     protected static class Context
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         //
         //        /** Map of optional (weak) glyphs per system. */
@@ -186,7 +184,6 @@ public class SymbolsStep
         /** Map of relevant annotations per system. */
         public final Map<SystemInfo, List<Annotation>> annotationMap;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public Context (Map<SystemInfo, List<Annotation>> annotationMap)
         {
             this.annotationMap = annotationMap;
@@ -196,10 +193,9 @@ public class SymbolsStep
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,

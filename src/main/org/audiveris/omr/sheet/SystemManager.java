@@ -27,16 +27,14 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.lag.Lags;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.GeoPath;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.ReversePathIterator;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
-
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
-
 import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
@@ -55,8 +53,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import org.audiveris.omr.math.GeoUtil;
-
 /**
  * Class {@code SystemManager} handles physical information about all the systems of a
  * given sheet.
@@ -82,21 +78,18 @@ import org.audiveris.omr.math.GeoUtil;
  */
 public class SystemManager
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SystemManager.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private Sheet sheet;
 
     /** Sheet retrieved systems. */
-    private final List<SystemInfo> systems = new ArrayList<SystemInfo>();
+    private final List<SystemInfo> systems = new ArrayList<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SystemManager object.
      *
@@ -115,7 +108,6 @@ public class SystemManager
         this.sheet = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // computeSystemArea //
     //-------------------//
@@ -140,22 +132,20 @@ public class SystemManager
 
         // Vertical abscissae on system left & right
         final SystemInfo leftNeighbor = horizontalNeighbor(system, LEFT);
-        final int left = (leftNeighbor != null)
-                ? ((leftNeighbor.getRight() + system.getLeft()) / 2) : 0;
+        final int left = (leftNeighbor != null) ? ((leftNeighbor.getRight() + system.getLeft()) / 2)
+                : 0;
         system.setAreaEnd(LEFT, left);
 
         final SystemInfo rightNeighbor = horizontalNeighbor(system, RIGHT);
-        final int right = (rightNeighbor != null)
-                ? ((system.getRight() + rightNeighbor.getLeft()) / 2) : sheetWidth;
+        final int right = (rightNeighbor != null) ? ((system.getRight() + rightNeighbor.getLeft())
+                                                             / 2) : sheetWidth;
         system.setAreaEnd(RIGHT, right);
 
-        PathIterator north = aboves.isEmpty()
-                ? new GeoPath(new Line2D.Double(left, 0, right, 0)).getPathIterator(
-                        null) : getGlobalLine(aboves, BOTTOM);
+        PathIterator north = aboves.isEmpty() ? new GeoPath(new Line2D.Double(left, 0, right, 0))
+                .getPathIterator(null) : getGlobalLine(aboves, BOTTOM);
 
-        PathIterator south = belows.isEmpty()
-                ? new GeoPath(
-                        new Line2D.Double(left, sheetHeight, right, sheetHeight)).getPathIterator(null)
+        PathIterator south = belows.isEmpty() ? new GeoPath(
+                new Line2D.Double(left, sheetHeight, right, sheetHeight)).getPathIterator(null)
                 : getGlobalLine(belows, TOP);
 
         // Define sheet-wide area
@@ -190,7 +180,7 @@ public class SystemManager
         if (found != null) {
             found.clear();
         } else {
-            found = new ArrayList<SystemInfo>();
+            found = new ArrayList<>();
         }
 
         for (SystemInfo system : systems) {
@@ -254,7 +244,7 @@ public class SystemManager
         }
 
         // Now dispatch the lag sections among relevant systems
-        List<SystemInfo> relevants = new ArrayList<SystemInfo>();
+        List<SystemInfo> relevants = new ArrayList<>();
 
         for (Section section : sheet.getLagManager().getLag(Lags.HLAG).getEntities()) {
             getSystemsOf(section.getCentroid(), relevants);
@@ -280,7 +270,7 @@ public class SystemManager
         }
 
         // Now dispatch the lag sections among relevant systems
-        List<SystemInfo> relevants = new ArrayList<SystemInfo>();
+        List<SystemInfo> relevants = new ArrayList<>();
 
         for (Section section : sheet.getLagManager().getLag(Lags.VLAG).getEntities()) {
             getSystemsOf(section.getCentroid(), relevants);
@@ -343,6 +333,22 @@ public class SystemManager
         return Collections.unmodifiableList(systems);
     }
 
+    //------------//
+    // setSystems //
+    //------------//
+    /**
+     * Assign the whole sequence of systems
+     *
+     * @param systems the (new) systems
+     */
+    public void setSystems (Collection<SystemInfo> systems)
+    {
+        if (this.systems != systems) {
+            this.systems.clear();
+            this.systems.addAll(systems);
+        }
+    }
+
     //--------------//
     // getSystemsOf //
     //--------------//
@@ -387,7 +393,7 @@ public class SystemManager
         if (found != null) {
             found.clear();
         } else {
-            found = new ArrayList<SystemInfo>();
+            found = new ArrayList<>();
         }
 
         for (SystemInfo system : systems) {
@@ -417,7 +423,7 @@ public class SystemManager
         if (found != null) {
             found.clear();
         } else {
-            found = new ArrayList<SystemInfo>();
+            found = new ArrayList<>();
         }
 
         for (SystemInfo system : systems) {
@@ -545,22 +551,6 @@ public class SystemManager
         systems.clear();
     }
 
-    //------------//
-    // setSystems //
-    //------------//
-    /**
-     * Assign the whole sequence of systems
-     *
-     * @param systems the (new) systems
-     */
-    public void setSystems (Collection<SystemInfo> systems)
-    {
-        if (this.systems != systems) {
-            this.systems.clear();
-            this.systems.addAll(systems);
-        }
-    }
-
     //-------------------//
     // verticalNeighbors //
     //-------------------//
@@ -575,7 +565,7 @@ public class SystemManager
     public List<SystemInfo> verticalNeighbors (SystemInfo current,
                                                VerticalSide side)
     {
-        final List<SystemInfo> neighbors = new ArrayList<SystemInfo>();
+        final List<SystemInfo> neighbors = new ArrayList<>();
         final int idx = systems.indexOf(current);
         final int dir = (side == TOP) ? (-1) : 1;
         final int iBreak = (side == TOP) ? (-1) : systems.size();
@@ -614,14 +604,6 @@ public class SystemManager
         Collections.sort(neighbors, SystemInfo.byId);
 
         return neighbors;
-    }
-
-    //----------------//
-    // initTransients //
-    //----------------//
-    void initTransients (Sheet sheet)
-    {
-        this.sheet = sheet;
     }
 
     //---------------//
@@ -730,7 +712,7 @@ public class SystemManager
             return null;
         }
 
-        List<Staff> staffList = new ArrayList<Staff>();
+        List<Staff> staffList = new ArrayList<>();
 
         for (SystemInfo system : list) {
             staffList.add((side == TOP) ? system.getFirstStaff() : system.getLastStaff());
@@ -789,14 +771,20 @@ public class SystemManager
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //----------------//
+    // initTransients //
+    //----------------//
+    void initTransients (Sheet sheet)
+    {
+        this.sheet = sheet;
+    }
+
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction minShift = new Scale.Fraction(
                 3.0,

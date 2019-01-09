@@ -25,8 +25,9 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.SystemInfo;
 
-import org.deeplearning4j.optimize.api.IterationListener;
-
+//
+//import org.deeplearning4j.optimize.api.IterationListener;
+//
 import java.util.Collection;
 import java.util.EnumSet;
 
@@ -39,7 +40,6 @@ import java.util.EnumSet;
  */
 public interface Classifier
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Number of shapes to differentiate. */
     public static final int SHAPE_COUNT = 1 + Shape.LAST_PHYSICAL_SHAPE.ordinal();
@@ -47,25 +47,21 @@ public interface Classifier
     /** Empty conditions set. */
     public static final EnumSet<Condition> NO_CONDITIONS = EnumSet.noneOf(Condition.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
     /** Optional conditions for evaluation. */
     public static enum Condition
     {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
         /** Make sure the shape is not blacklisted by the glyph at hand. */
         ALLOWED,
         /** Make sure all specific checks are successfully passed. */
         CHECKED;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Add a training listener
      *
      * @param listener listener to register
      */
-    void addListener (IterationListener listener);
+    void addListener (TrainingMonitor listener);
 
     /**
      * Report the sorted sequence of best evaluation(s) found by the classifier on the
@@ -153,13 +149,13 @@ public interface Classifier
      */
     boolean isBigEnough (double weight);
 
-    /**
-     * Remove a training listener
-     *
-     * @param listener listener to unregister
-     */
-    void removeListener (IterationListener listener);
-
+    //    /**
+    //     * Remove a training listener
+    //     *
+    //     * @param listener listener to unregister
+    //     */
+    //    void removeListener (IterationListener listener);
+    //
     /**
      * Recreate a classifier from scratch.
      */

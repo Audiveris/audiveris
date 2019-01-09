@@ -35,7 +35,6 @@ import org.audiveris.omr.util.ChartPlotter;
 public class HeaderTimeColumn
         extends TimeColumn
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code HeaderTimeColumn} object.
@@ -47,7 +46,6 @@ public class HeaderTimeColumn
         super(system);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // addPlot //
     //---------//

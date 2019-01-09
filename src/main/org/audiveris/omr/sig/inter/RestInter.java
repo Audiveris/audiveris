@@ -44,8 +44,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code RestInter} represents a rest.
- * TODO: Should be closer to AbstractNoteInter?
+ * Class {@code RestInter} represents a rest note.
  *
  * @author Hervé Bitteur
  */
@@ -53,13 +52,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RestInter
         extends AbstractNoteInter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(RestInter.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new RestInter object.
      *
@@ -105,7 +102,6 @@ public class RestInter
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -113,6 +109,29 @@ public class RestInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //----------//
+    // getChord //
+    //----------//
+    /**
+     * Report the containing rest chord.
+     *
+     * @return containing rest chord
+     */
+    @Override
+    public RestChordInter getChord ()
+    {
+        return (RestChordInter) getEnsemble();
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
     }
 
     //-------------//
@@ -259,31 +278,18 @@ public class RestInter
         return restInter;
     }
 
-    //----------//
-    // getChord //
-    //----------//
-    @Override
-    public RestChordInter getChord ()
-    {
-        return (RestChordInter) getEnsemble();
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
-    private static final class Constants
+    private static class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Double suspiciousPitchPosition = new Constant.Double(
-                "PitchPosition",
-                2.0,
-                "Maximum absolute pitch position for a rest to avoid additional checks");
+        private final Constant.Double suspiciousPitchPosition = new Constant.Double("PitchPosition",
+                                                                                    2.0,
+                                                                                    "Maximum absolute pitch position for a rest to avoid additional checks");
 
-        private final Scale.Fraction minInterChordDx = new Scale.Fraction(
-                0.5,
-                "Minimum horizontal delta between two chords");
+        private final Scale.Fraction minInterChordDx = new Scale.Fraction(0.5,
+                                                                          "Minimum horizontal delta between two chords");
     }
 }

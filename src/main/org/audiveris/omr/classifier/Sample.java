@@ -46,10 +46,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class Sample
         extends Glyph
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Sample.class);
+    private static final Logger logger = LoggerFactory.getLogger(Sample.class);
 
     /** For comparing Sample instances by shape. */
     public static final Comparator<Sample> byShape = new Comparator<Sample>()
@@ -95,8 +93,6 @@ public class Sample
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
     // Persistent data
     //----------------
     //
@@ -119,7 +115,6 @@ public class Sample
     /** True for artificial (font-based) sample. */
     private boolean symbol;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ShapeSample} object.
      *
@@ -159,14 +154,8 @@ public class Sample
                    Shape shape,
                    Double pitch)
     {
-        this(
-                glyph.getLeft(),
-                glyph.getTop(),
-                glyph.getRunTable(),
-                interline,
-                glyph.getId(),
-                shape,
-                pitch);
+        this(glyph.getLeft(), glyph.getTop(), glyph.getRunTable(), interline, glyph.getId(), shape,
+             pitch);
     }
 
     /**
@@ -175,34 +164,6 @@ public class Sample
     private Sample ()
     {
         this(0, 0, null, 0, 0, null, null);
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //--------------------//
-    // getRecordableShape //
-    //--------------------//
-    /**
-     * Report the shape to record for the provided shape.
-     * <p>
-     * For example shapes WHOLE_REST and HALF_REST differ only by their pitch position, so they both
-     * end up to HW_REST_set physical shape.
-     *
-     * @param shape the provided shape
-     * @return the recordable shape to use, or null
-     */
-    public static Shape getRecordableShape (Shape shape)
-    {
-        if (shape == null) {
-            return null;
-        }
-
-        Shape physicalShape = shape.getPhysicalShape();
-
-        if (physicalShape.isTrainable() && (physicalShape != Shape.NOISE)) {
-            return physicalShape;
-        } else {
-            return null;
-        }
     }
 
     /**
@@ -217,6 +178,11 @@ public class Sample
         return this == obj;
     }
 
+    /**
+     * Report the staff interline for this sample.
+     *
+     * @return related staff interline value
+     */
     public int getInterline ()
     {
         return interline;
@@ -271,6 +237,11 @@ public class Sample
         return pitch;
     }
 
+    /**
+     * Report the sample shape.
+     *
+     * @return sample shape
+     */
     public Shape getShape ()
     {
         return shape;
@@ -324,5 +295,32 @@ public class Sample
         }
 
         return sb.toString();
+    }
+
+    //--------------------//
+    // getRecordableShape //
+    //--------------------//
+    /**
+     * Report the shape to record for the provided shape.
+     * <p>
+     * For example shapes WHOLE_REST and HALF_REST differ only by their pitch position, so they both
+     * end up to HW_REST_set physical shape.
+     *
+     * @param shape the provided shape
+     * @return the recordable shape to use, or null
+     */
+    public static Shape getRecordableShape (Shape shape)
+    {
+        if (shape == null) {
+            return null;
+        }
+
+        Shape physicalShape = shape.getPhysicalShape();
+
+        if (physicalShape.isTrainable() && (physicalShape != Shape.NOISE)) {
+            return physicalShape;
+        } else {
+            return null;
+        }
     }
 }
