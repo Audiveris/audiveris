@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2018. All rights reserved.
+//  Copyright © Audiveris 2019. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -32,7 +32,6 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeChecker;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.UriUtil;
 import org.audiveris.omr.util.ZipFileSystem;
 
@@ -272,7 +271,7 @@ public abstract class AbstractClassifier<M extends Object>
 
                     if (!isCompatible(model, norms)) {
                         final String msg = "Obsolete classifier user data in " + path
-                                           + ", trying default data";
+                                                   + ", trying default data";
                         logger.warn(msg);
                     } else {
                         // Tell user we are not using the default
@@ -320,7 +319,7 @@ public abstract class AbstractClassifier<M extends Object>
 
             if (!isCompatible(model, norms)) {
                 final String msg = "Obsolete classifier default data in " + uri
-                                   + ", please retrain from scratch";
+                                           + ", please retrain from scratch";
                 logger.warn(msg);
             } else {
                 logger.info("Classifier data loaded from default uri {}", uri);
