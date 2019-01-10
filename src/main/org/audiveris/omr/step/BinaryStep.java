@@ -33,7 +33,6 @@ import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Picture.SourceKey;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.ui.SheetAssembly;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.util.StopWatch;
 
@@ -59,18 +58,6 @@ public class BinaryStep
      */
     public BinaryStep ()
     {
-    }
-
-    //-----------//
-    // displayUI //
-    //-----------//
-    @Override
-    public void displayUI (Step step,
-                           Sheet sheet)
-    {
-        // Switch from Picture to Binary display
-        SheetAssembly assembly = sheet.getStub().getAssembly();
-        assembly.renameTab(SheetTab.PICTURE_TAB.label, SheetTab.BINARY_TAB.label);
     }
 
     //------//

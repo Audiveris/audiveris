@@ -34,12 +34,10 @@ import javax.xml.bind.annotation.XmlAttribute;
 public class MySymbol
         extends MyAbstractEntity
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     @XmlAttribute
     private final int weight;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MySymbol} object.
      */
@@ -58,7 +56,6 @@ public class MySymbol
         this.weight = weight;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public String toString ()
     {

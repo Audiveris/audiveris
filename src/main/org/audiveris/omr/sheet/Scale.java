@@ -874,6 +874,17 @@ public class Scale
         }
     }
 
+    /**
+     * Staff size kind.
+     */
+    public enum Size
+    {
+        /** Standard staff. */
+        LARGE,
+        /** Small staff. */
+        SMALL;
+    }
+
     //--------------//
     // AreaFraction //
     //--------------//
@@ -1148,7 +1159,7 @@ public class Scale
     {
 
         /**
-         *
+         * Fraction with value 0.
          */
         public static final Fraction ZERO = new Fraction(0, "zero");
 

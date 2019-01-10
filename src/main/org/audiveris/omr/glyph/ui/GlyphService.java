@@ -60,7 +60,7 @@ public class GlyphService
     /**
      * Creates a new {@code GlyphService} object.
      *
-     * @param index           underlying glyph index (typically a nest)
+     * @param index           underlying glyph index
      * @param locationService related service for location info
      */
     public GlyphService (EntityIndex<Glyph> index,

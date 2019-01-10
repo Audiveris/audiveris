@@ -43,6 +43,7 @@ import org.audiveris.omr.score.ui.BookPdfOutput;
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 import org.audiveris.omr.sheet.rhythm.Voices;
 import org.audiveris.omr.sheet.ui.BookBrowser;
+import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.ProcessingCancellationException;
 import org.audiveris.omr.step.Step;
@@ -1286,7 +1287,9 @@ public class Book
                 BookManager.getDefaultPrintPath(this));
 
         try {
-            new BookPdfOutput(Book.this, pdfPath.toFile()).write(null);
+            new BookPdfOutput(Book.this, pdfPath.toFile()).write(
+                    null,
+                    new SheetResultPainter.PdfResultPainter());
             setPrintPath(pdfPath);
         } catch (Exception ex) {
             logger.warn("Cannot print to {} {}", pdfPath, ex.toString(), ex);

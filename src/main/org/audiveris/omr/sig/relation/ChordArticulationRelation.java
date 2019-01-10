@@ -137,6 +137,9 @@ public class ChordArticulationRelation
     //----------------//
     // getTargetCoeff //
     //----------------//
+    /**
+     * @return the supporting coefficient for (target) articulation
+     */
     @Override
     protected double getTargetCoeff ()
     {

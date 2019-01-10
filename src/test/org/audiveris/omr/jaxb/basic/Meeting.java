@@ -30,7 +30,6 @@ import javax.xml.bind.annotation.XmlAttribute;
  */
 public class Meeting
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     @XmlAttribute
     public int start;
@@ -38,7 +37,6 @@ public class Meeting
     @XmlAttribute
     public int stop;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Meeting object.
      *

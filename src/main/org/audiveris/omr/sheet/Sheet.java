@@ -26,6 +26,8 @@ import org.audiveris.omr.classifier.Annotations;
 import org.audiveris.omr.classifier.AnnotationsBuilder;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.SampleSheet;
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.GlyphsModel;
@@ -47,6 +49,7 @@ import org.audiveris.omr.sheet.ui.BinarizationBoard;
 import org.audiveris.omr.sheet.ui.PictureView;
 import org.audiveris.omr.sheet.ui.PixelBoard;
 import org.audiveris.omr.sheet.ui.SheetAssembly;
+import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.sig.InterIndex;
@@ -66,6 +69,7 @@ import org.audiveris.omr.ui.util.ItemRenderer;
 import org.audiveris.omr.ui.util.WeakItemRenderer;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.FileUtil;
+import org.audiveris.omr.util.IndentingXMLStreamWriter;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
@@ -104,9 +108,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import org.audiveris.omr.constant.Constant;
-import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.util.IndentingXMLStreamWriter;
 
 /**
  * Class {@code Sheet} corresponds to one image in a book image file.
@@ -177,7 +178,7 @@ import org.audiveris.omr.util.IndentingXMLStreamWriter;
  * <ul>
  * <li>{@link #getSymbolsEditor}</li>
  * <li>{@link #createBinaryView}</li>
- * <li>{@link #createPictureView}</li>
+ * <li>{@link #createInitialView}</li>
  * <li>{@link #displayDataTab}</li>
  * <li>{@link #displayMainTabs}</li>
  * <li>{@link #getErrorsEditor}</li>
@@ -512,7 +513,7 @@ public class Sheet
                 locationService.subscribeStrongly(LocationEvent.class, picture);
 
                 // Display sheet binary
-                PictureView pictureView = new PictureView(this);
+                PictureView pictureView = new PictureView(this, tab);
                 assembly.addViewTab(
                         tab,
                         pictureView,
@@ -524,19 +525,19 @@ public class Sheet
     }
 
     //-------------------//
-    // createPictureView //
+    // createInitialView //
     //-------------------//
     /**
-     * Create and display the picture view.
+     * Create and display the initial view.
      */
-    public void createPictureView ()
+    public void createInitialView ()
     {
         locationService.subscribeStrongly(LocationEvent.class, picture);
 
         // Display sheet picture
-        PictureView pictureView = new PictureView(this);
+        PictureView pictureView = new PictureView(this, SheetTab.INITIAL_TAB);
         stub.getAssembly().addViewTab(
-                SheetTab.PICTURE_TAB,
+                SheetTab.INITIAL_TAB,
                 pictureView,
                 new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
     }
@@ -570,7 +571,7 @@ public class Sheet
         } else if (stub.isDone(Step.BINARY)) {
             createBinaryView(); // Display BINARY tab
         } else {
-            createPictureView(); // Display Picture tab
+            createInitialView(); // Display Initial tab
         }
 
         if (!stub.isValid()) {
@@ -706,9 +707,9 @@ public class Sheet
     // getGlyphIndex //
     //---------------//
     /**
-     * Report the global index for glyphs of this sheet, or null.
+     * Report the global index for glyphs of this sheet
      *
-     * @return the nest for glyphs, perhaps null
+     * @return the index for glyphs
      */
     public GlyphIndex getGlyphIndex ()
     {
@@ -941,10 +942,10 @@ public class Sheet
             throws StepException
     {
         try {
-            picture = new Picture(this, image, locationService);
+            picture = new Picture(this, image);
 
             if (OMR.gui != null) {
-                createPictureView();
+                createInitialView();
             }
 
             done(Step.LOAD);
@@ -1132,7 +1133,9 @@ public class Sheet
                 Files.createDirectories(parent);
             }
 
-            new BookPdfOutput(getBook(), sheetPrintPath.toFile()).write(this);
+            new BookPdfOutput(getBook(), sheetPrintPath.toFile()).write(
+                    this,
+                    new SheetResultPainter.PdfResultPainter());
             logger.info("Sheet printed to {}", sheetPrintPath);
         } catch (Exception ex) {
             logger.warn("Cannot print sheet to " + sheetPrintPath + " " + ex, ex);
@@ -1420,17 +1423,18 @@ public class Sheet
     //-----------//
     private void setBinary (RunTable binaryTable)
     {
-        try {
+        if (picture == null) {
             picture = new Picture(this, binaryTable);
-
-            if (OMR.gui != null) {
-                createBinaryView();
-            }
-
-            done(Step.LOAD);
-            done(Step.BINARY);
-        } finally {
+        } else {
+            picture.setTable(Picture.TableKey.BINARY, binaryTable, false);
         }
+
+        if (OMR.gui != null) {
+            createBinaryView();
+        }
+
+        done(Step.LOAD);
+        done(Step.BINARY);
     }
 
     //-------//

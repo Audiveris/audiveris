@@ -35,7 +35,6 @@ import org.junit.Test;
 public class PopulationTest
         extends BaseTestCase
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     //-----------//
     // testEmpty //
@@ -51,7 +50,7 @@ public class PopulationTest
             double mv = p.getMeanValue();
             fail(
                     "Exception should be raised"
-                    + " when retrieving mean value of an empty population");
+                            + " when retrieving mean value of an empty population");
         } catch (Exception expected) {
             checkException(expected);
         }
@@ -60,7 +59,7 @@ public class PopulationTest
             double sd = p.getStandardDeviation();
             fail(
                     "Exception should be raised"
-                    + " when retrieving standard deviation of an empty population");
+                            + " when retrieving standard deviation of an empty population");
         } catch (Exception expected) {
             checkException(expected);
         }

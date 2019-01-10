@@ -63,7 +63,7 @@ public class KeyAlterInter
      */
     private KeyAlterInter ()
     {
-        super(null, null, 0, null, null, null);
+        super((Glyph) null, null, 0, null, null, null);
     }
 
     //--------//

@@ -100,6 +100,8 @@ public class PluginsManager
         // Default plugin, if any is defined
         if (!constants.defaultPlugin.getValue().trim().isEmpty()) {
             setDefaultPlugin(constants.defaultPlugin.getValue().trim());
+        } else if (!plugins.isEmpty()) {
+            setDefaultPlugin(plugins.get(0));
         }
     }
 

@@ -40,6 +40,54 @@ public abstract class OmrShapes
     /** OmrShapes as a list a strings. */
     public static final List<String> NAMES = getNames();
 
+    /** All note heads. */
+    public static final EnumSet<OmrShape> HEADS = EnumSet.of(
+            noteheadBlack,
+            noteheadBlackSmall,
+            noteheadHalf,
+            noteheadHalfSmall,
+            noteheadWhole,
+            noteheadWholeSmall,
+            noteheadDoubleWhole,
+            noteheadDoubleWholeSmall,
+            noteheadXBlack,
+            noteheadXHalf,
+            noteheadXWhole);
+
+    /** Predefined numbers for time signatures. */
+    public static final EnumSet<OmrShape> TIME_NUMBERS = EnumSet.of(
+            timeSig0,
+            timeSig1,
+            timeSig2,
+            timeSig3,
+            timeSig4,
+            timeSig5,
+            timeSig6,
+            timeSig7,
+            timeSig8,
+            timeSig9,
+            timeSig12,
+            timeSig16);
+
+    /** Partial numbers for time signatures. */
+    public static final EnumSet<OmrShape> TIME_PARTIALS = EnumSet.of(
+            timeSig1,
+            timeSig2,
+            timeSig3,
+            timeSig4,
+            timeSig5,
+            timeSig6,
+            timeSig7,
+            timeSig8,
+            timeSig9,
+            timeSig12,
+            timeSig16);
+
+    /** Predefined commons for time signatures. */
+    public static final EnumSet<OmrShape> TIME_COMMONS = EnumSet.of(
+            timeSigCommon,
+            timeSigCutCommon);
+
     /** Predefined combos for time signatures. */
     public static final EnumSet<OmrShape> TIME_COMBOS = EnumSet.of(
             timeSig2over4,
@@ -56,8 +104,142 @@ public abstract class OmrShapes
             timeSig9over8,
             timeSig12over8);
 
+    /** All time signature items. */
+    public static final EnumSet<OmrShape> TIMES = EnumSet.noneOf(OmrShape.class);
+
+    static {
+        TIMES.addAll(TIME_PARTIALS);
+        TIMES.addAll(TIME_COMMONS);
+        TIMES.addAll(TIME_COMBOS);
+    }
+
+    /** Clef shapes (not including changes, nor 8 and 15 separate entities). */
+    public static final EnumSet<OmrShape> CLEFS = EnumSet.of(
+            gClef,
+            gClef8vb,
+            gClef8va,
+            gClef15mb,
+            gClef15ma,
+            cClefAlto,
+            cClefTenor,
+            fClef,
+            fClef8vb,
+            fClef8va,
+            fClef15mb,
+            fClef15ma,
+            unpitchedPercussionClef1);
+
+    /** Clef changes (usually smaller). */
+    public static final EnumSet<OmrShape> CLEF_CHANGES = EnumSet.of(
+            gClefChange,
+            cClefAltoChange,
+            cClefTenorChange,
+            fClefChange);
+
+    /** Key items (including keyNatural). */
+    public static final EnumSet<OmrShape> KEY_ALTERS = EnumSet.of(keyFlat, keyNatural, keySharp);
+
     /** Map of predefined combos to num/den integer pairs. */
     public static final Map<OmrShape, NumDen> COMBO_MAP = buildComboMap();
+
+    /** Articulations. */
+    public static final EnumSet<OmrShape> ARTICULATIONS = EnumSet.of(
+            articAccentAbove,
+            articAccentBelow,
+            articStaccatoAbove,
+            articStaccatoBelow,
+            articTenutoAbove,
+            articTenutoBelow,
+            articStaccatissimoAbove,
+            articStaccatissimoBelow,
+            articMarcatoAbove,
+            articMarcatoBelow,
+            articTenutoStaccatoAbove,
+            articTenutoStaccatoBelow);
+
+    /** Flags. */
+    public static final EnumSet<OmrShape> FLAGS = EnumSet.of(
+            flag8thUp,
+            flag8thUpSmall,
+            flag16thUp,
+            flag32ndUp,
+            flag64thUp,
+            flag128thUp,
+            flag256thUp,
+            flag512thUp,
+            flag1024thUp,
+            flag8thDown,
+            flag8thDownSmall,
+            flag16thDown,
+            flag32ndDown,
+            flag64thDown,
+            flag128thDown,
+            flag256thDown,
+            flag512thDown,
+            flag1024thDown);
+
+    /** Rests. */
+    public static final EnumSet<OmrShape> RESTS = EnumSet.of(
+            restMaxima,
+            restLonga,
+            restDoubleWhole,
+            restWhole,
+            restHalf,
+            restQuarter,
+            rest8th,
+            rest16th,
+            rest32nd,
+            rest64th,
+            rest128th,
+            rest256th,
+            rest512th,
+            rest1024th,
+            restHBar);
+
+    /** Accidentals. */
+    public static final EnumSet<OmrShape> ACCIDENTALS = EnumSet.of(
+            accidentalFlat,
+            accidentalFlatSmall,
+            accidentalNatural,
+            accidentalNaturalSmall,
+            accidentalSharp,
+            accidentalSharpSmall,
+            accidentalDoubleSharp,
+            accidentalDoubleFlat);
+
+    /** Dynamics. */
+    public static final EnumSet<OmrShape> DYNAMICS = EnumSet.of(
+            dynamicPiano,
+            dynamicMezzo,
+            dynamicForte,
+            dynamicRinforzando,
+            dynamicSforzando,
+            dynamicZ,
+            dynamicNiente,
+            dynamicPPPPPP,
+            dynamicPPPPP,
+            dynamicPPPP,
+            dynamicPPP,
+            dynamicPP,
+            dynamicMP,
+            dynamicMF,
+            dynamicPF,
+            dynamicFF,
+            dynamicFFF,
+            dynamicFFFF,
+            dynamicFFFFF,
+            dynamicFFFFFF,
+            dynamicFortePiano,
+            dynamicForzando,
+            dynamicSforzando1,
+            dynamicSforzandoPiano,
+            dynamicSforzandoPianissimo,
+            dynamicSforzato,
+            dynamicSforzatoPiano,
+            dynamicSforzatoFF,
+            dynamicRinforzando1,
+            dynamicRinforzando2
+    );
 
     /**
      * Report the list of OmrShape values, to be used by DL4J.

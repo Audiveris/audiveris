@@ -60,6 +60,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Stroke;
 import java.awt.font.TextLayout;
@@ -373,6 +374,27 @@ public class SheetResultPainter
             //                    measure.getPart().getFirstStaff().getTopLeft().y - 15);
             //            }
             g.setColor(oldColor);
+        }
+    }
+
+    //------------------//
+    // PdfResultPainter //
+    //------------------//
+    public static class PdfResultPainter
+            implements SimpleSheetPainter
+    {
+
+        @Override
+        public void paint (Sheet sheet,
+                           Graphics2D g)
+        {
+            SheetResultPainter painter = new SheetResultPainter(
+                    sheet,
+                    g,
+                    false, // No voice painting
+                    true, // Paint staff lines
+                    false); // No annotations
+            painter.process();
         }
     }
 

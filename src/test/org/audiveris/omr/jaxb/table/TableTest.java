@@ -45,7 +45,6 @@ import javax.xml.stream.XMLStreamException;
 public class TableTest
         extends BaseTestCase
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private JAXBContext jaxbContext;
 
@@ -53,9 +52,11 @@ public class TableTest
 
     private final String fileName = "table.xml";
 
-    //~ Methods ------------------------------------------------------------------------------------
     public void testInSequence ()
-            throws JAXBException, FileNotFoundException, XMLStreamException, IOException
+            throws JAXBException,
+                   FileNotFoundException,
+                   XMLStreamException,
+                   IOException
     {
         marshall();
         unmarshall();
@@ -82,7 +83,10 @@ public class TableTest
     }
 
     private void marshall ()
-            throws JAXBException, FileNotFoundException, XMLStreamException, IOException
+            throws JAXBException,
+                   FileNotFoundException,
+                   XMLStreamException,
+                   IOException
     {
         Table table = createTable();
         File target = new File(dir, fileName);
@@ -98,7 +102,9 @@ public class TableTest
     }
 
     private void unmarshall ()
-            throws JAXBException, FileNotFoundException, IOException
+            throws JAXBException,
+                   FileNotFoundException,
+                   IOException
     {
         System.out.println("=========================================================");
         System.out.println("Unmarshalling ...");

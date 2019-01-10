@@ -584,6 +584,7 @@ public class SheetStub
     public Sheet getSheet ()
     {
         Sheet sh = this.sheet;
+
         if (sh == null) {
             synchronized (this) {
                 sh = this.sheet;
@@ -902,25 +903,12 @@ public class SheetStub
     // resetToBinary //
     //---------------//
     /**
-     * Reset this stub to its BINARY step.
+     * Reset this stub to end of its BINARY step.
      */
     public void resetToBinary ()
     {
         try {
-            // Avoid loading sheet just to reset to binary:
-            // If sheet is available, use its picture.getTable()
-            // Otherwise, load it directly from binary.xml on disk
-            RunTable binaryTable = null;
-
-            if (hasSheet()) {
-                logger.debug("Getting BINARY from sheet");
-                binaryTable = getSheet().getPicture().getTable(TableKey.BINARY);
-            }
-
-            if (binaryTable == null) {
-                logger.debug("Loading BINARY from disk");
-                binaryTable = new RunTableHolder(TableKey.BINARY).getData(this);
-            }
+            RunTable binaryTable = grabBinaryTable();
 
             doReset();
             sheet = new Sheet(this, binaryTable);
@@ -1162,6 +1150,29 @@ public class SheetStub
         }
 
         return neededSteps;
+    }
+
+    //-----------------//
+    // grabBinaryTable //
+    //-----------------//
+    private RunTable grabBinaryTable ()
+    {
+        // Avoid loading sheet just to reset to binary:
+        // If sheet is available, use its picture.getTable()
+        // Otherwise, load it directly from binary.xml on disk
+        RunTable binaryTable = null;
+
+        if (hasSheet()) {
+            logger.debug("Getting BINARY from sheet");
+            binaryTable = getSheet().getPicture().getTable(TableKey.BINARY);
+        }
+
+        if (binaryTable == null) {
+            logger.debug("Loading BINARY from disk");
+            binaryTable = new RunTableHolder(TableKey.BINARY).getData(this);
+        }
+
+        return binaryTable;
     }
 
     //----------------//

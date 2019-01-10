@@ -425,9 +425,13 @@ public class HeadInter
     // getCoreBounds //
     //---------------//
     @Override
-    public Rectangle2D getCoreBounds ()
+    public Rectangle getCoreBounds ()
     {
-        return shrink(getBounds());
+        if (coreBounds == null) {
+            coreBounds = shrink(getBounds()).getBounds();
+        }
+
+        return coreBounds;
     }
 
     //---------------//

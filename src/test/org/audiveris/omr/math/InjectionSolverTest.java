@@ -23,8 +23,6 @@ package org.audiveris.omr.math;
 
 import junit.framework.*;
 
-import org.audiveris.omr.math.InjectionSolver;
-
 /**
  *
  * @author Hervé Bitteur
@@ -32,7 +30,6 @@ import org.audiveris.omr.math.InjectionSolver;
 public class InjectionSolverTest
         extends TestCase
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new InjectionSolverTest object.
@@ -44,7 +41,6 @@ public class InjectionSolverTest
         super(testName);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of solve method, of class omr.math.InjectionSolver.
      */
@@ -70,17 +66,14 @@ public class InjectionSolverTest
     {
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     public static class MyDistance
             implements InjectionSolver.Distance
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
         public MyDistance ()
         {
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         public int getDistance (int in,
                                 int ip)
         {

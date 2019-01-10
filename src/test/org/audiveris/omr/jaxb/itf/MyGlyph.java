@@ -34,12 +34,10 @@ import javax.xml.bind.annotation.XmlAttribute;
 public class MyGlyph
         extends MyAbstractEntity
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     @XmlAttribute
     private final String name;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MyGlyph} object.
      */
@@ -58,7 +56,6 @@ public class MyGlyph
         this.name = name;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public String toString ()
     {

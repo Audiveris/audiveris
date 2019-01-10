@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Skew;
@@ -92,7 +93,7 @@ public class SentenceInter
     /**
      * Creates a new {@code SentenceInter} object.
      *
-     * @param bounds   the bounding bounds
+     * @param bounds   the bounding box
      * @param grade    the interpretation quality
      * @param meanFont the font averaged on whole text line
      * @param role     text role for the line
@@ -102,7 +103,7 @@ public class SentenceInter
                           FontInfo meanFont,
                           TextRole role)
     {
-        super(null, bounds, null, grade);
+        super((Glyph) null, bounds, null, grade);
 
         this.meanFont = meanFont;
         this.role = role;

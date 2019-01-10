@@ -26,6 +26,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -34,6 +35,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -496,6 +498,31 @@ public class AlterInter
         } else {
             return new Pitches((int) Math.rint(massPitch), massPitch);
         }
+    }
+
+    //--------------//
+    // computePitch //
+    //--------------//
+    protected static Pitches computePitch (Rectangle bounds,
+                                           OmrShape omrShape,
+                                           Staff staff)
+    {
+        final Point center = GeoUtil.centerOf(bounds);
+        final double geoPitch;
+
+        // Pitch offset for flat-based alterations
+        if ((omrShape == OmrShape.keyFlat)
+                    || (omrShape == OmrShape.accidentalFlat)
+                    || (omrShape == OmrShape.accidentalDoubleFlat)
+                    || (omrShape == OmrShape.accidentalFlatSmall)) {
+            // Heuristic center WRT area box
+            geoPitch = staff.pitchPositionOf(
+                    new Point2D.Double(center.x, center.y + (getFlatAreaOffset() * bounds.height)));
+        } else {
+            geoPitch = staff.pitchPositionOf(center);
+        }
+
+        return new Pitches((int) Math.rint(geoPitch), geoPitch);
     }
 
     //---------//

@@ -38,15 +38,9 @@ import java.util.Map;
 public abstract class OmrShapeMapping
 {
 
-    /**
-     * Map from {@link Shape} to {@link OmrShape}.
-     */
-    public static final Map<Shape, OmrShape> SHAPE_TO_OMRSHAPE = buildShapeMap();
+    private static final Map<Shape, OmrShape> SHAPE_TO_OMRSHAPE = buildShapeMap();
 
-    /**
-     * Map from {@link OmrShape} to {@link Shape}.
-     */
-    public static final Map<OmrShape, Shape> OMRSHAPE_TO_SHAPE = buildOmrShapeMap();
+    private static final Map<OmrShape, Shape> OMRSHAPE_TO_SHAPE = buildOmrShapeMap();
 
     /**
      * Report the mapped OmrShape, if any, for a given TimePairInter.
@@ -71,6 +65,28 @@ public abstract class OmrShapeMapping
     }
 
     /**
+     * Report the OmrShape that corresponds to the provided shape.
+     *
+     * @param shape provided shape
+     * @return related OmrShape or null
+     */
+    public static OmrShape omrShapeOf (Shape shape)
+    {
+        return SHAPE_TO_OMRSHAPE.get(shape);
+    }
+
+    /**
+     * Report the Shape that corresponds to the provided omrShape.
+     *
+     * @param omrShape provided omrShape
+     * @return related Shape or null
+     */
+    public static Shape shapeOf (OmrShape omrShape)
+    {
+        return OMRSHAPE_TO_SHAPE.get(omrShape);
+    }
+
+    /**
      * Build the map (OmrShape -> Shape) as the reverse of SHAPE_TO_OMRSHAPE.
      *
      * @return the initialized map
@@ -88,6 +104,38 @@ public abstract class OmrShapeMapping
             }
         }
 
+        //-------------------
+        // Manual adjustments
+        //-------------------
+        //
+        map.put(OmrShape.cClefAlto, Shape.C_CLEF);
+        map.put(OmrShape.cClefTenor, Shape.C_CLEF);
+
+        //        map.put(OmrShape.cClefAltoChange, Shape.XXX);
+        //
+        map.put(OmrShape.keyFlat, Shape.FLAT);
+        map.put(OmrShape.keySharp, Shape.SHARP);
+        map.put(OmrShape.keyNatural, Shape.NATURAL);
+
+        map.put(OmrShape.articAccentAbove, Shape.ACCENT);
+        map.put(OmrShape.articAccentBelow, Shape.ACCENT);
+
+        map.put(OmrShape.articMarcatoAbove, Shape.STRONG_ACCENT);
+        map.put(OmrShape.articMarcatoBelow, Shape.STRONG_ACCENT);
+
+        map.put(OmrShape.articStaccatissimoAbove, Shape.STACCATISSIMO);
+        map.put(OmrShape.articStaccatissimoBelow, Shape.STACCATISSIMO);
+
+        map.put(OmrShape.articStaccatoAbove, Shape.STACCATO);
+        map.put(OmrShape.articStaccatoBelow, Shape.STACCATO);
+
+        map.put(OmrShape.articTenutoAbove, Shape.TENUTO);
+        map.put(OmrShape.articTenutoBelow, Shape.TENUTO);
+
+        //
+        //        map.put(OmrShape.graceNoteAcciaccaturaStemDown, Shape.XXX);
+        //        map.put(OmrShape.graceNoteAppoggiaturaStemDown, Shape.XXX);
+        //
         return map;
     }
 
@@ -110,7 +158,7 @@ public abstract class OmrShapeMapping
         map.put(Shape.G_CLEF_SMALL, OmrShape.gClefChange);
         map.put(Shape.G_CLEF_8VA, OmrShape.gClef8va);
         map.put(Shape.G_CLEF_8VB, OmrShape.gClef8vb);
-        map.put(Shape.C_CLEF, OmrShape.cClef);
+        ///map.put(Shape.C_CLEF, OmrShape.cClef);
         map.put(Shape.F_CLEF, OmrShape.fClef);
         map.put(Shape.F_CLEF_SMALL, OmrShape.fClefChange);
         map.put(Shape.F_CLEF_8VA, OmrShape.fClef8va);
@@ -266,8 +314,8 @@ public abstract class OmrShapeMapping
         //        map.put(Shape.ENDING_VERTICAL, OmrShape.none);
         //        map.put(Shape.SEGMENT, OmrShape.none);
         map.put(Shape.STEM, OmrShape.stem);
-        map.put(Shape.KEY_FLAT_1, OmrShape.keyFlat);
-        map.put(Shape.KEY_SHARP_1, OmrShape.keySharp);
+        //        map.put(Shape.KEY_FLAT_1, OmrShape.keyFlat);
+        //        map.put(Shape.KEY_SHARP_1, OmrShape.keySharp);
         map.put(Shape.GRACE_NOTE_SLASH, OmrShape.graceNoteAcciaccaturaStemUp);
         map.put(Shape.GRACE_NOTE, OmrShape.graceNoteAppoggiaturaStemUp);
         map.put(Shape.FERMATA, OmrShape.fermataAbove);

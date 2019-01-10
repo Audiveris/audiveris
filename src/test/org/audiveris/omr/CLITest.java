@@ -39,11 +39,9 @@ import java.util.Arrays;
  */
 public class CLITest
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private final CLI instance = new CLI("AudiverisTest");
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code CLITest} object.
      */
@@ -51,7 +49,6 @@ public class CLITest
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Test
     public void testOption ()
             throws Exception

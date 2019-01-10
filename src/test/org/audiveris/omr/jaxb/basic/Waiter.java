@@ -41,7 +41,6 @@ import javax.xml.bind.annotation.*;
 @XmlRootElement
 public class Waiter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** A simple id */
     @XmlAttribute
@@ -80,7 +79,6 @@ public class Waiter
     /** not accessed directly */
     public String[] titles;
 
-    //~ Methods ------------------------------------------------------------------------------------
     public List<Day> getDays ()
     {
         return days;

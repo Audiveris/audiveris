@@ -33,11 +33,9 @@ import java.awt.geom.Path2D;
  */
 public class MaskTest
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Mask instance = createInstance();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new MaskTest object.
      */
@@ -45,7 +43,6 @@ public class MaskTest
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of apply method, of class Mask.
      */

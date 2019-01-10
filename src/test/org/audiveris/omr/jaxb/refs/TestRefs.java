@@ -45,7 +45,6 @@ import javax.xml.stream.XMLStreamException;
 public class TestRefs
         extends BaseTestCase
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private JAXBContext jaxbContext;
 
@@ -53,9 +52,11 @@ public class TestRefs
 
     private final String fileName = "universe.xml";
 
-    //~ Methods ------------------------------------------------------------------------------------
     public void testInSequence ()
-            throws JAXBException, FileNotFoundException, XMLStreamException, IOException
+            throws JAXBException,
+                   FileNotFoundException,
+                   XMLStreamException,
+                   IOException
     {
         marshall();
         unmarshall();
@@ -70,7 +71,10 @@ public class TestRefs
     }
 
     private void marshall ()
-            throws JAXBException, FileNotFoundException, XMLStreamException, IOException
+            throws JAXBException,
+                   FileNotFoundException,
+                   XMLStreamException,
+                   IOException
     {
         Universe universe = new Universe();
         File target = new File(dir, fileName);
@@ -123,7 +127,9 @@ public class TestRefs
     }
 
     private void unmarshall ()
-            throws JAXBException, FileNotFoundException, IOException
+            throws JAXBException,
+                   FileNotFoundException,
+                   IOException
     {
         System.out.println("=========================================================");
         System.out.println("Unmarshalling ...");

@@ -29,6 +29,9 @@ import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.util.VerticalSide;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Point;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -44,6 +47,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class TimeNumberInter
         extends AbstractNumberInter
 {
+
+    private static final Logger logger = LoggerFactory.getLogger(TimeNumberInter.class);
 
     private static final Constants constants = new Constants();
 

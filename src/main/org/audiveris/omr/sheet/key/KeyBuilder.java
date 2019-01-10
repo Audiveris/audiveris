@@ -19,7 +19,7 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sheet.header;
+package org.audiveris.omr.sheet.key;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -36,7 +36,8 @@ import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.header.KeyColumn.PartStatus;
+import org.audiveris.omr.sheet.header.StaffHeader;
+import org.audiveris.omr.sheet.key.KeyColumn.PartStatus;
 import org.audiveris.omr.sig.GradeUtil;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.ClefInter;
@@ -238,45 +239,50 @@ public class KeyBuilder
      */
     public void addPlot (ChartPlotter plotter)
     {
-        retrieveHiLoPeaks();
+        if (peakFinder != null) {
+            retrieveHiLoPeaks();
+        }
 
         // Choose range
         StaffHeader.Range range = staff.getHeader().keyRange; // If key already processed
-        Integer derStart;
 
-        if ((range != null) && range.hasStart()) {
-            derStart = range.getStart();
-        } else {
-            derStart = staff.getKeyStart();
-        }
+        if (peakFinder != null) {
+            Integer derStart;
 
-        if (derStart == null) {
-            derStart = browseStart;
-        }
+            if ((range != null) && range.hasStart()) {
+                derStart = range.getStart();
+            } else {
+                derStart = staff.getKeyStart();
+            }
 
-        int derStop = (range != null) ? range.getStop() : projection.getXMax();
+            if (derStart == null) {
+                derStart = browseStart;
+            }
 
-        // Peaks
-        if ((peakFinder.getPeaks() != null) && !peakFinder.getPeaks().isEmpty()) {
-            plotter.add(peakFinder.getPeakSeries(derStart, derStop), Colors.CHART_PEAK);
-        }
+            int derStop = (range != null) ? range.getStop() : projection.getXMax();
 
-        // HiLos
-        plotter.add(peakFinder.getHiloSeries(derStart, derStop), Colors.CHART_HILO, true);
+            // Peaks
+            if ((peakFinder.getPeaks() != null) && !peakFinder.getPeaks().isEmpty()) {
+                plotter.add(peakFinder.getPeakSeries(derStart, derStop), Colors.CHART_PEAK);
+            }
 
-        {
-            // Values (w/ threshold)
-            XYSeries valueSeries = peakFinder.getValueSeries(
-                    projection.getXMin(),
-                    projection.getXMax());
-            valueSeries.setKey("Key");
-            plotter.add(valueSeries, Colors.CHART_VALUE);
-        }
+            // HiLos
+            plotter.add(peakFinder.getHiloSeries(derStart, derStop), Colors.CHART_HILO, true);
 
-        {
-            // Derivatives (w/ thresholds)
-            XYSeries derSeries = peakFinder.getDerivativeSeries(derStart + 1, derStop);
-            plotter.add(derSeries, Colors.CHART_DERIVATIVE);
+            {
+                // Values (w/ threshold)
+                XYSeries valueSeries = peakFinder.getValueSeries(
+                        projection.getXMin(),
+                        projection.getXMax());
+                valueSeries.setKey("Key");
+                plotter.add(valueSeries, Colors.CHART_VALUE);
+            }
+
+            {
+                // Derivatives (w/ thresholds)
+                XYSeries derSeries = peakFinder.getDerivativeSeries(derStart + 1, derStop);
+                plotter.add(derSeries, Colors.CHART_DERIVATIVE);
+            }
         }
 
         List<Integer> alterStarts = staff.getHeader().alterStarts;
@@ -320,7 +326,7 @@ public class KeyBuilder
             plotter.add(series, Color.BLACK);
         }
 
-        {
+        if (projection != null) {
             // Space threshold
             XYSeries chunkSeries = new XYSeries("Space", false); // No autosort
             chunkSeries.add(browseStart, params.maxSpaceCumul);
@@ -1000,7 +1006,8 @@ public class KeyBuilder
         // process //
         //---------//
         /**
-         * Process the potential key signature of the underlying staff in isolation.
+         * Process the potential key signature of the underlying staff in isolation,
+         * based on hilo sequence.
          * <p>
          * This builds peaks, slices, alters and checks trailing space and clef(s) compatibility.
          */

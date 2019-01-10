@@ -33,13 +33,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "fruit")
 public abstract class Fruit
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     @XmlID
     @XmlAttribute
     final String id;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Fruit} object.
      */

@@ -71,14 +71,20 @@ public class PictureView
     /** Pop-up page menu. */
     private final SheetPopupMenu pageMenu;
 
+    /** Initial or Binary tab. */
+    private final SheetTab sheetTab;
+
     /**
      * Create a new {@code PictureView} instance, dedicated to a sheet.
      *
-     * @param sheet the related sheet
+     * @param sheet    the related sheet
+     * @param sheetTab the desired tab (initial or binary)
      */
-    public PictureView (Sheet sheet)
+    public PictureView (Sheet sheet,
+                        SheetTab sheetTab)
     {
         this.sheet = sheet;
+        this.sheetTab = sheetTab;
 
         view = new MyView();
         view.setName("Picture-View");
@@ -148,11 +154,13 @@ public class PictureView
             boolean ok = true;
 
             if (input) {
-                Picture picture = sheet.getPicture();
-                BufferedImage initial = picture.getInitialImage();
+                final Picture picture = sheet.getPicture();
 
-                if ((initial == null) && !picture.hasTableReady(Picture.TableKey.BINARY)) {
-                    ok = false;
+                if (sheetTab == SheetTab.INITIAL_TAB) {
+                    BufferedImage initial = picture.getInitialImage();
+                    ok = initial != null;
+                } else {
+                    ok = picture.hasTableReady(Picture.TableKey.BINARY);
                 }
             }
 
@@ -194,12 +202,11 @@ public class PictureView
             final Color oldColor = g.getColor();
             g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_OFF);
 
-            // Render the picture image (either initial or binary)
             if (input) {
-                Picture picture = sheet.getPicture();
-                BufferedImage initial = picture.getInitialImage();
+                final Picture picture = sheet.getPicture();
 
-                if (initial != null) {
+                if (sheetTab == SheetTab.INITIAL_TAB) {
+                    final BufferedImage initial = picture.getInitialImage();
                     g.drawRenderedImage(initial, null);
                 } else if (table != null) {
                     table.render(g, new Point(0, 0));
@@ -208,9 +215,8 @@ public class PictureView
 
             // Render the recognized score entities?
             if (output) {
-                final boolean mixed = input;
-                final boolean coloredVoices = mixed ? false : voice;
-                g.setColor(mixed ? Colors.MUSIC_PICTURE : Colors.MUSIC_ALONE);
+                final boolean coloredVoices = input ? false : voice;
+                g.setColor(input ? Colors.MUSIC_PICTURE : Colors.MUSIC_ALONE);
                 new SheetResultPainter(sheet, g, coloredVoices, true, false).process();
             }
 

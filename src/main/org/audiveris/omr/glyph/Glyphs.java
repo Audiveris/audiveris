@@ -738,7 +738,6 @@ public abstract class Glyphs
 //     */
 //    public static interface LinkAdapter
 //    {
-//        //~ Methods --------------------------------------------------------------------------------
 //
 //        /**
 //         * Report the maximum acceptable distance around the provided glyph.

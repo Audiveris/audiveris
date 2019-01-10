@@ -46,21 +46,21 @@ import javax.xml.stream.XMLStreamException;
 public class RunTableBindingTest
         extends BaseTestCase
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final File dir = new File("data/temp");
 
     private static final Dimension dim = new Dimension(10, 5);
 
-    //~ Instance fields ----------------------------------------------------------------------------
     private final File fileTable = new File(dir, "runtable.xml");
 
     private JAXBContext jaxbContext;
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Test
     public void testMarshalTable ()
-            throws PropertyException, JAXBException, FileNotFoundException, IOException,
+            throws PropertyException,
+                   JAXBException,
+                   FileNotFoundException,
+                   IOException,
                    XMLStreamException
     {
         // Make sure target folder exists but target file does not exist

@@ -1,6 +1,5 @@
 package org.audiveris.omr.math;
 
-import org.audiveris.omr.math.Clustering;
 import static org.audiveris.omr.math.Clustering.*;
 
 import org.junit.Test;
@@ -11,11 +10,9 @@ import org.junit.Test;
  */
 public class ClusteringTest
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     static java.util.Random random = new java.util.Random(111);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ClusteringTest object.
      */
@@ -23,7 +20,6 @@ public class ClusteringTest
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public static double gaussianSample (double mu,
                                          double sigma)
     {

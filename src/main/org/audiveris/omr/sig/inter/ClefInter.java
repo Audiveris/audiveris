@@ -25,6 +25,7 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -377,6 +378,46 @@ public class ClefInter
         default:
             return null;
         }
+    }
+
+    //--------//
+    // kindOf //
+    //--------//
+    /**
+     * Report the ClefKind for a provided OmrShape
+     *
+     * @param omrShape provided OmrShape
+     * @return related ClefKind
+     * @throws IllegalArgumentException if provided omrShape is not mapped
+     */
+    public static ClefKind kindOf (OmrShape omrShape)
+    {
+        switch (omrShape) {
+        case gClef:
+        case gClef8vb:
+        case gClef8va:
+        case gClef15mb:
+        case gClef15ma:
+            return ClefKind.TREBLE;
+
+        case cClefAlto:
+            return ClefKind.ALTO;
+
+        case cClefTenor:
+            return ClefKind.TENOR;
+
+        case fClef:
+        case fClef8vb:
+        case fClef8va:
+        case fClef15mb:
+        case fClef15ma:
+            return ClefKind.BASS;
+
+        case unpitchedPercussionClef1:
+            return ClefKind.PERCUSSION;
+        }
+
+        throw new IllegalArgumentException("No ClefKind for " + omrShape);
     }
 
     //------------//

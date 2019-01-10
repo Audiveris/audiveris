@@ -35,7 +35,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class MyCompound
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     @XmlIDREF
     MyGlyph topGlyph;
@@ -51,7 +50,6 @@ public class MyCompound
 
     MyBasicIndex<MyEntity> index;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MyCompound} object.
      */

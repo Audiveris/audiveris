@@ -5,7 +5,6 @@
  */
 package org.audiveris.omr.sheet;
 
-import org.audiveris.omr.sheet.ExportPattern;
 import org.audiveris.omr.util.BaseTestCase;
 
 import org.junit.Test;
@@ -20,7 +19,6 @@ import java.nio.file.Paths;
 public class ExportPatternTest
         extends BaseTestCase
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new {@code ExportPatternTest} object.
@@ -29,7 +27,6 @@ public class ExportPatternTest
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Test
     public void testGetPathRadix ()
     {

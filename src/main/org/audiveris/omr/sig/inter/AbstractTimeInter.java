@@ -29,6 +29,7 @@ import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.score.TimeValue;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -296,6 +297,68 @@ public abstract class AbstractTimeInter
 
         case TIME_SIX_EIGHT:
             return new TimeRational(6, 8);
+
+        default:
+            return null;
+        }
+    }
+
+    //------------//
+    // rationalOf //
+    //------------//
+    /**
+     * Report the num/den pair of predefined time signature shapes.
+     *
+     * @param omrShape the queried shape
+     * @return the related num/den or null
+     */
+    public static TimeRational rationalOf (OmrShape omrShape)
+    {
+        if (omrShape == null) {
+            return null;
+        }
+
+        switch (omrShape) {
+        case timeSigCommon:
+        case timeSig4over4:
+            return new TimeRational(4, 4);
+
+        case timeSigCutCommon:
+        case timeSig2over2:
+            return new TimeRational(2, 2);
+
+        case timeSig2over4:
+            return new TimeRational(2, 4);
+
+        case timeSig3over2:
+            return new TimeRational(3, 2);
+
+        case timeSig3over4:
+            return new TimeRational(3, 4);
+
+        case timeSig3over8:
+            return new TimeRational(3, 8);
+
+        case timeSig5over4:
+            return new TimeRational(5, 4);
+
+        case timeSig5over8:
+            return new TimeRational(5, 8);
+
+        case timeSig6over4:
+            return new TimeRational(6, 4);
+
+        case timeSig6over8:
+            return new TimeRational(6, 8);
+
+        case timeSig7over8:
+            return new TimeRational(7, 8);
+
+        case timeSig9over8:
+            return new TimeRational(9, 8);
+
+        case timeSig12over8:
+            return new TimeRational(12, 8);
 
         default:
             return null;

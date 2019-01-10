@@ -37,7 +37,6 @@ import javax.xml.bind.annotation.XmlValue;
 @XmlRootElement(name = "run-table")
 public class Table
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Width of the table. */
     @XmlAttribute
@@ -51,8 +50,6 @@ public class Table
     @XmlElement(name = "runs")
     public final RunSequence[] sequences;
 
-    //~ Constructors -------------------------------------------------------------------------------
-    //longpublic final short[][] sequences;
     /**
      * Creates a new {@code Table} object.
      *
@@ -92,7 +89,6 @@ public class Table
         this.sequences = null;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // RunSequence //
     //-------------//
@@ -100,12 +96,10 @@ public class Table
     @XmlRootElement(name = "runs")
     public static class RunSequence
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlValue
         public short[] vector;
 
-        //~ Constructors ---------------------------------------------------------------------------
         public RunSequence ()
         {
         }
@@ -115,7 +109,6 @@ public class Table
             this.vector = vector;
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

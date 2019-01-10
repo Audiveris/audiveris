@@ -1705,33 +1705,3 @@ public class NoteHeadsBuilder
     }
 
 }
-//
-//    //--------------//
-//    // flagOverlaps //
-//    //--------------//
-//    /**
-//     * In the provided list of note interpretations, detect and flag as
-//     * such the overlapping ones.
-//     *
-//     * @param inters the provided interpretations (for a staff)
-//     */
-//    private void flagOverlaps (List<Inter> inters)
-//    {
-//        for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
-//            Inter left = inters.get(i);
-//            Rectangle box = left.getBounds();
-//            Rectangle2D smallBox = HeadInter.shrink(box);
-//            double xMax = smallBox.getMaxX();
-//
-//            for (Inter right : inters.subList(i + 1, inters.size())) {
-//                Rectangle rightBox = right.getBounds();
-//
-//                if (smallBox.intersects(rightBox)) {
-//                    sig.insertExclusion(left, right, Exclusion.Cause.OVERLAP);
-//                } else if (rightBox.x > xMax) {
-//                    break;
-//                }
-//            }
-//        }
-//    }
-//

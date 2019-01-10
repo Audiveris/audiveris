@@ -157,8 +157,10 @@ public class AnnotationsBuilder
         annotations.setVersion("1.0");
         annotations.setComplete(false);
         annotations.setSource(WellKnowns.TOOL_NAME + " " + WellKnowns.TOOL_REF);
-        annotations.setSheetInfo(new SheetInfo(sheet.getId() + Annotations.SHEET_IMAGE_EXTENSION,
-                                               new Dimension(sheet.getWidth(), sheet.getHeight())));
+        annotations.setSheetInfo(
+                new SheetInfo(
+                        sheet.getId() + Annotations.SHEET_IMAGE_EXTENSION,
+                        new Dimension(sheet.getWidth(), sheet.getHeight())));
 
         // Populate system by system
         for (SystemInfo system : sheet.getSystems()) {
@@ -238,22 +240,31 @@ public class AnnotationsBuilder
 
             if (items.size() == 1) {
                 // Isolated barline
-                OmrShape oShape = OmrShapeMapping.SHAPE_TO_OMRSHAPE.get(bar.getShape());
-                annotations.addSymbol(new SymbolInfo(oShape, interline, bar.getId(), null, bar
-                                                     .getBounds()));
+                OmrShape oShape = OmrShapeMapping.omrShapeOf(bar.getShape());
+                annotations.addSymbol(
+                        new SymbolInfo(oShape, interline, bar.getId(), null, bar.getBounds()));
             } else {
                 List<SymbolInfo> inners = new ArrayList<>();
 
                 for (Inter item : items) {
-                    OmrShape oShape = OmrShapeMapping.SHAPE_TO_OMRSHAPE.get(item.getShape());
-                    inners.add(new SymbolInfo(oShape, interline, item.getId(), null, item
-                                              .getBounds()));
+                    OmrShape oShape = OmrShapeMapping.omrShapeOf(item.getShape());
+                    inners.add(
+                            new SymbolInfo(
+                                    oShape,
+                                    interline,
+                                    item.getId(),
+                                    null,
+                                    item.getBounds()));
                 }
 
                 // Determine the outer shape
                 OmrShape oShape = getBarGroupShape(items);
-                SymbolInfo outer = new SymbolInfo(oShape, interline, null, null, Inters.getBounds(
-                                                  items));
+                SymbolInfo outer = new SymbolInfo(
+                        oShape,
+                        interline,
+                        null,
+                        null,
+                        Inters.getBounds(items));
 
                 for (SymbolInfo inner : inners) {
                     outer.addInnerSymbol(inner);
@@ -298,7 +309,7 @@ public class AnnotationsBuilder
             } else if (inter instanceof ArticulationInter) {
                 omrShape = getOmrShape((ArticulationInter) inter);
             } else {
-                omrShape = OmrShapeMapping.SHAPE_TO_OMRSHAPE.get(interShape);
+                omrShape = OmrShapeMapping.omrShapeOf(interShape);
 
                 if (omrShape == null) {
                     logger.info("{} shape is not mapped.", inter);
@@ -352,8 +363,8 @@ public class AnnotationsBuilder
             }
 
             final int interline = staff.getSpecificInterline();
-            annotations.addSymbol(new SymbolInfo(omrShape, interline, inter.getId(), null,
-                                                 interBounds));
+            annotations.addSymbol(
+                    new SymbolInfo(omrShape, interline, inter.getId(), null, interBounds));
         }
 
         /**
@@ -371,19 +382,28 @@ public class AnnotationsBuilder
             final List<SymbolInfo> inners = new ArrayList<>();
 
             for (Inter inter : pair.getMembers()) {
-                OmrShape oShape = OmrShapeMapping.SHAPE_TO_OMRSHAPE.get(inter.getShape());
+                OmrShape oShape = OmrShapeMapping.omrShapeOf(inter.getShape());
 
                 if (oShape != null) {
-                    inners.add(new SymbolInfo(oShape, interline, inter.getId(), null, inter
-                                              .getBounds()));
+                    inners.add(
+                            new SymbolInfo(
+                                    oShape,
+                                    interline,
+                                    inter.getId(),
+                                    null,
+                                    inter.getBounds()));
                 }
             }
 
             final OmrShape pairShape = OmrShapeMapping.getTimeCombo(pair);
 
             if (pairShape != null) {
-                SymbolInfo outer = new SymbolInfo(pairShape, interline, pair.getId(), null, pair
-                                                  .getBounds());
+                SymbolInfo outer = new SymbolInfo(
+                        pairShape,
+                        interline,
+                        pair.getId(),
+                        null,
+                        pair.getBounds());
 
                 for (SymbolInfo inner : inners) {
                     outer.addInnerSymbol(inner);
@@ -562,8 +582,10 @@ public class AnnotationsBuilder
             final Staff staff = ledger.getStaff();
             final Integer index = staff.getLedgerIndex(ledger);
             final int ledgerPitch = Staff.getLedgerPitchPosition(index);
-            final List<Inter> heads = Inters.intersectedInters(allHeads, GeoOrder.BY_ABSCISSA,
-                                                               ledgerBox);
+            final List<Inter> heads = Inters.intersectedInters(
+                    allHeads,
+                    GeoOrder.BY_ABSCISSA,
+                    ledgerBox);
 
             for (Inter inter : heads) {
                 final HeadInter head = (HeadInter) inter;

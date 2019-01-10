@@ -31,8 +31,10 @@ import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.header.TimeBuilder;
+import org.audiveris.omr.sheet.time.TimeBuilder;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
+import org.audiveris.omr.sheet.time.BasicTimeColumn;
+import org.audiveris.omr.sheet.time.TimeColumn;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractFlagInter;
@@ -604,7 +606,7 @@ public class InterFactory
         // Finally, scan each stack populated with some time sig(s)
         for (Entry<MeasureStack, Set<Inter>> entry : timeMap.entrySet()) {
             MeasureStack stack = entry.getKey();
-            TimeBuilder.BasicColumn column = new TimeBuilder.BasicColumn(stack, entry.getValue());
+            TimeColumn column = new BasicTimeColumn(stack, entry.getValue());
             int res = column.retrieveTime();
 
             // If the stack does have a validated time sig, discard overlapping stuff right now!

@@ -42,10 +42,26 @@ public class Entities
     public static final Comparator<Entity> byId = new Comparator<Entity>()
     {
         @Override
-        public int compare (Entity o1,
-                            Entity o2)
+        public int compare (Entity e1,
+                            Entity e2)
         {
-            return o1.getId() - o2.getId();
+            return e1.getId() - e2.getId();
+        }
+    };
+
+    /**
+     * For comparing entities by center abscissa.
+     */
+    public static final Comparator<Entity> byCenterAbscissa = new Comparator<Entity>()
+    {
+        @Override
+        public int compare (Entity e1,
+                            Entity e2)
+        {
+            final Rectangle b1 = e1.getBounds();
+            final Rectangle b2 = e2.getBounds();
+
+            return Integer.compare(b1.x + (b1.width / 2), b2.x + (b2.width / 2));
         }
     };
 
@@ -179,5 +195,42 @@ public class Entities
         sb.append("]");
 
         return sb.toString();
+    }
+
+    //---------------------//
+    // intersectedEntities //
+    //---------------------//
+    /**
+     * Look up in an iteration on Entity instances for <b>all</b> instances intersected
+     * by a provided rectangle.
+     *
+     * @param <E>      precise type of entity handled
+     * @param iterator the iterator on the collection of entities to be browsed
+     * @param rect     the coordinates rectangle
+     * @return the entities found, which may be an empty list
+     */
+    public static <E extends Entity> List<E> intersectedEntities (Iterator<? extends E> iterator,
+                                                                  Rectangle rect)
+    {
+        List<E> list = null;
+
+        while (iterator.hasNext()) {
+            E entity = iterator.next();
+            final Rectangle bounds = entity.getBounds();
+
+            if ((bounds != null) && rect.intersects(bounds)) {
+                if (list == null) {
+                    list = new ArrayList<E>();
+                }
+
+                list.add(entity);
+            }
+        }
+
+        if (list != null) {
+            return list;
+        } else {
+            return Collections.emptyList();
+        }
     }
 }

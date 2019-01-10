@@ -26,7 +26,6 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.ui.SigPainter;
-import org.audiveris.omr.ui.ViewParameters;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -41,16 +40,27 @@ public class SheetGradedPainter
         extends SheetPainter
 {
 
+    private final boolean withVoices;
+
+    private final boolean withTranslucency;
+
     /**
      * Creates a new {@code SheetGradedPainter} object.
      *
-     * @param sheet the sheet to paint
-     * @param g     Graphic context
+     * @param sheet            the sheet to paint
+     * @param g                Graphic context
+     * @param withVoices       true for colored voices
+     * @param withTranslucency true for translucency
      */
     public SheetGradedPainter (Sheet sheet,
-                               Graphics g)
+                               Graphics g,
+                               boolean withVoices,
+                               boolean withTranslucency)
     {
         super(sheet, g);
+
+        this.withVoices = withVoices;
+        this.withTranslucency = withTranslucency;
     }
 
     //---------------//
@@ -65,15 +75,12 @@ public class SheetGradedPainter
     //------------------//
     // GradedSigPainter //
     //------------------//
-    private static class GradedSigPainter
+    private class GradedSigPainter
             extends SigPainter
     {
 
-        /** View parameters. */
-        private final ViewParameters viewParams = ViewParameters.getInstance();
-
-        GradedSigPainter (Graphics g,
-                          Scale scale)
+        public GradedSigPainter (Graphics g,
+                                 Scale scale)
         {
             super(g, scale);
         }
@@ -94,7 +101,7 @@ public class SheetGradedPainter
             Color base = inter.getColor();
 
             // Voice-based color?
-            if (!inter.isAbnormal() && viewParams.isVoicePainting()) {
+            if (!inter.isAbnormal() && withVoices) {
                 final Voice voice = inter.getVoice();
 
                 if (voice != null) {
@@ -105,7 +112,7 @@ public class SheetGradedPainter
             final Color color;
 
             // Should we use translucency?
-            if (viewParams.isTranslucentPainting()) {
+            if (withTranslucency) {
                 // Prefer contextual grade over intrinsic grade when available
                 final double grade = inter.getBestGrade();
 

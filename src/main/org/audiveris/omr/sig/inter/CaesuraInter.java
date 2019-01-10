@@ -26,6 +26,9 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Point;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -39,6 +42,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class CaesuraInter
         extends AbstractInter
 {
+
+    private static final Logger logger = LoggerFactory.getLogger(CaesuraInter.class);
 
     /**
      * Creates a new {@code CaesuraInter} object.

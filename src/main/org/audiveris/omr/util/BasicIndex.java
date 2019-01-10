@@ -22,7 +22,10 @@
 package org.audiveris.omr.util;
 
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
+import org.audiveris.omr.ui.selection.MouseMovement;
+import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.symbol.BasicSymbol;
 
 import org.slf4j.Logger;
@@ -39,6 +42,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.swing.SwingUtilities;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -46,7 +50,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -54,11 +57,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Class {@code BasicIndex}
  *
  * @param <E> precise type for indexed entities
- * @author HervÃ© Bitteur
+ *
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlRootElement
-@XmlType(propOrder = {"lastIdValue", "entities"})
+@XmlRootElement(name = "index")
 public class BasicIndex<E extends Entity>
         implements EntityIndex<E>
 {
@@ -214,6 +217,15 @@ public class BasicIndex<E extends Entity>
         return 0;
     }
 
+    //------------------------//
+    // getIntersectedEntities //
+    //------------------------//
+    @Override
+    public List<E> getIntersectedEntities (Rectangle rectangle)
+    {
+        return Entities.intersectedEntities(iterator(), rectangle);
+    }
+
     //-----------//
     // getLastId //
     //-----------//
@@ -238,7 +250,7 @@ public class BasicIndex<E extends Entity>
     @Override
     public String getName ()
     {
-        return "";
+        return getClass().getSimpleName();
     }
 
     //--------//
@@ -284,6 +296,35 @@ public class BasicIndex<E extends Entity>
         return entities.values().iterator();
     }
 
+    //---------//
+    // publish //
+    //---------//
+    /**
+     * Convenient method to publish an Entity instance.
+     *
+     * @param entity the Entity to publish (can be null)
+     */
+    public void publish (final E entity)
+    {
+        final EntityService<E> interService = this.getEntityService();
+
+        if (interService != null) {
+            SwingUtilities.invokeLater(new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    interService.publish(
+                            new EntityListEvent<E>(
+                                    this,
+                                    SelectionHint.ENTITY_INIT,
+                                    MouseMovement.PRESSING,
+                                    entity));
+                }
+            });
+        }
+    }
+
     //----------//
     // register //
     //----------//
@@ -327,17 +368,38 @@ public class BasicIndex<E extends Entity>
         entities.clear();
     }
 
+    //-------------//
+    // setEntities //
+    //-------------//
+    @Override
+    public void setEntities (Collection<E> entities)
+    {
+        for (E entity : entities) {
+            insert(entity);
+        }
+    }
+
     //-----------//
     // setVipIds //
     //-----------//
     /**
-     * Record the IDs of VIP entities.
+     * Declare a list of VIP IDs.
      *
-     * @param vipIds collection of VIP IDs
+     * @param vipIdsString a string formatted as a comma-separated list of ID numbers
      */
-    public void setVipIds (List<Integer> vipIds)
+    public void setVipIds (String vipIdsString)
     {
-        this.vipIds = vipIds;
+        vipIds = IntUtil.parseInts(vipIdsString);
+
+        if (!vipIds.isEmpty()) {
+            logger.info("VIP {}: {}", getClass().getSimpleName(), vipIds);
+
+            for (E entity : entities.values()) {
+                if ((entity != null) && isVipId(entity.getId())) {
+                    entity.setVip(true);
+                }
+            }
+        }
     }
 
     //----------//

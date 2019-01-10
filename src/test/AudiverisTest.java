@@ -32,11 +32,9 @@ import org.slf4j.LoggerFactory;
  */
 public class AudiverisTest
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AudiverisTest.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AudiverisTest object.
      */
@@ -44,7 +42,6 @@ public class AudiverisTest
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of main method, of class Audiveris.
      */

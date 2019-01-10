@@ -23,7 +23,6 @@ package org.audiveris.omr.math;
 
 import junit.framework.Assert;
 
-import org.audiveris.omr.math.Histogram;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -45,7 +44,6 @@ import java.util.TreeSet;
  */
 public class HistogramTest
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private Set<Integer> keySet;
 
@@ -53,7 +51,6 @@ public class HistogramTest
 
     private List<Entry<Integer, Integer>> expMaxima = new ArrayList<Entry<Integer, Integer>>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new HistogramTest object.
      */
@@ -61,7 +58,6 @@ public class HistogramTest
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of bucketSet method, of class Histogram.
      */
@@ -324,7 +320,7 @@ public class HistogramTest
         if (actualsLength != expectedsLength) {
             Assert.fail(
                     header + "list lengths differed, expected.length=" + expectedsLength
-                    + " actual.length=" + actualsLength);
+                            + " actual.length=" + actualsLength);
         }
 
         return expectedsLength;
@@ -334,7 +330,7 @@ public class HistogramTest
                                       Entry<Integer, Integer> actual)
     {
         if (!expected.getKey().equals(actual.getKey())
-            || !expected.getValue().equals(actual.getValue())) {
+                    || !expected.getValue().equals(actual.getValue())) {
             throw new AssertionError("Expected: " + expected + " Actual: " + actual);
         }
     }

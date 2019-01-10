@@ -75,6 +75,7 @@ public class StaffHeader
 
     /** Time-sig found, if any. */
     @XmlIDREF
+    @XmlElement(name = "time")
     public AbstractTimeInter time;
 
     // Transient data

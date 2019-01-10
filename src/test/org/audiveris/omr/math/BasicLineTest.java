@@ -33,20 +33,17 @@ import org.audiveris.omr.util.BaseTestCase;
 public class BasicLineTest
         extends BaseTestCase
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     protected static final double[] xx = new double[]{1d, 2d, 3d, 4d, 5d};
 
     protected static final double[] yy = new double[]{4d, 9d, 14d, 19d, 24d};
 
-    //~ Instance fields ----------------------------------------------------------------------------
     BasicLine l;
 
     BasicLine l2;
 
     BasicLine lxy;
 
-    //~ Methods ------------------------------------------------------------------------------------
     //@Test (expected = IllegalArgumentException.class)
     public void testDifferentPoints ()
     {

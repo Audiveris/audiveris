@@ -100,7 +100,7 @@ public abstract class AbstractInter
     //----------------
     //
     /** The assigned shape. */
-    @XmlAttribute
+    @XmlAttribute(name = "shape")
     protected Shape shape;
 
     /** The underlying glyph, if any. */
@@ -170,6 +170,9 @@ public abstract class AbstractInter
 
     /** Potential attachments, lazily allocated. */
     private AttachmentHolder attachments;
+
+    /** Core bounds meant for overlap check. */
+    protected Rectangle coreBounds;
 
     /**
      * Creates a new AbstractInter object, with detailed impacts information.
@@ -542,9 +545,15 @@ public abstract class AbstractInter
     // getCoreBounds //
     //---------------//
     @Override
-    public Rectangle2D getCoreBounds ()
+    public Rectangle getCoreBounds ()
     {
-        return getBounds();
+        if (coreBounds == null) {
+            final Rectangle box = getBounds();
+
+            coreBounds = box;
+        }
+
+        return coreBounds;
     }
 
     //------------//
@@ -966,7 +975,18 @@ public abstract class AbstractInter
             } else if (that.getGlyph() != null) {
                 // Area <--> Glyph?
                 return that.getGlyph().intersects(this.area);
+            } else {
+                // Area <--> Bounds
+                return this.area.intersects(that.getBounds());
             }
+        }
+
+        if ((this.getGlyph() != null)) {
+            return this.getGlyph().intersects(that.getBounds());
+        }
+
+        if ((that.getGlyph() != null)) {
+            return that.getGlyph().intersects(this.getBounds());
         }
 
         return true;
@@ -1183,6 +1203,10 @@ public abstract class AbstractInter
 
         if (staff != null) {
             sb.append(" s:").append(staff.getId());
+        }
+
+        if (shape != null) {
+            sb.append(" ").append(shape);
         }
 
         return sb.toString();

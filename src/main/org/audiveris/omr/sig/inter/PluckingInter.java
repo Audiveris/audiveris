@@ -23,6 +23,7 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -112,5 +113,27 @@ public class PluckingInter
         }
 
         throw new IllegalArgumentException("Invalid plucking shape " + shape);
+    }
+
+    //---------//
+    // valueOf //
+    //---------//
+    private static char valueOf (OmrShape omrShape)
+    {
+        switch (omrShape) {
+        case fingeringPLower:
+            return 'p';
+
+        case fingeringILower:
+            return 'i';
+
+        case fingeringMLower:
+            return 'm';
+
+        case fingeringALower:
+            return 'a';
+        }
+
+        throw new IllegalArgumentException("Invalid plucking shape " + omrShape);
     }
 }
