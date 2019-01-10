@@ -676,9 +676,9 @@ public class Staff
     public IndexedLedger getClosestLedger (Point2D point)
     {
         IndexedLedger bestLedger = null;
-        double top = getFirstLine().yAt(point.getX());
-        double bottom = getLastLine().yAt(point.getX());
-        double rawPitch = (4.0d * ((2 * point.getY()) - bottom - top)) / (bottom - top);
+        final double top = getFirstLine().yAt(point.getX());
+        final double bottom = getLastLine().yAt(point.getX());
+        final double rawPitch = (4.0d * ((2 * point.getY()) - bottom - top)) / (bottom - top);
 
         if (Math.abs(rawPitch) <= 5) {
             return null;
@@ -718,8 +718,8 @@ public class Staff
             double bestDist = Double.MAX_VALUE;
 
             for (IndexedLedger iLedger : foundLedgers) {
-                Point2D center = iLedger.ledger.getGlyph().getCenter();
-                double dist = Math.abs(center.getY() - point.getY());
+                final Point2D center = iLedger.ledger.getGlyph().getCenter();
+                final double dist = Math.abs(center.getY() - point.getY());
 
                 if (dist < bestDist) {
                     bestDist = dist;
@@ -1769,6 +1769,15 @@ public class Staff
         return commonBottom > commonTop;
     }
 
+    //--------------//
+    // afterMarshal //
+    //--------------//
+    @SuppressWarnings("unused")
+    private void afterMarshal (Marshaller m)
+    {
+        ledgersValue = null;
+    }
+
     //---------------//
     // beforeMarshal //
     //---------------//
@@ -2022,7 +2031,7 @@ public class Staff
     // LedgersEntry //
     //--------------//
     /**
-     * This temporary structure is needed to marshall / unmarshall the ledgerMap,
+     * This temporary structure is needed to marshal / unmarshal the ledgerMap,
      * because of its use of IDREF's.
      */
     private static class LedgersEntry

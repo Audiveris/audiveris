@@ -37,13 +37,11 @@ import javax.media.jai.*;
  */
 public class ImageInfo
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     private ImageInfo ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public static void main (String[] args)
     {
         String name = "../bnf/manuscrit/2Partitions/00398006/T0000012.tif"; //args[0];
@@ -67,17 +65,18 @@ public class ImageInfo
         // Remember getMaxX and getMaxY return the coordinate of the next point!
         System.out.println(
                 " (from " + pi.getMinX() + "," + pi.getMinY() + " to " + (pi.getMaxX() - 1) + ","
-                + (pi.getMaxY() - 1) + ")");
+                        + (pi.getMaxY() - 1) + ")");
 
         if ((pi.getNumXTiles() != 1) || (pi.getNumYTiles() != 1)) { // Is it tiled?
             // Tiles number, dimensions and coordinates.
             System.out.print("Tiles: ");
             System.out.print(
                     pi.getTileWidth() + "x" + pi.getTileHeight() + " pixels" + " ("
-                    + pi.getNumXTiles() + "x" + pi.getNumYTiles() + " tiles)");
+                            + pi.getNumXTiles() + "x" + pi.getNumYTiles() + " tiles)");
             System.out.print(
-                    " (from " + pi.getMinTileX() + "," + pi.getMinTileY() + " to " + pi.getMaxTileX()
-                    + "," + pi.getMaxTileY() + ")");
+                    " (from " + pi.getMinTileX() + "," + pi.getMinTileY() + " to " + pi
+                    .getMaxTileX()
+                            + "," + pi.getMaxTileY() + ")");
             System.out.println(
                     " offset: " + pi.getTileGridXOffset() + "," + pi.getTileGridXOffset());
         }

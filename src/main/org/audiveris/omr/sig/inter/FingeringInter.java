@@ -23,6 +23,7 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -89,15 +90,6 @@ public class FingeringInter
         return value;
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
-
     //---------//
     // valueOf //
     //---------//
@@ -137,5 +129,33 @@ public class FingeringInter
         }
 
         throw new IllegalArgumentException("No fingering value for " + shape);
+    }
+
+    //---------//
+    // valueOf //
+    //---------//
+    private static int valueOf (OmrShape omrShape)
+    {
+        switch (omrShape) {
+        case fingering0:
+            return 0;
+
+        case fingering1:
+            return 1;
+
+        case fingering2:
+            return 2;
+
+        case fingering3:
+            return 3;
+
+        case fingering4:
+            return 4;
+
+        case fingering5:
+            return 5;
+        }
+
+        throw new IllegalArgumentException("No fingering value for " + omrShape);
     }
 }

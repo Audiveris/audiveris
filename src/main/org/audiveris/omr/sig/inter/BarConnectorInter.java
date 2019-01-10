@@ -82,13 +82,4 @@ public class BarConnectorInter
     {
         return grade >= Grades.goodBarConnectorGrade;
     }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
 }

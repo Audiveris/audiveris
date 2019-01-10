@@ -38,7 +38,6 @@ import java.util.List;
  */
 public class ChamferMatchingTest
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final String[] imageRows = new String[]{
         "                                    ",
@@ -92,7 +91,6 @@ public class ChamferMatchingTest
         "       XXXXXXXXX      "
     };
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of matchAll method, of class DistanceMatching.
      */

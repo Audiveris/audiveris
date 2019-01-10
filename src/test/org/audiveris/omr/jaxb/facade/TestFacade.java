@@ -47,7 +47,6 @@ import javax.xml.stream.XMLStreamException;
 public class TestFacade
         extends BaseTestCase
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private JAXBContext jaxbContext;
 
@@ -55,9 +54,10 @@ public class TestFacade
 
     private final String fileName = "facade-data.xml";
 
-    //~ Methods ------------------------------------------------------------------------------------
     public void testInSequence ()
-            throws JAXBException, IOException, XMLStreamException
+            throws JAXBException,
+                   IOException,
+                   XMLStreamException
     {
         marshall();
         unmarshall();
@@ -72,7 +72,9 @@ public class TestFacade
     }
 
     private void marshall ()
-            throws JAXBException, IOException, XMLStreamException
+            throws JAXBException,
+                   IOException,
+                   XMLStreamException
     {
         File target = new File(dir, fileName);
         Files.deleteIfExists(target.toPath());
@@ -97,7 +99,9 @@ public class TestFacade
     }
 
     private void unmarshall ()
-            throws JAXBException, FileNotFoundException, IOException
+            throws JAXBException,
+                   FileNotFoundException,
+                   IOException
     {
         System.out.println("================================================================");
         System.out.println("Unmarshalling ...");

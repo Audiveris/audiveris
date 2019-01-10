@@ -595,7 +595,11 @@ public class SymbolsEditor
                 }
 
                 // Inters (with graded colors)
-                new SheetGradedPainter(sheet, g).process();
+                new SheetGradedPainter(
+                        sheet,
+                        g,
+                        viewParams.isVoicePainting(),
+                        viewParams.isTranslucentPainting()).process();
 
                 // Display staff line splines?
                 if (ViewParameters.getInstance().isStaffLinePainting()) {

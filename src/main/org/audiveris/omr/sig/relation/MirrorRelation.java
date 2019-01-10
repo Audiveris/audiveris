@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
+import org.audiveris.omr.sig.inter.AbstractInter;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**

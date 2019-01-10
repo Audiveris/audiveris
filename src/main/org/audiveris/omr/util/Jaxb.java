@@ -142,18 +142,29 @@ public abstract class Jaxb
             throws IOException,
                    JAXBException
     {
-        InputStream is = null;
-
-        try {
-            Unmarshaller um = jaxbContext.createUnmarshaller();
-            is = Files.newInputStream(path, StandardOpenOption.READ);
-
-            return um.unmarshal(is);
-        } finally {
-            if (is != null) {
-                is.close();
-            }
+        try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ)) {
+            return unmarshal(is, jaxbContext);
         }
+    }
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal an object from a stream, using provided JAXB context.
+     *
+     * @param is          input stream, not closed by this method
+     * @param jaxbContext proper context
+     * @return the unmarshalled object
+     * @throws IOException   on IO error
+     * @throws JAXBException on JAXB error
+     */
+    public static Object unmarshal (InputStream is,
+                                    JAXBContext jaxbContext)
+            throws IOException,
+                   JAXBException
+    {
+        return jaxbContext.createUnmarshaller().unmarshal(is);
     }
 
     //----------------------//
@@ -492,6 +503,40 @@ public abstract class Jaxb
             }
 
             return Double.valueOf(s);
+        }
+    }
+
+    //------------------------//
+    // IntegerPositiveAdapter //
+    //------------------------//
+    /**
+     * Only strictly positive value is marshalled into the output,
+     * zero or negative value is not marshalled.
+     */
+    public static class IntegerPositiveAdapter
+            extends XmlAdapter<String, Integer>
+    {
+
+        @Override
+        public String marshal (Integer i)
+                throws Exception
+        {
+            if (i == null) {
+                return null;
+            }
+
+            return (i > 0) ? Integer.toString(i) : null;
+        }
+
+        @Override
+        public Integer unmarshal (String s)
+                throws Exception
+        {
+            if (s == null) {
+                return 0;
+            }
+
+            return Integer.parseInt(s);
         }
     }
 

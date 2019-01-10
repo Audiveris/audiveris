@@ -33,12 +33,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Apple
         extends Fruit
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     @XmlAttribute
     final String name;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Apple} object.
      */

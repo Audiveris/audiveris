@@ -31,13 +31,11 @@ import org.audiveris.omr.ui.selection.IdEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.util.BasicIndex;
-import org.audiveris.omr.util.IntUtil;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.SwingUtilities;
@@ -76,12 +74,7 @@ public class FilamentIndex
         this.sheet = sheet;
 
         // Declared VIP IDs?
-        List<Integer> vipIds = IntUtil.parseInts(constants.vipFilaments.getValue());
-
-        if (!vipIds.isEmpty()) {
-            logger.info("VIP filaments:{} in {}", vipIds, sheet);
-            setVipIds(vipIds);
-        }
+        setVipIds(constants.vipFilaments.getValue());
 
         // User filament service?
         if (OMR.gui != null) {

@@ -34,7 +34,6 @@ import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.util.BasicIndex;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.EntityIndex;
-import org.audiveris.omr.util.IntUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -144,7 +143,8 @@ public class GlyphIndex
      *
      * @param glyphs populating glyphs
      */
-    public void setEntities (ArrayList<Glyph> glyphs)
+    @Override
+    public void setEntities (Collection<Glyph> glyphs)
     {
         for (Glyph glyph : glyphs) {
             WeakGlyph weak = new WeakGlyph(glyph);
@@ -191,6 +191,15 @@ public class GlyphIndex
     public int getIdBefore (int id)
     {
         return weakIndex.getIdBefore(id);
+    }
+
+    //------------------------//
+    // getIntersectedEntities //
+    //------------------------//
+    @Override
+    public List<Glyph> getIntersectedEntities (Rectangle rectangle)
+    {
+        return Entities.intersectedEntities(iterator(), rectangle);
     }
 
     @Override
@@ -270,7 +279,7 @@ public class GlyphIndex
         weakIndex.setIdGenerator(sheet.getPersistentIdGenerator());
 
         // Declared VIP IDs?
-        List<Integer> vipIds = IntUtil.parseInts(constants.vipGlyphs.getValue());
+        final String vipIds = constants.vipGlyphs.getValue();
 
         if (!vipIds.isEmpty()) {
             logger.info("VIP glyphs: {}", vipIds);

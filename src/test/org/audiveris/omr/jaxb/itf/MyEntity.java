@@ -28,7 +28,6 @@ package org.audiveris.omr.jaxb.itf;
  */
 public interface MyEntity
 {
-    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report the ID of this entity

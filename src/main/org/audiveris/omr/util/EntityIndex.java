@@ -97,6 +97,14 @@ public interface EntityIndex<E extends Entity>
     int getIdBefore (int id);
 
     /**
+     * Look up the index for all entities intersected by the provided rectangle.
+     *
+     * @param rectangle provided rectangle
+     * @return the list of intersected entities found, perhaps empty but not null
+     */
+    List<E> getIntersectedEntities (Rectangle rectangle);
+
+    /**
      * Report the last ID assigned so far.
      *
      * @return the last ID used so far, 0 if none
@@ -144,6 +152,13 @@ public interface EntityIndex<E extends Entity>
      * Reset index internals (entities and last ID value).
      */
     void reset ();
+
+    /**
+     * Populate the index with the provided entities.
+     *
+     * @param entities provided entities
+     */
+    void setEntities (Collection<E> entities);
 
     /**
      * Assign and connect an entity selection service.

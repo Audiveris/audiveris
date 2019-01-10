@@ -478,6 +478,9 @@ public class SheetContainer
         }
     }
 
+    //------------//
+    // Descriptor //
+    //------------//
     /**
      * A descriptor for a sample sheet.
      */

@@ -31,13 +31,11 @@ import javax.imageio.ImageIO;
 @Ignore
 public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     Map<Shape, D> descriptors = new EnumMap<Shape, D>(Shape.class);
 
     File temp = new File("data/temp");
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new MomentsExtractorTest object.
      */
@@ -45,7 +43,6 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // testAllShapes //
     //---------------//
@@ -54,7 +51,8 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
      */
     public void testAllShapes (MomentsExtractor<D> extractor,
                                Class<? extends D> classe)
-            throws InstantiationException, IllegalAccessException
+            throws InstantiationException,
+                   IllegalAccessException
     {
         temp.mkdirs();
 
@@ -107,7 +105,9 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
         // Print moments per shape
         for (Map.Entry<Shape, D> entry : descriptors.entrySet()) {
             System.out.println(
-                    String.format("%-30s %s", entry.getKey().toString(), entry.getValue().toString()));
+                    String
+                            .format("%-30s %s", entry.getKey().toString(), entry.getValue()
+                                    .toString()));
         }
 
         System.out.println();
@@ -197,13 +197,11 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // Relation //
     //----------//
     private class Relation
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Shape from;
 
@@ -211,7 +209,6 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
 
         final double distance;
 
-        //~ Constructors ---------------------------------------------------------------------------
         Relation (Shape from,
                   Shape to)
         {
@@ -220,7 +217,6 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
             distance = descriptors.get(from).distanceTo(descriptors.get(to));
         }
 
-        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -233,13 +229,11 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
     //----------------//
     private class ShapeRelations
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         final Shape shape;
 
         final List<Relation> relations; // Sorted
 
-        //~ Constructors ---------------------------------------------------------------------------
         ShapeRelations (Shape shape,
                         List<Relation> relations)
         {

@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
+import ij.process.ByteProcessor;
+
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.ui.SampleBrowser;
@@ -315,6 +317,34 @@ public class BookActions
         }
     }
 
+
+    //---------------//
+    // displayBinary //
+    //---------------//
+    /**
+     * Action that allows to display the view on binary image
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = STUB_AVAILABLE)
+    public void displayBinary (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub.isDone(Step.BINARY)) {
+            final SheetAssembly assembly = stub.getAssembly();
+            final SheetTab tab = SheetTab.BINARY_TAB;
+
+            if (assembly.getPane(tab.label) == null) {
+                stub.getSheet().createBinaryView();
+            } else {
+                assembly.selectViewTab(tab);
+            }
+        } else {
+            logger.info("No binary image available yet.");
+        }
+    }
+
     //-------------//
     // displayData //
     //-------------//
@@ -326,10 +356,41 @@ public class BookActions
     @Action(enabledProperty = STUB_AVAILABLE)
     public void displayData (ActionEvent e)
     {
-        SheetStub stub = StubsController.getCurrentStub();
+        final SheetStub stub = StubsController.getCurrentStub();
 
         if (stub.isDone(Step.GRID)) {
-            stub.getSheet().displayDataTab();
+            final SheetAssembly assembly = stub.getAssembly();
+            final SheetTab tab = SheetTab.DATA_TAB;
+
+            if (assembly.getPane(tab.label) == null) {
+                stub.getSheet().displayDataTab();
+            } else {
+                assembly.selectViewTab(tab);
+            }
+        } else {
+            logger.info("No data buffer available yet.");
+        }
+    }
+
+    //----------------//
+    // displayInitial //
+    //----------------//
+    /**
+     * Action that allows to display the view on initial image.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = STUB_AVAILABLE)
+    public void displayInitial (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+        final SheetAssembly assembly = stub.getAssembly();
+        final SheetTab tab = SheetTab.INITIAL_TAB;
+
+        if (assembly.getPane(tab.label) == null) {
+            stub.getSheet().createInitialView();
+        } else {
+            assembly.selectViewTab(tab);
         }
     }
 
@@ -344,51 +405,24 @@ public class BookActions
     @Action(enabledProperty = STUB_AVAILABLE)
     public void displayNoStaff (ActionEvent e)
     {
-        SheetStub stub = StubsController.getCurrentStub();
+        final SheetStub stub = StubsController.getCurrentStub();
 
-        if (stub == null) {
-            return;
-        }
+        if (stub.isDone(Step.GRID)) {
+            final SheetAssembly assembly = stub.getAssembly();
+            final SheetTab tab = SheetTab.NO_STAFF_TAB;
 
-        final SheetAssembly assembly = stub.getAssembly();
-        final SheetTab tab = SheetTab.NO_STAFF_TAB;
-
-        if (assembly.getPane(tab.label) == null) {
-            Sheet sheet = stub.getSheet(); // This may load the sheet...
-            assembly.addViewTab(
-                    tab,
-                    new ScrollImageView(
-                            sheet,
-                            new ImageView(
-                                    sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF)
-                                            .getBufferedImage())),
-                    new BoardsPane(new PixelBoard(sheet)));
+            if (assembly.getPane(tab.label) == null) {
+                Sheet sheet = stub.getSheet(); // This may load the sheet...
+                ByteProcessor noStaff = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
+                assembly.addViewTab(
+                        tab,
+                        new ScrollImageView(sheet, new ImageView(noStaff.getBufferedImage())),
+                        new BoardsPane(new PixelBoard(sheet)));
+            } else {
+                assembly.selectViewTab(tab);
+            }
         } else {
-            assembly.selectViewTab(tab);
-        }
-    }
-
-    //----------------//
-    // displayPicture //
-    //----------------//
-    /**
-     * Action that allows to display the view on image (or binary table)
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(enabledProperty = STUB_AVAILABLE)
-    public void displayPicture (ActionEvent e)
-    {
-        SheetStub stub = StubsController.getCurrentStub();
-
-        if (stub == null) {
-            return;
-        }
-
-        if (stub.isDone(Step.BINARY)) {
-            stub.getSheet().createBinaryView();
-        } else {
-            stub.getSheet().createPictureView();
+            logger.info("No staff lines available yet.");
         }
     }
 
@@ -403,25 +437,25 @@ public class BookActions
     @Action(enabledProperty = STUB_AVAILABLE)
     public void displayStaffLineGlyphs (ActionEvent e)
     {
-        SheetStub stub = StubsController.getCurrentStub();
+        final SheetStub stub = StubsController.getCurrentStub();
 
-        if (stub == null) {
-            return;
-        }
+        if (stub.isDone(Step.GRID)) {
+            final SheetAssembly assembly = stub.getAssembly();
+            final SheetTab tab = SheetTab.STAFF_LINE_TAB;
 
-        final SheetAssembly assembly = stub.getAssembly();
-        final SheetTab tab = SheetTab.STAFF_LINE_TAB;
-
-        if (assembly.getPane(tab.label) == null) {
-            Sheet sheet = stub.getSheet(); // This may load the sheet...
-            assembly.addViewTab(
-                    tab,
-                    new ScrollImageView(
-                            sheet,
-                            new ImageView(sheet.getPicture().buildStaffLineGlyphsImage())),
-                    new BoardsPane(new PixelBoard(sheet)));
+            if (assembly.getPane(tab.label) == null) {
+                Sheet sheet = stub.getSheet(); // This may load the sheet...
+                assembly.addViewTab(
+                        tab,
+                        new ScrollImageView(
+                                sheet,
+                                new ImageView(sheet.getPicture().buildStaffLineGlyphsImage())),
+                        new BoardsPane(new PixelBoard(sheet)));
+            } else {
+                assembly.selectViewTab(tab);
+            }
         } else {
-            assembly.selectViewTab(tab);
+            logger.info("No staff lines available yet.");
         }
     }
 
@@ -854,12 +888,7 @@ public class BookActions
         }
 
         // Select target book print path
-        final Path bookPrintPath = UIUtil.pathChooser(
-                true,
-                OMR.gui.getFrame(),
-                BookManager.getDefaultPrintPath(book),
-                new OmrFileFilter(OMR.PRINT_EXTENSION),
-                "Choose book print target");
+        final Path bookPrintPath = choosePrintPath(book, "");
 
         if ((bookPrintPath == null) || !confirmed(bookPrintPath)) {
             return null;
@@ -887,19 +916,7 @@ public class BookActions
         }
 
         // Let the user select a PDF output file
-        final Book book = stub.getBook();
-        final String ext = OMR.PRINT_EXTENSION;
-        final Path defaultBookPath = BookManager.getDefaultPrintPath(book);
-        final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PRINT_EXTENSION);
-        final String suffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
-        final Path defaultSheetPath = Paths.get(bookSansExt + suffix + ext);
-
-        final Path sheetPrintPath = UIUtil.pathChooser(
-                true,
-                OMR.gui.getFrame(),
-                defaultSheetPath,
-                filter(ext),
-                "Choose sheet print target");
+        final Path sheetPrintPath = choosePrintPath(stub, "");
 
         if ((sheetPrintPath == null) || !confirmed(sheetPrintPath)) {
             return null;
@@ -1563,6 +1580,73 @@ public class BookActions
                 filter(OMR.BOOK_EXTENSION));
 
         return (prjPath == null) ? null : prjPath;
+    }
+
+    //---------------//
+    // choosePngPath //
+    //---------------//
+    private Path choosePngPath (SheetStub stub,
+                                String preExt)
+    {
+        final String PNG_EXTENSION = ".png";
+        final Book book = stub.getBook();
+        final String ext = preExt + PNG_EXTENSION;
+        final Path defaultBookPath = BookManager.getDefaultPrintPath(book);
+        final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PRINT_EXTENSION);
+        final String sheetSuffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
+        final Path defaultSheetPath = Paths.get(bookSansExt + sheetSuffix + ext);
+
+        return UIUtil.pathChooser(
+                true,
+                OMR.gui.getFrame(),
+                defaultSheetPath,
+                filter(ext),
+                "Choose sheet png target");
+    }
+
+    //-----------------//
+    // choosePrintPath //
+    //-----------------//
+    private Path choosePrintPath (Book book,
+                                  String preExt)
+    {
+        final String ext = preExt + OMR.PRINT_EXTENSION;
+        Path defaultBookPath = BookManager.getDefaultPrintPath(book);
+        Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PRINT_EXTENSION);
+
+        if (!preExt.isEmpty()) {
+            bookSansExt = FileUtil.avoidExtensions(bookSansExt, preExt);
+        }
+
+        defaultBookPath = Paths.get(bookSansExt + ext);
+
+        return UIUtil.pathChooser(
+                true,
+                OMR.gui.getFrame(),
+                defaultBookPath,
+                filter(ext),
+                "Choose book print target");
+    }
+
+    //-----------------//
+    // choosePrintPath //
+    //-----------------//
+    private Path choosePrintPath (SheetStub stub,
+                                  String preExt)
+    {
+        final Book book = stub.getBook();
+        final String ext = preExt + OMR.PRINT_EXTENSION;
+        final Path defaultBookPath = BookManager.getDefaultPrintPath(book);
+        final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PRINT_EXTENSION);
+        final String sheetSuffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
+        final Path defaultSheetPath = Paths.get(bookSansExt + sheetSuffix + ext);
+
+        return UIUtil.pathChooser(
+                true,
+                OMR.gui.getFrame(),
+                defaultSheetPath,
+                filter(ext),
+                "Choose sheet print target");
     }
 
     //--------------//

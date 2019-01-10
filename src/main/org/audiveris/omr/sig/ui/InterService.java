@@ -62,7 +62,7 @@ public class InterService
     /**
      * Creates a new {@code InterService} object.
      *
-     * @param index           underlying inter index (InterManager)
+     * @param index           underlying inter index
      * @param locationService related service for location info
      */
     public InterService (EntityIndex<Inter> index,

@@ -23,13 +23,11 @@ import javax.imageio.stream.ImageOutputStream;
  */
 public class TiffSplit
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     private TiffSplit ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public static void main (String... args)
             throws Exception
     {

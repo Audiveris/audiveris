@@ -4,8 +4,6 @@
  */
 package org.audiveris.omr.util;
 
-import org.audiveris.omr.util.StopWatch;
-
 import org.junit.Test;
 
 /**
@@ -14,13 +12,11 @@ import org.junit.Test;
  */
 public class StopWatchTest
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     StopWatch instance = new StopWatch("Utility Watch");
 
     int j;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StopWatchTest object.
      */
@@ -28,7 +24,6 @@ public class StopWatchTest
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     @Test
     public void testOne ()
     {

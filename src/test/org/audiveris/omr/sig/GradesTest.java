@@ -13,7 +13,6 @@ import org.junit.Test;
  */
 public class GradesTest
 {
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new GradesTest object.
@@ -22,7 +21,6 @@ public class GradesTest
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //    /**
     //     * Test of contextual method, of class GradeUtil.
     //     */

@@ -46,7 +46,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 public class MyClass
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     @XmlAttribute
     public final String name;
@@ -66,7 +65,6 @@ public class MyClass
     @XmlElementWrapper(name = "entities")
     public final Map<Integer, String> allEntities = new ConcurrentHashMap<Integer, String>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MyClass} object.
      */

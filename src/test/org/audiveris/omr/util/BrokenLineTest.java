@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
-import org.audiveris.omr.util.BrokenLine;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +38,6 @@ import java.util.List;
  */
 public class BrokenLineTest
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private Point p0 = new Point(1, 5);
 
@@ -51,7 +49,6 @@ public class BrokenLineTest
 
     private BrokenLine instance;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BrokenLineTest object.
      */
@@ -60,7 +57,6 @@ public class BrokenLineTest
         ///System.out.println("BrokenLineTest");
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of addPoint method, of class BrokenLine.
      */

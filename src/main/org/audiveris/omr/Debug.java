@@ -95,7 +95,6 @@ public class Debug
     //    private static class ChordInjector
     //        extends AbstractScoreVisitor
     //    {
-    //        //~ Static fields/initializers -----------------------------------------
     //
     //        /** List of symbols to inject. */
     //        private static final String[] shelf = new String[] {
@@ -103,12 +102,10 @@ public class Debug
     //                                                  "F#", "C#7sus4", "F#"
     //                                              };
     //
-    //        //~ Instance fields ----------------------------------------------------
     //
     //        /** Current index to symbol to inject. */
     //        private int symbolCount = 0;
     //
-    //        //~ Methods ------------------------------------------------------------
     //
     //        @Override
     //        public boolean visit (ChordSymbol symbol)

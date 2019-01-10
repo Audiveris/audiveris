@@ -19,7 +19,7 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sheet.header;
+package org.audiveris.omr.sheet.clef;
 
 import ij.process.Blitter;
 import ij.process.ByteProcessor;
@@ -46,6 +46,7 @@ import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sig.GradeUtil;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.ClefInter;

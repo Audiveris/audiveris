@@ -28,12 +28,10 @@ package org.audiveris.omr.sig.inter;
  */
 public class ChordNameInterTest
 {
-    //    //~ Static fields/initializers -----------------------------------------------------------------
     //
     //    /** Store output in dedicated file. */
     //    private static final PrintWriter out = getPrintWriter(new File("data/temp/tests.log"));
     //
-    //    //~ Methods ------------------------------------------------------------------------------------
     //    @Test
     //    public void test_01 ()
     //    {

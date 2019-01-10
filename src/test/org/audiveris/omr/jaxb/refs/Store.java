@@ -35,7 +35,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class Store
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     // Containment to define all IDs
     @XmlElementWrapper(name = "fruits")
@@ -48,7 +47,6 @@ public class Store
     //    })
     ArrayList<Fruit> fruits = new ArrayList<Fruit>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Store} object.
      */
@@ -56,7 +54,6 @@ public class Store
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public void add (Apple apple)
     {
         fruits.add(apple);

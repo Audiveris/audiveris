@@ -29,7 +29,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
-import org.audiveris.omr.sheet.ui.SheetResultPainter;
+import org.audiveris.omr.sheet.ui.SimpleSheetPainter;
 import org.audiveris.omr.step.Step;
 
 import org.slf4j.Logger;
@@ -76,10 +76,12 @@ public class BookPdfOutput
     /**
      * Write the PDF output for the provided sheet if any, otherwise for the whole book.
      *
-     * @param sheet desired sheet or null
+     * @param sheet   desired sheet or null
+     * @param painter concrete sheet painter
      * @throws Exception if printing goes wrong
      */
-    public void write (Sheet sheet)
+    public void write (Sheet sheet,
+                       SimpleSheetPainter painter)
             throws Exception
     {
         FileOutputStream fos = null;
@@ -121,22 +123,19 @@ public class BookPdfOutput
                         RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
 
-                // Painting
-                SheetResultPainter painter = new SheetResultPainter(
-                        stub.getSheet(),
-                        g2,
-                        false, // No voice painting
-                        true, // Paint staff lines
-                        false); // No annotations
+                // Foreground color
                 g2.setColor(Color.BLACK);
 
-                painter.process();
+                // Sheet painting
+                painter.paint(stub.getSheet(), g2);
 
                 // This is the end...
                 g2.dispose();
             }
 
-            logger.info("Book printed to {}", file);
+            if (sheet == null) {
+                logger.info("Book printed to {}", file);
+            }
         } finally {
             if (document != null) {
                 document.close();

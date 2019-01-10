@@ -45,7 +45,6 @@ import javax.xml.stream.XMLStreamException;
 public class TestCompound
         extends BaseTestCase
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private JAXBContext jaxbContext;
 
@@ -53,9 +52,11 @@ public class TestCompound
 
     private final String indexFileName = "itf-compound.xml";
 
-    //~ Methods ------------------------------------------------------------------------------------
     public void testInSequence ()
-            throws JAXBException, FileNotFoundException, IOException, XMLStreamException
+            throws JAXBException,
+                   FileNotFoundException,
+                   IOException,
+                   XMLStreamException
     {
         marshall();
         unmarshall();
@@ -70,7 +71,9 @@ public class TestCompound
     }
 
     private void marshall ()
-            throws JAXBException, IOException, XMLStreamException
+            throws JAXBException,
+                   IOException,
+                   XMLStreamException
     {
         File target = new File(dir, indexFileName);
         Files.deleteIfExists(target.toPath());
@@ -96,7 +99,9 @@ public class TestCompound
     }
 
     private void unmarshall ()
-            throws JAXBException, FileNotFoundException, IOException
+            throws JAXBException,
+                   FileNotFoundException,
+                   IOException
     {
         System.out.println("=========================================================");
         System.out.println("Unmarshalling ...");

@@ -39,11 +39,9 @@ import java.awt.Point;
  */
 public class RunTableTest
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Dimension dim = new Dimension(10, 5);
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code RunTableTest} object.
      */
@@ -51,7 +49,6 @@ public class RunTableTest
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of copy method, of class RunTable.
      */

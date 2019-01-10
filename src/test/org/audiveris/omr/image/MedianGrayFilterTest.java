@@ -35,13 +35,11 @@ import java.awt.image.WritableRaster;
  */
 public class MedianGrayFilterTest
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     final int width = 10;
 
     final int height = 4;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new MedianGrayFilterTest object.
      */
@@ -49,7 +47,6 @@ public class MedianGrayFilterTest
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //    @Test
     public void testProcess_black_1 ()
     {

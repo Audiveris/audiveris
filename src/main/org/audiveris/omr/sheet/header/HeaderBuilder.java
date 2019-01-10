@@ -26,6 +26,9 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.clef.ClefBuilder;
+import org.audiveris.omr.sheet.key.KeyColumn;
+import org.audiveris.omr.sheet.time.HeaderTimeColumn;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.ClefInter;
@@ -96,7 +99,7 @@ public class HeaderBuilder
     private final KeyColumn keyColumn;
 
     /** Manager for column of time signatures. */
-    private final TimeBuilder.HeaderColumn timeColumn;
+    private final HeaderTimeColumn timeColumn;
 
     /**
      * Creates a new HeaderBuilder object.
@@ -111,7 +114,7 @@ public class HeaderBuilder
         maxHeaderWidth = system.getSheet().getScale().toPixels(constants.maxHeaderWidth);
         clefColumn = new ClefBuilder.Column(system);
         keyColumn = new KeyColumn(system);
-        timeColumn = new TimeBuilder.HeaderColumn(system);
+        timeColumn = new HeaderTimeColumn(system);
     }
 
     //------//

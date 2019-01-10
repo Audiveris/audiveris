@@ -33,12 +33,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Orange
         extends Fruit
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     @XmlAttribute
     final String name;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Orange} object.
      *

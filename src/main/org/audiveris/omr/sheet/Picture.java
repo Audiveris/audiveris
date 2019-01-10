@@ -41,7 +41,6 @@ import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.PixelEvent;
-import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
 
@@ -57,22 +56,17 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumMap;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import javax.media.jai.JAI;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.stream.XMLStreamException;
 
 /**
  * Class {@code Picture} starts from the original BufferedImage to provide all {@link
@@ -109,6 +103,8 @@ public class Picture
 
     private static final Logger logger = LoggerFactory.getLogger(Picture.class);
 
+    public static final String INITIAL_FILE_NAME = "initial.png";
+
     // Persistent data
     //----------------
     //
@@ -136,13 +132,7 @@ public class Picture
     private Sheet sheet;
 
     /** The initial (gray-level) image, if any. */
-    private BufferedImage initialImage;
-
-    /**
-     * Service object where gray level of pixel is to be written to when so asked for
-     * by the onEvent() method.
-     */
-    final SelectionService pixelService;
+    private final ImageHolder initialHolder = new ImageHolder(INITIAL_FILE_NAME);
 
     /**
      * Build a picture instance from a binary table.
@@ -154,43 +144,37 @@ public class Picture
                     RunTable binaryTable)
     {
         initTransients(sheet);
-        pixelService = null;
 
         width = binaryTable.getWidth();
         height = binaryTable.getHeight();
 
         setTable(TableKey.BINARY, binaryTable, false);
 
-        // Remember the initial image
-        initialImage = null;
-        logger.debug("BinaryTable {}", binaryTable);
+        logger.debug("Picture with BinaryTable {}", binaryTable);
     }
 
     /**
      * Build a picture instance from a given original image.
      *
-     * @param sheet        the related sheet
-     * @param image        the provided original image
-     * @param pixelService service where pixel events are to be written
+     * @param sheet the related sheet
+     * @param image the provided original image
      * @throws ImageFormatException if the image format is unsupported
      */
     public Picture (Sheet sheet,
-                    BufferedImage image,
-                    SelectionService pixelService)
+                    BufferedImage image)
             throws ImageFormatException
     {
         initTransients(sheet);
-        this.pixelService = pixelService;
 
         // Make sure format, colors, etc are OK for us
         ///ImageUtil.printInfo(image, "Original image");
-        image = checkImage(image);
+        image = adjustImageFormat(image);
         width = image.getWidth();
         height = image.getHeight();
 
         // Remember the initial image
-        initialImage = image;
-        logger.debug("InitialImage {}", image);
+        initialHolder.setData(image, true);
+        logger.debug("Picture with InitialImage {}", image);
     }
 
     /**
@@ -201,7 +185,6 @@ public class Picture
         this.sheet = null;
         this.width = 0;
         this.height = 0;
-        this.pixelService = null;
         logger.debug("Picture unmarshalled by JAXB");
     }
 
@@ -277,11 +260,6 @@ public class Picture
      */
     public void disposeSource (SourceKey key)
     {
-        // Nullify cached data, if needed
-        if ((key == SourceKey.INITIAL) && constants.disposeOfInitialSource.isSet()) {
-            initialImage = null;
-        }
-
         sources.remove(key);
     }
 
@@ -409,7 +387,7 @@ public class Picture
      */
     public BufferedImage getImage (Rectangle rect)
     {
-        BufferedImage img = initialImage;
+        BufferedImage img = getInitialImage();
 
         if (img == null) {
             ByteProcessor buffer = getSource(SourceKey.BINARY);
@@ -433,7 +411,7 @@ public class Picture
      */
     public BufferedImage getInitialImage ()
     {
-        return initialImage;
+        return initialHolder.getData(sheet.getStub());
     }
 
     //------------------//
@@ -481,17 +459,6 @@ public class Picture
         return "Picture";
     }
 
-    //-----------------//
-    // getLevelService //
-    //-----------------//
-    /**
-     * @return the pixelService
-     */
-    public SelectionService getPixelService ()
-    {
-        return pixelService;
-    }
-
     //-----------//
     // getSource //
     //-----------//
@@ -509,7 +476,7 @@ public class Picture
         if (src == null) {
             switch (key) {
             case INITIAL:
-                src = getInitialSource(initialImage);
+                src = getInitialSource(getInitialImage());
 
                 break;
 
@@ -520,13 +487,17 @@ public class Picture
 
                 if (table != null) {
                     src = table.getBuffer();
-                } else if (initialImage != null) {
-                    // Built via binarization of initial source
-                    src = binarized(getSource(SourceKey.INITIAL));
                 } else {
-                    logger.warn("Cannot provide BINARY source");
+                    // Built via binarization of initial source if any
+                    ByteProcessor initial = getSource(SourceKey.INITIAL);
 
-                    return null;
+                    if (initial != null) {
+                        src = binarized(initial);
+                    } else {
+                        logger.warn("Cannot provide BINARY source");
+
+                        return null;
+                    }
                 }
 
                 break;
@@ -548,6 +519,8 @@ public class Picture
                 src = buildNoStaffBuffer();
 
                 break;
+            default:
+                logger.error("Source " + key + " is not yet supported");
             }
 
             if (src != null) {
@@ -671,7 +644,7 @@ public class Picture
     @Override
     public void onEvent (LocationEvent event)
     {
-        if (initialImage == null) {
+        if (initialHolder.hasNoData()) {
             return;
         }
 
@@ -699,7 +672,8 @@ public class Picture
                 }
             }
 
-            pixelService.publish(new PixelEvent(this, event.hint, event.movement, level));
+            sheet.getLocationService()
+                    .publish(new PixelEvent(this, event.hint, event.movement, level));
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
@@ -758,36 +732,8 @@ public class Picture
                        Path oldSheetFolder)
     {
         // Each handled table
-        for (Entry<TableKey, RunTableHolder> entry : tables.entrySet()) {
-            final TableKey key = entry.getKey();
-            final RunTableHolder holder = entry.getValue();
-            final Path tablepath = sheetFolder.resolve(key + ".xml");
-
-            if (!holder.hasData()) {
-                if (oldSheetFolder != null) {
-                    try {
-                        // Copy from old book file to new
-                        Path oldTablePath = oldSheetFolder.resolve(key + ".xml");
-                        Files.copy(oldTablePath, tablepath);
-                        logger.info("Copied {}", tablepath);
-                    } catch (IOException ex) {
-                        logger.warn("Error in picture.store " + ex, ex);
-                    }
-                }
-            } else if (holder.isModified()) {
-                try {
-                    Files.deleteIfExists(tablepath);
-
-                    RunTable table = holder.getData(sheet.getStub());
-                    table.marshal(tablepath);
-                    holder.setModified(false);
-                    logger.info("Stored {}", tablepath);
-                } catch (IOException |
-                         JAXBException |
-                         XMLStreamException ex) {
-                    logger.warn("Error in picture.store " + ex, ex);
-                }
-            }
+        for (RunTableHolder holder : tables.values()) {
+            holder.storeData(sheetFolder, oldSheetFolder);
         }
     }
 
@@ -894,34 +840,6 @@ public class Picture
         }
 
         return new ByteProcessor(img);
-    }
-
-    //------------//
-    // checkImage //
-    //------------//
-    private BufferedImage checkImage (BufferedImage img)
-            throws ImageFormatException
-    {
-        // Check image format
-        img = adjustImageFormat(img);
-
-        // Check pixel size and compute grayFactor accordingly
-        ColorModel colorModel = img.getColorModel();
-        int pixelSize = colorModel.getPixelSize();
-        logger.debug("colorModel={} pixelSize={}", colorModel, pixelSize);
-
-        //        if (pixelSize == 1) {
-        //            grayFactor = 1;
-        //        } else if (pixelSize <= 8) {
-        //            grayFactor = (int) Math.rint(128 / Math.pow(2, pixelSize - 1));
-        //        } else if (pixelSize <= 16) {
-        //            grayFactor = (int) Math.rint(32768 / Math.pow(2, pixelSize - 1));
-        //        } else {
-        //            throw new RuntimeException("Unsupported pixel size: " + pixelSize);
-        //        }
-        //
-        //        logger.debug("grayFactor={}", grayFactor);
-        return img;
     }
 
     //--------------//

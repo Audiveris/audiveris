@@ -35,7 +35,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "basket")
 public class Basket
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     //    @XmlElementWrapper(name = "apples")
     //    @XmlElement(name = "apple")
@@ -49,7 +48,6 @@ public class Basket
     @XmlIDREF
     ArrayList<Orange> oranges = new ArrayList<Orange>();
 
-    //~ Methods ------------------------------------------------------------------------------------
     public void add (Apple apple)
     {
         apples.add(apple);

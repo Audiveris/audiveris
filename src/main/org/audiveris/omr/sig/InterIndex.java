@@ -33,12 +33,9 @@ import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.util.BasicIndex;
-import org.audiveris.omr.util.IntUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 import javax.swing.SwingUtilities;
 
@@ -57,7 +54,7 @@ public class InterIndex
     private static final Logger logger = LoggerFactory.getLogger(InterIndex.class);
 
     /**
-     * Creates a new InterManager object.
+     * Creates a new InterIndex object.
      */
     public InterIndex ()
     {
@@ -78,7 +75,7 @@ public class InterIndex
         lastId = sheet.getPersistentIdGenerator();
 
         // Declared VIP IDs?
-        List<Integer> vipIds = IntUtil.parseInts(constants.vipInters.getValue());
+        final String vipIds = constants.vipInters.getValue();
 
         if (!vipIds.isEmpty()) {
             logger.info("VIP inters: {}", vipIds);

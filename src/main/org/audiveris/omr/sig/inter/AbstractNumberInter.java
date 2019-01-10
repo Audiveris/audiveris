@@ -23,6 +23,7 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import java.awt.Rectangle;
 
@@ -155,5 +156,51 @@ public abstract class AbstractNumberInter
         }
 
         throw new IllegalArgumentException("No integer value defined for " + shape);
+    }
+
+    //---------//
+    // valueOf //
+    //---------//
+    protected static int valueOf (OmrShape omrShape)
+    {
+        switch (omrShape) {
+        case timeSig0:
+            return 0;
+
+        case timeSig1:
+            return 1;
+
+        case timeSig2:
+            return 2;
+
+        case timeSig3:
+            return 3;
+
+        case timeSig4:
+            return 4;
+
+        case timeSig5:
+            return 5;
+
+        case timeSig6:
+            return 6;
+
+        case timeSig7:
+            return 7;
+
+        case timeSig8:
+            return 8;
+
+        case timeSig9:
+            return 9;
+
+        case timeSig12:
+            return 12;
+
+        case timeSig16:
+            return 16;
+        }
+
+        throw new IllegalArgumentException("No integer value defined for " + omrShape);
     }
 }

@@ -32,7 +32,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class Universe
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     @XmlElement
     Store store = new Store();

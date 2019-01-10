@@ -642,6 +642,13 @@ public class ScoreParameters
         }
     }
 
+    //----------//
+    // TextPane //
+    //----------//
+    /**
+     * Pane to set the dominant text language specification.
+     * Scope can be: default, book, sheet.
+     */
     private static class TextPane
             extends XactDataPane<String>
             implements ListSelectionListener
@@ -738,7 +745,6 @@ public class ScoreParameters
 //    private class TempoPane
 //            extends Pane<Integer>
 //    {
-//        //~ Instance fields ------------------------------------------------------------------------
 //
 //        // Tempo value
 //        private final SpinData tempo = new SpinData(
@@ -746,7 +752,6 @@ public class ScoreParameters
 //                "Tempo in quarters per minute",
 //                new SpinnerNumberModel(20, 20, 400, 1));
 //
-//        //~ Constructors ---------------------------------------------------------------------------
 //        public TempoPane (Score score,
 //                          Pane parent,
 //                          Param<Integer> model)
@@ -754,7 +759,6 @@ public class ScoreParameters
 //            super("Tempo", score, null, parent, model);
 //        }
 //
-//        //~ Methods --------------------------------------------------------------------------------
 //        @Override
 //        public int defineLayout (PanelBuilder builder,
 //                                 CellConstraints cst,
@@ -821,18 +825,15 @@ public class ScoreParameters
 //    private class PartsPane
 //            extends Pane<List<PartData>>
 //    {
-//        //~ Instance fields ------------------------------------------------------------------------
 //
 //        /** All score part panes */
 //        private final List<PartPanel> partPanels = new ArrayList<>();
 //
-//        //~ Constructors ---------------------------------------------------------------------------
 //        public PartsPane (Score score)
 //        {
 //            super("Parts", score, null, null, score.getPartsParam());
 //        }
 //
-//        //~ Methods --------------------------------------------------------------------------------
 //        @Override
 //        public int defineLayout (PanelBuilder builder,
 //                                 CellConstraints cst,
@@ -910,11 +911,9 @@ public class ScoreParameters
 //    private static class PartPanel
 //            extends Panel
 //    {
-//        //~ Static fields/initializers -------------------------------------------------------------
 //
 //        public static final int logicalRowCount = 3;
 //
-//        //~ Instance fields ------------------------------------------------------------------------
 //        //
 //        private final JLabel label;
 //
@@ -930,7 +929,6 @@ public class ScoreParameters
 //        private final JComboBox<String> midiBox = new JComboBox<String>(
 //                MidiAbstractions.getProgramNames());
 //
-//        //~ Constructors ---------------------------------------------------------------------------
 //        public PartPanel (LogicalPart part)
 //        {
 //            label = new JLabel("Part #" + part.getId());
@@ -939,7 +937,6 @@ public class ScoreParameters
 //            id.setText(part.getPid());
 //        }
 //
-//        //~ Methods --------------------------------------------------------------------------------
 //        public boolean checkPart ()
 //        {
 //            // Part name
@@ -1009,7 +1006,6 @@ public class ScoreParameters
 //    private static class ParallelPane
 //            extends BooleanPane
 //    {
-//        //~ Constructors ---------------------------------------------------------------------------
 //
 //        public ParallelPane ()
 //        {

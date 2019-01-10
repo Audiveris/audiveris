@@ -44,7 +44,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement
 public class MyBasicIndex<E extends MyEntity>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Index name. */
     @XmlAttribute
@@ -60,7 +59,6 @@ public class MyBasicIndex<E extends MyEntity>
     @XmlJavaTypeAdapter(SnapAdapter.class)
     protected final ConcurrentHashMap<Integer, E> allEntities = new ConcurrentHashMap<Integer, E>();
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MyBasicIndex} object.
      *
@@ -79,7 +77,6 @@ public class MyBasicIndex<E extends MyEntity>
         this.name = null;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public Collection<E> getEntities ()
     {
         return new ArrayList<E>(allEntities.values());
@@ -118,7 +115,6 @@ public class MyBasicIndex<E extends MyEntity>
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     /**
      * Class {@code Snap} is just a flat list of entities, with each item name based on
      * actual item type.
@@ -127,7 +123,6 @@ public class MyBasicIndex<E extends MyEntity>
      */
     private static class Snap<E extends MyAbstractEntity>
     {
-        //~ Instance fields ------------------------------------------------------------------------
 
         @XmlElements({
             @XmlElement(name = "glyph", type = MyGlyph.class),
@@ -145,7 +140,6 @@ public class MyBasicIndex<E extends MyEntity>
     private static class SnapAdapter<E extends MyAbstractEntity>
             extends XmlAdapter<Snap<E>, ConcurrentHashMap<Integer, E>>
     {
-        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Snap<E> marshal (ConcurrentHashMap<Integer, E> map)

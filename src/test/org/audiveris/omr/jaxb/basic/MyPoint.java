@@ -33,11 +33,9 @@ import javax.xml.bind.annotation.*;
 @XmlRootElement(name = "point")
 public class MyPoint
 {
-    //~ Instance fields ----------------------------------------------------------------------------
 
     private Point p;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /** Creates a new instance of MyPoint */
     public MyPoint ()
     {
@@ -54,7 +52,6 @@ public class MyPoint
         this.p = p;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     public Point getPoint ()
     {
         return p;
