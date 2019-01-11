@@ -94,8 +94,8 @@ public class BookPdfOutput
             fos = new FileOutputStream(file);
 
             for (SheetStub stub : stubs) {
-                if (!stub.isDone(Step.GRID)) {
-                    logger.info("{} has not reached GRID step yet, no printout.", stub);
+                if (!stub.isDone(Step.BINARY)) {
+                    logger.info("{} has not reached BINARY step yet, no printout.", stub);
 
                     continue;
                 }
