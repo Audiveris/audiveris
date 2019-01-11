@@ -573,7 +573,101 @@ public class Rubber
         return "{Rubber #" + id + " " + rect + "}";
     }
 
+    //-----------//
+    // translate //
+    //-----------//
+    /**
+     * Move rubber according to the provided translation vector.
+     *
+     * @param dx abscissa move
+     * @param dy ordinate move
+     */
+    public void translate (int dx,
+                           int dy)
+    {
+        if (rect == null) {
+            return;
+        }
+
+        rect.translate(dx, dy);
+        clampCenter();
+
+        if (component != null) {
+            component.repaint();
+        }
+    }
+
     //-- private access ----------------------------------------------------------------------------
+    //-------------//
+    // clampCenter //
+    //-------------//
+    /**
+     * Maintain rubber center within component bounds.
+     */
+    private void clampCenter ()
+    {
+        final Point initial = getCenter();
+
+        if (initial == null) {
+            return;
+        }
+
+        int x = initial.x;
+        int y = initial.y;
+
+        // The center must stay within the component
+        final int compWidth = unscaled(component.getWidth());
+        final int compHeight = unscaled(component.getHeight());
+
+        if (x < 0) {
+            x = 0;
+        } else if (x > compWidth) {
+            x = compWidth;
+        }
+
+        if (y < 0) {
+            y = 0;
+        } else if (y > compHeight) {
+            y = compHeight;
+        }
+
+        rect.translate(x - initial.x, y - initial.y);
+    }
+
+    //---------------//
+    // cropRectangle //
+    //---------------//
+    /**
+     * Crop rubber rectangle with component bounds.
+     */
+    private void cropRectangle ()
+    {
+        // The origin must stay within the component
+        final int compWidth = unscaled(component.getWidth());
+        final int compHeight = unscaled(component.getHeight());
+
+        if (rect.x < 0) {
+            rect.x = 0;
+        } else if (rect.x > compWidth) {
+            rect.x = compWidth;
+        }
+
+        if (rect.y < 0) {
+            rect.y = 0;
+        } else if (rect.y > compHeight) {
+            rect.y = compHeight;
+        }
+
+        // The rectangle shouldn't extend past the drawing area.
+        if ((rect.x + rect.width) > compWidth) {
+            rect.width = compWidth - rect.x;
+        }
+
+        if ((rect.y + rect.height) > compHeight) {
+            rect.height = compHeight - rect.y;
+        }
+    }
+
     //---------------------//
     // disconnectComponent //
     //---------------------//
@@ -633,30 +727,8 @@ public class Rubber
             }
         }
 
-        // The origin must stay within the component
-        final int compWidth = unscaled(component.getWidth());
-        final int compHeight = unscaled(component.getHeight());
-
-        if (rect.x < 0) {
-            rect.x = 0;
-        } else if (rect.x > compWidth) {
-            rect.x = compWidth;
-        }
-
-        if (rect.y < 0) {
-            rect.y = 0;
-        } else if (rect.y > compHeight) {
-            rect.y = compHeight;
-        }
-
-        // The rectangle shouldn't extend past the drawing area.
-        if ((rect.x + rect.width) > compWidth) {
-            rect.width = compWidth - rect.x;
-        }
-
-        if ((rect.y + rect.height) > compHeight) {
-            rect.height = compHeight - rect.y;
-        }
+        // Crop rect within the component
+        cropRectangle();
     }
 
     //-------//

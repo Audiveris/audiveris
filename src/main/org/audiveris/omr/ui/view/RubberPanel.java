@@ -42,9 +42,15 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.util.ConcurrentModificationException;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -96,6 +102,8 @@ public class RubberPanel
     public RubberPanel ()
     {
         setBackground(Color.white);
+
+        bindKeys();
     }
 
     /**
@@ -112,6 +120,7 @@ public class RubberPanel
         setZoom(zoom);
         setRubber(rubber);
 
+        bindKeys();
         logger.debug("new RubberPanel zoom={} rubber={}", zoom, rubber);
     }
 
@@ -579,6 +588,31 @@ public class RubberPanel
         }
     }
 
+    //----------//
+    // bindKeys //
+    //----------//
+    /**
+     * Bind keys to slightly modify the rubber location.
+     */
+    protected void bindKeys ()
+    {
+        final InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        final ActionMap actionMap = getActionMap();
+
+        // Slight translation
+        inputMap.put(KeyStroke.getKeyStroke("alt UP"), "UpTranslateAction");
+        actionMap.put("UpTranslateAction", new TranslateAction(0, -1));
+
+        inputMap.put(KeyStroke.getKeyStroke("alt DOWN"), "DownTranslateAction");
+        actionMap.put("DownTranslateAction", new TranslateAction(0, 1));
+
+        inputMap.put(KeyStroke.getKeyStroke("alt LEFT"), "LeftTranslateAction");
+        actionMap.put("LeftTranslateAction", new TranslateAction(-1, 0));
+
+        inputMap.put(KeyStroke.getKeyStroke("alt RIGHT"), "RightTranslateAction");
+        actionMap.put("RightTranslateAction", new TranslateAction(1, 0));
+    }
+
     //----------------//
     // paintComponent //
     //----------------//
@@ -706,6 +740,37 @@ public class RubberPanel
         // Publish the new user-selected location
         if (locationService != null) {
             locationService.publish(new LocationEvent(this, hint, movement, new Rectangle(rect)));
+        }
+    }
+
+    //-----------------//
+    // TranslateAction //
+    //-----------------//
+    /**
+     * Action to translate rubber location.
+     */
+    private class TranslateAction
+            extends AbstractAction
+    {
+
+        /** Translation on abscissa axis. */
+        private final int dx;
+
+        /** Translation on ordinate axis. */
+        private final int dy;
+
+        public TranslateAction (int dx,
+                                int dy)
+        {
+            this.dx = dx;
+            this.dy = dy;
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            rubber.translate(dx, dy);
+            setFocusLocation(rubber.getRectangle(), null, LOCATION_INIT);
         }
     }
 
