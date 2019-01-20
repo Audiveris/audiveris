@@ -33,6 +33,7 @@ import org.audiveris.omr.glyph.dynamic.CompoundFactory;
 import org.audiveris.omr.glyph.dynamic.SectionCompound;
 import org.audiveris.omr.glyph.dynamic.StraightFilament;
 import org.audiveris.omr.lag.Section;
+import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
@@ -47,11 +48,13 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
+import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.Exclusion.Cause;
@@ -78,6 +81,7 @@ import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -172,6 +176,9 @@ public class StemsBuilder
     /** Stems interpretations for this system. */
     private final List<StemInter> systemStems = new ArrayList<>();
 
+    /** Areas forbidden to stem candidates. */
+    private final List<Area> noStemAreas;
+
     private VerticalsBuilder verticalsBuilder;
 
     /** Constructor for stem compound. */
@@ -194,6 +201,8 @@ public class StemsBuilder
 
         ShapeSymbol symbol = Shape.NOTEHEAD_BLACK.getSymbol();
         headSymbolDim = symbol.getDimension(MusicFont.getHeadFont(scale, scale.getInterline()));
+
+        noStemAreas = retrieveNoStemAreas();
 
         stemConstructor = new StraightFilament.Constructor(scale.getInterline());
     }
@@ -504,6 +513,58 @@ public class StemsBuilder
         } finally {
             logger.debug("S#{} stems: {} exclusions: {}", system.getId(), size, count);
         }
+    }
+
+    //---------------------//
+    // retrieveNoStemAreas //
+    //---------------------//
+    /**
+     * Remember those inters that candidate stems cannot compete with.
+     * Typically, these are 2-staff barlines with their connector.
+     *
+     * @return list of no-stem areas, sorted by abscissa
+     */
+    private List<Area> retrieveNoStemAreas ()
+    {
+        final List<Area> areas = new ArrayList<>();
+
+        for (Inter barline : sig.inters(BarlineInter.class)) {
+            Set<Relation> connections = sig.getRelations(barline, BarConnectionRelation.class);
+            for (Relation connection : connections) {
+                BarlineInter source = (BarlineInter) sig.getEdgeSource(connection);
+
+                if (source == barline) {
+                    // Top area
+                    areas.add(barline.getArea());
+
+                    // Bottom area
+                    BarlineInter target = (BarlineInter) sig.getEdgeTarget(connection);
+                    areas.add(target.getArea());
+
+                    // Middle area
+                    Line2D median = new Line2D.Double(
+                            source.getMedian().getP2(),
+                            target.getMedian().getP1());
+                    double width = 0.5 * (source.getWidth() + target.getWidth());
+                    Area middle = AreaUtil.verticalRibbon(median, width);
+                    areas.add(middle);
+                }
+            }
+        }
+
+        // Sort by abscissa
+        Collections.sort(areas, new Comparator<Area>()
+                 {
+                     @Override
+                     public int compare (Area a1,
+                                         Area a2)
+                     {
+                         return Double.compare(a1.getBounds2D().getMinX(), a2.getBounds2D()
+                                               .getMinX());
+                     }
+                 });
+
+        return areas;
     }
 
     //---------------------//
@@ -1241,6 +1302,9 @@ public class StemsBuilder
                         }
                     }
 
+                    // Purge seeds that belong to a 2-staff barline/connector
+                    purgeNoStemSeeds();
+
                     // In case of overlap, simply keep the most contributive
                     List<Glyph> kept = new ArrayList<>();
                     sortByContrib(seeds);
@@ -1763,6 +1827,46 @@ public class StemsBuilder
             {
                 Collections.sort(glyphs, (yDir > 0) ? Glyphs.byOrdinate : Glyphs.byReverseBottom);
             }
+
+            //------------------//
+            // purgeNoStemSeeds //
+            //------------------//
+            private void purgeNoStemSeeds ()
+            {
+                final double maxBarOverlap = constants.maxBarOverlap.getValue();
+
+                SeedLoop:
+                for (Iterator<Glyph> it = seeds.iterator(); it.hasNext();) {
+                    final Glyph seed = it.next();
+                    final Rectangle seedBox = seed.getBounds();
+                    final double seedSize = seedBox.width * seedBox.height;
+
+                    if (seed.isVip()) {
+                        logger.info("VIP purgeNoStemSeeds? for {} {} {}", seed, head, corner);
+                    }
+
+                    for (Area noStem : noStemAreas) {
+                        if (noStem.intersects(seedBox)) {
+                            // Compute intersection over noStem area
+                            Area intersection = new Area(seedBox);
+                            intersection.intersect(noStem);
+                            Rectangle2D interBox = intersection.getBounds2D();
+                            double interSize = interBox.getWidth() * interBox.getHeight();
+
+                            Rectangle2D barBox = noStem.getBounds2D();
+                            double barSize = barBox.getWidth() * barBox.getHeight();
+
+                            final double ratio = interSize / Math.min(barSize, seedSize);
+
+                            if (ratio > maxBarOverlap) {
+                                it.remove();
+
+                                continue SeedLoop;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -1900,7 +2004,8 @@ public class StemsBuilder
         /**
          * Check whether this is the canonical "shared" configuration.
          * <p>
-         * For this test, we cannot trust stem extensions and must stay with physical stem limits.
+         * For this test, we cannot trust stem extensions and must stay with physical stem
+         * limits.
          *
          * @return true if canonical
          */
@@ -1986,6 +2091,10 @@ public class StemsBuilder
         private final Constant.Ratio sideStemBoost = new Constant.Ratio(
                 0.5,
                 "How much do we boost beam side stems");
+
+        private final Constant.Ratio maxBarOverlap = new Constant.Ratio(
+                0.25,
+                "Maximum stem overlap ratio on a connected barline");
     }
 
     //------------//
