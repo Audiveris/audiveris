@@ -233,7 +233,8 @@ public class Skeleton
                         Shape.BEAM,
                         Shape.BEAM_HOOK,
                         Shape.BEAM_SMALL,
-                        Shape.BEAM_HOOK_SMALL));
+                        Shape.BEAM_HOOK_SMALL,
+                        Shape.TEXT));
 
         // Crossable inters
         crossables = cleaner.eraseShapes(
