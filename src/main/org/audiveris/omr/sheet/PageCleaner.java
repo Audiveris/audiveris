@@ -343,10 +343,7 @@ public abstract class PageCleaner
     @Override
     public void visit (WordInter word)
     {
-        // Process isolated word
-        if (word.getEnsemble() == null) {
-            processGlyph(word.getGlyph());
-        }
+        processGlyph(word.getGlyph());
     }
 
     //---------//
