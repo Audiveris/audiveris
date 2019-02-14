@@ -498,6 +498,10 @@ public class BeamGroup
         // Make sure all chords are part of the same group
         // We check the vertical distance between any chord and the beams above or below the chord.
         for (AbstractChordInter chord : getChords()) {
+            if (chord.isVip()) {
+                logger.info("VIP checkForSplit on {}", chord);
+            }
+
             final Rectangle chordBox = chord.getBounds();
             final Point tail = chord.getTailLocation();
 
@@ -1029,21 +1033,11 @@ public class BeamGroup
 
                 // Move BeamStem relation from pivot to short
                 Relation bs = sig.getRelation(beam, pivotStem, BeamStemRelation.class);
-                sig.removeEdge(bs);
-                sig.addEdge(beam, shortStem, bs);
 
-                //
-                //                // Move BeamHead relation(s) from pivot to short
-                //                Set<Relation> bhRels = sig.getRelations(beam, BeamHeadRelation.class);
-                //
-                //                for (Relation bh : bhRels) {
-                //                    Inter head = sig.getOppositeInter(beam, bh);
-                //
-                //                    if (head.getEnsemble() == pivotChord) {
-                //                        sig.removeEdge(bh);
-                //                        sig.addEdge(beam, head.getMirror(), bh);
-                //                    }
-                //                }
+                if (bs != null) {
+                    sig.removeEdge(bs);
+                    sig.addEdge(beam, shortStem, bs);
+                }
             }
 
             // Notify updates to both chords
@@ -1071,29 +1065,3 @@ public class BeamGroup
                 "Maximum vertical gap between a chord and a beam");
     }
 }
-//
-//    //-----------------//
-//    // checkBeamGroups //
-//    //-----------------//
-//    /**
-//     * Check all the BeamGroup instances of the given measure, to find the first split
-//     * if any to perform.
-//     *
-//     * @param measure the given measure
-//     * @return the first split parameters, or null if everything is OK
-//     */
-//    private static boolean checkBeamGroups (Measure measure)
-//    {
-//        for (BeamGroup group : measure.getBeamGroups()) {
-//            AbstractChordInter alienChord = group.checkForSplit();
-//
-//            if (alienChord != null) {
-//                group.split(alienChord);
-//
-//                return true;
-//            }
-//        }
-//
-//        return false;
-//    }
-//
