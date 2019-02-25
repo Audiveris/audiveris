@@ -9,6 +9,9 @@ ext.programId       = 'audiveris'
 ext.programVersion  = '5.1.1'
 ext.companyName     = "$programName Ltd."
 ext.companyId       = "${programName}Ltd"
+ext.jcppVersion     = '1.3'
+ext.leptVersion     = '1.73'
+ext.tessVersion     = '3.04.01'
 
 // this code is required in order to adapt values of os.name and os.arch to the
 // conventions used by Javacpp's dependencies
@@ -113,9 +116,9 @@ dependencies {
         [group: 'com.itextpdf', name: 'itextpdf', version: '5.5.9'],
         [group: 'gov.nist.math', name: 'jama', version: '1.0.3'],
         [group: 'org.reflections', name: 'reflections', version: '0.9.10'],
-        [group: 'org.bytedeco', name: 'javacpp', version: '1.3'],
-        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.73-1.3'],
-        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: '3.04.01-1.3'],
+        [group: 'org.bytedeco', name: 'javacpp', version: jcppVersion],
+        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}"],
+        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}"],
         [group: 'com.github.jai-imageio', name: 'jai-imageio-core', version: '1.3.1'],
 //        [group: 'org.deeplearning4j', name: 'deeplearning4j-core', version: "${project.ext.dl4jVersion}"],
 //        [group: 'org.nd4j', name: 'nd4j-native', version: "${project.ext.nd4jVersion}"],
@@ -124,8 +127,8 @@ dependencies {
 
     runtime(
 //        [group: 'org.nd4j', name: 'nd4j-native', version: "${project.ext.nd4jVersion}", classifier: "${project.ext.targetOS}"],
-        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.73-1.3', classifier: "${project.ext.targetOS}"],
-        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: '3.04.01-1.3', classifier: "${project.ext.targetOS}"]
+        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"],
+        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"]
     )
 
     testCompile(
@@ -137,8 +140,8 @@ dependencies {
 // Specific configurations for specific OS dependencies
 ['windows-x86', 'windows-x86_64'].each { os ->
     configurations.create("runtime-$os")
-    dependencies.add("runtime-$os", [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.73-1.3', classifier: "$os"])
-    dependencies.add("runtime-$os", [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: '3.04.01-1.3', classifier: "$os"])
+    dependencies.add("runtime-$os", [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "$os"])
+    dependencies.add("runtime-$os", [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "$os"])
 }
 
 jar {
@@ -219,10 +222,10 @@ sourceSets {
 task findNsisCompiler {
     description "Find path to NSIS compiler"
     onlyIf {"windows" == "${project.ext.targetOSName}"}
-    
+
     doLast {
         // First test on PATH, then on standard program files locations
-        ["", "C:/Program Files (x86)/NSIS/", "C:/Program Files/NSIS/"].each { prefix ->        
+        ["", "C:/Program Files (x86)/NSIS/", "C:/Program Files/NSIS/"].each { prefix ->
             if (project.ext.makensisPath == null) {
                 try {
                     def path = "${prefix}makensis.exe"
@@ -231,12 +234,12 @@ task findNsisCompiler {
                     println "NSIS compiler $path found, version " + proc.in.text.trim()
                     project.ext.makensisPath = path
                 } catch (ignored) {
-                }    
+                }
             }
         }
-    
+
         if (project.ext.makensisPath == null) {
-            throw new RuntimeException("Cannot find NSIS compiler (makensis.exe)!")       
+            throw new RuntimeException("Cannot find NSIS compiler (makensis.exe)!")
         }
     }
 }
@@ -251,7 +254,7 @@ task installers {
 ['windows-x86', 'windows-x86_64'].each { os ->
     task "installer_$os"(type: Exec, dependsOn: [findNsisCompiler, jar, startScripts]) {
         group "Installers"
-        description "Builds installer for $os"        
+        description "Builds installer for $os"
         onlyIf {"windows" == "${project.ext.targetOSName}"}
 
         // Filter line that starts with "CLASSPATH="  or "set CLASSPATH=" findClasspath,
@@ -259,18 +262,18 @@ task installers {
         def updateClassPath = { findClasspath, line ->
             line.startsWith("${findClasspath}=") ? line.replaceAll("-${project.ext.targetOS}.jar", "-${os}.jar") : line
         }
-        
+
         doFirst  {
             mkdir "$buildDir/installers"
-            
+
             // Fresh population of os-dependent folder with bin+lib items
             delete "$buildDir/installers/$os"
-            
+
             // bin: Scripts and icon
             copy {
-                into "$buildDir/installers/$os/bin"                
+                into "$buildDir/installers/$os/bin"
                 from("$buildDir/scripts/Audiveris") {filter updateClassPath.curry('CLASSPATH') }
-                from("$buildDir/scripts/Audiveris.bat") {filter updateClassPath.curry('set CLASSPATH')}            
+                from("$buildDir/scripts/Audiveris.bat") {filter updateClassPath.curry('set CLASSPATH')}
                 from "$projectDir/res/icon-256.ico"
             }
 
@@ -279,11 +282,11 @@ task installers {
                 into "$buildDir/installers/$os/lib"
                 from "$buildDir/jar" // audiveris.jar
                 from configurations.compile // Compile jars
-                from configurations."runtime-$os" // OS-specific jars 
+                from configurations."runtime-$os" // OS-specific jars
             }
-       
+
             // Set NSIS compiler command line
-            def suffix = (os == "windows-x86_64")? "" : "32"    
+            def suffix = (os == "windows-x86_64")? "" : "32"
             commandLine "cmd", "/c",\
                 "${project.ext.makensisPath}",\
                 "/DPRODUCT_VERSION=$programVersion",\
@@ -293,7 +296,7 @@ task installers {
                 "$projectDir/dev/installer-windows/Installer.nsi"
         }
     }
-    
+
     installers.dependsOn("installer_$os")
 }
 
