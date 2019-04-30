@@ -186,20 +186,20 @@ public class GlyphCluster
     // getSubGraph //
     //-------------//
     /**
-     * Extract a subgraph limited to the provided set of glyphs.
+     * Extract a subgraph limited to the provided collection of glyphs.
      *
-     * @param set        the provided set of glyphs
+     * @param collection the provided collection of glyphs
      * @param graph      the global graph to extract from
      * @param checkEdges true if glyph edges may point outside the provided set.
      * @return the graph limited to glyph set and related edges
      */
-    public static SimpleGraph<Glyph, GlyphLink> getSubGraph (Set<Glyph> set,
+    public static SimpleGraph<Glyph, GlyphLink> getSubGraph (Collection<Glyph> collection,
                                                              SimpleGraph<Glyph, GlyphLink> graph,
                                                              boolean checkEdges)
     {
         // Which edges should be extracted for this set?
         Set<GlyphLink> setEdges = new LinkedHashSet<>();
-        for (Glyph glyph : set) {
+        for (Glyph glyph : collection) {
             Set<GlyphLink> glyphEdges = graph.edgesOf(glyph);
 
             if (!checkEdges) {
@@ -209,14 +209,14 @@ public class GlyphCluster
                 for (GlyphLink link : glyphEdges) {
                     Glyph opposite = Graphs.getOppositeVertex(graph, link, glyph);
 
-                    if (set.contains(opposite)) {
+                    if (collection.contains(opposite)) {
                         setEdges.add(link);
                     }
                 }
             }
         }
         SimpleGraph<Glyph, GlyphLink> subGraph = new SimpleGraph<>(GlyphLink.class);
-        Graphs.addAllVertices(subGraph, set);
+        Graphs.addAllVertices(subGraph, collection);
         Graphs.addAllEdges(subGraph, graph, setEdges);
         return subGraph;
     }

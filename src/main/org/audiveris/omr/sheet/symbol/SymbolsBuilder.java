@@ -52,9 +52,9 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -319,26 +319,21 @@ public class SymbolsBuilder
         final int interline = sheet.getInterline();
         final int maxPartCount = constants.maxPartCount.getValue();
 
-        for (Set<Glyph> set : sets) {
+        for (Collection<Glyph> set : sets) {
             final int setSize = set.size();
             logger.debug("set size: {}", setSize);
 
             if (setSize > 1) {
-                final Set<Glyph> subSet; // Use an upper limit for set size
-
-                if (setSize <= maxPartCount) {
-                    subSet = set;
-                } else {
+                if (setSize > maxPartCount) {
                     List<Glyph> list = new ArrayList<>(set);
                     Collections.sort(list, Glyphs.byReverseWeight);
-                    list = list.subList(0, Math.min(list.size(), maxPartCount));
-                    subSet = new LinkedHashSet<>(list);
+                    set = list.subList(0, maxPartCount);
                     logger.info("Symbol parts shrunk from {} to {}", setSize, maxPartCount);
                 }
 
                 // Use just the subgraph for this (sub)set
                 final SimpleGraph<Glyph, GlyphLink> subGraph;
-                subGraph = GlyphCluster.getSubGraph(subSet, systemGraph, true);
+                subGraph = GlyphCluster.getSubGraph(set, systemGraph, true);
                 new GlyphCluster(new SymbolAdapter(subGraph), GlyphGroup.SYMBOL).decompose();
             } else {
                 // The set is just an isolated glyph, to be evaluated directly
