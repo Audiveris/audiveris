@@ -970,20 +970,28 @@ public class BarsRetriever
     //------------//
     // createPart //
     //------------//
+    /**
+     * Create a part.
+     *
+     * @param system containing system
+     * @param first  first staff in part
+     * @param last   last staff in part
+     * @return the created part
+     */
     private Part createPart (SystemInfo system,
                              Staff first,
                              Staff last)
     {
         final List<Part> parts = system.getParts();
-        final List<Staff> staves = system.getStaves();
-        int iFirst = staves.indexOf(first);
-        int iLast = staves.indexOf(last);
+        final List<Staff> systemStaves = system.getStaves();
+        int iFirst = systemStaves.indexOf(first);
+        int iLast = systemStaves.indexOf(last);
 
         // Dirty hack to prevent multiple part creation for same staff
         if (!parts.isEmpty()) {
             final Part latestPart = parts.get(parts.size() - 1);
             final Staff latestStaff = latestPart.getLastStaff();
-            final int iLatest = staves.indexOf(latestStaff);
+            final int iLatest = systemStaves.indexOf(latestStaff);
 
             if (iLast <= iLatest) {
                 return null;
@@ -994,12 +1002,29 @@ public class BarsRetriever
 
         Part part = new Part(system);
 
-        for (Staff staff : staves.subList(iFirst, iLast + 1)) {
+        for (Staff staff : systemStaves.subList(iFirst, iLast + 1)) {
             part.addStaff(staff);
         }
 
         part.setId(1 + parts.size());
         system.addPart(part);
+
+        // Check of a "merged" part (composed of 2 staves merged into some 11-line grand staff)
+        // This is based on the vertical distance between the 2 staves
+        if (system.getStaves().size() == 2 && part.getStaves().size() == 2) {
+            int x = Math.max(first.getAbscissa(LEFT), last.getAbscissa(LEFT)); // Safer
+            int y1 = first.getLastLine().yAt(x);
+            int y2 = last.getFirstLine().yAt(x);
+            int gutter = y2 - y1;
+
+            if (gutter < params.minSeparateStaffGutter) {
+                part.setMerged(true);
+                logger.info(
+                        "System#{} {} detected as a merged 11-line grand staff",
+                        system.getId(),
+                        part);
+            }
+        }
 
         return part;
     }
@@ -1012,8 +1037,16 @@ public class BarsRetriever
      * <p>
      * By default, each staff corresponds to a separate part. The only exception is the case of a
      * "real" brace (multi-staff instrument) for which the embraced staves share a single part.
+     * Such "true" braced group is then removed from system groups.
      * <p>
-     * Such "real" brace is then removed from system groups.
+     * Since brace symbols are not always present, we provide the ability to force a 2-staff part
+     * if all the 3 following conditions are met:
+     * <ol>
+     * <li>The application constant 'forceSinglePart' is set to true
+     * <li>The system is made of exactly 2 staves
+     * <li>The system left margin contains no brace symbol
+     * </ol>
+     * <p>
      * <p>
      * NOTA: We have to make sure that every staff is somehow assigned to a part, without exception,
      * otherwise it would be lost when data is finally stored into project file.
@@ -1055,12 +1088,19 @@ public class BarsRetriever
             }
 
             // Final gap to fill?
-            for (int id = nextId; id <= system.getLastStaff().getId(); id++) {
-                Staff staff = sheetStaves.get(id - 1);
-                createPart(system, staff, staff);
+            if (constants.forceSinglePart.isSet() && (system.getStaves().size() == 2)
+                        && bracedGroups.isEmpty()) {
+                // Force this 2-staff system as a single part, despite the lack of brace symbol
+                createPart(system, system.getFirstStaff(), system.getLastStaff());
+            } else {
+                // Create a separate part for each staff found
+                for (int id = nextId; id <= system.getLastStaff().getId(); id++) {
+                    Staff staff = sheetStaves.get(id - 1);
+                    createPart(system, staff, staff);
+                }
             }
 
-            // These "true" braced groups are removed from system groups
+            // The "true" braced groups are removed from system groups
             allGroups.removeAll(bracedGroups);
 
             // Print out purged system groups
@@ -2050,15 +2090,18 @@ public class BarsRetriever
                 }
 
                 // Look for a rather thick first peak
-                if (!p1.isStaffEnd(LEFT) && !p1.isStaffEnd(RIGHT) && !(p1.isBrace()) && !p1
-                        .isBracket() && (p1.getWidth() >= params.minPeak1WidthForCClef)) {
+                if (!p1.isStaffEnd(LEFT) && !p1.isStaffEnd(RIGHT)
+                            && !(p1.isBrace())
+                            && !p1.isBracket()
+                            && (p1.getWidth() >= params.minPeak1WidthForCClef)) {
                     // Check gap is larger than multi-bar gap but smaller than measure
                     int gap = p1.getStart() - measureStart;
 
                     // Gap is not relevant for first measure, thanks to !peak.isStaffEnd() test
                     int minGap = (measureStart == staffStart) ? 0 : params.maxDoubleBarGap;
 
-                    if ((gap > minGap) && (gap < params.minMeasureWidth) && !isConnected(p1, TOP)
+                    if ((gap > minGap) && (gap < params.minMeasureWidth)
+                                && !isConnected(p1, TOP)
                                 && !isConnected(p1, BOTTOM)) {
                         if (logger.isDebugEnabled() || p1.isVip()) {
                             logger.info("VIP perhaps a C-Clef peak1 at {}", p1);
@@ -2072,7 +2115,8 @@ public class BarsRetriever
                             int gap2 = p2.getStart() - p1.getStop() - 1;
 
                             if ((p2.getWidth() <= params.maxPeak2WidthForCClef)
-                                        && (gap2 <= params.maxDoubleBarGap) && !isConnected(p2, TOP)
+                                        && (gap2 <= params.maxDoubleBarGap)
+                                        && !isConnected(p2, TOP)
                                         && !isConnected(p2, BOTTOM)) {
                                 boolean cancelled = false;
                                 tails.clear();
@@ -2573,6 +2617,14 @@ public class BarsRetriever
                 20,
                 "Maximum mean curvature radius for a brace");
 
+        private final Constant.Boolean forceSinglePart = new Constant.Boolean(
+                false,
+                "Should we force single part for 2-staff systems without brace?");
+
+        private final Scale.Fraction minSeparateStaffGutter = new Scale.Fraction(
+                2.5,
+                "Minimum vertical gap between two part staves to be separated");
+
         // For brackets ----------------------------------------------------------------------------
         //
         private final Scale.Fraction minBracketWidth = new Scale.Fraction(
@@ -2646,6 +2698,8 @@ public class BarsRetriever
 
         final int maxBraceCurvature;
 
+        final int minSeparateStaffGutter;
+
         final int serifSegmentLength;
 
         final int minBracketWidth;
@@ -2689,6 +2743,7 @@ public class BarsRetriever
             braceBarNeutralGap = scale.toPixels(constants.braceBarNeutralGap);
             braceLookupExtension = scale.toPixels(constants.braceLookupExtension);
             maxBraceCurvature = scale.toPixels(constants.maxBraceCurvature);
+            minSeparateStaffGutter = scale.toPixels(constants.minSeparateStaffGutter);
 
             serifSegmentLength = scale.toPixels(constants.serifSegmentLength);
             minBracketWidth = scale.toPixels(constants.minBracketWidth);

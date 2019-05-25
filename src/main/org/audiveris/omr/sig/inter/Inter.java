@@ -365,6 +365,20 @@ public interface Inter
     boolean isGood ();
 
     /**
+     * Report whether this instance is implicit.
+     *
+     * @return true if implicit
+     */
+    boolean isImplicit ();
+
+    /**
+     * Set this inter as implicit.
+     *
+     * @param implicit new value
+     */
+    void setImplicit (boolean implicit);
+
+    /**
      * Report whether this instance has been set manually.
      *
      * @return true if manual

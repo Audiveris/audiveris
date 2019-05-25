@@ -760,15 +760,6 @@ public class HeadInter
         return Collections.emptyList();
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
-
     //------------------//
     // fixDuplicateWith //
     //------------------//

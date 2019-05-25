@@ -248,6 +248,10 @@ public abstract class PageCleaner
     @Override
     public void visit (Inter inter)
     {
+        if (inter.isImplicit()) {
+            return;
+        }
+
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
         Glyph glyph = inter.getGlyph();
         Point center = (glyph != null) ? glyph.getCenter() : GeoUtil.centerOf(inter.getBounds());

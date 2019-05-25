@@ -70,7 +70,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.annotation.PostConstruct;
 import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -1022,8 +1021,7 @@ public class SheetStub
      * for this object, but before this object is set to the parent object.
      * All non-persistent members are null.
      */
-    @PostConstruct // Don't remove this method, invoked by JAXB through reflection
-
+    @SuppressWarnings("unused")
     private void afterUnmarshal (Unmarshaller um,
                                  Object parent)
     {

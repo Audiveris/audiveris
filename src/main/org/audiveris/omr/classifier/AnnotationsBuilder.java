@@ -281,6 +281,10 @@ public class AnnotationsBuilder
          */
         private void exportInter (Inter inter)
         {
+            if (inter.isImplicit()) {
+                return;
+            }
+
             final Class interClass = inter.getClass();
 
             // Excluded class?

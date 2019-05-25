@@ -118,10 +118,10 @@ public class PageRhythm
         // Populate all stacks/measures in page with their FRATs
         populateFRATs();
 
-        // Check typical duration for each range, using StackTuner 1st pass
+        // Check typical duration for each range, using StackRhythm failFast pass
         retrieveRangeDurations();
 
-        // For each range, adjust TS if needed, then process each measure, using StackTuner 2nd pass
+        // For each range, adjust TS if needed, then process each measure, using StackRhythm 2nd pass
         processRanges();
     }
 
@@ -138,7 +138,10 @@ public class PageRhythm
         logger.debug("PageRhythm.reprocessStack {}", stack);
 
         Rational expectedDuration = stack.getExpectedDuration();
-        new StackTuner(stack, false).process(expectedDuration);
+        new StackRhythm(stack, false).process(expectedDuration);
+
+        // Refine voices IDs within the containing system
+        Voices.refineSystem(stack.getSystem());
     }
 
     //---------------//
@@ -242,7 +245,7 @@ public class PageRhythm
 
                 try {
                     logger.debug("\n--- Processing {} {} expDur:{}", sn, stack, range.duration);
-                    new StackTuner(stack, false).process(range.duration);
+                    new StackRhythm(stack, false).process(range.duration);
                 } catch (Exception ex) {
                     logger.warn("Error on stack " + stack + " " + ex, ex);
                 }
@@ -272,63 +275,68 @@ public class PageRhythm
      */
     private Rational retrieveExpectedDuration (Range range)
     {
-        Histogram<Rational> histo = new Histogram<>();
+        try {
+            Histogram<Rational> histo = new Histogram<>();
 
-        SystemLoop:
-        for (SystemInfo system : page.getSystems()) {
-            for (MeasureStack stack : system.getStacks()) {
-                final int sn = seqNumOf(stack);
+            SystemLoop:
+            for (SystemInfo system : page.getSystems()) {
+                for (MeasureStack stack : system.getStacks()) {
+                    final int sn = seqNumOf(stack);
 
-                if (sn < range.startSN) {
-                    continue;
-                } else if (sn > range.stopSN) {
-                    break SystemLoop;
-                }
+                    if (sn < range.startSN) {
+                        continue;
+                    } else if (sn > range.stopSN) {
+                        break SystemLoop;
+                    }
 
-                for (Voice voice : stack.getVoices()) {
-                    Rational dur = voice.getDuration();
+                    for (Voice voice : stack.getVoices()) {
+                        Rational dur = voice.getDuration();
 
-                    if (dur != null) {
-                        histo.increaseCount(dur, 1);
+                        if (dur != null) {
+                            histo.increaseCount(dur, 1);
+                        }
                     }
                 }
             }
-        }
 
-        // We aim at a duration value in the set: [1/2, 3/4, 1, 5/4]
-        final Rational minDur = new Rational(1, 2);
-        final Rational maxDur = new Rational(3, 2);
-        Rational avgGuess = null;
-        double val = 0.0;
-        int count = 0;
+            // We aim at a duration value in the set: [1/2, 3/4, 1, 5/4]
+            final Rational minDur = new Rational(1, 2);
+            final Rational maxDur = new Rational(3, 2);
+            Rational avgGuess = null;
+            double val = 0.0;
+            int count = 0;
 
-        for (Rational r : histo.bucketSet()) {
-            if ((r.compareTo(minDur) >= 0) && (r.compareTo(maxDur) <= 0)) {
-                int nb = histo.getCount(r);
-                count += nb;
-                val += (nb * r.doubleValue());
+            for (Rational r : histo.bucketSet()) {
+                if ((r.compareTo(minDur) >= 0) && (r.compareTo(maxDur) <= 0)) {
+                    int nb = histo.getCount(r);
+                    count += nb;
+                    val += (nb * r.doubleValue());
+                }
             }
+
+            if (count != 0) {
+                val /= count;
+
+                int quarters = (int) Math.rint(val * 4);
+                avgGuess = new Rational(quarters, 4);
+            }
+
+            //        Rational topGuess = histo.getMaxBucket();
+            //        logger.info(
+            //                "{} Durations avgGuess:{} topGuess:{} avgValue:{} stacks:{} voices:{} {}",
+            //                range,
+            //                avgGuess,
+            //                topGuess,
+            //                String.format("%.2f", val),
+            //                stackNb,
+            //                voiceNb,
+            //                histo);
+            //
+            return avgGuess;
+        } catch (Exception ex) {
+            logger.warn("{} error in retrieveExpectedDuration {}", range, ex.toString(), ex);
+            return null;
         }
-
-        if (count != 0) {
-            val /= count;
-
-            int quarters = (int) Math.rint(val * 4);
-            avgGuess = new Rational(quarters, 4);
-        }
-
-        //        Rational topGuess = histo.getMaxBucket();
-        //        logger.info(
-        //                "{} Durations avgGuess:{} topGuess:{} avgValue:{} stacks:{} voices:{} {}",
-        //                range,
-        //                avgGuess,
-        //                topGuess,
-        //                String.format("%.2f", val),
-        //                stackNb,
-        //                voiceNb,
-        //                histo);
-        //
-        return avgGuess;
     }
 
     //------------------------//
@@ -352,7 +360,7 @@ public class PageRhythm
 
                 try {
                     logger.debug("\n--- Raw processing {} {} ---", sn, stack);
-                    new StackTuner(stack, true).process(null);
+                    new StackRhythm(stack, true).process(null);
                 } catch (Exception ex) {
                     logger.warn("Error on stack " + stack + " " + ex, ex);
                 }

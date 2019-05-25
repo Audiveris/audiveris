@@ -244,10 +244,12 @@ public class TupletInter
     @Override
     public void remove (boolean extensive)
     {
-        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
+        if (!isImplicit()) {
+            MeasureStack stack = sig.getSystem().getStackAt(getCenter());
 
-        if (stack != null) {
-            stack.removeInter(this);
+            if (stack != null) {
+                stack.removeInter(this);
+            }
         }
 
         super.remove(extensive);
@@ -277,15 +279,6 @@ public class TupletInter
         }
 
         return links;
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
     }
 
     //-------------//

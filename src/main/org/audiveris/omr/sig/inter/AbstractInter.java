@@ -139,6 +139,11 @@ public abstract class AbstractInter
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     protected boolean manual;
 
+    /** Is it implicit?. */
+    @XmlAttribute(name = "implicit")
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean implicit;
+
     /** The contextual grade of this interpretation, if any. */
     @XmlAttribute(name = "ctx-grade")
     @XmlJavaTypeAdapter(Jaxb.Double3Adapter.class)
@@ -301,7 +306,7 @@ public abstract class AbstractInter
             }
         }
 
-        return isManual();
+        return isManual() || isImplicit();
     }
 
     //----------//
@@ -492,6 +497,10 @@ public abstract class AbstractInter
     {
         Rectangle bounds = getBounds();
 
+        if (bounds == null) {
+            return null;
+        }
+
         return new Point(bounds.x, bounds.y + (bounds.height / 2));
     }
 
@@ -502,6 +511,10 @@ public abstract class AbstractInter
     public Point getCenterRight ()
     {
         Rectangle bounds = getBounds();
+
+        if (bounds == null) {
+            return null;
+        }
 
         return new Point((bounds.x + bounds.width) - 1, bounds.y + (bounds.height / 2));
     }
@@ -873,6 +886,24 @@ public abstract class AbstractInter
         return grade >= getGoodGrade();
     }
 
+    //------------//
+    // isImplicit //
+    //------------//
+    @Override
+    public boolean isImplicit ()
+    {
+        return implicit;
+    }
+
+    //-------------//
+    // setImplicit //
+    //-------------//
+    @Override
+    public void setImplicit (boolean implicit)
+    {
+        this.implicit = implicit;
+    }
+
     //----------//
     // isManual //
     //----------//
@@ -906,7 +937,18 @@ public abstract class AbstractInter
     @Override
     public boolean isSameAs (Inter that)
     {
-        if ((this.getShape() != that.getShape()) || !this.getBounds().equals(that.getBounds())) {
+        if (this.getShape() != that.getShape()) {
+            return false;
+        }
+
+        Rectangle thisBounds = this.getBounds();
+        Rectangle thatBounds = that.getBounds();
+
+        if (thisBounds == null || thatBounds == null) {
+            return false;
+        }
+
+        if (!thisBounds.equals(thatBounds)) {
             return false;
         }
 
@@ -924,6 +966,10 @@ public abstract class AbstractInter
     public boolean overlaps (Inter that)
             throws DeletedInterException
     {
+        if (this.isImplicit() || that.isImplicit()) {
+            return false;
+        }
+
         // Trivial case?
         if (!this.getCoreBounds().intersects(that.getCoreBounds())) {
             return false;
@@ -1187,6 +1233,10 @@ public abstract class AbstractInter
 
         if (isManual()) {
             sb.append(" MANUAL");
+        }
+
+        if (isImplicit()) {
+            sb.append(" IMPLICIT");
         }
 
         if (isFrozen()) {

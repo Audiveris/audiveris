@@ -547,7 +547,9 @@ public abstract class CurvesBuilder
         List<Inter> inters = skeleton.getErasedInters(crossable).get(system);
 
         for (Inter inter : inters) {
-            if (inter.getBounds().intersects(box)) {
+            Rectangle bounds = inter.getBounds();
+
+            if (bounds != null && bounds.intersects(box)) {
                 Area area = inter.getArea();
 
                 if ((area == null) || area.intersects(box)) {
@@ -706,7 +708,7 @@ public abstract class CurvesBuilder
 
                 for (Inter nc : ncs) {
                     // Check extension line would cross item bounds
-                    if (nc.getBounds().intersectsLine(ce.x, ce.y, ae.x, ae.y)) {
+                    if (!nc.isImplicit() && nc.getBounds().intersectsLine(ce.x, ce.y, ae.x, ae.y)) {
                         final boolean crossing;
 
                         // Have a closer look (for beams mainly)

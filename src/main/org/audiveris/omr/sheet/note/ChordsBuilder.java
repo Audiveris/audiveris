@@ -383,7 +383,17 @@ public class ChordsBuilder
             AbstractChordInter chord = (AbstractChordInter) inter;
             Part part = chord.getPart();
             Measure measure = part.getMeasureAt(chord.getCenter());
-            measure.addInter(chord);
+
+            // Safer for staves very close to each other
+            if (measure == null) {
+                measure = part.getMeasureAt(chord.getHeadLocation());
+            }
+
+            if (measure != null) {
+                measure.addInter(chord);
+            } else {
+                logger.warn("No containing measure for {}", inter);
+            }
         }
     }
 

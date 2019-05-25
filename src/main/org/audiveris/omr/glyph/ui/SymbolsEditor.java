@@ -567,11 +567,27 @@ public class SymbolsEditor
             final Color oldColor = g.getColor();
 
             if (viewParams.isErrorPainting()) {
-                // Use specific background for stacks in error
+                // Use specific background for stacks/measures in error
                 for (SystemInfo system : sheet.getSystems()) {
-                    for (MeasureStack stack : system.getStacks()) {
-                        if (stack.isAbnormal()) {
-                            stack.render(g, Colors.STACK_ABNORMAL);
+                    final Rectangle clip = g.getClipBounds();
+                    final Rectangle systemRect = system.getBounds();
+
+                    if (clip == null || clip.intersects(systemRect)) {
+                        for (MeasureStack stack : system.getStacks()) {
+                            boolean measureSignalled = false;
+
+                            // New measure-level area is preferred
+                            for (Measure measure : stack.getMeasures()) {
+                                if (measure.isAbnormal()) {
+                                    measure.renderArea(g, Colors.AREA_ABNORMAL);
+                                    measureSignalled = true;
+                                }
+                            }
+
+                            // Old stack-level area for retro-compatibility
+                            if (!measureSignalled && stack.isAbnormal()) {
+                                stack.renderArea(g, Colors.AREA_ABNORMAL);
+                            }
                         }
                     }
                 }

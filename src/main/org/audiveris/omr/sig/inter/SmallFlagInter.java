@@ -89,13 +89,4 @@ public class SmallFlagInter
 
         return isAbnormal();
     }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
 }

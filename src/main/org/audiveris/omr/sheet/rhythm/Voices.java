@@ -25,8 +25,8 @@ import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.sheet.Part;
-import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.rhythm.Voice.Family;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
@@ -85,12 +85,12 @@ public abstract class Voices
                 return Part.byId.compare(p1, p2);
             }
 
-            // Check if they originate from different staves
-            Staff s1 = v1.getStartingStaff();
-            Staff s2 = v2.getStartingStaff();
+            // Check voice family
+            Family f1 = v1.getFamily();
+            Family f2 = v2.getFamily();
 
-            if (s1 != s2) {
-                return Staff.byId.compare(s1, s2);
+            if (f1 != f2) {
+                return f1.compareTo(f2);
             }
 
             AbstractChordInter c1 = v1.getFirstChord();
@@ -267,7 +267,6 @@ public abstract class Voices
      * <p>
      * When this method is called, initial IDs have been assigned according to voice creation
      * (whole voices first, then slot voices, with each voice remaining in its part).
-     * See {@link Slot#buildVoices(java.util.List)} method.
      * <p>
      * Here we simply rename the IDs from top to bottom (roughly), within each staff.
      * <p>
@@ -342,6 +341,11 @@ public abstract class Voices
                                       SlurAdapter slurAdapter)
     {
         final AbstractChordInter firstChord = voice.getFirstChord();
+
+        if (firstChord == null) {
+            return null;
+        }
+
         final SIGraph sig = firstChord.getSig();
 
         // Is there an incoming tie on a head of this chord?

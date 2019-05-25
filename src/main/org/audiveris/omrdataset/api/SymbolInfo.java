@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -224,7 +223,7 @@ public class SymbolInfo
      * Called after all the properties (except IDREF) are unmarshalled
      * for this object, but before this object is set to the parent object.
      */
-    @PostConstruct
+    @SuppressWarnings("unused")
     private void afterUnmarshal (Unmarshaller um,
                                  Object parent)
     {

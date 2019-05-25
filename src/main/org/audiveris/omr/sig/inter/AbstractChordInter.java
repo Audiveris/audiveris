@@ -925,65 +925,36 @@ public abstract class AbstractChordInter
     // setVoice //
     //----------//
     /**
-     * Assign a voice to this chord, and to the related ones.
+     * Assign a voice to this chord, and recursively propagate to the following chords
+     * related by beam or tie.
      *
      * @param voice the voice to assign
      */
     public void setVoice (Voice voice)
     {
-        // Already done?
-        if (this.voice == null) {
+        if (this.voice != voice) {
             this.voice = voice;
 
             // Update the voice entity
-            if (!isWholeRest()) {
-                if (slot != null) {
-                    voice.startChord(slot, this);
-                }
-
-                // Extend this voice to other grouped chords if any
-                BeamGroup group = getBeamGroup();
-
-                if (group != null) {
-                    logger.debug(
-                            "{} extending voice#{} to group#{}",
-                            this,
-                            voice.getId(),
-                            group.getId());
-
-                    group.setVoice(voice);
-                }
-
-                // Extend to the following tied chords as well
-                List<AbstractChordInter> tied = getFollowingTiedChords();
-
-                for (AbstractChordInter chord : tied) {
-                    logger.debug("{} tied to {}", this, chord);
-
-                    // Check the tied chords belong to the same measure
-                    if (this.measure == chord.measure) {
-                        logger.debug(
-                                "{} extending voice#{} to tied chord#{}",
-                                this,
-                                voice.getId(),
-                                chord.getId());
-
-                        chord.setVoice(voice);
-                    } else {
-                        // Chords tied across measure boundary
-                        logger.debug("{} Cross tie -> {}", this, chord);
-                    }
-                }
+            if ((voice != null) && !isWholeRest()) {
+                voice.addChord(this);
             }
-        } else if (this.voice != voice) {
-            logger.warn(
-                    "{} Attempt to reassign voice from {} to {}",
-                    this,
-                    this.voice.getId(),
-                    voice.getId());
-        } else if (!isWholeRest()) {
-            if (slot != null) {
-                voice.startChord(slot, this);
+
+            // Extend to other grouped chords if any
+            BeamGroup group = getBeamGroup();
+
+            if (group != null) {
+                group.setVoice(voice);
+            }
+
+            // Extend to the following tied chord(s?) as well
+            List<AbstractChordInter> tied = getFollowingTiedChords();
+
+            for (AbstractChordInter chord : tied) {
+                // Make sure the tied chords belong to the same measure
+                if (this.measure == chord.measure) {
+                    chord.setVoice(voice);
+                }
             }
         }
     }
@@ -1138,37 +1109,80 @@ public abstract class AbstractChordInter
      */
     public void resetTiming ()
     {
-        dotsNumber = 0;
         slot = null;
         voice = null;
         timeOffset = null;
+    }
+
+    //------------------//
+    // pushTimeViaGroup //
+    //------------------//
+    public void pushTimeViaGroup ()
+    {
+        // Propagate via beam group if any
+        BeamGroup group = getBeamGroup();
+
+        if (group != null) {
+            group.computeTimeOffsets();
+
+            // If any, push via tie after last chord
+            AbstractChordInter lastChord = group.getLastChord();
+            lastChord.pushTimeViaTie();
+        }
+    }
+
+    //----------------//
+    // pushTimeViaTie //
+    //----------------//
+    public void pushTimeViaTie ()
+    {
+        // Propagate via tie if any
+        List<AbstractChordInter> tied = getFollowingTiedChords();
+
+        for (AbstractChordInter ch : tied) {
+            // Make sure the tied chords belong to the same measure
+            if (measure == ch.measure) {
+                ch.setTimeOffset(getEndTime());
+
+                // If any, push via group of tied chord
+                ch.pushTimeViaGroup();
+                ch.pushTimeViaTie();
+            }
+        }
     }
 
     //---------------//
     // setTimeOffset //
     //---------------//
     /**
-     * Remember the time offset for this chord
+     * Remember the time offset for this chord.
+     * <p>
+     * Information is <b>NOT</b> recursively propagated to other chords linked by beam or tie.
+     * if needed, do it via {@link #pushTimeViaGroup()} and {@link #pushTimeViaTie()}.
      *
-     * @param timeOffset chord starting time (counted within the measure)
-     * @return true if OK
+     * @param timeOffset chord starting time (counted since measure start)
      */
-    public boolean setTimeOffset (Rational timeOffset)
+    public void setTimeOffset (Rational timeOffset)
     {
-        if (isVip()) {
-            logger.info("VIP {} setTimeOffset from {} to {}", this, this.timeOffset, timeOffset);
+        this.timeOffset = timeOffset;
+    }
+
+    //----------------//
+    // setAndPushTime //
+    //----------------//
+    /**
+     * Set chord time offset and push it via groups (beam or tie).
+     *
+     * @param timeOffset new time offset value for this chord
+     */
+    public void setAndPushTime (Rational timeOffset)
+    {
+        setTimeOffset(timeOffset);
+
+        if (timeOffset != null) {
+            pushTimeViaGroup(); // Propagate via beam group if any
+            pushTimeViaTie(); // Propagate via tie if any
         }
-
-        // Already done?
-        if (this.timeOffset == null) {
-            this.timeOffset = timeOffset;
-        } else if (!this.timeOffset.equals(timeOffset)) {
-            logger.debug("{} Reassign timeOffset from {} to {}", this, this.timeOffset, timeOffset);
-
-            return false;
-        }
-
-        return true;
     }
 
     //------------------//
@@ -1198,12 +1212,19 @@ public abstract class AbstractChordInter
 
         if (sig != null) {
             if (sig.containsVertex(this)) {
-                Rational sansTuplet = getDurationSansTuplet();
 
-                if (sansTuplet != null) {
-                    sb.append(" dur:").append(sansTuplet);
-                } else {
-                    sb.append(" noDur");
+                if (slot != null) {
+                    sb.append(" slot#").append(slot.getId());
+                }
+
+                if (timeOffset != null) {
+                    sb.append(" off:").append(timeOffset);
+                }
+
+                Rational dur = getDuration();
+
+                if (dur != null) {
+                    sb.append(" dur:").append(dur);
                 }
             }
         } else {

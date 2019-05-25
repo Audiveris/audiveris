@@ -388,15 +388,6 @@ public class DynamicsInter
     }
 
     //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
-
-    //-----------//
     // Constants //
     //-----------//
     private static class Constants

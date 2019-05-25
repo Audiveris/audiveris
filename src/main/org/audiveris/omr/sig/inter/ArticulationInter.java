@@ -163,15 +163,6 @@ public class ArticulationInter
         return Collections.singleton(link);
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
-
     //------------//
     // lookupLink //
     //------------//

@@ -11,6 +11,9 @@
     <!-- You can define additional loggers here below: -->
     <!-- ============================================= -->
     
-<!--    <logger name="org.audiveris.omr.sheet.rhythm.SlotsBuilder" level="DEBUG"/>-->
+<!--    <logger name="org.audiveris.omr.sheet.rhythm.StackRhythm" level="DEBUG"/>-->
+<!--    <logger name="org.audiveris.omr.sheet.rhythm.MeasureRhythm" level="DEBUG"/>-->
+<!--    <logger name="org.audiveris.omr.sheet.rhythm.SlotsRetriever" level="DEBUG"/>-->
+<!--    <logger name="org.audiveris.omr.sheet.rhythm.Slot" level="DEBUG"/>-->
 
 </configuration>

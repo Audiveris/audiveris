@@ -313,6 +313,9 @@ public class HeaderTimeBuilder
         RunTable runTable = new RunTableFactory(Orientation.VERTICAL).createTable(buf);
         List<Glyph> parts = GlyphFactory.buildGlyphs(runTable, rect.getLocation());
 
+        // Keep only interesting parts
+        purgeParts(parts, rect);
+
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
 
         for (ListIterator<Glyph> li = parts.listIterator(); li.hasNext();) {
@@ -479,6 +482,39 @@ public class HeaderTimeBuilder
                 int gid = inter.getGlyph().getId();
                 logger.debug("Staff#{} {} g#{} {}", staff.getId(), inter, gid, timeBox);
             }
+        }
+    }
+
+    //------------//
+    // purgeParts //
+    //------------//
+    /**
+     * Purge the population of parts candidates as much as possible, since the cost
+     * of their later combinations is worse than exponential.
+     *
+     * @param parts the collection to purge
+     * @param rect  the slice rectangle
+     */
+    private void purgeParts (List<Glyph> parts,
+                             Rectangle rect)
+    {
+        //        // The rect is used for cropping only.
+        //        // Use a smaller core rectangle which must be intersected by any part candidate
+        //        Rectangle core = new Rectangle(rect);
+        //        core.grow(-params.xCoreMargin, -params.yCoreMargin);
+        //        staff.addAttachment("c", core);
+
+        List<Glyph> toRemove = new ArrayList<>();
+
+        for (Glyph part : parts) {
+            ///if ((part.getWeight() < params.minPartWeight) || !part.getBounds().intersects(core)) {
+            if (part.getWeight() < params.minPartWeight) {
+                toRemove.add(part);
+            }
+        }
+
+        if (!toRemove.isEmpty()) {
+            parts.removeAll(toRemove);
         }
     }
 

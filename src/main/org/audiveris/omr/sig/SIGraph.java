@@ -213,9 +213,7 @@ public class SIGraph
         for (Inter inter : vertexSet()) {
             final Rectangle box = inter.getBounds();
 
-            if (box == null) {
-                logger.error("No bounds for {}", inter);
-            } else if (rect.contains(box)) {
+            if ((box != null) && rect.contains(box)) {
                 found.add(inter);
             }
         }
@@ -973,7 +971,9 @@ public class SIGraph
                 continue;
             }
 
-            if (box.intersects(inter.getBounds())) {
+            Rectangle interBounds = inter.getBounds();
+
+            if ((interBounds != null) && box.intersects(interBounds)) {
                 found.add(inter);
             }
         }

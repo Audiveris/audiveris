@@ -31,7 +31,6 @@ import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.time.TimeBuilder;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.time.BasicTimeColumn;
 import org.audiveris.omr.sheet.time.TimeColumn;

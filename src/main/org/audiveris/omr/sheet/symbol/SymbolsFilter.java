@@ -394,11 +394,11 @@ public class SymbolsFilter
         // visit //
         //-------//
         @Override
-        public void visit (HeadInter inter)
+        public void visit (HeadInter head)
         {
-            final ShapeDescriptor desc = inter.getDescriptor();
+            final ShapeDescriptor desc = head.getDescriptor();
             final Template tpl = desc.getTemplate();
-            final Rectangle box = desc.getBounds(inter.getBounds());
+            final Rectangle box = desc.getBounds(head.getBounds());
 
             // Use underlying glyph (enlarged only for strong inters)
             final List<Point> fores = tpl.getForegroundPixels(box, buffer, systemWeaks == null);

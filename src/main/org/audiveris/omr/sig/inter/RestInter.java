@@ -104,15 +104,6 @@ public class RestInter
         return (RestChordInter) getEnsemble();
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
-
     //-------------//
     // createValid //
     //-------------//

@@ -79,18 +79,13 @@ public class TupletsBuilder
     /**
      * Try to link all tuplet signs in stack.
      * <p>
-     * This method is used by RHYTHMS step, when these tuplets signs are not certain at all.
-     * <p>
      * A tuplet sign embraces a specific number of notes (heads / rests).
      * <p>
      * Its neighborhood is limited in its part, vertically to staff above and staff below and
      * horizontally to its containing measure stack.
-     *
-     * @return a set, perhaps empty, of wrong tuplet instances to delete
      */
-    public Set<TupletInter> linkStackTuplets ()
+    public void linkStackTuplets ()
     {
-        final Set<TupletInter> toDelete = new LinkedHashSet<>();
         final Set<TupletInter> tuplets = stack.getTuplets();
 
         for (TupletInter tuplet : tuplets) {
@@ -111,11 +106,9 @@ public class TupletsBuilder
             }
 
             if (!tuplet.isManual() && !sig.hasRelation(tuplet, ChordTupletRelation.class)) {
-                toDelete.add(tuplet);
+                tuplet.remove();
             }
         }
-
-        return toDelete;
     }
 
     //-------------//
@@ -397,6 +390,7 @@ public class TupletsBuilder
         {
             if (!chords.contains(chord)) {
                 // Chord together with its beam-siblings
+                // (only if tuplet is on beam side of the stems)
                 Set<AbstractChordInter> siblings = getBeamSiblings(chord);
 
                 for (AbstractChordInter ch : siblings) {
@@ -432,6 +426,10 @@ public class TupletsBuilder
 
         /**
          * Retrieve all chords linked via a beam to the provided chord.
+         * <p>
+         * We have to check position of tuplet with respect to chord
+         * If tuplet is closer to chord tail side (thus beam) we use siblings
+         * Otherwise, tuplet is closer to head and we don't propagate to beam siblings
          *
          * @param chord the provided chord
          * @return all sibling chords, including the chord provided
@@ -441,12 +439,19 @@ public class TupletsBuilder
             final Set<AbstractChordInter> set = new LinkedHashSet<>();
             set.add(chord);
 
-            StemInter stem = chord.getStem();
+            final StemInter stem = chord.getStem();
 
             if (stem != null) {
-                for (AbstractBeamInter beam : stem.getBeams()) {
-                    for (StemInter s : beam.getStems()) {
-                        set.addAll(s.getChords());
+                final Point center = tuplet.getCenter();
+                final Point tail = chord.getTailLocation();
+                final Point head = chord.getHeadLocation();
+
+                if (center.distanceSq(tail) < center.distanceSq(head)) {
+                    for (AbstractBeamInter beam : stem.getBeams()) {
+
+                        for (StemInter s : beam.getStems()) {
+                            set.addAll(s.getChords());
+                        }
                     }
                 }
             }

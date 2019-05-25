@@ -26,6 +26,7 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
+import org.audiveris.omr.sheet.rhythm.TupletsBuilder;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
@@ -209,6 +210,8 @@ public class SymbolsLinker
         linkWedges();
         linkFermatas();
         linkGraces();
+        linkAugmentationDots();
+        linkTuplets();
     }
 
     //-------------------//
@@ -276,6 +279,22 @@ public class SymbolsLinker
             }
         } catch (Exception ex) {
             logger.warn("Error in unlinkOneSentence for {} {}", sentence, ex.toString(), ex);
+        }
+    }
+
+    //----------------------//
+    // linkAugmentationDots //
+    //----------------------//
+    /**
+     * Harmonize augmentation dots for each chord.
+     * This may discard some augmentation dots.
+     */
+    private void linkAugmentationDots ()
+    {
+        for (MeasureStack stack : system.getStacks()) {
+            for (AbstractChordInter chord : stack.getStandardChords()) {
+                chord.countDots();
+            }
         }
     }
 
@@ -429,6 +448,19 @@ public class SymbolsLinker
         for (Inter sInter : sig.inters(SentenceInter.class)) {
             final SentenceInter sentence = (SentenceInter) sInter;
             linkOneSentence(sentence);
+        }
+    }
+
+    //-------------//
+    // linkTuplets //
+    //-------------//
+    /**
+     * Link tuplet inters to their relevant chords.
+     */
+    private void linkTuplets ()
+    {
+        for (MeasureStack stack : system.getStacks()) {
+            new TupletsBuilder(stack).linkStackTuplets();
         }
     }
 

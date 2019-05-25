@@ -74,8 +74,10 @@ public class InjectionSolverTest
         {
         }
 
+        @Override
         public int getDistance (int in,
-                                int ip)
+                                int ip,
+                                StringBuilder details)
         {
             return Math.abs((1 + in) - ip);
         }

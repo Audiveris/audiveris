@@ -175,6 +175,10 @@ public class StemInter
      */
     public Line2D computeAnchoredLine ()
     {
+        if (isRemoved()) {
+            return null;
+        }
+
         final Set<Relation> links = sig.getRelations(this, HeadStemRelation.class);
 
         if (!links.isEmpty()) {
@@ -293,6 +297,10 @@ public class StemInter
      */
     public Line2D computeExtendedLine ()
     {
+        if (isRemoved()) {
+            return null;
+        }
+
         Point2D extTop = new Point2D.Double(top.getX(), top.getY());
         Point2D extBottom = new Point2D.Double(bottom.getX(), bottom.getY());
 
@@ -369,8 +377,10 @@ public class StemInter
     {
         final Set<AbstractBeamInter> set = new LinkedHashSet<>();
 
-        for (Relation relation : sig.getRelations(this, BeamStemRelation.class)) {
-            set.add((AbstractBeamInter) sig.getEdgeSource(relation));
+        if (!isRemoved()) {
+            for (Relation relation : sig.getRelations(this, BeamStemRelation.class)) {
+                set.add((AbstractBeamInter) sig.getEdgeSource(relation));
+            }
         }
 
         return set;
@@ -407,12 +417,14 @@ public class StemInter
     {
         List<HeadChordInter> chords = null;
 
-        for (Relation rel : sig.getRelations(this, ChordStemRelation.class)) {
-            if (chords == null) {
-                chords = new ArrayList<>();
-            }
+        if (!isRemoved()) {
+            for (Relation rel : sig.getRelations(this, ChordStemRelation.class)) {
+                if (chords == null) {
+                    chords = new ArrayList<>();
+                }
 
-            chords.add((HeadChordInter) sig.getOppositeInter(this, rel));
+                chords.add((HeadChordInter) sig.getOppositeInter(this, rel));
+            }
         }
 
         if (chords == null) {
@@ -434,8 +446,10 @@ public class StemInter
     {
         final Set<HeadInter> set = new LinkedHashSet<>();
 
-        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
-            set.add((HeadInter) sig.getEdgeSource(relation));
+        if (!isRemoved()) {
+            for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
+                set.add((HeadInter) sig.getEdgeSource(relation));
+            }
         }
 
         return set;
@@ -471,8 +485,10 @@ public class StemInter
     @Override
     public Voice getVoice ()
     {
-        for (Relation rel : sig.getRelations(this, HeadStemRelation.class)) {
-            return sig.getOppositeInter(this, rel).getVoice();
+        if (!isRemoved()) {
+            for (Relation rel : sig.getRelations(this, HeadStemRelation.class)) {
+                return sig.getOppositeInter(this, rel).getVoice();
+            }
         }
 
         return null;
@@ -488,12 +504,14 @@ public class StemInter
      */
     public boolean isGraceStem ()
     {
-        for (Relation rel : sig.getRelations(this, HeadStemRelation.class)) {
-            Shape headShape = sig.getOppositeInter(this, rel).getShape();
+        if (!isRemoved()) {
+            for (Relation rel : sig.getRelations(this, HeadStemRelation.class)) {
+                Shape headShape = sig.getOppositeInter(this, rel).getShape();
 
-            // First head tested is enough.
-            return (headShape == Shape.NOTEHEAD_BLACK_SMALL)
-                           || (headShape == Shape.NOTEHEAD_VOID_SMALL);
+                // First head tested is enough.
+                return (headShape == Shape.NOTEHEAD_BLACK_SMALL)
+                               || (headShape == Shape.NOTEHEAD_VOID_SMALL);
+            }
         }
 
         return false;
@@ -513,16 +531,18 @@ public class StemInter
     public Inter lookupHead (HorizontalSide side,
                              int pitch)
     {
-        for (Relation rel : sig.getRelations(this, HeadStemRelation.class)) {
-            HeadStemRelation hsRel = (HeadStemRelation) rel;
+        if (!isRemoved()) {
+            for (Relation rel : sig.getRelations(this, HeadStemRelation.class)) {
+                HeadStemRelation hsRel = (HeadStemRelation) rel;
 
-            // Check side
-            if (hsRel.getHeadSide() == side) {
-                // Check pitch
-                HeadInter head = (HeadInter) sig.getEdgeSource(rel);
+                // Check side
+                if (hsRel.getHeadSide() == side) {
+                    // Check pitch
+                    HeadInter head = (HeadInter) sig.getEdgeSource(rel);
 
-                if (head.getIntegerPitch() == pitch) {
-                    return head;
+                    if (head.getIntegerPitch() == pitch) {
+                        return head;
+                    }
                 }
             }
         }

@@ -72,9 +72,7 @@ import java.util.Set;
 /**
  * Class {@code PageStep} handles connections between systems in a page.
  * <ul>
- * <li>Physical system Part instances are abstracted into LogicalPart instances.
- * For systems where a given LogicalPart has no representative Part, a corresponding dummy Part is
- * inserted (with its proper staves and minimal measures).</li>
+ * <li>Physical system Part instances are abstracted into LogicalPart instances.</li>
  * <li>Slurs are connected across systems.</li>
  * <li>Tied voices.</li>
  * <li>Refined lyric syllables.</li>

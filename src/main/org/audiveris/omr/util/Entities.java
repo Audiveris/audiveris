@@ -158,10 +158,14 @@ public class Entities
         if ((entities != null) && !entities.isEmpty()) {
             for (Entity entity : entities) {
                 if (entity != null) {
-                    if (bounds == null) {
-                        bounds = entity.getBounds();
-                    } else {
-                        bounds.add(entity.getBounds());
+                    final Rectangle entityBounds = entity.getBounds();
+
+                    if (entityBounds != null) {
+                        if (bounds == null) {
+                            bounds = entityBounds;
+                        } else {
+                            bounds.add(entityBounds);
+                        }
                     }
                 }
             }
@@ -195,6 +199,30 @@ public class Entities
         sb.append("]");
 
         return sb.toString();
+    }
+
+    //-------------//
+    // containsVip //
+    //-------------//
+    /**
+     * Report whether the provided collection of entities contains at least one VIP.
+     *
+     * @param entities the collection to check
+     * @return true if at least one VIP is included
+     */
+    public static boolean containsVip (Collection<? extends Entity> entities)
+    {
+        if (entities == null) {
+            return false;
+        }
+
+        for (Entity entity : entities) {
+            if (entity != null && entity.isVip()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //---------------------//
