@@ -55,7 +55,8 @@ import org.audiveris.omr.util.Predicate;
  * of staff-level TimeBuilder instances since, within a system, a column of time
  * signatures must be complete and contain only identical signatures.
  * <p>
- * Subclasses:<ul>
+ * Subclasses:
+ * <ul>
  * <li>{@link HeaderTimeColumn} works for system header.
  * <li>{@link BasicTimeColumn} works for time signatures found outside of system header.
  * </ul>
@@ -169,8 +170,7 @@ public abstract class TimeColumn
         final SIGraph sig = system.getSig();
         final Collection<AbstractTimeInter> times = getTimeInters().values();
         final Rectangle columnBox = Inters.getBounds(times);
-        List<Inter> neighbors = sig.inters(
-                new Predicate<Inter>()
+        final List<Inter> neighbors = sig.inters(new Predicate<Inter>()
         {
             @Override
             public boolean check (Inter inter)
@@ -229,7 +229,7 @@ public abstract class TimeColumn
      * appears in each staff as a AbstractTimeInter instance and assign a global grade (as
      * average of staff-based AbstractTimeInter instances for the same TimeValue).</li>
      * <li>The best system-based TimeValue is then chosen as THE time signature for this
-     * system column. </li>
+     * system column.</li>
      * <li>All staff non compatible AbstractTimeInter instances are destroyed and the member
      * numbers that don't belong to the chosen AbstractTimeInter are destroyed.</li>
      * </ol>

@@ -988,7 +988,7 @@ public class SigReducer
             @Override
             public boolean check (Inter inter)
             {
-                return !inter.isRemoved() && (inter instanceof TupletInter)
+                return !inter.isRemoved() && !inter.isImplicit() && (inter instanceof TupletInter)
                                && (inter.isContextuallyGood());
             }
         });
@@ -1278,7 +1278,7 @@ public class SigReducer
         for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
             Inter left = inters.get(i);
 
-            if (left.isRemoved()) {
+            if (left.isRemoved() || left.isImplicit()) {
                 continue;
             }
 
@@ -1309,7 +1309,7 @@ public class SigReducer
             final double xMax = leftBox.getMaxX();
 
             for (Inter right : inters.subList(i + 1, inters.size())) {
-                if (right.isRemoved()) {
+                if (right.isRemoved() || right.isImplicit()) {
                     continue;
                 }
 

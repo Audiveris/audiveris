@@ -32,13 +32,22 @@ import java.awt.Color;
 public abstract class Colors
 {
 
-    /** Global alpha transparency (0..255). */
+    /** Global alpha opacity (0..255). */
     private static final int alpha = 180;
+
+    /** Opacity value for implicit items (0..255). */
+    public static final int IMPLICIT_ALPHA = 100;
 
     // Color names below should better be listed alphabetically
     //
-    /** Annotations. */
+    /** General annotations. */
     public static final Color ANNOTATION = Color.LIGHT_GRAY;
+
+    /** Chord annotations. */
+    public static final Color ANNOTATION_CHORD = Color.MAGENTA;
+
+    /** Area detected as abnormal. */
+    public static final Color AREA_ABNORMAL = new Color(255, 225, 225);
 
     /** Attachments. */
     public static final Color ATTACHMENT = Color.PINK;
@@ -145,9 +154,6 @@ public abstract class Colors
 
     /** Current time slot. */
     public static final Color SLOT_CURRENT = new Color(255, 0, 255, alpha);
-
-    /** Stack detected as abnormal. */
-    public static final Color STACK_ABNORMAL = new Color(255, 225, 225);
 
     /** Brace staff peak. */
     public static final Color STAFF_PEAK_BRACE = new Color(0, 255, 255, 100);

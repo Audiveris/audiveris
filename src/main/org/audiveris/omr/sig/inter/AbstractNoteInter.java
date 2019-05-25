@@ -176,6 +176,24 @@ public abstract class AbstractNoteInter
         }
     }
 
+    //------------------//
+    // getAbsolutePitch //
+    //------------------//
+    /**
+     * Report the absolute pitch for this note, using the current clef, and the pitch
+     * position of the note.
+     *
+     * @return the related "absolute" pitch
+     */
+    public int getAbsolutePitch ()
+    {
+        AbstractChordInter chord = getChord();
+        Measure measure = chord.getMeasure();
+        ClefInter clef = measure.getClefBefore(getCenter(), getStaff());
+
+        return ClefInter.absolutePitchOf(clef, (int) Math.rint(pitch));
+    }
+
     //-----------//
     // getOctave //
     //-----------//

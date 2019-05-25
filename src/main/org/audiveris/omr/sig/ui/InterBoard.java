@@ -78,6 +78,9 @@ public class InterBoard
     /** Output : grade (intrinsic/contextual). */
     private final LTextField grade = new LTextField("Grade", "Intrinsic / Contextual");
 
+    /** Output : implicit / manual. */
+    private final JLabel specific = new JLabel("");
+
     /** Output : shape. */
     private final LTextField shapeField = new LTextField("", "Shape for this interpretation");
 
@@ -145,6 +148,7 @@ public class InterBoard
 
         // Initial status
         grade.setEnabled(false);
+        specific.setEnabled(false);
         details.setEnabled(false);
 
         defineLayout();
@@ -219,6 +223,8 @@ public class InterBoard
                 grade.setText(String.format("%.2f", inter.getGrade()));
             }
 
+            specific.setText(inter.isImplicit() ? "IMPLICIT" : (inter.isManual() ? "MANUAL" : ""));
+
             details.setText((inter.getImpacts() == null) ? "" : inter.getImpacts().toString());
             deassignAction.putValue(Action.NAME, inter.isRemoved() ? "deleted" : "Deassign");
 
@@ -248,6 +254,7 @@ public class InterBoard
             vip.getField().setSelected(false);
 
             grade.setText("");
+            specific.setText("");
             details.setText("");
             deassignAction.putValue(Action.NAME, " ");
         }
@@ -285,6 +292,7 @@ public class InterBoard
 
         r += 2; // --------------------------------
 
+        builder.add(specific, cst.xyw(3, r, 4));
         builder.add(shapeField.getField(), cst.xyw(7, r, 5));
 
         r += 2; // --------------------------------

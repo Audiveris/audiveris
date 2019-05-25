@@ -21,9 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
+import java.util.List;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.ui.InterController;
@@ -65,7 +68,13 @@ public class AugmentationRelation
     public void added (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         final AugmentationDotInter dot = (AugmentationDotInter) e.getEdgeSource();
+
         dot.checkAbnormal();
+
+        // Update related chord dot count?
+        if (isManual() || dot.isManual()) {
+            updateChordDotCount(e.getEdgeTarget());
+        }
     }
 
     @Override
@@ -128,6 +137,12 @@ public class AugmentationRelation
         if (!dot.isRemoved()) {
             dot.checkAbnormal();
         }
+
+        final Inter target = e.getEdgeTarget();
+
+        if (!target.isRemoved()) {
+            updateChordDotCount(target);
+        }
     }
 
     //---------------//
@@ -161,6 +176,30 @@ public class AugmentationRelation
     protected Scale.Fraction getYGapMax (boolean manual)
     {
         return getYGapMaximum(manual);
+    }
+
+    //---------------------//
+    // updateChordDotCount //
+    //---------------------//
+    private void updateChordDotCount (Inter target)
+    {
+        AbstractNoteInter note = null;
+
+        if (target instanceof AugmentationDotInter) {
+            AugmentationDotInter first = (AugmentationDotInter) target;
+            List<AbstractNoteInter> notes = first.getAugmentedNotes();
+
+            if (!notes.isEmpty()) {
+                note = notes.get(0);
+            }
+        } else {
+            note = (AbstractNoteInter) target;
+        }
+
+        if (note != null) {
+            AbstractChordInter chord = note.getChord();
+            chord.countDots();
+        }
     }
 
     //-----------//

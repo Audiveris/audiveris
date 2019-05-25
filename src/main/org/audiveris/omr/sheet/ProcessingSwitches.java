@@ -155,7 +155,8 @@ public class ProcessingSwitches
         lyricsAboveStaff(constants.lyricsAboveStaff),
         smallBlackHeads(constants.smallBlackHeads),
         smallVoidHeads(constants.smallVoidHeads),
-        smallWholeHeads(constants.smallWholeHeads);
+        smallWholeHeads(constants.smallWholeHeads),
+        implicitTuplets(constants.implicitTuplets);
 
         /** Underlying boolean constant. */
         Constant.Boolean constant;
@@ -287,6 +288,10 @@ public class ProcessingSwitches
         private final Constant.Boolean smallWholeHeads = new Constant.Boolean(
                 false,
                 "Support for small whole note heads");
+
+        private final Constant.Boolean implicitTuplets = new Constant.Boolean(
+                false,
+                "Support for implicit tuplets");
     }
 
     //-----------------//

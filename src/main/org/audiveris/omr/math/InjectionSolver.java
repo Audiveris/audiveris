@@ -117,10 +117,10 @@ public class InjectionSolver
     // inspect //
     //---------//
     /**
-     * For a provided domain item, find the range item that leads to optimal config.
+     * For a provided domain item, find the range item that leads to optimal configuration.
      *
      * @param id   index of provided domain item
-     * @param cost current config cost
+     * @param cost current configuration cost
      */
     private void inspect (final int id,
                           final int cost)
@@ -131,7 +131,7 @@ public class InjectionSolver
                 free[ir] = false;
                 config[id] = ir;
 
-                int newCost = cost + distance.getDistance(id, ir);
+                int newCost = cost + distance.getDistance(id, ir, null);
 
                 /// System.out.println("ir=" + ir + " newCost=" + newCost);
                 if (id < (domainSize - 1)) {
@@ -159,11 +159,13 @@ public class InjectionSolver
          * Report the distance when mapping element 'id' of domain to element 'ir' of
          * range
          *
-         * @param id index of domain element
-         * @param ir index of range element
+         * @param id      index of domain element
+         * @param ir      index of range element
+         * @param details (optional output) if not null, to be populated by distance details
          * @return the cost of mapping these two elements
          */
         int getDistance (int id,
-                         int ir);
+                         int ir,
+                         StringBuilder details);
     }
 }

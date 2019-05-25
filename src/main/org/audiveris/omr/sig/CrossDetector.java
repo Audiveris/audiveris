@@ -107,7 +107,7 @@ public class CrossDetector
             @Override
             public boolean check (Inter inter)
             {
-                if (inter instanceof SentenceInter) {
+                if (inter.isImplicit() || (inter instanceof SentenceInter)) {
                     return false;
                 }
 

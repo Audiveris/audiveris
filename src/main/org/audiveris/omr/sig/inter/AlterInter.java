@@ -287,15 +287,6 @@ public class AlterInter
         }
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
-
     //-------------//
     // lookupLinks //
     //-------------//

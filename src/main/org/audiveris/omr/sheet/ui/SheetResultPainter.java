@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Part;
@@ -32,6 +34,7 @@ import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import static org.audiveris.omr.sheet.ui.SheetPainter.halfAT;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
@@ -49,6 +52,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.SigPainter;
 import org.audiveris.omr.ui.Colors;
 import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.MIDDLE_LEFT;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.HorizontalSide;
@@ -59,9 +63,11 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
@@ -82,6 +88,8 @@ import java.awt.geom.Point2D;
 public class SheetResultPainter
         extends SheetPainter
 {
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SheetResultPainter.class);
 
@@ -414,17 +422,20 @@ public class SheetResultPainter
         @Override
         protected void setColor (Inter inter)
         {
-            if (coloredVoices) {
-                final Voice voice = inter.getVoice();
+            final Voice voice = inter.getVoice();
+            Color c;
 
-                if (voice != null) {
-                    g.setColor(colorOf(voice));
-                } else {
-                    g.setColor(defaultColor);
-                }
+            if (coloredVoices && (voice != null)) {
+                c = colorOf(voice);
             } else {
-                g.setColor(defaultColor);
+                c = defaultColor;
             }
+
+            if (inter.isImplicit()) {
+                c = new Color(c.getRed(), c.getGreen(), c.getBlue(), Colors.IMPLICIT_ALPHA);
+            }
+
+            g.setColor(c);
         }
 
         @Override
@@ -432,5 +443,75 @@ public class SheetResultPainter
         {
             return coloredVoices;
         }
+
+        @Override
+        public void visit (AbstractChordInter chord)
+        {
+            // As part of annotations, draw chord ID & voice if any
+            if (annotated && constants.chordIdPainting.isSet()) {
+                final double zoom = g.getTransform().getScaleX();
+
+                if (zoom >= constants.minZoomForChordId.getValue()) {
+                    Font oldFont = g.getFont();
+
+                    if (oldFont != chordFont) {
+                        g.setFont(chordFont);
+                    } else {
+                        oldFont = null;
+                    }
+
+                    Color oldColor = g.getColor();
+                    g.setColor(Colors.ANNOTATION_CHORD);
+
+                    Rectangle box = chord.getBounds();
+                    Point pt = new Point(box.x, box.y + box.height / 2);
+
+                    // Chord ID
+                    String str = Integer.toString(chord.getId());
+
+                    // Chord voice
+                    if (constants.chordVoiceAppended.isSet()) {
+                        Voice voice = chord.getVoice();
+
+                        if (voice != null) {
+                            str = str + (" v" + voice.getId());
+                        }
+                    }
+
+                    final double z = Math.max(0.5, zoom);
+                    final AffineTransform at = AffineTransform.getScaleInstance(0.5 / z, 0.5 / z);
+                    final TextLayout layout = basicLayout(str, at);
+                    paint(layout, pt, MIDDLE_LEFT);
+
+                    g.setColor(oldColor);
+
+                    if (oldFont != null) {
+                        g.setFont(oldFont);
+                    }
+                }
+
+                g.setColor(defaultColor);
+            }
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean chordIdPainting = new Constant.Boolean(
+                false,
+                "Should the chords ID be painted?");
+
+        private final Constant.Boolean chordVoiceAppended = new Constant.Boolean(
+                false,
+                "Should the chords voices be appended to ID?");
+
+        private final Constant.Ratio minZoomForChordId = new Constant.Ratio(
+                0.75,
+                "Minimum zoom value to display chords ID");
     }
 }

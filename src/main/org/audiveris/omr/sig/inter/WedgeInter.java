@@ -222,15 +222,6 @@ public class WedgeInter
         }
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
-
     //------------------------//
     // getStackAbscissaMargin //
     //------------------------//

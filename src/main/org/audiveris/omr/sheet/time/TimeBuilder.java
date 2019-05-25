@@ -398,6 +398,8 @@ public abstract class TimeBuilder
 
         final int maxHalvesDx;
 
+        final int minPartWeight;
+
         final double maxPartGap;
 
         final int minWholeTimeWeight;
@@ -430,6 +432,7 @@ public abstract class TimeBuilder
                 minTimeWidth = specific.toPixels(constants.minTimeWidth);
                 maxTimeWidth = specific.toPixels(constants.maxTimeWidth);
                 maxHalvesDx = specific.toPixels(constants.maxHalvesDx);
+                minPartWeight = specific.toPixels(constants.minPartWeight);
                 maxPartGap = specific.toPixels(constants.maxPartGap);
                 minWholeTimeWeight = specific.toPixels(constants.minWholeTimeWeight);
                 minHalfTimeWeight = specific.toPixels(constants.minHalfTimeWeight);
@@ -469,6 +472,10 @@ public abstract class TimeBuilder
         private final Scale.Fraction maxHalvesDx = new Scale.Fraction(
                 1,
                 "Maximum abscissa shift between top & bottom halves of a time signature");
+
+        private final Scale.AreaFraction minPartWeight = new Scale.AreaFraction(
+                0.01,
+                "Minimum weight for a glyph part");
 
         private final Scale.Fraction maxPartGap = new Scale.Fraction(
                 1.0,

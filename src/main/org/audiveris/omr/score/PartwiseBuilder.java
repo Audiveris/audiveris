@@ -41,6 +41,7 @@ import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
+import org.audiveris.omr.sheet.rhythm.SlotVoice;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
@@ -1664,10 +1665,10 @@ public class PartwiseBuilder
                     }
                 } else {
                     for (Slot slot : stack.getSlots()) {
-                        Voice.SlotVoice info = voice.getSlotInfo(slot);
+                        SlotVoice info = voice.getSlotInfo(slot);
 
                         if ((info != null) && // Skip free slots
-                                (info.status == Voice.Status.BEGIN)) {
+                                (info.status == SlotVoice.Status.BEGIN)) {
                             AbstractChordInter chord = info.chord;
                             clefIters.push(slot.getXOffset(), chord.getTopStaff());
 

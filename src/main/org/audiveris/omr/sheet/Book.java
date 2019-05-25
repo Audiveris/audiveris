@@ -1835,12 +1835,22 @@ public class Book
     /**
      * Check whether the program version can operate on the file version.
      * <p>
-     * All version strings are expected to be formatted like "5.0" or "5.0.1"
-     * and we don't take the 3rd number, if any, into account for compatibility checking.
+     * (Quoting semantic versioning)
+     * <br>
+     * Given a version number MAJOR.MINOR.PATCH, increment the:
+     * <ol>
+     * <li>MAJOR version when you make incompatible API changes,
+     * <li>MINOR version when you add functionality in a backwards-compatible manner, and
+     * <li>PATCH version when you make backwards-compatible bug fixes.
+     * </ol>
+     * Additional labels for pre-release and build metadata are available as extensions to the
+     * MAJOR.MINOR.PATCH format.
      *
      * @param programVersion version of software
      * @param fileVersion    version of book file
      * @return true if OK
+     *
+     * @see https://semver.org/
      */
     private boolean areVersionsCompatible (String programVersion,
                                            String fileVersion)
@@ -1860,7 +1870,8 @@ public class Book
                 throw new IllegalArgumentException("Illegal Book file version " + fileVersion);
             }
 
-            for (int i = 0; i < 2; i++) {
+            // Only MAJOR token is considered for compatibility
+            for (int i = 0; i < 1; i++) {
                 if (Integer.decode(fileTokens[i]) < Integer.decode(programTokens[i])) {
                     return false;
                 }

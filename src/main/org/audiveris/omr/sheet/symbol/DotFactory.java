@@ -364,7 +364,7 @@ public class DotFactory
                         Rectangle dotBox = dot.getBounds();
 
                         for (Inter inter : sig.vertexSet()) {
-                            if (inter == dot) {
+                            if (inter == dot || inter.isImplicit()) {
                                 continue;
                             }
 

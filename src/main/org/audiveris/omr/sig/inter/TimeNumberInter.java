@@ -121,15 +121,6 @@ public class TimeNumberInter
         this.side = side;
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
-
     /**
      * (Try to) create a top or bottom number for time signature.
      *

@@ -170,8 +170,8 @@ public class MeasureFixer
         final SystemInfo system = stack.getSystem();
 
         return (system.getIndexInPage() == 0) && (stack == system.getFirstStack())
-                       && (stackTermination != null) && (stackTermination.compareTo(Rational.ZERO)
-                                                                 < 0);
+                       && (stackTermination != null)
+                       && (stackTermination.compareTo(Rational.ZERO) < 0);
     }
 
     //-------------//

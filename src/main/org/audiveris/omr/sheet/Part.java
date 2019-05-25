@@ -33,7 +33,6 @@ import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
-import org.audiveris.omr.step.PageStep;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
@@ -65,11 +64,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Class {@code Part} is the <b>physical</b> gathering of {@link Staff} instances in an
  * instance of {@link SystemInfo}.
  * <p>
- * It loosely corresponds to a single instrument, typical examples are a singer (1 staff) or a piano
- * (2 staves).
+ * It loosely corresponds to a single instrument, typical examples are a singer (1 staff), a piano
+ * (2 staves) and an organ (3 staves).
  * <p>
  * Since the instrument usually persists from one system to the next, we can define the notion of
- * "logical" part, named {@link LogicalPart}.
+ * {@link LogicalPart}.
  * <p>
  * Generally, such LogicalPart corresponds to a separate (physical) Part instance in each
  * system but not always. For example, a singer part may not appear at the very beginning of a
@@ -79,14 +78,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * LogicalPart do not vary (in number of staves or in relative positions of staves within the part).
  * However, the part as a whole may appear (or disappear?) from one system to the next.
  * <p>
- * During step {@link PageStep}, dummy parts (and dummy staves and measures) can be inserted in the
- * concrete structure of page/system/part/measure/staff to ease the handling of logical parts along
- * the pages and score.
- * <p>
- * Before {@link PageStep} is run, a part IDs is the 1-based index within the containing system.
- * After {@link PageStep} is run, part IDs, because of dummy parts, may not be exactly the position
- * number within the containing system. But all the (physical) Parts related to the same (logical)
- * LogicalPart share the same ID.
+ * During export to MusicXML, dummy parts (and their contained dummy staves and measures) can be
+ * on-the-fly <i>virtually</i> inserted into the structure of page/system/part/measure/staff
+ * to ease the handling of logical parts along the pages and score.
  *
  * @author Hervé Bitteur
  */
@@ -122,10 +116,10 @@ public class Part
     @XmlAttribute
     private SentenceInter name;
 
-    /** Indicate a dummy physical part. */
-    @XmlAttribute
+    /** Indicate a merged grand staff part, made of 2 staves not clearly separated. */
+    @XmlAttribute(name = "merged-grand-staff")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
-    private boolean dummy;
+    private boolean merged;
 
     /** Staves in this part. */
     @XmlElement(name = "staff")
@@ -157,6 +151,9 @@ public class Part
     /** The containing system. */
     @Navigable(false)
     private SystemInfo system;
+
+    /** Indicate a dummy physical part. Used only during MusicXML export. */
+    private boolean dummy;
 
     /**
      * Creates a new instance of {@code Part}.
@@ -826,6 +823,32 @@ public class Part
     public boolean isDummy ()
     {
         return dummy;
+    }
+
+    //----------//
+    // isMerged //
+    //----------//
+    /**
+     * Report whether this part represents a pair of staves with no clear separation.
+     *
+     * @return the merged attribute
+     */
+    public boolean isMerged ()
+    {
+        return merged;
+    }
+
+    //-----------//
+    // setMerged //
+    //-----------//
+    /**
+     * Set this part a being a "merged" part like a kind of 11-line grand staff.
+     *
+     * @param merged the merged value to set
+     */
+    public void setMerged (boolean merged)
+    {
+        this.merged = merged;
     }
 
     //-----------------//

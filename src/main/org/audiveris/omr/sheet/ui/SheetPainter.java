@@ -75,6 +75,12 @@ public abstract class SheetPainter
             Font.PLAIN,
             constants.basicFontSize.getValue());
 
+    /** Font for chord annotations. */
+    protected static final Font chordFont = new Font(
+            "Sans Serif",
+            Font.PLAIN,
+            constants.chordFontSize.getValue());
+
     /** Sheet. */
     protected final Sheet sheet;
 
@@ -212,5 +218,10 @@ public abstract class SheetPainter
                 "points",
                 30,
                 "Standard font size for annotations");
+
+        private final Constant.Integer chordFontSize = new Constant.Integer(
+                "points",
+                5,
+                "Font size for chord annotations");
     }
 }

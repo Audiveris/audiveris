@@ -622,6 +622,10 @@ public class SlurInter
             return false;
         }
 
+        if (leftHead.isVip() && rightHead.isVip()) {
+            logger.info("VIP isSpaceClear? {} {}", leftHead, rightHead);
+        }
+
         // Check number of measures limits crossed?
         final Part prt = leftHead.getPart();
         final MeasureStack leftStack = prt.getMeasureAt(leftHead.getCenter()).getStack();

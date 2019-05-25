@@ -52,7 +52,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -159,9 +158,13 @@ public class MeasureStack
     @XmlJavaTypeAdapter(Rational.Adapter.class)
     private Rational excess;
 
-    /** Anomaly detected, if any. */
+    /**
+     * Anomaly detected, if any.
+     * Deprecated since individual measures can now be flagged as abnormal.
+     */
     @XmlAttribute(name = "abnormal")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    @Deprecated
     private boolean abnormal;
 
     // Transient data
@@ -318,16 +321,13 @@ public class MeasureStack
     // checkDuration //
     //---------------//
     /**
-     * Check the duration as computed in this measure from its contained voices,
+     * Check the duration as computed in this stack from its contained voices,
      * compared to its theoretical duration.
      */
     public void checkDuration ()
     {
-        // Check duration of each voice
         for (Measure measure : measures) {
-            for (Voice voice : measure.getVoices()) {
-                voice.checkDuration(this);
-            }
+            measure.checkDuration();
         }
     }
 
@@ -662,7 +662,6 @@ public class MeasureStack
     public void setExcess (Rational excess)
     {
         this.excess = excess;
-        setAbnormal(true);
     }
 
     //---------------------//
@@ -676,28 +675,6 @@ public class MeasureStack
     public Rational getExpectedDuration ()
     {
         return expectedDuration;
-
-        //        try {
-        //            if (expectedDuration == null) {
-        //                int numerator;
-        //                int denominator;
-        //                AbstractTimeInter ts = getCurrentTimeSignature();
-        //
-        //                if (ts != null) {
-        //                    numerator = ts.getNumerator();
-        //                    denominator = ts.getDenominator();
-        //                } else {
-        //                    numerator = 4;
-        //                    denominator = 4;
-        //                }
-        //
-        //                expectedDuration = new Rational(numerator, denominator);
-        //            }
-        //
-        //            return expectedDuration;
-        //        } catch (NullPointerException npe) {
-        //            throw new TimeSignature.InvalidTimeSignature();
-        //        }
     }
 
     //---------------------//
@@ -764,6 +741,7 @@ public class MeasureStack
      * Report all head chords in stack.
      *
      * @return stack head chords
+     * @see #getStandardHeadChords()
      */
     public Set<HeadChordInter> getHeadChords ()
     {
@@ -1185,6 +1163,26 @@ public class MeasureStack
         return found;
     }
 
+    //-----------------------//
+    // getStandardHeadChords //
+    //-----------------------//
+    /**
+     * Report all standard (not small) head chords in this stack.
+     *
+     * @return all non-small head chords in stack
+     * @see #getHeadChords()
+     */
+    public Set<HeadChordInter> getStandardHeadChords ()
+    {
+        Set<HeadChordInter> headChords = new LinkedHashSet<>();
+
+        for (Measure measure : measures) {
+            headChords.addAll(measure.getStandardHeadChords());
+        }
+
+        return headChords;
+    }
+
     //-----------//
     // getSystem //
     //-----------//
@@ -1511,8 +1509,10 @@ public class MeasureStack
 
             for (Measure measure : measures) {
                 sb.append("\n--- P").append(measure.getPart().getId());
+                List<Voice> voices = new ArrayList<>(measure.getVoices());
+                Collections.sort(voices, Voices.byId);
 
-                for (Voice voice : measure.getVoices()) {
+                for (Voice voice : voices) {
                     sb.append("\n").append(voice.toStrip());
                 }
             }
@@ -1550,17 +1550,17 @@ public class MeasureStack
         }
     }
 
-    //--------//
-    // render //
-    //--------//
+    //------------//
+    // renderArea //
+    //------------//
     /**
      * Render the measure stack area with provided color.
      *
      * @param g     graphics context
      * @param color provided color
      */
-    public void render (Graphics2D g,
-                        Color color)
+    public void renderArea (Graphics2D g,
+                            Color color)
     {
         // Save some drawing
         final Rectangle clip = g.getClipBounds();
@@ -1581,7 +1581,11 @@ public class MeasureStack
         int top = Math.min(firstLine.yAt(left), firstLine.yAt(right));
 
         for (Inter inter : firstMeasure.getTimingInters()) {
-            top = Math.min(top, inter.getBounds().y);
+            Rectangle bounds = inter.getBounds();
+
+            if (bounds != null) {
+                top = Math.min(top, bounds.y);
+            }
         }
 
         // Most inters from last measure
@@ -1592,26 +1596,34 @@ public class MeasureStack
 
         for (Inter inter : lastMeasure.getTimingInters()) {
             Rectangle bounds = inter.getBounds();
-            bottom = Math.max(bottom, bounds.y + bounds.height);
+
+            if (bounds != null) {
+                bottom = Math.max(bottom, bounds.y + bounds.height);
+            }
         }
 
         // Inters from stack tuplets
         for (Inter inter : stackTuplets) {
             Rectangle bounds = inter.getBounds();
-            top = Math.min(top, bounds.y);
-            bottom = Math.max(bottom, bounds.y + bounds.height);
+
+            if (bounds != null) {
+                top = Math.min(top, bounds.y);
+                bottom = Math.max(bottom, bounds.y + bounds.height);
+            }
         }
 
-        Area area = new Area(new Rectangle(left, 0, right - left + 1, sheet.getHeight()));
-        area.intersect(new Area(new Rectangle(0, top, sheet.getWidth(), bottom - top + 1)));
-        g.fill(area);
+        g.fill(new Rectangle(left, top, right - left + 1, bottom - top + 1));
     }
 
     //-------------//
     // resetRhythm //
     //-------------//
     /**
-     * Reset rhythm info in this stack.
+     * Reset rhythm info at stack level.
+     * <p>
+     * This does not reset rhythm info at measure level.
+     *
+     * @see Measure#resetRhythm()
      */
     public void resetRhythm ()
     {
@@ -1619,11 +1631,6 @@ public class MeasureStack
         excess = null;
         slots.clear();
         setActualDuration(null);
-
-        // Reset every measure within this stack
-        for (Measure measure : measures) {
-            measure.resetRhythm();
-        }
     }
 
     //---------------//

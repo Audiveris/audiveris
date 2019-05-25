@@ -278,11 +278,16 @@ public class BeamGroup
     public Rational getDuration ()
     {
         final AbstractChordInter first = getFirstChord();
-        final AbstractChordInter last = getLastChord();
-        Rational duration = last.getTimeOffset().minus(first.getTimeOffset()).plus(
-                last.getDuration());
+        final Rational firstOffset = first.getTimeOffset();
 
-        return duration;
+        final AbstractChordInter last = getLastChord();
+        final Rational lastOffset = last.getTimeOffset();
+
+        if (firstOffset == null || lastOffset == null) {
+            return null;
+        }
+
+        return lastOffset.minus(firstOffset).plus(last.getDuration());
     }
 
     //---------------//
@@ -359,18 +364,17 @@ public class BeamGroup
      */
     public void setVoice (Voice voice)
     {
-        // Already done?
-        if (this.voice == null) {
+        if (this.voice != voice) {
             this.voice = voice;
 
             // Forward this information to the beamed chords
             // Including the interleaved rests if any
-            AbstractChordInter prevChord = null;
+            AbstractChordInter lastChord = null;
 
             for (AbstractChordInter chord : getChords()) {
-                if (prevChord != null) {
+                if (lastChord != null) {
                     // Here we must check for interleaved rest
-                    AbstractNoteInter rest = measure.lookupRest(prevChord, chord);
+                    AbstractNoteInter rest = measure.lookupRest(lastChord, chord);
 
                     if (rest != null) {
                         rest.getChord().setVoice(voice);
@@ -378,12 +382,8 @@ public class BeamGroup
                 }
 
                 chord.setVoice(voice);
-                prevChord = chord;
+                lastChord = chord;
             }
-        } else if (voice == null) {
-            this.voice = null;
-        } else if (!this.voice.equals(voice)) {
-            logger.warn("Reassigning voice from " + this.voice + " to " + voice + " in " + this);
         }
     }
 
@@ -512,9 +512,8 @@ public class BeamGroup
                 // Skip beam hooks
                 // Skip beams attached to this chord
                 // Skip beams with no abscissa overlap WRT this chord
-                if (!beam.isHook() && !beam.getChords().contains(chord) && (GeoUtil.xOverlap(
-                        beam.getBounds(),
-                        chordBox) > 0)) {
+                if (!beam.isHook() && !beam.getChords().contains(chord)
+                            && (GeoUtil.xOverlap(beam.getBounds(), chordBox) > 0)) {
                     // Check vertical gap
                     int lineY = (int) Math.rint(LineUtil.yAtX(beam.getMedian(), tail.x));
                     int yOverlap = Math.min(lineY, chordBox.y + chordBox.height) - Math.max(

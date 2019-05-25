@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.rhythm;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.DurationFactor;
@@ -29,6 +31,7 @@ import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.grid.LineInfo;
+import org.audiveris.omr.sheet.rhythm.Voice.Family;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
@@ -46,6 +49,7 @@ import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -74,6 +78,7 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code Measure} represents a measure in a system part, it vertically embraces
@@ -89,12 +94,14 @@ public class Measure
 
     private static final Logger logger = LoggerFactory.getLogger(Measure.class);
 
-    /** Offset in voice ID, according to its initial staff. */
-    private static int ID_STAFF_OFFSET = 4;
-
     // Persistent data
     //----------------
     //
+    /** Anomaly detected, if any. */
+    @XmlAttribute(name = "abnormal")
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean abnormal;
+
     /** Left barline, if any. */
     @XmlElement(name = "left-barline")
     private PartBarline leftBarline;
@@ -374,8 +381,7 @@ public class Measure
                             new Class[]{
                                 ClefInter.class,
                                 KeyInter.class,
-                                AbstractTimeInter.class,
-                                TupletInter.class}));
+                                AbstractTimeInter.class}));
 
             for (Inter inter : measureInters) {
                 addInter(inter);
@@ -404,6 +410,21 @@ public class Measure
         }
     }
 
+    //---------------//
+    // checkDuration //
+    //---------------//
+    /**
+     * Check the duration as computed in this measure from its contained voices,
+     * compared to its theoretical duration.
+     */
+    public void checkDuration ()
+    {
+        // Check duration of each voice
+        for (Voice voice : voices) {
+            voice.checkDuration();
+        }
+    }
+
     //-----------------//
     // clearBeamGroups //
     //-----------------//
@@ -415,11 +436,22 @@ public class Measure
         beamGroups.clear();
     }
 
+    //-------------//
+    // clearVoices //
+    //-------------//
+    /**
+     * Reset collection of voices for this measure.
+     */
+    public void clearVoices ()
+    {
+        voices.clear();
+    }
+
     //--------//
     // filter //
     //--------//
     /**
-     * Retrieve among the provided inters the ones contains in this measure.
+     * Retrieve among the provided inters the ones contained in this measure.
      *
      * @param inters the provided inters
      * @return the contained inters
@@ -469,18 +501,16 @@ public class Measure
     // generateVoiceId //
     //-----------------//
     /**
-     * Generate a new voice ID, starting in provided staff.
-     * <p>
-     * Use 1-4 for first staff, 5-8 for second staff
+     * Generate a new voice ID, based on voice family and current measure voices.
      *
-     * @param staff staff on which the voice starts
+     * @param family the voice family (HIGH, LOW, INFRA)
      * @return the generated ID, or -1 if none could be assigned.
      */
-    public int generateVoiceId (Staff staff)
+    public int generateVoiceId (Family family)
     {
-        int offset = ID_STAFF_OFFSET * part.getStaves().indexOf(staff);
+        final int idOffset = family.idOffset();
 
-        for (int id = offset + 1;; id++) {
+        for (int id = idOffset + 1;; id++) {
             if (getVoiceById(id) == null) {
                 return id;
             }
@@ -1207,6 +1237,30 @@ public class Measure
         return stdChords;
     }
 
+    //-----------------------//
+    // getStandardHeadChords //
+    //-----------------------//
+    /**
+     * Report all standard (not small) head chords in this measure.
+     *
+     * @return all non-small head chords in measure
+     */
+    public Set<HeadChordInter> getStandardHeadChords ()
+    {
+        final Set<HeadChordInter> standardHeadChords = getHeadChords();
+
+        for (Iterator<HeadChordInter> it = standardHeadChords.iterator(); it.hasNext();) {
+            final HeadChordInter headChord = it.next();
+            final List<Inter> notes = headChord.getMembers();
+
+            if (notes.isEmpty() || notes.get(0).getShape().isSmall()) {
+                it.remove();
+            }
+        }
+
+        return standardHeadChords;
+    }
+
     //------------------//
     // getTimeSignature //
     //------------------//
@@ -1299,6 +1353,29 @@ public class Measure
         return Collections.unmodifiableList(voices);
     }
 
+    //--------------------//
+    // getWholeRestChords //
+    //--------------------//
+    /**
+     * Report all whole rest-chords in measure.
+     *
+     * @return all whole rest chords in measure
+     */
+    public Set<AbstractChordInter> getWholeRestChords ()
+    {
+        final Set<AbstractChordInter> set = new LinkedHashSet<>();
+
+        for (RestChordInter chord : getRestChords()) {
+            final List<Inter> members = chord.getMembers();
+
+            if (!members.isEmpty() && (members.get(0).getShape() == Shape.WHOLE_REST)) {
+                set.add(chord);
+            }
+        }
+
+        return set;
+    }
+
     //----------//
     // getWidth //
     //----------//
@@ -1362,6 +1439,66 @@ public class Measure
         }
 
         return true;
+    }
+
+    //------------------//
+    // inferVoiceFamily //
+    //------------------//
+    /**
+     * Infer the voice family for a voice started by the provided chord.
+     *
+     * @param chord the provided chord (assumed to be the first in voice)
+     * @return the inferred voice family
+     */
+    public Family inferVoiceFamily (AbstractChordInter chord)
+    {
+        final Staff startingStaff = chord.getTopStaff();
+
+        if (part.isMerged()) {
+            switch (chord.getStemDir()) {
+            case -1:
+                return Family.HIGH;
+            case +1:
+                return Family.LOW;
+            default:
+                return (startingStaff == part.getFirstStaff()) ? Family.HIGH : Family.LOW;
+            }
+        } else {
+            int index = part.getStaves().indexOf(startingStaff);
+
+            if (index >= 0 && index < Family.values().length) {
+                return Family.values()[index];
+            }
+
+            logger.error("{} Weird staff index {} in part", startingStaff, index);
+            return Family.HIGH;
+        }
+    }
+
+    //------------//
+    // isAbnormal //
+    //------------//
+    /**
+     * Report whether this measure is abnormal.
+     *
+     * @return the abnormal status
+     */
+    public boolean isAbnormal ()
+    {
+        return abnormal;
+    }
+
+    //-------------//
+    // setAbnormal //
+    //-------------//
+    /**
+     * Mark this measure as being abnormal or not.
+     *
+     * @param abnormal new value
+     */
+    public void setAbnormal (boolean abnormal)
+    {
+        this.abnormal = abnormal;
     }
 
     //---------//
@@ -1652,27 +1789,73 @@ public class Measure
     }
 
     //--------------//
+    // removeVoices //
+    //--------------//
+    /**
+     * Remove the provided voices.
+     *
+     * @param toRemove the voices to remove
+     */
+    public void removeVoices (Collection<Voice> toRemove)
+    {
+        voices.removeAll(toRemove);
+    }
+
+    //--------------//
     // renameVoices //
     //--------------//
     /**
-     * Adjust voice ID per staff, in line with their order.
+     * Adjust voice ID per family, in line with their order.
      */
     public void renameVoices ()
     {
-        final List<Staff> staves = part.getStaves();
-
-        for (int index = 0; index < staves.size(); index++) {
-            final Staff staff = staves.get(index);
-            int id = ID_STAFF_OFFSET * index;
+        for (Family family : Family.values()) {
+            int id = family.idOffset();
 
             for (int i = 0; i < voices.size(); i++) {
                 final Voice voice = voices.get(i);
 
-                if (voice.getStartingStaff() == staff) {
+                if (voice.getFamily() == family) {
                     voice.setId(++id);
                 }
             }
         }
+    }
+
+    //------------//
+    // renderArea //
+    //------------//
+    /**
+     * Render the measure area with provided color.
+     *
+     * @param g     graphics context
+     * @param color provided color
+     */
+    public void renderArea (Graphics2D g,
+                            Color color)
+    {
+        g.setColor(color);
+
+        final int left = getLeft();
+        final int right = getRight();
+
+        final LineInfo firstLine = part.getFirstStaff().getFirstLine();
+        int top = Math.min(firstLine.yAt(left), firstLine.yAt(right));
+
+        final LineInfo lastLine = part.getLastStaff().getLastLine();
+        int bottom = Math.max(lastLine.yAt(left), lastLine.yAt(right));
+
+        // Most timing inters from measure
+        for (Inter inter : getTimingInters()) {
+            Rectangle bounds = inter.getBounds();
+
+            if (bounds != null) {
+                top = Math.min(top, bounds.y);
+                bottom = Math.max(bottom, bounds.y + bounds.height);
+            }
+        }
+
+        g.fill(new Rectangle(left, top, right - left + 1, bottom - top + 1));
     }
 
     //-----------//
@@ -1695,10 +1878,11 @@ public class Measure
     // resetRhythm //
     //-------------//
     /**
-     * Nullify rhythm information in this measure.
+     * Reset rhythm information in this measure (voices, beam groups, chords).
      */
     public void resetRhythm ()
     {
+        setAbnormal(false);
         voices.clear();
 
         // Reset voice of every beam group
@@ -2147,74 +2331,3 @@ public class Measure
         }
     }
 }
-//
-//    //--------------//
-//    // getKeyBefore //
-//    //--------------//
-//    /**
-//     * Report the key signature which applies in this measure, whether a key signature
-//     * actually starts this measure in the same staff, or whether a key signature was
-//     * found in a previous measure, for the same staff.
-//     *
-//     * @param point the point before which to look
-//     * @param staff the containing staff (cannot be null)
-//     * @return the current key signature, or null if not found
-//     */
-//    public KeyInter getKeyBefore (Point point,
-//                                  Staff staff)
-//    {
-//        if (point == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        int staffIndexInPart = staff.getIndexInPart();
-//
-//        // Look in this measure, with same staff, going backwards
-//        // TODO: make sure keysigs is sorted by abscissa !!!!!
-//        for (int ik = keySigs.size() - 1; ik >= 0; ik--) {
-//            final KeyInter ks = keySigs.get(ik);
-//
-//            if ((ks.getStaff() == staff) && (ks.getCenter().x < point.x)) {
-//                return ks;
-//            }
-//        }
-//
-//        // Look in previous measures in the system part and the preceding ones
-//        Measure measure = this;
-//
-//        while ((measure = measure.getPrecedingInPage()) != null) {
-//            final KeyInter ks = measure.getLastMeasureKey(staffIndexInPart);
-//
-//            if (ks != null) {
-//                return ks;
-//            }
-//        }
-//
-//        return null; // Not found (in this page)
-//    }
-//
-//
-//    //-------------------//
-//    // getLastMeasureKey //
-//    //-------------------//
-//    /**
-//     * Report the last key signature (if any) in this measure, if tagged with the
-//     * specified staff index.
-//     *
-//     * @param staffIndexInPart the imposed part-based staff index
-//     * @return the last key signature, or null
-//     */
-//    public KeyInter getLastMeasureKey (int staffIndexInPart)
-//    {
-//        // Going backwards
-//        for (int ik = keySigs.size() - 1; ik >= 0; ik--) {
-//            KeyInter key = keySigs.get(ik);
-//
-//            if (key.getStaff().getIndexInPart() == staffIndexInPart) {
-//                return key;
-//            }
-//        }
-//
-//        return null;
-//    }
-//

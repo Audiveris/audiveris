@@ -112,6 +112,27 @@ public class ClefInter
         super(null, null, null, null, null, null);
     }
 
+    //-----------------//
+    // absolutePitchOf //
+    //-----------------//
+    /**
+     * Report an absolute pitch value, using the current clef if any,
+     * otherwise using the default clef (G_CLEF)
+     *
+     * @param clef          the provided current clef
+     * @param pitchPosition the pitch position of the provided note
+     * @return the corresponding absolute
+     */
+    public static int absolutePitchOf (ClefInter clef,
+                                       int pitchPosition)
+    {
+        if (clef == null) {
+            return defaultClef.absolutePitchOf(pitchPosition);
+        } else {
+            return clef.absolutePitchOf(pitchPosition);
+        }
+    }
+
     //-------//
     // added //
     //-------//
@@ -194,7 +215,56 @@ public class ClefInter
     @Override
     protected String internals ()
     {
-        return super.internals() + " " + shape + " " + kind;
+        return super.internals() + " " + kind;
+    }
+
+    //-----------------//
+    // absolutePitchOf //
+    //-----------------//
+    /**
+     * Report the absolute pitch corresponding to a note at the provided pitch position,
+     * assuming we are governed by this clef
+     *
+     * @param intPitch the pitch position of the note
+     * @return the corresponding absolute pitch
+     */
+    private int absolutePitchOf (int intPitch)
+    {
+        switch (shape) {
+        case G_CLEF:
+        case G_CLEF_SMALL:
+            return 34 - intPitch;
+
+        case G_CLEF_8VA:
+            return 34 + 7 - intPitch;
+
+        case G_CLEF_8VB:
+            return 34 - 7 - intPitch;
+
+        case C_CLEF:
+
+            // Depending on precise clef position, we can have
+            // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2) [or other stuff]
+            return 28 - (int) Math.rint(this.pitch) - intPitch;
+
+        case F_CLEF:
+        case F_CLEF_SMALL:
+            return 22 - intPitch;
+
+        case F_CLEF_8VA:
+            return 22 + 7 - intPitch;
+
+        case F_CLEF_8VB:
+            return 22 - 7 - intPitch;
+
+        case PERCUSSION_CLEF:
+            return 0;
+
+        default:
+            logger.error("No absolute note pitch defined for {}", this);
+
+            return 0; // To keep compiler happy
+        }
     }
 
     //------------//

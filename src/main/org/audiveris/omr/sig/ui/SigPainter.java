@@ -112,6 +112,7 @@ import javax.swing.JPanel;
  * Remarks on no-op visit() for:
  * <ul>
  * <li>AbstractChordInter: Notes and stem are painted on their own
+ * Only chord ID can be added.
  * <li>KeyInter: Each key item is painted on its own
  * <li>WordInter: Painting is handled from sentence
  * </ul>
@@ -596,8 +597,12 @@ public abstract class SigPainter
                 font = getMusicFont(staff);
             }
 
-            final Point center = GeoUtil.centerOf(inter.getBounds());
-            symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
+            final Rectangle bounds = inter.getBounds();
+
+            if (bounds != null) {
+                final Point center = GeoUtil.centerOf(bounds);
+                symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
+            }
         } else {
             logger.error("No symbol to paint {}", inter);
         }

@@ -46,6 +46,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.math.Rational;
 
 /**
  * Class {@code AbstractTimeInter} represents a time signature, with either one (full)
@@ -156,6 +157,27 @@ public abstract class AbstractTimeInter
      * @return the duplicate (not inserted in sig)
      */
     public abstract AbstractTimeInter replicate (Staff targetStaff);
+
+    //--------------//
+    // getBeatValue //
+    //--------------//
+    /**
+     * Report the duration of one beat
+     *
+     * @return beat value
+     */
+    public Rational getBeatValue ()
+    {
+        final int num = timeRational.num;
+        final int den = timeRational.den;
+
+        // Specific case for 6/8, 9/8, 12/8 (but not 3/8)
+        if (num != 3 && num % 3 == 0 && den == 8) {
+            return new Rational(3, 8);
+        }
+
+        return new Rational(1, den);
+    }
 
     //----------------//
     // getDenominator //
