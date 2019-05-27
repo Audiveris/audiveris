@@ -671,7 +671,18 @@ public class SlurInter
             final BeamGroup group = chord.getBeamGroup();
 
             if ((group != null) && ((group == leftGroup) || (group == rightGroup))) {
-                logger.debug("Tie forbidden across {}", chord);
+                logger.debug("Tie forbidden across beamed {}", chord);
+
+                return false;
+            }
+
+            // Check invading chord into tie box
+            final Rectangle chordBox = chord.getBounds();
+            final Rectangle inter = chordBox.intersection(box);
+            double invasion = (double) inter.height / box.height;
+
+            if (invasion > constants.maxTieIntersection.getValue()) {
+                logger.info("Tie forbidden across invading {}", chord);
 
                 return false;
             }
@@ -979,5 +990,9 @@ public class SlurInter
                 "none",
                 1,
                 "Maximum delta in measure ID when setting a tie");
+
+        private final Constant.Ratio maxTieIntersection = new Constant.Ratio(
+                0.25,
+                "Maximum intersection for a chord invading a tie");
     }
 }
