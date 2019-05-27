@@ -537,8 +537,16 @@ public class StubsController
                         @Override
                         public void run ()
                         {
-                            // Tell the selected assembly that it now has the focus
-                            stub.getAssembly().assemblySelected();
+                            // Race condition: let's check we are working on the selected stub
+                            SheetStub selected = getSelectedStub();
+
+                            if (stub == selected) {
+                                // Tell the selected assembly that it now has the focus
+                                // (to display stub related boards and error pane)
+                                stub.getAssembly().assemblySelected();
+                            } else {
+                                logger.debug("Too late for {}", stub);
+                            }
                         }
                     });
 
