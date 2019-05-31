@@ -656,7 +656,7 @@ public class StaffManager
                 "Should we show the staff lines on all views?");
 
         private final Scale.Fraction verticalAreaMargin = new Scale.Fraction(
-                1.0,
+                0.9, // 1.0,
                 "Vertical margin on staff areas");
     }
 }

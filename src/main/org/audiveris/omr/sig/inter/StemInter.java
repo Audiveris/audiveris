@@ -43,7 +43,6 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
 import static org.audiveris.omr.sig.relation.StemPortion.STEM_BOTTOM;
 import static org.audiveris.omr.sig.relation.StemPortion.STEM_TOP;
-import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
@@ -515,39 +514,6 @@ public class StemInter
         }
 
         return false;
-    }
-
-    //------------//
-    // lookupHead //
-    //------------//
-    /**
-     * Lookup a head connected to this stem, with proper head side and pitch values.
-     * Beware side is defined WRT head, not WRT stem.
-     *
-     * @param side  desired head side
-     * @param pitch desired pitch position
-     * @return the head instance if found, null otherwise
-     */
-    public Inter lookupHead (HorizontalSide side,
-                             int pitch)
-    {
-        if (!isRemoved()) {
-            for (Relation rel : sig.getRelations(this, HeadStemRelation.class)) {
-                HeadStemRelation hsRel = (HeadStemRelation) rel;
-
-                // Check side
-                if (hsRel.getHeadSide() == side) {
-                    // Check pitch
-                    HeadInter head = (HeadInter) sig.getEdgeSource(rel);
-
-                    if (head.getIntegerPitch() == pitch) {
-                        return head;
-                    }
-                }
-            }
-        }
-
-        return null;
     }
 
     //--------//

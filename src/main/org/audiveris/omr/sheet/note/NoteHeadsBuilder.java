@@ -85,6 +85,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
 
 /**
@@ -702,7 +703,7 @@ public class NoteHeadsBuilder
     private List<Inter> processStaff (Staff staff,
                                       boolean useSeeds)
     {
-        List<Inter> ch = new ArrayList<>(); // Created heads
+        final List<Inter> ch = new ArrayList<>(); // Created heads
 
         // Use all staff lines
         int pitch = -5; // Current pitch
@@ -726,7 +727,21 @@ public class NoteHeadsBuilder
         }
 
         // Use all ledgers, above staff, then below staff
+        // For merged grand staff, don't look further than middle ledger (C4)
+        final Part part = staff.getPart();
+
         for (int dir : new int[]{-1, 1}) {
+            // Limitation to last ledger in the specific case of merged grand staff
+            boolean lookFurther = true;
+
+            if (part.isMerged()) {
+                if (dir > 0 && staff == part.getFirstStaff()) {
+                    lookFurther = false;
+                } else if (dir < 0 && staff == part.getLastStaff()) {
+                    lookFurther = false;
+                }
+            }
+
             pitch = dir * 4;
 
             for (int i = dir;; i += dir) {
@@ -747,8 +762,10 @@ public class NoteHeadsBuilder
                     ch.addAll(new Scanner(adapter, null, 0, pitch, useSeeds).lookup());
 
                     // Look just further from staff
-                    int pitch2 = pitch + dir;
-                    ch.addAll(new Scanner(adapter, null, dir, pitch2, useSeeds).lookup());
+                    if (lookFurther) {
+                        int pitch2 = pitch + dir;
+                        ch.addAll(new Scanner(adapter, null, dir, pitch2, useSeeds).lookup());
+                    }
                 }
             }
         }

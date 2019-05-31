@@ -627,11 +627,13 @@ public class HeadInter
                 if (Math.abs(thatHead.getIntegerPitch() - getIntegerPitch()) > 1) {
                     return false;
                 }
-            } else {
-                // We have two note heads from different staves and with overlapping bounds!
-                fixDuplicateWith(thatHead); // Throws DeletedInterException when fixed
-
-                return true;
+//            } else {
+//                // We have two note heads from different staves and with overlapping bounds
+//                if (this.getStaff().getSystem() != that.getStaff().getSystem()) {
+//                    fixDuplicateWith(thatHead); // Throws DeletedInterException when fixed
+//
+//                    return true;
+//                }
             }
 
             // Check horizontal distance
@@ -648,30 +650,11 @@ public class HeadInter
             int minArea = Math.min(thisArea, thatArea);
             int commonArea = common.width * common.height;
             double areaRatio = (double) commonArea / minArea;
-            boolean res = (common.width > (constants.maxOverlapDxRatio.getValue()
-                                                   * thisBounds.width)) && (areaRatio
-                                                                                    > constants.maxOverlapAreaRatio
-                            .getValue());
+            boolean res = (common.width
+                                   > (constants.maxOverlapDxRatio.getValue() * thisBounds.width))
+                                  && (areaRatio > constants.maxOverlapAreaRatio.getValue());
 
             return res;
-
-            //        } else if (that instanceof StemInter) {
-            //            // Head with respect to a stem
-            //            // First, standard check
-            //            if (!Glyphs.intersect(this.getGlyph(), that.getGlyph(), false)) {
-            //                return false;
-            //            }
-            //
-            //            // Second, limit stem vertical range to connection points of ending heads if any
-            //            // (Assuming wrong-side ending heads have been pruned beforehand)
-            //            StemInter stem = (StemInter) that;
-            //            Line2D line = stem.computeAnchoredLine();
-            //            int top = (int) Math.ceil(line.getY1());
-            //            int bottom = (int) Math.floor(line.getY2());
-            //            Rectangle box = stem.getBounds();
-            //            Rectangle anchorRect = new Rectangle(box.x, top, box.width, bottom - top + 1);
-            //
-            //            return this.getCoreBounds().intersects(anchorRect);
         }
 
         // Basic test
@@ -759,39 +742,40 @@ public class HeadInter
 
         return Collections.emptyList();
     }
-
-    //------------------//
-    // fixDuplicateWith //
-    //------------------//
-    /**
-     * Fix head duplication on two staves.
-     * <p>
-     * We have two note heads from different staves and with overlapping bound.
-     * Vertical gap between the staves must be small and crowded, leading to head being "duplicated"
-     * in both staves.
-     * <p>
-     * Assuming there is a linked stem, we could use sibling stem/head in a beam group if any.
-     * Or we can simply use stem direction, assumed to point to the "true" containing staff.
-     *
-     * @param that the other inter
-     */
-    private void fixDuplicateWith (HeadInter that)
-            throws DeletedInterException
-    {
-        for (Relation rel : sig.getRelations(this, HeadStemRelation.class)) {
-            StemInter thisStem = (StemInter) sig.getOppositeInter(this, rel);
-            int thisDir = thisStem.computeDirection();
-            Inter dupli = ((thisDir * (that.getStaff().getId() - this.getStaff().getId())) > 0)
-                    ? this : that;
-
-            logger.debug("Deleting duplicated {}", dupli);
-            dupli.remove();
-            throw new DeletedInterException(dupli);
-        }
-
-        //TODO: What if we have no stem? It's a WHOLE_NOTE or SMALL_WHOLE_NOTE
-        // Perhaps check for a weak ledger, tangent to the note towards staff
-    }
+//
+//    //------------------//
+//    // fixDuplicateWith //
+//    //------------------//
+//    /**
+//     * Fix head duplication on two staves.
+//     * <p>
+//     * We have two note heads from different staves and with overlapping bound.
+//     * Vertical gap between the staves must be small and crowded, leading to head being "duplicated"
+//     * in both staves.
+//     * <p>
+//     * Assuming there is a linked stem, we could use sibling stem/head in a beam group if any.
+//     * Or we can simply use stem direction, assumed to point to the "true" containing staff.
+//     *
+//     * @param that the other inter
+//     */
+//    private void fixDuplicateWith (HeadInter that)
+//            throws DeletedInterException
+//    {
+//        for (Relation rel : sig.getRelations(this, HeadStemRelation.class)) {
+//            StemInter thisStem = (StemInter) sig.getOppositeInter(this, rel);
+//            int thisDir = thisStem.computeDirection();
+//            Inter dupli = ((thisDir * (that.getStaff().getId() - this.getStaff().getId())) > 0)
+//                    ? this : that;
+//
+//            logger.debug("Deleting duplicated {}", dupli);
+//            dupli.remove();
+//            throw new DeletedInterException(dupli);
+//        }
+//
+//        //TODO: What if we have no stem? It's a WHOLE_NOTE or SMALL_WHOLE_NOTE
+//        // Perhaps check for a weak ledger, tangent to the note towards staff
+//    }
+//
 
     //------------//
     // lookupLink //

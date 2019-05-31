@@ -737,14 +737,16 @@ public class SigReducer
             }
 
             // Pitch of the note head
-            int pitch = ((AbstractPitchedInter) head).getIntegerPitch();
+            // Beware for merged grand staff of pitches in the gutter between the two staves
+            final Staff staff = head.getStaff();
+            final int pitch = ((AbstractPitchedInter) head).getIntegerPitch();
 
             // Target side and target pitches of other head
-            // Look for presence of head on other side with target pitch
+            // Look for presence of head on other side with target pitches
             HorizontalSide targetSide = headSide.opposite();
 
             for (int targetPitch = pitch - 1; targetPitch <= (pitch + 1); targetPitch++) {
-                if (stem.lookupHead(targetSide, targetPitch) != null) {
+                if (lookupHead(stem, targetSide, targetPitch, staff) != null) {
                     continue RelsLoop; // OK
                 }
             }
@@ -1522,6 +1524,61 @@ public class SigReducer
         }
 
         return false;
+    }
+
+    //------------//
+    // lookupHead //
+    //------------//
+    /**
+     * Lookup a head connected to provided stem, with proper head side and pitch values.
+     * Beware side is defined WRT head, not WRT stem.
+     * <p>
+     * For merged grand staff configuration, search that extend past the middle ledger is handled
+     * in the context of the other staff and with a different pitch value.
+     *
+     * @param stem  the provided stem
+     * @param side  desired head side
+     * @param pitch desired pitch position
+     * @param staff staff the pitch is related to
+     * @return the head instance if found, null otherwise
+     */
+    private Inter lookupHead (StemInter stem,
+                              HorizontalSide side,
+                              int pitch,
+                              Staff staff)
+    {
+        if (stem.isRemoved()) {
+            return null;
+        }
+
+        // Very specific handling for merged grand staff
+        final Part staffPart = staff.getPart();
+
+        if (staffPart.isMerged()) {
+            if (staff == staffPart.getFirstStaff() && (pitch == 7)) {
+                staff = staffPart.getLastStaff();
+                pitch = -5;
+            } else if (staff == staffPart.getLastStaff() && (pitch == -6)) {
+                staff = staffPart.getFirstStaff();
+                pitch = 5;
+            }
+        }
+
+        for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
+            HeadStemRelation hsRel = (HeadStemRelation) rel;
+
+            // Check side
+            if (hsRel.getHeadSide() == side) {
+                // Check pitch in proper staff
+                HeadInter head = (HeadInter) sig.getEdgeSource(rel);
+
+                if ((head.getStaff() == staff) && (head.getIntegerPitch() == pitch)) {
+                    return head;
+                }
+            }
+        }
+
+        return null;
     }
 
     //----------------//

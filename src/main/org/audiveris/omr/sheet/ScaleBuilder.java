@@ -711,7 +711,7 @@ public class ScaleBuilder
                 "Ratio of total runs for derivative acceptance");
 
         private final Constant.Ratio maxSecondRatio = new Constant.Ratio(
-                2.0,
+                1.9, // 2.0 led to a false second peak in merged grand staff
                 "Maximum ratio between second and first combined peak");
 
         private final Constant.Ratio minBeamFraction = new Constant.Ratio(
