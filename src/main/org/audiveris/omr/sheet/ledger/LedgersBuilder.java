@@ -39,6 +39,7 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.run.Orientation;
 import static org.audiveris.omr.run.Orientation.*;
+import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
@@ -254,18 +255,33 @@ public class LedgersBuilder
     /**
      * Use smart tests on ledger candidates.
      * Starting from each staff, check one interline higher (and lower) for candidates, etc.
+     * <p>
+     * For merged grand staff, there is only one middle ledger (C4), related to the upper staff.
+     * Therefore, upper staff is limited downward to +1, and lower staff limited upward to 0.
      */
     private void filterLedgers ()
     {
         for (Staff staff : system.getStaves()) {
+            final Part part = staff.getPart();
             logger.debug("Staff#{}", staff.getId());
 
-            // Above staff (-1,-2,-3, ...) then below staff (+1,+2,+3, ...)
-            for (int dir : new int[]{-1, +1}) {
-                for (int index = dir;; index += dir) {
-                    if (0 == lookupLine(staff, index)) {
-                        break;
-                    }
+            // Above staff (-1,-2,-3, ...)
+            final int minIndex = (part.isMerged() && (staff == part.getLastStaff())) ? 0
+                    : Integer.MIN_VALUE;
+
+            for (int index = -1; index >= minIndex; index--) {
+                if (0 == lookupLine(staff, index)) {
+                    break;
+                }
+            }
+
+            // Below staff (+1,+2,+3, ...)
+            final int maxIndex = (part.isMerged() && (staff == part.getFirstStaff())) ? 1
+                    : Integer.MAX_VALUE;
+
+            for (int index = 1; index <= maxIndex; index++) {
+                if (0 == lookupLine(staff, index)) {
+                    break;
                 }
             }
         }
@@ -505,7 +521,7 @@ public class LedgersBuilder
                 double grade = impacts.getGrade();
 
                 if (stick.isVip()) {
-                    logger.info("VIP staff#{} at {} {}", staff.getId(), index, impacts.getDump());
+                    logger.info("VIP staff#{} at {} {}", staff.getId(), index, impacts);
                 }
 
                 if (grade >= suite.getMinThreshold()) {
@@ -630,6 +646,7 @@ public class LedgersBuilder
         return new Point2D.Double(
                 (startPoint.getX() + stopPoint.getX()) / 2,
                 (startPoint.getY() + stopPoint.getY()) / 2);
+
     }
 
     //-------------//
@@ -868,9 +885,9 @@ public class LedgersBuilder
         }
     }
 
-    //--------//
-    // Suites //
-    //--------//
+//--------//
+// Suites //
+//--------//
     /**
      * Management of check suites, based on staff interline.
      */
@@ -897,9 +914,9 @@ public class LedgersBuilder
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
+//-----------//
+// Constants //
+//-----------//
     private static class Constants
             extends ConstantSet
     {
@@ -925,7 +942,7 @@ public class LedgersBuilder
         // Constants specified WRT mean line thickness
         // -------------------------------------------
         private final Scale.LineFraction maxThicknessHigh = new Scale.LineFraction(
-                3,
+                3.25, // 3.0 is just too low for a synthetic score with 1-pixel staff lines
                 "High Maximum thickness of an interesting stick (WRT staff line)");
 
         private final Scale.LineFraction maxThicknessLow = new Scale.LineFraction(
@@ -983,9 +1000,9 @@ public class LedgersBuilder
                 "Low Minimum radius for ledger");
     }
 
-    //------------------//
-    // LedgerCheckBoard //
-    //------------------//
+//------------------//
+// LedgerCheckBoard //
+//------------------//
     /**
      * A specific board to display intrinsic checks of ledger sticks.
      */
@@ -1048,9 +1065,9 @@ public class LedgersBuilder
         }
     }
 
-    //--------------//
-    // StickContext //
-    //--------------//
+//--------------//
+// StickContext //
+//--------------//
     private static class StickContext
     {
 

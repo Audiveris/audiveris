@@ -124,6 +124,10 @@ public class LedgersFilter
                 Point center = new Point(x + (length / 2), y);
                 Staff staff = staffManager.getClosestStaff(center);
 
+                if (staff == null) {
+                    return false;
+                }
+
                 return staff.distanceTo(center) >= minDistanceFromStaff;
             }
         };

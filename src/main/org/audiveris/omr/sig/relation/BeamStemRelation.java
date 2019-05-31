@@ -372,7 +372,7 @@ public class BeamStemRelation
                 "Maximum manual horizontal overlap between stem & beam");
 
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
-                0.1,
+                0.15, ///0.1;
                 "Maximum horizontal gap between stem & beam");
 
         private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(

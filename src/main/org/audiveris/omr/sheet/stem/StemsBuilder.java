@@ -369,7 +369,7 @@ public class StemsBuilder
     private void checkBeamStems (Inter beam)
     {
         if (beam.isVip()) {
-            logger.info("VIP checkBeamStems? {}");
+            logger.info("VIP checkBeamStems? {}", beam);
         }
 
         List<BeamStemRelation> rels = new ArrayList<>();
