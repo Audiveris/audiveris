@@ -119,7 +119,7 @@ public abstract class VoiceDistance
                 if (right.getPart() != left.getPart()) {
                     return INCOMPATIBLE;
                 } else {
-                    // Map with a stem imposes to be on same staff
+                    // Map with a rest chord imposes to be on same staff
                     if ((left instanceof RestChordInter) || (right instanceof RestChordInter)) {
                         return INCOMPATIBLE;
                     }

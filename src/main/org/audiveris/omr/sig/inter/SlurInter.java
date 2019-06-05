@@ -682,7 +682,7 @@ public class SlurInter
             double invasion = (double) inter.height / box.height;
 
             if (invasion > constants.maxTieIntersection.getValue()) {
-                logger.info("Tie forbidden across invading {}", chord);
+                logger.debug("Tie forbidden across invading {}", chord);
 
                 return false;
             }

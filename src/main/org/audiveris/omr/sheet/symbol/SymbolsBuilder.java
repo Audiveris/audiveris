@@ -333,7 +333,7 @@ public class SymbolsBuilder
                     Collections.sort(list, Glyphs.byReverseWeight);
                     list = list.subList(0, Math.min(list.size(), maxPartCount));
                     subSet = new LinkedHashSet<>(list);
-                    logger.info("Symbol parts shrunk from {} to {}", setSize, maxPartCount);
+                    logger.debug("Symbol parts shrunk from {} to {}", setSize, maxPartCount);
                 }
 
                 // Use just the subgraph for this (sub)set

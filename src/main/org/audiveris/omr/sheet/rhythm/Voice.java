@@ -31,6 +31,7 @@ import static org.audiveris.omr.sheet.rhythm.SlotVoice.Status;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
+import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -254,6 +255,28 @@ public class Voice
                 prevChord = info.chord;
             }
         }
+    }
+
+    //----------------//
+    // getChordBefore //
+    //----------------//
+    /**
+     * Retrieve within this voice the latest chord, if any, before the provided chord.
+     *
+     * @param chord the provided chord
+     * @return the chord just before if any
+     */
+    AbstractChordInter getChordBefore (AbstractChordInter chord)
+    {
+        if (chords != null) {
+            final int chordIndex = chords.indexOf(chord);
+
+            if (chordIndex > 0) {
+                return chords.get(chordIndex - 1);
+            }
+        }
+
+        return null;
     }
 
     //----------------//
@@ -659,6 +682,37 @@ public class Voice
     public Rational getTermination ()
     {
         return termination;
+    }
+
+    //------------//
+    // getTuplets //
+    //------------//
+    /**
+     * Report the sequence of tuplet signs used in voice
+     *
+     * @return the sequence found, perhaps empty
+     */
+    public List<TupletInter> getTuplets ()
+    {
+        List<TupletInter> found = null;
+
+        for (AbstractChordInter chord : chords) {
+            final TupletInter tuplet = chord.getTuplet();
+
+            if ((tuplet != null) && (found == null || !found.contains(tuplet))) {
+                if (found == null) {
+                    found = new ArrayList<>();
+                }
+
+                found.add(tuplet);
+            }
+        }
+
+        if (found == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return found;
     }
 
     //----------------//

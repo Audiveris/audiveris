@@ -306,7 +306,7 @@ public abstract class AbstractInter
             }
         }
 
-        return isManual() || isImplicit();
+        return isManual() || ((bounds != null) && isImplicit());
     }
 
     //----------//

@@ -305,12 +305,28 @@ public class PageRhythm
             Rational avgGuess = null;
             double val = 0.0;
             int count = 0;
+            int topNb = -1;
+            Rational topGuess = null;
 
             for (Rational r : histo.bucketSet()) {
-                if ((r.compareTo(minDur) >= 0) && (r.compareTo(maxDur) <= 0)) {
-                    int nb = histo.getCount(r);
-                    count += nb;
-                    val += (nb * r.doubleValue());
+                if (r.compareTo(minDur) < 0) {
+                    continue;
+                }
+
+                if (r.compareTo(maxDur) > 0) {
+                    break;
+                }
+
+                int nb = histo.getCount(r);
+
+                // Average
+                count += nb;
+                val += (nb * r.doubleValue());
+
+                // Top
+                if (nb > topNb) {
+                    topNb = nb;
+                    topGuess = r;
                 }
             }
 
@@ -321,18 +337,16 @@ public class PageRhythm
                 avgGuess = new Rational(quarters, 4);
             }
 
-            //        Rational topGuess = histo.getMaxBucket();
-            //        logger.info(
-            //                "{} Durations avgGuess:{} topGuess:{} avgValue:{} stacks:{} voices:{} {}",
-            //                range,
-            //                avgGuess,
-            //                topGuess,
-            //                String.format("%.2f", val),
-            //                stackNb,
-            //                voiceNb,
-            //                histo);
-            //
-            return avgGuess;
+            logger.info("{}", histo);
+            logger.info(
+                    "{} Durations topGuess:{} avgGuess:{} avgValue:{} stacks:{}",
+                    range,
+                    topGuess,
+                    avgGuess,
+                    String.format("%.2f", val),
+                    range.stopSN - range.startSN + 1);
+
+            return topGuess;
         } catch (Exception ex) {
             logger.warn("{} error in retrieveExpectedDuration {}", range, ex.toString(), ex);
             return null;
@@ -367,8 +381,9 @@ public class PageRhythm
 
                 // End of range?
                 if (sn == range.stopSN) {
-                    // If range is governed by a manual time signature, use it!
-                    if ((range.ts != null) && range.ts.isManual()) {
+                    // If range is governed by a time signature, let's use it!
+                    ///if ((range.ts != null) && range.ts.isManual()) {
+                    if (range.ts != null) {
                         range.duration = range.ts.getTimeRational().getValue();
                         logger.debug("{} manual:{}", range, range.duration);
                     } else {
