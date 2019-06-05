@@ -53,14 +53,20 @@ public class Rational
         implements Comparable<Rational>
 {
 
-    /** The zero rational instance. */
+    /** 0 rational instance. */
     public static final Rational ZERO = new Rational(0, 1);
 
-    /** The one rational instance. */
+    /** 1/4 rational value. */
+    public static final Rational ONE_OVER_FOUR = new Rational(1, 4);
+
+    /** 1/2 rational instance. */
+    public static final Rational HALF = new Rational(1, 2);
+
+    /** 1 rational instance. */
     public static final Rational ONE = new Rational(1, 1);
 
-    /** The half rational instance. */
-    public static final Rational HALF = new Rational(1, 2);
+    /** 3/2 rational value. */
+    public static final Rational THREE_OVER_TWO = new Rational(3, 2);
 
     /** Max rational value. */
     public static final Rational MAX_VALUE = new Rational(Integer.MAX_VALUE, 1);

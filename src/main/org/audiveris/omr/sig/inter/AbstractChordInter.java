@@ -23,6 +23,7 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.Population;
 import org.audiveris.omr.math.Rational;
@@ -1047,6 +1048,21 @@ public abstract class AbstractChordInter
         }
 
         return false;
+    }
+
+    //-------------//
+    // isWholeHead //
+    //-------------//
+    /**
+     * Check whether the chord/note contains a whole head.
+     *
+     * @return true if whole head
+     */
+    public boolean isWholeHead ()
+    {
+        Shape shape = getLeadingNote().getShape();
+
+        return ShapeSet.StemLessHeads.contains(shape);
     }
 
     //-------------//

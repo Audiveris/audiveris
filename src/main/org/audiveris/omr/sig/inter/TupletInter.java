@@ -40,6 +40,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -115,10 +116,14 @@ public class TupletInter
     {
         super.added();
 
-        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
+        Point center = getCenter();
 
-        if (stack != null) {
-            stack.addInter(this);
+        if (center != null) {
+            MeasureStack stack = sig.getSystem().getStackAt(center);
+
+            if (stack != null) {
+                stack.addInter(this);
+            }
         }
 
         setAbnormal(true); // No chord linked yet

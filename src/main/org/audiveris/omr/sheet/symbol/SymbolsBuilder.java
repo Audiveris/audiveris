@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2019. All rights reserved.
+//  Copyright © Audiveris 2021. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -49,12 +49,12 @@ import org.jgrapht.graph.SimpleGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,11 +67,13 @@ import java.util.Set;
  */
 public class SymbolsBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolsBuilder.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -95,6 +97,7 @@ public class SymbolsBuilder
     /** Scale-dependent global constants. */
     private final Parameters params;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolsBuilder object.
      *
@@ -112,6 +115,7 @@ public class SymbolsBuilder
         params = new Parameters(sheet.getScale());
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // buildSymbols //
     //--------------//
@@ -184,7 +188,7 @@ public class SymbolsBuilder
             logger.info("VIP evaluateGlyph on {}", glyph);
         }
 
-        final Point center = glyph.getCenter();
+        final Point2D center = glyph.getCenter2D();
         final Staff closestStaff = system.getClosestStaff(center); // Just an indication!
 
         if (closestStaff == null) {
@@ -319,21 +323,26 @@ public class SymbolsBuilder
         final int interline = sheet.getInterline();
         final int maxPartCount = constants.maxPartCount.getValue();
 
-        for (Collection<Glyph> set : sets) {
+        for (Set<Glyph> set : sets) {
             final int setSize = set.size();
             logger.debug("set size: {}", setSize);
 
             if (setSize > 1) {
-                if (setSize > maxPartCount) {
+                final Set<Glyph> subSet; // Use an upper limit for set size
+
+                if (setSize <= maxPartCount) {
+                    subSet = set;
+                } else {
                     List<Glyph> list = new ArrayList<>(set);
                     Collections.sort(list, Glyphs.byReverseWeight);
-                    set = list.subList(0, maxPartCount);
-                    logger.info("Symbol parts shrunk from {} to {}", setSize, maxPartCount);
+                    list = list.subList(0, Math.min(list.size(), maxPartCount));
+                    subSet = new LinkedHashSet<>(list);
+                    logger.debug("Symbol parts shrunk from {} to {}", setSize, maxPartCount);
                 }
 
                 // Use just the subgraph for this (sub)set
                 final SimpleGraph<Glyph, GlyphLink> subGraph;
-                subGraph = GlyphCluster.getSubGraph(set, systemGraph, true);
+                subGraph = GlyphCluster.getSubGraph(subSet, systemGraph, true);
                 new GlyphCluster(new SymbolAdapter(subGraph), GlyphGroup.SYMBOL).decompose();
             } else {
                 // The set is just an isolated glyph, to be evaluated directly
@@ -365,52 +374,7 @@ public class SymbolsBuilder
         }
     }
 
-    //---------------//
-    // SymbolAdapter //
-    //---------------//
-    private class SymbolAdapter
-            extends GlyphCluster.AbstractAdapter
-    {
-
-        private final Scale scale = sheet.getScale();
-
-        SymbolAdapter (SimpleGraph<Glyph, GlyphLink> graph)
-        {
-            super(graph);
-        }
-
-        @Override
-        public void evaluateGlyph (Glyph glyph,
-                                   Set<Glyph> parts)
-        {
-            SymbolsBuilder.this.evaluateGlyph(glyph);
-        }
-
-        @Override
-        public boolean isTooLarge (Rectangle symBox)
-        {
-            // Check width
-            if (symBox.width > params.maxSymbolWidth) {
-                return true;
-            }
-
-            // Check height (not limited if on left of system: braces / brackets)
-            if (GeoUtil.centerOf(symBox).x < system.getLeft()) {
-                return false;
-            } else {
-                return symBox.height > params.maxSymbolHeight;
-            }
-        }
-
-        @Override
-        public boolean isTooLight (int weight)
-        {
-            double normed = scale.pixelsToAreaFrac(weight);
-
-            return !classifier.isBigEnough(normed);
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -488,4 +452,49 @@ public class SymbolsBuilder
         }
     }
 
+    //---------------//
+    // SymbolAdapter //
+    //---------------//
+    private class SymbolAdapter
+            extends GlyphCluster.AbstractAdapter
+    {
+
+        private final Scale scale = sheet.getScale();
+
+        SymbolAdapter (SimpleGraph<Glyph, GlyphLink> graph)
+        {
+            super(graph);
+        }
+
+        @Override
+        public void evaluateGlyph (Glyph glyph,
+                                   Set<Glyph> parts)
+        {
+            SymbolsBuilder.this.evaluateGlyph(glyph);
+        }
+
+        @Override
+        public boolean isTooLarge (Rectangle symBox)
+        {
+            // Check width
+            if (symBox.width > params.maxSymbolWidth) {
+                return true;
+            }
+
+            // Check height (not limited if on left of system: braces / brackets)
+            if (GeoUtil.center2D(symBox).getX() < system.getLeft()) {
+                return false;
+            } else {
+                return symBox.height > params.maxSymbolHeight;
+            }
+        }
+
+        @Override
+        public boolean isTooLight (int weight)
+        {
+            double normed = scale.pixelsToAreaFrac(weight);
+
+            return !classifier.isBigEnough(normed);
+        }
+    }
 }

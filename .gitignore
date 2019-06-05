@@ -56,3 +56,6 @@ Thumb.db
 .classpath
 .project
 .settings
+
+# Gradle added files (temporary fix)
+gradle.properties

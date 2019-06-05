@@ -394,13 +394,16 @@ public class CLI
                 if (!Files.exists(folder)) {
                     Files.createDirectories(folder);
                 }
+
                 // In batch, log into specific log file within book folder
                 if (OMR.gui == null) {
                     LogUtil.addAppender(book.getRadix(), folder);
                 }
                 LogUtil.start(book);
+
                 // Specific sheets to process?
                 final SortedSet<Integer> sheetIds = params.getSheetIds();
+
                 // Make sure stubs are available
                 if (book.getStubs().isEmpty()) {
                     book.createStubs(sheetIds);
@@ -410,10 +413,12 @@ public class CLI
                         book.store(BookManager.getDefaultSavePath(book), false);
                     }
                 }
+
                 if (OMR.gui != null) {
                     Integer focus = (sheetIds != null) ? sheetIds.first() : null;
                     book.createStubsTabs(focus); // Tabs are now accessible
                 }
+
                 // Specific step to reach on all sheets in the book?
                 if (params.step != null) {
                     boolean ok = book.reachBookStep(params.step, params.force, sheetIds);
@@ -422,9 +427,11 @@ public class CLI
                         return;
                     }
                 }
+
                 if (params.transcribe) {
                     book.reduceScores();
                 }
+
                 // Specific class to run?
                 if (params.runClass != null) {
                     try {
@@ -441,21 +448,25 @@ public class CLI
                         logger.warn("Error running {} {}", params.runClass, ex.toString(), ex);
                     }
                 }
+
                 // Book export?
                 if (params.export) {
                     logger.debug("Export book");
                     book.export();
                 }
+
                 // Book sample?
                 if (params.sample) {
                     logger.debug("Sample book");
                     book.sample();
                 }
+
                 // Book annotate?
                 if (params.annotate) {
                     logger.debug("Annotate book");
                     book.annotate();
                 }
+
                 // Book print?
                 if (params.print) {
                     logger.debug("Print book");
