@@ -32,6 +32,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -150,14 +151,36 @@ public class TupletGenerator
      * <p>
      * We use the approximate number of notes in the provided beat group to choose between
      * TUPLET_THREE and TUPLET_SIX for tuplet shape.
+     * <p>
+     * Working assumption: If a chord of a beam group is implied, link the whole beam group,
+     * including the interleaved rests.
      *
-     * @param group the provided group of chords
+     * @param group    (input) the original group of chords
+     * @param extGroup (output) the extended group of chords
      * @return the generated implicit tuplet
      */
-    public TupletInter generateTuplet (List<AbstractChordInter> group)
+    public TupletInter generateTuplet (List<AbstractChordInter> group,
+                                       List<AbstractChordInter> extGroup)
     {
+        // Extend to beam group?
+        for (AbstractChordInter chord : group) {
+            BeamGroup bg = chord.getBeamGroup();
+
+            if (bg != null) {
+                for (AbstractChordInter c : bg.getAllChords()) {
+                    if (!extGroup.contains(c)) {
+                        extGroup.add(c);
+                    }
+                }
+            } else {
+                extGroup.add(chord);
+            }
+        }
+
+        Collections.sort(extGroup, Inters.byCenterAbscissa);
+
         // Simplistic approach
-        final int size = group.size();
+        final int size = extGroup.size();
         final int nb = (int) Math.rint(size / 3.0);
         final Shape shape = (nb == 1) ? Shape.TUPLET_THREE : Shape.TUPLET_SIX;
 
@@ -165,7 +188,7 @@ public class TupletGenerator
         tuplet.setImplicit(true);
 
         // Precise tuplet bounds, above or below group
-        tuplet.setBounds(inferTupletBounds(group, shape));
+        tuplet.setBounds(inferTupletBounds(extGroup, shape));
 
         final SIGraph sig = system.getSig();
         sig.addVertex(tuplet);
@@ -173,7 +196,7 @@ public class TupletGenerator
         measure.addInter(tuplet);
 
         // Set relation between tuplet and every chord in group
-        for (AbstractChordInter ch : group) {
+        for (AbstractChordInter ch : extGroup) {
             sig.addEdge(ch, tuplet, new ChordTupletRelation(shape));
         }
 
@@ -238,7 +261,8 @@ public class TupletGenerator
 
         // Process each beat group
         for (List<AbstractChordInter> group : groups) {
-            created.add(generateTuplet(group));
+            List<AbstractChordInter> extGroup = new ArrayList<>();
+            created.add(generateTuplet(group, extGroup));
         }
 
         return created;
