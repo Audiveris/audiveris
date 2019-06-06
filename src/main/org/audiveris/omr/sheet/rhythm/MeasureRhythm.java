@@ -471,12 +471,13 @@ public class MeasureRhythm
         final List<AbstractChordInter> group = chords.subList(iFirst, iBreak);
 
         // Generate one implicit tuplet for the group
-        tupletGenerator.generateTuplet(group);
+        List<AbstractChordInter> extGroup = new ArrayList<>();
+        tupletGenerator.generateTuplet(group, extGroup);
 
         // Modify time offset for chords and slots
         AbstractChordInter prevChord = null;
 
-        for (AbstractChordInter chord : group) {
+        for (AbstractChordInter chord : extGroup) {
             if (prevChord != null) {
                 Rational newTime = prevChord.getEndTime();
                 chord.setAndPushTime(newTime);
@@ -582,7 +583,8 @@ public class MeasureRhythm
                         List<AbstractChordInter> doubleGroup = new ArrayList<>();
                         doubleGroup.addAll(prevGroup);
                         doubleGroup.addAll(group);
-                        tupletGenerator.generateTuplet(doubleGroup);
+                        List<AbstractChordInter> extGroup = new ArrayList<>();
+                        tupletGenerator.generateTuplet(doubleGroup, extGroup);
                     }
                 }
 

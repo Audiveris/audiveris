@@ -204,18 +204,10 @@ public class BeamGroup
     {
         AbstractChordInter prevChord = null;
 
-        for (AbstractChordInter chord : getChords()) {
+        for (AbstractChordInter chord : getAllChords()) {
             if (prevChord != null) {
                 try {
-                    // Here we must check for interleaved rest
-                    AbstractNoteInter rest = measure.lookupRest(prevChord, chord);
-
-                    if (rest != null) {
-                        rest.getChord().setTimeOffset(prevChord.getEndTime());
-                        chord.setTimeOffset(rest.getChord().getEndTime());
-                    } else {
-                        chord.setTimeOffset(prevChord.getEndTime());
-                    }
+                    chord.setTimeOffset(prevChord.getEndTime());
                 } catch (Exception ex) {
                     logger.warn("{} Cannot compute chord time based on previous chord", chord);
                 }
@@ -225,6 +217,39 @@ public class BeamGroup
 
             prevChord = chord;
         }
+    }
+
+    //--------------//
+    // getAllChords //
+    //--------------//
+    /**
+     * Report the x-ordered collection of chords that are grouped by this beam group,
+     * including the interleaved rests if any.
+     *
+     * @return the (perhaps empty) collection of 'beamed' chords and interleaved rests.
+     */
+    public List<AbstractChordInter> getAllChords ()
+    {
+        final List<AbstractChordInter> allChords = new ArrayList<>();
+        AbstractChordInter prevChord = null;
+
+        for (AbstractChordInter chord : getChords()) {
+            if (prevChord != null) {
+                AbstractNoteInter rest = measure.lookupRest(prevChord, chord);
+
+                if (rest != null) {
+                    allChords.add(rest.getChord());
+                }
+
+                allChords.add(chord);
+            }
+
+            prevChord = chord;
+        }
+
+        Collections.sort(allChords, Inters.byAbscissa);
+
+        return allChords;
     }
 
     //----------//
@@ -367,22 +392,9 @@ public class BeamGroup
         if (this.voice != voice) {
             this.voice = voice;
 
-            // Forward this information to the beamed chords
-            // Including the interleaved rests if any
-            AbstractChordInter lastChord = null;
-
-            for (AbstractChordInter chord : getChords()) {
-                if (lastChord != null) {
-                    // Here we must check for interleaved rest
-                    AbstractNoteInter rest = measure.lookupRest(lastChord, chord);
-
-                    if (rest != null) {
-                        rest.getChord().setVoice(voice);
-                    }
-                }
-
+            // Forward this information to the beamed chords, including the interleaved rests if any
+            for (AbstractChordInter chord : getAllChords()) {
                 chord.setVoice(voice);
-                lastChord = chord;
             }
         }
     }

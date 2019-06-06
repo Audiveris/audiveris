@@ -47,6 +47,7 @@ import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
@@ -111,6 +112,7 @@ public class RhythmsStep
         // Relations
         forStack.add(AugmentationRelation.class);
         forStack.add(BeamStemRelation.class);
+        forStack.add(ChordTupletRelation.class);
         forStack.add(DoubleDotRelation.class);
         forStack.add(HeadStemRelation.class);
     }

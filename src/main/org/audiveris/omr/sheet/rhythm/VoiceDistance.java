@@ -139,6 +139,10 @@ public abstract class VoiceDistance
                 nar += NOT_A_REST;
             }
 
+            if (right instanceof HeadChordInter) {
+                nar += NOT_A_REST;
+            }
+
             // Pitch difference (even in different staves)
             int p1 = left.getLeadingNote().getAbsolutePitch();
             int p2 = right.getLeadingNote().getAbsolutePitch();
