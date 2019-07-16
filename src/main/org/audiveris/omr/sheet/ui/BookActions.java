@@ -45,6 +45,7 @@ import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.grid.StaffProjector;
 import org.audiveris.omr.sheet.stem.StemScaler;
 import static org.audiveris.omr.sheet.ui.StubDependent.BOOK_IDLE;
+import static org.audiveris.omr.sheet.ui.StubDependent.INITIAL_AVAILABLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_AVAILABLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_IDLE;
 import org.audiveris.omr.sig.ui.InterController;
@@ -317,7 +318,6 @@ public class BookActions
         }
     }
 
-
     //---------------//
     // displayBinary //
     //---------------//
@@ -380,7 +380,7 @@ public class BookActions
      *
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = STUB_AVAILABLE)
+    @Action(enabledProperty = INITIAL_AVAILABLE)
     public void displayInitial (ActionEvent e)
     {
         final SheetStub stub = StubsController.getCurrentStub();

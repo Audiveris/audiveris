@@ -1581,7 +1581,7 @@ public class Book
                     repository.storeRepository();
                 }
             } else {
-                // (Store as): Switch from old to new book file
+                // Switch from old to new book file
                 root = createBookFile(bookPath);
                 diskWritten = true;
 

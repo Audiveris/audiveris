@@ -414,6 +414,19 @@ public class Picture
         return initialHolder.getData(sheet.getStub());
     }
 
+    //-------------------//
+    // hasNoInitialImage //
+    //-------------------//
+    /**
+     * Tell whether no initial image still exists, even on disk
+     *
+     * @return true if no initial image still exists
+     */
+    public boolean hasNoInitialImage ()
+    {
+        return initialHolder.hasNoData();
+    }
+
     //------------------//
     // getInitialSource //
     //------------------//
