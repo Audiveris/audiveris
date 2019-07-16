@@ -114,22 +114,28 @@ public abstract class DataHolder<T>
                 book.getLock().lock();
 
                 if (data == null) {
-                    // Open book file system
-                    Path path = book.openSheetFolder(stub.getNumber()).resolve(pathString);
-                    logger.debug("path: {}", path);
+                    if (book.getBookPath() != null) {
+                        // Open book file system
+                        Path path = book.openSheetFolder(stub.getNumber()).resolve(pathString);
+                        logger.debug("path: {}", path);
 
-                    if (Files.exists(path)) {
-                        try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ)) {
-                            data = load(is);
-                            logger.debug("Loaded {}", path);
+                        if (Files.exists(path)) {
+                            try (InputStream is = Files
+                                    .newInputStream(path, StandardOpenOption.READ)) {
+                                data = load(is);
+                                logger.debug("Loaded {}", path);
+                            }
+                        } else {
+                            logger.debug("No {}", path);
+                            hasNoData = true;
                         }
-                    } else {
-                        hasNoData = true;
-                        logger.info("No {}", path);
-                    }
 
-                    path.getFileSystem().close(); // Close book file system
-                    modified = false;
+                        path.getFileSystem().close(); // Close book file system
+                        modified = false;
+                    } else {
+                        logger.debug("No bookpath for{}", book);
+                        hasNoData = true;
+                    }
                 }
             } catch (Exception ex) {
                 logger.warn("Error reading data from " + pathString, ex);

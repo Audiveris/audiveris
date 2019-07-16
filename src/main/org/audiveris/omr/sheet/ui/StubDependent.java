@@ -22,6 +22,7 @@
 package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.sheet.Book;
+import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.Step;
@@ -47,6 +48,9 @@ public abstract class StubDependent
 {
 
     private static final Logger logger = LoggerFactory.getLogger(StubDependent.class);
+
+    /** Name of property linked to initial image availability. */
+    public static final String INITIAL_AVAILABLE = "initialAvailable";
 
     /** Name of property linked to sheet transcription ability. */
     public static final String STUB_TRANSCRIBABLE = "stubTranscribable";
@@ -74,6 +78,9 @@ public abstract class StubDependent
 
     /** Name of property linked to redoable. */
     public static final String REDOABLE = "redoable";
+
+    /** Indicates whether the sheet initial image is available. */
+    protected boolean initialAvailable = false;
 
     /** Indicates whether the current sheet stub can be transcribed. */
     protected boolean stubTranscribable = false;
@@ -232,6 +239,37 @@ public abstract class StubDependent
 
         if (redoable != oldValue) {
             firePropertyChange(REDOABLE, oldValue, this.redoable);
+        }
+    }
+
+    //--------------------//
+    // isInitialAvailable //
+    //--------------------//
+    /**
+     * Getter for initialAvailable property
+     *
+     * @return the current property value
+     */
+    public boolean isInitialAvailable ()
+    {
+        return initialAvailable;
+    }
+
+    //---------------------//
+    // setInitialAvailable //
+    //---------------------//
+    /**
+     * Setter for initialAvailable property.
+     *
+     * @param initialAvailable the new property value
+     */
+    public void setInitialAvailable (boolean initialAvailable)
+    {
+        boolean oldValue = this.initialAvailable;
+        this.initialAvailable = initialAvailable;
+
+        if (initialAvailable != oldValue) {
+            firePropertyChange(INITIAL_AVAILABLE, oldValue, this.initialAvailable);
         }
     }
 
@@ -457,6 +495,14 @@ public abstract class StubDependent
             } else {
                 setUndoable(false);
                 setRedoable(false);
+            }
+
+            // Update initialAvailable
+            if ((stub != null) && stub.hasSheet()) {
+                final Picture picture = stub.getSheet().getPicture();
+                setInitialAvailable(!picture.hasNoInitialImage());
+            } else {
+                setInitialAvailable(false);
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
