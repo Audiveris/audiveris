@@ -39,6 +39,9 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
+import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.SameVoiceRelation;
+import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
 import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
@@ -138,6 +141,7 @@ public class MeasureRhythm
 
         boolean ok = true;
 
+        // Second pass can be used only when implicit tuplets option is enabled
         for (int pass = 1; pass <= 2; pass++) {
             measure.resetRhythm();
             ok = true;
@@ -411,7 +415,7 @@ public class MeasureRhythm
 
         for (Voice voice : measure.getVoices()) {
             if (!voice.isWhole() && !extinctVoices.contains(voice)) {
-                AbstractChordInter lastChord = voice.getLastChord(false);
+                AbstractChordInter lastChord = voice.getLastChord();
 
                 if (lastChord.getTimeOffset() != null) {
                     Rational end = lastChord.getEndTime();
@@ -470,9 +474,9 @@ public class MeasureRhythm
                 stopChord) : chords.size();
         final List<AbstractChordInter> group = chords.subList(iFirst, iBreak);
 
-        // Generate one implicit tuplet for the group
+        // Generate implicit tuplets for the group
         List<AbstractChordInter> extGroup = new ArrayList<>();
-        tupletGenerator.generateTuplet(group, extGroup);
+        tupletGenerator.generateTuplets(group, extGroup);
 
         // Modify time offset for chords and slots
         AbstractChordInter prevChord = null;
@@ -584,7 +588,7 @@ public class MeasureRhythm
                         doubleGroup.addAll(prevGroup);
                         doubleGroup.addAll(group);
                         List<AbstractChordInter> extGroup = new ArrayList<>();
-                        tupletGenerator.generateTuplet(doubleGroup, extGroup);
+                        tupletGenerator.generateTuplets(doubleGroup, extGroup);
                     }
                 }
 
@@ -611,7 +615,10 @@ public class MeasureRhythm
         private final List<AbstractChordInter> rookies;
 
         // Known incompabilities
-        private final Set<ChordPair> incomps = new LinkedHashSet<>();
+        private final Set<ChordPair> blackList;
+
+        // Explicit voice links
+        private final Set<ChordPair> whiteList;
 
         // Current mapping
         private Mapping mapping;
@@ -620,6 +627,9 @@ public class MeasureRhythm
         {
             this.slot = slot;
             rookies = new ArrayList<>(slot.getChords());
+
+            blackList = buildBlackList();
+            whiteList = buildWhiteList();
         }
 
         public boolean mapChords ()
@@ -711,7 +721,7 @@ public class MeasureRhythm
 
                             // Discard
                             if (mapping != null) {
-                                incomps.add(new ChordPair(ch, mapping.ref(ch)));
+                                blackList.add(new ChordPair(ch, mapping.ref(ch)));
                             }
 
                             ok = false;
@@ -831,7 +841,8 @@ public class MeasureRhythm
                         }
 
                         if (timeOffset == null) {
-                            logger.warn("No timeOffset for {}", ch); // TODO: handle this!!!!!!
+                            // This can happen when chords are being manually redefined
+                            logger.info("No timeOffset for {}", ch);
                         }
                     }
                 }
@@ -1048,7 +1059,7 @@ public class MeasureRhythm
          * <p>
          * Otherwise, the slot time has to be determined by the slot chords themselves, using the
          * end time of their previous chords in their mapped voices.
-         * If all chords don't agree, we select the largest time value.
+         * If all chords don't agree, we select the largest time value. TODO: check this!
          * <p>
          * For any chord in slot which does not fit with the slot time, we reject its voice mapping
          * and new voice mappings can be tempted.
@@ -1059,7 +1070,8 @@ public class MeasureRhythm
         private void mapRookies ()
         {
             // Still active chords
-            final List<AbstractChordInter> actives = retrieveActives();
+            final List<AbstractChordInter> extinctExplicits = new ArrayList<>();
+            final List<AbstractChordInter> actives = retrieveActives(extinctExplicits);
 
             if (actives.isEmpty()) {
                 return; // Since we have nothing to map with!
@@ -1074,8 +1086,8 @@ public class MeasureRhythm
             Iteration:
             while (!done) {
                 done = true;
-                ChordsMapper mapper = new ChordsMapper(rookies, actives, voiceDistance, incomps);
-                mapping = mapper.process();
+                mapping = new ChordsMapper(rookies, actives, extinctExplicits, voiceDistance,
+                                           blackList, whiteList).process();
 
                 if (mapping.pairs.isEmpty()) {
                     return;
@@ -1111,14 +1123,14 @@ public class MeasureRhythm
                                             rectifyVoice(setCh, null, lastSync);
                                         } else {
                                             // Discard
-                                            incomps.add(pair);
+                                            blackList.add(pair);
                                             done = false;
                                             continue Iteration;
                                         }
                                     }
                                 } else {
                                     // Discard
-                                    incomps.add(pair);
+                                    blackList.add(pair);
                                     done = false;
                                     continue Iteration;
                                 }
@@ -1192,25 +1204,44 @@ public class MeasureRhythm
         /**
          * Retrieve all the chords that are still active before current compound slot
          * and could be mapped to slot chords.
+         * <p>
+         * A chord, belonging to an extinct voice, can still be kept in active set, if there is an
+         * explicit SameVoiceRelation between this chord and a rookie.
          *
+         * @param extinctExplicits (output) extinct voice/chords still to be considered
          * @return the active chords
          */
-        private List<AbstractChordInter> retrieveActives ()
+        private List<AbstractChordInter> retrieveActives (List<AbstractChordInter> extinctExplicits)
         {
             List<AbstractChordInter> actives = new ArrayList<>();
 
             for (Voice voice : measure.getVoices()) {
-                if (!voice.isWhole() && !extinctVoices.contains(voice)) {
-                    AbstractChordInter lastChord = voice.getLastChord(false);
+                if (voice.isWhole()) {
+                    continue;
+                }
 
-                    if (lastChord != null) {
-                        // Exclude whole notes
-                        // Make sure voice lastChord slot precedes this slot
-                        if (!lastChord.isWholeHead() && lastChord.getSlot().compareTo(slot) < 0) {
+                AbstractChordInter lastChord = voice.getLastChord();
+
+                // Exclude whole notes
+                if (lastChord.isWholeHead()) {
+                    continue;
+                }
+
+                // Make sure voice lastChord slot precedes this slot
+                if (lastChord.getSlot().compareTo(slot) > 0) {
+                    continue;
+                }
+
+                if (!extinctVoices.contains(voice)) {
+                    actives.add(lastChord);
+                } else {
+                    // Check for extinct voice chord with an explicit relation to a rookie
+                    for (ChordPair p : whiteList) {
+                        if ((p.oldChord == lastChord) && (rookies.contains(p.newChord))) {
                             actives.add(lastChord);
+                            extinctExplicits.add(p.oldChord);
+                            break;
                         }
-                    } else {
-                        logger.error("Voice {} with no last chord", voice);
                     }
                 }
             }
@@ -1250,6 +1281,54 @@ public class MeasureRhythm
             }
 
             return list;
+        }
+
+        //----------------//
+        // buildBlackList //
+        //----------------//
+        /**
+         * Initialize the set of incompatibilities by looking up for explicit
+         * {@link SeparateVoiceRelation} instances.
+         *
+         * @return the populated blackList
+         */
+        private Set<ChordPair> buildBlackList ()
+        {
+            final Set blacks = new LinkedHashSet<>();
+            final SIGraph sig = rookies.isEmpty() ? null : rookies.get(0).getSig();
+
+            for (AbstractChordInter ch : rookies) {
+                for (Relation rel : sig.getRelations(ch, SeparateVoiceRelation.class)) {
+                    AbstractChordInter other = (AbstractChordInter) sig.getOppositeInter(ch, rel);
+                    blacks.add(new ChordPair(ch, other));
+                }
+            }
+
+            return blacks;
+        }
+
+        //----------------//
+        // buildWhiteList //
+        //----------------//
+        /**
+         * Initialize the whiteList by looking up for explicit {@link SameVoiceRelation}
+         * instances.
+         *
+         * @return the populated whiteList
+         */
+        private Set<ChordPair> buildWhiteList ()
+        {
+            final Set whites = new LinkedHashSet<>();
+            final SIGraph sig = rookies.isEmpty() ? null : rookies.get(0).getSig();
+
+            for (AbstractChordInter ch : rookies) {
+                for (Relation rel : sig.getRelations(ch, SameVoiceRelation.class)) {
+                    AbstractChordInter other = (AbstractChordInter) sig.getOppositeInter(ch, rel);
+                    whites.add(new ChordPair(ch, other));
+                }
+            }
+
+            return whites;
         }
     }
 }

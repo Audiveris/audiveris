@@ -1252,7 +1252,7 @@ public abstract class AbstractInter
         sb.append(")");
 
         if (staff != null) {
-            sb.append(" s:").append(staff.getId());
+            sb.append(" stf:").append(staff.getId());
         }
 
         if (shape != null) {

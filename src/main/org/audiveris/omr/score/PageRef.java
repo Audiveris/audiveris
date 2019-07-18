@@ -28,6 +28,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
@@ -52,6 +53,9 @@ public class PageRef
 
     @XmlAttribute(name = "delta-measure-id")
     private Integer deltaMeasureId;
+
+    @XmlElement(name = "last-time-rational")
+    private TimeRational lastTimeRational;
 
     // Transient data
     //---------------
@@ -138,6 +142,22 @@ public class PageRef
     }
 
     /**
+     * @return the last time rational value in page
+     */
+    public TimeRational getLastTimeRational ()
+    {
+        return lastTimeRational;
+    }
+
+    /**
+     * @param lastTimeRational the lastTimeRational value to set
+     */
+    public void setLastTimeRational (TimeRational lastTimeRational)
+    {
+        this.lastTimeRational = lastTimeRational;
+    }
+
+    /**
      * @return the sheetNumber
      */
     public int getSheetNumber ()
@@ -182,6 +202,10 @@ public class PageRef
 
         if (deltaMeasureId != null) {
             sb.append(" deltaMeasureId:").append(deltaMeasureId);
+        }
+
+        if (lastTimeRational != null) {
+            sb.append(" lastTimeRational:").append(lastTimeRational);
         }
 
         sb.append('}');

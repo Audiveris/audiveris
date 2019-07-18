@@ -41,6 +41,8 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.SameTimeRelation;
+import org.audiveris.omr.sig.relation.SeparateTimeRelation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
 
 import org.jgrapht.Graphs;
@@ -232,6 +234,17 @@ public class SlotsRetriever
             return false;
         }
 
+        // No adjacency if explicitly separated
+        final AbstractChordInter src = (ch1.getId() < ch2.getId()) ? ch1 : ch2;
+        final AbstractChordInter tgt = (ch1.getId() < ch2.getId()) ? ch2 : ch1;
+        final SIGraph sig = src.getSig();
+
+        for (Relation rel : sig.getAllEdges(src, tgt)) {
+            if (rel instanceof SeparateTimeRelation) {
+                return false;
+            }
+        }
+
         final Rectangle box1 = ch1.getBoundsWithDots();
         final Rectangle box2 = ch2.getBoundsWithDots();
 
@@ -307,6 +320,9 @@ public class SlotsRetriever
 
         // Populate graph with chords
         Graphs.addAllVertices(graph, stdChords);
+
+        // Explicit time join
+        inspectTimeJoins();
 
         // BeamGroup-based relationships
         inspectBeams();
@@ -734,6 +750,25 @@ public class SlotsRetriever
                     setRel(ch2, ch1, EQUAL);
                 }
             }
+        }
+    }
+
+    //------------------//
+    // inspectTimeJoins //
+    //------------------//
+    /**
+     * A pair of chords may be linked by an explicit ChordTimeJoinRelation.
+     */
+    private void inspectTimeJoins ()
+    {
+        final SIGraph sig = measure.getStack().getSystem().getSig();
+
+        for (Relation same : sig.relations(SameTimeRelation.class)) {
+            final AbstractChordInter ch1 = (AbstractChordInter) sig.getEdgeSource(same);
+            final AbstractChordInter ch2 = (AbstractChordInter) sig.getEdgeTarget(same);
+
+            setRel(ch1, ch2, EQUAL);
+            setRel(ch2, ch1, EQUAL);
         }
     }
 

@@ -80,10 +80,27 @@ public class RunTableView
         // Render all table runs
         table.render(g, new Point(0, 0));
     }
+//
+//    @Override
+//    public void subscribe ()
+//    {
+//        super.subscribe();
+//
+//        table.getRunService().setLocationService(locationService);
+//    }
+//
+//    @Override
+//    public void unsubscribe ()
+//    {
+//        super.unsubscribe();
+//
+//        table.getRunService().cutLocationService(locationService);
+//    }
 
     //---------------------//
     // handleLocationEvent //
     //---------------------//
+    // (This run lookup could now be handled by RunService, see subscribe/unsubscribe above)
     /**
      * Interest in Location &rArr; Run
      *

@@ -211,10 +211,6 @@ public class InterBoard
         roleCombo.setVisible(false);
 
         if (inter != null) {
-            vip.getLabel().setEnabled(true);
-            vip.getField().setEnabled(!inter.isVip());
-            vip.getField().setSelected(inter.isVip());
-
             Double cp = inter.getContextualGrade();
 
             if (cp != null) {
@@ -250,9 +246,6 @@ public class InterBoard
             } else {
             }
         } else {
-            vip.setEnabled(false);
-            vip.getField().setSelected(false);
-
             grade.setText("");
             specific.setText("");
             details.setText("");

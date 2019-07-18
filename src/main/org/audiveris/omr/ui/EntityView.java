@@ -25,7 +25,7 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
-import static org.audiveris.omr.ui.selection.SelectionHint.ENTITY_INIT;
+import static org.audiveris.omr.ui.selection.SelectionHint.ENTITY_TRANSIENT;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.view.RubberPanel;
 import org.audiveris.omr.util.Entities;
@@ -114,20 +114,17 @@ public class EntityView<E extends Entity>
     // handleEntityListEvent //
     //-----------------------//
     /**
-     * Interest in EntityList
+     * Interest in EntityList to display entities contour.
      *
-     * @param listEVent list of entities
+     * @param listEvent list of entities
      */
-    protected void handleEntityListEvent (EntityListEvent<E> listEVent)
+    protected void handleEntityListEvent (EntityListEvent<E> listEvent)
     {
-        if (listEVent.hint == ENTITY_INIT) {
-            List<E> list = listEVent.getData();
+        List<E> list = listEvent.getData();
 
-            if (!list.isEmpty()) {
-                // Display entities contour
-                locationService.publish(
-                        new LocationEvent(this, listEVent.hint, null, Entities.getBounds(list)));
-            }
+        if (!list.isEmpty()) {
+            locationService.publish(
+                    new LocationEvent(this, ENTITY_TRANSIENT, null, Entities.getBounds(list)));
         }
     }
 }

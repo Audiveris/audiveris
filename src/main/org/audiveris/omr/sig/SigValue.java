@@ -113,6 +113,10 @@ import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
+import org.audiveris.omr.sig.relation.SameTimeRelation;
+import org.audiveris.omr.sig.relation.SameVoiceRelation;
+import org.audiveris.omr.sig.relation.SeparateTimeRelation;
+import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
@@ -351,8 +355,6 @@ public class SigValue
             @XmlElementRef(type = AugmentationRelation.class),
             @XmlElementRef(type = BarConnectionRelation.class),
             @XmlElementRef(type = BarGroupRelation.class),
-            @XmlElementRef(type = Containment.class),
-            @XmlElementRef(type = Exclusion.class),
             @XmlElementRef(type = BeamHeadRelation.class),
             @XmlElementRef(type = BeamStemRelation.class),
             @XmlElementRef(type = ChordArpeggiatoRelation.class),
@@ -367,10 +369,12 @@ public class SigValue
             @XmlElementRef(type = ChordTupletRelation.class),
             @XmlElementRef(type = ChordWedgeRelation.class),
             @XmlElementRef(type = ClefKeyRelation.class),
+            @XmlElementRef(type = Containment.class),
             @XmlElementRef(type = DotFermataRelation.class),
             @XmlElementRef(type = DoubleDotRelation.class),
             @XmlElementRef(type = EndingBarRelation.class),
             @XmlElementRef(type = EndingSentenceRelation.class),
+            @XmlElementRef(type = Exclusion.class),
             @XmlElementRef(type = FermataBarRelation.class),
             @XmlElementRef(type = FermataChordRelation.class),
             @XmlElementRef(type = FlagStemRelation.class),
@@ -382,6 +386,10 @@ public class SigValue
             @XmlElementRef(type = NoExclusion.class),
             @XmlElementRef(type = RepeatDotBarRelation.class),
             @XmlElementRef(type = RepeatDotPairRelation.class),
+            @XmlElementRef(type = SameTimeRelation.class),
+            @XmlElementRef(type = SameVoiceRelation.class),
+            @XmlElementRef(type = SeparateTimeRelation.class),
+            @XmlElementRef(type = SeparateVoiceRelation.class),
             @XmlElementRef(type = SlurHeadRelation.class),
             @XmlElementRef(type = StemAlignmentRelation.class),
             @XmlElementRef(type = TimeTopBottomRelation.class)})

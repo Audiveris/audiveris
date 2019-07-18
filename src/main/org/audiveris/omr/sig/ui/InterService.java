@@ -32,6 +32,7 @@ import org.audiveris.omr.ui.selection.IdEvent;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import static org.audiveris.omr.ui.selection.SelectionHint.ENTITY_INIT;
+import static org.audiveris.omr.ui.selection.SelectionHint.ENTITY_TRANSIENT;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.util.EntityIndex;
 
@@ -103,6 +104,7 @@ public class InterService
     @Override
     protected void handleEntityListEvent (EntityListEvent<Inter> listEvent)
     {
+        // Publish underlying glyph, perhaps null
         final SelectionHint hint = listEvent.hint;
 
         if (hint == ENTITY_INIT) {
@@ -112,9 +114,8 @@ public class InterService
                 final SIGraph sig = inter.getSig();
 
                 if (sig != null) {
-                    // Publish underlying glyph, perhaps null
                     final Glyph glyph = inter.getGlyph();
-                    sig.getSystem().getSheet().getGlyphIndex().publish(glyph);
+                    sig.getSystem().getSheet().getGlyphIndex().publish(glyph, ENTITY_TRANSIENT);
                 }
             }
         }

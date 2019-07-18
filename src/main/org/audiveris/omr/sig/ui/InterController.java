@@ -27,10 +27,15 @@ import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ui.NestView;
 import org.audiveris.omr.glyph.ui.SymbolsEditor;
+import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.math.LineUtil;
+import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.score.Page;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Skew;
@@ -40,6 +45,7 @@ import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
@@ -57,13 +63,16 @@ import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
+import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
+import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.MirrorRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
+import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import static org.audiveris.omr.sig.ui.UITask.OpKind.*;
 import org.audiveris.omr.sig.ui.UITaskList.Option;
@@ -79,6 +88,7 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.util.UIThread;
+import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.VoidTask;
@@ -90,6 +100,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Area;
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -421,7 +432,8 @@ public class InterController
                     }
 
                     // Remove conflicting relations if any
-                    removeConflictingRelations(seq, sig, src, source, target, relation);
+                    final boolean sourceIsNew = source != src;
+                    removeConflictingRelations(seq, sig, sourceIsNew, source, target, relation);
 
                     // Finally, add relation
                     seq.add(new LinkTask(sig, source, target, relation));
@@ -435,6 +447,152 @@ public class InterController
                 return null;
             }
         }.execute();
+    }
+
+    //-------------//
+    // mergeChords //
+    //-------------//
+    /**
+     * Make a single chord out of the provided two (or more) head chords.
+     *
+     * @param chords   the head chords to merge
+     * @param withStem true for a merge with stem-based head chords, false for whole head chords
+     */
+    @UIThread
+    public void mergeChords (final List<HeadChordInter> chords,
+                             final boolean withStem)
+    {
+        CtrlTask ctrlTask = new CtrlTask(DO)
+        {
+            @Override
+            protected Void doInBackground ()
+            {
+                try {
+                    final SIGraph sig = chords.get(0).getSig();
+                    final Rectangle newChordBounds = Entities.getBounds(chords);
+
+                    // All heads involved
+                    final List<HeadInter> heads = new ArrayList<>();
+
+                    for (HeadChordInter ch : chords) {
+                        for (Inter iHead : ch.getNotes()) {
+                            heads.add((HeadInter) iHead);
+                        }
+                    }
+
+                    Collections.sort(heads, Inters.byReverseCenterOrdinate);
+
+                    // Create a new chord ensemble will all heads
+                    final List<Link> newChordLinks = new ArrayList<>();
+                    for (HeadInter head : heads) {
+                        newChordLinks.add(new Link(head, new Containment(), true));
+                    }
+
+                    // Transfer original chords support relations to the compound chord
+                    for (HeadChordInter ch : chords) {
+                        for (Relation rel : sig.getRelations(ch, Support.class)) {
+                            Inter target = sig.getEdgeTarget(rel);
+                            Inter other = sig.getOppositeInter(ch, rel);
+                            newChordLinks.add(new Link(other, rel.duplicate(), other == target));
+                            seq.add(new UnlinkTask(sig, rel));
+                        }
+                    }
+
+                    final HeadChordInter newChord = new HeadChordInter(1.0);
+                    newChord.setManual(true);
+                    seq.add(new AdditionTask(sig, newChord, newChordBounds, newChordLinks));
+
+                    // Unlink each head from its original chord
+                    for (HeadChordInter ch : chords) {
+                        for (Relation rel : sig.getRelations(ch, Containment.class)) {
+                            seq.add(new UnlinkTask(sig, rel));
+                        }
+                    }
+
+                    if (withStem) {
+                        // Build the new stem linked to all heads
+                        final List<StemInter> stems = new ArrayList<>();
+                        final StemInter newStem = buildStem(chords, stems);
+                        final Rectangle newStemBounds = Entities.getBounds(stems);
+
+                        final List<Link> newStemLinks = new ArrayList<>();
+                        for (HeadInter head : heads) {
+                            newStemLinks.add(new Link(head, new HeadStemRelation(), false));
+                        }
+
+                        // Transfer original stem relations (beam, flag) to the compound stem
+                        for (StemInter st : stems) {
+                            for (Relation rel : sig.getRelations(st, BeamStemRelation.class,
+                                                                 FlagStemRelation.class)) {
+                                Inter target = sig.getEdgeTarget(rel);
+                                Inter other = sig.getOppositeInter(st, rel);
+                                newStemLinks.add(new Link(other, rel.duplicate(), other == target));
+                            }
+                        }
+
+                        seq.add(new AdditionTask(sig, newStem, newStemBounds, newStemLinks));
+
+                        // Remove the original stems (and their relations)
+                        for (StemInter stem : stems) {
+                            seq.add(new RemovalTask(stem));
+                        }
+                    }
+
+                    // Remove the original chords (and their relations)
+                    for (HeadChordInter ch : chords) {
+                        seq.add(new RemovalTask(ch));
+                    }
+
+                    logger.debug("Merge {}", seq);
+                    seq.performDo();
+
+                    newChord.countDots();
+
+                    sheet.getInterIndex().publish(newChord);
+                    epilog(seq);
+                } catch (Throwable ex) {
+                    logger.warn("Exception in mergeChords {}", ex.toString(), ex);
+                }
+
+                return null;
+            }
+        };
+
+        ctrlTask.execute();
+    }
+
+    //-----------//
+    // buildStem //
+    //-----------//
+    /**
+     * Build a compound stem out of the provided stem-based head chords.
+     *
+     * @param chords the provided head chords
+     * @param stems  (output) the original chords stems
+     * @return the created compound stem
+     */
+    private StemInter buildStem (List<HeadChordInter> chords,
+                                 List<StemInter> stems)
+    {
+        List<Glyph> glyphs = new ArrayList<>();
+
+        for (HeadChordInter ch : chords) {
+            StemInter stem = ch.getStem();
+            stems.add(stem);
+
+            if (stem.getGlyph() != null) {
+                glyphs.add(stem.getGlyph());
+            }
+        }
+
+        Collections.sort(stems, Inters.byCenterOrdinate);
+
+        Glyph stemGlyph = glyphs.isEmpty() ? null : sheet.getGlyphIndex().registerOriginal(
+                GlyphFactory.buildGlyph(glyphs));
+        StemInter stemInter = new StemInter(stemGlyph, 1.0);
+        stemInter.setManual(true);
+
+        return stemInter;
     }
 
     //------//
@@ -540,6 +698,47 @@ public class InterController
     // reprocessRhythm //
     //-----------------//
     /**
+     * Reprocess the rhythm on the whole provided page.
+     *
+     * @param page page to reprocess
+     */
+    @UIThread
+    public void reprocessPageRhythm (final Page page)
+    {
+        new CtrlTask(DO)
+        {
+            @Override
+            protected Void doInBackground ()
+            {
+                try {
+                    sheet.getStub().setModified(true);
+
+                    seq = null; // So that history is not modified
+
+                    // Re-process impacted steps
+                    final UITaskList tempSeq = new UITaskList(new PageTask(page));
+                    final Step latestStep = sheet.getStub().getLatestStep();
+                    final Step firstStep = Step.RHYTHMS;
+
+                    final EnumSet<Step> steps = EnumSet.range(firstStep, latestStep);
+
+                    for (Step step : steps) {
+                        logger.debug("Impact {}", step);
+                        step.impact(tempSeq, OpKind.DO);
+                    }
+                } catch (Throwable ex) {
+                    logger.warn("Exception in reprocessPageRhythm {}", ex.toString(), ex);
+                }
+
+                return null;
+            }
+        }.execute();
+    }
+
+    //-----------------//
+    // reprocessRhythm //
+    //-----------------//
+    /**
      * Reprocess the rhythm on the provided measure stack.
      *
      * @param stack measure stack to reprocess
@@ -596,6 +795,331 @@ public class InterController
         // Support for delete key
         inputMap.put(KeyStroke.getKeyStroke("DELETE"), "RemoveAction");
         view.getActionMap().put("RemoveAction", new RemoveAction());
+    }
+
+    //------------//
+    // splitChord //
+    //------------//
+    /**
+     * Split the provided head chord into 2 separate chords.
+     * <p>
+     * The strategy is to split the heads where inter-head vertical distance is maximum.
+     *
+     * @param chord the chord to be split
+     */
+    @UIThread
+    public void splitChord (final HeadChordInter chord)
+    {
+
+        CtrlTask ctrlTask = new CtrlTask(DO)
+        {
+            @Override
+            protected Void doInBackground ()
+            {
+                try {
+                    final SIGraph sig = chord.getSig();
+
+                    // Notes are assumed to be ordered bottom up (byReverseCenterOrdinate)
+                    final List<List<HeadInter>> partitions = partitionHeads(chord);
+                    final List<HeadChordInter> newChords = new ArrayList<>();
+
+                    for (List<HeadInter> partition : partitions) {
+                        final List<Link> newChordLinks = new ArrayList<>();
+                        for (HeadInter head : partition) {
+                            newChordLinks.add(new Link(head, new Containment(), true));
+                        }
+
+                        // Transfer original chords relations to proper sub-chords
+                        //TODO
+                        //
+                        final Rectangle bounds = Entities.getBounds(partition);
+                        final HeadChordInter ch = new HeadChordInter(1.0);
+                        ch.setManual(true);
+                        ch.setStaff(partition.get(0).getStaff());
+                        newChords.add(ch);
+                        seq.add(new AdditionTask(sig, ch, bounds, newChordLinks));
+                    }
+
+                    // Unlink each head from the original chord
+                    for (Relation rel : sig.getRelations(chord, Containment.class)) {
+                        seq.add(new UnlinkTask(sig, rel));
+                    }
+
+                    final StemInter stem = chord.getStem();
+                    final Point tail = chord.getTailLocation();
+                    final int yDir = Integer.compare(tail.y, chord.getCenter().y);
+
+                    // Remove the original chord (before dealing with beams)
+                    seq.add(new RemovalTask(chord));
+
+                    // Case of stem-based chord
+                    if (stem != null) {
+                        final Rectangle[] boxes = getSubStemsBounds(stem, tail, yDir, partitions);
+
+                        for (int i = 0; i < 2; i++) {
+                            final List<HeadInter> partition = partitions.get(i);
+
+                            // Create stem
+                            StemInter s = new StemInter(null, 1.0);
+                            s.setManual(true);
+
+                            final List<Link> newStemLinks = new ArrayList<>();
+                            for (HeadInter head : partition) {
+                                newStemLinks.add(new Link(head, new HeadStemRelation(), false));
+                            }
+
+                            // Transfer original stem relations (beams, flags) to proper sub-stem
+                            if ((yDir == -1 && i == 1) || (yDir == 1 && i == 0)) {
+                                for (Relation rel : sig.getRelations(stem, BeamStemRelation.class,
+                                                                     FlagStemRelation.class)) {
+                                    Inter target = sig.getEdgeTarget(rel);
+                                    Inter other = sig.getOppositeInter(stem, rel);
+                                    Relation dup = rel.duplicate();
+                                    newStemLinks.add(new Link(other, dup, other == target));
+                                }
+                            }
+
+                            seq.add(new AdditionTask(sig, s, boxes[i], newStemLinks));
+                        }
+
+                        // Remove the original stem
+                        seq.add(new RemovalTask(stem));
+                    }
+
+                    logger.debug("Split {}", seq);
+                    seq.performDo();
+
+                    for (HeadChordInter ch : newChords) {
+                        ch.countDots();
+                    }
+
+                    sheet.getInterIndex().publish(null); // TODO: publish both parts?
+                    epilog(seq);
+                } catch (Throwable ex) {
+                    logger.warn("Exception in splitChord {}", ex.toString(), ex);
+                }
+
+                return null;
+            }
+        };
+
+        ctrlTask.execute();
+    }
+
+    //----------//
+    // timeJoin //
+    //----------//
+    /**
+     * Join the two provided chords in the same time slot.
+     *
+     * @param chords the (two) chords to be joined in time
+     */
+    @UIThread
+    public void timeJoin (final List<? extends AbstractChordInter> chords)
+    {
+
+        CtrlTask ctrlTask = new CtrlTask(DO)
+        {
+            @Override
+            protected Void doInBackground ()
+            {
+                try {
+                    final SIGraph sig = chords.get(0).getSig();
+
+//                    // Notes are assumed to be ordered bottom up (byReverseCenterOrdinate)
+//                    final List<List<HeadInter>> partitions = partitionHeads(chord);
+//                    final List<HeadChordInter> newChords = new ArrayList<>();
+//
+//                    for (List<HeadInter> partition : partitions) {
+//                        final List<Link> newChordLinks = new ArrayList<>();
+//                        for (HeadInter head : partition) {
+//                            newChordLinks.add(new Link(head, new Containment(), true));
+//                        }
+//
+//                        // Transfer original chords relations to proper sub-chords
+//                        //TODO
+//                        //
+//                        final Rectangle bounds = Entities.getBounds(partition);
+//                        final HeadChordInter ch = new HeadChordInter(1.0);
+//                        ch.setManual(true);
+//                        ch.setStaff(partition.get(0).getStaff());
+//                        newChords.add(ch);
+//                        seq.add(new AdditionTask(sig, ch, bounds, newChordLinks));
+//                    }
+//
+//                    // Unlink each head from the original chord
+//                    for (Relation rel : sig.getRelations(chord, Containment.class)) {
+//                        seq.add(new UnlinkTask(sig, rel));
+//                    }
+//
+//                    final StemInter stem = chord.getStem();
+//                    final Point tail = chord.getTailLocation();
+//                    final int yDir = Integer.compare(tail.y, chord.getCenter().y);
+//
+//                    // Remove the original chord (before dealing with beams)
+//                    seq.add(new RemovalTask(chord));
+//
+//                    // Case of stem-based chord
+//                    if (stem != null) {
+//                        final Rectangle[] boxes = getSubStemsBounds(stem, tail, yDir, partitions);
+//
+//                        for (int i = 0; i < 2; i++) {
+//                            final List<HeadInter> partition = partitions.get(i);
+//
+//                            // Create stem
+//                            StemInter s = new StemInter(null, 1.0);
+//                            s.setManual(true);
+//
+//                            final List<Link> newStemLinks = new ArrayList<>();
+//                            for (HeadInter head : partition) {
+//                                newStemLinks.add(new Link(head, new HeadStemRelation(), false));
+//                            }
+//
+//                            // Transfer original stem relations (beams, flags) to proper sub-stem
+//                            if ((yDir == -1 && i == 1) || (yDir == 1 && i == 0)) {
+//                                for (Relation rel : sig.getRelations(stem, BeamStemRelation.class,
+//                                                                     FlagStemRelation.class)) {
+//                                    Inter target = sig.getEdgeTarget(rel);
+//                                    Inter other = sig.getOppositeInter(stem, rel);
+//                                    Relation dup = rel.duplicate();
+//                                    newStemLinks.add(new Link(other, dup, other == target));
+//                                }
+//                            }
+//
+//                            seq.add(new AdditionTask(sig, s, boxes[i], newStemLinks));
+//                        }
+//
+//                        // Remove the original stem
+//                        seq.add(new RemovalTask(stem));
+//                    }
+//
+                    logger.debug("TimeJoin {}", seq);
+                    seq.performDo();
+
+                    sheet.getInterIndex().publish(null); // TODO: publish both chords?
+                    epilog(seq);
+                } catch (Throwable ex) {
+                    logger.warn("Exception in timeJoin {}", ex.toString(), ex);
+                }
+
+                return null;
+            }
+        };
+
+        ctrlTask.execute();
+    }
+
+    //-------------------//
+    // getSubStemsBounds //
+    //-------------------//
+    /**
+     * Compute the box for each of the 2 sub-stems that result from chord split.
+     *
+     * @param stem       the original chord stem
+     * @param tail       the chord tail point
+     * @param yDir       stem direction
+     * @param partitions the 2 detected head partitions (bottom up)
+     * @return the bounds for each sub-stem (bottom up)
+     */
+    private Rectangle[] getSubStemsBounds (StemInter stem,
+                                           Point tail,
+                                           int yDir,
+                                           List<List<HeadInter>> partitions)
+    {
+        final Rectangle[] boundsArray = new Rectangle[2];
+        final Line2D median = stem.getMedian();
+        final int width = sheet.getScale().getStemThickness();
+
+        for (int i = 0; i < 2; i++) {
+            final List<HeadInter> p = partitions.get(i);
+            final int stemTop;
+            final int stemBottom;
+
+            if (i == 0) {
+                // Process bottom partition
+                if (yDir < 0) {
+                    // Stem going up
+                    final List<HeadInter> p1 = partitions.get(1); // Other (top) partition
+                    stemTop = p1.get(0).getCenter().y;
+                    stemBottom = p.get(0).getCenter().y;
+                } else {
+                    // Stem going down
+                    stemTop = p.get(p.size() - 1).getCenter().y;
+                    stemBottom = tail.y;
+                }
+            } else {
+                // Process top partition
+                if (yDir < 0) {
+                    // Stem going up
+                    stemTop = tail.y;
+                    stemBottom = p.get(0).getCenter().y;
+                } else {
+                    // Stem going down
+                    final List<HeadInter> p0 = partitions.get(0); // Other (bottom) partition
+                    stemTop = p.get(p.size() - 1).getCenter().y;
+                    stemBottom = p0.get(p0.size() - 1).getCenter().y;
+                }
+            }
+
+            final Point top = PointUtil.rounded(LineUtil.intersectionAtY(median, stemTop));
+            final Point bottom = PointUtil.rounded(LineUtil.intersectionAtY(median, stemBottom));
+            final Area area = AreaUtil.verticalParallelogram(top, bottom, width);
+            boundsArray[i] = area.getBounds();
+        }
+
+        return boundsArray;
+    }
+
+    //----------------//
+    // partitionHeads //
+    //----------------//
+    /**
+     * Partition the heads of provided chord into 2 partitions.
+     *
+     * @param chord the provided chord
+     * @return the sequence of 2 head partitions
+     */
+    private List<List<HeadInter>> partitionHeads (HeadChordInter chord)
+    {
+        final List<? extends Inter> notes = chord.getNotes();
+
+        Point prevCenter = null;
+        Integer maxDy = null;
+        int bestIndex = 0;
+
+        for (int i = 0; i < notes.size(); i++) {
+            HeadInter head = (HeadInter) notes.get(i);
+            Point center = head.getCenter();
+
+            if (prevCenter != null) {
+                int dy = prevCenter.y - center.y;
+
+                if (maxDy == null || maxDy < dy) {
+                    maxDy = dy;
+                    bestIndex = i;
+                }
+            }
+
+            prevCenter = center;
+        }
+
+        // We decide to split at bestIndex
+        final List<List<HeadInter>> lists = new ArrayList<>();
+
+        List<HeadInter> one = new ArrayList<>();
+        for (Inter inter : notes.subList(0, bestIndex)) {
+            one.add((HeadInter) inter);
+        }
+
+        List<HeadInter> two = new ArrayList<>();
+        for (Inter inter : notes.subList(bestIndex, notes.size())) {
+            two.add((HeadInter) inter);
+        }
+
+        lists.add(one);
+        lists.add(two);
+
+        return lists;
     }
 
     //------//
@@ -1174,9 +1698,8 @@ public class InterController
         }
 
         // If resulting chords are not compatible, move head to stemChord
-        if ((stemChords.isEmpty() && (headChord.getStem() != null)) || (!stemChords.isEmpty()
-                                                                                && !stemChords
-                        .contains(headChord))) {
+        if ((stemChords.isEmpty() && (headChord.getStem() != null))
+                    || (!stemChords.isEmpty() && !stemChords.contains(headChord))) {
             // Extract head from headChord
             seq.add(new UnlinkTask(sig, sig.getRelation(headChord, head, Containment.class)));
 
@@ -1268,9 +1791,19 @@ public class InterController
     //----------------------------//
     // removeConflictingRelations //
     //----------------------------//
+    /**
+     * Remove relations that would conflict with the provided to-be-inserted relation.
+     *
+     * @param seq         the action sequence being worked upon
+     * @param sig         the containing SIG
+     * @param sourceIsNew true if source has been changed
+     * @param source      the actual source (perhaps different from src)
+     * @param target      the target provided by user
+     * @param relation    the relation to be inserted between source and target
+     */
     private void removeConflictingRelations (UITaskList seq,
                                              SIGraph sig,
-                                             Inter src,
+                                             boolean sourceIsNew,
                                              Inter source,
                                              Inter target,
                                              Relation relation)
@@ -1299,7 +1832,7 @@ public class InterController
 
         // Conflict on targets
         if (relation.isSingleTarget()) {
-            if (source == src) {
+            if (!sourceIsNew) {
                 for (Relation rel : sig.getRelations(source, relation.getClass())) {
                     toRemove.add(rel);
                 }

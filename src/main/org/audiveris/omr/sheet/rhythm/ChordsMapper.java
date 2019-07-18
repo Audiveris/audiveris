@@ -43,27 +43,37 @@ public class ChordsMapper
 
     private final List<AbstractChordInter> olds;
 
+    private final List<AbstractChordInter> extinctExplicits;
+
     private final VoiceDistance vd;
 
-    private final Set<ChordPair> incompatibilities;
+    private final Set<ChordPair> blackList;
+
+    private final Set<ChordPair> whiteList;
 
     /**
      * Creates a {@code ChordsMapper} object.
      *
-     * @param news              incoming chords to map
-     * @param olds              available previous chords
-     * @param vd                the VoiceDistance to use
-     * @param incompatibilities known incompatibilities
+     * @param news             incoming chords to map
+     * @param olds             available previous chords
+     * @param extinctExplicits extinct chords but with explicit SameVoiceRelation
+     * @param vd               the VoiceDistance to use
+     * @param blackList        known incompatibilities
+     * @param whiteList        explicit compatibilities
      */
     public ChordsMapper (List<AbstractChordInter> news,
                          List<AbstractChordInter> olds,
+                         List<AbstractChordInter> extinctExplicits,
                          VoiceDistance vd,
-                         Set<ChordPair> incompatibilities)
+                         Set<ChordPair> blackList,
+                         Set<ChordPair> whiteList)
     {
         this.news = news;
         this.olds = olds;
+        this.extinctExplicits = extinctExplicits;
         this.vd = vd;
-        this.incompatibilities = incompatibilities;
+        this.blackList = blackList;
+        this.whiteList = whiteList;
     }
 
     /**
@@ -117,11 +127,30 @@ public class ChordsMapper
             AbstractChordInter newChord = news.get(in);
             AbstractChordInter oldChord = olds.get(ip);
 
-            // Incompatible link
-            for (ChordPair pair : incompatibilities) {
+            // White list
+            for (ChordPair pair : whiteList) {
+                if (pair.oldChord == oldChord) {
+                    if (pair.newChord == newChord) {
+                        if (details != null) {
+                            details.append("WHITE");
+                        }
+
+                        return 0;
+                    } else if (extinctExplicits.contains(oldChord)) {
+                        if (details != null) {
+                            details.append("EXTINCT");
+                        }
+
+                        return VoiceDistance.INCOMPATIBLE;
+                    }
+                }
+            }
+
+            // Black list
+            for (ChordPair pair : blackList) {
                 if (pair.newChord == newChord && pair.oldChord == oldChord) {
                     if (details != null) {
-                        details.append("INCOMP=").append(VoiceDistance.INCOMPATIBLE);
+                        details.append("BLACK");
                     }
 
                     return VoiceDistance.INCOMPATIBLE;

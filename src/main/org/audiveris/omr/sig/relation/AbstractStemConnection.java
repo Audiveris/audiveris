@@ -36,8 +36,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *
  * @author Hervé Bitteur
  */
-
-
 public abstract class AbstractStemConnection
         extends AbstractConnection
 {

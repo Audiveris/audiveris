@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import org.audiveris.omr.score.Page;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.SIGraph;
 
@@ -41,7 +42,7 @@ public abstract class UITask
     }
 
     /** Underlying sheet. */
-    protected final Sheet sheet;
+    protected Sheet sheet;
 
     /** Underlying SIG. */
     protected final SIGraph sig;
@@ -55,6 +56,17 @@ public abstract class UITask
     {
         this.sig = sig;
         sheet = sig.getSystem().getSheet();
+    }
+
+    /**
+     * Creates a new {@code UITask} object.
+     *
+     * @param page the underlying page
+     */
+    public UITask (Page page)
+    {
+        sig = null;
+        sheet = page.getSheet();
     }
 
     public SIGraph getSig ()

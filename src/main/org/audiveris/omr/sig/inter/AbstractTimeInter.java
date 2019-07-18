@@ -168,6 +168,20 @@ public abstract class AbstractTimeInter
      */
     public Rational getBeatValue ()
     {
+        return getBeatValue(timeRational);
+    }
+
+    //--------------//
+    // getBeatValue //
+    //--------------//
+    /**
+     * Report the duration of one beat for the provided TimeRational.
+     *
+     * @param timeRational provided TimeRational
+     * @return beat value
+     */
+    public static Rational getBeatValue (TimeRational timeRational)
+    {
         final int num = timeRational.num;
         final int den = timeRational.den;
 

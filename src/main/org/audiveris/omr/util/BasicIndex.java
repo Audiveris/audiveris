@@ -306,20 +306,36 @@ public class BasicIndex<E extends Entity>
      */
     public void publish (final E entity)
     {
-        final EntityService<E> interService = this.getEntityService();
+        publish(entity, SelectionHint.ENTITY_INIT);
+    }
 
-        if (interService != null) {
+    //---------//
+    // publish //
+    //---------//
+    /**
+     * Convenient method to publish an Entity instance.
+     *
+     * @param entity the Entity to publish (can be null)
+     * @param hint   ENTITY_INIT or ENTITY_TRANSIENT
+     */
+    public void publish (E entity,
+                         SelectionHint hint)
+    {
+        final EntityService<E> entityService = this.getEntityService();
+
+        if (entityService != null) {
+            final EntityListEvent event = new EntityListEvent<E>(
+                    this,
+                    hint,
+                    MouseMovement.PRESSING,
+                    entity);
+
             SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
                 {
-                    interService.publish(
-                            new EntityListEvent<E>(
-                                    this,
-                                    SelectionHint.ENTITY_INIT,
-                                    MouseMovement.PRESSING,
-                                    entity));
+                    entityService.publish(event);
                 }
             });
         }

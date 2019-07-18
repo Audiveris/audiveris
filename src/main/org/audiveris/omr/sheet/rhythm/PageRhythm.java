@@ -21,9 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.rhythm;
 
-import org.audiveris.omr.math.Histogram;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.Page;
+import org.audiveris.omr.score.PageRef;
+import org.audiveris.omr.score.TimeRational;
+import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
@@ -66,11 +68,6 @@ import java.util.List;
  * Processing is done system per system <b>sequentially</b> because of impact of potential
  * key-sig changes on the following systems. Hence, parallelism is NOT provided for this step.
  * Consistently, within a system, processing is done measure stack after measure stack.
- * <p>
- * Time sig can be inferred from stacks actual content, but this is a chicken &amp; egg problem.
- * We check whether the page starts with a time-sig indication. If not, we'll need two passes, the
- * first pass to determine expected duration and the second pass to determine time signature and
- * more precise fit.
  * <p>
  * TODO: Key signature changes are still to be implemented.
  *
@@ -118,9 +115,6 @@ public class PageRhythm
         // Populate all stacks/measures in page with their FRATs
         populateFRATs();
 
-        // Check typical duration for each range, using StackRhythm failFast pass
-        retrieveRangeDurations();
-
         // For each range, adjust TS if needed, then process each measure, using StackRhythm 2nd pass
         processRanges();
     }
@@ -138,7 +132,7 @@ public class PageRhythm
         logger.debug("PageRhythm.reprocessStack {}", stack);
 
         Rational expectedDuration = stack.getExpectedDuration();
-        new StackRhythm(stack, false).process(expectedDuration);
+        new StackRhythm(stack).process(expectedDuration);
 
         // Refine voices IDs within the containing system
         Voices.refineSystem(stack.getSystem());
@@ -200,9 +194,34 @@ public class PageRhythm
             }
         }
 
-        // If there was no time sig at beginning of page
+        // If there was no time sig at beginning of page, insert a range there
         if (ranges.isEmpty() || (ranges.get(0).startSN > 1)) {
             ranges.add(0, new Range(1, null));
+        }
+
+        // Assign the timeRational and duration values
+        for (int i = 0; i < ranges.size(); i++) {
+            final Range range = ranges.get(i);
+
+            if (range.ts != null) {
+                range.timeRational = range.ts.getTimeRational();
+                range.duration = range.ts.getTimeRational().getValue();
+            } else if (i == 0 && !page.isMovementStart()) {
+                // Use time at end of last sheet/page if any
+                SheetStub stub = page.getSheet().getStub();
+                int stubNumber = stub.getNumber();
+
+                if (stubNumber > 1) {
+                    SheetStub prevStub = stub.getBook().getStub(stubNumber - 1);
+                    PageRef prevPageRef = prevStub.getLastPageRef();
+                    TimeRational lastTR = prevPageRef.getLastTimeRational();
+
+                    if (lastTR != null) {
+                        range.timeRational = lastTR.duplicate();
+                        range.duration = lastTR.getValue();
+                    }
+                }
+            }
         }
 
         // Assign the stopSN values
@@ -210,7 +229,13 @@ public class PageRhythm
             ranges.get(i).stopSN = ranges.get(i + 1).startSN - 1;
         }
 
-        ranges.get(ranges.size() - 1).stopSN = seqNumOf(page.getLastSystem().getLastStack());
+        // Very last range in page
+        final Range lastRange = ranges.get(ranges.size() - 1);
+        lastRange.stopSN = seqNumOf(page.getLastSystem().getLastStack());
+
+        if (lastRange.timeRational != null) {
+            page.setLastTimeRational(lastRange.timeRational.duplicate());
+        }
     }
 
     //---------------//
@@ -231,21 +256,11 @@ public class PageRhythm
                 // Start of range?
                 if (sn == range.startSN) {
                     logger.debug("Starting {}", range);
-                    //
-                    //                    // Adjust time signature? (TODO: today we don't adjust anything in fact)
-                    //                    if ((range.duration != null) && ((range.ts == null) || !range.ts
-                    //                            .getTimeRational().getValue().equals(range.duration))) {
-                    //                        logger.info(
-                    //                                "{}{} should update to {}-based time sig?",
-                    //                                stack.getSystem().getLogPrefix(),
-                    //                                range,
-                    //                                range.duration);
-                    //                    }
                 }
 
                 try {
                     logger.debug("\n--- Processing {} {} expDur:{}", sn, stack, range.duration);
-                    new StackRhythm(stack, false).process(range.duration);
+                    new StackRhythm(stack).process(range.duration);
                 } catch (Exception ex) {
                     logger.warn("Error on stack " + stack + " " + ex, ex);
                 }
@@ -260,150 +275,6 @@ public class PageRhythm
 
             // Refine voices IDs (and thus display colors) across all measures of the system
             Voices.refineSystem(system);
-        }
-    }
-
-    //--------------------------//
-    // retrieveExpectedDuration //
-    //--------------------------//
-    /**
-     * Determine a suitable duration value for the provided range.
-     * This is based on stacks / voices material found in this range.
-     *
-     * @param range the range of stacks to analyze
-     * @return the guessed duration value
-     */
-    private Rational retrieveExpectedDuration (Range range)
-    {
-        try {
-            Histogram<Rational> histo = new Histogram<>();
-
-            SystemLoop:
-            for (SystemInfo system : page.getSystems()) {
-                for (MeasureStack stack : system.getStacks()) {
-                    final int sn = seqNumOf(stack);
-
-                    if (sn < range.startSN) {
-                        continue;
-                    } else if (sn > range.stopSN) {
-                        break SystemLoop;
-                    }
-
-                    for (Voice voice : stack.getVoices()) {
-                        Rational dur = voice.getDuration();
-
-                        if (dur != null) {
-                            histo.increaseCount(dur, 1);
-                        }
-                    }
-                }
-            }
-
-            // We aim at a duration value in the set: [1/2, 3/4, 1, 5/4]
-            final Rational minDur = new Rational(1, 2);
-            final Rational maxDur = new Rational(3, 2);
-            Rational avgGuess = null;
-            double val = 0.0;
-            int count = 0;
-            int topNb = -1;
-            Rational topGuess = null;
-
-            for (Rational r : histo.bucketSet()) {
-                if (r.compareTo(minDur) < 0) {
-                    continue;
-                }
-
-                if (r.compareTo(maxDur) > 0) {
-                    break;
-                }
-
-                int nb = histo.getCount(r);
-
-                // Average
-                count += nb;
-                val += (nb * r.doubleValue());
-
-                // Top
-                if (nb > topNb) {
-                    topNb = nb;
-                    topGuess = r;
-                }
-            }
-
-            if (count != 0) {
-                val /= count;
-
-                int quarters = (int) Math.rint(val * 4);
-                avgGuess = new Rational(quarters, 4);
-            }
-
-            logger.info("{}", histo);
-            logger.info(
-                    "{} Durations topGuess:{} avgGuess:{} avgValue:{} stacks:{}",
-                    range,
-                    topGuess,
-                    avgGuess,
-                    String.format("%.2f", val),
-                    range.stopSN - range.startSN + 1);
-
-            return topGuess;
-        } catch (Exception ex) {
-            logger.warn("{} error in retrieveExpectedDuration {}", range, ex.toString(), ex);
-            return null;
-        }
-    }
-
-    //------------------------//
-    // retrieveRangeDurations //
-    //------------------------//
-    /**
-     * Analyze the ranges of stacks, each range being governed by a time signature
-     * (if any for the start), to retrieve typical stack duration and check with the
-     * time signature.
-     */
-    private void retrieveRangeDurations ()
-    {
-        // Launch a raw processing to determine expected measure duration
-        // on the range of first system & stacks before first time signature
-        final Iterator<Range> it = ranges.iterator();
-        Range range = it.next(); // Current range
-
-        for (SystemInfo system : page.getSystems()) {
-            for (MeasureStack stack : system.getStacks()) {
-                final int sn = seqNumOf(stack);
-
-                try {
-                    logger.debug("\n--- Raw processing {} {} ---", sn, stack);
-                    new StackRhythm(stack, true).process(null);
-                } catch (Exception ex) {
-                    logger.warn("Error on stack " + stack + " " + ex, ex);
-                }
-
-                // End of range?
-                if (sn == range.stopSN) {
-                    // If range is governed by a time signature, let's use it!
-                    ///if ((range.ts != null) && range.ts.isManual()) {
-                    if (range.ts != null) {
-                        range.duration = range.ts.getTimeRational().getValue();
-                        logger.debug("{} manual:{}", range, range.duration);
-                    } else {
-                        // Use CURRENT MATERIAL of voices to determine expected duration on this range
-                        Rational guess = retrieveExpectedDuration(range);
-
-                        if (guess != null) {
-                            range.duration = guess;
-                        } else if (range.ts != null) {
-                            range.duration = range.ts.getTimeRational().getValue();
-                        }
-
-                        logger.debug("{} guess:{}", range, guess);
-                    }
-
-                    if (it.hasNext()) {
-                        range = it.next();
-                    }
-                }
-            }
         }
     }
 
@@ -454,6 +325,8 @@ public class PageRhythm
 
         AbstractTimeInter ts; // Time signature found in first stack of range, if any
 
+        TimeRational timeRational; // Time rational value, if any
+
         Rational duration; // Inferred measure duration for the range
 
         Range (int startSN,
@@ -476,6 +349,8 @@ public class PageRhythm
 
             if (ts != null) {
                 sb.append(" ts:").append(ts.getTimeRational());
+            } else if (timeRational != null) {
+                sb.append(" tr:").append(timeRational);
             }
 
             if (duration != null) {

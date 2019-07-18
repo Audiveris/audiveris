@@ -87,6 +87,10 @@ public class Page
     @XmlAttribute(name = "delta-measure-id")
     private Integer deltaMeasureId;
 
+    /** Last time rational value in this page. */
+    @XmlElement(name = "last-time-rational")
+    private TimeRational lastTimeRational;
+
     /** LogicalPart list for the page. */
     @XmlElement(name = "logical-part")
     private List<LogicalPart> logicalParts;
@@ -251,8 +255,38 @@ public class Page
         logger.info("{}", msg.toString());
     }
 
+    //---------------------//
+    // getLastTimeRational //
+    //---------------------//
+    /**
+     * Report the last time rational value within this page.
+     *
+     * @return the lastTimeRational
+     */
+    public TimeRational getLastTimeRational ()
+    {
+        return lastTimeRational;
+    }
+
+    //---------------------//
+    // setLastTimeRational //
+    //---------------------//
+    /**
+     * Assign the last time rational value within this page.
+     *
+     * @param lastTimeRational the last time rational value to set
+     */
+    public void setLastTimeRational (TimeRational lastTimeRational)
+    {
+        this.lastTimeRational = lastTimeRational;
+
+        SheetStub stub = sheet.getStub();
+        PageRef pageRef = stub.getPageRefs().get(id - 1);
+        pageRef.setLastTimeRational(lastTimeRational);
+    }
+
     //-------------------//
-    // getMeasureDeltaId //
+    // getDeltaMeasureId //
     //-------------------//
     /**
      * Report the progression of measure IDs within this page.

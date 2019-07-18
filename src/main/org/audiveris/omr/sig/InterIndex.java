@@ -28,16 +28,10 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.ui.InterService;
-import org.audiveris.omr.ui.selection.EntityListEvent;
-import org.audiveris.omr.ui.selection.EntityService;
-import org.audiveris.omr.ui.selection.MouseMovement;
-import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.util.BasicIndex;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.swing.SwingUtilities;
 
 /**
  * Class {@code InterIndex} keeps an index of all Inter instances registered
@@ -108,35 +102,6 @@ public class InterIndex
     public String getName ()
     {
         return "interIndex";
-    }
-
-    //---------//
-    // publish //
-    //---------//
-    /**
-     * Convenient method to publish an Inter instance.
-     *
-     * @param inter the inter to publish (can be null)
-     */
-    public void publish (final Inter inter)
-    {
-        final EntityService<Inter> interService = this.getEntityService();
-
-        if (interService != null) {
-            SwingUtilities.invokeLater(new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    interService.publish(
-                            new EntityListEvent<>(
-                                    this,
-                                    SelectionHint.ENTITY_INIT,
-                                    MouseMovement.PRESSING,
-                                    inter));
-                }
-            });
-        }
     }
 
     //-----------//

@@ -321,8 +321,7 @@ public class EntityBoard<E extends Entity>
         if (entity != null) {
             // VIP
             if (vip != null) {
-                vip.getLabel().setEnabled(true);
-                vip.getField().setEnabled(!entity.isVip());
+                vip.setEnabled(true);
                 vip.getField().setSelected(entity.isVip());
             }
 

@@ -34,6 +34,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import static org.audiveris.omr.util.HorizontalSide.*;
 
@@ -148,6 +149,7 @@ public abstract class Voices
             @Override
             public SlurInter getInitialSlur (SlurInter slur)
             {
+                // Across systems within a single page, the partnering slur is the left extension
                 return slur.getExtension(LEFT);
             }
         };
@@ -235,6 +237,7 @@ public abstract class Voices
                             @Override
                             public SlurInter getInitialSlur (SlurInter slur)
                             {
+                                // Across pages within a score, use the links map
                                 return links.get(slur);
                             }
                         };
@@ -297,31 +300,53 @@ public abstract class Voices
      */
     public static void refineSystem (SystemInfo system)
     {
-        final MeasureStack firstStack = system.getFirstStack();
+        final SIGraph sig = system.getSig();
         final SlurAdapter measureSlurAdapter = new SlurAdapter()
         {
             @Override
             public SlurInter getInitialSlur (SlurInter slur)
             {
+                // Across measures within a single system, the partnering slur is the slur itself
                 return slur;
             }
         };
 
         for (Part part : system.getParts()) {
+            Measure prevMeasure = null;
+
             for (MeasureStack stack : system.getStacks()) {
-                if (stack != firstStack) {
+                final Measure measure = stack.getMeasureAt(part);
+
+                if (prevMeasure != null) {
                     // Check tied voices from same part in previous measure
-                    final Measure measure = stack.getMeasureAt(part);
-                    final List<Voice> measureVoices = measure.getVoices(); // Sorted vertically
+                    final List<Voice> measureVoices = measure.getVoices(); // Sorted vertically (?)
 
                     for (Voice voice : measureVoices) {
+                        // Tie-based voice link
                         Integer tiedId = getTiedId(voice, measureSlurAdapter);
 
                         if ((tiedId != null) && (voice.getId() != tiedId)) {
                             measure.swapVoiceId(voice, tiedId);
                         }
+
+                        // SameVoiceRelation-based voice link
+                        AbstractChordInter ch2 = voice.getFirstChord();
+
+                        for (Relation rel : sig.getRelations(ch2, SameVoiceRelation.class)) {
+                            Inter inter = sig.getOppositeInter(ch2, rel);
+                            AbstractChordInter ch1 = (AbstractChordInter) inter;
+
+                            if (ch1.getMeasure() == prevMeasure) {
+                                if (voice.getId() != ch1.getVoice().getId()) {
+                                    measure.swapVoiceId(voice, ch1.getVoice().getId());
+                                }
+                                break;
+                            }
+                        }
                     }
                 }
+
+                prevMeasure = measure;
             }
         }
     }
@@ -385,13 +410,21 @@ public abstract class Voices
     //-------------//
     // SlurAdapter //
     //-------------//
+    /**
+     * This adapter gives access to the partnering slur of a given slur.
+     * <p>
+     * There are different implementations:
+     * <ul>
+     * <li>measureSlurAdapter: Across measures in a single system.
+     * <li>systemSlurAdapter: Across systems in a single page.
+     * <li>pageSlurAdapter: Across pages in a (single) score.
+     * </ul>
+     */
     private static interface SlurAdapter
     {
 
         /**
-         * Report the slur connected to the left of the provided one.
-         * This can be the extending slur when looking in previous system, or the slur itself when
-         * looking in previous measure within the same system.
+         * Report the initial (that is: before) partnering slur.
          *
          * @param slur the slur to follow
          * @return the extending slur (or the slur itself)
