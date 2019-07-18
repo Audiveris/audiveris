@@ -538,7 +538,6 @@ public class SymbolsEditor
 
                     if (vector != null) {
                         vector.extendTo(pt); // Extension
-                        ///vector.handle(false); // Dry run?
                     }
 
                     break;

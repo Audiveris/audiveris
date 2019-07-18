@@ -96,8 +96,10 @@ public class Link
         final Inter source = outgoing ? inter : partner;
         final Inter target = outgoing ? partner : inter;
 
-        if (null == sig.getRelation(source, target, relation.getClass())) {
-            sig.addEdge(source, target, relation);
+        if (!source.isRemoved() && !target.isRemoved()) {
+            if (null == sig.getRelation(source, target, relation.getClass())) {
+                sig.addEdge(source, target, relation);
+            }
         }
     }
 

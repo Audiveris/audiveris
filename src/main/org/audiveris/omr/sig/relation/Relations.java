@@ -53,13 +53,17 @@ import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
+import org.audiveris.omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -196,6 +200,28 @@ public abstract class Relations
     }
 
     /**
+     * Lookup for relations for which the provided predicate applies within the
+     * provided collection.
+     *
+     * @param collection the collection of relations to browse
+     * @param predicate  the predicate to apply, or null
+     * @return the list of compliant relations, perhaps empty but not null
+     */
+    public static List<Relation> relations (Collection<? extends Relation> collection,
+                                            Predicate<Relation> predicate)
+    {
+        List<Relation> found = new ArrayList<>();
+
+        for (Relation relation : collection) {
+            if ((predicate == null) || predicate.check(relation)) {
+                found.add(relation);
+            }
+        }
+
+        return found;
+    }
+
+    /**
      * Report the suggested relation classes between the provided source and target
      * inters.
      *
@@ -322,5 +348,34 @@ public abstract class Relations
     {
         getSet(src, sourceClass).add(relationClass);
         getSet(tgt, targetClass).add(relationClass);
+    }
+
+    //------------------------//
+    // RelationClassPredicate //
+    //------------------------//
+    /**
+     * Predicate to filter Relation instance of a certain class (or subclass thereof).
+     */
+    public static class RelationClassPredicate
+            implements Predicate<Relation>
+    {
+
+        private final Class classe;
+
+        /**
+         * Create relation class predicate.
+         *
+         * @param classe Filtering class
+         */
+        public RelationClassPredicate (Class classe)
+        {
+            this.classe = classe;
+        }
+
+        @Override
+        public boolean check (Relation relation)
+        {
+            return classe.isInstance(relation);
+        }
     }
 }

@@ -46,6 +46,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -100,7 +101,8 @@ public class TupletGenerator
     //---------------------//
     /**
      * Inspect all measure voices for those that start in first slot and exhibit a
-     * duration which is exactly 3/2 times the measure expected duration.
+     * duration (without any implicit tuplet) which is exactly 3/2 times the measure
+     * expected duration.
      * <p>
      * Then force tuplet injection to each such voice
      *
@@ -112,27 +114,35 @@ public class TupletGenerator
         List<TupletInter> created = null;
 
         for (Voice voice : measure.getVoices()) {
-            if (!voice.isWhole()) {
-                final List<AbstractChordInter> chords = voice.getChords();
-                final Rational start = chords.get(0).getTimeOffset();
+            if (voice.isWhole()) {
+                continue;
+            }
 
-                if (Rational.ZERO.equals(start)) {
-                    final AbstractChordInter lastChord = chords.get(chords.size() - 1);
+            final List<AbstractChordInter> chords = voice.getChords();
+            final Rational start = chords.get(0).getTimeOffset();
 
-                    if (!lastChord.isWholeHead()) {
-                        final Rational stop = lastChord.getEndTime();
-                        final Rational ratio = stop.divides(expected);
+            if (!Rational.ZERO.equals(start)) {
+                continue;
+            }
 
-                        if (ratio.equals(THREE_OVER_TWO)) {
-                            if (created == null) {
-                                created = new ArrayList<>();
-                            }
+            final AbstractChordInter lastChord = chords.get(chords.size() - 1);
 
-                            created.addAll(forceTuplets(voice));
-                            logger.info("{} {} rechecked with implicit tuplets", measure, voice);
-                        }
-                    }
+            if (lastChord.isWholeHead()) {
+                continue;
+            }
+
+            // Compute total voice duration, ignoring tuplets if any
+            // So, we cannot simply use lastChord end time
+            final Rational stop = voice.getDurationSansTuplet();
+            final Rational ratio = stop.divides(expected);
+
+            if (ratio.equals(THREE_OVER_TWO)) {
+                if (created == null) {
+                    created = new ArrayList<>();
                 }
+
+                created.addAll(forceTuplets(voice));
+                logger.info("{} {} rechecked with implicit tuplets", measure, voice);
             }
         }
 
@@ -143,25 +153,23 @@ public class TupletGenerator
         return created;
     }
 
-    //----------------//
-    // generateTuplet //
-    //----------------//
+    //-----------------//
+    // generateTuplets //
+    //-----------------//
     /**
-     * Generate an implicit tuplet for the provided group of chords.
+     * Generate one or several implicit tuplets for the provided group of chords.
      * <p>
-     * We use the approximate number of notes in the provided beat group to choose between
-     * TUPLET_THREE and TUPLET_SIX for tuplet shape.
-     * <p>
-     * Working assumption: If a chord of a beam group is implied, link the whole beam group,
-     * including the interleaved rests.
+     * If the provided group of chords contains more than one beam group, it is split in 2.
      *
      * @param group    (input) the original group of chords
      * @param extGroup (output) the extended group of chords
-     * @return the generated implicit tuplet
+     * @return the generated implicit tuplet(s)
      */
-    public TupletInter generateTuplet (List<AbstractChordInter> group,
-                                       List<AbstractChordInter> extGroup)
+    public List<TupletInter> generateTuplets (List<AbstractChordInter> group,
+                                              List<AbstractChordInter> extGroup)
     {
+        final List<TupletInter> tuplets = new ArrayList<>();
+
         // Extend to beam group?
         for (AbstractChordInter chord : group) {
             BeamGroup bg = chord.getBeamGroup();
@@ -179,8 +187,39 @@ public class TupletGenerator
 
         Collections.sort(extGroup, Inters.byCenterAbscissa);
 
+        // Check if more than one beam group is present
+        final AbstractChordInter pivot = checkGroups(Arrays.asList(extGroup));
+
+        if (pivot != null) {
+            final int index = extGroup.indexOf(pivot);
+            tuplets.add(generateOneTuplet(extGroup.subList(0, index)));
+            tuplets.add(generateOneTuplet(extGroup.subList(index, extGroup.size())));
+        } else {
+            tuplets.add(generateOneTuplet(extGroup));
+        }
+
+        return tuplets;
+    }
+
+    //-------------------//
+    // generateOneTuplet //
+    //-------------------//
+    /**
+     * Generate one implicit tuplet for the provided group of chords.
+     * <p>
+     * We use the approximate number of notes in the provided beat group to choose between
+     * TUPLET_THREE and TUPLET_SIX for tuplet shape.
+     * <p>
+     * Working assumption: If a chord of a beam group is implied, link the whole beam group,
+     * including the interleaved rests.
+     *
+     * @param group the group of chords
+     * @return the generated implicit tuplet
+     */
+    public TupletInter generateOneTuplet (List<AbstractChordInter> group)
+    {
         // Simplistic approach
-        final int size = extGroup.size();
+        final int size = group.size();
         final int nb = (int) Math.rint(size / 3.0);
         final Shape shape = (nb == 1) ? Shape.TUPLET_THREE : Shape.TUPLET_SIX;
 
@@ -188,7 +227,7 @@ public class TupletGenerator
         tuplet.setImplicit(true);
 
         // Precise tuplet bounds, above or below group
-        tuplet.setBounds(inferTupletBounds(extGroup, shape));
+        tuplet.setBounds(inferTupletBounds(group, shape));
 
         final SIGraph sig = system.getSig();
         sig.addVertex(tuplet);
@@ -196,7 +235,7 @@ public class TupletGenerator
         measure.addInter(tuplet);
 
         // Set relation between tuplet and every chord in group
-        for (AbstractChordInter ch : extGroup) {
+        for (AbstractChordInter ch : group) {
             sig.addEdge(ch, tuplet, new ChordTupletRelation(shape));
         }
 
@@ -253,7 +292,7 @@ public class TupletGenerator
 
         // Check beam grouping in voice, is it consistent with beat value?
         // At least we can do this for beat value of 1/2
-        if (!checkGroups(groups) && duration.equals(Rational.HALF)) {
+        if ((checkGroups(groups) != null) && duration.equals(Rational.HALF)) {
             groups = buildGroups(voice, ONE_OVER_FOUR);
         }
 
@@ -262,7 +301,7 @@ public class TupletGenerator
         // Process each beat group
         for (List<AbstractChordInter> group : groups) {
             List<AbstractChordInter> extGroup = new ArrayList<>();
-            created.add(generateTuplet(group, extGroup));
+            created.addAll(generateTuplets(group, extGroup));
         }
 
         return created;
@@ -310,12 +349,12 @@ public class TupletGenerator
     // checkGroups //
     //-------------//
     /**
-     * Check there is at most one beam group per chord group
+     * Check there is at most one beam group per chord group.
      *
      * @param groups the sequence of chord groups
-     * @return true if OK
+     * @return the starting chord of the first different group found, or null
      */
-    private boolean checkGroups (List<List<AbstractChordInter>> groups)
+    private AbstractChordInter checkGroups (List<List<AbstractChordInter>> groups)
     {
         for (List<AbstractChordInter> group : groups) {
             BeamGroup beamGroup = null;
@@ -327,13 +366,13 @@ public class TupletGenerator
                     if (beamGroup == null) {
                         beamGroup = bg;
                     } else if (beamGroup != bg) {
-                        return false;
+                        return ch;
                     }
                 }
             }
         }
 
-        return true;
+        return null; // No different beam group found
     }
 
     //-------------------//

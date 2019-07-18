@@ -52,7 +52,12 @@ import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.SameTimeRelation;
+import org.audiveris.omr.sig.relation.SameVoiceRelation;
+import org.audiveris.omr.sig.relation.SeparateTimeRelation;
+import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
 import org.audiveris.omr.sig.ui.InterTask;
+import org.audiveris.omr.sig.ui.PageTask;
 import org.audiveris.omr.sig.ui.RelationTask;
 import org.audiveris.omr.sig.ui.StackTask;
 import org.audiveris.omr.sig.ui.UITask;
@@ -122,9 +127,14 @@ public class PageStep
         forVoices.add(TimePairInter.class);
         forVoices.add(TimeWholeInter.class);
         forVoices.add(TupletInter.class);
-        forVoices.add(AugmentationRelation.class);
-        forVoices.add(DoubleDotRelation.class);
         forVoices.add(MeasureStack.class);
+        // Relations
+        forVoices.add(AugmentationRelation.class);
+        forVoices.add(SameTimeRelation.class);
+        forVoices.add(SameVoiceRelation.class);
+        forVoices.add(SeparateTimeRelation.class);
+        forVoices.add(SeparateVoiceRelation.class);
+        forVoices.add(DoubleDotRelation.class);
     }
 
     static {
@@ -200,7 +210,6 @@ public class PageStep
         logger.debug("PAGE impact {} {}", opKind, seq);
 
         final SIGraph sig = seq.getSig();
-        final SystemInfo system = sig.getSystem();
 
         // First, determine what will be impacted
         Map<Page, Impact> map = new LinkedHashMap<>();
@@ -257,6 +266,16 @@ public class PageStep
                 if (isImpactedBy(classe, forVoices)) {
                     impact.onVoices = true;
                 }
+            } else if (task instanceof PageTask) {
+                Page page = ((PageTask) task).getPage();
+                Impact impact = map.get(page);
+
+                if (impact == null) {
+                    map.put(page, impact = new Impact());
+                }
+
+                impact.onMeasures = true;
+                impact.onVoices = true;
             } else if (task instanceof RelationTask) {
                 RelationTask relationTask = (RelationTask) task;
                 Relation relation = relationTask.getRelation();
@@ -264,6 +283,7 @@ public class PageStep
 
                 if (isImpactedBy(classe, forVoices)) {
                     Inter source = relationTask.getSource();
+                    SystemInfo system = sig.getSystem();
                     MeasureStack stack = system.getStackAt(source.getCenter());
                     Page page = stack.getSystem().getPage();
                     Impact impact = map.get(page);

@@ -40,13 +40,6 @@ import java.util.TreeMap;
  * <p>
  * This class builds the time slots and voices that result from stack content, and checks for the
  * "time correctness" of the stack.
- * <p>
- * It can run in two modes:
- * <ol>
- * <li>A fail-fast mode, just meant to get a rough estimate of stack duration and inferred time
- * signature.
- * <li>A (non fail-fast) standard mode, where voices and times are more thoroughly processed.
- * </ol>
  *
  * @author Hervé Bitteur
  */
@@ -58,20 +51,14 @@ public class StackRhythm
     /** The dedicated measure stack. */
     private final MeasureStack stack;
 
-    /** Fail-fast mode, just meant to guess expected duration for this stack. */
-    private final boolean failFast;
-
     /**
      * Creates a new {@code StackRhythm} object.
      *
-     * @param stack    the measure stack to process
-     * @param failFast true for raw processing (meant only to guess expected measure duration)
+     * @param stack the measure stack to process
      */
-    public StackRhythm (MeasureStack stack,
-                        boolean failFast)
+    public StackRhythm (MeasureStack stack)
     {
         this.stack = stack;
-        this.failFast = failFast;
     }
 
     //---------//
@@ -87,7 +74,7 @@ public class StackRhythm
         stack.setExpectedDuration(expectedDuration);
 
         try {
-            if (!doProcess() && !failFast) {
+            if (!doProcess()) {
                 logger.info("{}{} no correct rhythm", stack.getSystem().getLogPrefix(), stack);
                 ///stack.setAbnormal(true);
             }

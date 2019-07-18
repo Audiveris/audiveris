@@ -51,8 +51,13 @@ import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.SameTimeRelation;
+import org.audiveris.omr.sig.relation.SameVoiceRelation;
+import org.audiveris.omr.sig.relation.SeparateTimeRelation;
+import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterTask;
+import org.audiveris.omr.sig.ui.PageTask;
 import org.audiveris.omr.sig.ui.RelationTask;
 import org.audiveris.omr.sig.ui.RemovalTask;
 import org.audiveris.omr.sig.ui.StackTask;
@@ -115,6 +120,10 @@ public class RhythmsStep
         forStack.add(ChordTupletRelation.class);
         forStack.add(DoubleDotRelation.class);
         forStack.add(HeadStemRelation.class);
+        forStack.add(SameTimeRelation.class);
+        forStack.add(SameVoiceRelation.class);
+        forStack.add(SeparateTimeRelation.class);
+        forStack.add(SeparateVoiceRelation.class);
     }
 
     static {
@@ -161,8 +170,7 @@ public class RhythmsStep
         logger.debug("RHYTHMS impact {} {}", opKind, seq);
 
         final SIGraph sig = seq.getSig();
-        final SystemInfo system = sig.getSystem();
-        final Page page = system.getPage();
+        Page page = null;
 
         // First, determine what will be impacted
         final Impact impact = new Impact();
@@ -181,7 +189,7 @@ public class RhythmsStep
                     Point center = inter.getCenter();
 
                     if (center != null) {
-                        MeasureStack stack = system.getStackAt(center);
+                        MeasureStack stack = sig.getSystem().getStackAt(center);
                         impact.onStacks.add(stack);
 
                         if (inter instanceof BarlineInter || inter instanceof StaffBarlineInter) {
@@ -201,17 +209,25 @@ public class RhythmsStep
                 if (isImpactedBy(classe, forStack)) {
                     impact.onStacks.add(stack);
                 }
+            } else if (task instanceof PageTask) {
+                // Reprocess the page
+                impact.onPage = true;
+                page = ((PageTask) task).getPage();
             } else if (task instanceof RelationTask) {
                 RelationTask relationTask = (RelationTask) task;
                 Relation relation = relationTask.getRelation();
                 Class classe = relation.getClass();
 
                 if (isImpactedBy(classe, forStack)) {
-                    Inter source = relationTask.getSource();
-                    MeasureStack stack = system.getStackAt(source.getCenter());
-                    impact.onStacks.add(stack);
+                    SystemInfo system = sig.getSystem();
+                    impact.onStacks.add(system.getStackAt(relationTask.getSource().getCenter()));
+                    impact.onStacks.add(system.getStackAt(relationTask.getTarget().getCenter()));
                 }
             }
+        }
+
+        if (page == null) {
+            page = sig.getSystem().getPage();
         }
 
         // Second, handle each rhythm impact

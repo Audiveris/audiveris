@@ -286,7 +286,7 @@ public class SlurInter
     //-----------//
     /**
      * Check whether two slurs to-be-connected between two systems in sequence are
-     * roughly compatible with each other. (same staff id, and similar pitch positions).
+     * roughly compatible with each other. (same staff index, and similar pitch positions).
      *
      * @param prevSlur the previous slur
      * @return true if found compatible

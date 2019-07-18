@@ -24,6 +24,7 @@ package org.audiveris.omr.score.ui;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.ui.TribesMenu;
 import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.score.Page;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Sheet;
@@ -37,6 +38,7 @@ import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.ui.ExtractionMenu;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.ui.ChordListMenu;
 import org.audiveris.omr.sig.ui.GlyphListMenu;
 import org.audiveris.omr.sig.ui.InterListMenu;
 import org.audiveris.omr.sig.ui.UITaskList.Option;
@@ -60,7 +62,7 @@ import javax.swing.JMenuItem;
  * Class {@code EditorMenu} defines the pop-up menu which is linked to the current
  * selection in page editor view.
  * <p>
- * It points to several sub-menus: measure, slot, chords, glyphs
+ * It points to several sub-menus: inters, glyphs, measure, page, slot, chords, staff, extraction
  *
  * @author Hervé Bitteur
  */
@@ -86,6 +88,7 @@ public class EditorMenu
     //--------------//
     private void defineLayout ()
     {
+        addMenu(new ChordListMenu(sheet));
         addMenu(new InterListMenu(sheet));
         addMenu(new GlyphListMenu(sheet));
 
@@ -94,6 +97,7 @@ public class EditorMenu
         }
 
         addMenu(new MeasureMenu());
+        addMenu(new PageMenu());
         addMenu(new SlotMenu());
 
         if (AdvancedTopics.Topic.PLOTS.isSet()) {
@@ -115,6 +119,27 @@ public class EditorMenu
         }
 
         return null;
+    }
+
+    //----------------//
+    // getCurrentPage //
+    //----------------//
+    private Page getCurrentPage (Point point)
+    {
+        List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(point);
+
+        Page p = null;
+
+        for (SystemInfo system : systems) {
+            if (p == null) {
+                p = system.getPage();
+            } else if (p != system.getPage()) {
+                // Several pages were selected
+                return null;
+            }
+        }
+
+        return p;
     }
 
     //----------------//
@@ -282,6 +307,82 @@ public class EditorMenu
             private void update ()
             {
                 if (stack == null) {
+                    setEnabled(false);
+                } else {
+                    // Action enabled only if step >= RHYTHMS
+                    setEnabled(sheet.getStub().getLatestStep().compareTo(Step.RHYTHMS) >= 0);
+                }
+            }
+        }
+    }
+
+    //----------//
+    // PageMenu //
+    //----------//
+    private class PageMenu
+            extends LocationDependentMenu
+    {
+
+        /** Selected page. */
+        private Page page;
+
+        private final RhythmAction rhythmAction = new RhythmAction();
+
+        PageMenu ()
+        {
+            super("Page");
+            add(new JMenuItem(rhythmAction));
+        }
+
+        @Override
+        public void updateUserLocation (Rectangle rect)
+        {
+            Page newPage = getCurrentPage(GeoUtil.centerOf(rect));
+
+            if (newPage != null) {
+                page = newPage;
+            } else {
+                page = null;
+            }
+
+            setVisible(page != null);
+
+            if (page != null) {
+                setText("Page #" + page.getId() + " ...");
+            }
+
+            rhythmAction.update();
+        }
+
+        /**
+         * Reprocess rhythm of the current page.
+         */
+        private class RhythmAction
+                extends AbstractAction
+        {
+
+            RhythmAction ()
+            {
+                putValue(NAME, "Reprocess page rhythm");
+                putValue(SHORT_DESCRIPTION, "Reprocess rhythm on current page");
+            }
+
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                sheet.getInterController().reprocessPageRhythm(page);
+            }
+
+            @Override
+            public Object clone ()
+                    throws CloneNotSupportedException
+            {
+                return super.clone(); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            private void update ()
+            {
+                if (page == null) {
                     setEnabled(false);
                 } else {
                     // Action enabled only if step >= RHYTHMS

@@ -310,21 +310,25 @@ public abstract class AbstractChordInter
                     beams.add(beam);
                 }
 
-                // Keep the sequence sorted from chord tail
-                Collections.sort(beams, new Comparator<AbstractBeamInter>()
-                         {
-                             @Override
-                             public int compare (AbstractBeamInter b1,
-                                                 AbstractBeamInter b2)
+                final Point headLoc = getHeadLocation();
+                if (headLoc != null) {
+                    // Keep the sequence ordered by distance from chord tail
+                    Collections.sort(beams, new Comparator<AbstractBeamInter>()
                              {
-                                 int x = getCenter().x;
-                                 double y1 = LineUtil.yAtX(b1.getMedian(), x);
-                                 double y2 = LineUtil.yAtX(b2.getMedian(), x);
-                                 int yHead = getHeadLocation().y;
+                                 @Override
+                                 public int compare (AbstractBeamInter b1,
+                                                     AbstractBeamInter b2)
+                                 {
+                                     int x = getCenter().x;
+                                     double y1 = LineUtil.yAtX(b1.getMedian(), x);
+                                     double y2 = LineUtil.yAtX(b2.getMedian(), x);
+                                     int yHead = headLoc.y;
 
-                                 return Double.compare(Math.abs(yHead - y2), Math.abs(yHead - y1));
-                             }
-                         });
+                                     return Double.compare(Math.abs(yHead - y2),
+                                                           Math.abs(yHead - y1));
+                                 }
+                             });
+                }
             }
         }
 
@@ -640,26 +644,37 @@ public abstract class AbstractChordInter
     }
 
     //----------------//
+    // getHighestNote //
+    //----------------//
+    /**
+     * Report the note located in highest position.
+     *
+     * @return the highest note
+     */
+    public AbstractNoteInter getHighestNote ()
+    {
+        final List<Inter> notes = getMembers(); // Members are returned bottom up
+
+        if (notes.isEmpty()) {
+            logger.warn("No notes in chord " + this);
+
+            return null;
+        }
+
+        return (AbstractNoteInter) notes.get(notes.size() - 1);
+    }
+
+    //----------------//
     // getLeadingNote //
     //----------------//
     /**
-     * Report the note which if vertically farthest from stem tail.
-     * For wholes and breves, it's the head itself.
-     * For rest chords, it's the rest itself.
+     * Report the highest note by default.
      *
      * @return the leading note
      */
     public AbstractNoteInter getLeadingNote ()
     {
-        final List<Inter> notes = getMembers();
-
-        if (!notes.isEmpty()) {
-            return (AbstractNoteInter) notes.get(0);
-        } else {
-            logger.warn("No notes in chord " + this);
-
-            return null;
-        }
+        return getHighestNote();
     }
 
     //------------//
@@ -1060,7 +1075,7 @@ public abstract class AbstractChordInter
      */
     public boolean isWholeHead ()
     {
-        Shape shape = getLeadingNote().getShape();
+        Shape shape = getMembers().get(0).getShape();
 
         return ShapeSet.StemLessHeads.contains(shape);
     }

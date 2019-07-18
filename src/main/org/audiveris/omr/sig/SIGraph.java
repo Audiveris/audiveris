@@ -35,7 +35,10 @@ import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.Exclusion.Cause;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.Relations;
+import org.audiveris.omr.sig.relation.Relations.RelationClassPredicate;
 import org.audiveris.omr.sig.relation.Support;
+import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
 
@@ -1016,9 +1019,24 @@ public class SIGraph
      *
      * @param inter the inter to publish (can be null)
      */
-    public void publish (final Inter inter)
+    public void publish (Inter inter)
     {
-        system.getSheet().getInterIndex().publish(inter);
+        publish(inter, SelectionHint.ENTITY_INIT);
+    }
+
+    //---------//
+    // publish //
+    //---------//
+    /**
+     * Convenient method to publish an Inter instance.
+     *
+     * @param inter the inter to publish (can be null)
+     * @param hint  ENTITY_INIT or ENTITY_TRANSIENT
+     */
+    public void publish (Inter inter,
+                         SelectionHint hint)
+    {
+        system.getSheet().getInterIndex().publish(inter, hint);
     }
 
     //------------------//
@@ -1122,6 +1140,34 @@ public class SIGraph
     public Set<Inter> reduceExclusions ()
     {
         return reduceExclusions(exclusions());
+    }
+
+    //-----------//
+    // relations //
+    //-----------//
+    /**
+     * Lookup for relations for which the provided predicate applies.
+     *
+     * @param predicate the predicate to apply, or null
+     * @return the list of compliant relations, perhaps empty but not null
+     */
+    public List<Relation> relations (Predicate<Relation> predicate)
+    {
+        return Relations.relations(edgeSet(), predicate);
+    }
+
+    //-----------//
+    // relations //
+    //-----------//
+    /**
+     * Lookup for relations of the provided class (or subclass thereof).
+     *
+     * @param classe the class to search for
+     * @return the relations of desired class, perhaps empty but not null
+     */
+    public List<Relation> relations (final Class classe)
+    {
+        return relations(new RelationClassPredicate(classe));
     }
 
     //--------------//

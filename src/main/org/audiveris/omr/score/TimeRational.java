@@ -79,6 +79,14 @@ public class TimeRational
         den = num = 0;
     }
 
+    //-----------//
+    // duplicate //
+    //-----------//
+    public TimeRational duplicate ()
+    {
+        return new TimeRational(num, den);
+    }
+
     //--------//
     // equals //
     //--------//

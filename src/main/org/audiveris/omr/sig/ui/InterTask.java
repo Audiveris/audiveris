@@ -57,7 +57,7 @@ public abstract class InterTask
      * @param sig           the underlying sig
      * @param inter         the inter task is focused upon
      * @param initialBounds the inter initial bounds
-     * @param links         the relations around inter
+     * @param links         the relations around inter, perhaps null
      */
     protected InterTask (SIGraph sig,
                          Inter inter,
@@ -90,6 +90,12 @@ public abstract class InterTask
     {
         StringBuilder sb = new StringBuilder(actionName());
         sb.append(" ").append(inter);
+
+        if (links != null) {
+            for (Link link : links) {
+                sb.append("\n       +  ").append(link);
+            }
+        }
 
         return sb.toString();
     }

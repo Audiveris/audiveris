@@ -22,7 +22,6 @@
 package org.audiveris.omr.ui.selection;
 
 import java.awt.Point;
-import static org.audiveris.omr.ui.selection.SelectionHint.ENTITY_INIT;
 import org.audiveris.omr.util.Entity;
 import org.audiveris.omr.util.EntityIndex;
 
@@ -199,13 +198,12 @@ public class EntityService<E extends Entity>
                 return;
             }
 
-            ///logger.info("{} {}", this.getClass().getSimpleName(), event);
             if (event instanceof LocationEvent) {
                 handleLocationEvent((LocationEvent) event); // Location => enclosed/enclosing entities(s)
             } else if (event instanceof IdEvent) {
-                handleEvent((IdEvent) event); // Id => indexed entity
+                handleIdEvent((IdEvent) event); // Id => indexed entity
             } else if (event instanceof EntityListEvent) {
-                handleEntityListEvent((EntityListEvent) event); // List => display contour of (first) entity
+                handleEntityListEvent((EntityListEvent) event); // List => display contour of (one) entity
             }
         } catch (ConcurrentModificationException cme) {
             // This can happen because of processing being done on EntityIndex...
@@ -246,15 +244,18 @@ public class EntityService<E extends Entity>
     {
         final SelectionHint hint = listEvent.hint;
 
-        if (hint == ENTITY_INIT) {
-            final E entity = listEvent.getEntity();
+        final E entity = listEvent.getEntity();
 
-            if (entity != null) {
-                if (locationService != null) {
-                    locationService.publish(
-                            new LocationEvent(this, hint, listEvent.movement, entity.getBounds()));
-                }
+        if (entity != null) {
+            if (locationService != null) {
+                locationService.publish(
+                        new LocationEvent(this,
+                                          SelectionHint.ENTITY_TRANSIENT,
+                                          listEvent.movement,
+                                          entity.getBounds()));
+            }
 
+            if (hint == SelectionHint.ENTITY_INIT) {
                 // Use this entity to start a basket
                 basket.clear();
                 basket.add(entity);
@@ -270,7 +271,7 @@ public class EntityService<E extends Entity>
      *
      * @param idEvent the id event
      */
-    protected void handleEvent (IdEvent idEvent)
+    protected void handleIdEvent (IdEvent idEvent)
     {
         final E entity = index.getEntity(idEvent.getData());
         publish(new EntityListEvent<>(this, idEvent.hint, idEvent.movement, entity));

@@ -24,6 +24,7 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.ui.selection.SelectionHint;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,5 +101,14 @@ public class InterAction
     {
         final SIGraph sig = inter.getSig();
         sig.publish(inter);
+    }
+
+    //---------//
+    // publish //
+    //---------//
+    public void publish (SelectionHint hint)
+    {
+        final SIGraph sig = inter.getSig();
+        sig.publish(inter, hint);
     }
 }

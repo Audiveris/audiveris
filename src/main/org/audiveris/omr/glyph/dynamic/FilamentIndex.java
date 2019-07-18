@@ -134,20 +134,22 @@ public class FilamentIndex
      *
      * @param filament the provided filament
      */
+    @Override
     public void publish (final Filament filament)
     {
         if (entityService != null) {
+            final EntityListEvent event = new EntityListEvent<>(
+                    this,
+                    SelectionHint.ENTITY_INIT,
+                    MouseMovement.PRESSING,
+                    filament);
+
             SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
                 {
-                    entityService.publish(
-                            new EntityListEvent<>(
-                                    this,
-                                    SelectionHint.ENTITY_INIT,
-                                    MouseMovement.PRESSING,
-                                    filament));
+                    entityService.publish(event);
                 }
             });
         }

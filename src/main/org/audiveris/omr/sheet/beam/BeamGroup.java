@@ -240,10 +240,9 @@ public class BeamGroup
                 if (rest != null) {
                     allChords.add(rest.getChord());
                 }
-
-                allChords.add(chord);
             }
 
+            allChords.add(chord);
             prevChord = chord;
         }
 

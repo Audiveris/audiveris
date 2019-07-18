@@ -253,27 +253,6 @@ public class HeadChordInter
         return super.getBounds();
     }
 
-    //------------//
-    // getDetails //
-    //------------//
-    @Override
-    public String getDetails ()
-    {
-        StringBuilder sb = new StringBuilder(super.getDetails());
-
-        final StemInter stem = getStem();
-
-        if (stem != null) {
-            if (sb.length() > 0) {
-                sb.append(' ');
-            }
-
-            sb.append("stem:").append(stem);
-        }
-
-        return sb.toString();
-    }
-
     //----------------//
     // getFlagsNumber //
     //----------------//
@@ -380,45 +359,44 @@ public class HeadChordInter
     // getLeadingNote //
     //----------------//
     /**
-     * Report the note which if vertically farthest from stem tail.
-     * For wholes and breves, it's the head itself.
-     * For rest chords, it's the rest itself
+     * If the chord is stem-based, report the note vertically farthest from stem tail.
+     * Otherwise return the highest note.
      *
      * @return the leading note
      */
     @Override
     public HeadInter getLeadingNote ()
     {
-        final List<Inter> notes = getMembers();
+        final StemInter stem = getStem();
 
-        if (!notes.isEmpty()) {
-            final StemInter stem = getStem();
+        if (stem == null) {
+            return (HeadInter) super.getLeadingNote();
+        }
 
-            if (stem != null) {
-                // Find the note farthest from stem middle point
-                Point middle = stem.getCenter();
-                Inter bestNote = null;
-                int bestDy = Integer.MIN_VALUE;
+        final List<Inter> notes = getMembers(); // Members are returned bottom up
 
-                for (Inter note : notes) {
-                    int noteY = note.getCenter().y;
-                    int dy = Math.abs(noteY - middle.y);
-
-                    if (dy > bestDy) {
-                        bestNote = note;
-                        bestDy = dy;
-                    }
-                }
-
-                return (HeadInter) bestNote;
-            } else {
-                return (HeadInter) notes.get(0);
-            }
-        } else {
+        if (notes.isEmpty()) {
             logger.warn("No notes in chord " + this);
 
             return null;
         }
+
+        // Find the note farthest from stem middle point
+        Point middle = stem.getCenter();
+        Inter bestNote = null;
+        int bestDy = Integer.MIN_VALUE;
+
+        for (Inter note : notes) {
+            int noteY = note.getCenter().y;
+            int dy = Math.abs(noteY - middle.y);
+
+            if (dy > bestDy) {
+                bestNote = note;
+                bestDy = dy;
+            }
+        }
+
+        return (HeadInter) bestNote;
     }
 
     //-----------//

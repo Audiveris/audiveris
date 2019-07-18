@@ -358,7 +358,6 @@ public class StemInter
 
         // Create sub-stem
         final StemInter subStem = new StemInter(g, getGrade());
-        sheet.getInterIndex().register(subStem);
         sig.addVertex(subStem);
 
         return subStem;

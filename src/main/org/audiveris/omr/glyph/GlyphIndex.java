@@ -32,6 +32,7 @@ import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.util.BasicIndex;
+import org.audiveris.omr.util.ClassUtil;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.EntityIndex;
 
@@ -331,20 +332,36 @@ public class GlyphIndex
      *
      * @param glyph the provided glyph
      */
-    public void publish (final Glyph glyph)
+    public void publish (Glyph glyph)
+    {
+        publish(glyph, SelectionHint.ENTITY_INIT);
+    }
+
+    //---------//
+    // publish //
+    //---------//
+    /**
+     * Convenient debug UI method to publish and focus on a glyph.
+     *
+     * @param glyph the provided glyph
+     * @param hint  selection hint (ENTITY_INIT or ENTITY_TRANSIENT)
+     */
+    public void publish (Glyph glyph,
+                         SelectionHint hint)
     {
         if (glyphService != null) {
+            final EntityListEvent event = new EntityListEvent<>(
+                    this,
+                    hint,
+                    MouseMovement.PRESSING,
+                    glyph);
+
             SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()
                 {
-                    glyphService.publish(
-                            new EntityListEvent<>(
-                                    this,
-                                    SelectionHint.ENTITY_INIT,
-                                    MouseMovement.PRESSING,
-                                    glyph));
+                    glyphService.publish(event);
                 }
             });
         }
@@ -412,6 +429,15 @@ public class GlyphIndex
     {
         weakIndex.reset();
         originals.clear();
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return ClassUtil.nameOf(this);
     }
 
     //-----------------//

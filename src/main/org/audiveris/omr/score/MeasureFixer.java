@@ -238,8 +238,14 @@ public class MeasureFixer
         for (int idx = 0; idx < system.getStacks().size(); idx++) {
             boolean computeRepeats = true;
             stack = system.getStacks().get(idx);
+
             // First, compute voices terminations
-            stack.checkDuration();
+            if (stack.getExpectedDuration() != null) {
+                stack.checkDuration();
+            } else {
+                logger.warn("No target duration for measure {}, please check time signature.",
+                            stack.getPageId());
+            }
 
             // Check if all voices in all parts exhibit the same termination
             stackTermination = getStackTermination();

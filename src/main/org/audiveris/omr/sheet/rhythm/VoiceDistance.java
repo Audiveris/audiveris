@@ -87,9 +87,9 @@ public abstract class VoiceDistance
 
         private static final int NOT_A_REST = 5;
 
-        private static final int NEW_IN_STAFF = 10; //25;
+        private static final int NEW_IN_STAFF = 10;
 
-        private static final int STAFF_DIFF = 20; //30;
+        private static final int STAFF_DIFF = 20;
 
         private static final int STEM_1_DIFF = 3;
 
@@ -143,10 +143,19 @@ public abstract class VoiceDistance
                 nar += NOT_A_REST;
             }
 
-            // Pitch difference (even in different staves)
-            int p1 = left.getLeadingNote().getAbsolutePitch();
-            int p2 = right.getLeadingNote().getAbsolutePitch();
-            int dp = Math.abs(p2 - p1);
+            // Pitch difference
+            final int dp;
+            if ((left instanceof HeadChordInter) && (right instanceof HeadChordInter)) {
+                // No rest involved, use absolute pitch to cope with potentially different staves
+                int p1 = left.getHighestNote().getAbsolutePitch();
+                int p2 = right.getHighestNote().getAbsolutePitch();
+                dp = Math.abs(p2 - p1);
+            } else {
+                // At least one rest involved, use chord area centers
+                int y1 = left.getCenter().y;
+                int y2 = right.getCenter().y;
+                dp = Math.abs((2 * (y2 - y1)) / scale.getInterline());
+            }
 
             // Stem direction difference
             int dif = Math.abs(right.getStemDir() - left.getStemDir());

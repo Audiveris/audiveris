@@ -350,6 +350,29 @@ public class Voice
         return voiceDur;
     }
 
+    //-----------------------//
+    // getDurationSansTuplet //
+    //-----------------------//
+    /**
+     * Report the voice duration without counting any tuplet effect.
+     *
+     * @return the tuplet-free duration of voice
+     */
+    public Rational getDurationSansTuplet ()
+    {
+        if (wholeRestChord != null) {
+            return null;
+        }
+
+        Rational voiceDur = Rational.ZERO;
+
+        for (AbstractChordInter ch : chords) {
+            voiceDur = voiceDur.plus(ch.getDurationSansTuplet());
+        }
+
+        return voiceDur;
+    }
+
     //-----------//
     // getFamily //
     //-----------//
@@ -375,15 +398,13 @@ public class Voice
     {
         if (isWhole()) {
             return wholeRestChord;
-        } else {
-            if (slots != null) {
-                for (SlotVoice info : slots.values()) {
-                    return info.chord;
-                }
-            }
-
-            return null;
         }
+
+        if (!chords.isEmpty()) {
+            return chords.get(0);
+        }
+
+        return null;
     }
 
     //-------//
@@ -554,39 +575,15 @@ public class Voice
      */
     public AbstractChordInter getLastChord ()
     {
-        return getLastChord(true);
-    }
-
-    //--------------//
-    // getLastChord //
-    //--------------//
-    /**
-     * Report the last chord of this voice.
-     *
-     * @param bySlot true for use of slots, false for use of chords array
-     * @return the last chord, which may be a whole/multi
-     */
-    public AbstractChordInter getLastChord (boolean bySlot)
-    {
         if (isWhole()) {
             return wholeRestChord;
-        } else {
-            if (bySlot) {
-                AbstractChordInter lastChord = null;
-
-                if (slots != null) {
-                    for (SlotVoice info : slots.values()) {
-                        lastChord = info.chord;
-                    }
-                }
-
-                return lastChord;
-            } else if (chords != null && !chords.isEmpty()) {
-                return chords.get(chords.size() - 1);
-            }
-
-            return null;
         }
+
+        if (!chords.isEmpty()) {
+            return chords.get(chords.size() - 1);
+        }
+
+        return null;
     }
 
     //------------//
@@ -625,14 +622,10 @@ public class Voice
 
         if (isWhole()) {
             rests.add(wholeRestChord);
-        } else if (slots != null) {
-            for (SlotVoice info : slots.values()) {
-                if (info.status == Status.BEGIN) {
-                    AbstractChordInter chord = info.chord;
-
-                    if (chord.isRest()) {
-                        rests.add(chord);
-                    }
+        } else {
+            for (AbstractChordInter chord : chords) {
+                if (chord.isRest()) {
+                    rests.add(chord);
                 }
             }
         }

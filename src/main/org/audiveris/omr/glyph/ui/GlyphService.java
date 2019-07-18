@@ -106,7 +106,7 @@ public class GlyphService
         if (ViewParameters.getInstance().getSelectionMode() != SelectionMode.MODE_SECTION) {
             super.handleLocationEvent(locationEvent);
 
-            if (basket.size() > 1) {
+            if ((locationEvent.hint != SelectionHint.ENTITY_TRANSIENT) && (basket.size() > 1)) {
                 // Build compound on-the-fly and publish it (no impact on basket)
                 Glyph compound = GlyphFactory.buildGlyph(basket);
                 publish(
