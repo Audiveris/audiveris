@@ -28,7 +28,7 @@ import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.util.ModelSerializer;
 
-import static org.deeplearning4j.util.ModelSerializer.OLD_UPDATER_BIN;
+//import static org.deeplearning4j.util.ModelSerializer.OLD_UPDATER_BIN;
 import static org.deeplearning4j.util.ModelSerializer.UPDATER_BIN;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -118,8 +118,9 @@ public abstract class ModelSystemSerializer
 
         if (loadUpdater) {
             //This can be removed a few releases after 0.4.1...
-            final Path oldUpdaters = root.resolve(OLD_UPDATER_BIN);
+            //final Path oldUpdaters = root.resolve(OLD_UPDATER_BIN);
 
+            /*
             if (Files.exists(oldUpdaters)) {
                 InputStream stream = Files.newInputStream(oldUpdaters);
                 ObjectInputStream ois = new ObjectInputStream(stream);
@@ -131,7 +132,7 @@ public abstract class ModelSystemSerializer
                 }
 
                 gotOldUpdater = true;
-            }
+            }*/
 
             final Path updaterStateEntry = root.resolve(UPDATER_BIN);
 

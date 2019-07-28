@@ -39,6 +39,7 @@ import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.util.Panel;
 
 import org.deeplearning4j.nn.api.Model;
+import org.deeplearning4j.optimize.api.BaseTrainingListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,8 +69,8 @@ import javax.swing.SwingUtilities;
  *
  * @author Hervé Bitteur
  */
-class TrainingPanel
-        implements TrainingMonitor, Observer
+class TrainingPanel extends BaseTrainingListener
+        implements Observer
 {
 
     private static final Constants constants = new Constants();
@@ -148,16 +149,20 @@ class TrainingPanel
 
         defineLayout();
 
-        task.classifier.addListener(this);
+        //task.classifier.addListener(this);
 
         displayParams();
         inputParams();
     }
 
-    @Override
     public void epochStarted (int epoch)
     {
         this.epoch = epoch;
+    }
+
+    @Override
+    public void onBackwardPass(Model model) {
+        //No op
     }
 
     public JComponent getComponent ()
@@ -165,25 +170,21 @@ class TrainingPanel
         return component;
     }
 
-    @Override
     public int getIterationPeriod ()
     {
         return constants.listenerPeriod.getValue();
     }
 
-    @Override
     public void invoke ()
     {
         invoked = true;
     }
 
-    @Override
     public boolean invoked ()
     {
         return invoked;
     }
 
-    @Override
     public void iterationDone (Model model,
                                int iteration)
     {
@@ -199,7 +200,6 @@ class TrainingPanel
         }
     }
 
-    @Override
     public void iterationPeriodDone (int iter,
                                      double score)
     {

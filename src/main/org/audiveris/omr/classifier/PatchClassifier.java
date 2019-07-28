@@ -34,6 +34,8 @@ import org.audiveris.omrdataset.api.OmrShape;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.modelimport.keras.KerasModelImport;
+import org.deeplearning4j.nn.modelimport.keras.exceptions.UnsupportedKerasConfigurationException;
+import org.deeplearning4j.nn.modelimport.keras.exceptions.InvalidKerasConfigurationException;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -70,10 +72,12 @@ public class PatchClassifier
     public static final int INTERLINE = 10;
 
     /** Height of patch, within scaled image: {@value}. */
-    public static final int CONTEXT_HEIGHT = 160;
+    //public static final int CONTEXT_HEIGHT = 160;
+    public static final int CONTEXT_HEIGHT = 110;
 
     /** Width of patch, within scaled image: {@value}. */
-    public static final int CONTEXT_WIDTH = 40;
+    //public static final int CONTEXT_WIDTH = 40;
+    public static final int CONTEXT_WIDTH = 60;
 
     /** Value used for background pixel feature: {@value}. */
     public static final int BACKGROUND = 255;
@@ -93,6 +97,7 @@ public class PatchClassifier
     /** The underlying network.
      * To my knowledge, the ComputationGraph would better fit our needs.
      */
+    //private final ComputationGraph model;
     private final ComputationGraph model;
 
     /**
@@ -198,15 +203,15 @@ public class PatchClassifier
             }
         }
 
-        ///storePixels(location, pixels);
+        //storePixels(location, pixels);
         //
         // Output patch image if so asked for
         if (imageWrapper != null) {
             imageWrapper.value = imageOf(pixels);
         }
 
-        INDArray features = Nd4j.create(pixels)
-                .reshape(1, 1, CONTEXT_HEIGHT, CONTEXT_WIDTH);
+        INDArray features = Nd4j.create(pixels).
+                reshape(1, 1, CONTEXT_HEIGHT, CONTEXT_WIDTH);
 
         // Network inference
         INDArray output = model.outputSingle(features);
@@ -237,6 +242,7 @@ public class PatchClassifier
      * @param fileName file name for classifier data
      * @return the model loaded
      */
+    //protected ComputationGraph load (String fileName)
     protected ComputationGraph load (String fileName)
     {
         ComputationGraph model = null;
@@ -254,8 +260,12 @@ public class PatchClassifier
 
             try {
                 model = KerasModelImport.importKerasModelAndWeights(path.toString());
-            } catch (Exception ex) {
-                logger.warn("Load error {}", ex.toString(), ex);
+            } catch (java.io.IOException ex) {
+                logger.warn("I/O Exception occured {}", ex.toString(), ex);
+            } catch (UnsupportedKerasConfigurationException ex) {
+                logger.warn("Unsupported Keras configuration {}", ex.toString(), ex);
+            } catch (InvalidKerasConfigurationException ex) {
+                logger.warn("Invalid Keras configuration {}", ex.toString(), ex);
             }
 
             logger.debug("Model loaded.");
@@ -315,9 +325,9 @@ public class PatchClassifier
         List<String> outputs = conf.getNetworkOutputs();
         boolean compatability = true;
         compatability &= (inputs.size() == 1);
-        compatability &= inputs.get(0).equals("input_1");
+        compatability &= inputs.get(0).equals("input_2");
         compatability &= (outputs.size() == 1);
-        compatability &= outputs.get(0).equals("dense_1_loss");
+        compatability &= outputs.get(0).equals("fc_out_loss");
 
         return compatability;
     }
@@ -333,7 +343,7 @@ public class PatchClassifier
     private ArrayList<OmrShape> getOmrShapeList ()
     {
         ArrayList<OmrShape> shapes = new ArrayList<>();
-        shapes.add(OmrShape.none);
+        //shapes.add(OmrShape.none);
         shapes.add(OmrShape.brace);
         shapes.add(OmrShape.repeatDot);
         shapes.add(OmrShape.segno);

@@ -41,7 +41,7 @@ import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.layers.BaseLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
-import org.deeplearning4j.optimize.api.IterationListener;
+import org.deeplearning4j.optimize.api.TrainingListener;
 
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -160,7 +160,7 @@ public class DeepClassifier
     public void addListener (TrainingMonitor listener)
     {
         if (listener != null) {
-            Collection<IterationListener> listeners = model.getListeners();
+            Collection<TrainingListener> listeners = model.getListeners();
 
             if (!listeners.contains(listener)) {
                 listeners.add(listener);
@@ -185,14 +185,15 @@ public class DeepClassifier
         synchronized (this) {
             INDArray output = model.output(features, false);
             BaseLayer outputLayer = (BaseLayer) model.getOutputLayer();
-            preOutput = outputLayer.preOutput(false);
+            //preOutput = outputLayer.preOutput(false);
         }
 
         Evaluation[] evals = new Evaluation[SHAPE_COUNT];
         Shape[] values = Shape.values();
 
         for (int s = 0; s < SHAPE_COUNT; s++) {
-            double grade = sigmoid(preOutput.getDouble(s)); // Rather than normalized output
+            //double grade = sigmoid(preOutput.getDouble(s)); // Rather than normalized output
+            double grade = sigmoid(0.99); // DUMMY!
             evals[s] = new Evaluation(values[s], grade);
         }
 
@@ -219,7 +220,7 @@ public class DeepClassifier
     public void removeListener (TrainingMonitor listener)
     {
         if (listener != null) {
-            Collection<IterationListener> listeners = model.getListeners();
+            Collection<TrainingListener> listeners = model.getListeners();
 
             if (listeners.contains(listener)) {
                 listeners.remove(listener);
@@ -235,7 +236,7 @@ public class DeepClassifier
     public void reset ()
     {
         // Create a new model and transfer listeners from previous model
-        Collection<IterationListener> listeners = model.getListeners();
+        Collection<TrainingListener> listeners = model.getListeners();
         model = createNetwork();
         model.setListeners(listeners);
     }
@@ -325,7 +326,7 @@ public class DeepClassifier
             final List<String> names = Arrays.asList(
                     ShapeSet.getPhysicalShapeNames());
             org.deeplearning4j.eval.Evaluation eval = new org.deeplearning4j.eval.Evaluation(names);
-            INDArray guesses = model.output(dataSet.getFeatureMatrix());
+            INDArray guesses = model.output(dataSet.getFeatures());
             eval.eval(dataSet.getLabels(), guesses);
             logger.info(eval.stats(true));
 
@@ -365,7 +366,7 @@ public class DeepClassifier
         final org.deeplearning4j.nn.conf.layers.ConvolutionLayer confInputLayer
                 = (org.deeplearning4j.nn.conf.layers.ConvolutionLayer) inputLayer.conf()
                         .getLayer();
-        final int modelIn = confInputLayer.getNIn();
+        final long modelIn = confInputLayer.getNIn();
 
         if (modelIn != 1) {
             logger.warn("Incompatible features count:{} expected:{}", modelIn, 1);
@@ -379,7 +380,7 @@ public class DeepClassifier
         final org.deeplearning4j.nn.conf.layers.OutputLayer confOutputLayer
                 = (org.deeplearning4j.nn.conf.layers.OutputLayer) outputLayer.conf()
                         .getLayer();
-        final int modelOut = confOutputLayer.getNOut();
+        final long modelOut = confOutputLayer.getNOut();
 
         if (modelOut != SHAPE_COUNT) {
             logger.warn("Incompatible shape count model:{} expected:{}", modelOut, SHAPE_COUNT);
@@ -439,15 +440,15 @@ public class DeepClassifier
 
         MultiLayerConfiguration.Builder builder = new NeuralNetConfiguration.Builder() //
                 .seed(seed) //
-                .iterations(iterations) //
-                .regularization(true) //
+                //.iterations(iterations) //
+                //.regularization(true) //
                 .l2(0.0005) //
-                .learningRate(learningRate) // was .01 in original MNIST example
+                //.learningRate(learningRate) // was .01 in original MNIST example
                 //.biasLearningRate(0.02)
                 //.learningRateDecayPolicy(LearningRatePolicy.Inverse).lrPolicyDecayRate(0.001).lrPolicyPower(0.75)
                 .weightInit(WeightInit.XAVIER) //
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT) //
-                .updater(Updater.NESTEROVS).momentum(0.9) //
+                //.updater(Updater.NESTEROVS).momentum(0.9) //
                 .list() //
                 .layer(
                         0,
@@ -503,7 +504,7 @@ public class DeepClassifier
     //--------------//
     private void epochStarted (int epoch)
     {
-        for (IterationListener listener : model.getListeners()) {
+        for (TrainingListener listener : model.getListeners()) {
             if (listener instanceof TrainingMonitor) {
                 TrainingMonitor monitor = (TrainingMonitor) listener;
                 monitor.epochStarted(epoch);
