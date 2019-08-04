@@ -236,7 +236,6 @@ public class MeasureFixer
 
         // Loop on stacks in system (the list of stacks being modified on the fly)
         for (int idx = 0; idx < system.getStacks().size(); idx++) {
-            boolean computeRepeats = true;
             stack = system.getStacks().get(idx);
 
             // First, compute voices terminations
@@ -310,9 +309,7 @@ public class MeasureFixer
             }
 
             // Inspect stack for repeat signs
-            if (computeRepeats) {
-                stack.computeRepeats();
-            }
+            stack.computeRepeats();
 
             // For next measure stack
             prevStack = stack;

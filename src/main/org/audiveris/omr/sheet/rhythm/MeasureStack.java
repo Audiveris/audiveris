@@ -336,39 +336,57 @@ public class MeasureStack
     //----------------//
     /**
      * Compute the possible repeat indications (left, right) for this stack.
+     * <p>
+     * Only the first staff of the first measure is actually used to assign repeat sign(s) to the
+     * stack.
+     * But all staves of the stack have to be checked because the repeat check may correct the
+     * current style of the barline, in case thin and thick barlines were not correctly recognized.
      */
     public void computeRepeats ()
     {
         repeats = null;
 
-        Measure measure = getFirstMeasure();
-        PartBarline partBarline = measure.getPartBarlineOn(HorizontalSide.LEFT);
+        final Measure firstMeasure = getFirstMeasure();
 
-        if (partBarline != null) {
-            StaffBarlineInter staffBarline = partBarline.getStaffBarlines().get(0);
+        for (Measure measure : measures) {
+            final boolean isFirstMeasure = measure == firstMeasure;
+            checkRepeats(measure.getPartBarlineOn(LEFT), LEFT, isFirstMeasure);
+            checkRepeats(measure.getMidPartBarline(), LEFT, isFirstMeasure);
+            checkRepeats(measure.getPartBarlineOn(RIGHT), RIGHT, isFirstMeasure);
+        }
+    }
 
-            if (staffBarline.isLeftRepeat()) {
-                addRepeat(HorizontalSide.LEFT);
-            }
+    //--------------//
+    // checkRepeats //
+    //--------------//
+    /**
+     * Check every staff of this measure for a repeat sign at the provided partBarline.
+     *
+     * @param partBarline    the provided PartBarline
+     * @param side           repeat side: LEFT or RIGHT
+     * @param isFirstMeasure true for the first measure in stack
+     */
+    private void checkRepeats (final PartBarline partBarline,
+                               final HorizontalSide side,
+                               final boolean isFirstMeasure)
+    {
+        if (partBarline == null) {
+            return;
         }
 
-        partBarline = measure.getMidPartBarline();
+        final List<StaffBarlineInter> bars = partBarline.getStaffBarlines();
 
-        if (partBarline != null) {
-            StaffBarlineInter staffBarline = partBarline.getStaffBarlines().get(0);
+        for (int i = 0; i < bars.size(); i++) {
+            final StaffBarlineInter sbl = bars.get(i);
 
-            if (staffBarline.isLeftRepeat()) {
-                addRepeat(HorizontalSide.LEFT);
-            }
-        }
-
-        partBarline = measure.getRightPartBarline();
-
-        if (partBarline != null) {
-            StaffBarlineInter staffBarline = partBarline.getStaffBarlines().get(0);
-
-            if (staffBarline.isRightRepeat()) {
-                addRepeat(HorizontalSide.RIGHT);
+            if (side == LEFT) {
+                if (sbl.isLeftRepeat() && isFirstMeasure && (i == 0)) {
+                    addRepeat(LEFT);
+                }
+            } else {
+                if (sbl.isRightRepeat() && isFirstMeasure && (i == 0)) {
+                    addRepeat(RIGHT);
+                }
             }
         }
     }

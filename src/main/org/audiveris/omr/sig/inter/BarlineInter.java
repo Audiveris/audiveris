@@ -204,6 +204,19 @@ public class BarlineInter
         return null;
     }
 
+    //----------//
+    // setShape //
+    //----------//
+    /**
+     * Allows to modify the barline shape (THIN_BARLINE or THIN_BARLINE).
+     *
+     * @param shape the new shape
+     */
+    public void setShape (Shape shape)
+    {
+        this.shape = shape;
+    }
+
     //-----------------//
     // getStaffBarline //
     //-----------------//
