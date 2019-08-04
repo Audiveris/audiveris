@@ -698,13 +698,48 @@ public final class StaffBarlineInter
     //--------------//
     /**
      * Tell whether this barline is a measure left repeat (dots on right of barline).
+     * <p>
+     * Here again, we can't be too strict on thin/thick difference.
      *
      * @return true if so
      */
     public boolean isLeftRepeat ()
     {
-        return ((getStyle() == HEAVY_LIGHT) || (getStyle() == LIGHT_HEAVY_LIGHT))
-                       && hasDotsOnRight();
+//        return ((getStyle() == HEAVY_LIGHT) || (getStyle() == LIGHT_HEAVY_LIGHT))
+//                       && hasDotsOnRight();
+
+        if (!hasDotsOnRight()) {
+            return false;
+        }
+
+        final List<Inter> bars = getMembers();
+        final int size = bars.size();
+        getStyle();
+
+        switch (size) {
+        case 2:
+            // Style should be HEAVY_LIGHT
+            if (style != HEAVY_LIGHT) {
+                BarlineInter b1 = (BarlineInter) bars.get(0);
+                double w1 = b1.getWidth();
+                BarlineInter b2 = (BarlineInter) bars.get(1);
+                double w2 = b2.getWidth();
+
+                if (w2 < w1) {
+                    style = HEAVY_LIGHT;
+                    b1.setShape(Shape.THICK_BARLINE);
+                    b2.setShape(Shape.THIN_BARLINE);
+                }
+            }
+
+            return true;
+        case 3:
+            // Style should be LIGHT_HEAVY_LIGHT
+            return true;
+        default:
+            return false;
+        }
+
     }
 
     //---------------//
@@ -712,13 +747,47 @@ public final class StaffBarlineInter
     //---------------//
     /**
      * Tell whether this barline is a measure right repeat (dots on left of barline).
+     * <p>
+     * Here again, we can't be too strict on thin/thick difference.
      *
      * @return true if so
      */
     public boolean isRightRepeat ()
     {
-        return ((getStyle() == LIGHT_HEAVY) || (getStyle() == LIGHT_HEAVY_LIGHT))
-                       && hasDotsOnLeft();
+//        return ((getStyle() == LIGHT_HEAVY) || (getStyle() == LIGHT_HEAVY_LIGHT))
+//                       && hasDotsOnLeft();
+
+        if (!hasDotsOnLeft()) {
+            return false;
+        }
+
+        final List<Inter> bars = getMembers();
+        final int size = bars.size();
+        getStyle();
+
+        switch (size) {
+        case 2:
+            // Style should be LIGHT_HEAVY
+            if (style != LIGHT_HEAVY) {
+                BarlineInter b1 = (BarlineInter) bars.get(0);
+                double w1 = b1.getWidth();
+                BarlineInter b2 = (BarlineInter) bars.get(1);
+                double w2 = b2.getWidth();
+
+                if (w2 > w1) {
+                    style = LIGHT_HEAVY;
+                    b1.setShape(Shape.THIN_BARLINE);
+                    b2.setShape(Shape.THICK_BARLINE);
+                }
+            }
+
+            return true;
+        case 3:
+            // Style should be LIGHT_HEAVY_LIGHT
+            return true;
+        default:
+            return false;
+        }
     }
 
     //--------------//
@@ -741,7 +810,13 @@ public final class StaffBarlineInter
     @Override
     public String shapeString ()
     {
-        return getStyle().toString();
+        PartBarline.Style style = getStyle();
+
+        if (style != null) {
+            return style.toString();
+        }
+
+        return null;
     }
 
     //-----------//
@@ -759,6 +834,15 @@ public final class StaffBarlineInter
     //--------------//
     // computeStyle //
     //--------------//
+    /**
+     * Compute the style for this StaffBarline, based on its member barlines.
+     * <p>
+     * The separation between thin and thick barlines is not reliable enough, therefore we have
+     * to base the computation on the number of barlines rather than a strict difference between
+     * thin/thick roles.
+     *
+     * @return the style inferred from composition
+     */
     private Style computeStyle ()
     {
         switch (getMembers().size()) {
@@ -778,11 +862,11 @@ public final class StaffBarlineInter
 
         case 3:
 
-            if ((getLeftBar().getShape() == Shape.THIN_BARLINE) && (getMiddleBar()
-                    .getShape() == Shape.THICK_BARLINE)
-                        && (getRightBar().getShape() == Shape.THIN_BARLINE)) {
-                return LIGHT_HEAVY_LIGHT;
-            }
+//            if ((getLeftBar().getShape() == Shape.THIN_BARLINE)
+//                        && (getMiddleBar().getShape() == Shape.THICK_BARLINE)
+//                        && (getRightBar().getShape() == Shape.THIN_BARLINE)) {
+            return LIGHT_HEAVY_LIGHT;
+//            }
 
         default:
             logger.warn("Unknown style for {}", this);
