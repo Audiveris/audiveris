@@ -22,6 +22,9 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Shape;
+import static org.audiveris.omr.glyph.Shape.BACK_TO_BACK_REPEAT_SIGN;
+import static org.audiveris.omr.glyph.Shape.LEFT_REPEAT_SIGN;
+import static org.audiveris.omr.glyph.Shape.RIGHT_REPEAT_SIGN;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
@@ -699,7 +702,7 @@ public final class StaffBarlineInter
     /**
      * Tell whether this barline is a measure left repeat (dots on right of barline).
      * <p>
-     * Here again, we can't be too strict on thin/thick difference.
+     * Here again, we can't be too strict on thin/thick difference. *
      *
      * @return true if so
      */
@@ -707,6 +710,10 @@ public final class StaffBarlineInter
     {
 //        return ((getStyle() == HEAVY_LIGHT) || (getStyle() == LIGHT_HEAVY_LIGHT))
 //                       && hasDotsOnRight();
+
+        if (shape == LEFT_REPEAT_SIGN || shape == BACK_TO_BACK_REPEAT_SIGN) {
+            return true;
+        }
 
         if (!hasDotsOnRight()) {
             return false;
@@ -756,6 +763,10 @@ public final class StaffBarlineInter
     {
 //        return ((getStyle() == LIGHT_HEAVY) || (getStyle() == LIGHT_HEAVY_LIGHT))
 //                       && hasDotsOnLeft();
+
+        if (shape == RIGHT_REPEAT_SIGN || shape == BACK_TO_BACK_REPEAT_SIGN) {
+            return true;
+        }
 
         if (!hasDotsOnLeft()) {
             return false;

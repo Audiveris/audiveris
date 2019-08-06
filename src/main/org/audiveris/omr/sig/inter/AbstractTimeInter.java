@@ -29,11 +29,14 @@ import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.score.TimeValue;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.header.StaffHeader;
+import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -278,6 +281,35 @@ public abstract class AbstractTimeInter
 
         this.shape = shape;
         this.timeRational = timeRational;
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Remove the time signature from containing measure (and from staff header if any).
+     *
+     * @param extensive true for non-manual removals only
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        // Remove from staff header if relevant
+        final StaffHeader header = staff.getHeader();
+
+        if (header != null && header.time == this) {
+            header.time = null;
+        }
+
+        // Remove from containing measure
+        final Point center = getCenter();
+        final Measure measure = staff.getPart().getMeasureAt(center);
+
+        if (measure != null) {
+            measure.removeInter(this);
+        }
+
+        super.remove(extensive);
     }
 
     //-----------//
