@@ -337,22 +337,17 @@ public class MeasureStack
     /**
      * Compute the possible repeat indications (left, right) for this stack.
      * <p>
-     * Only the first staff of the first measure is actually used to assign repeat sign(s) to the
-     * stack.
-     * But all staves of the stack have to be checked because the repeat check may correct the
+     * All staves of the stack have to be checked because the repeat check may correct the
      * current style of the barline, in case thin and thick barlines were not correctly recognized.
      */
     public void computeRepeats ()
     {
         repeats = null;
 
-        final Measure firstMeasure = getFirstMeasure();
-
         for (Measure measure : measures) {
-            final boolean isFirstMeasure = measure == firstMeasure;
-            checkRepeats(measure.getPartBarlineOn(LEFT), LEFT, isFirstMeasure);
-            checkRepeats(measure.getMidPartBarline(), LEFT, isFirstMeasure);
-            checkRepeats(measure.getPartBarlineOn(RIGHT), RIGHT, isFirstMeasure);
+            checkRepeats(measure.getPartBarlineOn(LEFT), LEFT);
+            checkRepeats(measure.getMidPartBarline(), LEFT);
+            checkRepeats(measure.getPartBarlineOn(RIGHT), RIGHT);
         }
     }
 
@@ -362,13 +357,11 @@ public class MeasureStack
     /**
      * Check every staff of this measure for a repeat sign at the provided partBarline.
      *
-     * @param partBarline    the provided PartBarline
-     * @param side           repeat side: LEFT or RIGHT
-     * @param isFirstMeasure true for the first measure in stack
+     * @param partBarline the provided PartBarline
+     * @param side        repeat side: LEFT or RIGHT
      */
     private void checkRepeats (final PartBarline partBarline,
-                               final HorizontalSide side,
-                               final boolean isFirstMeasure)
+                               final HorizontalSide side)
     {
         if (partBarline == null) {
             return;
@@ -376,15 +369,13 @@ public class MeasureStack
 
         final List<StaffBarlineInter> bars = partBarline.getStaffBarlines();
 
-        for (int i = 0; i < bars.size(); i++) {
-            final StaffBarlineInter sbl = bars.get(i);
-
+        for (StaffBarlineInter sbl : bars) {
             if (side == LEFT) {
-                if (sbl.isLeftRepeat() && isFirstMeasure && (i == 0)) {
+                if (sbl.isLeftRepeat()) {
                     addRepeat(LEFT);
                 }
             } else {
-                if (sbl.isRightRepeat() && isFirstMeasure && (i == 0)) {
+                if (sbl.isRightRepeat()) {
                     addRepeat(RIGHT);
                 }
             }
