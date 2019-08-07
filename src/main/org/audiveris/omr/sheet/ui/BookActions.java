@@ -634,6 +634,8 @@ public class BookActions
                     "About to set sheet " + stub.getId() + " as invalid." + "\nDo you confirm?");
 
             if (answer == JOptionPane.YES_OPTION) {
+                stub.invalidate();
+
                 final Sheet sheet = stub.getSheet();
                 final StubsController controller = StubsController.getInstance();
 
