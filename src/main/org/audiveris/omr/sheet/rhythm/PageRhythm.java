@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.audiveris.omr.sheet.Sheet;
 
 /**
  * Class {@code PageRhythm} handles rhythm data on a sheet page.
@@ -211,14 +212,41 @@ public class PageRhythm
                 SheetStub stub = page.getSheet().getStub();
                 int stubNumber = stub.getNumber();
 
-                if (stubNumber > 1) {
-                    SheetStub prevStub = stub.getBook().getStub(stubNumber - 1);
-                    PageRef prevPageRef = prevStub.getLastPageRef();
-                    TimeRational lastTR = prevPageRef.getLastTimeRational();
+                if (stubNumber <= 1) {
+                    continue;
+                }
 
-                    if (lastTR != null) {
-                        range.timeRational = lastTR.duplicate();
-                        range.duration = lastTR.getValue();
+                SheetStub prevStub = stub.getBook().getStub(stubNumber - 1);
+
+                if (!prevStub.isValid()) {
+                    continue;
+                }
+
+                PageRef prevPageRef = prevStub.getLastPageRef();
+
+                if (prevPageRef == null) {
+                    continue;
+                }
+
+                TimeRational lastTR = prevPageRef.getLastTimeRational();
+
+                if (lastTR != null) {
+                    // Use last timeRational of previous page
+                    range.timeRational = lastTR.duplicate();
+                    range.duration = lastTR.getValue();
+                } else {
+                    // Fallback using last expectedDuration of previous page
+                    Sheet prevSheet = prevStub.getSheet(); // Perhaps load from disk...
+                    Page prevPage = prevSheet.getLastPage();
+
+                    if (prevPage == null) {
+                        continue;
+                    }
+
+                    MeasureStack prevStack = prevPage.getLastSystem().getLastStack();
+
+                    if (prevStack.getExpectedDuration() != null) {
+                        range.duration = prevStack.getExpectedDuration();
                     }
                 }
             }
