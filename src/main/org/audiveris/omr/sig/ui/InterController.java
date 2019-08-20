@@ -45,8 +45,8 @@ import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
+import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
@@ -63,6 +63,7 @@ import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
+import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
@@ -101,6 +102,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -179,8 +181,6 @@ public class InterController
             return;
         }
 
-        logger.debug("addInters {} {}", inters, options);
-
         if ((options == null) || !Arrays.asList(options).contains(Option.VALIDATED)) {
             if (sheet.getStub().getLatestStep().compareTo(Step.MEASURES) >= 0) {
                 List<Inter> staffBarlines = staffBarlinesOf(inters);
@@ -198,43 +198,42 @@ public class InterController
             }
         }
 
-        CtrlTask ctrlTask = new CtrlTask(DO)
+        new CtrlTask(DO, "addInters", options)
         {
+            private final List<LinkedGhost> linkedGhosts = new ArrayList<>();
+
             @Override
-            protected Void doInBackground ()
+            protected void action ()
             {
-                try {
-                    List<LinkedGhost> lgs = new ArrayList<>();
 
-                    for (Inter inter : inters) {
-                        SystemInfo system = inter.getStaff().getSystem();
+                for (Inter inter : inters) {
+                    SystemInfo system = inter.getStaff().getSystem();
 
-                        if (inter instanceof BarlineInter) {
-                            BarlineInter b = (BarlineInter) inter;
+                    if (inter instanceof BarlineInter) {
+                        BarlineInter b = (BarlineInter) inter;
 
-                            if (b.getArea() == null) {
-                                b.setArea(new Area(b.getBounds()));
-                            }
+                        if (b.getArea() == null) {
+                            b.setArea(new Area(b.getBounds()));
                         }
-
-                        // If glyph is used by another inter, delete this other inter
-                        removeCompetitors(inter, inter.getGlyph(), system, seq);
-
-                        lgs.add(new LinkedGhost(inter, inter.searchLinks(system, false)));
                     }
 
-                    addGhosts(seq, lgs);
-                    epilog(seq);
-                } catch (Throwable ex) {
-                    logger.warn("Exception in addInters {}", ex.toString(), ex);
+                    // If glyph is used by another inter, delete this other inter
+                    removeCompetitors(inter, inter.getGlyph(), system, seq);
+
+                    linkedGhosts.add(new LinkedGhost(inter, inter.searchLinks(system, false)));
                 }
 
-                return null;
+                addGhosts(seq, linkedGhosts);
             }
-        };
 
-        ctrlTask.seq.setOptions(options);
-        ctrlTask.execute();
+            @Override
+            protected void publish ()
+            {
+                sheet.getInterIndex().publish(linkedGhosts.get(0).ghost);
+                sheet.getGlyphIndex().publish(null);
+            }
+
+        }.execute();
     }
 
     //-------------//
@@ -250,8 +249,6 @@ public class InterController
     public void assignGlyph (Glyph aGlyph,
                              final Shape shape)
     {
-        logger.debug("addInter {} as {}", aGlyph, shape);
-
         if ((shape == Shape.TEXT) || (shape == Shape.LYRICS)) {
             addText(aGlyph, shape);
 
@@ -327,23 +324,18 @@ public class InterController
     public void changeSentence (final SentenceInter sentence,
                                 final TextRole newRole)
     {
-        logger.debug("changeSentence {} for {}", sentence, newRole);
-
-        new CtrlTask(DO)
+        new CtrlTask(DO, "changeSentence")
         {
             @Override
-            protected Void doInBackground ()
+            protected void action ()
             {
-                try {
-                    seq.add(new SentenceRoleTask(sentence, newRole));
-                    seq.performDo();
-                    sheet.getInterIndex().publish(sentence);
-                    epilog(seq);
-                } catch (Throwable ex) {
-                    logger.warn("Exception in changeSentence {}", ex.toString(), ex);
-                }
+                seq.add(new SentenceRoleTask(sentence, newRole));
+            }
 
-                return null;
+            @Override
+            protected void publish ()
+            {
+                sheet.getInterIndex().publish(sentence);
             }
         }.execute();
     }
@@ -361,23 +353,18 @@ public class InterController
     public void changeWord (final WordInter word,
                             final String newValue)
     {
-        logger.debug("changeWord {} for {}", word, newValue);
-
-        new CtrlTask(DO)
+        new CtrlTask(DO, "changeWord")
         {
             @Override
-            protected Void doInBackground ()
+            protected void action ()
             {
-                try {
-                    seq.add(new WordValueTask(word, newValue));
-                    seq.performDo();
-                    sheet.getInterIndex().publish(word);
-                    epilog(seq);
-                } catch (Throwable ex) {
-                    logger.warn("Exception in changeWord {}", ex.toString(), ex);
-                }
+                seq.add(new WordValueTask(word, newValue));
+            }
 
-                return null;
+            @Override
+            protected void publish ()
+            {
+                sheet.getInterIndex().publish(word);
             }
         }.execute();
     }
@@ -415,36 +402,27 @@ public class InterController
                       final Inter target,
                       final Relation relation)
     {
-        new CtrlTask(DO)
+        new CtrlTask(DO, "link")
         {
             @Override
-            protected Void doInBackground ()
+            protected void action ()
             {
                 Inter source = src; // To allow use of a new source
 
-                try {
-                    if (relation instanceof HeadStemRelation) {
-                        HeadInter head = (HeadInter) source;
+                if (relation instanceof HeadStemRelation) {
+                    HeadInter head = (HeadInter) source;
 
-                        if (head.getChord() != null) {
-                            source = preHeadStemLink(seq, head, (StemInter) target);
-                        }
+                    if (head.getChord() != null) {
+                        source = preHeadStemLink(seq, head, (StemInter) target);
                     }
-
-                    // Remove conflicting relations if any
-                    final boolean sourceIsNew = source != src;
-                    removeConflictingRelations(seq, sig, sourceIsNew, source, target, relation);
-
-                    // Finally, add relation
-                    seq.add(new LinkTask(sig, source, target, relation));
-
-                    seq.performDo();
-                    epilog(seq);
-                } catch (Throwable ex) {
-                    logger.warn("Exception in process {}", ex.toString(), ex);
                 }
 
-                return null;
+                // Remove conflicting relations if any
+                final boolean sourceIsNew = source != src;
+                removeConflictingRelations(seq, sig, sourceIsNew, source, target, relation);
+
+                // Finally, add relation
+                seq.add(new LinkTask(sig, source, target, relation));
             }
         }.execute();
     }
@@ -462,103 +440,146 @@ public class InterController
     public void mergeChords (final List<HeadChordInter> chords,
                              final boolean withStem)
     {
-        CtrlTask ctrlTask = new CtrlTask(DO)
+        new CtrlTask(DO, "mergeChords")
         {
+            private final HeadChordInter newChord = new HeadChordInter(1.0);
+
             @Override
-            protected Void doInBackground ()
+            protected void action ()
             {
-                try {
-                    final SIGraph sig = chords.get(0).getSig();
-                    final Rectangle newChordBounds = Entities.getBounds(chords);
+                final SIGraph sig = chords.get(0).getSig();
+                final Rectangle newChordBounds = Entities.getBounds(chords);
 
-                    // All heads involved
-                    final List<HeadInter> heads = new ArrayList<>();
+                // All heads involved
+                final List<HeadInter> heads = new ArrayList<>();
 
-                    for (HeadChordInter ch : chords) {
-                        for (Inter iHead : ch.getNotes()) {
-                            heads.add((HeadInter) iHead);
-                        }
+                for (HeadChordInter ch : chords) {
+                    for (Inter iHead : ch.getNotes()) {
+                        heads.add((HeadInter) iHead);
                     }
-
-                    Collections.sort(heads, Inters.byReverseCenterOrdinate);
-
-                    // Create a new chord ensemble will all heads
-                    final List<Link> newChordLinks = new ArrayList<>();
-                    for (HeadInter head : heads) {
-                        newChordLinks.add(new Link(head, new Containment(), true));
-                    }
-
-                    // Transfer original chords support relations to the compound chord
-                    for (HeadChordInter ch : chords) {
-                        for (Relation rel : sig.getRelations(ch, Support.class)) {
-                            Inter target = sig.getEdgeTarget(rel);
-                            Inter other = sig.getOppositeInter(ch, rel);
-                            newChordLinks.add(new Link(other, rel.duplicate(), other == target));
-                            seq.add(new UnlinkTask(sig, rel));
-                        }
-                    }
-
-                    final HeadChordInter newChord = new HeadChordInter(1.0);
-                    newChord.setManual(true);
-                    seq.add(new AdditionTask(sig, newChord, newChordBounds, newChordLinks));
-
-                    // Unlink each head from its original chord
-                    for (HeadChordInter ch : chords) {
-                        for (Relation rel : sig.getRelations(ch, Containment.class)) {
-                            seq.add(new UnlinkTask(sig, rel));
-                        }
-                    }
-
-                    if (withStem) {
-                        // Build the new stem linked to all heads
-                        final List<StemInter> stems = new ArrayList<>();
-                        final StemInter newStem = buildStem(chords, stems);
-                        final Rectangle newStemBounds = Entities.getBounds(stems);
-
-                        final List<Link> newStemLinks = new ArrayList<>();
-                        for (HeadInter head : heads) {
-                            newStemLinks.add(new Link(head, new HeadStemRelation(), false));
-                        }
-
-                        // Transfer original stem relations (beam, flag) to the compound stem
-                        for (StemInter st : stems) {
-                            for (Relation rel : sig.getRelations(st, BeamStemRelation.class,
-                                                                 FlagStemRelation.class)) {
-                                Inter target = sig.getEdgeTarget(rel);
-                                Inter other = sig.getOppositeInter(st, rel);
-                                newStemLinks.add(new Link(other, rel.duplicate(), other == target));
-                            }
-                        }
-
-                        seq.add(new AdditionTask(sig, newStem, newStemBounds, newStemLinks));
-
-                        // Remove the original stems (and their relations)
-                        for (StemInter stem : stems) {
-                            seq.add(new RemovalTask(stem));
-                        }
-                    }
-
-                    // Remove the original chords (and their relations)
-                    for (HeadChordInter ch : chords) {
-                        seq.add(new RemovalTask(ch));
-                    }
-
-                    logger.debug("Merge {}", seq);
-                    seq.performDo();
-
-                    newChord.countDots();
-
-                    sheet.getInterIndex().publish(newChord);
-                    epilog(seq);
-                } catch (Throwable ex) {
-                    logger.warn("Exception in mergeChords {}", ex.toString(), ex);
                 }
 
-                return null;
-            }
-        };
+                Collections.sort(heads, Inters.byReverseCenterOrdinate);
 
-        ctrlTask.execute();
+                // Create a new chord ensemble will all heads
+                final List<Link> newChordLinks = new ArrayList<>();
+                for (HeadInter head : heads) {
+                    newChordLinks.add(new Link(head, new Containment(), true));
+                }
+
+                // Transfer original chords support relations to the compound chord
+                for (HeadChordInter ch : chords) {
+                    for (Relation rel : sig.getRelations(ch, Support.class)) {
+                        Inter target = sig.getEdgeTarget(rel);
+                        Inter other = sig.getOppositeInter(ch, rel);
+                        newChordLinks.add(new Link(other, rel.duplicate(), other == target));
+                        seq.add(new UnlinkTask(sig, rel));
+                    }
+                }
+
+                newChord.setManual(true);
+                seq.add(new AdditionTask(sig, newChord, newChordBounds, newChordLinks));
+
+                // Unlink each head from its original chord
+                for (HeadChordInter ch : chords) {
+                    for (Relation rel : sig.getRelations(ch, Containment.class)) {
+                        seq.add(new UnlinkTask(sig, rel));
+                    }
+                }
+
+                if (withStem) {
+                    // Build the new stem linked to all heads
+                    final List<StemInter> stems = new ArrayList<>();
+                    final StemInter newStem = buildStem(chords, stems);
+                    final Rectangle newStemBounds = Entities.getBounds(stems);
+
+                    final List<Link> newStemLinks = new ArrayList<>();
+                    for (HeadInter head : heads) {
+                        newStemLinks.add(new Link(head, new HeadStemRelation(), false));
+                    }
+
+                    // Transfer original stem relations (beam, flag) to the compound stem
+                    for (StemInter st : stems) {
+                        for (Relation rel : sig.getRelations(st, BeamStemRelation.class,
+                                                             FlagStemRelation.class)) {
+                            Inter target = sig.getEdgeTarget(rel);
+                            Inter other = sig.getOppositeInter(st, rel);
+                            newStemLinks.add(new Link(other, rel.duplicate(), other == target));
+                        }
+                    }
+
+                    seq.add(new AdditionTask(sig, newStem, newStemBounds, newStemLinks));
+
+                    // Remove the original stems (and their relations)
+                    for (StemInter stem : stems) {
+                        seq.add(new RemovalTask(stem));
+                    }
+                }
+
+                // Remove the original chords (and their relations)
+                for (HeadChordInter ch : chords) {
+                    seq.add(new RemovalTask(ch));
+                }
+
+                logger.debug("Merge {}", seq);
+            }
+
+            @Override
+            protected void publish ()
+            {
+                newChord.countDots();
+                sheet.getInterIndex().publish(newChord);
+            }
+        }.execute();
+    }
+
+    //-------------//
+    // mergeSystem //
+    //-------------//
+    /**
+     * Merge the provided system with its sibling below.
+     *
+     * TODO: Implement the UNDO side of this task, (if relevant)
+     *
+     * @param system the system above
+     */
+    @UIThread
+    public void mergeSystem (final SystemInfo system)
+    {
+        new CtrlTask(DO, "mergeSystem")
+        {
+            @Override
+            protected void action ()
+            {
+                final Staff upStaff = system.getLastStaff();
+                final BarlineInter upBar = upStaff.getSideBarline(LEFT);
+
+                final List<SystemInfo> systems = sheet.getSystems();
+                final SystemInfo systemBelow = systems.get(1 + systems.indexOf(system));
+                final Staff downStaff = systemBelow.getFirstStaff();
+                final BarlineInter downBar = downStaff.getSideBarline(LEFT);
+
+                // Merge the systems into one
+                seq.add(new SystemMergeTask(system));
+
+                if (upBar != null && downBar != null) {
+                    // Add connector between up & down bars
+                    Shape shape = (upBar.getShape() == Shape.THICK_BARLINE) ? Shape.THICK_CONNECTOR
+                            : Shape.THIN_CONNECTOR;
+                    Point2D p1 = upBar.getMedian().getP2();
+                    Point2D p2 = downBar.getMedian().getP1();
+                    Line2D median = new Line2D.Double(p1, p2);
+                    double width = (upBar.getWidth() + downBar.getWidth()) * 0.5;
+                    BarConnectorInter connector = new BarConnectorInter(shape, 1.0, median, width);
+                    SIGraph sig = system.getSig();
+                    seq.add(new AdditionTask(
+                            sig, connector, connector.getBounds(), Collections.EMPTY_SET));
+
+                    // Link up & down bars
+                    seq.add(new LinkTask(sig, upBar, downBar, new BarConnectionRelation()));
+                }
+            }
+        }.execute();
     }
 
     //-----------//
@@ -604,23 +625,18 @@ public class InterController
     @UIThread
     public void redo ()
     {
-        new CtrlTask(REDO)
+        new CtrlTask(REDO, "redo")
         {
             @Override
-            protected Void doInBackground ()
+            protected void action ()
             {
-                try {
-                    seq = history.toRedo();
-                    seq.performDo();
+                seq = history.toRedo();
+            }
 
-                    sheet.getInterIndex().publish(null);
-
-                    epilog(seq);
-                } catch (Throwable ex) {
-                    logger.warn("Exception in redo {}", ex.toString(), ex);
-                }
-
-                return null;
+            @Override
+            protected void publish ()
+            {
+                sheet.getInterIndex().publish(null);
             }
         }.execute();
     }
@@ -671,32 +687,25 @@ public class InterController
             }
         }
 
-        CtrlTask ctrlTask = new CtrlTask(DO)
+        new CtrlTask(DO, "removeInters", options)
         {
             @Override
-            protected Void doInBackground ()
+            protected void action ()
             {
-                try {
-                    populateRemovals(inters, seq);
-
-                    seq.performDo();
-                    sheet.getInterIndex().publish(null);
-                    epilog(seq);
-                } catch (Throwable ex) {
-                    logger.warn("Exception in removeInters {}", ex.toString(), ex);
-                }
-
-                return null;
+                populateRemovals(inters, seq);
             }
-        };
 
-        ctrlTask.seq.setOptions(options);
-        ctrlTask.execute();
+            @Override
+            protected void publish ()
+            {
+                sheet.getInterIndex().publish(null);
+            }
+        }.execute();
     }
 
-    //-----------------//
-    // reprocessRhythm //
-    //-----------------//
+    //---------------------//
+    // reprocessPageRhythm //
+    //---------------------//
     /**
      * Reprocess the rhythm on the whole provided page.
      *
@@ -705,74 +714,47 @@ public class InterController
     @UIThread
     public void reprocessPageRhythm (final Page page)
     {
-        new CtrlTask(DO)
+        new CtrlTask(DO, "reprocessPageRhythm", Option.NO_HISTORY)
         {
             @Override
-            protected Void doInBackground ()
+            protected void action ()
             {
-                try {
-                    sheet.getStub().setModified(true);
+                seq.add(new PageTask(page));
+            }
 
-                    seq = null; // So that history is not modified
-
-                    // Re-process impacted steps
-                    final UITaskList tempSeq = new UITaskList(new PageTask(page));
-                    final Step latestStep = sheet.getStub().getLatestStep();
-                    final Step firstStep = Step.RHYTHMS;
-
-                    final EnumSet<Step> steps = EnumSet.range(firstStep, latestStep);
-
-                    for (Step step : steps) {
-                        logger.debug("Impact {}", step);
-                        step.impact(tempSeq, OpKind.DO);
-                    }
-                } catch (Throwable ex) {
-                    logger.warn("Exception in reprocessPageRhythm {}", ex.toString(), ex);
-                }
-
-                return null;
+            @Override
+            protected Step firstImpactedStep ()
+            {
+                return Step.RHYTHMS;
             }
         }.execute();
     }
 
-    //-----------------//
-    // reprocessRhythm //
-    //-----------------//
+    //----------------------//
+    // reprocessStackRhythm //
+    //----------------------//
     /**
      * Reprocess the rhythm on the provided measure stack.
      *
      * @param stack measure stack to reprocess
      */
     @UIThread
-    public void reprocessRhythm (final MeasureStack stack)
+    public void reprocessStackRhythm (final MeasureStack stack)
     {
-        new CtrlTask(DO)
+        new CtrlTask(DO, "reprocessStackRhythm", Option.NO_HISTORY)
         {
             @Override
-            protected Void doInBackground ()
+            protected void action ()
             {
-                try {
-                    sheet.getStub().setModified(true);
-
-                    seq = null; // So that history is not modified
-
-                    // Re-process impacted steps
-                    final UITaskList tempSeq = new UITaskList(new StackTask(stack));
-                    final Step latestStep = sheet.getStub().getLatestStep();
-                    final Step firstStep = Step.RHYTHMS;
-
-                    final EnumSet<Step> steps = EnumSet.range(firstStep, latestStep);
-
-                    for (Step step : steps) {
-                        logger.debug("Impact {}", step);
-                        step.impact(tempSeq, OpKind.DO);
-                    }
-                } catch (Throwable ex) {
-                    logger.warn("Exception in reprocessRhythm {}", ex.toString(), ex);
-                }
-
-                return null;
+                seq.add(new StackTask(stack));
             }
+
+            @Override
+            protected Step firstImpactedStep ()
+            {
+                return Step.RHYTHMS;
+            }
+
         }.execute();
     }
 
@@ -810,203 +792,94 @@ public class InterController
     @UIThread
     public void splitChord (final HeadChordInter chord)
     {
-
-        CtrlTask ctrlTask = new CtrlTask(DO)
+        new CtrlTask(DO, "splitChord")
         {
+            private final List<HeadChordInter> newChords = new ArrayList<>();
+
             @Override
-            protected Void doInBackground ()
+            protected void action ()
             {
-                try {
-                    final SIGraph sig = chord.getSig();
+                final SIGraph sig = chord.getSig();
 
-                    // Notes are assumed to be ordered bottom up (byReverseCenterOrdinate)
-                    final List<List<HeadInter>> partitions = partitionHeads(chord);
-                    final List<HeadChordInter> newChords = new ArrayList<>();
+                // Notes are assumed to be ordered bottom up (byReverseCenterOrdinate)
+                final List<List<HeadInter>> partitions = partitionHeads(chord);
 
-                    for (List<HeadInter> partition : partitions) {
-                        final List<Link> newChordLinks = new ArrayList<>();
+                for (List<HeadInter> partition : partitions) {
+                    final List<Link> newChordLinks = new ArrayList<>();
+                    for (HeadInter head : partition) {
+                        newChordLinks.add(new Link(head, new Containment(), true));
+                    }
+
+                    // Transfer original chords relations to proper sub-chords
+                    //TODO
+                    //
+                    final Rectangle bounds = Entities.getBounds(partition);
+                    final HeadChordInter ch = new HeadChordInter(1.0);
+                    ch.setManual(true);
+                    ch.setStaff(partition.get(0).getStaff());
+                    newChords.add(ch);
+                    seq.add(new AdditionTask(sig, ch, bounds, newChordLinks));
+                }
+
+                // Unlink each head from the original chord
+                for (Relation rel : sig.getRelations(chord, Containment.class)) {
+                    seq.add(new UnlinkTask(sig, rel));
+                }
+
+                final StemInter stem = chord.getStem();
+                final Point tail = chord.getTailLocation();
+                final int yDir = Integer.compare(tail.y, chord.getCenter().y);
+
+                // Remove the original chord (before dealing with beams)
+                seq.add(new RemovalTask(chord));
+
+                // Case of stem-based chord
+                if (stem != null) {
+                    final Rectangle[] boxes = getSubStemsBounds(stem, tail, yDir, partitions);
+
+                    for (int i = 0; i < 2; i++) {
+                        final List<HeadInter> partition = partitions.get(i);
+
+                        // Create stem
+                        StemInter s = new StemInter(null, 1.0);
+                        s.setManual(true);
+
+                        final List<Link> newStemLinks = new ArrayList<>();
                         for (HeadInter head : partition) {
-                            newChordLinks.add(new Link(head, new Containment(), true));
+                            newStemLinks.add(new Link(head, new HeadStemRelation(), false));
                         }
 
-                        // Transfer original chords relations to proper sub-chords
-                        //TODO
-                        //
-                        final Rectangle bounds = Entities.getBounds(partition);
-                        final HeadChordInter ch = new HeadChordInter(1.0);
-                        ch.setManual(true);
-                        ch.setStaff(partition.get(0).getStaff());
-                        newChords.add(ch);
-                        seq.add(new AdditionTask(sig, ch, bounds, newChordLinks));
-                    }
-
-                    // Unlink each head from the original chord
-                    for (Relation rel : sig.getRelations(chord, Containment.class)) {
-                        seq.add(new UnlinkTask(sig, rel));
-                    }
-
-                    final StemInter stem = chord.getStem();
-                    final Point tail = chord.getTailLocation();
-                    final int yDir = Integer.compare(tail.y, chord.getCenter().y);
-
-                    // Remove the original chord (before dealing with beams)
-                    seq.add(new RemovalTask(chord));
-
-                    // Case of stem-based chord
-                    if (stem != null) {
-                        final Rectangle[] boxes = getSubStemsBounds(stem, tail, yDir, partitions);
-
-                        for (int i = 0; i < 2; i++) {
-                            final List<HeadInter> partition = partitions.get(i);
-
-                            // Create stem
-                            StemInter s = new StemInter(null, 1.0);
-                            s.setManual(true);
-
-                            final List<Link> newStemLinks = new ArrayList<>();
-                            for (HeadInter head : partition) {
-                                newStemLinks.add(new Link(head, new HeadStemRelation(), false));
+                        // Transfer original stem relations (beams, flags) to proper sub-stem
+                        if ((yDir == -1 && i == 1) || (yDir == 1 && i == 0)) {
+                            for (Relation rel : sig.getRelations(stem, BeamStemRelation.class,
+                                                                 FlagStemRelation.class)) {
+                                Inter target = sig.getEdgeTarget(rel);
+                                Inter other = sig.getOppositeInter(stem, rel);
+                                Relation dup = rel.duplicate();
+                                newStemLinks.add(new Link(other, dup, other == target));
                             }
-
-                            // Transfer original stem relations (beams, flags) to proper sub-stem
-                            if ((yDir == -1 && i == 1) || (yDir == 1 && i == 0)) {
-                                for (Relation rel : sig.getRelations(stem, BeamStemRelation.class,
-                                                                     FlagStemRelation.class)) {
-                                    Inter target = sig.getEdgeTarget(rel);
-                                    Inter other = sig.getOppositeInter(stem, rel);
-                                    Relation dup = rel.duplicate();
-                                    newStemLinks.add(new Link(other, dup, other == target));
-                                }
-                            }
-
-                            seq.add(new AdditionTask(sig, s, boxes[i], newStemLinks));
                         }
 
-                        // Remove the original stem
-                        seq.add(new RemovalTask(stem));
+                        seq.add(new AdditionTask(sig, s, boxes[i], newStemLinks));
                     }
 
-                    logger.debug("Split {}", seq);
-                    seq.performDo();
-
-                    for (HeadChordInter ch : newChords) {
-                        ch.countDots();
-                    }
-
-                    sheet.getInterIndex().publish(null); // TODO: publish both parts?
-                    epilog(seq);
-                } catch (Throwable ex) {
-                    logger.warn("Exception in splitChord {}", ex.toString(), ex);
+                    // Remove the original stem
+                    seq.add(new RemovalTask(stem));
                 }
 
-                return null;
+                logger.debug("Split {}", seq);
             }
-        };
 
-        ctrlTask.execute();
-    }
-
-    //----------//
-    // timeJoin //
-    //----------//
-    /**
-     * Join the two provided chords in the same time slot.
-     *
-     * @param chords the (two) chords to be joined in time
-     */
-    @UIThread
-    public void timeJoin (final List<? extends AbstractChordInter> chords)
-    {
-
-        CtrlTask ctrlTask = new CtrlTask(DO)
-        {
             @Override
-            protected Void doInBackground ()
+            protected void publish ()
             {
-                try {
-                    final SIGraph sig = chords.get(0).getSig();
-
-//                    // Notes are assumed to be ordered bottom up (byReverseCenterOrdinate)
-//                    final List<List<HeadInter>> partitions = partitionHeads(chord);
-//                    final List<HeadChordInter> newChords = new ArrayList<>();
-//
-//                    for (List<HeadInter> partition : partitions) {
-//                        final List<Link> newChordLinks = new ArrayList<>();
-//                        for (HeadInter head : partition) {
-//                            newChordLinks.add(new Link(head, new Containment(), true));
-//                        }
-//
-//                        // Transfer original chords relations to proper sub-chords
-//                        //TODO
-//                        //
-//                        final Rectangle bounds = Entities.getBounds(partition);
-//                        final HeadChordInter ch = new HeadChordInter(1.0);
-//                        ch.setManual(true);
-//                        ch.setStaff(partition.get(0).getStaff());
-//                        newChords.add(ch);
-//                        seq.add(new AdditionTask(sig, ch, bounds, newChordLinks));
-//                    }
-//
-//                    // Unlink each head from the original chord
-//                    for (Relation rel : sig.getRelations(chord, Containment.class)) {
-//                        seq.add(new UnlinkTask(sig, rel));
-//                    }
-//
-//                    final StemInter stem = chord.getStem();
-//                    final Point tail = chord.getTailLocation();
-//                    final int yDir = Integer.compare(tail.y, chord.getCenter().y);
-//
-//                    // Remove the original chord (before dealing with beams)
-//                    seq.add(new RemovalTask(chord));
-//
-//                    // Case of stem-based chord
-//                    if (stem != null) {
-//                        final Rectangle[] boxes = getSubStemsBounds(stem, tail, yDir, partitions);
-//
-//                        for (int i = 0; i < 2; i++) {
-//                            final List<HeadInter> partition = partitions.get(i);
-//
-//                            // Create stem
-//                            StemInter s = new StemInter(null, 1.0);
-//                            s.setManual(true);
-//
-//                            final List<Link> newStemLinks = new ArrayList<>();
-//                            for (HeadInter head : partition) {
-//                                newStemLinks.add(new Link(head, new HeadStemRelation(), false));
-//                            }
-//
-//                            // Transfer original stem relations (beams, flags) to proper sub-stem
-//                            if ((yDir == -1 && i == 1) || (yDir == 1 && i == 0)) {
-//                                for (Relation rel : sig.getRelations(stem, BeamStemRelation.class,
-//                                                                     FlagStemRelation.class)) {
-//                                    Inter target = sig.getEdgeTarget(rel);
-//                                    Inter other = sig.getOppositeInter(stem, rel);
-//                                    Relation dup = rel.duplicate();
-//                                    newStemLinks.add(new Link(other, dup, other == target));
-//                                }
-//                            }
-//
-//                            seq.add(new AdditionTask(sig, s, boxes[i], newStemLinks));
-//                        }
-//
-//                        // Remove the original stem
-//                        seq.add(new RemovalTask(stem));
-//                    }
-//
-                    logger.debug("TimeJoin {}", seq);
-                    seq.performDo();
-
-                    sheet.getInterIndex().publish(null); // TODO: publish both chords?
-                    epilog(seq);
-                } catch (Throwable ex) {
-                    logger.warn("Exception in timeJoin {}", ex.toString(), ex);
+                for (HeadChordInter ch : newChords) {
+                    ch.countDots();
                 }
 
-                return null;
+                sheet.getInterIndex().publish(null); // TODO: publish both parts?
             }
-        };
-
-        ctrlTask.execute();
+        }.execute();
     }
 
     //-------------------//
@@ -1131,23 +1004,18 @@ public class InterController
     @UIThread
     public void undo ()
     {
-        new CtrlTask(UNDO)
+        new CtrlTask(UNDO, "undo")
         {
             @Override
-            protected Void doInBackground ()
+            protected void action ()
             {
-                try {
-                    UITaskList seq = history.toUndo();
-                    seq.performUndo();
+                seq = history.toUndo();
+            }
 
-                    sheet.getInterIndex().publish(null);
-
-                    epilog(seq);
-                } catch (Throwable ex) {
-                    logger.warn("Exception in undo {}", ex.toString(), ex);
-                }
-
-                return null;
+            @Override
+            protected void publish ()
+            {
+                sheet.getInterIndex().publish(null);
             }
         }.execute();
     }
@@ -1165,28 +1033,21 @@ public class InterController
     public void unlink (final SIGraph sig,
                         final Relation relation)
     {
-        new CtrlTask(DO)
+        new CtrlTask(DO, "unlink")
         {
+            private Inter source = null;
+
             @Override
-            protected Void doInBackground ()
+            protected void action ()
             {
-                try {
-                    logger.debug("unlink on {}", relation);
+                seq.add(new UnlinkTask(sig, relation));
+                source = sig.getEdgeSource(relation);
+            }
 
-                    seq.add(new UnlinkTask(sig, relation));
-
-                    Inter source = sig.getEdgeSource(relation);
-
-                    seq.performDo();
-
-                    sheet.getInterIndex().publish(source);
-
-                    epilog(seq);
-                } catch (Throwable ex) {
-                    logger.warn("Exception in unlink {}", ex.toString(), ex);
-                }
-
-                return null;
+            @Override
+            protected void publish ()
+            {
+                sheet.getInterIndex().publish(source);
             }
         }.execute();
     }
@@ -1271,11 +1132,6 @@ public class InterController
                 }
             }
         }
-
-        seq.performDo();
-
-        sheet.getInterIndex().publish(linkedGhosts.get(0).ghost);
-        sheet.getGlyphIndex().publish(null);
     }
 
     //---------//
@@ -1291,102 +1147,96 @@ public class InterController
     private void addText (final Glyph glyph,
                           final Shape shape)
     {
-        new CtrlTask(DO)
+        new CtrlTask(DO, "addText")
         {
             @Override
-            protected Void doInBackground ()
+            protected void action ()
             {
-                try {
-                    if (!OcrUtil.getOcr().isAvailable()) {
-                        logger.info(OCR.NO_OCR);
+                if (!OcrUtil.getOcr().isAvailable()) {
+                    logger.info(OCR.NO_OCR);
 
-                        return null;
-                    }
-
-                    final Point centroid = glyph.getCentroid();
-                    final SystemInfo system = sheet.getSystemManager().getClosestSystem(centroid);
-
-                    if (system == null) {
-                        return null;
-                    }
-
-                    final SIGraph sig = system.getSig();
-
-                    // Retrieve lines relative to glyph origin
-                    ByteProcessor buffer = glyph.getBuffer();
-                    List<TextLine> relativeLines = new BlockScanner(sheet).scanBuffer(
-                            buffer,
-                            sheet.getStub().getOcrLanguages().getValue(),
-                            glyph.getId());
-
-                    // Retrieve absolute lines (and the underlying word glyphs)
-                    boolean lyrics = shape == Shape.LYRICS;
-                    List<TextLine> lines = new TextBuilder(system, lyrics).retrieveGlyphLines(
-                            buffer,
-                            relativeLines,
-                            glyph.getTopLeft());
-
-                    // Generate the sequence of word/line Inter additions
-                    for (TextLine line : lines) {
-                        logger.debug("line {}", line);
-
-                        TextRole role = line.getRole();
-                        SentenceInter sentence = null;
-                        Staff staff = null;
-
-                        for (TextWord textWord : line.getWords()) {
-                            logger.debug("word {}", textWord);
-
-                            WordInter word = lyrics ? new LyricItemInter(textWord)
-                                    : new WordInter(textWord);
-
-                            if (sentence != null) {
-                                seq.add(
-                                        new AdditionTask(
-                                                sig,
-                                                word,
-                                                textWord.getBounds(),
-                                                Arrays.asList(
-                                                        new Link(
-                                                                sentence,
-                                                                new Containment(),
-                                                                false))));
-                            } else {
-                                sentence = lyrics ? LyricLineInter.create(line)
-                                        : ((role == TextRole.ChordName) ? ChordNameInter.create(
-                                                        line) : SentenceInter.create(line));
-                                staff = sentence.assignStaff(system, line.getLocation());
-                                seq.add(
-                                        new AdditionTask(
-                                                sig,
-                                                word,
-                                                textWord.getBounds(),
-                                                Collections.EMPTY_SET));
-                                seq.add(
-                                        new AdditionTask(
-                                                sig,
-                                                sentence,
-                                                line.getBounds(),
-                                                Arrays.asList(
-                                                        new Link(word, new Containment(), true))));
-                            }
-
-                            word.setStaff(staff);
-                        }
-                    }
-
-                    seq.performDo();
-
-                    sheet.getInterIndex().publish(null);
-                    sheet.getGlyphIndex().publish(null);
-                    sheet.getSymbolsEditor().getShapeBoard().addToHistory(shape);
-
-                    epilog(seq);
-                } catch (Throwable ex) {
-                    logger.warn("Exception in addText {}", ex.toString(), ex);
+                    return;
                 }
 
-                return null;
+                final Point centroid = glyph.getCentroid();
+                final SystemInfo system = sheet.getSystemManager().getClosestSystem(centroid);
+
+                if (system == null) {
+                    return;
+                }
+
+                final SIGraph sig = system.getSig();
+
+                // Retrieve lines relative to glyph origin
+                ByteProcessor buffer = glyph.getBuffer();
+                List<TextLine> relativeLines = new BlockScanner(sheet).scanBuffer(
+                        buffer,
+                        sheet.getStub().getOcrLanguages().getValue(),
+                        glyph.getId());
+
+                // Retrieve absolute lines (and the underlying word glyphs)
+                boolean lyrics = shape == Shape.LYRICS;
+                List<TextLine> lines = new TextBuilder(system, lyrics).retrieveGlyphLines(
+                        buffer,
+                        relativeLines,
+                        glyph.getTopLeft());
+
+                // Generate the sequence of word/line Inter additions
+                for (TextLine line : lines) {
+                    logger.debug("line {}", line);
+
+                    TextRole role = line.getRole();
+                    SentenceInter sentence = null;
+                    Staff staff = null;
+
+                    for (TextWord textWord : line.getWords()) {
+                        logger.debug("word {}", textWord);
+
+                        WordInter word = lyrics ? new LyricItemInter(textWord)
+                                : new WordInter(textWord);
+
+                        if (sentence != null) {
+                            seq.add(
+                                    new AdditionTask(
+                                            sig,
+                                            word,
+                                            textWord.getBounds(),
+                                            Arrays.asList(
+                                                    new Link(
+                                                            sentence,
+                                                            new Containment(),
+                                                            false))));
+                        } else {
+                            sentence = lyrics ? LyricLineInter.create(line)
+                                    : ((role == TextRole.ChordName) ? ChordNameInter.create(
+                                                    line) : SentenceInter.create(line));
+                            staff = sentence.assignStaff(system, line.getLocation());
+                            seq.add(
+                                    new AdditionTask(
+                                            sig,
+                                            word,
+                                            textWord.getBounds(),
+                                            Collections.EMPTY_SET));
+                            seq.add(
+                                    new AdditionTask(
+                                            sig,
+                                            sentence,
+                                            line.getBounds(),
+                                            Arrays.asList(
+                                                    new Link(word, new Containment(), true))));
+                        }
+
+                        word.setStaff(staff);
+                    }
+                }
+            }
+
+            @Override
+            protected void publish ()
+            {
+                sheet.getInterIndex().publish(null);
+                sheet.getGlyphIndex().publish(null);
+                sheet.getSymbolsEditor().getShapeBoard().addToHistory(shape);
             }
         }.execute();
     }
@@ -1542,41 +1392,6 @@ public class InterController
         }
 
         return staff;
-    }
-
-    //-------------------//
-    // firstImpactedStep //
-    //-------------------//
-    /**
-     * Report the first step impacted by the provided task sequence
-     *
-     * @param seq the provided task sequence
-     * @return the first step impacted, perhaps null
-     */
-    private Step firstImpactedStep (UITaskList seq)
-    {
-        // Classes of inter and relation instances involved
-        final Set<Class> classes = new HashSet<>();
-
-        for (UITask task : seq.getTasks()) {
-            if (task instanceof InterTask) {
-                InterTask interTask = (InterTask) task;
-                classes.add(interTask.getInter().getClass());
-            } else if (task instanceof RelationTask) {
-                RelationTask relationTask = (RelationTask) task;
-                classes.add(relationTask.getRelation().getClass());
-            }
-        }
-
-        for (Step step : Step.values()) {
-            for (Class classe : classes) {
-                if (step.isImpactedBy(classe)) {
-                    return step; // First step impacted
-                }
-            }
-        }
-
-        return null; // No impact detected
     }
 
     //------------------------//
@@ -2010,21 +1825,53 @@ public class InterController
             extends VoidTask
     {
 
-        protected UITaskList seq = new UITaskList();
+        protected final OpKind opKind; // Kind of operation to be performed (DO/UNDO/REDO)
 
-        protected final OpKind opKind;
+        protected final String opName; // Descriptive name of user action
 
-        public CtrlTask (OpKind opKind)
+        protected UITaskList seq = new UITaskList(); // Atomic sequence of tasks
+
+        public CtrlTask (OpKind opKind,
+                         String opName,
+                         Option... options)
         {
             this.opKind = opKind;
+            this.opName = opName;
+
+            seq.setOptions(options);
         }
 
-        /**
-         * Background epilog for any user action sequence.
-         *
-         * @param seq sequence of user tasks
-         */
-        protected void epilog (UITaskList seq)
+        @Override
+        protected final Void doInBackground ()
+        {
+            try {
+                action(); // 1) Populate task(s) sequence
+
+                // 2) Perform the task(s) sequence
+                if (opKind == OpKind.UNDO) {
+                    seq.performUndo();
+                } else {
+                    seq.performDo();
+                }
+
+                publish(); // 3) Publications at end of sequence
+
+                epilog(); // 4) Impacted steps
+            } catch (Throwable ex) {
+                logger.warn("Exception in {} {}", opName, ex.toString(), ex);
+            }
+
+            return null;
+        }
+
+        /** User background action. */
+        protected void action ()
+        {
+            // Void by default
+        }
+
+        /** User background epilog. */
+        protected void epilog ()
         {
             if (opKind == OpKind.DO) {
                 sheet.getStub().setModified(true);
@@ -2032,7 +1879,7 @@ public class InterController
 
             // Re-process impacted steps
             final Step latestStep = sheet.getStub().getLatestStep();
-            final Step firstStep = firstImpactedStep(seq);
+            final Step firstStep = firstImpactedStep();
             logger.debug("firstStep: {}", firstStep);
 
             if ((firstStep != null) && (firstStep.compareTo(latestStep) <= 0)) {
@@ -2052,12 +1899,51 @@ public class InterController
             // This method runs on EDT
 
             // Append to history?
-            if ((opKind == DO) && (seq != null)) {
+            if ((opKind == DO) && (seq != null) && !seq.isOptionSet(Option.NO_HISTORY)) {
                 history.add(seq);
             }
 
             // Refresh user display
             refreshUI();
+        }
+
+        /**
+         * Report the first step impacted by the task sequence
+         *
+         * @return the first impacted step
+         */
+        protected Step firstImpactedStep ()
+        {
+            // Classes of inter and relation instances involved
+            final Set<Class> classes = new HashSet<>();
+
+            for (UITask task : seq.getTasks()) {
+                if (task instanceof InterTask) {
+                    InterTask interTask = (InterTask) task;
+                    classes.add(interTask.getInter().getClass());
+                } else if (task instanceof SystemMergeTask) {
+                    classes.add(task.getClass());
+                } else if (task instanceof RelationTask) {
+                    RelationTask relationTask = (RelationTask) task;
+                    classes.add(relationTask.getRelation().getClass());
+                }
+            }
+
+            for (Step step : Step.values()) {
+                for (Class classe : classes) {
+                    if (step.isImpactedBy(classe)) {
+                        return step; // First step impacted
+                    }
+                }
+            }
+
+            return null; // No impact detected
+        }
+
+        /** User background publications at end of task(s) sequence. */
+        protected void publish ()
+        {
+            // Void by default
         }
     }
 

@@ -220,7 +220,7 @@ public class ChordListMenu
      * <ul>
      * <li>Belong to the same measure.
      * <li>Are rather close abscissa-wise.
-     * <li>Don't belong to the same beam group (because their time retations are imposed)
+     * <li>Don't belong to the same beam group (because their time relations are imposed)
      * </ul>
      *
      * @param chords   the two provided chords

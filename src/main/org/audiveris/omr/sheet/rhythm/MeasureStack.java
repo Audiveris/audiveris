@@ -1445,6 +1445,48 @@ public class MeasureStack
     }
 
     //----------------//
+    // mergeWithBelow //
+    //----------------//
+    /**
+     * Merge this stack with the stack below (due to system merge).
+     *
+     * @param stackBelow the measure stack below (in the former system below)
+     * @see #unmergeWith(MeasureStack)
+     */
+    public void mergeWithBelow (MeasureStack stackBelow)
+    {
+        // left, right
+        left = Math.min(left, stackBelow.left);
+        right = Math.max(right, stackBelow.right);
+
+        // special?
+        //
+        // repeats
+        for (HorizontalSide side : HorizontalSide.values()) {
+            if (stackBelow.isRepeat(side)) {
+                addRepeat(side);
+            }
+        }
+
+        // measures
+        for (Measure measure : stackBelow.measures) {
+            measure.setStack(this);
+        }
+
+        measures.addAll(stackBelow.measures);
+
+        // stackTuplets
+        stackTuplets.addAll(stackBelow.stackTuplets);
+
+        // slots?
+        // expectedDuration?
+        // duration?
+        // excess?
+        // abnormal?
+        // (no, done by reprocessPageRhythm)
+    }
+
+    //----------------//
     // mergeWithRight //
     //----------------//
     /**
@@ -1810,6 +1852,51 @@ public class MeasureStack
         sb.append('#').append(getPageId());
 
         return sb.toString();
+    }
+
+    //-------------//
+    // unmergeWith //
+    //-------------//
+    /**
+     * Un-merge this stack with the provided stack below (due to undo of system merge).
+     *
+     * @param stackBelow the measure stack below (in the former system below)
+     * @see #mergeWithBelow(MeasureStack)
+     */
+    public void unmergeWith (MeasureStack stackBelow)
+    {
+        // measures
+        measures.removeAll(stackBelow.measures);
+
+        for (Measure measure : stackBelow.measures) {
+            measure.setStack(stackBelow);
+        }
+
+        // left, right
+        left = Integer.MAX_VALUE;
+        right = Integer.MIN_VALUE;
+
+        for (Measure measure : measures) {
+            for (Staff staff : measure.getPart().getStaves()) {
+                left = Math.min(left, measure.getAbscissa(LEFT, staff));
+                right = Math.max(right, measure.getAbscissa(RIGHT, staff));
+            }
+        }
+
+        // special?
+        //
+        // repeats
+        computeRepeats();
+
+        // stackTuplets
+        stackTuplets.removeAll(stackBelow.stackTuplets);
+
+        // slots?
+        // expectedDuration?
+        // duration?
+        // excess?
+        // abnormal?
+        // (no, done by reprocessPageRhythm)
     }
 
     /**

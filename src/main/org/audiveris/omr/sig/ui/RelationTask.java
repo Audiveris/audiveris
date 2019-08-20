@@ -43,13 +43,15 @@ public abstract class RelationTask
     /**
      * Creates a new {@code RelationTask} object.
      *
-     * @param sig      the underlying sig
-     * @param relation the relation task is focused upon
+     * @param sig        the underlying sig
+     * @param relation   the relation task is focused upon
+     * @param actionName name for action
      */
     public RelationTask (SIGraph sig,
-                         Relation relation)
+                         Relation relation,
+                         String actionName)
     {
-        super(sig);
+        super(sig, actionName);
         this.relation = relation;
     }
 
@@ -80,7 +82,7 @@ public abstract class RelationTask
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder(actionName());
+        StringBuilder sb = new StringBuilder(actionName);
         sb.append(" ").append(relation);
         sb.append(" src:").append(source);
         sb.append(" tgt:").append(target);

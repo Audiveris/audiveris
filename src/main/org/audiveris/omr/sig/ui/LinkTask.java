@@ -47,7 +47,7 @@ public class LinkTask
                      Inter target,
                      Relation relation)
     {
-        super(sig, relation);
+        super(sig, relation, "link");
         this.source = source;
         this.target = target;
     }
@@ -69,11 +69,5 @@ public class LinkTask
         //        if (!source.isRemoved()) {
         //            sheet.getInterIndex().publish(source);
         //        }
-    }
-
-    @Override
-    protected String actionName ()
-    {
-        return "link";
     }
 }

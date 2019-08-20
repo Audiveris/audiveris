@@ -1163,6 +1163,7 @@ public class Measure
             if (part.getLeftPartBarline() != null) {
                 return part.getLeftPartBarline().getStaffBarline(part, staff).getReferenceCenter();
             }
+
             // No bar, use start of staff
              {
                 List<LineInfo> lines = staff.getLines();
@@ -1179,6 +1180,7 @@ public class Measure
             if (rightBarline != null) {
                 return rightBarline.getStaffBarline(part, staff).getReferenceCenter();
             }
+
             // No bar, use end of staff
              {
                 List<LineInfo> lines = staff.getLines();

@@ -501,6 +501,83 @@ public class SystemManager
         reportResults();
     }
 
+    //--------------//
+    // removeSystem //
+    //--------------//
+    /**
+     * Remove the provided system (perhaps because of a merge with system above).
+     *
+     * @param system the system to remove
+     * @return the PageRef removed if any
+     */
+    public PageRef removeSystem (SystemInfo system)
+    {
+        final int index = systems.indexOf(system);
+
+        if (index == -1) {
+            logger.error("Cannot remove unknown {}", system);
+        } else {
+            systems.remove(system);
+
+            // Update ID for each following system
+            for (int i = index; i < systems.size(); i++) {
+                SystemInfo s = systems.get(i);
+                s.setId(i + 1);
+            }
+
+            final Page page = system.getPage();
+            page.removeSystem(system);
+
+            // Remove page?
+            if (page.getSystems().isEmpty()) {
+                final SheetStub stub = sheet.getStub();
+                final PageRef pageRef = stub.getPageRefs().get(page.getId() - 1);
+                sheet.removePage(page);
+                stub.removePageRef(pageRef);
+
+                return pageRef;
+            }
+        }
+
+        return null;
+    }
+
+    //----------------//
+    // unremoveSystem //
+    //----------------//
+    /**
+     * Un-remove the provided system (canceling a remove).
+     *
+     * @param system  the system to remove
+     * @param pageRef the removed PageRef if any
+     *
+     */
+    public void unremoveSystem (SystemInfo system,
+                                PageRef pageRef)
+    {
+        // Re-insert system in sheet
+        final int index = system.getId() - 1; // Where to re-insert removed system
+        systems.add(index, system);
+
+        // Re-insert page?
+        final Page page = system.getPage();
+
+        if (pageRef != null) {
+            sheet.addPage(page.getId() - 1, page);
+            final SheetStub stub = sheet.getStub();
+            stub.addPageRef(pageRef.getId() - 1, pageRef);
+        }
+
+        // Re-insert system into containing page
+        page.unremoveSystem(system);
+
+        // Update ID for each following system
+        for (int i = index + 1; i < systems.size(); i++) {
+            SystemInfo s = systems.get(i);
+            s.setId(i + 1);
+        }
+    }
+
     //-------//
     // reset //
     //-------//

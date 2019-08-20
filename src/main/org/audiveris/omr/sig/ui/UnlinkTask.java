@@ -42,7 +42,7 @@ public class UnlinkTask
     public UnlinkTask (SIGraph sig,
                        Relation relation)
     {
-        super(sig, relation);
+        super(sig, relation, "unlink");
         source = sig.getEdgeSource(relation);
         target = sig.getEdgeTarget(relation);
     }
@@ -64,11 +64,5 @@ public class UnlinkTask
         sig.addEdge(getSource(), getTarget(), getRelation());
 
         sheet.getInterIndex().publish(source);
-    }
-
-    @Override
-    protected String actionName ()
-    {
-        return "unlink";
     }
 }

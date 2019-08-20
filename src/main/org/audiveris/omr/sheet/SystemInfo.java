@@ -68,6 +68,7 @@ import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.score.PageRef;
 
 /**
  * Class {@code SystemInfo} gathers information from the original picture about a
@@ -107,7 +108,7 @@ public class SystemInfo
     //
     /** Unique Id (sequential vertical number starting from 1 in containing sheet). */
     @XmlAttribute(name = "id")
-    private final int id;
+    private int id;
 
     /** Indentation flag. */
     @XmlAttribute(name = "indented")
@@ -202,7 +203,7 @@ public class SystemInfo
         setStaves(staves);
 
         sig = new SIGraph(this);
-        sig.addGraphListener(new SigListener());
+        sig.addGraphListener(new SigListener(sig));
     }
 
     /**
@@ -210,7 +211,6 @@ public class SystemInfo
      */
     private SystemInfo ()
     {
-        this.id = 0;
     }
 
     //--------------//
@@ -326,7 +326,7 @@ public class SystemInfo
             }
 
             // Listen to sig modifications
-            sig.addGraphListener(new SigListener());
+            sig.addGraphListener(new SigListener(sig));
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }
@@ -624,6 +624,19 @@ public class SystemInfo
     public int getId ()
     {
         return id;
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Assign a new ID to this system.
+     *
+     * @param id the new ID value
+     */
+    public void setId (int id)
+    {
+        this.id = id;
     }
 
     //----------------//
@@ -1275,6 +1288,66 @@ public class SystemInfo
         return staves.size() > 1;
     }
 
+    //----------------//
+    // mergeWithBelow //
+    //----------------//
+    /**
+     * Merge this system with the next one (just below).
+     * <p>
+     * This feature can be used manually when the left bar connection is too damaged, thus wrongly
+     * leading to two separate systems.
+     *
+     * @return the PageRef removed, if any
+     * @see #unmergeWith(SystemInfo, PageRef)
+     */
+    public PageRef mergeWithBelow ()
+    {
+        final List<SystemInfo> systems = sheet.getSystems();
+        final SystemInfo systemBelow = systems.get(1 + systems.indexOf(this));
+
+        // Remove systemBelow from sheet structure
+        PageRef removedPageRef = sheet.getSystemManager().removeSystem(systemBelow);
+
+        // parts
+        parts.addAll(systemBelow.parts);
+
+        // partGroups
+        partGroups.addAll(systemBelow.partGroups);
+
+        // freeGlyphs
+        if (systemBelow.freeGlyphs != null) {
+            for (Glyph glyph : systemBelow.freeGlyphs) {
+                addFreeGlyph(glyph);
+            }
+        }
+
+        // staves
+        staves.addAll(systemBelow.staves);
+
+        // sections
+        hSections.addAll(systemBelow.hSections);
+        vSections.addAll(systemBelow.vSections);
+
+        // bottom, deltaY, left, top, width
+        updateCoordinates();
+
+        // area, areaLeft, areaRight
+        area = null;
+        getArea();
+
+        // stacks
+        for (int i = 0; i < stacks.size(); i++) {
+            MeasureStack stack = stacks.get(i);
+            MeasureStack stackBelow = systemBelow.stacks.get(i);
+            stack.mergeWithBelow(stackBelow);
+        }
+
+        // sig
+        sig.includeSig(systemBelow.getSig());
+
+        return removedPageRef;
+    }
+
     //---------------//
     // registerGlyph //
     //---------------//
@@ -1393,6 +1466,62 @@ public class SystemInfo
         }
     }
 
+    //-------------//
+    // unmergeWith //
+    //-------------//
+    /**
+     * Revert the merge of this system with the former system below.
+     *
+     * @param systemBelow former system below
+     * @param pageRef     the removed PageRef, if any
+     * @see #mergeWithBelow()
+     */
+    public void unmergeWith (SystemInfo systemBelow,
+                             PageRef pageRef)
+    {
+        // Re-insert system (and its PageRef if needed)
+        sheet.getSystemManager().unremoveSystem(systemBelow, pageRef);
+
+        // parts
+        parts.removeAll(systemBelow.parts);
+
+        // partGroups
+        partGroups.removeAll(systemBelow.partGroups);
+
+        // freeGlyphs
+        if (systemBelow.freeGlyphs != null) {
+            freeGlyphs.removeAll(systemBelow.freeGlyphs);
+
+            if (freeGlyphs.isEmpty()) {
+                freeGlyphs = null;
+            }
+        }
+
+        // staves
+        staves.removeAll(systemBelow.staves);
+
+        // sections
+        hSections.removeAll(systemBelow.hSections);
+        vSections.removeAll(systemBelow.vSections);
+
+        // bottom, deltaY, left, top, width
+        updateCoordinates();
+
+        // area, areaLeft, areaRight
+        area = null;
+        getArea();
+
+        // stacks
+        for (int i = 0; i < stacks.size(); i++) {
+            MeasureStack stack = stacks.get(i);
+            MeasureStack stackBelow = systemBelow.stacks.get(i);
+            stack.unmergeWith(stackBelow);
+        }
+
+        // sig
+        sig.excludeSig(systemBelow.getSig());
+    }
+
     //-------------------//
     // updateCoordinates //
     //-------------------//
@@ -1447,28 +1576,46 @@ public class SystemInfo
     //        }
     //    }
     //
-    //----------//
-    // toString //
-    //----------//
+    //--------------//
+    // toLongString //
+    //--------------//
     /**
      * Report a readable description.
      *
      * @return a description based on staff indices
      */
+    public String toLongString ()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(this);
+        sb.append(" {");
+
+        if (staves.size() == 1) {
+            sb.append("staff:").append(getFirstStaff().getId());
+        } else {
+            sb.append("staves:");
+
+            for (int i = 0; i < staves.size(); i++) {
+                if (i > 0) {
+                    sb.append(',');
+                }
+
+                sb.append(staves.get(i).getId());
+            }
+        }
+
+        sb.append("}");
+
+        return sb.toString();
+    }
+
+    //----------//
+    // toString //
+    //----------//
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append("System#").append(id);
-
-        //        sb.append(" T").append(getFirstStaff().getId());
-        //
-        //        if (staves.size() > 1) {
-        //            sb.append("..T").append(getLastStaff().getId());
-        //        }
-        //
-        //sb.append("}");
-        return sb.toString();
+        return "System#" + id;
     }
 
     //-----------//

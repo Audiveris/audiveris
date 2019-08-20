@@ -48,7 +48,7 @@ public class SentenceRoleTask
     public SentenceRoleTask (SentenceInter sentence,
                              TextRole newRole)
     {
-        super(sentence.getSig(), sentence, sentence.getBounds(), null);
+        super(sentence.getSig(), sentence, sentence.getBounds(), null, "role");
         this.newRole = newRole;
 
         oldRole = sentence.getRole();
@@ -95,17 +95,11 @@ public class SentenceRoleTask
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder(actionName());
+        StringBuilder sb = new StringBuilder(actionName);
         sb.append(" ").append(inter);
         sb.append(" from ").append(oldRole);
         sb.append(" to ").append(newRole);
 
         return sb.toString();
-    }
-
-    @Override
-    protected String actionName ()
-    {
-        return "role";
     }
 }
