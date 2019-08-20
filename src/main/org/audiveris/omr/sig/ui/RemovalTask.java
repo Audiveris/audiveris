@@ -40,7 +40,7 @@ public class RemovalTask
      */
     public RemovalTask (Inter inter)
     {
-        super(inter.getSig(), inter, inter.getBounds(), null);
+        super(inter.getSig(), inter, inter.getBounds(), null, "del");
     }
 
     @Override
@@ -59,11 +59,5 @@ public class RemovalTask
         for (Link link : links) {
             link.applyTo(inter);
         }
-    }
-
-    @Override
-    protected String actionName ()
-    {
-        return "del";
     }
 }

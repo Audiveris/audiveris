@@ -984,6 +984,50 @@ public class SIGraph
         return found;
     }
 
+    //------------//
+    // includeSig //
+    //------------//
+    /**
+     * Include the provided sig into this one.
+     *
+     * @param oldSig the sig to be included
+     */
+    public void includeSig (SIGraph oldSig)
+    {
+        // Inters
+        for (Inter inter : oldSig.vertexSet()) {
+            inter.setSig(this);
+            addVertex(inter);
+        }
+
+        // Relations
+        for (Relation relation : oldSig.edgeSet()) {
+            Inter source = oldSig.getEdgeSource(relation);
+            Inter target = oldSig.getEdgeTarget(relation);
+            addEdge(source, target, relation);
+        }
+    }
+
+    //------------//
+    // excludeSig //
+    //------------//
+    /**
+     * Exclude the provided sig from this one.
+     *
+     * @param oldSig the sig to be excluded
+     */
+    public void excludeSig (SIGraph oldSig)
+    {
+        // Inters
+        for (Inter inter : oldSig.vertexSet()) {
+            inter.setSig(oldSig);
+        }
+
+        for (Inter inter : oldSig.vertexSet()) {
+            super.removeVertex(inter); // This removes related relations
+        }
+    }
+
     //-----------//
     // noSupport //
     //-----------//

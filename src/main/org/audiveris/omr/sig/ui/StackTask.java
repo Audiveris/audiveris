@@ -42,7 +42,7 @@ public class StackTask
      */
     public StackTask (MeasureStack stack)
     {
-        super(stack.getSystem().getSig());
+        super(stack.getSystem().getSig(), "reprocess-stack");
         this.stack = stack;
     }
 
@@ -61,11 +61,5 @@ public class StackTask
     public void performUndo ()
     {
         // Void
-    }
-
-    @Override
-    protected String actionName ()
-    {
-        return "reprocess";
     }
 }

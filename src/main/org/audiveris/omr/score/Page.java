@@ -620,7 +620,7 @@ public class Page
         // Define proper indices
         int first = (firstSystemId != null) ? (firstSystemId - 1) : 0;
         int last = (lastSystemId != null) ? (lastSystemId - 1) : (sheetSystems.size() - 1);
-        systems = sheetSystems.subList(first, last + 1);
+        systems = new ArrayList<>(sheetSystems.subList(first, last + 1));
     }
 
     //----------------//
@@ -683,6 +683,57 @@ public class Page
         // Very temporary raw values
         setDeltaMeasureId(systemOffset);
         computeMeasureCount();
+    }
+
+    //--------------//
+    // removeSystem //
+    //--------------//
+    /**
+     * Remove the provided system from this page.
+     *
+     * @param system the system to remove
+     * @see #unremoveSystem()
+     */
+    public void removeSystem (SystemInfo system)
+    {
+        systems.remove(system);
+
+        if (!systems.isEmpty()) {
+            firstSystemId = getFirstSystem().getId();
+            lastSystemId = getLastSystem().getId();
+        }
+    }
+
+    //----------------//
+    // unremoveSystem //
+    //----------------//
+    /**
+     * Un-remove the provided system into this page.
+     *
+     * @param system the system to re-insert
+     * @see #removeSystem()
+     */
+    public void unremoveSystem (SystemInfo system)
+    {
+        boolean inserted = false;
+
+        for (int i = 0; i < systems.size(); i++) {
+            SystemInfo s = systems.get(i);
+
+            if (s.getId() == system.getId()) {
+                systems.add(i, system);
+                inserted = true;
+
+                break;
+            }
+        }
+
+        if (!inserted) {
+            systems.add(system);
+        }
+
+        firstSystemId = getFirstSystem().getId();
+        lastSystemId = getLastSystem().getId();
     }
 
     //----------------------//

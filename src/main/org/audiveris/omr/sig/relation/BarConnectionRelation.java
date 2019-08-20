@@ -51,8 +51,7 @@ public class BarConnectionRelation
         setImpacts(impacts);
     }
 
-    // For JAXB
-    private BarConnectionRelation ()
+    public BarConnectionRelation ()
     {
     }
 

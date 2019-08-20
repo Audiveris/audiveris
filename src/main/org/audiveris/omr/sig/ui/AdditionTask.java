@@ -50,7 +50,7 @@ public class AdditionTask
                          Rectangle initialBounds,
                          Collection<Link> links)
     {
-        super(sig, inter, initialBounds, links);
+        super(sig, inter, initialBounds, links, "add");
     }
 
     @Override
@@ -68,11 +68,5 @@ public class AdditionTask
     public void performUndo ()
     {
         inter.remove();
-    }
-
-    @Override
-    protected String actionName ()
-    {
-        return "add";
     }
 }

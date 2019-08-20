@@ -393,6 +393,21 @@ public class Sheet
         pages.add(page);
     }
 
+    //---------//
+    // addPage //
+    //---------//
+    /**
+     * Add a related page to this sheet at the provided index.
+     *
+     * @param index the provided index
+     * @param page  the detected page
+     */
+    public void addPage (int index,
+                         Page page)
+    {
+        pages.add(index, page);
+    }
+
     //-------------//
     // afterReload //
     //-------------//
@@ -1140,6 +1155,19 @@ public class Sheet
         } catch (Exception ex) {
             logger.warn("Cannot print sheet to " + sheetPrintPath + " " + ex, ex);
         }
+    }
+
+    //------------//
+    // removePage //
+    //------------//
+    /**
+     * Remove the provided page.
+     *
+     * @param page the page to be removed
+     */
+    public void removePage (Page page)
+    {
+        pages.remove(page);
     }
 
     //-------------//

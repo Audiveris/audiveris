@@ -42,11 +42,15 @@ public class SigListener
 
     private static final Logger logger = LoggerFactory.getLogger(SigListener.class);
 
+    /** Related sig. */
+    private final SIGraph sig;
+
     /**
      * Creates a new {@code SigListener} object.
      */
-    public SigListener ()
+    public SigListener (SIGraph sig)
     {
+        this.sig = sig;
     }
 
     @Override
@@ -58,7 +62,11 @@ public class SigListener
         //         e.getEdgeSource(),
         //         e.getEdgeTarget());
         //
-        e.getEdge().added(e);
+        Inter source = e.getEdgeSource();
+
+        if (source.getSig() == sig) {
+            e.getEdge().added(e);
+        }
     }
 
     @Override
@@ -70,7 +78,11 @@ public class SigListener
         //         e.getEdgeSource(),
         //         e.getEdgeTarget());
         //
-        e.getEdge().removed(e);
+        Inter source = e.getEdgeSource();
+
+        if (source.getSig() == sig) {
+            e.getEdge().removed(e);
+        }
     }
 
     @Override

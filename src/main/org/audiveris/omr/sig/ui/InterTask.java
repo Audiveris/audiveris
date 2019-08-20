@@ -58,13 +58,15 @@ public abstract class InterTask
      * @param inter         the inter task is focused upon
      * @param initialBounds the inter initial bounds
      * @param links         the relations around inter, perhaps null
+     * @param actionName    name for action
      */
     protected InterTask (SIGraph sig,
                          Inter inter,
                          Rectangle initialBounds,
-                         Collection<Link> links)
+                         Collection<Link> links,
+                         String actionName)
     {
-        super(sig);
+        super(sig, actionName);
         this.inter = inter;
         this.initialBounds = (initialBounds != null) ? new Rectangle(initialBounds) : null;
         this.links = links;
@@ -88,7 +90,7 @@ public abstract class InterTask
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder(actionName());
+        StringBuilder sb = new StringBuilder(actionName);
         sb.append(" ").append(inter);
 
         if (links != null) {

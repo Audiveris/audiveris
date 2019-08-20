@@ -73,6 +73,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import org.audiveris.omr.sig.ui.SystemMergeTask;
 
 /**
  * Class {@code PageStep} handles connections between systems in a page.
@@ -111,6 +112,7 @@ public class PageStep
 
     static {
         forVoices = new HashSet<>();
+        // Inters
         forVoices.add(AugmentationDotInter.class);
         forVoices.add(BarlineInter.class);
         forVoices.add(BeamHookInter.class);
@@ -118,6 +120,7 @@ public class PageStep
         forVoices.add(FlagInter.class);
         forVoices.add(HeadChordInter.class);
         forVoices.add(HeadInter.class);
+        forVoices.add(MeasureStack.class);
         forVoices.add(RestChordInter.class);
         forVoices.add(RestInter.class);
         forVoices.add(SlurInter.class);
@@ -127,7 +130,6 @@ public class PageStep
         forVoices.add(TimePairInter.class);
         forVoices.add(TimeWholeInter.class);
         forVoices.add(TupletInter.class);
-        forVoices.add(MeasureStack.class);
         // Relations
         forVoices.add(AugmentationRelation.class);
         forVoices.add(SameTimeRelation.class);
@@ -135,6 +137,8 @@ public class PageStep
         forVoices.add(SeparateTimeRelation.class);
         forVoices.add(SeparateVoiceRelation.class);
         forVoices.add(DoubleDotRelation.class);
+        // Tasks
+        forVoices.add(SystemMergeTask.class);
     }
 
     static {
@@ -155,8 +159,11 @@ public class PageStep
 
     static {
         forMeasures = new HashSet<>();
+        // Inters
         forMeasures.add(BarlineInter.class);
         forMeasures.add(StaffBarlineInter.class);
+        // Tasks
+        forMeasures.add(SystemMergeTask.class);
     }
 
     static {
@@ -268,6 +275,16 @@ public class PageStep
                 }
             } else if (task instanceof PageTask) {
                 Page page = ((PageTask) task).getPage();
+                Impact impact = map.get(page);
+
+                if (impact == null) {
+                    map.put(page, impact = new Impact());
+                }
+
+                impact.onMeasures = true;
+                impact.onVoices = true;
+            } else if (task instanceof SystemMergeTask) {
+                Page page = ((SystemMergeTask) task).getSystem().getPage();
                 Impact impact = map.get(page);
 
                 if (impact == null) {

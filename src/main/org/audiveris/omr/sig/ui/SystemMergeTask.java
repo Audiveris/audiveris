@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                         P a g e T a s k                                        //
+//                                  S y s t e m M e r g e T a s k                                 //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -21,45 +21,51 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import org.audiveris.omr.score.Page;
+import java.util.List;
+import org.audiveris.omr.score.PageRef;
+import org.audiveris.omr.sheet.SystemInfo;
 
 /**
- * Class {@code PageTask} implements the on demand re-processing of a page.
+ * Class {@code SystemMergeTask} implements the merge of two systems.
  *
  * @author Hervé Bitteur
  */
-public class PageTask
+public class SystemMergeTask
         extends UITask
 {
 
-    /** Impacted page. */
-    private final Page page;
+    /** Top system. */
+    private final SystemInfo system;
 
-    /**
-     * Creates a new {@code PageTask} object.
-     *
-     * @param page the impacted page
-     */
-    public PageTask (Page page)
+    /** Bottom system. */
+    private final SystemInfo systemBelow;
+
+    /** PageRef removed, if any. */
+    private PageRef pageRef;
+
+    public SystemMergeTask (SystemInfo system)
     {
-        super(page, "reprocess-page");
-        this.page = page;
+        super(system.getSig(), "merge-system");
+
+        this.system = system;
+        List<SystemInfo> systems = sheet.getSystems();
+        systemBelow = systems.get(1 + systems.indexOf(system));
     }
 
-    public Page getPage ()
+    public SystemInfo getSystem ()
     {
-        return page;
+        return system;
     }
 
     @Override
     public void performDo ()
     {
-        // Void
+        pageRef = system.mergeWithBelow();
     }
 
     @Override
     public void performUndo ()
     {
-        // Void
+        system.unmergeWith(systemBelow, pageRef);
     }
 }

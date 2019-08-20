@@ -49,6 +49,8 @@ public class UITaskList
     /** Possible options. */
     public static enum Option
     {
+        /** Sequence not to be kept in history. */
+        NO_HISTORY,
         /** User has validated the choice. */
         VALIDATED,
         /** Measures are to be updated. */

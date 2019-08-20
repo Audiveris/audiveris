@@ -41,6 +41,9 @@ public abstract class UITask
         REDO;
     }
 
+    /** A name for task action. */
+    protected final String actionName;
+
     /** Underlying sheet. */
     protected Sheet sheet;
 
@@ -50,23 +53,29 @@ public abstract class UITask
     /**
      * Creates a new {@code UITask} object.
      *
-     * @param sig the underlying sig
+     * @param sig        the underlying sig
+     * @param actionName name for action
      */
-    public UITask (SIGraph sig)
+    public UITask (SIGraph sig,
+                   String actionName)
     {
         this.sig = sig;
         sheet = sig.getSystem().getSheet();
+        this.actionName = actionName;
     }
 
     /**
      * Creates a new {@code UITask} object.
      *
-     * @param page the underlying page
+     * @param page       the underlying page
+     * @param actionName name for action
      */
-    public UITask (Page page)
+    public UITask (Page page,
+                   String actionName)
     {
         sig = null;
         sheet = page.getSheet();
+        this.actionName = actionName;
     }
 
     public SIGraph getSig ()
@@ -77,11 +86,4 @@ public abstract class UITask
     public abstract void performDo ();
 
     public abstract void performUndo ();
-
-    /**
-     * Report a name for task action.
-     *
-     * @return task name
-     */
-    protected abstract String actionName ();
 }

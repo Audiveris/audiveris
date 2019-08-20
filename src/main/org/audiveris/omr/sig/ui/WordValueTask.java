@@ -47,7 +47,7 @@ public class WordValueTask
     public WordValueTask (WordInter word,
                           String newValue)
     {
-        super(word.getSig(), word, word.getBounds(), null);
+        super(word.getSig(), word, word.getBounds(), null, "word");
         this.newValue = newValue;
 
         oldValue = word.getValue();
@@ -78,17 +78,11 @@ public class WordValueTask
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder(actionName());
+        StringBuilder sb = new StringBuilder(actionName);
         sb.append(" ").append(inter);
         sb.append(" from \"").append(oldValue).append("\"");
         sb.append(" to \"").append(newValue).append("\"");
 
         return sb.toString();
-    }
-
-    @Override
-    protected String actionName ()
-    {
-        return "word";
     }
 }

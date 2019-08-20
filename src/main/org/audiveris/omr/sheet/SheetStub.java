@@ -254,6 +254,21 @@ public class SheetStub
         pageRefs.add(pageRef);
     }
 
+    //------------//
+    // addPageRef //
+    //------------//
+    /**
+     * Add a page reference to this stub at the provided index.
+     *
+     * @param index   the provided index
+     * @param pageRef the page reference
+     */
+    public void addPageRef (int index,
+                            PageRef pageRef)
+    {
+        pageRefs.add(index, pageRef);
+    }
+
     //---------------//
     // clearPageRefs //
     //---------------//
@@ -862,6 +877,19 @@ public class SheetStub
         }
 
         return ok;
+    }
+
+    //---------------//
+    // removePageRef //
+    //---------------//
+    /**
+     * Remove the provided PageRef.
+     *
+     * @param pageRef the page ref to remove
+     */
+    public void removePageRef (PageRef pageRef)
+    {
+        pageRefs.remove(pageRef);
     }
 
     //-------//

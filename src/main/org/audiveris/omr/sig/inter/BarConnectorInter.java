@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import java.awt.geom.Line2D;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.grid.BarConnection;
@@ -39,8 +40,6 @@ public class BarConnectorInter
         extends AbstractVerticalInter
 {
 
-    private final BarConnection connection;
-
     /**
      * Creates a new {@code BarConnectorInter} object.
      *
@@ -53,7 +52,22 @@ public class BarConnectorInter
                               GradeImpacts impacts)
     {
         super(null, shape, impacts, connection.getMedian(), connection.getWidth());
-        this.connection = connection;
+    }
+
+    /**
+     * Creates a new {@code BarConnectorInter} object.
+     *
+     * @param shape  the assigned shape
+     * @param grade  quality
+     * @param median vertical segment
+     * @param width  segment width
+     */
+    public BarConnectorInter (Shape shape,
+                              double grade,
+                              Line2D median,
+                              double width)
+    {
+        super(null, shape, grade, median, width);
     }
 
     /**
@@ -62,7 +76,6 @@ public class BarConnectorInter
     private BarConnectorInter ()
     {
         super(null, null, null, null, null);
-        this.connection = null;
     }
 
     //--------//

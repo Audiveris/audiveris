@@ -61,6 +61,7 @@ import org.audiveris.omr.sig.ui.PageTask;
 import org.audiveris.omr.sig.ui.RelationTask;
 import org.audiveris.omr.sig.ui.RemovalTask;
 import org.audiveris.omr.sig.ui.StackTask;
+import org.audiveris.omr.sig.ui.SystemMergeTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
@@ -98,6 +99,7 @@ public class RhythmsStep
 
     static {
         forStack = new HashSet<>();
+        // Inters
         forStack.add(AugmentationDotInter.class);
         forStack.add(BarlineInter.class);
         forStack.add(BeamHookInter.class);
@@ -128,10 +130,13 @@ public class RhythmsStep
 
     static {
         forPage = new HashSet<>();
+        // Inters
         forPage.add(SlurInter.class); // Because of possibility of ties
         forPage.add(TimeNumberInter.class);
         forPage.add(TimePairInter.class);
         forPage.add(TimeWholeInter.class);
+        // Tasks
+        forPage.add(SystemMergeTask.class);
     }
 
     static {
@@ -213,6 +218,10 @@ public class RhythmsStep
                 // Reprocess the page
                 impact.onPage = true;
                 page = ((PageTask) task).getPage();
+            } else if (task instanceof SystemMergeTask) {
+                // Reprocess the system page
+                impact.onPage = true;
+                page = ((SystemMergeTask) task).getSystem().getPage();
             } else if (task instanceof RelationTask) {
                 RelationTask relationTask = (RelationTask) task;
                 Relation relation = relationTask.getRelation();

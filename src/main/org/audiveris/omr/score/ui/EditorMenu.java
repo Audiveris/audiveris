@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
+import org.audiveris.omr.OMR;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.ui.TribesMenu;
 import org.audiveris.omr.math.GeoUtil;
@@ -28,6 +29,7 @@ import org.audiveris.omr.score.Page;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -45,6 +47,7 @@ import org.audiveris.omr.sig.ui.UITaskList.Option;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.action.AdvancedTopics;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
+import org.audiveris.omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,11 +55,14 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
+import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sheet.Scale;
 
 /**
  * Class {@code EditorMenu} defines the pop-up menu which is linked to the current
@@ -69,6 +75,8 @@ import javax.swing.JMenuItem;
 public class EditorMenu
         extends SheetPopupMenu
 {
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(EditorMenu.class);
 
@@ -98,6 +106,7 @@ public class EditorMenu
 
         addMenu(new MeasureMenu());
         addMenu(new PageMenu());
+        addMenu(new SystemMenu());
         addMenu(new SlotMenu());
 
         if (AdvancedTopics.Topic.PLOTS.isSet()) {
@@ -154,6 +163,40 @@ public class EditorMenu
         }
 
         return null;
+    }
+
+    //------------------//
+    // getCurrentSystem //
+    //------------------//
+    /**
+     * Report the single current system that contains the provided point.
+     * <p>
+     * If the provided point is located between 2 systems, no system is reported.
+     *
+     * @param point provided point
+     * @return the selected system or null
+     */
+    private SystemInfo getCurrentSystem (Point point)
+    {
+        List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(point);
+
+        if (systems.size() == 1) {
+            return systems.get(0);
+        }
+
+        return null;
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Scale.Fraction maxEndShift = new Scale.Fraction(
+                1.0,
+                "Maximum deskewed abscissa difference between measure end");
     }
 
     //-------------//
@@ -294,7 +337,7 @@ public class EditorMenu
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                sheet.getInterController().reprocessRhythm(stack);
+                sheet.getInterController().reprocessStackRhythm(stack);
             }
 
             @Override
@@ -575,6 +618,131 @@ public class EditorMenu
                     throws CloneNotSupportedException
             {
                 return super.clone(); //To change body of generated methods, choose Tools | Templates.
+            }
+        }
+    }
+
+    //------------//
+    // SystemMenu //
+    //------------//
+    private class SystemMenu
+            extends LocationDependentMenu
+    {
+
+        /** Selected system. */
+        private SystemInfo system;
+
+        private final MergeAction mergeAction = new MergeAction();
+
+        SystemMenu ()
+        {
+            super("System");
+            add(new JMenuItem(mergeAction));
+        }
+
+        @Override
+        public void updateUserLocation (Rectangle rect)
+        {
+            SystemInfo newSystem = getCurrentSystem(GeoUtil.centerOf(rect));
+
+            if (newSystem != null) {
+                system = newSystem;
+            } else {
+                system = null;
+            }
+
+            setVisible(system != null);
+
+            if (system != null) {
+                setText("System #" + system.getId() + " ...");
+            }
+
+            mergeAction.update();
+        }
+
+        /**
+         * Merge current system with the one below.
+         */
+        private class MergeAction
+                extends AbstractAction
+        {
+
+            MergeAction ()
+            {
+                putValue(NAME, "Merge with system below");
+                putValue(SHORT_DESCRIPTION, "Merge this system with the one located below");
+            }
+
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                final Scale scale = system.getSheet().getScale();
+                final int maxEndShift = scale.toPixels(constants.maxEndShift);
+                final List<SystemInfo> systems = sheet.getSystems();
+                final SystemInfo system2 = systems.get(1 + systems.indexOf(system));
+
+                // Check that the stacks are compatible between the two systems
+                // Same number of stacks
+                final List<MeasureStack> stacks = system.getStacks();
+                final List<MeasureStack> stacks2 = system2.getStacks();
+
+                if (stacks.size() != stacks2.size()) {
+                    OMR.gui.displayWarning(
+                            String.format("Different measure counts %d vs %d",
+                                          stacks.size(), stacks2.size()),
+                            "Incompatible " + system + " & " + system2);
+                    return;
+                }
+
+                // Check rough alignment of each right limit
+                final Skew skew = system.getSheet().getSkew();
+                final Staff staff = system.getLastStaff();
+                final Staff staff2 = system2.getFirstStaff();
+
+                for (int i = 0; i < stacks.size(); i++) {
+                    MeasureStack stack = stacks.get(i);
+                    Measure measure = stack.getMeasureAt(staff);
+                    Point right = measure.getSidePoint(HorizontalSide.RIGHT, staff);
+                    Point2D dsk = skew.deskewed(right);
+
+                    MeasureStack stack2 = stacks2.get(i);
+                    Measure measure2 = stack2.getMeasureAt(staff2);
+                    Point right2 = measure2.getSidePoint(HorizontalSide.RIGHT, staff2);
+                    Point2D dsk2 = skew.deskewed(right2);
+
+                    double dx = Math.abs(dsk.getX() - dsk2.getX());
+
+                    if (dx > maxEndShift) {
+                        OMR.gui.displayWarning("Misaligned left ends between " + measure + " and "
+                                                       + measure2,
+                                               "Incompatible " + system + " & " + system2);
+                        return;
+                    }
+                }
+
+                if (OMR.gui.displayConfirmation("Merge " + system.toLongString() + " with "
+                                                        + system2.toLongString() + "?")) {
+                    sheet.getInterController().mergeSystem(system);
+                }
+            }
+
+            @Override
+            public Object clone ()
+                    throws CloneNotSupportedException
+            {
+                return super.clone(); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            private void update ()
+            {
+                if (system == null) {
+                    setEnabled(false);
+                } else {
+                    // Action enabled only if system is not the last in sheet and step >= GRID
+                    final List<SystemInfo> systems = sheet.getSystemManager().getSystems();
+                    boolean isLast = system == systems.get(systems.size() - 1);
+                    setEnabled(!isLast && sheet.getStub().getLatestStep().compareTo(Step.GRID) >= 0);
+                }
             }
         }
     }
