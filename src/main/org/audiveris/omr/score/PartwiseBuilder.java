@@ -1312,6 +1312,10 @@ public class PartwiseBuilder
         try {
             logger.debug("Visiting {}", keySignature);
 
+            if (keySignature == null) {
+                return;
+            }
+
             final Key key = factory.createKey();
             key.setFifths(new BigInteger("" + keySignature.getFifths()));
 

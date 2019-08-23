@@ -658,8 +658,10 @@ public abstract class AbstractInter
     @Override
     public Inter getMirror ()
     {
-        for (Relation rel : sig.getRelations(this, MirrorRelation.class)) {
-            return sig.getOppositeInter(this, rel);
+        if (sig != null) {
+            for (Relation rel : sig.getRelations(this, MirrorRelation.class)) {
+                return sig.getOppositeInter(this, rel);
+            }
         }
 
         return null;

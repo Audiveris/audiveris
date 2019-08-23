@@ -150,8 +150,10 @@ public abstract class AbstractNoteInter
      */
     public AugmentationDotInter getFirstAugmentationDot ()
     {
-        for (Relation dn : sig.getRelations(this, AugmentationRelation.class)) {
-            return (AugmentationDotInter) sig.getOppositeInter(this, dn);
+        if (sig != null) {
+            for (Relation dn : sig.getRelations(this, AugmentationRelation.class)) {
+                return (AugmentationDotInter) sig.getOppositeInter(this, dn);
+            }
         }
 
         return null;
