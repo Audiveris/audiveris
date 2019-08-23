@@ -606,22 +606,24 @@ public abstract class AbstractChordInter
     {
         final List<AbstractChordInter> tied = new ArrayList<>();
 
-        for (Inter inter : getMembers()) {
-            AbstractNoteInter note = (AbstractNoteInter) inter;
-            Set<Relation> rels = sig.getRelations(note, SlurHeadRelation.class);
+        if (sig != null) {
+            for (Inter inter : getMembers()) {
+                AbstractNoteInter note = (AbstractNoteInter) inter;
+                Set<Relation> rels = sig.getRelations(note, SlurHeadRelation.class);
 
-            for (Relation rel : rels) {
-                SlurInter slur = (SlurInter) sig.getOppositeInter(note, rel);
-                HeadInter leftNote = slur.getHead(HorizontalSide.LEFT);
-                HeadInter rightNote = slur.getHead(HorizontalSide.RIGHT);
+                for (Relation rel : rels) {
+                    SlurInter slur = (SlurInter) sig.getOppositeInter(note, rel);
+                    HeadInter leftNote = slur.getHead(HorizontalSide.LEFT);
+                    HeadInter rightNote = slur.getHead(HorizontalSide.RIGHT);
 
-                if (slur.isTie() && (leftNote == note) && (rightNote != null)) {
-                    tied.add(rightNote.getChord());
+                    if (slur.isTie() && (leftNote == note) && (rightNote != null)) {
+                        tied.add(rightNote.getChord());
+                    }
                 }
             }
-        }
 
-        Collections.sort(tied, Inters.byAbscissa);
+            Collections.sort(tied, Inters.byAbscissa);
+        }
 
         return tied;
     }
@@ -897,8 +899,10 @@ public abstract class AbstractChordInter
      */
     public TupletInter getTuplet ()
     {
-        for (Relation tcRel : sig.getRelations(this, ChordTupletRelation.class)) {
-            return (TupletInter) sig.getOppositeInter(this, tcRel);
+        if (sig != null) {
+            for (Relation tcRel : sig.getRelations(this, ChordTupletRelation.class)) {
+                return (TupletInter) sig.getOppositeInter(this, tcRel);
+            }
         }
 
         return null;
@@ -914,10 +918,12 @@ public abstract class AbstractChordInter
      */
     public DurationFactor getTupletFactor ()
     {
-        for (Relation rel : sig.getRelations(this, ChordTupletRelation.class)) {
-            TupletInter tuplet = (TupletInter) sig.getOppositeInter(this, rel);
+        if (sig != null) {
+            for (Relation rel : sig.getRelations(this, ChordTupletRelation.class)) {
+                TupletInter tuplet = (TupletInter) sig.getOppositeInter(this, rel);
 
-            return tuplet.getDurationFactor();
+                return tuplet.getDurationFactor();
+            }
         }
 
         return null;

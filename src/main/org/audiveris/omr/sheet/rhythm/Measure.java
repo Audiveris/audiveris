@@ -310,7 +310,10 @@ public class Measure
 
             if (!clefs.contains(clef)) {
                 clefs.add(clef);
-                Collections.sort(clefs, Inters.byFullCenterAbscissa);
+
+                if ((clefs.size() > 1) && (clef.getCenter() != null)) {
+                    Collections.sort(clefs, Inters.byFullCenterAbscissa);
+                }
             }
         } else if (inter instanceof KeyInter) {
             final KeyInter key = (KeyInter) inter;

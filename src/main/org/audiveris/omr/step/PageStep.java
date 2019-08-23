@@ -281,6 +281,7 @@ public class PageStep
                     map.put(page, impact = new Impact());
                 }
 
+                impact.onParts = true; // Safer
                 impact.onMeasures = true;
                 impact.onVoices = true;
             } else if (task instanceof SystemMergeTask) {
