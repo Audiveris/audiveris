@@ -1311,6 +1311,10 @@ public class SystemInfo
         // parts
         parts.addAll(systemBelow.parts);
 
+        for (Part part : systemBelow.parts) {
+            part.setSystem(this);
+        }
+
         // partGroups
         partGroups.addAll(systemBelow.partGroups);
 
@@ -1484,6 +1488,10 @@ public class SystemInfo
 
         // parts
         parts.removeAll(systemBelow.parts);
+
+        for (Part part : systemBelow.parts) {
+            part.setSystem(systemBelow);
+        }
 
         // partGroups
         partGroups.removeAll(systemBelow.partGroups);

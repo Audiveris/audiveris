@@ -291,6 +291,7 @@ public class PageStep
                     map.put(page, impact = new Impact());
                 }
 
+                impact.onParts = true;
                 impact.onMeasures = true;
                 impact.onVoices = true;
             } else if (task instanceof RelationTask) {
