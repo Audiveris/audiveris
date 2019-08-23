@@ -282,11 +282,15 @@ public class TextBuilder
     private void checkRole (TextLine line)
     {
         if (line.getRole() == null) {
-            TextRole role = (isManual() && manualLyrics) ? TextRole.Lyrics
-                    : TextRole.guessRole(line, system, manualLyrics == null);
+            try {
+                TextRole role = (isManual() && manualLyrics) ? TextRole.Lyrics
+                        : TextRole.guessRole(line, system, manualLyrics == null);
 
-            if (role != null) {
-                line.setRole(role);
+                if (role != null) {
+                    line.setRole(role);
+                }
+            } catch (Exception ex) {
+                logger.warn("Error in checRole for {} {}", line, ex.toString(), ex);
             }
         }
     }
