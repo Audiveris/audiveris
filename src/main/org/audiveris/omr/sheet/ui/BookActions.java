@@ -151,6 +151,8 @@ public class BookActions
                 try {
                     LogUtil.start(book);
                     book.annotate();
+                } catch (Throwable ex) {
+                    logger.warn("Error in annotateBook {}", ex.toString(), ex);
                 } finally {
                     LogUtil.stopBook();
                 }
@@ -183,8 +185,8 @@ public class BookActions
                 try {
                     LogUtil.start(sheet.getStub());
                     sheet.annotate();
-                } catch (Exception ex) {
-                    logger.warn("Annotations failed {}", ex);
+                } catch (Throwable ex) {
+                    logger.warn("Error in annotateSheet {}", ex.toString(), ex);
                 } finally {
                     LogUtil.stopBook();
                 }
@@ -313,8 +315,8 @@ public class BookActions
 
             dialog.pack();
             OmrGui.getApplication().show(dialog);
-        } catch (Exception ex) {
-            logger.warn("Error in SheetParameters", ex);
+        } catch (Throwable ex) {
+            logger.warn("Error in defineSheetParameters {}", ex.toString(), ex);
         }
     }
 
@@ -331,17 +333,21 @@ public class BookActions
     {
         final SheetStub stub = StubsController.getCurrentStub();
 
-        if (stub.isDone(Step.BINARY)) {
-            final SheetAssembly assembly = stub.getAssembly();
-            final SheetTab tab = SheetTab.BINARY_TAB;
+        try {
+            if (stub.isDone(Step.BINARY)) {
+                final SheetAssembly assembly = stub.getAssembly();
+                final SheetTab tab = SheetTab.BINARY_TAB;
 
-            if (assembly.getPane(tab.label) == null) {
-                stub.getSheet().createBinaryView();
+                if (assembly.getPane(tab.label) == null) {
+                    stub.getSheet().createBinaryView();
+                } else {
+                    assembly.selectViewTab(tab);
+                }
             } else {
-                assembly.selectViewTab(tab);
+                logger.info("No binary image available yet.");
             }
-        } else {
-            logger.info("No binary image available yet.");
+        } catch (Throwable ex) {
+            logger.warn("Error in displayBinary {}", ex.toString(), ex);
         }
     }
 
@@ -358,17 +364,21 @@ public class BookActions
     {
         final SheetStub stub = StubsController.getCurrentStub();
 
-        if (stub.isDone(Step.GRID)) {
-            final SheetAssembly assembly = stub.getAssembly();
-            final SheetTab tab = SheetTab.DATA_TAB;
+        try {
+            if (stub.isDone(Step.GRID)) {
+                final SheetAssembly assembly = stub.getAssembly();
+                final SheetTab tab = SheetTab.DATA_TAB;
 
-            if (assembly.getPane(tab.label) == null) {
-                stub.getSheet().displayDataTab();
+                if (assembly.getPane(tab.label) == null) {
+                    stub.getSheet().displayDataTab();
+                } else {
+                    assembly.selectViewTab(tab);
+                }
             } else {
-                assembly.selectViewTab(tab);
+                logger.info("No data buffer available yet.");
             }
-        } else {
-            logger.info("No data buffer available yet.");
+        } catch (Throwable ex) {
+            logger.warn("Error in displayData {}", ex.toString(), ex);
         }
     }
 
@@ -1101,14 +1111,20 @@ public class BookActions
             return null;
         }
 
-        final Path bookPath = BookManager.getDefaultSavePath(book);
+        try {
+            final Path bookPath = BookManager.getDefaultSavePath(book);
 
-        if ((book.getBookPath() != null) && (bookPath.toAbsolutePath().equals(
-                book.getBookPath().toAbsolutePath()) || confirmed(bookPath))) {
-            return new StoreBookTask(book, bookPath);
+            if ((book.getBookPath() != null) && (bookPath.toAbsolutePath().equals(
+                    book.getBookPath().toAbsolutePath()) || confirmed(bookPath))) {
+                return new StoreBookTask(book, bookPath);
+            }
+
+            return saveBookAs(e);
+        } catch (Throwable ex) {
+            logger.warn("Error in saveBook {}", ex.toString(), ex);
         }
 
-        return saveBookAs(e);
+        return null;
     }
 
     //------------//
@@ -1123,14 +1139,18 @@ public class BookActions
             return null;
         }
 
-        // Let the user select a book output file
-        final Path defaultBookPath = BookManager.getDefaultSavePath(book);
-        final Path targetPath = selectBookPath(true, defaultBookPath);
-        final Path ownPath = book.getBookPath();
+        try {
+            // Let the user select a book output file
+            final Path defaultBookPath = BookManager.getDefaultSavePath(book);
+            final Path targetPath = selectBookPath(true, defaultBookPath);
+            final Path ownPath = book.getBookPath();
 
-        if ((targetPath != null) && (((ownPath != null) && ownPath.toAbsolutePath().equals(
-                targetPath.toAbsolutePath())) || confirmed(targetPath))) {
-            return new StoreBookTask(book, targetPath);
+            if ((targetPath != null) && (((ownPath != null) && ownPath.toAbsolutePath().equals(
+                    targetPath.toAbsolutePath())) || confirmed(targetPath))) {
+                return new StoreBookTask(book, targetPath);
+            }
+        } catch (Throwable ex) {
+            logger.warn("Error in saveBookAs {}", ex.toString(), ex);
         }
 
         return null;
@@ -1154,12 +1174,16 @@ public class BookActions
             return null;
         }
 
-        if (book.hasAllocatedRepository()) {
-            SampleRepository repo = book.getSampleRepository();
+        try {
+            if (book.hasAllocatedRepository()) {
+                SampleRepository repo = book.getSampleRepository();
 
-            if (repo.isModified()) {
-                repo.storeRepository();
+                if (repo.isModified()) {
+                    repo.storeRepository();
+                }
             }
+        } catch (Throwable ex) {
+            logger.warn("Error in saveBookRepository {}", ex.toString(), ex);
         }
 
         return null;
@@ -1182,7 +1206,11 @@ public class BookActions
             return;
         }
 
-        book.swapAllSheets();
+        try {
+            book.swapAllSheets();
+        } catch (Throwable ex) {
+            logger.warn("Error in swapSheets {}", ex.toString(), ex);
+        }
     }
 
     //----------------//
@@ -1690,6 +1718,8 @@ public class BookActions
                             StubsController.invokeSelect(firstValid);
                         }
                     }
+                } catch (Throwable ex) {
+                    logger.warn("Error in LoadBookTask {}", ex.toString(), ex);
                 } finally {
                     LogUtil.stopBook();
                 }
@@ -1773,6 +1803,8 @@ public class BookActions
                 LogUtil.start(book);
                 book.setPrintPath(bookPrintPath);
                 book.print();
+            } catch (Throwable ex) {
+                logger.warn("Error in PrintBookTask {}", ex.toString(), ex);
             } finally {
                 LogUtil.stopBook();
             }
@@ -1806,6 +1838,8 @@ public class BookActions
             try {
                 LogUtil.start(sheet.getStub());
                 sheet.print(sheetPrintPath);
+            } catch (Throwable ex) {
+                logger.warn("Error in PrintSheetTask {}", ex.toString(), ex);
             } finally {
                 LogUtil.stopStub();
             }
@@ -1835,6 +1869,8 @@ public class BookActions
             try {
                 LogUtil.start(sheet.getStub());
                 sheet.sample();
+            } catch (Throwable ex) {
+                logger.warn("Error in SampleSheetTask {}", ex.toString(), ex);
             } finally {
                 LogUtil.stopStub();
             }
@@ -1869,6 +1905,8 @@ public class BookActions
             try {
                 LogUtil.start(book);
                 book.close();
+            } catch (Throwable ex) {
+                logger.warn("Error in CloseBookTask {}", ex.toString(), ex);
             } finally {
                 LogUtil.stopBook();
             }
@@ -1974,6 +2012,8 @@ public class BookActions
                 if (checkParameters(book)) {
                     book.export();
                 }
+            } catch (Throwable ex) {
+                logger.warn("Error in ExportBookTask {}", ex.toString(), ex);
             } finally {
                 LogUtil.stopBook();
             }
@@ -2011,6 +2051,8 @@ public class BookActions
                     sheet.getStub().reachStep(Step.PAGE, false);
                     sheet.export(sheetExportPath);
                 }
+            } catch (Throwable ex) {
+                logger.warn("Error in ExportSheetTask {}", ex.toString(), ex);
             } finally {
                 LogUtil.stopStub();
             }
@@ -2069,6 +2111,8 @@ public class BookActions
             try {
                 LogUtil.start(book);
                 book.sample();
+            } catch (Throwable ex) {
+                logger.warn("Error in SampleBookTask {}", ex.toString(), ex);
             } finally {
                 LogUtil.stopBook();
             }
@@ -2109,6 +2153,8 @@ public class BookActions
                 LogUtil.start(book);
                 book.store(bookPath, false);
                 BookActions.getInstance().setBookModifiedOrUpgraded(false);
+            } catch (Throwable ex) {
+                logger.warn("Error in StoreBookTask {}", ex.toString(), ex);
             } finally {
                 LogUtil.stopBook();
             }
@@ -2141,7 +2187,7 @@ public class BookActions
             try {
                 LogUtil.start(book);
                 book.transcribe();
-            } catch (Exception ex) {
+            } catch (Throwable ex) {
                 logger.warn("Could not transcribe book", ex);
             } finally {
                 LogUtil.stopBook();
@@ -2178,7 +2224,7 @@ public class BookActions
             try {
                 LogUtil.start(sheet.getStub());
                 sheet.getStub().transcribe();
-            } catch (Exception ex) {
+            } catch (Throwable ex) {
                 logger.warn("Could not transcribe sheet", ex);
             } finally {
                 LogUtil.stopStub();

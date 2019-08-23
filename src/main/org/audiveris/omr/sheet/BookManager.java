@@ -186,7 +186,7 @@ public class BookManager
 
         // Alias?
         if (AliasPatterns.useAliasPatterns()) {
-            final String nameSansExt = FileUtil.getNameSansExtension(path);
+            final String nameSansExt = FileUtil.getNameSansExtension(path).trim();
             String alias = getAlias(nameSansExt);
 
             if (alias != null) {
