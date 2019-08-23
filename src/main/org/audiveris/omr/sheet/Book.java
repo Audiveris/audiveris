@@ -330,7 +330,7 @@ public class Book
         this.path = path;
         subBooks = null;
 
-        initTransients(FileUtil.getNameSansExtension(path), null);
+        initTransients(FileUtil.getNameSansExtension(path).trim(), null);
     }
 
     /**
@@ -1917,7 +1917,7 @@ public class Book
     {
         // Are we changing the target name WRT the default name?
         final String newRadix = FileUtil.avoidExtensions(bookPath.getFileName(), OMR.BOOK_EXTENSION)
-                .toString();
+                .toString().trim();
 
         if (!newRadix.equals(radix)) {
             // Update book radix
@@ -2086,14 +2086,14 @@ public class Book
         }
 
         if (nameSansExt != null) {
-            radix = nameSansExt;
+            radix = nameSansExt.trim();
         }
 
         if (bookPath != null) {
             this.bookPath = bookPath;
 
             if (nameSansExt == null) {
-                radix = FileUtil.getNameSansExtension(bookPath);
+                radix = FileUtil.getNameSansExtension(bookPath).trim();
             }
         }
 

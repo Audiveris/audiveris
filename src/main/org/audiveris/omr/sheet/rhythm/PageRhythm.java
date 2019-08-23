@@ -243,9 +243,15 @@ public class PageRhythm
                         continue;
                     }
 
-                    MeasureStack prevStack = prevPage.getLastSystem().getLastStack();
+                    SystemInfo lastSystem = prevPage.getLastSystem();
 
-                    if (prevStack.getExpectedDuration() != null) {
+                    if (lastSystem == null) {
+                        continue;
+                    }
+
+                    MeasureStack prevStack = lastSystem.getLastStack();
+
+                    if ((prevStack != null) && (prevStack.getExpectedDuration() != null)) {
                         range.duration = prevStack.getExpectedDuration();
                     }
                 }
