@@ -1063,9 +1063,11 @@ public class BarsRetriever
             // Look for "true" braced groups
             TreeSet<PartGroup> bracedGroups = new TreeSet<>(PartGroup.byFirstId);
 
-            for (PartGroup pg : allGroups) {
-                if (isTrueBraceGroup(pg)) {
-                    bracedGroups.add(pg);
+            if (!constants.forceSeparateParts.isSet()) {
+                for (PartGroup pg : allGroups) {
+                    if (isTrueBraceGroup(pg)) {
+                        bracedGroups.add(pg);
+                    }
                 }
             }
 
@@ -2620,6 +2622,10 @@ public class BarsRetriever
         private final Constant.Boolean forceSinglePart = new Constant.Boolean(
                 false,
                 "Should we force single part for 2-staff systems without brace?");
+
+        private final Constant.Boolean forceSeparateParts = new Constant.Boolean(
+                false,
+                "Should we force all staves to use separate parts?");
 
         private final Scale.Fraction minSeparateStaffGutter = new Scale.Fraction(
                 2.5,
