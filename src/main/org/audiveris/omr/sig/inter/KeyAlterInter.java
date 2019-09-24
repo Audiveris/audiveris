@@ -81,7 +81,7 @@ public class KeyAlterInter
     @Override
     public void added ()
     {
-        removed = false; // Skip AlterInder
+        removed = false; // Skip AlterInter
     }
 
     //---------------//

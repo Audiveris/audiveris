@@ -51,6 +51,7 @@ import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
+import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
@@ -632,6 +633,19 @@ public abstract class SigPainter
             Dimension dim = symbol.getDimension(font);
             center.y += dim.width;
             symbol.paintSymbol(g, font, center, Alignment.BOTTOM_CENTER);
+        }
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (KeyInter key)
+    {
+        // Normally, key ensemble is painted via its alter members
+        // But for a manual key, there are no members available, so we use the key shape
+        if (key.isManual()) {
+            visit((Inter) key);
         }
     }
 

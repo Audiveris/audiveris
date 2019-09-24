@@ -24,6 +24,9 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.header.StaffHeader;
+import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
 import static org.audiveris.omr.sig.inter.AbstractNoteInter.Step.*;
 import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
@@ -33,6 +36,7 @@ import org.audiveris.omr.util.Entities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.EnumMap;
 import java.util.List;
@@ -142,6 +146,21 @@ public class KeyInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
+
+        if (stack != null) {
+            stack.addInter(this);
+        }
     }
 
     //-----------//
@@ -275,6 +294,35 @@ public class KeyInter
     {
         bounds = null;
         fifths = 0;
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Remove the key from containing measure (and from staff header if any).
+     *
+     * @param extensive true for non-manual removals only
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        // Remove from staff header if relevant
+        final StaffHeader header = staff.getHeader();
+
+        if (header != null && header.key == this) {
+            header.key = null;
+        }
+
+        // Remove from containing measure
+        final Point center = getCenter();
+        final Measure measure = staff.getPart().getMeasureAt(center);
+
+        if (measure != null) {
+            measure.removeInter(this);
+        }
+
+        super.remove(extensive);
     }
 
     //--------------//
