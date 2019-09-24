@@ -287,6 +287,19 @@ public class SlotsRetriever
                     final int p2 = h2.getIntegerPitch();
 
                     if (Math.abs(p2 - p1) <= 2) {
+                        // Check no strong separation exists via close/equal chords
+                        Set<AbstractChordInter> n1 = getClosure(ch1);
+                        Set<AbstractChordInter> n2 = getClosure(ch2);
+
+                        for (AbstractChordInter c1 : n1) {
+                            for (AbstractChordInter c2 : n2) {
+                                Rel rel = getRel(c1, c2);
+                                if (rel == Rel.AFTER || rel == Rel.BEFORE) {
+                                    return false;
+                                }
+                            }
+                        }
+
                         return true;
                     }
                 }
@@ -362,22 +375,24 @@ public class SlotsRetriever
 
         NextSlot:
         while (iStart < chordCount) {
-            AbstractChordInter c1 = candidateChords.get(iStart);
-
             for (int i = iStart + 1; i < chordCount; i++) {
                 AbstractChordInter c2 = candidateChords.get(i);
-                Rel rel = getRel(c1, c2);
 
-                if (rel != Rel.EQUAL && rel != Rel.CLOSE) {
-                    // New slot starting here, register previous one
-                    MeasureSlot slot = new MeasureSlot(
-                            ++slotCount,
-                            measure,
-                            candidateChords.subList(iStart, i));
-                    slots.add(slot);
-                    iStart = i;
+                // Make sure c2 is compatible with ALL slot chords so far
+                for (AbstractChordInter c1 : candidateChords.subList(iStart, i)) {
+                    Rel rel = getRel(c1, c2);
 
-                    continue NextSlot;
+                    if (rel != Rel.EQUAL && rel != Rel.CLOSE) {
+                        // New slot starting here, register previous one
+                        MeasureSlot slot = new MeasureSlot(
+                                ++slotCount,
+                                measure,
+                                candidateChords.subList(iStart, i));
+                        slots.add(slot);
+                        iStart = i;
+
+                        continue NextSlot;
+                    }
                 }
             }
 
@@ -597,7 +612,7 @@ public class SlotsRetriever
             final AbstractChordInter ch1 = stdChords.get(i);
 
             final Rectangle box1 = ch1.getBounds();
-            final double x1 = stack.getXOffset(ch1.getCenter());
+            final double x1 = stack.getXOffset(ch1.getCenterLeft());
 
             for (AbstractChordInter ch2 : stdChords.subList(i + 1, stdChords.size())) {
                 if (ch1.isVip() && ch2.isVip()) {
@@ -610,14 +625,12 @@ public class SlotsRetriever
 
                 // Check y overlap
                 final Rectangle box2 = ch2.getBounds();
-                final double x2 = stack.getXOffset(ch2.getCenter());
+                final double x2 = stack.getXOffset(ch2.getCenterLeft());
                 final int yOverlap = GeoUtil.yOverlap(box1, box2);
 
                 if (yOverlap > params.maxVerticalOverlap) {
                     // Boxes overlap vertically
                     if (areAdjacent(ch1, ch2)) {
-                        setRel(ch1, ch2, EQUAL);
-                        setRel(ch2, ch1, EQUAL);
                         adjacencies.add(new ChordPair(ch1, ch2));
                     } else if (x1 < x2) {
                         setRel(ch1, ch2, BEFORE);
@@ -650,19 +663,15 @@ public class SlotsRetriever
 
             for (ChordPair pair : adjacencies) {
                 // Since ch1 ~ ch2, all neighbors of ch1 ~ neighbors of ch2
+                // (unless a relationship is already established)
                 Set<AbstractChordInter> n1 = getClosure(pair.one);
                 Set<AbstractChordInter> n2 = getClosure(pair.two);
 
                 for (AbstractChordInter ch1 : n1) {
                     for (AbstractChordInter ch2 : n2) {
-                        if (ch1 != ch2) {
-                            if (getRel(ch1, ch2) != EQUAL) {
-                                setRel(ch1, ch2, CLOSE);
-                            }
-
-                            if (getRel(ch2, ch1) != EQUAL) {
-                                setRel(ch2, ch1, CLOSE);
-                            }
+                        if ((ch1 != ch2) && (getRel(ch1, ch2) == null)) {
+                            setRel(ch1, ch2, CLOSE);
+                            setRel(ch2, ch1, CLOSE);
                         }
                     }
                 }
@@ -821,6 +830,10 @@ public class SlotsRetriever
                          AbstractChordInter to,
                          Rel rel)
     {
+        if (from.isVip() && to.isVip()) {
+            logger.info("VIP setRel {} {} {}", from, rel, to);
+        }
+
         Edge edge = graph.getEdge(from, to);
 
         if (edge != null) {

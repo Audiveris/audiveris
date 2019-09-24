@@ -76,7 +76,6 @@ public class StackRhythm
         try {
             if (!doProcess()) {
                 logger.info("{}{} no correct rhythm", stack.getSystem().getLogPrefix(), stack);
-                ///stack.setAbnormal(true);
             }
         } catch (Exception ex) {
             logger.warn("StackRhythm error processing {} " + ex, stack, ex);
