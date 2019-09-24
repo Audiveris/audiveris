@@ -47,6 +47,8 @@ public class SigListener
 
     /**
      * Creates a new {@code SigListener} object.
+     *
+     * @param sig the underlying SIG
      */
     public SigListener (SIGraph sig)
     {

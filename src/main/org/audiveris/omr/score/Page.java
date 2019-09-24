@@ -692,7 +692,7 @@ public class Page
      * Remove the provided system from this page.
      *
      * @param system the system to remove
-     * @see #unremoveSystem()
+     * @see #unremoveSystem
      */
     public void removeSystem (SystemInfo system)
     {
@@ -711,7 +711,7 @@ public class Page
      * Un-remove the provided system into this page.
      *
      * @param system the system to re-insert
-     * @see #removeSystem()
+     * @see #removeSystem
      */
     public void unremoveSystem (SystemInfo system)
     {
