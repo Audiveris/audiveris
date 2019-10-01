@@ -999,15 +999,17 @@ public class SystemInfo
      */
     public MeasureStack getStackAt (Point2D point)
     {
-        final Staff staff = getStavesAround(point).get(0);
-        final double x = point.getX();
+        if (point != null) {
+            final Staff staff = getStavesAround(point).get(0);
+            final double x = point.getX();
 
-        for (MeasureStack stack : stacks) {
-            final Measure measure = stack.getMeasureAt(staff);
+            for (MeasureStack stack : stacks) {
+                final Measure measure = stack.getMeasureAt(staff);
 
-            if ((measure != null) && (x >= measure.getAbscissa(LEFT, staff)) && (x <= measure
-                    .getAbscissa(RIGHT, staff))) {
-                return stack;
+                if ((measure != null) && (x >= measure.getAbscissa(LEFT, staff)) && (x <= measure
+                        .getAbscissa(RIGHT, staff))) {
+                    return stack;
+                }
             }
         }
 

@@ -294,6 +294,10 @@ public class TimePairInter
         pair.addMember(num);
         pair.addMember(den);
 
+        // Safer
+        pair.getBounds();
+        pair.setStaff(num.getStaff());
+
         if (pair.isVip()) {
             logger.info("VIP created {} from num:{} den:{}", pair, num, den);
         }
