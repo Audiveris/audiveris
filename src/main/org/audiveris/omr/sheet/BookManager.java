@@ -403,13 +403,15 @@ public class BookManager
     // getBaseFolderString //
     //---------------------//
     /**
-     * Report the base string for output folders.
+     * Report the (trimmed) base string for output folders.
+     * <p>
+     * We make sure there is no heading or trailing space in the user-provided folder name.
      *
      * @return the output base folder string
      */
     public static String getBaseFolderString ()
     {
-        return constants.baseFolder.getValue();
+        return constants.baseFolder.getValue().trim();
     }
 
     //---------------------//
