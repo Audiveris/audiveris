@@ -22,7 +22,6 @@
 package org.audiveris.omr.text;
 
 import org.audiveris.omr.text.OCR.LayoutMode;
-import org.audiveris.omr.text.tesseract.TesseractOCR;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -39,7 +38,7 @@ public abstract class OcrUtil
 {
 
     /** The related OCR. */
-    private static final OCR ocr = TesseractOCR.getInstance();
+    private static final OCR ocr = new NoOpOCR();
 
     /** Not meant to be instantiated. */
     private OcrUtil ()

@@ -28,7 +28,6 @@ import org.audiveris.omr.constant.ConstantManager;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.sheet.BookManager;
-import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.ui.MainGui;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.util.OmrExecutors;
@@ -345,7 +344,7 @@ public class Main
                             + ", "
                             + System.getProperty("java.vm.info")
                             + ")",
-                    TesseractOCR.getInstance().identify());
+                    "None");
         }
     }
 

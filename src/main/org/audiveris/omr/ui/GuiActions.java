@@ -34,7 +34,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.ui.ShapeColorChooser;
 import org.audiveris.omr.sheet.BookManager;
-import org.audiveris.omr.text.tesseract.TesseractOCR;
+import org.audiveris.omr.text.NoOpOCR;
 import org.audiveris.omr.ui.action.AdvancedTopics;
 import org.audiveris.omr.ui.symbol.SymbolRipper;
 import org.audiveris.omr.ui.util.CursorController;
@@ -608,7 +608,7 @@ public class GuiActions
             Topic.classes.comp.setText(WellKnowns.CLASS_CONTAINER.toString());
             Topic.license.comp.setText("GNU Affero GPL v3");
 
-            Topic.ocr.comp.setText(TesseractOCR.getInstance().identify());
+            Topic.ocr.comp.setText(new NoOpOCR().identify());
 
             Topic.javaVendor.comp.setText(System.getProperty("java.vendor"));
             Topic.javaVersion.comp.setText(System.getProperty("java.version"));

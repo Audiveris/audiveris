@@ -62,7 +62,6 @@ public enum Step
     STEMS("Build stems connected to heads & beams", new StemsStep()),
     REDUCTION("Reduce conflicts in heads, stems & beams", new ReductionStep()),
     CUE_BEAMS("Retrieve cue beams", new CueBeamsStep()),
-    TEXTS("Call OCR on textual items", new TextsStep()),
     MEASURES("Retrieve raw measures from groups of bar lines", new MeasuresStep()),
     CHORDS("Gather notes heads into chords", new ChordsStep()),
     CURVES("Retrieve slurs, wedges & endings", new CurvesStep()),

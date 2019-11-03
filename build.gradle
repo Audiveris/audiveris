@@ -114,20 +114,20 @@ dependencies {
         [group: 'gov.nist.math', name: 'jama', version: '1.0.3'],
         [group: 'org.reflections', name: 'reflections', version: '0.9.10'],
         [group: 'org.bytedeco', name: 'javacpp', version: '1.3'],
-        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.73-1.3'],
-        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: '3.04.01-1.3'],
+//        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.73-1.3'],
+//        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: '3.04.01-1.3'],
         [group: 'com.github.jai-imageio', name: 'jai-imageio-core', version: '1.3.1'],
 //        [group: 'org.deeplearning4j', name: 'deeplearning4j-core', version: "${project.ext.dl4jVersion}"],
 //        [group: 'org.nd4j', name: 'nd4j-native', version: "${project.ext.nd4jVersion}"],
         [group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.4']
     )
-
+/*
     runtime(
 //        [group: 'org.nd4j', name: 'nd4j-native', version: "${project.ext.nd4jVersion}", classifier: "${project.ext.targetOS}"],
-        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.73-1.3', classifier: "${project.ext.targetOS}"],
-        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: '3.04.01-1.3', classifier: "${project.ext.targetOS}"]
+//        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.73-1.3', classifier: "${project.ext.targetOS}"],
+//        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: '3.04.01-1.3', classifier: "${project.ext.targetOS}"]
     )
-
+ */
     testCompile(
         [group: 'junit', name: 'junit', version: '4.10'],
         [group: 'org.jgrapht', name: 'jgrapht-ext', version: '1.0.1']
@@ -135,11 +135,13 @@ dependencies {
 }
 
 // Specific configurations for specific OS dependencies
+/*
 ['windows-x86', 'windows-x86_64'].each { os ->
     configurations.create("runtime-$os")
     dependencies.add("runtime-$os", [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.73-1.3', classifier: "$os"])
     dependencies.add("runtime-$os", [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: '3.04.01-1.3', classifier: "$os"])
 }
+*/
 
 jar {
     // override default output archive name
