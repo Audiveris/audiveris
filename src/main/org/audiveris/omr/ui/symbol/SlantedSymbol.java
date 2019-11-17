@@ -25,9 +25,8 @@ import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.font.TextLayout;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -127,11 +126,7 @@ public class SlantedSymbol
             x += (r.getWidth() - dx);
         }
 
-        p.rect = new Rectangle(
-                (int) Math.floor(rect.getX()),
-                (int) Math.floor(rect.getY()),
-                (int) Math.ceil(rect.getWidth()),
-                (int) Math.ceil(rect.getHeight()));
+        p.rect = rect;
 
         return p;
     }
@@ -142,15 +137,15 @@ public class SlantedSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
 
-        Point loc = alignment.translatedPoint(BASELINE_LEFT, p.rect, location);
+        Point2D loc = alignment.translatedPoint(BASELINE_LEFT, p.rect, location);
 
         // Precise abscissa
-        float x = loc.x;
+        double x = loc.getX();
 
         for (int i = 0; i < p.layouts.length; i++) {
             SmartLayout smart = p.layouts[i];
@@ -159,7 +154,7 @@ public class SlantedSymbol
                 x -= smart.dx; // Before symbol
             }
 
-            OmrFont.paint(g, smart.layout, new Point((int) Math.rint(x), loc.y), BASELINE_LEFT);
+            OmrFont.paint(g, smart.layout, new Point2D.Double(x, loc.getY()), BASELINE_LEFT);
 
             x += smart.layout.getBounds().getWidth();
             x -= smart.dx; // After symbol
@@ -169,7 +164,7 @@ public class SlantedSymbol
     //--------//
     // Params //
     //--------//
-    protected class MyParams
+    protected static class MyParams
             extends Params
     {
 

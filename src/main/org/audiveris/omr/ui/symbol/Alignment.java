@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import org.audiveris.omr.math.PointUtil;
+
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -214,16 +216,17 @@ public class Alignment
      * @param location the provided location
      * @return the translated point
      */
-    public Point translatedPoint (Alignment that,
-                                  Rectangle rect,
-                                  Point location)
+    public Point2D translatedPoint (Alignment that,
+                                    Rectangle2D rect,
+                                    Point2D location)
     {
         if (!this.equals(that)) {
-            Point toOrigin = toPoint(that, rect);
+            Point2D toOrigin = toPoint(that, rect);
+            PointUtil.add(toOrigin, location);
 
-            return new Point(location.x + toOrigin.x, location.y + toOrigin.y);
+            return toOrigin;
         } else {
-            return new Point(location.x, location.y);
+            return new Point2D.Double(location.getX(), location.getY());
         }
     }
 

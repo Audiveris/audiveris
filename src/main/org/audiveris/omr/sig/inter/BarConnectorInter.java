@@ -21,11 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import java.awt.geom.Line2D;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.grid.BarConnection;
 import org.audiveris.omr.sig.GradeImpacts;
+
+import java.awt.geom.Line2D;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -37,7 +38,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "bar-connector")
 public class BarConnectorInter
-        extends AbstractVerticalInter
+        extends AbstractVerticalConnectorInter
 {
 
     /**
@@ -51,7 +52,7 @@ public class BarConnectorInter
                               Shape shape,
                               GradeImpacts impacts)
     {
-        super(null, shape, impacts, connection.getMedian(), connection.getWidth());
+        super(connection, shape, impacts);
     }
 
     /**
@@ -67,7 +68,7 @@ public class BarConnectorInter
                               Line2D median,
                               double width)
     {
-        super(null, shape, grade, median, width);
+        super(shape, grade, median, width);
     }
 
     /**
@@ -75,7 +76,6 @@ public class BarConnectorInter
      */
     private BarConnectorInter ()
     {
-        super(null, null, null, null, null);
     }
 
     //--------//

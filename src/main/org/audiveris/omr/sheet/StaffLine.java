@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -65,7 +66,7 @@ public class StaffLine
     /** Absolute defining points (including start and stop points). */
     @XmlElement(name = "point")
     @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
-    protected final List<Point2D> points;
+    protected final List<Point2D> points = new ArrayList<>();
 
     /** Mean line thickness. */
     @XmlAttribute
@@ -95,8 +96,12 @@ public class StaffLine
     public StaffLine (List<Point2D> points,
                       double thickness)
     {
-        this.points = points;
         this.thickness = thickness;
+
+        for (Point2D p : points) {
+            // Adjust point ordinates (0.5 lower than int ordinate values)
+            this.points.add(new Point2D.Double(p.getX(), p.getY() + 0.5));
+        }
     }
 
     /**
@@ -104,7 +109,6 @@ public class StaffLine
      */
     private StaffLine ()
     {
-        this.points = null;
         this.thickness = 0;
     }
 

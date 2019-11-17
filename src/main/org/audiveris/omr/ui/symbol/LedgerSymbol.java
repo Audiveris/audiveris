@@ -22,16 +22,19 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sig.inter.LedgerInter;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code LedgerSymbol} implements a decorated ledger symbol.
+ * Class {@code LedgerSymbol} implements a ledger symbol.
  *
  * @author Hervé Bitteur
  */
@@ -64,31 +67,64 @@ public class LedgerSymbol
         super(isIcon, Shape.LEDGER, decorated);
     }
 
+    //----------//
+    // getModel //
+    //----------//
+    @Override
+    public LedgerInter.Model getModel (MusicFont font,
+                                       Point location,
+                                       Alignment alignment)
+    {
+        MyParams p = getParams(font);
+        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        p.model.translate(loc.getX(), loc.getY());
+
+        return p.model;
+    }
+
+    //-----------------------//
+    // createDecoratedSymbol //
+    //-----------------------//
+    @Override
+    protected ShapeSymbol createDecoratedSymbol ()
+    {
+        return new LedgerSymbol(isIcon, true);
+    }
+
     //------------//
     // createIcon //
     //------------//
     @Override
     protected ShapeSymbol createIcon ()
     {
-        return new LedgerSymbol(true, true);
+        return new LedgerSymbol(true, decorated);
     }
 
     //-----------//
     // getParams //
     //-----------//
     @Override
-    protected Params getParams (MusicFont font)
+    protected MyParams getParams (MusicFont font)
     {
-        Params p = new Params();
+        MyParams p = new MyParams();
 
-        // Head layout
-        p.layout = font.layout(head.getString());
+        // A ledger length
+        int width = (int) Math.ceil(font.getStaffInterline() * 2.5);
+        p.thickness = (int) Math.ceil(LedgerInter.DEFAULT_THICKNESS);
 
-        // Use a ledger length twice as large as note head
-        Rectangle2D hRect = p.layout.getBounds();
-        p.rect = new Rectangle(
-                (int) Math.ceil(2 * hRect.getWidth()),
-                (int) Math.ceil(hRect.getHeight()));
+        if (decorated) {
+            // Head layout
+            p.layout = font.layout(head.getString());
+
+            p.rect = new Rectangle2D.Double(0, 0, width, p.layout.getBounds().getHeight());
+        } else {
+            p.rect = new Rectangle2D.Double(0, 0, width, p.thickness);
+        }
+
+        p.model = new LedgerInter.Model(0,
+                                        p.rect.getHeight() / 2.0,
+                                        width,
+                                        p.rect.getHeight() / 2.0);
 
         return p;
     }
@@ -99,20 +135,42 @@ public class LedgerSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
-        Point loc = alignment.translatedPoint(AREA_CENTER, params.rect, location);
+        MyParams p = (MyParams) params;
+
+        Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
 
         if (decorated) {
             // Draw a note head (using composite)
             Composite oldComposite = g.getComposite();
             g.setComposite(decoComposite);
-            MusicFont.paint(g, params.layout, loc, AREA_CENTER);
+            MusicFont.paint(g, p.layout, loc, AREA_CENTER);
             g.setComposite(oldComposite);
         }
 
-        // Ledger
-        g.drawLine(loc.x - (params.rect.width / 2), loc.y, loc.x + (params.rect.width / 2), loc.y);
+        // Ledger itself
+        PointUtil.add(loc, -p.rect.getWidth() / 2, 0);
+        p.model.translate(loc.getX(), 0);
+        g.draw(new Line2D.Double(p.model.p1, p.model.p2));
+    }
+
+    //--------//
+    // Params //
+    //--------//
+    protected static class MyParams
+            extends BasicSymbol.Params
+    {
+
+        // offset: not used
+        // layout: head decoration
+        // rect:   global image
+        //
+        // ledger thickness
+        int thickness;
+
+        // model
+        LedgerInter.Model model;
     }
 }

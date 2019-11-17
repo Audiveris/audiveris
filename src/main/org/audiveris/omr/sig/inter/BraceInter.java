@@ -59,6 +59,16 @@ public class BraceInter
     }
 
     /**
+     * Creates a new BraceInter object, meant for manual use.
+     *
+     * @param grade evaluation value
+     */
+    public BraceInter (double grade)
+    {
+        this(null, grade);
+    }
+
+    /**
      * No-arg constructor meant for JAXB.
      */
     private BraceInter ()
@@ -73,6 +83,21 @@ public class BraceInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //----------//
+    // contains //
+    //----------//
+    @Override
+    public boolean contains (Point point)
+    {
+        getBounds();
+
+        if (bounds != null) {
+            return bounds.contains(point);
+        }
+
+        return false;
     }
 
     //-----------//

@@ -26,9 +26,9 @@ import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
+import java.awt.geom.Point2D;
 
 /**
  * Class {@code StemSymbol} implements a stem symbol.
@@ -67,6 +67,15 @@ public class StemSymbol
         super(isIcon, Shape.STEM, decorated);
     }
 
+    //-----------------------//
+    // createDecoratedSymbol //
+    //-----------------------//
+    @Override
+    protected ShapeSymbol createDecoratedSymbol ()
+    {
+        return new StemSymbol(isIcon, true);
+    }
+
     //------------//
     // createIcon //
     //------------//
@@ -93,12 +102,13 @@ public class StemSymbol
             // Quarter layout
             p.quarterLayout = font.layout(quarter.getString());
 
-            p.rect = p.quarterLayout.getBounds().getBounds();
+            p.rect = p.quarterLayout.getBounds();
 
             // Define specific offset
-            p.offset = new Point((p.rect.width - rs.width) / 2, -(p.rect.height - rs.height) / 2);
+            p.offset = new Point2D.Double((p.rect.getWidth() - rs.width) / 2,
+                                          -(p.rect.getHeight() - rs.height) / 2);
         } else {
-            p.rect = p.layout.getBounds().getBounds();
+            p.rect = p.layout.getBounds();
         }
 
         return p;
@@ -110,13 +120,13 @@ public class StemSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
 
         if (decorated) {
-            Point loc = alignment.translatedPoint(TOP_RIGHT, p.rect, location);
+            Point2D loc = alignment.translatedPoint(TOP_RIGHT, p.rect, location);
 
             // Decorations (using composite)
             Composite oldComposite = g.getComposite();
@@ -128,7 +138,7 @@ public class StemSymbol
             MusicFont.paint(g, p.layout, loc, TOP_RIGHT);
         } else {
             // Stem alone
-            Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+            Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
             MusicFont.paint(g, p.layout, loc, AREA_CENTER);
         }
     }
@@ -136,7 +146,7 @@ public class StemSymbol
     //--------//
     // Params //
     //--------//
-    protected class MyParams
+    protected static class MyParams
             extends Params
     {
 

@@ -22,9 +22,12 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.text.FontInfo;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
 
-import java.awt.Rectangle;
-import java.awt.geom.Rectangle2D;
+import java.awt.Point;
+import java.awt.geom.Point2D;
 
 /**
  * Class {@code TextSymbol} implements a decorated text symbol
@@ -35,7 +38,7 @@ public class TextSymbol
         extends ShapeSymbol
 {
 
-    /** The text string to use */
+    /** The text string to use. */
     private final String str;
 
     /**
@@ -65,6 +68,21 @@ public class TextSymbol
         this.str = str;
     }
 
+    //----------//
+    // getModel //
+    //----------//
+    @Override
+    public WordInter.Model getModel (MusicFont font,
+                                     Point location,
+                                     Alignment alignment)
+    {
+        MyParams p = getParams(font);
+        Point2D topLeft = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        p.model.translate(topLeft.getX() - p.rect.getX(), topLeft.getY() - p.rect.getY());
+
+        return p.model;
+    }
+
     //------------//
     // createIcon //
     //------------//
@@ -78,17 +96,37 @@ public class TextSymbol
     // getParams //
     //-----------//
     @Override
-    protected Params getParams (MusicFont font)
+    protected MyParams getParams (MusicFont font)
     {
-        Params p = new Params();
+        MyParams p = new MyParams();
 
-        ///TextFont textFont = new TextFont((int) Math.rint(font.getSize2D() * 0.62));
-        TextFont textFont = new TextFont((int) Math.rint(font.getSize2D() * 0.4));
+        int fontSize = (int) Math.rint(font.getSize2D() * 0.5); // 0.5 for icon size
+        TextFont textFont = new TextFont(fontSize);
         p.layout = textFont.layout(str);
+        p.rect = p.layout.getBounds();
+        Point2D baseLoc = new Point2D.Double(0, 0);
+        FontInfo fontInfo = FontInfo.createDefault(fontSize);
 
-        Rectangle2D r = p.layout.getBounds();
-        p.rect = new Rectangle((int) Math.ceil(r.getWidth()), (int) Math.ceil(r.getHeight()));
+        p.model = new WordInter.Model(str, baseLoc, fontInfo);
 
         return p;
+    }
+
+    //--------//
+    // Params //
+    //--------//
+    protected static class MyParams
+            extends BasicSymbol.Params
+    {
+
+        // offset: not used
+        // layout: head decoration
+        // rect:   global image
+        //
+        // ledger thickness
+        int thickness;
+
+        // model
+        WordInter.Model model;
     }
 }

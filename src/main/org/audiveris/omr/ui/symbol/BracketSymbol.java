@@ -22,17 +22,23 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sig.inter.AbstractVerticalInter;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code BracketSymbol} displays a BRACKET symbol: [
+ * <p>
+ * <img src="doc-files/BracketUpperSerif.png" alt="Bracket upper serif">
+ * <p>
+ * <img src="doc-files/BracketLowerSerif.png" alt="Bracket lower serif">
  *
  * @author Hervé Bitteur
  */
@@ -47,13 +53,42 @@ public class BracketSymbol
     private static final BasicSymbol lowerSymbol = Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 
     /**
+     * Create a BracketSymbol (which is made of upper and lower parts).
+     */
+    public BracketSymbol ()
+    {
+        this(false);
+    }
+
+    /**
      * Create a BracketSymbol (which is made of upper and lower parts)
      *
      * @param isIcon true for an icon
      */
-    public BracketSymbol (boolean isIcon)
+    protected BracketSymbol (boolean isIcon)
     {
         super(isIcon, Shape.BRACKET, false);
+    }
+
+    //----------//
+    // getModel //
+    //----------//
+    @Override
+    public AbstractVerticalInter.Model getModel (MusicFont font,
+                                                 Point location,
+                                                 Alignment alignment)
+    {
+        MyParams p = getParams(font);
+
+        Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+
+        // Location pointed by the mouse is in fact the center of trunk (not the area center)
+        // So, let's retrieve the top left corner manually
+        PointUtil.add(loc, -p.model.width / 2, -p.rect.getHeight() / 2);
+
+        p.model.translate(loc.getX(), loc.getY());
+
+        return p.model;
     }
 
     //------------//
@@ -69,7 +104,7 @@ public class BracketSymbol
     // getParams //
     //-----------//
     @Override
-    protected Params getParams (MusicFont font)
+    protected MyParams getParams (MusicFont font)
     {
         MyParams p = new MyParams();
 
@@ -81,10 +116,20 @@ public class BracketSymbol
         Rectangle2D upperRect = p.upperLayout.getBounds();
         Rectangle2D trunkRect = p.layout.getBounds();
         Rectangle2D lowerRect = p.lowerLayout.getBounds();
-        p.rect = new Rectangle(
-                (int) Math.ceil(upperRect.getWidth()),
-                (int) Math.floor(
-                        upperRect.getHeight() + trunkRect.getHeight() + lowerRect.getHeight()));
+        double width = trunkRect.getWidth();
+
+        p.model = new AbstractVerticalInter.Model(
+                new Point2D.Double(width / 2.0, -upperRect.getY()),
+                new Point2D.Double(width / 2.0, -upperRect.getY() + trunkRect.getHeight()));
+        p.model.width = width;
+
+        p.rect = new Rectangle2D.Double(
+                0,
+                0,
+                upperRect.getWidth(),
+                trunkRect.getHeight() - upperRect.getY() + lowerRect.getY() + lowerRect.getHeight());
+
+        p.offset = new Point2D.Double(-p.rect.getWidth() / 2 + width / 2, 0);
 
         return p;
     }
@@ -95,27 +140,37 @@ public class BracketSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
-        Point loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
+        Point2D loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
         MusicFont.paint(g, p.layout, loc, MIDDLE_LEFT);
-        loc.y -= (p.rect.height / 2);
+
+        PointUtil.add(loc, 0, -p.rect.getHeight() / 2);
         MusicFont.paint(g, p.upperLayout, loc, TOP_LEFT);
-        loc.y += (2 * (p.rect.height / 2));
+
+        PointUtil.add(loc, 0, p.rect.getHeight());
         MusicFont.paint(g, p.lowerLayout, loc, BOTTOM_LEFT);
     }
 
-    //--------//
-    // Params //
-    //--------//
-    protected class MyParams
+    //----------//
+    // MyParams //
+    //----------//
+    protected static class MyParams
             extends Params
     {
+        // offset: pointing to center of trunk
+        // layout: trunk
+        // rect:   global image
 
+        // model
+        AbstractVerticalInter.Model model;
+
+        // Upper serif
         TextLayout upperLayout;
 
+        // Lower serif
         TextLayout lowerLayout;
     }
 }

@@ -271,19 +271,21 @@ public class TupletInter
      * @return chords link, perhaps empty
      */
     @Override
-    public Collection<Link> searchLinks (SystemInfo system,
-                                         boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system)
     {
         MeasureStack stack = system.getStackAt(getCenter());
-        Collection<Link> links = new TupletsBuilder(stack).lookupLinks(this);
 
-        if (doit) {
-            for (Link link : links) {
-                link.applyTo(this);
-            }
-        }
+        return new TupletsBuilder(stack).lookupLinks(this);
+    }
 
-        return links;
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, ChordTupletRelation.class);
     }
 
     //-------------//

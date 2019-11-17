@@ -55,22 +55,22 @@ public class GhostGlassPane
     /** Composite to be used over a non-droppable target. */
     private static final AlphaComposite nonTargetComposite = AlphaComposite.getInstance(
             AlphaComposite.SRC_OVER,
-            0.2f);
+            0.25f);
 
     /** The image to be dragged. */
     protected BufferedImage draggedImage = null;
 
-    /** The previous display bounds. */
+    /** The previous display bounds (glass-based). */
     protected Rectangle prevRectangle = null;
 
-    /** The current location relative to this glasspane. */
+    /** The current location (glass-based). */
     protected Point localPoint = null;
 
     /** Are we over a droppable target?. */
     protected boolean overTarget = false;
 
     /**
-     * Create a new GhostGlassPane object
+     * Create a new GhostGlassPane object.
      */
     public GhostGlassPane ()
     {
@@ -91,19 +91,19 @@ public class GhostGlassPane
         Graphics2D g2 = (Graphics2D) g;
 
         // Use composition with display underneath
-        if (!overTarget) {
-            g2.setComposite(nonTargetComposite);
-        } else {
+        if (overTarget) {
             g2.setComposite(targetComposite);
+        } else {
+            g2.setComposite(nonTargetComposite);
         }
 
         Rectangle rect = getImageBounds(localPoint);
         g2.drawImage(draggedImage, null, rect.x, rect.y);
     }
 
-    //---------//
+    //----------//
     // setImage //
-    //---------//
+    //----------//
     /**
      * Assign the image to be dragged
      *
@@ -118,7 +118,7 @@ public class GhostGlassPane
     // setOverTarget //
     //---------------//
     /**
-     * Tell the glasspane whether we are currently over a droppable target
+     * Tell the glass pane whether we are currently over a droppable target
      *
      * @param overTarget true if over a target
      */
@@ -127,15 +127,15 @@ public class GhostGlassPane
         this.overTarget = overTarget;
     }
 
-    //----------//
-    // setPoint //
-    //----------//
+    //----------------//
+    // setScreenPoint //
+    //----------------//
     /**
-     * Assign the current point, where the dragged image is to be displayed
+     * Assign the current screen point, where the dragged image is to be displayed
      *
      * @param screenPoint the current location (screen-based)
      */
-    public void setPoint (ScreenPoint screenPoint)
+    public void setScreenPoint (ScreenPoint screenPoint)
     {
         setLocalPoint(screenPoint.getLocalPoint(this));
     }
@@ -146,7 +146,7 @@ public class GhostGlassPane
     /**
      * Report the bounds of just the image.
      *
-     * @param localPoint provided local point
+     * @param localPoint provided local point (glass-based)
      * @return bounds of image such as its refPoint is set on the local point.
      *         If refPoint is null, image center is used instead.
      */
@@ -173,7 +173,7 @@ public class GhostGlassPane
     /**
      * Report the bounds of whole scene (image + items).
      *
-     * @param center location for image center (not necessarily scene center)
+     * @param center (glass-based) location for image center (not necessarily scene center)
      * @return the bounds of whole scene
      */
     protected Rectangle getSceneBounds (Point center)
@@ -188,9 +188,9 @@ public class GhostGlassPane
      * Assign the current point, where the dragged image is to be displayed,
      * and repaint as few as possible of the glass pane.
      *
-     * @param localPoint the current location (glasspane-based)
+     * @param localPoint the current location (glass-based)
      */
-    private void setLocalPoint (Point localPoint)
+    protected void setLocalPoint (Point localPoint)
     {
         // Anything to repaint since last time the point was set?
         if (draggedImage != null) {

@@ -292,7 +292,7 @@ public class BeamsBuilder
                                    List<Inter> beams)
     {
         final Rectangle box = glyph.getBounds();
-        final Line2D glyphLine = glyph.getLine();
+        final Line2D glyphLine = glyph.getCenterLine();
 
         if (glyph.isVip()) {
             logger.info("VIP checkBeamGlyph {} cue:{}", glyph, isCue);
@@ -416,12 +416,12 @@ public class BeamsBuilder
         }
 
         // Define hook item
-        Point centroid = glyph.getCentroid();
+        Point2D centroid = glyph.getCentroidDouble();
         double slope = LineUtil.getSlope(beam.getMedian());
         Point2D p1 = LineUtil.intersectionAtX(centroid, slope, box.x);
-        Point2D p2 = LineUtil.intersectionAtX(centroid, slope, (box.x + box.width) - 1);
-        Line2D median = new Line2D.Double(p1, p2);
-        double height = beam.getHeight();
+        Point2D p2 = LineUtil.intersectionAtX(centroid, slope, box.x + box.width);
+        Line2D median = new Line2D.Double(p1.getX(), p1.getY() + 0.5, p2.getX(), p2.getY() + 0.5);
+        double height = beam.getHeight(); // We reuse beam height for the hook
         BeamItem item = new BeamItem(median, height);
 
         // Check this hook item does not conflict with any existing beam
@@ -623,6 +623,8 @@ public class BeamsBuilder
                 }
 
                 try {
+                    logger.debug("Create beam with {}", line);
+
                     //TODO: test for detecting top/bottom items is not correct
                     Impacts impacts = computeBeamImpacts(
                             item,
@@ -632,7 +634,6 @@ public class BeamsBuilder
 
                     if ((impacts != null) && (impacts.getGrade() >= BeamInter.getMinGrade())) {
                         success = true;
-
                         BeamInter beam = new BeamInter(impacts, item.median, item.height);
 
                         if (line.isVip()) {
@@ -1341,10 +1342,10 @@ public class BeamsBuilder
         // Height
         double oneWidth = oneMedian.getX2() - oneMedian.getX1();
         double twoWidth = twoMedian.getX2() - twoMedian.getX1();
-        double height = ((one.getHeight() * oneWidth) + (two.getHeight() * twoWidth)) / (oneWidth
-                                                                                                 + twoWidth);
+        double height = ((one.getHeight() * oneWidth) + (two.getHeight() * twoWidth))
+                                / (oneWidth + twoWidth);
 
-        // Median & width
+        // Median & height
         final Line2D median;
 
         if (oneMedian.getX1() < twoMedian.getX1()) {

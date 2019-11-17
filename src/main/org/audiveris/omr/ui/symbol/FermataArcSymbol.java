@@ -28,8 +28,8 @@ import static org.audiveris.omr.ui.symbol.Alignment.*;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.font.TextLayout;
+import java.awt.geom.Point2D;
 
 /**
  * Class {@code FermataArcSymbol} implements Fermata Arc symbols with the related dot
@@ -87,13 +87,13 @@ public class FermataArcSymbol
     // getParams //
     //-----------//
     @Override
-    protected Params getParams (MusicFont font)
+    protected MyParams getParams (MusicFont font)
     {
         MyParams p = new MyParams();
 
         // Full symbol (arc + dot)
         p.layout = font.layout(codes);
-        p.rect = p.layout.getBounds().getBounds();
+        p.rect = p.layout.getBounds();
 
         // Dot layout
         p.dotLayout = font.layout(dotSymbol);
@@ -107,14 +107,14 @@ public class FermataArcSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         // We paint the full fermata symbol first
         // Then we paint a dot using white or decoComposite
         MyParams p = (MyParams) params;
         Alignment align = (shape == Shape.FERMATA_ARC) ? BOTTOM_CENTER : TOP_CENTER;
-        Point loc = alignment.translatedPoint(align, p.rect, location);
+        Point2D loc = alignment.translatedPoint(align, p.rect, location);
 
         MusicFont.paint(g, p.layout, loc, align); // Arc + Dot
 
@@ -136,7 +136,7 @@ public class FermataArcSymbol
     //--------//
     // Params //
     //--------//
-    protected class MyParams
+    protected static class MyParams
             extends Params
     {
 

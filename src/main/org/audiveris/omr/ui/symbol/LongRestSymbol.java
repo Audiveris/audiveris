@@ -58,6 +58,15 @@ public class LongRestSymbol
         super(isIcon, Shape.LONG_REST, decorated, 227);
     }
 
+    //-----------------------//
+    // createDecoratedSymbol //
+    //-----------------------//
+    @Override
+    protected ShapeSymbol createDecoratedSymbol ()
+    {
+        return new LongRestSymbol(isIcon, true);
+    }
+
     //------------//
     // createIcon //
     //------------//

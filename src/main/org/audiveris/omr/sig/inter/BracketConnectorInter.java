@@ -35,10 +35,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "bracket-connector")
 public class BracketConnectorInter
-        extends AbstractVerticalInter
+        extends AbstractVerticalConnectorInter
 {
-
-    private final BarConnection connection;
 
     /**
      * Creates a new BracketConnectorInter object.
@@ -49,8 +47,7 @@ public class BracketConnectorInter
     public BracketConnectorInter (BarConnection connection,
                                   GradeImpacts impacts)
     {
-        super(null, BRACKET_CONNECTOR, impacts, connection.getMedian(), connection.getWidth());
-        this.connection = connection;
+        super(connection, BRACKET_CONNECTOR, impacts);
     }
 
     /**
@@ -58,8 +55,6 @@ public class BracketConnectorInter
      */
     private BracketConnectorInter ()
     {
-        super(null, null, null, null, null);
-        this.connection = null;
     }
 
     //--------//

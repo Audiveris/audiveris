@@ -418,9 +418,10 @@ public final class BasicLine
     // toDouble //
     //----------//
     /**
-     * Generate a Line2D.Double instance that matches line end points
+     * Generate a Line2D.Double instance that matches line integer end points.
      *
      * @return a Line2D.Double instance
+     * @see #toCenterLine()
      */
     public Line2D.Double toDouble ()
     {
@@ -444,6 +445,32 @@ public final class BasicLine
     public GeoPath toPath ()
     {
         return new GeoPath(toDouble());
+    }
+
+    //--------------//
+    // toCenterLine //
+    //--------------//
+    /**
+     * Generate a Line2D.Double instance that matches line precise end points,
+     * translated to points centers and extended to pixel limits.
+     *
+     * @return a Line2D.Double instance
+     */
+    public Line2D.Double toCenterLine ()
+    {
+        try {
+            checkLineParameters();
+
+            if (isRatherVertical) {
+                return new Line2D.Double(xAtY(yMin) + 0.5, yMin,
+                                         xAtY(yMax) + 0.5, yMax + 1);
+            } else {
+                return new Line2D.Double(xMin, yAtX(xMin) + 0.5,
+                                         xMax + 1, yAtX(xMax) + 0.5);
+            }
+        } catch (UndefinedLineException ulex) {
+            return null; // Not enough points
+        }
     }
 
     //----------//

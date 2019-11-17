@@ -25,7 +25,7 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
-import static org.audiveris.omr.ui.selection.SelectionHint.ENTITY_TRANSIENT;
+import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.view.RubberPanel;
 import org.audiveris.omr.util.Entities;
@@ -122,9 +122,10 @@ public class EntityView<E extends Entity>
     {
         List<E> list = listEvent.getData();
 
-        if (!list.isEmpty()) {
+        if (!list.isEmpty() && (listEvent.hint != SelectionHint.ENTITY_TRANSIENT)) {
             locationService.publish(
-                    new LocationEvent(this, ENTITY_TRANSIENT, null, Entities.getBounds(list)));
+                    new LocationEvent(this, SelectionHint.ENTITY_TRANSIENT, null,
+                                      Entities.getBounds(list)));
         }
     }
 }

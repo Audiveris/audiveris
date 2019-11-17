@@ -31,17 +31,17 @@ import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Relations;
 import org.audiveris.omr.sig.ui.SigPainter;
-import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 import org.audiveris.omr.ui.util.UIUtil;
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.Stroke;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 
 /**
  * Class {@code SelectionPainter} is meant to paint just selected items.
@@ -77,36 +77,31 @@ public class SelectionPainter
      * @param one          first inter
      * @param two          second inter
      * @param supportClass provided support class
-     * @param potential    true if support is just potential
      */
     public void drawSupport (Inter one,
                              Inter two,
-                             Class<? extends Relation> supportClass,
-                             boolean potential)
+                             Class<? extends Relation> supportClass)
     {
-        // Draw support line, using dash and specific color for potential relation
-        final Stroke oldStroke = potential ? UIUtil.setAbsoluteDashedStroke(g, 1f)
-                : UIUtil.setAbsoluteStroke(g, 1f);
-        g.setColor(
-                potential ? Color.PINK
-                        : (NoExclusion.class.isAssignableFrom(supportClass) ? Color.GRAY
-                        : Color.GREEN));
+        final double zoom = g.getTransform().getScaleX();
 
-        final double r = 2; // Radius
-        final Point oneCenter = one.getRelationCenter();
-        Ellipse2D e1 = new Ellipse2D.Double(oneCenter.x - r, oneCenter.y - r, 2 * r, 2 * r);
-        g.fill(e1);
+        // Draw support line
+        final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 2f);
+        g.setColor(NoExclusion.class.isAssignableFrom(supportClass) ? Color.GRAY : Color.GREEN);
 
-        final Point twoCenter = two.getRelationCenter();
-        Ellipse2D e2 = new Ellipse2D.Double(twoCenter.x - r, twoCenter.y - r, 2 * r, 2 * r);
-        g.fill(e2);
+        final double r = 2 / zoom; // Radius
+        final Point2D oneCenter = one.getRelationCenter();
+        g.fill(new Ellipse2D.Double(oneCenter.getX() - r,
+                                    oneCenter.getY() - r, 2 * r, 2 * r));
 
-        final Line2D line = new Line2D.Double(oneCenter, twoCenter);
+        final Point2D twoCenter = two.getRelationCenter();
+        g.fill(new Ellipse2D.Double(twoCenter.getX() - r,
+                                    twoCenter.getY() - r, 2 * r, 2 * r));
+
+        final Line2D line = new Line2D.Double(oneCenter.getX(), oneCenter.getY(),
+                                              twoCenter.getX(), twoCenter.getY());
         g.draw(line);
 
         // Print support name at center of line?
-        final double zoom = g.getTransform().getScaleX();
-
         if (zoom >= constants.minZoomForSupportNames.getValue()) {
             final double z = Math.max(0.5, zoom);
             final AffineTransform at = AffineTransform.getScaleInstance(0.5 / z, 0.5 / z);

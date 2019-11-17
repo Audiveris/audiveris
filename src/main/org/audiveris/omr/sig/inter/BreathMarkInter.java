@@ -77,7 +77,7 @@ public class BreathMarkInter
     // create //
     //--------//
     /**
-     * (Try to) create a breathMark inter.
+     * (Try to) create a BreathMark inter.
      *
      * @param glyph  the breathMark glyph
      * @param grade  the interpretation quality

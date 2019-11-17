@@ -22,6 +22,7 @@
 package org.audiveris.omr.ui.selection;
 
 import java.awt.Point;
+import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.util.Entity;
 import org.audiveris.omr.util.EntityIndex;
 
@@ -247,15 +248,15 @@ public class EntityService<E extends Entity>
         final E entity = listEvent.getEntity();
 
         if (entity != null) {
-            if (locationService != null) {
-                locationService.publish(
-                        new LocationEvent(this,
-                                          SelectionHint.ENTITY_TRANSIENT,
-                                          listEvent.movement,
-                                          entity.getBounds()));
-            }
-
             if (hint == SelectionHint.ENTITY_INIT) {
+                if (locationService != null) {
+                    locationService.publish(
+                            new LocationEvent(this,
+                                              SelectionHint.ENTITY_TRANSIENT,
+                                              listEvent.movement,
+                                              entity.getBounds()));
+                }
+
                 // Use this entity to start a basket
                 basket.clear();
                 basket.add(entity);
@@ -305,7 +306,7 @@ public class EntityService<E extends Entity>
                 // Non-degenerated rectangle: look for contained entities
                 basket.clear();
                 basket.addAll(index.getContainedEntities(rect));
-                publish(new EntityListEvent<>(this, hint, movement, basket));
+                publish(new EntityListEvent<>(this, SelectionHint.ENTITY_TRANSIENT, movement, basket));
             } else {
                 // Just a point: look for most relevant entity
                 final Point loc = rect.getLocation();
@@ -354,7 +355,7 @@ public class EntityService<E extends Entity>
                 }
 
                 // Publish basket
-                publish(new EntityListEvent<>(this, null, movement, basket));
+                publish(new EntityListEvent<>(this, SelectionHint.ENTITY_TRANSIENT, movement, basket));
             }
         }
     }

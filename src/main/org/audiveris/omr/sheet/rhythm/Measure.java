@@ -58,6 +58,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -733,7 +734,7 @@ public class Measure
      * @param point the provided point
      * @return the (perhaps empty) collection of head chords
      */
-    public Collection<HeadChordInter> getHeadChordsAbove (Point point)
+    public Collection<HeadChordInter> getHeadChordsAbove (Point2D point)
     {
         Staff desiredStaff = stack.getSystem().getStaffAtOrAbove(point);
         Collection<HeadChordInter> found = new ArrayList<>();
@@ -742,7 +743,7 @@ public class Measure
             if (chord.getBottomStaff() == desiredStaff) {
                 Point head = chord.getHeadLocation();
 
-                if ((head != null) && (head.y < point.y)) {
+                if ((head != null) && (head.y < point.getY())) {
                     found.add(chord);
                 }
             }
@@ -761,7 +762,7 @@ public class Measure
      * @param point the provided point
      * @return the (perhaps empty) collection of head chords
      */
-    public Collection<HeadChordInter> getHeadChordsBelow (Point point)
+    public Collection<HeadChordInter> getHeadChordsBelow (Point2D point)
     {
         Staff desiredStaff = stack.getSystem().getStaffAtOrBelow(point);
         Collection<HeadChordInter> found = new ArrayList<>();
@@ -770,7 +771,7 @@ public class Measure
             if (chord.getTopStaff() == desiredStaff) {
                 Point head = chord.getHeadLocation();
 
-                if ((head != null) && (head.y > point.y)) {
+                if ((head != null) && (head.y > point.getY())) {
                     found.add(chord);
                 }
             }

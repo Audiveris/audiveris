@@ -425,25 +425,6 @@ public abstract class CurvesBuilder
         Point2D uv = getEndVector(curve); // Unit Vector
         GeoPath path;
 
-        //        if (tgLine != null) {
-        //            int xDir = (uv.getX() > 0) ? 1 : (-1);
-        //            double lg = xDir * params.lineBoxLength;
-        //            double dx = xDir * params.lineBoxIn;
-        //            int yDir = (uv.getY() > 0) ? 1 : (-1);
-        //            double dl1 = yDir * params.lineBoxDeltaIn;
-        //            double dl2 = yDir * params.lineBoxDeltaOut;
-        //            double yLine = tgLine.yAt(ce.x);
-        //            path = new GeoPath(
-        //                    new Line2D.Double(
-        //                            new Point2D.Double(ce.x - dx, yLine),
-        //                            new Point2D.Double(ce.x - dx, yLine + dl1)));
-        //            yLine = tgLine.yAt(ce.x + lg);
-        //            path.append(
-        //                    new Line2D.Double(
-        //                            new Point2D.Double(ce.x + lg, yLine + dl2),
-        //                            new Point2D.Double(ce.x + lg, yLine)),
-        //                    true);
-        //        } else {
         if (uv == null) {
             return null;
         }

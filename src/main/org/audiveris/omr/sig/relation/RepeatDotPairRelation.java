@@ -23,6 +23,10 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.RepeatDotInter;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -38,6 +42,19 @@ public class RepeatDotPairRelation
 {
 
     private static final Constants constants = new Constants();
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final RepeatDotInter dot1 = (RepeatDotInter) e.getEdgeSource();
+        final RepeatDotInter dot2 = (RepeatDotInter) e.getEdgeTarget();
+
+        dot1.checkAbnormal();
+        dot2.checkAbnormal();
+    }
 
     //----------------//
     // isSingleSource //
@@ -80,6 +97,24 @@ public class RepeatDotPairRelation
             throws CloneNotSupportedException
     {
         return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final RepeatDotInter dot1 = (RepeatDotInter) e.getEdgeSource();
+        final RepeatDotInter dot2 = (RepeatDotInter) e.getEdgeTarget();
+
+        if (!dot1.isRemoved()) {
+            dot1.checkAbnormal();
+        }
+
+        if (!dot2.isRemoved()) {
+            dot2.checkAbnormal();
+        }
     }
 
     //-----------//

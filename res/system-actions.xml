@@ -34,6 +34,7 @@
     <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="viewBookRepository" topic="SAMPLES"/>
     <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBookRepository" topic="SAMPLES"/>
     <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="annotateBook"       topic="ANNOTATIONS"/>
+    <action domain="BOOK" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="upgradeBook"/>
     <action domain="BOOK" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBook"                                 button="javax.swing.JButton"/>
     <action domain="BOOK" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBookAs"/>
     <action domain="BOOK" section="60" class="org.audiveris.omr.sheet.ui.BookActions" method="closeBook"/>

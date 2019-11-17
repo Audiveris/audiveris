@@ -21,15 +21,42 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.GeoOrder;
+import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sheet.PartBarline;
+import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.relation.EndingBarRelation;
 import org.audiveris.omr.sig.relation.EndingSentenceRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.text.TextRole;
+import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.EndingSymbol;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.sig.ui.InterUIModel;
+import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -51,51 +78,58 @@ public class EndingInter
         extends AbstractInter
 {
 
+    private static final Constants constants = new Constants();
+
+    /** Default thickness of a wedge line. */
+    public static final double DEFAULT_THICKNESS = constants.defaultThickness.getValue();
+
     // Persistent Data
     //----------------
     //
     /** Mandatory left leg. */
     @XmlElement(name = "left-leg")
     @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
-    private final Line2D leftLeg;
+    private Line2D leftLeg;
 
     /** Horizontal line. */
     @XmlElement
     @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
-    private final Line2D line;
+    private Line2D line;
 
     /** Optional right leg, if any. */
     @XmlElement(name = "right-leg")
     @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
-    private final Line2D rightLeg;
-
-    // Transient Data
-    //---------------
-    //
-    private final SegmentInter segment;
+    private Line2D rightLeg;
 
     /**
-     * Creates a new EndingInter object.
+     * Creates a new {@code EndingInter} object.
      *
-     * @param segment  horizontal segment
      * @param line     precise line
      * @param leftLeg  mandatory left leg
      * @param rightLeg optional right leg
      * @param bounds   bounding box
      * @param impacts  assignments details
      */
-    public EndingInter (SegmentInter segment,
-                        Line2D line,
+    public EndingInter (Line2D line,
                         Line2D leftLeg,
                         Line2D rightLeg,
                         Rectangle bounds,
                         GradeImpacts impacts)
     {
         super(null, bounds, Shape.ENDING, impacts);
-        this.segment = segment;
         this.line = line;
         this.leftLeg = leftLeg;
         this.rightLeg = rightLeg;
+    }
+
+    /**
+     * Creates a new {@code EndingInter} object, meant for user manual handling.
+     *
+     * @param grade interpretation quality
+     */
+    public EndingInter (double grade)
+    {
+        super(null, null, Shape.ENDING, grade);
     }
 
     /**
@@ -103,10 +137,6 @@ public class EndingInter
      */
     private EndingInter ()
     {
-        this.segment = null;
-        this.line = null;
-        this.leftLeg = null;
-        this.rightLeg = null;
     }
 
     //--------//
@@ -116,6 +146,39 @@ public class EndingInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //----------//
+    // contains //
+    //----------//
+    @Override
+    public boolean contains (Point point)
+    {
+        getBounds();
+
+        if ((bounds != null) && !bounds.contains(point)) {
+            return false;
+        }
+
+        if ((glyph != null) && glyph.contains(point)) {
+            return true;
+        }
+
+        if (line.ptLineDistSq(point) <= DEFAULT_THICKNESS * DEFAULT_THICKNESS / 4) {
+            return true;
+        }
+
+        if (leftLeg.ptLineDistSq(point) <= DEFAULT_THICKNESS * DEFAULT_THICKNESS / 4) {
+            return true;
+        }
+
+        if (rightLeg != null) {
+            if (rightLeg.ptLineDistSq(point) <= DEFAULT_THICKNESS * DEFAULT_THICKNESS / 4) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //-----------//
@@ -136,7 +199,18 @@ public class EndingInter
             box = box.union(rightLeg.getBounds());
         }
 
+        box.grow((int) Math.ceil(DEFAULT_THICKNESS / 2.0), (int) Math.ceil(DEFAULT_THICKNESS / 2.0));
+
         return new Rectangle(bounds = box);
+    }
+
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new Editor(this);
     }
 
     //-------------------//
@@ -215,6 +289,15 @@ public class EndingInter
         return null;
     }
 
+    //-------------------//
+    // getRelationCenter //
+    //-------------------//
+    @Override
+    public Point2D getRelationCenter ()
+    {
+        return PointUtil.middle(line);
+    }
+
     //-------------//
     // getRightLeg //
     //-------------//
@@ -252,6 +335,350 @@ public class EndingInter
         return null;
     }
 
+    //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public void deriveFrom (ShapeSymbol symbol,
+                            MusicFont font,
+                            Point dropLocation,
+                            Alignment alignment)
+    {
+        final EndingSymbol endingSymbol = (EndingSymbol) symbol;
+        final Model model = endingSymbol.getModel(font, dropLocation, alignment);
+
+        line = new Line2D.Double(model.topLeft, model.topRight);
+        leftLeg = new Line2D.Double(model.topLeft, model.bottomLeft);
+
+        if (model.bottomRight != null) {
+            rightLeg = new Line2D.Double(model.topRight, model.bottomRight);
+        }
+
+        setBounds(null);
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final List<Link> links = new ArrayList<>();
+        final Scale scale = system.getSheet().getScale();
+
+        // Consider the staff just below the segment
+        staff = system.getStaffAtOrBelow(line.getP1());
+
+        if (staff == null) {
+            return links;
+        }
+
+        List<Inter> systemBars = system.getSig().inters(StaffBarlineInter.class);
+
+        // Left bar (or header)
+        StaffBarlineInter leftBar = lookupBar(LEFT, staff, systemBars);
+        final EndingBarRelation leftRel = new EndingBarRelation(LEFT, 0.5);
+
+        if (leftBar == null) {
+            // Check the special case of a staff start (with header?, with no barline?)
+            MeasureStack firstStack = system.getFirstStack();
+
+            if (firstStack == null) {
+                return links;
+            }
+
+            Measure firstMeasure = firstStack.getMeasureAt(staff);
+
+            if (line.getX1() >= firstMeasure.getAbscissa(RIGHT, staff)) {
+                // segment starts after end of first measure
+                return links;
+            }
+
+            PartBarline partLine = staff.getPart().getLeftPartBarline();
+
+            if (partLine != null) {
+                leftBar = partLine.getStaffBarline(staff.getPart(), staff);
+                leftRel.setOutGaps(0, 0, false);
+            }
+        } else {
+            double leftDist = scale.pixelsToFrac(Math.abs(leftBar.getCenter().x - line.getX1()));
+            leftRel.setOutGaps(leftDist, 0, false);
+        }
+
+        links.add(new Link(leftBar, leftRel, true));
+
+        // Right bar
+        StaffBarlineInter rightBar = lookupBar(RIGHT, staff, systemBars);
+
+        if (rightBar != null) {
+            double rightDist = scale.pixelsToFrac(Math.abs(rightBar.getCenter().x - line.getX2()));
+            final EndingBarRelation rightRel = new EndingBarRelation(RIGHT, rightDist);
+            rightRel.setOutGaps(rightDist, 0, false);
+
+            links.add(new Link(rightBar, rightRel, true));
+        }
+
+        return links;
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, EndingBarRelation.class);
+    }
+
+    //-----------//
+    // lookupBar //
+    //-----------//
+    /**
+     * Look for a StaffBarline vertically aligned with the ending side.
+     * <p>
+     * It is not very important to select a precise barline within a group, since for left end we
+     * choose the right-most bar and the opposite for right end.
+     * We simply have to make sure that the lookup area is wide enough.
+     * <p>
+     * An ending which starts a staff may have its left side after the clef and key signature, which
+     * means far after the starting barline (if any).
+     * Perhaps we should consider the staff header in such case.
+     *
+     * @param staff      related staff
+     * @param systemBars the collection of StaffBarlines in the containing system
+     * @return the selected bar line, or null if none
+     */
+    private StaffBarlineInter lookupBar (HorizontalSide side,
+                                         Staff staff,
+                                         List<Inter> systemBars)
+    {
+        final SystemInfo system = staff.getSystem();
+        final Scale scale = system.getSheet().getScale();
+        final Point end = PointUtil.rounded(
+                (side == HorizontalSide.LEFT) ? line.getP1() : line.getP2());
+        final int maxBarShift = scale.toPixels(EndingBarRelation.getXGapMaximum(manual));
+        Rectangle box = new Rectangle(end);
+        box.grow(maxBarShift, 0);
+        box.height = staff.getLastLine().yAt(end.x) - end.y;
+
+        List<Inter> bars = Inters.intersectedInters(systemBars, GeoOrder.NONE, box);
+        Collections.sort(bars, Inters.byAbscissa);
+
+        if (bars.isEmpty()) {
+            return null;
+        }
+
+        return (StaffBarlineInter) bars.get((side == HorizontalSide.LEFT) ? (bars.size() - 1) : 0);
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Double defaultThickness = new Constant.Double(
+                "pixels",
+                2.0,
+                "Default ending lines thickness");
+    }
+
+    //--------//
+    // Editor //
+    //--------//
+    /**
+     * User editor for an ending.
+     * <p>
+     * For an ending, there are 3 handles:
+     * <ul>
+     * <li>Left handle, moving only horizontally (with its related leg if any)
+     * <li>Top middle handle, moving the whole inter in any direction
+     * <li>Right handle, moving only horizontally (with its related leg if any)
+     * </ul>
+     */
+    private static class Editor
+            extends InterEditor
+    {
+
+        private final Model originalModel = new Model();
+
+        private final Model model = new Model();
+
+        private final Point2D midTop;
+
+        private final Point2D midLeft;
+
+        private final Point2D midRight;
+
+        public Editor (final EndingInter ending)
+        {
+            super(ending);
+
+            originalModel.topLeft = ending.line.getP1();
+            model.topLeft = ending.line.getP1();
+
+            originalModel.topRight = ending.line.getP2();
+            model.topRight = ending.line.getP2();
+
+            originalModel.bottomLeft = ending.leftLeg.getP2();
+            model.bottomLeft = ending.leftLeg.getP2();
+
+            midTop = PointUtil.middle(ending.line);
+            midLeft = PointUtil.middle(ending.leftLeg);
+
+            if (ending.rightLeg != null) {
+                originalModel.bottomRight = ending.rightLeg.getP2();
+                model.bottomRight = ending.rightLeg.getP2();
+
+                midRight = PointUtil.middle(ending.rightLeg);
+            } else {
+                midRight = null;
+            }
+
+            // Global move: move all points
+            handles.add(selectedHandle = new Handle(midTop)
+            {
+                @Override
+                public boolean applyMove (Point vector)
+                {
+                    PointUtil.add(model.topLeft, vector);
+                    PointUtil.add(midTop, vector);
+                    PointUtil.add(model.topRight, vector);
+
+                    if (ending.leftLeg != null) {
+                        PointUtil.add(midLeft, vector);
+                        PointUtil.add(model.bottomLeft, vector);
+                    }
+
+                    if (ending.rightLeg != null) {
+                        PointUtil.add(midRight, vector);
+                        PointUtil.add(model.bottomRight, vector);
+                    }
+
+                    return true;
+                }
+            });
+
+            // Left handle: move horizontally only
+            if (ending.leftLeg != null) {
+                handles.add(new InterEditor.Handle(midLeft)
+                {
+                    @Override
+                    public boolean applyMove (Point vector)
+                    {
+                        final double dx = vector.getX();
+
+                        if (dx == 0) {
+                            return false;
+                        }
+
+                        PointUtil.add(model.topLeft, dx, 0);
+                        PointUtil.add(midLeft, dx, 0);
+                        PointUtil.add(model.bottomLeft, dx, 0);
+                        PointUtil.add(midTop, dx / 2, 0);
+
+                        return true;
+                    }
+                });
+            } else {
+                handles.add(new InterEditor.Handle(model.topLeft)
+                {
+                    @Override
+                    public boolean applyMove (Point vector)
+                    {
+                        final double dx = vector.getX();
+
+                        if (dx == 0) {
+                            return false;
+                        }
+
+                        PointUtil.add(model.topLeft, dx, 0);
+                        PointUtil.add(midTop, dx / 2, 0);
+
+                        return true;
+                    }
+                });
+            }
+
+            // Right handle: move horizontally only
+            if (ending.rightLeg != null) {
+                handles.add(new InterEditor.Handle(midRight)
+                {
+                    @Override
+                    public boolean applyMove (Point vector)
+                    {
+                        final double dx = vector.getX();
+
+                        if (dx == 0) {
+                            return false;
+                        }
+
+                        PointUtil.add(model.topRight, dx, 0);
+                        PointUtil.add(midRight, dx, 0);
+                        PointUtil.add(model.bottomRight, dx, 0);
+                        PointUtil.add(midTop, dx / 2, 0);
+
+                        return true;
+                    }
+                });
+            } else {
+                handles.add(new InterEditor.Handle(model.topRight)
+                {
+                    @Override
+                    public boolean applyMove (Point vector)
+                    {
+                        final double dx = vector.getX();
+
+                        if (dx == 0) {
+                            return false;
+                        }
+
+                        PointUtil.add(model.topRight, dx, 0);
+                        PointUtil.add(midTop, dx / 2, 0);
+
+                        return true;
+                    }
+                });
+            }
+        }
+
+        @Override
+        protected void doit ()
+        {
+            final EndingInter ending = (EndingInter) inter;
+            ending.line.setLine(model.topLeft, model.topRight);
+            ending.leftLeg.setLine(model.topLeft, model.bottomLeft);
+
+            if (ending.rightLeg != null) {
+                ending.rightLeg.setLine(model.topRight, model.bottomRight);
+            }
+
+            inter.setBounds(null);
+            super.doit(); // No more glyph
+        }
+
+        @Override
+        public void undo ()
+        {
+            final EndingInter ending = (EndingInter) inter;
+
+            ending.line.setLine(originalModel.topLeft, originalModel.topRight);
+
+            if (ending.leftLeg != null) {
+                ending.leftLeg.setLine(originalModel.topLeft, originalModel.bottomLeft);
+            }
+
+            if (ending.rightLeg != null) {
+                ending.rightLeg.setLine(originalModel.topRight, originalModel.bottomRight);
+            }
+
+            inter.setBounds(null);
+            super.undo();
+        }
+    }
+
     //---------//
     // Impacts //
     //---------//
@@ -262,24 +689,47 @@ public class EndingInter
         private static final String[] NAMES = new String[]{
             "straight",
             "slope",
-            "length",
-            "leftBar",
-            "rightBar"};
+            "length"};
 
-        private static final double[] WEIGHTS = new double[]{1, 1, 1, 1, 1};
+        private static final double[] WEIGHTS = new double[]{1, 1, 1};
 
         public Impacts (double straight,
                         double slope,
-                        double length,
-                        double leftBar,
-                        double rightBar)
+                        double length)
         {
             super(NAMES, WEIGHTS);
             setImpact(0, straight);
             setImpact(1, slope);
             setImpact(2, length);
-            setImpact(3, leftBar);
-            setImpact(4, rightBar);
+        }
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements InterUIModel
+    {
+
+        public Point2D topLeft;
+
+        public Point2D topRight;
+
+        public Point2D bottomLeft;
+
+        public Point2D bottomRight; // Optional
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(topLeft, dx, dy);
+            PointUtil.add(topRight, dx, dy);
+            PointUtil.add(bottomLeft, dx, dy);
+
+            if (bottomRight != null) {
+                PointUtil.add(bottomRight, dx, dy);
+            }
         }
     }
 }

@@ -588,6 +588,16 @@ public class RubberPanel
         }
     }
 
+    //----------------//
+    // objectSelected //
+    //----------------//
+    @Override
+    public void objectSelected (Point pt,
+                                MouseMovement movement)
+    {
+        setFocusLocation(new Rectangle(pt), movement, ENTITY_INIT);
+    }
+
     //----------//
     // bindKeys //
     //----------//
@@ -747,17 +757,17 @@ public class RubberPanel
     // TranslateAction //
     //-----------------//
     /**
-     * Action to translate rubber location.
+     * Action bound to arrow keys.
      */
-    private class TranslateAction
+    protected class TranslateAction
             extends AbstractAction
     {
 
         /** Translation on abscissa axis. */
-        private final int dx;
+        protected final int dx;
 
         /** Translation on ordinate axis. */
-        private final int dy;
+        protected final int dy;
 
         public TranslateAction (int dx,
                                 int dy)

@@ -24,8 +24,9 @@ package org.audiveris.omr.sig;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sig.inter.AbstractInter;
+import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
@@ -41,6 +42,7 @@ import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
+import org.audiveris.omr.util.Version;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.Graphs;
@@ -173,7 +175,8 @@ public class SIGraph
             // SigValue is no longer useful and can be disposed of
             sigValue = null;
 
-            upgradeInters(); // Temporary upgrade stuff
+            // Handle migration from older inter implementations
+            upgradeInters();
 
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
@@ -1282,14 +1285,20 @@ public class SIGraph
     /**
      * All just loaded inters are checked and potentially upgraded.
      */
-    @Deprecated
     private void upgradeInters ()
     {
         boolean upgraded = false;
 
-        for (Inter inter : this.vertexSet()) {
-            AbstractInter abstractInter = (AbstractInter) inter;
-            upgraded |= abstractInter.upgradeOldStuff();
+        // Determine which upgrades must be applied
+        final SheetStub stub = system.getSheet().getStub();
+        final String sheetVersionValue = stub.getVersionValue();
+        final Version sheetVersion = (sheetVersionValue != null)
+                ? new Version(sheetVersionValue)
+                : stub.getBook().getVersion();
+        final List<Version> upgrades = Versions.getUpgrades(sheetVersion);
+
+        for (Inter inter : vertexSet()) {
+            upgraded |= inter.upgradeOldStuff(upgrades);
         }
 
         if (upgraded) {

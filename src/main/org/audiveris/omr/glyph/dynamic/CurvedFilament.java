@@ -116,7 +116,7 @@ public class CurvedFilament
                 startPoint = orientation.absolute(new Point2D.Double(oStart, p.getY()));
             }
 
-            newPoints.add(startPoint);
+            newPoints.add(new Point2D.Double(startPoint.getX(), startPoint.getY()));
 
             // Intermediate points (perhaps none)
             for (int i = 1; i < segCount; i++) {
@@ -138,7 +138,7 @@ public class CurvedFilament
                 stopPoint = orientation.absolute(new Point2D.Double(oStop, p.getY()));
             }
 
-            newPoints.add(stopPoint);
+            newPoints.add(new Point2D.Double(stopPoint.getX(), stopPoint.getY()));
 
             // Interpolate the best spline through the provided points
             spline = NaturalSpline.interpolate(newPoints);

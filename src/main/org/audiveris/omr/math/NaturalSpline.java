@@ -340,11 +340,7 @@ public class NaturalSpline
             // Use a Line
             return new NaturalSpline(new Line2D.Double(xx[0], yy[0], xx[1], yy[1]));
         } else if (n == 2) {
-            // Use a Quadratic (TODO: check this formula...)
-            //            double t = (xx[1] - xx[0]) / (xx[2] - xx[0]);
-            //            double u = 1 - t;
-            //            double cpx = (xx[1] - (u * u * xx[0]) - (t * t * xx[2])) / 2 * t * u;
-            //            double cpy = (yy[1] - (u * u * yy[0]) - (t * t * yy[2])) / 2 * t * u;
+            // Use a Quadratic
             return new NaturalSpline(
                     new QuadCurve2D.Double(
                             xx[0],

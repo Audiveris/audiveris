@@ -45,6 +45,9 @@ public class ChordWedgeRelation
         extends Support
 {
 
+    // Persistent data
+    //----------------
+    //
     /** Left or right side of the wedge. */
     @XmlAttribute
     private HorizontalSide side;
@@ -101,6 +104,8 @@ public class ChordWedgeRelation
     @Override
     public boolean isSingleSource ()
     {
+        // A wedge can have one chord on left and one chord on right
+        // TODO: make sure there is only one chord on each side
         return false;
     }
 

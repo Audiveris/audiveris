@@ -22,15 +22,17 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sig.inter.SlurInter;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code SlurSymbol} implements a decorated slur symbol
+ * Class {@code SlurSymbol} implements a slur symbol.
  *
  * @author Hervé Bitteur
  */
@@ -38,22 +40,38 @@ public class SlurSymbol
         extends ShapeSymbol
 {
 
+    final boolean above;
+
     /**
-     * Create a SlurSymbol
+     * Create a SlurSymbol.
+     *
+     * @param above true for above, false for below
      */
-    public SlurSymbol ()
+    public SlurSymbol (boolean above)
     {
-        this(false);
+        this(above, false);
     }
 
     /**
-     * Create a SlurSymbol
+     * Create a SlurSymbol.
      *
+     * @param above  true for above, false for below
      * @param isIcon true for an icon
      */
-    protected SlurSymbol (boolean isIcon)
+    protected SlurSymbol (boolean above,
+                          boolean isIcon)
     {
-        super(isIcon, Shape.SLUR, true); // Decorated
+        super(isIcon, Shape.SLUR, false);
+        this.above = above;
+    }
+
+    //--------//
+    // getTip //
+    //--------//
+    @Override
+    public String getTip ()
+    {
+        return shape + " (" + (above ? "above" : "below") + ")";
     }
 
     //------------//
@@ -62,18 +80,24 @@ public class SlurSymbol
     @Override
     protected ShapeSymbol createIcon ()
     {
-        return new SlurSymbol(true);
+        return new SlurSymbol(above, true);
     }
 
     //-----------//
     // getParams //
     //-----------//
     @Override
-    protected Params getParams (MusicFont font)
+    protected MyParams getParams (MusicFont font)
     {
-        Params p = new Params();
-        int il = font.getStaffInterline();
-        p.rect = new Rectangle(2 * il, (4 * il) / 3);
+        final MyParams p = new MyParams();
+        final int il = font.getStaffInterline();
+        final double w = 3 * il;
+        final double h = il;
+        p.rect = new Rectangle2D.Double(0, 0, w, h);
+
+        p.model = new SlurInter.Model(above //  /--\ vs \--/
+                ? new CubicCurve2D.Double(0, h, w / 5.0, 0, 4 * w / 5.0, 0, w, h)
+                : new CubicCurve2D.Double(0, 0, w / 5.0, h, 4 * w / 5.0, h, w, 0));
 
         return p;
     }
@@ -83,23 +107,45 @@ public class SlurSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params p,
-                          Point location,
+                          Params params,
+                          Point2D location,
                           Alignment alignment)
     {
-        Point loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
-
-        CubicCurve2D curve = new CubicCurve2D.Double(
-                loc.x,
-                loc.y + p.rect.height,
-                loc.x + ((3 * p.rect.width) / 10),
-                loc.y + (p.rect.height / 5),
-                loc.x + (p.rect.width / 2),
-                loc.y,
-                loc.x + p.rect.width,
-                loc.y);
-
-        // Slur
+        MyParams p = (MyParams) params;
+        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        p.model.translate(loc.getX(), loc.getY());
+        CubicCurve2D curve = new CubicCurve2D.Double();
+        curve.setCurve(p.model.points, 0);
         g.draw(curve);
+    }
+
+    //----------//
+    // getModel //
+    //----------//
+    @Override
+    public SlurInter.Model getModel (MusicFont font,
+                                     Point location,
+                                     Alignment alignment)
+    {
+        MyParams p = getParams(font);
+        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        p.model.translate(loc.getX(), loc.getY());
+
+        return p.model;
+    }
+
+    //--------//
+    // Params //
+    //--------//
+    protected static class MyParams
+            extends BasicSymbol.Params
+    {
+
+        // offset: not used
+        // layout: not used
+        // rect:   global image
+        //
+        // model
+        SlurInter.Model model;
     }
 }

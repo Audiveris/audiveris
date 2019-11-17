@@ -25,9 +25,8 @@ import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.font.TextLayout;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -112,13 +111,14 @@ public class NumDenSymbol
     @Override
     protected MyParams getParams (MusicFont font)
     {
-        MyParams p = new MyParams(font);
+        MyParams p = new MyParams(font, numCodes, denCodes);
 
         Rectangle2D numRect = p.numLayout.getBounds();
         Rectangle2D denRect = p.denLayout.getBounds();
-        p.rect = new Rectangle(
-                (int) Math.rint(Math.max(numRect.getWidth(), denRect.getWidth())),
-                p.dy + (int) Math.rint(Math.max(numRect.getHeight(), denRect.getHeight())));
+        p.rect = new Rectangle2D.Double(0,
+                                        0,
+                                        Math.max(numRect.getWidth(), denRect.getWidth()),
+                                        p.dy + Math.max(numRect.getHeight(), denRect.getHeight()));
 
         return p;
     }
@@ -129,35 +129,37 @@ public class NumDenSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
-        Point center = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+        Point2D center = alignment.translatedPoint(AREA_CENTER, p.rect, location);
 
-        Point top = new Point(center.x, center.y - (p.dy / 2));
+        Point2D top = new Point2D.Double(center.getX(), center.getY() - (p.dy / 2));
         OmrFont.paint(g, p.numLayout, top, AREA_CENTER);
 
-        Point bot = new Point(center.x, center.y + (p.dy / 2));
+        Point2D bot = new Point2D.Double(center.getX(), center.getY() + (p.dy / 2));
         OmrFont.paint(g, p.denLayout, bot, AREA_CENTER);
     }
 
     //----------//
     // MyParams //
     //----------//
-    protected class MyParams
+    protected static class MyParams
             extends Params
     {
 
-        final int dy;
+        final double dy;
 
         final TextLayout numLayout;
 
         final TextLayout denLayout;
 
-        MyParams (MusicFont font)
+        MyParams (MusicFont font,
+                  int[] numCodes,
+                  int[] denCodes)
         {
-            dy = (int) Math.rint(2 * font.getStaffInterline());
+            dy = 2 * font.getStaffInterline();
             numLayout = font.layout(numCodes);
             denLayout = font.layout(denCodes);
         }

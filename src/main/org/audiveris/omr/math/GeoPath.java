@@ -196,9 +196,10 @@ public class GeoPath
             double cpx1 = coords[0];
             double cpx2 = coords[2];
 
-            return (p1.x * u * u * u) + (3 * cpx1 * t * u * u) + (3 * cpx2 * t * t * u) + (p2.x * t
-                                                                                                   * t
-                                                                                           * t);
+            return (p1.x * u * u * u)
+                           + (3 * cpx1 * t * u * u)
+                           + (3 * cpx2 * t * t * u)
+                           + (p2.x * t * t * t);
         }
 
         default:
@@ -264,9 +265,10 @@ public class GeoPath
             double cpy1 = coords[1];
             double cpy2 = coords[3];
 
-            return (p1.y * u * u * u) + (3 * cpy1 * t * u * u) + (3 * cpy2 * t * t * u) + (p2.y * t
-                                                                                                   * t
-                                                                                           * t);
+            return (p1.y * u * u * u)
+                           + (3 * cpy1 * t * u * u)
+                           + (3 * cpy2 * t * t * u)
+                           + (p2.y * t * t * t);
         }
 
         default:

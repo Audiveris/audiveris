@@ -44,8 +44,11 @@ import org.audiveris.omr.ui.dnd.GhostGlassPane;
 import org.audiveris.omr.ui.dnd.GhostMotionAdapter;
 import org.audiveris.omr.ui.dnd.ScreenPoint;
 import org.audiveris.omr.ui.selection.UserEvent;
+import org.audiveris.omr.ui.symbol.EndingSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.SlurSymbol;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.view.RubberPanel;
 import org.audiveris.omr.ui.view.ScrollView;
@@ -67,8 +70,10 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -318,17 +323,54 @@ public class ShapeBoard
     //------------//
     // addButtons //
     //------------//
-    private void addButtons (Panel panel,
+    private void addButtons (Panel p,
                              List<Shape> shapes)
     {
         for (Shape shape : shapes) {
-            ShapeButton button = new ShapeButton(shape, keyListener);
-            button.addMouseListener(mouseListener); // For double-click
-            button.addMouseListener(dropAdapter); // For DnD transfer and double-click
-            button.addMouseMotionListener(motionAdapter); // For dragging
+            switch (shape) {
+            case SLUR:
+                // Slur: Provide different buttons for above and for below
+                addButton(p, new ShapeButton(shape, new SlurSymbol(true)));
+                addButton(p, new ShapeButton(shape, new SlurSymbol(false)));
 
-            panel.add(button);
+                break;
+            case ENDING:
+                // Ending: Provide different buttons with and without right leg
+                addButton(p, new ShapeButton(shape, new EndingSymbol(false)));
+                addButton(p, new ShapeButton(shape, new EndingSymbol(true)));
+
+                break;
+            default:
+                // Preference for plain symbol
+                ShapeSymbol symbol = Symbols.getSymbol(shape);
+
+                if (symbol == null) {
+                    // Fall back to decorated symbol
+                    symbol = Symbols.getSymbol(shape, true);
+                }
+
+                if (symbol != null) {
+                    addButton(p, new ShapeButton(shape, symbol));
+                }
+
+                break;
+            }
         }
+    }
+
+    //-----------//
+    // addButton //
+    //-----------//
+    private void addButton (Panel panel,
+                            ShapeButton button)
+    {
+        button.addMouseListener(mouseListener); // For double-click
+        button.addMouseListener(dropAdapter); // For DnD transfer and double-click
+        button.addMouseMotionListener(motionAdapter); // For dragging
+
+        button.addKeyListener(keyListener);
+
+        panel.add(button);
     }
 
     //-------------//
@@ -401,7 +443,7 @@ public class ShapeBoard
                 button.setBorderPainted(false);
                 panel.add(button);
 
-                // Create the related shapesPanel
+                // Create the child shapesPanel
                 shapesPanels.put(set, buildShapesPanel(set));
             }
         }
@@ -438,7 +480,7 @@ public class ShapeBoard
         panel.add(close);
         panel.addKeyListener(keyListener);
 
-        // One button per shape
+        // One button (or more) per shape
         addButtons(panel, set.getSortedShapes());
 
         return panel;
@@ -482,17 +524,8 @@ public class ShapeBoard
     //--------------//
     // getIconImage //
     //--------------//
-    /**
-     * Get the image to draw as an icon for the provided shape.
-     *
-     * @param shape the provided shape
-     * @return an image properly sized for an icon
-     */
-    private BufferedImage getIconImage (Shape shape)
+    private BufferedImage getIconImage (ShapeSymbol symbol)
     {
-        ShapeSymbol symbol = (shape == Shape.BEAM_HOOK) ? shape.getPhysicalShape().getSymbol()
-                : shape.getDecoratedSymbol();
-
         return symbol.getIconImage();
     }
 
@@ -560,16 +593,30 @@ public class ShapeBoard
 
         final Shape shape;
 
+        /**
+         * Precise symbol, since some shapes may exhibit variants.
+         * Example: slur above and slur below.
+         * <p>
+         * This non-decorated symbol will be used at drop time to shape the created inter.
+         */
+        final ShapeSymbol symbol;
+
+        /**
+         * Create a button for a shape.
+         *
+         * @param shape  the underlying shape
+         * @param symbol precise plain (non-decorated) symbol
+         */
         public ShapeButton (Shape shape,
-                            MyKeyListener keyListener)
+                            ShapeSymbol symbol)
         {
             this.shape = shape;
-            setIcon(shape.getDecoratedSymbol());
+            this.symbol = symbol;
+            setIcon(symbol.getDecoratedSymbol().getIcon());
             setName(shape.toString());
-            setToolTipText(shape.toString());
+            setToolTipText(symbol.getTip());
 
             setBorderPainted(true);
-            addKeyListener(keyListener);
         }
     }
 
@@ -624,11 +671,11 @@ public class ShapeBoard
             if (shape.isDraggable()) {
                 // Wait for drag to actually begin...
                 action = shape;
-                image = getIconImage(shape);
+                image = getIconImage(button.symbol);
             } else {
                 action = Shape.NON_DRAGGABLE;
                 image = Shape.NON_DRAGGABLE.getSymbol().getIconImage();
-                ((OmrGlassPane) glassPane).setReference(null);
+                ((OmrGlassPane) glassPane).setStaffReference(null);
             }
 
             super.mousePressed(e);
@@ -641,7 +688,7 @@ public class ShapeBoard
             super.mouseReleased(e);
 
             OmrGlassPane glass = (OmrGlassPane) glassPane;
-            glass.setReference(null);
+            glass.setStaffReference(null);
             dndOperation = null;
         }
     }
@@ -773,6 +820,8 @@ public class ShapeBoard
         // Optimization: remember the latest component on target
         private WeakReference<Component> prevComponent;
 
+        private ScreenPoint prevScreenPoint;
+
         public MyMotionAdapter ()
         {
             super(ShapeBoard.this.glassPane);
@@ -785,18 +834,24 @@ public class ShapeBoard
         }
 
         /**
-         * In this specific implementation, we update the size of the
-         * shape image according to the interline scale and to the
-         * display zoom of the droppable target underneath.
+         * In this specific implementation, we update the size of the shape image
+         * according to the interline scale and to the display zoom of the sheet view.
          *
          * @param e the mouse event
          */
         @Override
         public void mouseDragged (MouseEvent e)
         {
+            final ScreenPoint screenPoint = new ScreenPoint(e.getXOnScreen(), e.getYOnScreen());
+
+            if (screenPoint.equals(prevScreenPoint)) {
+                return;
+            }
+
+            prevScreenPoint = screenPoint;
+
             final ShapeButton button = (ShapeButton) e.getSource();
             final Shape shape = button.shape;
-            final ScreenPoint screenPoint = new ScreenPoint(e.getXOnScreen(), e.getYOnScreen());
             final OmrGlassPane glass = (OmrGlassPane) glassPane;
 
             // The (zoomed) sheet view
@@ -806,45 +861,55 @@ public class ShapeBoard
             if (screenPoint.isInComponent(component)) {
                 final RubberPanel view = scrollView.getView();
                 final Zoom zoom = view.getZoom();
-                final Point localPt = zoom.unscaled(screenPoint.getLocalPoint(view));
+                final Point sheetPt = zoom.unscaled(screenPoint.getLocalPoint(view));
                 glass.setOverTarget(true);
 
                 // Moving into this component?
                 if (component != prevComponent.get()) {
+                    // Set glass transform to fit current sheet view status
+                    Point gOffset = SwingUtilities.convertPoint(view, 0, 0, glass);
+                    double z = zoom.getRatio();
+                    glass.setTargetTransform(new AffineTransform(z, 0, 0, z, gOffset.x, gOffset.y));
+
                     if (shape.isDraggable()) {
                         if (dndOperation == null) {
                             // Set payload
                             dndOperation = new DndOperation(
                                     sheet,
                                     zoom,
-                                    InterFactory.createManual(shape, sheet));
+                                    InterFactory.createManual(shape, sheet),
+                                    button.symbol);
                         }
 
                         dndOperation.enteringTarget();
+                        glass.setGhostTracker(dndOperation.getGhostTracker());
                     } else {
                         glass.setImage(getNonDraggableImage(zoom));
-                        glass.setReference(null);
+                        glass.setStaffReference(null);
+                        glass.setGhostTracker(null);
                     }
 
                     prevComponent = new WeakReference<>(component);
                 }
 
                 if (shape.isDraggable()) {
-                    // Update reference point
-                    Point localRef = dndOperation.getReference(localPt);
-                    glass.setReference(
-                            (localRef != null) ? new ScreenPoint(view, zoom.scaled(localRef))
-                                    : null);
+                    // Update staff reference point
+                    Point sheetRef = dndOperation.getStaffReference(sheetPt);
+                    Point glassRef = (sheetRef == null) ? null
+                            : SwingUtilities.convertPoint(view, zoom.scaled(sheetRef), glass);
+                    glass.setStaffReference(glassRef);
                 }
             } else if (prevComponent.get() != null) {
                 // No longer on a droppable target, reuse initial image & size
                 glass.setOverTarget(false);
                 glass.setImage(dropAdapter.getImage());
-                glass.setReference(null);
+                glass.setStaffReference(null);
+                glass.setGhostTracker(null);
+                prevScreenPoint = null;
                 reset();
             }
 
-            glass.setPoint(screenPoint); // This triggers a repaint of glassPane
+            glass.setScreenPoint(screenPoint); // This triggers a repaint of glassPane
         }
     }
 
@@ -894,7 +959,8 @@ public class ShapeBoard
                             add(shape);
                         }
                     });
-                } catch (Exception ex) {
+                } catch (InterruptedException |
+                         InvocationTargetException ex) {
                     logger.warn("invokeAndWait error", ex);
                 }
             } else {

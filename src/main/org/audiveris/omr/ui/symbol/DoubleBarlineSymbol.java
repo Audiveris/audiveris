@@ -25,8 +25,7 @@ import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -45,11 +44,19 @@ public class DoubleBarlineSymbol
     private final ShapeSymbol thinSymbol = Symbols.getSymbol(Shape.THIN_BARLINE);
 
     /**
+     * Create a DoubleBarlineSymbol.
+     */
+    public DoubleBarlineSymbol ()
+    {
+        this(false);
+    }
+
+    /**
      * Create a DoubleBarlineSymbol
      *
      * @param isIcon true for an icon
      */
-    public DoubleBarlineSymbol (boolean isIcon)
+    protected DoubleBarlineSymbol (boolean isIcon)
     {
         super(isIcon, Shape.DOUBLE_BARLINE, false);
     }
@@ -74,9 +81,10 @@ public class DoubleBarlineSymbol
         p.layout = font.layout(thinSymbol);
 
         Rectangle2D thinRect = p.layout.getBounds();
-        p.rect = new Rectangle(
-                (int) Math.ceil(thinRect.getWidth() * WIDTH_RATIO),
-                (int) Math.ceil(thinRect.getHeight()));
+        p.rect = new Rectangle2D.Double(0,
+                                        0,
+                                        thinRect.getWidth() * WIDTH_RATIO,
+                                        thinRect.getHeight());
 
         return p;
     }
@@ -87,12 +95,12 @@ public class DoubleBarlineSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params p,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
-        Point loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
         MusicFont.paint(g, p.layout, loc, TOP_LEFT);
-        loc.x += p.rect.width;
+        loc.setLocation(loc.getX() + p.rect.getWidth(), loc.getY());
         MusicFont.paint(g, p.layout, loc, TOP_RIGHT);
     }
 }

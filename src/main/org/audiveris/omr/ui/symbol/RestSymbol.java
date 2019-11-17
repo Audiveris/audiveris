@@ -22,12 +22,13 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import static org.audiveris.omr.glyph.Shape.*;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.font.TextLayout;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -73,6 +74,19 @@ public class RestSymbol
         super(isIcon, shape, decorated, codes);
     }
 
+    //-----------------------//
+    // createDecoratedSymbol //
+    //-----------------------//
+    @Override
+    protected ShapeSymbol createDecoratedSymbol ()
+    {
+        if ((shape == BREVE_REST) || (shape == WHOLE_REST) || (shape == HALF_REST)) {
+            return new RestSymbol(isIcon, shape, true, codes);
+        }
+
+        return this; // No decoration
+    }
+
     //------------//
     // createIcon //
     //------------//
@@ -86,7 +100,7 @@ public class RestSymbol
     // getParams //
     //-----------//
     @Override
-    protected Params getParams (MusicFont font)
+    protected MyParams getParams (MusicFont font)
     {
         MyParams p = new MyParams();
 
@@ -97,13 +111,13 @@ public class RestSymbol
 
         if (decorated) {
             // Define specific offset
-            p.offset = new Point(0, (int) Math.rint(rs.getY() + (rs.getHeight() / 2)));
+            p.offset = new Point2D.Double(0, rs.getY() + (rs.getHeight() / 2));
 
             // Lines layout
             p.linesLayout = font.layout(linesSymbol.getString());
-            p.rect = p.linesLayout.getBounds().getBounds();
+            p.rect = p.linesLayout.getBounds();
         } else {
-            p.rect = rs.getBounds();
+            p.rect = rs;
         }
 
         return p;
@@ -129,11 +143,11 @@ public class RestSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
-        Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+        Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
 
         if (decorated) {
             Composite oldComposite = g.getComposite();
@@ -150,7 +164,7 @@ public class RestSymbol
     //--------//
     // Params //
     //--------//
-    protected class MyParams
+    protected static class MyParams
             extends Params
     {
 

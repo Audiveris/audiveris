@@ -24,11 +24,19 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.AreaUtil;
+import org.audiveris.omr.math.PointUtil;
+import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.ui.InterEditor;
+import org.audiveris.omr.sig.ui.InterEditor.Handle;
+import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.util.Jaxb;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -38,8 +46,12 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code AbstractVerticalInter} is the basis for similar vertical inter classes:
- * {@link BarlineInter} and {@link BracketInter}.
+ * Class {@code AbstractVerticalInter} is the basis for rather vertical inter classes.
+ * <ul>
+ * <li>{@link StemInter} and {@link ArpeggiatoInter} that can be smaller or taller than staff
+ * height.
+ * <li>{@link BarlineInter} and {@link BracketInter} whose height is exactly the staff height.
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -48,15 +60,15 @@ public abstract class AbstractVerticalInter
         extends AbstractInter
 {
 
-    /** Line width. */
+    /** Item width. */
     @XmlAttribute
     @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
-    protected final Double width;
+    protected Double width;
 
-    /** Median line. */
+    /** Median line, from top to bottom. */
     @XmlElement
     @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
-    protected final Line2D median;
+    protected Line2D median;
 
     /**
      * Creates a new {@code AbstractVerticalInter} object.
@@ -74,10 +86,32 @@ public abstract class AbstractVerticalInter
                                   Double width)
     {
         super(glyph, null, shape, impacts);
-        this.median = median;
+
+        this.median = (median == null) ? null : new Line2D.Double(median.getX1(), median.getY1(),
+                                                                  median.getX2(), median.getY2());
         this.width = width;
 
-        if (median != null) {
+        if ((median != null) && (width != null)) {
+            computeArea();
+        }
+    }
+
+    /**
+     * Creates a new {@code AbstractVerticalInter} object.
+     *
+     * @param glyph   the underlying glyph
+     * @param shape   the assigned shape
+     * @param impacts the assignment details
+     */
+    public AbstractVerticalInter (Glyph glyph,
+                                  Shape shape,
+                                  GradeImpacts impacts)
+    {
+        super(glyph, null, shape, impacts);
+
+        if (glyph != null) {
+            width = glyph.getMeanThickness(VERTICAL);
+            median = glyph.getCenterLine();
             computeArea();
         }
     }
@@ -98,10 +132,33 @@ public abstract class AbstractVerticalInter
                                   Double width)
     {
         super(glyph, null, shape, grade);
-        this.median = median;
+
+        this.median = (median == null) ? null : new Line2D.Double(median.getX1(), median.getY1(),
+                                                                  median.getX2(), median.getY2());
         this.width = width;
 
-        if (median != null) {
+        if ((median != null) && (width != null)) {
+            computeArea();
+        }
+    }
+
+    /**
+     * Creates a new {@code AbstractVerticalInter} object.
+     *
+     * @param glyph the underlying glyph
+     * @param shape the assigned shape
+     * @param grade the assignment quality
+     */
+    public AbstractVerticalInter (Glyph glyph,
+                                  Shape shape,
+                                  double grade)
+    {
+        super(glyph, null, shape, grade);
+
+        if (glyph != null) {
+            width = glyph.getMeanThickness(VERTICAL);
+            ///setMedian(glyph.getStartPoint(VERTICAL), glyph.getStopPoint(VERTICAL));
+            median = glyph.getCenterLine();
             computeArea();
         }
     }
@@ -116,25 +173,144 @@ public abstract class AbstractVerticalInter
     }
 
     //-----------//
+    // getBottom //
+    //-----------//
+    /**
+     * @return the bottom
+     */
+    public Point2D getBottom ()
+    {
+        if (median == null) {
+            return null;
+        }
+
+        return new Point2D.Double(median.getX2(), median.getY2());
+    }
+
+    //-----------//
+    // getBounds //
+    //-----------//
+    @Override
+    public Rectangle getBounds ()
+    {
+        if (bounds != null) {
+            return new Rectangle(bounds);
+        }
+
+        if ((area == null) && (median != null) && (getWidth() != null)) {
+            computeArea();
+        }
+
+        if (area != null) {
+            return new Rectangle(bounds = area.getBounds());
+        }
+
+        if (glyph != null) {
+            return new Rectangle(bounds = glyph.getBounds());
+        }
+
+        return null;
+    }
+
+    //-----------//
+    // setBounds //
+    //-----------//
+    @Override
+    public void setBounds (Rectangle bounds)
+    {
+        super.setBounds(bounds);
+
+        if (bounds != null) {
+            median = new Line2D.Double(bounds.x + bounds.width / 2.0, bounds.y,
+                                       bounds.x + bounds.width / 2.0, bounds.y + bounds.height);
+            width = Double.valueOf(bounds.width);
+        }
+    }
+
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new Editor(this, true);
+    }
+
+    //-----------//
     // getMedian //
     //-----------//
     /**
-     * @return the median
+     * Report item median line.
+     *
+     * @return copy of the median line
      */
     public Line2D getMedian ()
     {
-        return median;
+        return new Line2D.Double(median.getX1(), median.getY1(), median.getX2(), median.getY2());
+    }
+
+    //-----------//
+    // setMedian //
+    //-----------//
+    /**
+     * Assign median via top and bottom points.
+     *
+     * @param top    upper point
+     * @param bottom lower point
+     */
+    public final void setMedian (Point2D top,
+                                 Point2D bottom)
+    {
+        if (median == null) {
+            median = new Line2D.Double(top, bottom);
+        } else {
+            median.setLine(top, bottom);
+        }
+
+        if (getWidth() != null) {
+            computeArea();
+        }
+    }
+
+    //--------//
+    // getTop //
+    //--------//
+    /**
+     * @return the top
+     */
+    public Point2D getTop ()
+    {
+        if (median == null) {
+            return null;
+        }
+
+        return median.getP1();
     }
 
     //----------//
     // getWidth //
     //----------//
     /**
+     * Report item width.
+     *
      * @return the width
      */
-    public double getWidth ()
+    public Double getWidth ()
     {
         return width;
+    }
+
+    //----------//
+    // setWidth //
+    //----------//
+    /**
+     * Set item width.
+     *
+     * @param width item width
+     */
+    public final void setWidth (double width)
+    {
+        this.width = width;
     }
 
     //----------------//
@@ -148,7 +324,7 @@ public abstract class AbstractVerticalInter
     private void afterUnmarshal (Unmarshaller um,
                                  Object parent)
     {
-        if (median != null) {
+        if ((median != null) && (getWidth() != null)) {
             computeArea();
         }
     }
@@ -156,46 +332,174 @@ public abstract class AbstractVerticalInter
     //-------------//
     // computeArea //
     //-------------//
-    private void computeArea ()
+    protected void computeArea ()
     {
-        setArea(AreaUtil.verticalRibbon(new Path2D.Double(median), width));
+        setArea(AreaUtil.verticalRibbon(new Path2D.Double(median), getWidth()));
 
         // Define precise bounds based on this path
-        setBounds(getArea().getBounds());
+        bounds = getArea().getBounds();
     }
 
-    //---------//
-    // Impacts //
-    //---------//
+    //--------//
+    // Editor //
+    //--------//
     /**
-     * Grade impacts.
+     * User editor for an AbstractVerticalInter (stem, arpeggiato, bar/bracket connector).
+     * <p>
+     * For a vertical inter, there are 3 handles:
+     * <ul>
+     * <li>top handle, moving vertically
+     * <li>middle handle, moving the whole item horizontally
+     * <li>bottom handle, moving vertically
+     * </ul>
      */
-    public static class Impacts
-            extends GradeImpacts
+    protected static class Editor
+            extends InterEditor
     {
 
-        private static final String[] NAMES = new String[]{"core", "gap", "start", "stop"};
+        private final Model originalModel;
 
-        private static final double[] WEIGHTS = new double[]{1, 1, 1, 1};
+        private final Model model;
 
         /**
-         * Create an Impacts object.
+         * Create an editor adapted to actual item.
          *
-         * @param core  value of black core impact
-         * @param gap   value of vertical gap impact
-         * @param start derivative impact at start abscissa
-         * @param stop  derivative impact at stop abscissa
+         * @param vert the inter to edit
+         * @param full true for 3 handles (top, middle, bottom), false for just the middle one
          */
-        public Impacts (double core,
-                        double gap,
-                        double start,
-                        double stop)
+        public Editor (AbstractVerticalInter vert,
+                       boolean full)
         {
-            super(NAMES, WEIGHTS);
-            setImpact(0, core);
-            setImpact(1, gap);
-            setImpact(2, start);
-            setImpact(3, stop);
+            super(vert);
+
+            originalModel = new Model(vert.getTop(), vert.getBottom());
+            model = new Model(vert.getTop(), vert.getBottom());
+
+            final Point2D middle = PointUtil.middle(model.p1, model.p2);
+
+            // Move top, only vertically
+            if (full) {
+                handles.add(new Handle(model.p1)
+                {
+                    @Override
+                    public boolean applyMove (Point vector)
+                    {
+                        final int dy = vector.y;
+
+                        if (dy == 0) {
+                            return false;
+                        }
+
+                        PointUtil.add(model.p1, 0, dy); // Data & handle
+                        PointUtil.add(middle, 0, dy / 2.0); // Handle
+
+                        return true;
+                    }
+                });
+            }
+
+            // Global move, only horizontally
+            handles.add(selectedHandle = new Handle(middle)
+            {
+                @Override
+                public boolean applyMove (Point vector)
+                {
+                    final int dx = vector.x;
+
+                    if (dx == 0) {
+                        return false;
+                    }
+
+                    // Data (and shared handles if any)
+                    PointUtil.add(model.p1, dx, 0);
+                    PointUtil.add(model.p2, dx, 0);
+
+                    // Handle (middle)
+                    PointUtil.add(middle, dx, 0);
+
+                    return true;
+                }
+            });
+
+            // Bottom move, only vertically
+            if (full) {
+                handles.add(new Handle(model.p2)
+                {
+                    @Override
+                    public boolean applyMove (Point vector)
+                    {
+                        final int dy = vector.y;
+
+                        if (dy == 0) {
+                            return false;
+                        }
+
+                        PointUtil.add(model.p2, 0, dy); // Data & handle
+                        PointUtil.add(middle, 0, dy / 2.0); // Handle
+
+                        return true;
+                    }
+                });
+            }
+        }
+
+        @Override
+        protected void doit ()
+        {
+            final AbstractVerticalInter vert = (AbstractVerticalInter) inter;
+            vert.setMedian(model.p1, model.p2); // Set bounds also
+
+            super.doit(); // No more glyph
+
+            updateChords();
+        }
+
+        @Override
+        public void undo ()
+        {
+            final AbstractVerticalInter vert = (AbstractVerticalInter) inter;
+            vert.setMedian(originalModel.p1, originalModel.p2); // Set bounds also
+
+            super.undo();
+
+            updateChords();
+        }
+
+        protected void updateChords ()
+        {
+            //void by default
+        }
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements InterUIModel
+    {
+
+        // Upper point of median line
+        public Point2D p1;
+
+        // Lower point of median line
+        public Point2D p2;
+
+        // Width
+        public double width;
+
+        public Model (Point2D p1,
+                      Point2D p2)
+        {
+            this.p1 = p1;
+            this.p2 = p2;
+        }
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(p1, dx, dy);
+            PointUtil.add(p2, dx, dy);
         }
     }
 }

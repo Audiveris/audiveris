@@ -25,13 +25,14 @@ import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code HeadsSymbol} displays a column of several identical heads.
  * (black, void or whole)
+ * <p>
+ * [NOTA: Class no longer used, but kept for potential future interest]
  *
  * @author Hervé Bitteur
  */
@@ -76,11 +77,10 @@ public class HeadsSymbol
         MyParams p = new MyParams();
         p.layout = layout(font);
 
+        p.dy = font.getStaffInterline();
         Rectangle2D r = p.layout.getBounds();
-        p.dy = (int) Math.rint(font.getStaffInterline());
-        p.rect = new Rectangle(
-                (int) Math.ceil(r.getWidth()),
-                ((count * p.dy) + (int) Math.rint(r.getHeight())) - p.dy);
+        p.rect = new Rectangle2D.Double();
+        p.rect.setRect(r.getX(), r.getY(), r.getWidth(), r.getHeight() + (count - 1) * p.dy);
 
         return p;
     }
@@ -91,25 +91,25 @@ public class HeadsSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
-        Point loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
 
         for (int i = 0; i < count; i++) {
             MusicFont.paint(g, p.layout, loc, TOP_LEFT);
-            loc.y += p.dy;
+            loc.setLocation(loc.getX(), loc.getY() + p.dy);
         }
     }
 
     //----------//
     // MyParams //
     //----------//
-    protected class MyParams
+    protected static class MyParams
             extends Params
     {
 
-        int dy;
+        double dy;
     }
 }

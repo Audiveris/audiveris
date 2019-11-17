@@ -160,6 +160,11 @@ public class TupletsBuilder
     private List<AbstractChordInter> getChordsAround (TupletInter tuplet)
     {
         Point center = tuplet.getCenter();
+
+        if (stack == null) {
+            return Collections.EMPTY_LIST;
+        }
+
         List<Staff> stavesAround = stack.getSystem().getStavesAround(center);
         logger.trace("{} around:{}", tuplet, stavesAround);
 

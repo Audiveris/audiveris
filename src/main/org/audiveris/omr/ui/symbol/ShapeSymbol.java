@@ -23,8 +23,11 @@ package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
+import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sig.ui.InterUIModel;
 
 import java.awt.AlphaComposite;
+import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -33,8 +36,10 @@ import java.io.IOException;
 /**
  * Class {@code ShapeSymbol} extends the {@link BasicSymbol} with the handling of a
  * related {@link Shape}.
+ * <p>
  * A ShapeSymbol thus adds several features:
  * <ul>
+ * <li>It can be used for dedicated shape assignment buttons.</li>
  * <li>It can be used for Drag &amp; Drop operations, since it implements the {@link Transferable}
  * interface.</li>
  * <li>It can be used to <b>train</b> the glyph classifier when we don't have enough "real" glyphs
@@ -48,10 +53,10 @@ public class ShapeSymbol
         implements Transferable
 {
 
-    /** The symbol meta data */
+    /** The symbol meta data. */
     public static final DataFlavor DATA_FLAVOR = new DataFlavor(SymbolIcon.class, "shape-symbol");
 
-    /** Composite used for decoration */
+    /** Composite used for decoration. */
     protected static final AlphaComposite decoComposite = AlphaComposite.getInstance(
             AlphaComposite.SRC_OVER,
             0.15f);
@@ -61,6 +66,9 @@ public class ShapeSymbol
 
     /** Is this a decorated symbol. (shape with additional stuff) */
     protected final boolean decorated;
+
+    /** Decorated version if any. */
+    protected ShapeSymbol decoratedSymbol;
 
     /**
      * Create a ShapeSymbol with the provided shape and codes
@@ -93,6 +101,62 @@ public class ShapeSymbol
         this(false, shape, false, codes);
     }
 
+    //--------------------//
+    // getDecoratedSymbol //
+    //--------------------//
+    /**
+     * Report the decorated version of this ShapeSymbol.
+     *
+     * @return the decorated version
+     */
+    public ShapeSymbol getDecoratedSymbol ()
+    {
+        if (decorated) {
+            return this;
+        }
+
+        if (decoratedSymbol == null) {
+            decoratedSymbol = createDecoratedSymbol();
+        }
+
+        return decoratedSymbol;
+    }
+
+    //----------//
+    // getModel //
+    //----------//
+    /**
+     * Get inter geometry from this (dropped) symbol.
+     *
+     * @param font      properly scaled font
+     * @param location  dropping location
+     * @param alignment location alignment with respect to symbol
+     * @return the data model for inter being shaped
+     * @throws UnsupportedOperationException if operation is not explicitly supported by the symbol
+     */
+    public InterUIModel getModel (MusicFont font,
+                                  Point location,
+                                  Alignment alignment)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    //-------------//
+    // updateModel //
+    //-------------//
+    /**
+     * Tell the symbol that it can update its model with sheet informations.
+     * <p>
+     * This is useful when the dragged item enters a sheet view, since it can adapt itself to
+     * sheet informations (such as the typical beam thickness).
+     *
+     * @param sheet underlying sheet
+     */
+    public void updateModel (Sheet sheet)
+    {
+        // Void, by default
+    }
+
     //----------//
     // getShape //
     //----------//
@@ -104,6 +168,19 @@ public class ShapeSymbol
     public Shape getShape ()
     {
         return shape;
+    }
+
+    //--------//
+    // getTip //
+    //--------//
+    /**
+     * Report the tip text to display for this symbol.
+     *
+     * @return the tip text
+     */
+    public String getTip ()
+    {
+        return shape.toString(); // By default, use the shape name
     }
 
     //-----------------//
@@ -173,6 +250,20 @@ public class ShapeSymbol
         sb.append(" ").append(shape);
 
         return sb.toString();
+    }
+
+    //-----------------------//
+    // createDecoratedSymbol //
+    //-----------------------//
+    /**
+     * Create symbol with proper decorations.
+     * To be redefined by each subclass that does provide a specific decorated version
+     *
+     * @return the decorated version, which may be the same symbol if no decoration exists
+     */
+    protected ShapeSymbol createDecoratedSymbol ()
+    {
+        return this; // No decoration by default
     }
 
     //-------------//

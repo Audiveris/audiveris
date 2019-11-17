@@ -45,11 +45,14 @@ import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
+import org.audiveris.omr.sig.inter.BraceInter;
+import org.audiveris.omr.sig.inter.BracketInter;
 import org.audiveris.omr.sig.inter.BreathMarkInter;
 import org.audiveris.omr.sig.inter.CaesuraInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.DeletedInterException;
 import org.audiveris.omr.sig.inter.DynamicsInter;
+import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.FermataArcInter;
 import org.audiveris.omr.sig.inter.FermataDotInter;
 import org.audiveris.omr.sig.inter.FermataInter;
@@ -62,13 +65,13 @@ import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
+import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.RestInter;
-import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallFlagInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
@@ -719,7 +722,11 @@ public class InterFactory
         //        case OTTAVA_BASSA:
         //            return null;
         //
-        // Brace, bracket TODO ???
+        // Brace, bracket
+        case BRACE:
+            return new BraceInter(GRADE);
+        case BRACKET:
+            return new BracketInter(GRADE);
         //
         // Barlines
         case THIN_BARLINE:
@@ -762,12 +769,15 @@ public class InterFactory
         case SLUR:
             return new SlurInter(GRADE);
 
+        case ENDING:
+            return new EndingInter(GRADE);
+
         // Text
         case LYRICS:
-            return new SentenceInter(GRADE);
+            return new LyricItemInter(GRADE);
 
         case TEXT:
-            return new WordInter(GRADE);
+            return new WordInter(shape, GRADE);
 
         // Clefs
         case G_CLEF:

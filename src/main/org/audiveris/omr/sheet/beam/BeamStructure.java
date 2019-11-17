@@ -643,7 +643,7 @@ public class BeamStructure
                 for (Run run : section.getRuns()) {
                     sectionLine.includePoint(
                             x,
-                            (side == VerticalSide.TOP) ? run.getStart() : run.getStop());
+                            (side == VerticalSide.TOP) ? run.getStart() : run.getStop() + 1);
                     x++;
                 }
 
@@ -792,7 +792,7 @@ public class BeamStructure
         List<BeamItem> items = beamLine.getItems();
         Line2D median = beamLine.median;
         Integer start = null; // Starting abscissa of item being built
-        Integer stop = null; // Current abscissa end of item being built
+        Integer stop = null; // Current abscissa right after item being built
 
         // Sections are ordered by starting abscissa
         for (Section section : getGlyphSections()) {
@@ -816,10 +816,10 @@ public class BeamStructure
                         start = sctBox.x;
                     }
 
-                    stop = Math.max(stop, (sctBox.x + sctBox.width) - 1);
+                    stop = Math.max(stop, sctBox.x + sctBox.width);
                 } else {
                     start = sctBox.x;
-                    stop = (sctBox.x + sctBox.width) - 1;
+                    stop = sctBox.x + sctBox.width;
                 }
             }
         }

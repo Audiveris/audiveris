@@ -190,6 +190,7 @@ public class InterController
                     final List<Inter> closure = buildStaffBarlineClosure(oneBar);
 
                     if (!closure.isEmpty()) {
+                        // Recursive call
                         addInters(closure, Option.VALIDATED, Option.UPDATE_MEASURES);
                     }
 
@@ -203,7 +204,7 @@ public class InterController
             private final List<LinkedGhost> linkedGhosts = new ArrayList<>();
 
             @Override
-            protected void action ()
+            protected void build ()
             {
 
                 for (Inter inter : inters) {
@@ -220,7 +221,7 @@ public class InterController
                     // If glyph is used by another inter, delete this other inter
                     removeCompetitors(inter, inter.getGlyph(), system, seq);
 
-                    linkedGhosts.add(new LinkedGhost(inter, inter.searchLinks(system, false)));
+                    linkedGhosts.add(new LinkedGhost(inter, inter.searchLinks(system)));
                 }
 
                 addGhosts(seq, linkedGhosts);
@@ -327,7 +328,7 @@ public class InterController
         new CtrlTask(DO, "changeSentence")
         {
             @Override
-            protected void action ()
+            protected void build ()
             {
                 seq.add(new SentenceRoleTask(sentence, newRole));
             }
@@ -356,7 +357,7 @@ public class InterController
         new CtrlTask(DO, "changeWord")
         {
             @Override
-            protected void action ()
+            protected void build ()
             {
                 seq.add(new WordValueTask(word, newValue));
             }
@@ -385,6 +386,32 @@ public class InterController
         }
     }
 
+    //-----------//
+    // editInter //
+    //-----------//
+    /**
+     * Modify position or geometry of an inter.
+     *
+     * @param editor the editor used on inter
+     */
+    @UIThread
+    public void editInter (final InterEditor editor)
+    {
+
+        new CtrlTask(DO, "editInter")
+        {
+            @Override
+            protected void build ()
+            {
+                Inter inter = editor.getInter();
+                SystemInfo system = inter.getSig().getSystem();
+                Collection<Link> links = inter.searchLinks(system);
+                Collection<Link> unlinks = inter.searchUnlinks(system, links);
+                seq.add(new EditionTask(editor, links, unlinks));
+            }
+        }.execute();
+    }
+
     //------//
     // link //
     //------//
@@ -405,7 +432,7 @@ public class InterController
         new CtrlTask(DO, "link")
         {
             @Override
-            protected void action ()
+            protected void build ()
             {
                 Inter source = src; // To allow use of a new source
 
@@ -445,7 +472,7 @@ public class InterController
             private final HeadChordInter newChord = new HeadChordInter(1.0);
 
             @Override
-            protected void action ()
+            protected void build ()
             {
                 final SIGraph sig = chords.get(0).getSig();
                 final Rectangle newChordBounds = Entities.getBounds(chords);
@@ -549,7 +576,7 @@ public class InterController
         new CtrlTask(DO, "mergeSystem")
         {
             @Override
-            protected void action ()
+            protected void build ()
             {
                 final Staff upStaff = system.getLastStaff();
                 final BarlineInter upBar = upStaff.getSideBarline(LEFT);
@@ -628,15 +655,9 @@ public class InterController
         new CtrlTask(REDO, "redo")
         {
             @Override
-            protected void action ()
+            protected void build ()
             {
                 seq = history.toRedo();
-            }
-
-            @Override
-            protected void publish ()
-            {
-                sheet.getInterIndex().publish(null);
             }
         }.execute();
     }
@@ -690,7 +711,7 @@ public class InterController
         new CtrlTask(DO, "removeInters", options)
         {
             @Override
-            protected void action ()
+            protected void build ()
             {
                 populateRemovals(inters, seq);
             }
@@ -699,6 +720,13 @@ public class InterController
             protected void publish ()
             {
                 sheet.getInterIndex().publish(null);
+
+                // Make sure an on-going edition is not impacted
+                Inter edited = sheet.getSymbolsEditor().getEditedInter();
+
+                if (edited != null && inters.contains(edited)) {
+                    sheet.getSymbolsEditor().closeEditMode();
+                }
             }
         }.execute();
     }
@@ -717,7 +745,7 @@ public class InterController
         new CtrlTask(DO, "reprocessPageRhythm", Option.NO_HISTORY)
         {
             @Override
-            protected void action ()
+            protected void build ()
             {
                 seq.add(new PageTask(page));
             }
@@ -744,7 +772,7 @@ public class InterController
         new CtrlTask(DO, "reprocessStackRhythm", Option.NO_HISTORY)
         {
             @Override
-            protected void action ()
+            protected void build ()
             {
                 seq.add(new StackTask(stack));
             }
@@ -797,7 +825,7 @@ public class InterController
             private final List<HeadChordInter> newChords = new ArrayList<>();
 
             @Override
-            protected void action ()
+            protected void build ()
             {
                 final SIGraph sig = chord.getSig();
 
@@ -1004,18 +1032,25 @@ public class InterController
     @UIThread
     public void undo ()
     {
+        // If an inter is being edited, "undo" simply cancels the ongoing edition
+        InterEditor interEditor = sheet.getSymbolsEditor().getInterEditor();
+
+        if (interEditor != null) {
+            interEditor.undo();
+            sheet.getSymbolsEditor().closeEditMode();
+            Inter inter = interEditor.getInter();
+            inter.getSig().publish(inter, SelectionHint.ENTITY_TRANSIENT);
+            BookActions.getInstance().setUndoable(canUndo());
+
+            return;
+        }
+
         new CtrlTask(UNDO, "undo")
         {
             @Override
-            protected void action ()
+            protected void build ()
             {
                 seq = history.toUndo();
-            }
-
-            @Override
-            protected void publish ()
-            {
-                sheet.getInterIndex().publish(null);
             }
         }.execute();
     }
@@ -1038,7 +1073,7 @@ public class InterController
             private Inter source = null;
 
             @Override
-            protected void action ()
+            protected void build ()
             {
                 seq.add(new UnlinkTask(sig, relation));
                 source = sig.getEdgeSource(relation);
@@ -1130,6 +1165,38 @@ public class InterController
                     seq.add(new AdditionTask(sig, headChord, ghostBounds, Collections.EMPTY_SET));
                     seq.add(new LinkTask(sig, headChord, ghost, new Containment()));
                 }
+            } else if (ghost instanceof LyricItemInter) {
+                LyricItemInter item = (LyricItemInter) ghost;
+                Point2D loc = item.getLocation();
+                LyricLineInter line = new TextBuilder(system, true).lookupLyricLine(loc);
+
+                if (line == null) {
+                    // Create a new lyric line
+                    line = new LyricLineInter(1);
+                    line.setManual(true);
+                    line.setStaff(staff);
+                    seq.add(
+                            new AdditionTask(
+                                    sig,
+                                    line,
+                                    ghostBounds,
+                                    Collections.EMPTY_SET));
+                }
+
+                // Wrap lyric item into lyric line
+                seq.add(new LinkTask(sig, line, item, new Containment()));
+
+            } else if (ghost instanceof WordInter) {
+                // Wrap this word into a new sentence
+                SentenceInter sentence = new SentenceInter(TextRole.Direction, 1);
+                sentence.setManual(true);
+                sentence.setStaff(staff);
+                seq.add(
+                        new AdditionTask(
+                                sig,
+                                sentence,
+                                ghostBounds,
+                                Arrays.asList(new Link(ghost, new Containment(), true))));
             }
         }
     }
@@ -1150,7 +1217,7 @@ public class InterController
         new CtrlTask(DO, "addText")
         {
             @Override
-            protected void action ()
+            protected void build ()
             {
                 if (!OcrUtil.getOcr().isAvailable()) {
                     logger.info(OCR.NO_OCR);
@@ -1168,15 +1235,16 @@ public class InterController
                 final SIGraph sig = system.getSig();
 
                 // Retrieve lines relative to glyph origin
-                ByteProcessor buffer = glyph.getBuffer();
-                List<TextLine> relativeLines = new BlockScanner(sheet).scanBuffer(
+                final ByteProcessor buffer = glyph.getBuffer();
+                final List<TextLine> relativeLines = new BlockScanner(sheet).scanBuffer(
                         buffer,
                         sheet.getStub().getOcrLanguages().getValue(),
                         glyph.getId());
 
                 // Retrieve absolute lines (and the underlying word glyphs)
-                boolean lyrics = shape == Shape.LYRICS;
-                List<TextLine> lines = new TextBuilder(system, lyrics).retrieveGlyphLines(
+                final boolean lyrics = shape == Shape.LYRICS;
+                final TextBuilder textBuilder = new TextBuilder(system, lyrics);
+                final List<TextLine> lines = textBuilder.retrieveGlyphLines(
                         buffer,
                         relativeLines,
                         glyph.getTopLeft());
@@ -1186,8 +1254,14 @@ public class InterController
                     logger.debug("line {}", line);
 
                     TextRole role = line.getRole();
-                    SentenceInter sentence = null;
                     Staff staff = null;
+
+                    SentenceInter sentence = null;
+
+                    if (lyrics) {
+                        // In lyrics role, check if we should join an existing lyric line
+                        sentence = textBuilder.lookupLyricLine(line.getLocation());
+                    }
 
                     for (TextWord textWord : line.getWords()) {
                         logger.debug("word {}", textWord);
@@ -1208,8 +1282,8 @@ public class InterController
                                                             false))));
                         } else {
                             sentence = lyrics ? LyricLineInter.create(line)
-                                    : ((role == TextRole.ChordName) ? ChordNameInter.create(
-                                                    line) : SentenceInter.create(line));
+                                    : ((role == TextRole.ChordName) ? ChordNameInter.create(line)
+                                            : SentenceInter.create(line));
                             staff = sentence.assignStaff(system, line.getLocation());
                             seq.add(
                                     new AdditionTask(
@@ -1329,7 +1403,7 @@ public class InterController
             // Staff is uniquely defined
             staff = staves.get(0);
             system = staff.getSystem();
-            links.addAll(ghost.searchLinks(system, false));
+            links.addAll(ghost.searchLinks(system));
 
             return staff;
         }
@@ -1353,7 +1427,7 @@ public class InterController
                 system = stf.getSystem();
 
                 if (system != prevSystem) {
-                    links.addAll(ghost.searchLinks(system, false));
+                    links.addAll(ghost.searchLinks(system));
 
                     for (Link p : links) {
                         if (p.partner.getStaff() != null) {
@@ -1434,7 +1508,6 @@ public class InterController
     private void populateRemovals (Collection<? extends Inter> inters,
                                    UITaskList seq)
     {
-        // Dry run
         final Removal removal = new Removal();
 
         for (Inter inter : inters) {
@@ -1845,7 +1918,12 @@ public class InterController
         protected final Void doInBackground ()
         {
             try {
-                action(); // 1) Populate task(s) sequence
+                // 1) Build task(s) sequence
+                build();
+
+                if (seq == null) {
+                    return null;
+                }
 
                 // 2) Perform the task(s) sequence
                 if (opKind == OpKind.UNDO) {
@@ -1854,9 +1932,11 @@ public class InterController
                     seq.performDo();
                 }
 
-                publish(); // 3) Publications at end of sequence
+                // 3) Publications at end of sequence
+                publish();
 
-                epilog(); // 4) Impacted steps
+                // 4) Impacted steps
+                epilog();
             } catch (Throwable ex) {
                 logger.warn("Exception in {} {}", opName, ex.toString(), ex);
             }
@@ -1864,8 +1944,8 @@ public class InterController
             return null;
         }
 
-        /** User background action. */
-        protected void action ()
+        /** User background building of task(s) sequence. */
+        protected void build ()
         {
             // Void by default
         }

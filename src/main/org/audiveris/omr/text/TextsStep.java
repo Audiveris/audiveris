@@ -25,6 +25,11 @@ import ij.process.ByteProcessor;
 
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.LyricLineInter;
+import org.audiveris.omr.sig.ui.InterTask;
+import org.audiveris.omr.sig.ui.UITask;
+import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.StepException;
 
@@ -32,7 +37,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class {@code TextsStep} discovers text items in a system area.
@@ -44,6 +51,22 @@ public class TextsStep
 {
 
     private static final Logger logger = LoggerFactory.getLogger(TextsStep.class);
+
+    /** Classes that may impact texts. */
+    private static final Set<Class> forLyrics;
+
+    /** All impacting classes. */
+    private static final Set<Class> impactingClasses;
+
+    static {
+        forLyrics = new HashSet<>();
+        forLyrics.add(LyricLineInter.class);
+    }
+
+    static {
+        impactingClasses = new HashSet<>();
+        impactingClasses.addAll(forLyrics);
+    }
 
     /**
      * Creates a TextsStep instance.
@@ -84,6 +107,41 @@ public class TextsStep
 
         // Make all this available for system-level processing
         return new Context(scanner.getBuffer(), lines);
+    }
+
+    //--------//
+    // impact //
+    //--------//
+    @Override
+    public void impact (UITaskList seq,
+                        UITask.OpKind opKind)
+    {
+        logger.debug("TEXTS impact {} {}", opKind, seq);
+
+        for (UITask task : seq.getTasks()) {
+            if (task instanceof InterTask) {
+                InterTask interTask = (InterTask) task;
+                Inter inter = interTask.getInter();
+                SystemInfo system = inter.getSig().getSystem();
+                Class interClass = inter.getClass();
+
+                if (isImpactedBy(interClass, forLyrics)) {
+                    if (inter instanceof LyricLineInter) {
+                        // Re-number lyric lines
+                        new TextBuilder(system, true).numberLyricLines();
+                    }
+                }
+            }
+        }
+    }
+
+    //--------------//
+    // isImpactedBy //
+    //--------------//
+    @Override
+    public boolean isImpactedBy (Class classe)
+    {
+        return isImpactedBy(classe, impactingClasses);
     }
 
     //---------//

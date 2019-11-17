@@ -271,28 +271,25 @@ public class FermataInter
     // searchLinks //
     //-------------//
     @Override
-    public Collection<Link> searchLinks (SystemInfo system,
-                                         boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system)
     {
-        // Not very optimized!
-        List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
-        Collections.sort(systemHeadChords, Inters.byAbscissa);
-
         Link link = lookupBarlineLink(system);
 
         if (link == null) {
             link = lookupChordLink(system);
         }
 
-        if (link == null) {
-            return Collections.emptyList();
-        }
+        return (link == null) ? Collections.EMPTY_LIST : Collections.singleton(link);
+    }
 
-        if (doit) {
-            link.applyTo(this);
-        }
-
-        return Collections.singleton(link);
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, FermataBarRelation.class, FermataChordRelation.class);
     }
 
     //-------------------//
@@ -353,6 +350,11 @@ public class FermataInter
         getBounds();
         final Point center = getCenter();
         final MeasureStack stack = system.getStackAt(center);
+
+        if (stack == null) {
+            return null;
+        }
+
         final Collection<AbstractChordInter> chords = (shape == Shape.FERMATA_BELOW) ? stack
                 .getStandardChordsAbove(center, bounds)
                 : stack.getStandardChordsBelow(center, bounds);

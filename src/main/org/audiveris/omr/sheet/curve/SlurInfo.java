@@ -21,14 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.curve;
 
-import org.audiveris.omr.math.LineUtil;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.geom.CubicCurve2D;
-import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.List;
@@ -66,12 +63,6 @@ public class SlurInfo
      * 1 for above, -1 for below, 0 for flat
      */
     protected int above;
-
-    /** Unity vector from segment middle to circle center. */
-    protected Point2D bisUnit;
-
-    /** True for slur rather horizontal. */
-    protected Boolean horizontal;
 
     /** Global Bézier curve for the slur. */
     protected CubicCurve2D curve;
@@ -155,17 +146,6 @@ public class SlurInfo
         }
     }
 
-    //------------//
-    // getBisUnit //
-    //------------//
-    /**
-     * @return the bisUnit
-     */
-    public Point2D getBisUnit ()
-    {
-        return bisUnit;
-    }
-
     //----------//
     // getCurve //
     //----------//
@@ -237,20 +217,6 @@ public class SlurInfo
         }
 
         return curve;
-    }
-
-    //--------------//
-    // getEndVector //
-    //--------------//
-    /**
-     * Report the unit tangent vector at the item end designated by 'reverse' value.
-     *
-     * @param reverse true for first end, false for last
-     * @return the tangent unit vector
-     */
-    public Point2D getEndVector (boolean reverse)
-    {
-        return getSideModel(reverse).getEndVector(reverse);
     }
 
     //-------------//
@@ -356,30 +322,6 @@ public class SlurInfo
         }
     }
 
-    //--------------//
-    // isHorizontal //
-    //--------------//
-    /**
-     * Report whether slur is horizontal (rather than vertical)
-     *
-     * @return true if horizontal
-     */
-    public boolean isHorizontal ()
-    {
-        return horizontal;
-    }
-
-    //---------------//
-    // setHorizontal //
-    //---------------//
-    /**
-     * @param horizontal the horizontal to set
-     */
-    public void setHorizontal (boolean horizontal)
-    {
-        this.horizontal = horizontal;
-    }
-
     //----------//
     // setModel //
     //----------//
@@ -389,7 +331,6 @@ public class SlurInfo
         if (model != null) {
             super.setModel(model);
             above = model.above();
-            bisUnit = computeBisector(above > 0);
         }
     }
 
@@ -410,39 +351,5 @@ public class SlurInfo
         } else {
             lastModel = model;
         }
-    }
-
-    //-----------------//
-    // computeBisector //
-    //-----------------//
-    /**
-     * Compute bisector vector.
-     *
-     * @param above is the slur above (or below)
-     * @return the unit bisector
-     */
-    protected Point2D.Double computeBisector (boolean above)
-    {
-        Line2D bisector = LineUtil.bisector(getEnd(above), getEnd(!above));
-        double length = bisector.getP1().distance(bisector.getP2());
-
-        return new Point2D.Double(
-                (bisector.getX2() - bisector.getX1()) / length,
-                (bisector.getY2() - bisector.getY1()) / length);
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        if (horizontal != null) {
-            sb.append(" ").append(horizontal ? "H" : "V");
-        }
-
-        return sb.toString();
     }
 }

@@ -125,24 +125,24 @@ public class BeamHookInter
     // searchLinks //
     //-------------//
     @Override
-    public Collection<Link> searchLinks (SystemInfo system,
-                                         boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system)
     {
-        // Not very optimized!
         List<Inter> systemStems = system.getSig().inters(StemInter.class);
         Collections.sort(systemStems, Inters.byAbscissa);
 
         Link link = lookupLink(systemStems, system);
 
-        if (link == null) {
-            return Collections.emptyList();
-        }
+        return (link == null) ? Collections.EMPTY_LIST : Collections.singleton(link);
+    }
 
-        if (doit) {
-            link.applyTo(this);
-        }
-
-        return Collections.singleton(link);
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, BeamStemRelation.class);
     }
 
     //----------//
@@ -153,17 +153,19 @@ public class BeamHookInter
     {
         super.setGlyph(glyph);
 
-        // Compute height and median parameters
-        Rectangle box = glyph.getBounds();
-        height = (int) Math.rint(glyph.getMeanThickness(Orientation.HORIZONTAL));
+        if ((median == null) && (glyph != null)) {
+            // Case of manual hook: Compute height and median parameters and area
+            Rectangle box = glyph.getBounds();
+            height = (int) Math.rint(glyph.getMeanThickness(Orientation.HORIZONTAL));
 
-        Point centroid = glyph.getCentroid();
-        double slope = 0.0;
-        Point2D p1 = LineUtil.intersectionAtX(centroid, slope, box.x);
-        Point2D p2 = LineUtil.intersectionAtX(centroid, slope, (box.x + box.width) - 1);
-        median = new Line2D.Double(p1, p2);
+            Point2D centroid = glyph.getCentroidDouble();
+            double slope = 0.0; // Glyph line is not reliable for a short item like a hook!
+            Point2D p1 = LineUtil.intersectionAtX(centroid, slope, box.x);
+            Point2D p2 = LineUtil.intersectionAtX(centroid, slope, box.x + box.width);
+            median = new Line2D.Double(p1.getX(), p1.getY() + 0.5, p2.getX(), p2.getY() + 0.5);
 
-        computeArea();
+            computeArea();
+        }
     }
 
     //------------//

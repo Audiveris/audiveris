@@ -25,17 +25,22 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
+import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.util.Version;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -50,10 +55,13 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "arpeggiato")
 public class ArpeggiatoInter
-        extends AbstractInter
+        extends AbstractVerticalInter
 {
 
     private static final Logger logger = LoggerFactory.getLogger(ArpeggiatoInter.class);
+
+    /** Default thickness of an arpeggiato. */
+    public static final double DEFAULT_THICKNESS = 10.0;
 
     /**
      * Creates a new {@code ArpeggiatoInter} object.
@@ -64,7 +72,7 @@ public class ArpeggiatoInter
     public ArpeggiatoInter (Glyph glyph,
                             double grade)
     {
-        super(glyph, (glyph != null) ? glyph.getBounds() : null, Shape.ARPEGGIATO, grade);
+        super(glyph, Shape.ARPEGGIATO, grade);
     }
 
     /**
@@ -72,6 +80,7 @@ public class ArpeggiatoInter
      */
     private ArpeggiatoInter ()
     {
+        super(null, null, null);
     }
 
     //--------//
@@ -107,6 +116,21 @@ public class ArpeggiatoInter
     }
 
     //----------//
+    // contains //
+    //----------//
+    @Override
+    public boolean contains (Point point)
+    {
+        getBounds();
+
+        if (bounds != null) {
+            return bounds.contains(point);
+        }
+
+        return false;
+    }
+
+    //----------//
     // getVoice //
     //----------//
     @Override
@@ -119,28 +143,81 @@ public class ArpeggiatoInter
         return null;
     }
 
+    //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Report item width.
+     *
+     * @return the width
+     */
+    @Override
+    public Double getWidth ()
+    {
+        if (width != null) {
+            return width;
+        }
+
+        return DEFAULT_THICKNESS;
+    }
+
     //-------------//
     // searchLinks //
     //-------------//
     @Override
-    public Collection<Link> searchLinks (SystemInfo system,
-                                         boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system)
     {
-        // Not very optimized!
         List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
         Collections.sort(systemHeadChords, Inters.byAbscissa);
 
         Link link = lookupLink(systemHeadChords, system);
 
-        if (link == null) {
-            return Collections.emptyList();
+        return (link == null) ? Collections.EMPTY_LIST : Collections.singleton(link);
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, ChordArpeggiatoRelation.class);
+    }
+
+    //-----------------//
+    // upgradeOldStuff //
+    //-----------------//
+    @Override
+    public boolean upgradeOldStuff (List<Version> upgrades)
+    {
+        boolean upgraded = false;
+
+        if (upgrades.contains(Versions.INTER_GEOMETRY)) {
+            if (median == null) {
+                getBounds();
+
+                if (bounds != null) {
+                    Rectangle b = bounds;
+                    median = new Line2D.Double(b.x + b.width / 2.0, b.y,
+                                               b.x + b.width / 2.0, b.y + b.height);
+                    upgraded = true;
+                }
+            }
+
+            if (width == null) {
+                if (glyph != null) {
+                    width = glyph.getMeanThickness(VERTICAL);
+                    upgraded = true;
+                }
+            }
+
+            if (upgraded) {
+                computeArea();
+            }
         }
 
-        if (doit) {
-            link.applyTo(this);
-        }
-
-        return Collections.singleton(link);
+        return upgraded;
     }
 
     //------------//

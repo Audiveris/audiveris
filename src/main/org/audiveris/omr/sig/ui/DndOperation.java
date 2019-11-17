@@ -21,30 +21,31 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import java.awt.BasicStroke;
 import org.audiveris.omr.OMR;
-import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.curve.Curves;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.ui.OmrGlassPane;
+import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.ui.view.Zoom;
 import org.audiveris.omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
+import java.awt.Stroke;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Class {@code DndOperation} handles one DnD operation with a moving inter.
@@ -62,31 +63,48 @@ public class DndOperation
     /** GlassPane. */
     private final OmrGlassPane glass = OMR.gui.getGlassPane();
 
-    private final Zoom zoom;
+    /** Zoom ratio on sheet view, to be "replicated" on glass pane. */
+    private final double zoomRatio;
 
     /** Pay-load: the Inter instance being "moved". */
     private final Inter ghost;
 
-    /** Staff currently related. */
+    /** Ghost tracker. */
+    private final InterTracker ghostTracker;
+
+    /** Non-decorated symbol to determine inter geometry. */
+    private final ShapeSymbol symbol;
+
+    /** Stroke for symbol curves (slurs, wedges, endings). */
+    private final Stroke curveStroke;
+
+    /** Current staff. */
     private Staff staff;
 
-    /** System currently related. */
+    /** Current system. */
     private SystemInfo system;
 
     /**
      * Creates a new {@code DndOperation} object.
      *
-     * @param sheet the related sheet
-     * @param zoom  zoom applied on display
-     * @param ghost the inter being "moved"
+     * @param sheet  the related sheet
+     * @param zoom   zoom applied on display
+     * @param ghost  the inter being dragged
+     * @param symbol the originating symbol
      */
     public DndOperation (Sheet sheet,
                          Zoom zoom,
-                         Inter ghost)
+                         Inter ghost,
+                         ShapeSymbol symbol)
     {
         this.sheet = sheet;
-        this.zoom = zoom;
+        this.zoomRatio = zoom.getRatio();
         this.ghost = ghost;
+        this.symbol = symbol;
+
+        curveStroke = buildCurveStroke();
+
+        ghostTracker = new InterTracker(ghost, sheet);
     }
 
     //------//
@@ -95,49 +113,54 @@ public class DndOperation
     /**
      * Drop the ghost inter at provided location.
      * <p>
-     * Finalize ghost info (staff and bounds), insert into proper SIG
-     * and link to partners if any.
+     * Finalize ghost info (staff and bounds), insert into proper SIG and link to partners if any.
      *
-     * @param center provided location
+     * @param dropPoint provided drop location
      */
-    public void drop (Point center)
+    public void drop (Point dropPoint)
     {
         if (staff == null) {
-            logger.warn("No staff selected for drop");
+            final List<Staff> staves = sheet.getStaffManager().getStavesOf(dropPoint);
 
-            return;
+            if (staves.isEmpty()) {
+                logger.info("Drop point lies beyond sheet limits");
+                return;
+            }
+
+            if (staves.size() == 1) {
+                staff = staves.get(0);
+            } else {
+                // Prompt user...
+                final int option = StaffSelection.getInstance().prompt();
+
+                if (option >= 0) {
+                    staff = staves.get(option);
+                } else {
+                    return;
+                }
+            }
         }
 
         // Staff
         ghost.setStaff(staff);
 
-        // Bounds
-        final int staffInterline = staff.getSpecificInterline();
-        final MusicFont font = (ShapeSet.Heads.contains(ghost.getShape())) ? MusicFont.getHeadFont(
-                sheet.getScale(),
-                staffInterline) : MusicFont.getBaseFont(staffInterline);
-        final ShapeSymbol symbol = Symbols.getSymbol(ghost.getShape());
-        final Dimension dim = symbol.getDimension(font);
-        final Rectangle bounds = new Rectangle(
-                center.x - (dim.width / 2),
-                center.y - (dim.height / 2),
-                dim.width,
-                dim.height);
-        ghost.setBounds(bounds);
+        updateGhost(dropPoint);
 
         sheet.getInterController().addInters(Arrays.asList(ghost));
+        sheet.getSymbolsEditor().openEditMode(ghost);
 
-        logger.debug("Dropped {} at {}", this, center);
+        logger.debug("Dropped {} at {}", this, dropPoint);
     }
 
     //----------------//
     // enteringTarget //
     //----------------//
     /**
-     * Call-back when mouse is entering the target component.
+     * Call-back for mouse entering target component (the sheet view).
      */
     public void enteringTarget ()
     {
+        symbol.updateModel(sheet);
         updateImage(sheet.getScale().getInterline());
     }
 
@@ -149,40 +172,40 @@ public class DndOperation
         return ghost;
     }
 
-    //--------------//
-    // getReference //
-    //--------------//
+    //-----------------//
+    // getGhostTracker //
+    //-----------------//
+    public InterTracker getGhostTracker ()
+    {
+        return ghostTracker;
+    }
+
+    //-------------------//
+    // getStaffReference //
+    //-------------------//
     /**
-     * Report the reference point for the moving inter located on 'center' point.
+     * Report the staff reference point for the moving inter location.
      * <p>
-     * Staff above
-     * Staff above or below
-     * Staff below: coda, ... all markers?
-     * Note head on right: alteration
-     * HeadChord above or below: articulation
-     * etc
+     * We use a "sticky staff" approach to visually indicate the current related staff.
      *
-     * @param center current inter center
+     * @param location current inter location
      * @return the location of reference entity
      */
-    public Point getReference (Point center)
+    public Point getStaffReference (Point location)
     {
-        // By default, use a "sticky staff" approach...
-        Staff closestStaff = sheet.getStaffManager().getClosestStaff(center);
+        Staff closestStaff = sheet.getStaffManager().getClosestStaff(location);
 
         if (closestStaff == null) {
             staff = null;
             system = null;
         } else {
-            double pp = closestStaff.pitchPositionOf(center);
+            double pp = closestStaff.pitchPositionOf(location);
 
             if (Math.abs(pp) <= 4) {
                 // We are within staff height, so let's pick up this staff
                 if (staff != closestStaff) {
                     if (system != closestStaff.getSystem()) {
                         system = closestStaff.getSystem();
-
-                        // Retrieve system heads????????????????????????
                     }
 
                     // Adjust image size WRT new interline
@@ -197,21 +220,26 @@ public class DndOperation
             }
         }
 
+        ghost.setStaff(staff);
+        ghostTracker.setSystem(system);
+
         if (staff == null) {
             return null;
         }
 
-        LineInfo line = staff.getLines().get(2);
+        updateGhost(location);
 
-        if (center.x < line.getEndPoint(HorizontalSide.LEFT).getX()) {
+        LineInfo line = staff.getLines().get(2); // Middle staff line
+
+        if (location.x < line.getEndPoint(HorizontalSide.LEFT).getX()) {
             return PointUtil.rounded(line.getEndPoint(HorizontalSide.LEFT));
         }
 
-        if (center.x > line.getEndPoint(HorizontalSide.RIGHT).getX()) {
+        if (location.x > line.getEndPoint(HorizontalSide.RIGHT).getX()) {
             return PointUtil.rounded(line.getEndPoint(HorizontalSide.RIGHT));
         }
 
-        return new Point(center.x, line.yAt(center.x));
+        return new Point(location.x, line.yAt(location.x));
     }
 
     //----------//
@@ -235,23 +263,61 @@ public class DndOperation
         return sb.toString();
     }
 
+    //------------------//
+    // buildCurveStroke //
+    //------------------//
+    /**
+     * Build stroke for curves, based on sheet scale and view zoom.
+     *
+     * @return curve stroke
+     */
+    private Stroke buildCurveStroke ()
+    {
+        Scale scale = sheet.getScale();
+        Integer fore = (scale != null) ? scale.getFore() : null;
+        double thickness = (fore != null) ? fore : Curves.DEFAULT_THICKNESS;
+        float curveThickness = (float) (zoomRatio * thickness);
+
+        return new BasicStroke(curveThickness, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+    }
+
+    //-------------//
+    // updateGhost //
+    //-------------//
+    /**
+     * Update ghost location and geometry according to the provided new location.
+     *
+     * @param location ghost new location
+     */
+    private void updateGhost (Point location)
+    {
+        // We use the non-decorated symbol
+        final int staffInterline = staff.getSpecificInterline();
+        final MusicFont font = (ShapeSet.Heads.contains(ghost.getShape()))
+                ? MusicFont.getHeadFont(sheet.getScale(), staffInterline)
+                : MusicFont.getBaseFont(staffInterline);
+        ghost.deriveFrom(symbol, font, location, Alignment.AREA_CENTER);
+    }
+
     //-------------//
     // updateImage //
     //-------------//
     /**
-     * Build ghost image based on provided interline value.
+     * Update ghost image based on provided interline value.
+     * <ul>
+     * <li>Called when the mouse location enters the sheet view.
+     * <li>Called also when moving from one staff to another if these staves exhibit different
+     * interline values.
+     * </ul>
      *
-     * @param interline provided interline
+     * @param interline provided interline value
      */
     private void updateImage (int interline)
     {
-        // Adapt image to current zoom and interline
-        int zoomedInterline = (int) Math.rint(zoom.getRatio() * interline);
-        Shape shape = ghost.getShape();
-        BufferedImage image = MusicFont.buildImage(shape, zoomedInterline, true); // Decorated
+        // Adapt image to current interline
+        int zoomedInterline = (int) Math.rint(zoomRatio * interline);
+        MusicFont font = MusicFont.getBaseFont(zoomedInterline);
 
-        if (image != null) {
-            glass.setImage(image);
-        }
+        glass.setImage(symbol.getDecoratedSymbol().buildImage(font, curveStroke));
     }
 }

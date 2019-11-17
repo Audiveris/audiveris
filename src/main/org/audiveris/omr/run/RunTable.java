@@ -27,12 +27,14 @@ import org.audiveris.omr.image.PixelSource;
 import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.image.Table;
 import org.audiveris.omr.math.PointsCollector;
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.moments.ARTMoments;
 import org.audiveris.omr.moments.BasicARTExtractor;
 import org.audiveris.omr.moments.BasicARTMoments;
 import org.audiveris.omr.moments.GeometricMoments;
 import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import org.audiveris.omr.util.ByteUtil;
+import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Predicate;
 
 import org.slf4j.Logger;
@@ -43,6 +45,7 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,7 +69,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.stream.XMLStreamException;
-import org.audiveris.omr.util.Jaxb;
 
 /**
  * Class {@code RunTable} handles a rectangular assembly of oriented runs.
@@ -343,6 +345,22 @@ public class RunTable
     public Point computeCentroid (int left,
                                   int top)
     {
+        return PointUtil.rounded(computeCentroidDouble(left, top));
+    }
+
+    //-----------------------//
+    // computeCentroidDouble //
+    //-----------------------//
+    /**
+     * Compute the absolute centroid of this runtable, with provided offset.
+     *
+     * @param left abscissa offset
+     * @param top  ordinate offset
+     * @return absolute centroid
+     */
+    public Point2D computeCentroidDouble (int left,
+                                          int top)
+    {
         // Retrieve glyph foreground points
         getWeight(); // Make sure weight has been computed
 
@@ -363,7 +381,7 @@ public class RunTable
             y += yy[i];
         }
 
-        return new Point((int) Math.rint(x / weight), (int) Math.rint(y / weight));
+        return new Point2D.Double(x / weight, y / weight);
     }
 
     //-------------------------//

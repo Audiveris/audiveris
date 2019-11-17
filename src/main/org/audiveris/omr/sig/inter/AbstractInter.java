@@ -37,23 +37,31 @@ import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.MirrorRelation;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.Support;
+import org.audiveris.omr.sig.ui.DefaultEditor;
+import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.ui.util.BasicAttachmentHolder;
 import org.audiveris.omr.util.AbstractEntity;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Version;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.Area;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -118,12 +126,6 @@ public abstract class AbstractInter
     @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double3Adapter.class)
     protected double grade;
 
-    /** Deprecated. Old mirror instance, if any. */
-    @Deprecated
-    @XmlIDREF
-    @XmlAttribute(name = "mirror")
-    private AbstractInter oldMirror;
-
     /** Is it abnormal?. */
     @XmlAttribute(name = "abnormal")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
@@ -149,7 +151,7 @@ public abstract class AbstractInter
     @XmlJavaTypeAdapter(Jaxb.Double3Adapter.class)
     protected Double ctxGrade;
 
-    /** Related staff, if any. Marshalled via its ID */
+    /** Related staff, if any. Marshalled via its ID, see {@link #getStaffId()}. */
     @Navigable(false)
     protected Staff staff;
 
@@ -290,12 +292,12 @@ public abstract class AbstractInter
             return false;
         }
 
-        if ((glyph != null) && glyph.contains(point)) {
-            return true;
+        if (glyph != null) {
+            return glyph.contains(point);
         }
 
-        if ((area != null) && area.contains(point)) {
-            return true;
+        if (area != null) {
+            return area.contains(point);
         }
 
         if (this instanceof InterEnsemble) {
@@ -306,7 +308,14 @@ public abstract class AbstractInter
             }
         }
 
-        return isManual() || ((bounds != null) && isImplicit());
+        // Use central part of bounds
+        Point center = getCenter();
+
+        if (center != null) {
+            return center.distanceSq(point) <= bounds.width * bounds.height / 4.0;
+        }
+
+        return false;
     }
 
     //----------//
@@ -316,6 +325,24 @@ public abstract class AbstractInter
     public void decrease (double ratio)
     {
         grade *= (1 - ratio);
+    }
+
+    //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public void deriveFrom (ShapeSymbol symbol,
+                            MusicFont font,
+                            Point dropLocation,
+                            Alignment alignment)
+    {
+        final Dimension dim = symbol.getDimension(font);
+        final Rectangle box = new Rectangle(
+                dropLocation.x - (dim.width / 2),
+                dropLocation.y - (dim.height / 2),
+                dim.width,
+                dim.height);
+        setBounds(box);
     }
 
     //--------//
@@ -469,7 +496,7 @@ public abstract class AbstractInter
     @Override
     public void setBounds (Rectangle bounds)
     {
-        this.bounds = bounds;
+        this.bounds = (bounds != null) ? new Rectangle(bounds) : null;
     }
 
     //-----------//
@@ -592,6 +619,24 @@ public abstract class AbstractInter
         return sb.toString();
     }
 
+    //------------//
+    // isEditable //
+    //------------//
+    @Override
+    public boolean isEditable ()
+    {
+        return !(this instanceof InterEnsemble);
+    }
+
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new DefaultEditor(this);
+    }
+
     //-------------//
     // getEnsemble //
     //-------------//
@@ -712,9 +757,18 @@ public abstract class AbstractInter
     // getRelationCenter //
     //-------------------//
     @Override
-    public Point getRelationCenter ()
+    public Point2D getRelationCenter ()
     {
-        return getCenter(); // By default
+        if (getBounds() != null) {
+            return new Point2D.Double(bounds.x + (bounds.width / 2.0),
+                                      bounds.y + (bounds.height / 2.0));
+        }
+
+        if (glyph != null) {
+            return new Point(glyph.getCenter());
+        }
+
+        return null;
     }
 
     //----------//
@@ -1135,10 +1189,58 @@ public abstract class AbstractInter
     // searchLinks //
     //-------------//
     @Override
-    public Collection<Link> searchLinks (SystemInfo system,
-                                         boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system)
     {
         return Collections.emptySet(); // By default
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return Collections.emptySet(); // By default
+    }
+
+    //---------------------//
+    // searchObsoletelinks //
+    //---------------------//
+    /**
+     * Retrieve all obsolete support links.
+     * <p>
+     * This results in all support relations of the specified classes, that are not contained
+     * in the provided collection of non-obsolete relations.
+     *
+     * @param links   non-obsolete links
+     * @param classes specific support relation classes to check
+     * @return the collection of obsolete support links
+     */
+    protected Collection<Link> searchObsoletelinks (Collection<Link> links,
+                                                    Class<? extends Support>... classes)
+    {
+        Collection<Link> unlinks = null;
+
+        ExistingLoop:
+        for (Relation rel : sig.getRelations(this, classes)) {
+            final Inter other = sig.getOppositeInter(this, rel);
+
+            for (Link link : links) {
+                if (other == link.partner) {
+                    continue ExistingLoop;
+                }
+            }
+
+            if (unlinks == null) {
+                unlinks = new LinkedHashSet<>();
+            }
+
+            final boolean outgoing = (other == sig.getEdgeTarget(rel));
+            unlinks.add(new Link(other, rel, outgoing));
+        }
+
+        return (unlinks != null) ? unlinks : Collections.EMPTY_SET;
     }
 
     //-------//
@@ -1170,26 +1272,10 @@ public abstract class AbstractInter
     //-----------------//
     // upgradeOldStuff //
     //-----------------//
-    /**
-     * Temporary method to upgrade from oldMirror field to MirrorRelation.
-     *
-     * @return true if really upgraded
-     */
-    @Deprecated
-    public boolean upgradeOldStuff ()
+    @Override
+    public boolean upgradeOldStuff (List<Version> upgrades)
     {
-        if (oldMirror != null) {
-            // We keep only Head mirrors (not HeadChord "mirrors" any more)
-            if (this instanceof HeadInter) {
-                setMirror(oldMirror);
-            }
-
-            oldMirror = null;
-
-            return true;
-        }
-
-        return false;
+        return false; // By default
     }
 
     //---------------//

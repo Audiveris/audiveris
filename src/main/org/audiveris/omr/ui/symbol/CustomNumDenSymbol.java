@@ -21,13 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.font.TextLayout;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code CustomNumDenSymbol} displays a custom time signature, with just the N
@@ -77,9 +78,10 @@ public class CustomNumDenSymbol
         TextFont textFont = new TextFont((int) Math.rint(font.getSize2D() * 0.62));
         p.nLayout = textFont.layout("N");
         p.dLayout = textFont.layout("D");
-        p.rect = new Rectangle(
-                (int) Math.ceil(p.nLayout.getBounds().getWidth()),
-                (int) Math.ceil(p.nLayout.getBounds().getHeight() * 2.2));
+        p.rect = new Rectangle2D.Double(0,
+                                        0,
+                                        p.nLayout.getBounds().getWidth(),
+                                        p.nLayout.getBounds().getHeight() * 2.2);
 
         return p;
     }
@@ -90,22 +92,22 @@ public class CustomNumDenSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
 
-        Point loc = alignment.translatedPoint(TOP_CENTER, p.rect, location);
+        Point2D loc = alignment.translatedPoint(TOP_CENTER, p.rect, location);
         OmrFont.paint(g, p.nLayout, loc, TOP_CENTER);
 
-        loc.y += p.rect.height;
+        PointUtil.add(loc, 0, p.rect.getHeight());
         OmrFont.paint(g, p.dLayout, loc, BOTTOM_CENTER);
     }
 
     //--------//
     // Params //
     //--------//
-    protected class MyParams
+    protected static class MyParams
             extends Params
     {
 

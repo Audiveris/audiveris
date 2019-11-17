@@ -23,13 +23,13 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.text.TextWord;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -37,12 +37,18 @@ import static org.audiveris.omr.util.HorizontalSide.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code LyricItemInter} is specific subclass of Text, meant for one
- * item of a lyrics line (Syllable, Hyphen, Extension, Elision)
+ * Class {@code LyricItemInter} is a specific subclass of Text, meant for one
+ * item of a {@link LyricLineInter}.
+ * <p>
+ * Its kind is either Syllable, Hyphen, Extension or Elision.
  *
  * @author Hervé Bitteur
  */
@@ -81,15 +87,17 @@ public class LyricItemInter
     {
         super(textWord, Shape.LYRICS);
 
-        if (value.equals(ELISION_STRING)) {
-            itemKind = ItemKind.Elision;
-        } else if (value.equals(EXTENSION_STRING)) {
-            itemKind = ItemKind.Extension;
-        } else if (value.equals(HYPHEN_STRING)) {
-            itemKind = ItemKind.Hyphen;
-        } else {
-            itemKind = ItemKind.Syllable;
-        }
+        itemKind = inferItemKind();
+    }
+
+    /**
+     * Creates a new {@code LyricItemInter} object meant for manual assignment.
+     *
+     * @param grade inter grade
+     */
+    public LyricItemInter (double grade)
+    {
+        super(Shape.LYRICS, grade);
     }
 
     /**
@@ -138,9 +146,9 @@ public class LyricItemInter
     // getItemKind //
     //-------------//
     /**
-     * Report the kind of this lyric item
+     * Report the kind of this lyric item.
      *
-     * @return item kind (SYLLABLE, HYPHEN, ...)
+     * @return item kind (Syllable, Hyphen, ...)
      */
     public ItemKind getItemKind ()
     {
@@ -200,6 +208,35 @@ public class LyricItemInter
     }
 
     //----------//
+    // setValue //
+    //----------//
+    /**
+     * Assign a new text value, which may impact the lyric item kind.
+     *
+     * @param value the new value
+     */
+    @Override
+    public void setValue (String value)
+    {
+        super.setValue(value);
+
+        ItemKind oldKind = itemKind;
+        itemKind = inferItemKind();
+
+        if ((sig != null) && (itemKind != oldKind)) {
+            if (itemKind == ItemKind.Syllable) {
+                // Try to set relation with chord
+                mapToChord();
+            } else {
+                // Remove any chord relation
+                for (Relation rel : sig.getRelations(this, ChordSyllableRelation.class)) {
+                    sig.removeEdge(rel);
+                }
+            }
+        }
+    }
+
+    //----------//
     // getVoice //
     //----------//
     @Override
@@ -216,7 +253,7 @@ public class LyricItemInter
     // mapToChord //
     //------------//
     /**
-     * Set a ChordSyllableRelation between this lyric item and proper chord.
+     * Set a ChordSyllableRelation between this lyric item and proper head chord.
      */
     public void mapToChord ()
     {
@@ -230,70 +267,86 @@ public class LyricItemInter
             return;
         }
 
-        // Left is too far on left, middle is too far on right, we use width/4 (???)
-        int centerX = getLocation().x + (getBounds().width / 4);
-        SystemInfo system = getSig().getSystem();
-        boolean lookAbove = true;
-        Staff relatedStaff = system.getStaffAtOrAbove(location);
+        final SystemInfo system = sig.getSystem();
+        final Collection<Link> links = searchLinks(system);
 
-        if (relatedStaff == null) {
-            relatedStaff = system.getStaffAtOrBelow(location);
-            lookAbove = false;
-        }
-
-        setStaff(relatedStaff);
-
-        Part part = relatedStaff.getPart();
-        int maxDx = part.getSystem().getSheet().getScale().toPixels(constants.maxItemDx);
-
-        // A word can start in a measure and finish in the next measure
-        // Look for best aligned head-chord in proper staff
-        int bestDx = Integer.MAX_VALUE;
-        AbstractChordInter bestChord = null;
-
-        for (Measure measure : part.getMeasures()) {
-            // Select only possible measures
-            if ((measure.getAbscissa(LEFT, staff) - maxDx) > centerX) {
-                break;
-            }
-
-            if ((measure.getAbscissa(RIGHT, staff) + maxDx) < centerX) {
-                continue;
-            }
-
-            if (lookAbove) {
-                for (AbstractChordInter chord : measure.getHeadChordsAbove(getLocation())) {
-                    if (chord instanceof HeadChordInter && (chord
-                            .getBottomStaff() == relatedStaff)) {
-                        int dx = Math.abs(chord.getHeadLocation().x - centerX);
-
-                        if (bestDx > dx) {
-                            bestDx = dx;
-                            bestChord = chord;
-                        }
-                    }
-                }
-            } else {
-                for (AbstractChordInter chord : measure.getHeadChordsBelow(getLocation())) {
-                    if (chord instanceof HeadChordInter && (chord.getTopStaff() == relatedStaff)) {
-                        int dx = Math.abs(chord.getHeadLocation().x - centerX);
-
-                        if (bestDx > dx) {
-                            bestDx = dx;
-                            bestChord = chord;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (bestDx <= maxDx) {
-            sig.addEdge(bestChord, this, new ChordSyllableRelation());
-
+        if (links.isEmpty()) {
             return;
         }
 
-        logger.info("No head-chord for {}", this);
+        final Link link = links.iterator().next();
+        final HeadChordInter headChord = (HeadChordInter) link.partner;
+
+        // Here, headChord is the best acceptable candidate.
+        // But it may already be linked to another lyric item and if this other item belongs
+        // to the same lyric line, we have a mutual exclusion to fix.
+        final int xChord = headChord.getHeadLocation().x;
+        final double centerX = getReferenceAbscissa();
+        final double bestDx = Math.abs(xChord - centerX);
+        final LyricLineInter line = (LyricLineInter) getEnsemble();
+
+        for (Relation rel : sig.getRelations(headChord, ChordSyllableRelation.class)) {
+            LyricItemInter other = (LyricItemInter) sig.getOppositeInter(headChord, rel);
+
+            if (other.getEnsemble() == line) {
+                double otherX = other.getReferenceAbscissa();
+                double otherDx = Math.abs(xChord - otherX);
+
+                if (bestDx >= otherDx) {
+                    logger.info("{} preferred to {} in chord-lyric link.", other, this);
+                    return;
+                } else {
+                    logger.info("{} preferred to {} in chord-lyric link.", this, other);
+                    sig.removeEdge(rel);
+                }
+            }
+        }
+
+        link.applyTo(this);
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        // We can map only syllables
+        if (itemKind != ItemKind.Syllable) {
+            return Collections.EMPTY_LIST;
+        }
+
+        List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+        Collections.sort(systemHeadChords, Inters.byAbscissa);
+
+        Link link = lookupLink(system, systemHeadChords);
+
+        return (link == null) ? Collections.EMPTY_LIST : Collections.singleton(link);
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, ChordSyllableRelation.class);
+    }
+
+    //----------------------//
+    // getReferenceAbscissa //
+    //----------------------//
+    /**
+     * Report the reference abscissa of this lyric item to be used for chord link test.
+     * <p>
+     * Left is too far on left, middle is too far on right, we use width/4 as a good heuristic
+     *
+     * @return the x to use to chord link test
+     */
+    private double getReferenceAbscissa ()
+    {
+        return getLocation().getX() + (getBounds().width / 4.0);
     }
 
     //-----------//
@@ -330,21 +383,132 @@ public class LyricItemInter
                        || str.equals(HYPHEN_STRING);
     }
 
+    //---------------//
+    // inferItemKind //
+    //---------------//
+    /**
+     * Infer item kind from content.
+     */
+    private ItemKind inferItemKind ()
+    {
+        if (ELISION_STRING.equals(value)) {
+            return ItemKind.Elision;
+        } else if (EXTENSION_STRING.equals(value)) {
+            return ItemKind.Extension;
+        } else if (HYPHEN_STRING.equals(value)) {
+            return ItemKind.Hyphen;
+        } else {
+            return ItemKind.Syllable;
+        }
+    }
+
+    //------------//
+    // lookupLink //
+    //------------//
+    /**
+     * Try to detect a link between this lyric item and a HeadChord nearby.
+     *
+     * @param system           containing system
+     * @param systemHeadChords ordered collection of head chords in system
+     * @return the link found or null
+     */
+    private Link lookupLink (SystemInfo system,
+                             List<Inter> systemHeadChords)
+    {
+        if (systemHeadChords.isEmpty()) {
+            return null;
+        }
+
+        final double centerX = getReferenceAbscissa();
+        final boolean lookAbove;
+
+        if (staff == null) {
+            Staff relatedStaff = system.getStaffAtOrAbove(location);
+
+            if (relatedStaff == null) {
+                relatedStaff = system.getStaffAtOrBelow(location);
+                lookAbove = false;
+            } else {
+                lookAbove = true;
+            }
+
+            setStaff(relatedStaff);
+        } else {
+            lookAbove = staff.pitchPositionOf(location) >= 0;
+        }
+
+        part = staff.getPart();
+        int maxDx = system.getSheet().getScale().toPixels(constants.maxItemDx);
+
+        // A word can start in a measure and finish in the next measure
+        // Look for best aligned head-chord in proper staff
+        double bestDx = Double.MAX_VALUE;
+        AbstractChordInter bestChord = null;
+
+        for (Measure measure : part.getMeasures()) {
+            // Select only possible measures
+            if ((measure.getAbscissa(LEFT, staff) - maxDx) > centerX) {
+                break;
+            }
+
+            if ((measure.getAbscissa(RIGHT, staff) + maxDx) < centerX) {
+                continue;
+            }
+
+            if (lookAbove) {
+                for (AbstractChordInter chord : measure.getHeadChordsAbove(getLocation())) {
+                    if (chord instanceof HeadChordInter
+                                && (chord.getBottomStaff() == staff)) {
+                        double dx = Math.abs(chord.getHeadLocation().x - centerX);
+
+                        if (bestDx > dx) {
+                            bestDx = dx;
+                            bestChord = chord;
+                        }
+                    }
+                }
+            } else {
+                for (AbstractChordInter chord : measure.getHeadChordsBelow(getLocation())) {
+                    if (chord instanceof HeadChordInter && (chord.getTopStaff() == staff)) {
+                        double dx = Math.abs(chord.getHeadLocation().x - centerX);
+
+                        if (bestDx > dx) {
+                            bestDx = dx;
+                            bestChord = chord;
+                        }
+                    }
+                }
+            }
+        }
+
+        if ((bestChord != null) && (bestDx <= maxDx)) {
+            return new Link(bestChord, new ChordSyllableRelation(), false);
+        }
+
+        return null;
+    }
+
+    //----------//
+    // ItemKind //
+    //----------//
     /**
      * Describes the kind of this lyrics item.
      */
     public static enum ItemKind
     {
-        /** Just an elision */
+        /** Just an elision. */
         Elision,
-        /** Just an extension */
+        /** Just an extension. */
         Extension,
-        /** A hyphen between syllables */
+        /** A hyphen between syllables. */
         Hyphen,
-        /** A real syllable */
+        /** A real syllable. */
         Syllable;
     }
 
+    //--------------//
+    // SyllabicType //
+    //--------------//
     /**
      * Describes more precisely a syllable inside a word.
      */

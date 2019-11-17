@@ -151,6 +151,9 @@ public class StraightFilament
         return Double.POSITIVE_INFINITY;
     }
 
+    //-----------------//
+    // getMeanDistance //
+    //-----------------//
     @Override
     public double getMeanDistance ()
     {
@@ -171,6 +174,17 @@ public class StraightFilament
         } else {
             return getBasicLine().xAtY(coord);
         }
+    }
+
+    //---------------//
+    // getCenterLine //
+    //---------------//
+    @Override
+    public Line2D getCenterLine ()
+    {
+        checkLine();
+
+        return line.toCenterLine();
     }
 
     //------------//
@@ -237,7 +251,7 @@ public class StraightFilament
             checkLine();
 
             if (startPoint != null) {
-                g.draw(getLine());
+                g.draw(getCenterLine());
 
                 // Then the absolute defining points?
                 if (showPoints) {

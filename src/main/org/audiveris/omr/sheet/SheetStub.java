@@ -23,7 +23,7 @@ package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
-import static org.audiveris.omr.WellKnowns.LINE_SEPARATOR;
+import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.image.FilterDescriptor;
@@ -48,6 +48,7 @@ import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.ZipFileSystem;
 import org.audiveris.omr.util.param.Param;
 import org.audiveris.omr.util.param.StringParam;
+import org.audiveris.omr.util.Version;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -164,6 +165,10 @@ public class SheetStub
     /** Index of sheet, counted from 1, in the image file. */
     @XmlAttribute(name = "number")
     private final int number;
+
+    /** Related Audiveris version that last operated on this sheet. */
+    @XmlAttribute(name = "version")
+    private volatile String versionValue;
 
     /** Indicate a sheet that contains no music. */
     @XmlAttribute
@@ -321,14 +326,14 @@ public class SheetStub
             throw new StepException("Dummy decision");
         }
 
-        logger.warn(msg.replaceAll(LINE_SEPARATOR, " "));
+        logger.warn(msg.replaceAll(WellKnowns.LINE_SEPARATOR, " "));
 
         if (OMR.gui != null) {
             StubsController.invokeSelect(this);
         }
 
         if ((OMR.gui == null) || (OMR.gui.displayConfirmation(
-                msg + LINE_SEPARATOR + "OK for discarding this sheet?"))) {
+                msg + WellKnowns.LINE_SEPARATOR + "OK for discarding this sheet?"))) {
             invalidate();
 
             if (book.isMultiSheet()) {
@@ -644,6 +649,7 @@ public class SheetStub
                             // Complete sheet reload
                             watch.start("afterReload");
                             sh.afterReload(this);
+                            setVersionValue(WellKnowns.TOOL_REF); // Sheet is now OK WRT tool version
                             logger.info("Loaded {}", sheetFile);
                         } catch (IOException |
                                  JAXBException ex) {
@@ -798,6 +804,49 @@ public class SheetStub
         return !invalid;
     }
 
+    //------------//
+    // getVersion //
+    //------------//
+    /**
+     * Report the sheet version, specific if any, otherwise the book version
+     *
+     * @return the sheet version, specific or not.
+     */
+    public Version getVersion ()
+    {
+        if (versionValue == null) {
+            return book.getVersion();
+        }
+
+        return new Version(versionValue);
+    }
+
+    //-----------------//
+    // getVersionValue //
+    //-----------------//
+    /**
+     * Report the specific sheet version, if any.
+     *
+     * @return the version, perhaps null
+     */
+    public String getVersionValue ()
+    {
+        return versionValue;
+    }
+
+    //-----------------//
+    // setVersionValue //
+    //-----------------//
+    /**
+     * Set a specific software version for this sheet.
+     *
+     * @param value the version value to set
+     */
+    public void setVersionValue (String value)
+    {
+        this.versionValue = value;
+    }
+
     //-----------//
     // reachStep //
     //-----------//
@@ -910,7 +959,7 @@ public class SheetStub
                     @Override
                     public void run ()
                     {
-                        StubsController.getInstance().reDisplay(SheetStub.this);
+                        StubsController.getInstance().display(SheetStub.this);
                     }
                 };
 
@@ -957,9 +1006,9 @@ public class SheetStub
     public void storeSheet ()
             throws Exception
     {
-        if (modified) {
-            final Lock lock = book.getLock();
-            lock.lock();
+        if (isModified() || isUpgraded()) {
+            final Lock bookLock = book.getLock();
+            bookLock.lock();
 
             try {
                 Path bookPath = BookManager.getDefaultSavePath(book);
@@ -970,7 +1019,7 @@ public class SheetStub
                 sheet.store(sheetFolder, null);
                 root.getFileSystem().close();
             } finally {
-                lock.unlock();
+                bookLock.unlock();
             }
         }
     }
@@ -980,18 +1029,19 @@ public class SheetStub
     //-----------//
     /**
      * Swap sheet material.
-     * If modified and not discarded, sheet material will be stored before being disposed of.
+     * <p>
+     * If modified or upgraded, sheet material will be stored before being disposed of.
      */
     public void swapSheet ()
     {
         try {
-            if (isModified()) {
+            if (isModified() || isUpgraded()) {
                 logger.info("{} storing", this);
                 storeSheet();
             }
 
             if (sheet != null) {
-                logger.info("{} disposed", sheet);
+                logger.info("Disposed sheet{}", sheet.getStub().getNum());
                 sheet = null;
                 Memory.gc(); // Trigger a garbage collection...
             }

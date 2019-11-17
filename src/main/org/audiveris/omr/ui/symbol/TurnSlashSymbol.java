@@ -26,9 +26,9 @@ import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Stroke;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -45,10 +45,18 @@ public class TurnSlashSymbol
 
     /**
      * Creates a new TurnSlashSymbol object.
+     */
+    public TurnSlashSymbol ()
+    {
+        this(false);
+    }
+
+    /**
+     * Creates a new TurnSlashSymbol object.
      *
      * @param isIcon true for an icon
      */
-    public TurnSlashSymbol (boolean isIcon)
+    protected TurnSlashSymbol (boolean isIcon)
     {
         super(isIcon, Shape.TURN_SLASH, false);
     }
@@ -66,17 +74,18 @@ public class TurnSlashSymbol
     // getParams //
     //-----------//
     @Override
-    protected Params getParams (MusicFont font)
+    protected MyParams getParams (MusicFont font)
     {
         MyParams p = new MyParams();
 
         p.layout = font.layout(turnSymbol.getString());
 
         Rectangle2D rect = p.layout.getBounds();
-        p.rect = new Rectangle(
-                (int) Math.ceil(rect.getWidth()),
-                (int) Math.ceil(rect.getHeight() * 1.4));
-        p.stroke = new BasicStroke(Math.max(1f, p.rect.width / 20f));
+        p.rect = new Rectangle2D.Double(0,
+                                        0,
+                                        rect.getWidth(),
+                                        rect.getHeight() * 1.4);
+        p.stroke = new BasicStroke(Math.max(1f, (float) p.rect.getWidth() / 20f));
 
         return p;
     }
@@ -87,25 +96,26 @@ public class TurnSlashSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
-        Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+        Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
         MusicFont.paint(g, p.layout, loc, AREA_CENTER);
 
         Stroke oldStroke = g.getStroke();
         g.setStroke(p.stroke);
 
-        Point top = alignment.translatedPoint(TOP_CENTER, p.rect, location);
-        g.drawLine(loc.x, top.y, loc.x, top.y + p.rect.height);
+        Point2D top = alignment.translatedPoint(TOP_CENTER, p.rect, location);
+        g.draw(new Line2D.Double(loc.getX(), top.getY(),
+                                 loc.getX(), top.getY() + p.rect.getHeight()));
         g.setStroke(oldStroke);
     }
 
     //--------//
     // Params //
     //--------//
-    private class MyParams
+    private static class MyParams
             extends Params
     {
 

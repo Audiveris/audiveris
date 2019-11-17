@@ -23,14 +23,19 @@ package org.audiveris.omr.sig.inter;
 
 import ij.process.ByteProcessor;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.glyph.ShapeSet;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.AbstractStemConnection;
@@ -39,13 +44,17 @@ import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
 import static org.audiveris.omr.sig.relation.StemPortion.STEM_BOTTOM;
 import static org.audiveris.omr.sig.relation.StemPortion.STEM_TOP;
+import org.audiveris.omr.sig.ui.InterEditor;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.Predicate;
+import org.audiveris.omr.util.Version;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +64,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -71,26 +81,33 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlRootElement(name = "stem")
 public class StemInter
-        extends AbstractInter
+        extends AbstractVerticalInter
 {
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StemInter.class);
 
+    /** Default thickness of a stem. */
+    public static final double DEFAULT_THICKNESS = constants.defaultThickness.getValue();
+
     /** Anchor vertical margin, relative to head height. */
-    private static final double ANCHOR_MARGIN_RATIO = 0.67;
+    private static final double ANCHOR_MARGIN_RATIO = constants.anchorMarginRatio.getValue();
 
     // Persistent data
     //----------------
     //
     /** Top point. */
-    @XmlElement
+    @Deprecated
+    @XmlElement(name = "top")
     @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
-    private Point2D top;
+    private Point2D oldTop;
 
     /** Bottom point. */
-    @XmlElement
+    @Deprecated
+    @XmlElement(name = "bottom")
     @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
-    private Point2D bottom;
+    private Point2D oldBottom;
 
     /**
      * Creates a new StemInter object.
@@ -101,9 +118,7 @@ public class StemInter
     public StemInter (Glyph glyph,
                       GradeImpacts impacts)
     {
-        super(glyph, null, Shape.STEM, impacts);
-        top = glyph.getStartPoint(VERTICAL);
-        bottom = glyph.getStopPoint(VERTICAL);
+        super(glyph, Shape.STEM, impacts);
     }
 
     /**
@@ -115,12 +130,7 @@ public class StemInter
     public StemInter (Glyph glyph,
                       double grade)
     {
-        super(glyph, null, Shape.STEM, grade);
-
-        if (glyph != null) {
-            top = glyph.getStartPoint(VERTICAL);
-            bottom = glyph.getStopPoint(VERTICAL);
-        }
+        super(glyph, Shape.STEM, grade);
     }
 
     /**
@@ -128,7 +138,7 @@ public class StemInter
      */
     private StemInter ()
     {
-        super(null, null, null, null);
+        super(null, null, null);
     }
 
     //--------//
@@ -197,8 +207,9 @@ public class StemInter
                     }
                 }
 
-                if (yAnchor > top.getY()) {
-                    return new Line2D.Double(new Point2D.Double(top.getX(), yAnchor), bottom);
+                if (yAnchor > median.getY1()) {
+                    return new Line2D.Double(new Point2D.Double(median.getX1(), yAnchor),
+                                             median.getP2());
                 }
             } else if (dir < 0) {
                 // Stem up, heads are at bottom of stem
@@ -214,14 +225,15 @@ public class StemInter
                     }
                 }
 
-                if (yAnchor < bottom.getY()) {
-                    return new Line2D.Double(top, new Point2D.Double(bottom.getX(), yAnchor));
+                if (yAnchor < median.getY2()) {
+                    return new Line2D.Double(median.getP1(), new Point2D.Double(median.getX2(),
+                                                                                yAnchor));
                 }
             }
         }
 
         // No change
-        return new Line2D.Double(top, bottom);
+        return new Line2D.Double(median.getX1(), median.getY1(), median.getX2(), median.getY2());
     }
 
     //------------------//
@@ -300,8 +312,8 @@ public class StemInter
             return null;
         }
 
-        Point2D extTop = new Point2D.Double(top.getX(), top.getY());
-        Point2D extBottom = new Point2D.Double(bottom.getX(), bottom.getY());
+        Point2D extTop = new Point2D.Double(median.getX1(), median.getY1());
+        Point2D extBottom = new Point2D.Double(median.getX2(), median.getY2());
 
         for (Relation rel : sig.getRelations(this, AbstractStemConnection.class)) {
             AbstractStemConnection link = (AbstractStemConnection) rel;
@@ -385,17 +397,6 @@ public class StemInter
     }
 
     //-----------//
-    // getBottom //
-    //-----------//
-    /**
-     * @return the bottom
-     */
-    public Point2D getBottom ()
-    {
-        return bottom;
-    }
-
-    //-----------//
     // getChords //
     //-----------//
     /**
@@ -432,6 +433,15 @@ public class StemInter
         return chords;
     }
 
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new Editor(this);
+    }
+
     //----------//
     // getHeads //
     //----------//
@@ -453,28 +463,47 @@ public class StemInter
         return set;
     }
 
-    //-----------//
-    // getMedian //
-    //-----------//
+    //-------------//
+    // getMinGrade //
+    //-------------//
     /**
-     * Report the stem median line which goes from stem top to stem bottom.
+     * Report the minimum acceptable grade
      *
-     * @return the stem median line
+     * @return minimum grade
      */
-    public Line2D getMedian ()
+    public static double getMinGrade ()
     {
-        return new Line2D.Double(top, bottom);
+        return AbstractInter.getMinGrade();
     }
 
-    //--------//
-    // getTop //
-    //--------//
-    /**
-     * @return the top
-     */
-    public Point2D getTop ()
+    //----------//
+    // getStaff //
+    //----------//
+    @Override
+    public Staff getStaff ()
     {
-        return top;
+        if (staff != null) {
+            return staff;
+        }
+
+        // Check related chord(s)
+        Staff stemStaff = null;
+
+        for (HeadChordInter chord : getChords()) {
+            Staff chordStaff = chord.getStaff();
+
+            if (chordStaff == null) {
+                return null;
+            }
+
+            if (stemStaff != null && stemStaff != chordStaff) {
+                return null;
+            }
+
+            stemStaff = chordStaff;
+        }
+
+        return staff = stemStaff;
     }
 
     //----------//
@@ -490,6 +519,24 @@ public class StemInter
         }
 
         return null;
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Report item width.
+     *
+     * @return the width
+     */
+    @Override
+    public Double getWidth ()
+    {
+        if (width != null) {
+            return width;
+        }
+
+        return DEFAULT_THICKNESS;
     }
 
     //-------------//
@@ -561,77 +608,153 @@ public class StemInter
         super.remove(extensive);
     }
 
-    //-----------//
-    // setBounds //
-    //-----------//
-    @Override
-    public void setBounds (Rectangle bounds)
-    {
-        super.setBounds(bounds);
-
-        if (top == null) {
-            top = new Point2D.Double(bounds.x + (0.5 * bounds.width), bounds.y);
-        }
-
-        if (bottom == null) {
-            bottom = new Point2D.Double(
-                    bounds.x + (0.5 * bounds.width),
-                    (bounds.y + bounds.height) - 1);
-        }
-    }
-
-    //----------//
-    // setGlyph //
-    //----------//
-    @Override
-    public void setGlyph (Glyph glyph)
-    {
-        super.setGlyph(glyph);
-
-        top = glyph.getStartPoint(VERTICAL);
-        bottom = glyph.getStopPoint(VERTICAL);
-    }
-
-    //----------//
-    // getStaff //
-    //----------//
-    @Override
-    public Staff getStaff ()
-    {
-        if (staff != null) {
-            return staff;
-        }
-
-        // Check related chord(s)
-        Staff stemStaff = null;
-
-        for (HeadChordInter chord : getChords()) {
-            Staff chordStaff = chord.getStaff();
-
-            if (chordStaff == null) {
-                return null;
-            }
-
-            if (stemStaff != null && stemStaff != chordStaff) {
-                return null;
-            }
-
-            stemStaff = chordStaff;
-        }
-
-        return staff = stemStaff;
-    }
-
     //-------------//
-    // getMinGrade //
+    // searchLinks //
     //-------------//
     /**
-     * Report the minimum acceptable grade
+     * {@inheritDoc}
+     * <p>
+     * Specifically, look for heads nearby that need a stem relation.
      *
-     * @return minimum grade
+     * @return collection of head links, perhaps empty
      */
-    public static double getMinGrade ()
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
     {
-        return AbstractInter.getMinGrade();
+        Collection<Link> links = null;
+
+        // Search for non-linked heads in a lookup area around the stem
+        final Scale scale = system.getSheet().getScale();
+        final int maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum(manual));
+        final int maxYGap = scale.toPixels(HeadStemRelation.getYGapMaximum(manual));
+        final Rectangle luBox = getBounds();
+        luBox.grow(maxHeadOutDx, maxYGap);
+
+        List<Inter> heads = system.getSig().inters(new Predicate<Inter>()
+        {
+            @Override
+            public boolean check (Inter inter)
+            {
+                return !inter.isRemoved()
+                               && ShapeSet.StemHeads.contains(inter.getShape())
+                               && inter.getBounds().intersects(luBox)
+                               && ((HeadInter) inter).getStems().isEmpty();
+            }
+        });
+
+        // Keep only heads that would link to this stem
+        final List<Inter> thisStem = new ArrayList<>();
+        thisStem.add(this);
+
+        for (Inter inter : heads) {
+            HeadInter head = (HeadInter) inter;
+            Link link = head.lookupLink(thisStem, system);
+
+            if ((link != null) && (link.partner == this)) {
+                if (links == null) {
+                    links = new ArrayList<>();
+                }
+
+                // Use link reverse
+                Link rev = new Link(head, link.relation, false);
+                links.add(rev);
+            }
+        }
+
+        // TODO: solve conflicts if any (perhaps using preferred corners & relation.grade)
+        return (links == null) ? Collections.EMPTY_LIST : links;
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, HeadStemRelation.class);
+    }
+
+    //-----------------//
+    // upgradeOldStuff //
+    //-----------------//
+    @Override
+    public boolean upgradeOldStuff (List<Version> upgrades)
+    {
+        boolean upgraded = false;
+
+        if (upgrades.contains(Versions.INTER_GEOMETRY)) {
+            if (width == null) {
+                if (glyph != null) {
+                    width = glyph.getMeanThickness(VERTICAL);
+                } else {
+                    width = DEFAULT_THICKNESS;
+                }
+
+                upgraded = true;
+            }
+
+            if ((oldTop != null) && (oldBottom != null)) {
+                // These old integer points were min/max points INSIDE the stem
+                setMedian(new Point2D.Double(oldTop.getX() + 0.5, oldTop.getY()),
+                          new Point2D.Double(oldBottom.getX() + 0.5, oldBottom.getY() + 1));
+                oldTop = oldBottom = null;
+                upgraded = true;
+            }
+
+            if (upgraded) {
+                computeArea();
+            }
+        }
+
+        return upgraded;
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Double defaultThickness = new Constant.Double(
+                "pixels",
+                3.0,
+                "Default stem width");
+
+        private final Constant.Ratio anchorMarginRatio = new Constant.Ratio(
+                0.67,
+                "Anchor vertical margin, relative to head height");
+    }
+
+    //--------//
+    // Editor //
+    //--------//
+    /**
+     * User editor for a stem.
+     * <p>
+     * See {@link AbstractVerticalInter.Editor}
+     */
+    private static class Editor
+            extends AbstractVerticalInter.Editor
+    {
+
+        public Editor (StemInter stem)
+        {
+            super(stem, true);
+        }
+
+        /**
+         * Invalidate internal data of all chords that use this stem.
+         */
+        @Override
+        protected void updateChords ()
+        {
+            final StemInter stem = (StemInter) inter;
+
+            for (AbstractChordInter chord : stem.getChords()) {
+                chord.invalidateCache();
+            }
+        }
     }
 }
