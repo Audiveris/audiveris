@@ -48,10 +48,10 @@ public abstract class AreaUtil
     /**
      * Create a parallelogram mostly horizontal, where left and right
      * sides are short and vertical.
-     * This is most useful for beams.
+     * This is most useful for beams and ledgers.
      * <p>
      * Nota: the defining points are meant to be the extrema points
-     * <b>inside</b> the parallelogram.
+     * <b>on the borders of</b> the parallelogram.
      *
      * @param left   left point of median line
      * @param right  right point of median line
@@ -65,9 +65,9 @@ public abstract class AreaUtil
         final double dy = height / 2; // Half height
         final Path2D path = new Path2D.Double();
         path.moveTo(left.getX(), left.getY() - dy); // Upper left
-        path.lineTo(right.getX() + 1, right.getY() - dy); // Upper right
-        path.lineTo(right.getX() + 1, right.getY() + dy + 1); // Lower right
-        path.lineTo(left.getX(), left.getY() + dy + 1); // Lower left
+        path.lineTo(right.getX(), right.getY() - dy); // Upper right
+        path.lineTo(right.getX(), right.getY() + dy); // Lower right
+        path.lineTo(left.getX(), left.getY() + dy); // Lower left
         path.closePath();
 
         return new Area(path);
@@ -162,7 +162,7 @@ public abstract class AreaUtil
      * This is most useful for stems.
      * <p>
      * Nota: the defining points are meant to be the extrema points
-     * <b>inside</b> the parallelogram.
+     * <b>on the borders of</b> the parallelogram.
      *
      * @param top    top point of median line
      * @param bottom bottom point of median line
@@ -176,9 +176,9 @@ public abstract class AreaUtil
         final double dx = width / 2; // Half width
         final Path2D path = new Path2D.Double();
         path.moveTo(top.getX() - dx, top.getY()); // Upper left
-        path.lineTo(top.getX() + dx + 1, top.getY()); // Upper right
-        path.lineTo(bottom.getX() + dx + 1, bottom.getY() + 1); // Lower right
-        path.lineTo(bottom.getX() - dx, bottom.getY() + 1); // Lower left
+        path.lineTo(top.getX() + dx, top.getY()); // Upper right
+        path.lineTo(bottom.getX() + dx, bottom.getY()); // Lower right
+        path.lineTo(bottom.getX() - dx, bottom.getY()); // Lower left
         path.closePath();
 
         return new Area(path);
@@ -192,7 +192,8 @@ public abstract class AreaUtil
      * and left and right sides are long and rather vertical.
      * This is most useful for barlines.
      * <p>
-     * Nota: the defining points are meant to be the extrema points <b>inside</b> the ribbon.
+     * Nota: the defining points are meant to be the precise extrema Point2D values <b>on the
+     * borders of</b> the ribbon.
      *
      * @param median the defining vertical line (either a straight BasicLine or a more wavy
      *               NaturalSpline)
@@ -207,14 +208,14 @@ public abstract class AreaUtil
 
         // Left line
         path.append(
-                median.getPathIterator(AffineTransform.getTranslateInstance(-dx + 0.5, 0)),
+                median.getPathIterator(AffineTransform.getTranslateInstance(-dx, 0)),
                 false);
 
         // Right line (reversed)
         path.append(
                 ReversePathIterator.getReversePathIterator(
                         median,
-                        AffineTransform.getTranslateInstance(dx + 0.5, 0)),
+                        AffineTransform.getTranslateInstance(dx, 0)),
                 true);
 
         path.closePath();

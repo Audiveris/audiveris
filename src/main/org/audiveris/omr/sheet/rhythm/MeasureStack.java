@@ -162,9 +162,9 @@ public class MeasureStack
      * Anomaly detected, if any.
      * Deprecated since individual measures can now be flagged as abnormal.
      */
+    @Deprecated
     @XmlAttribute(name = "abnormal")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
-    @Deprecated
     private boolean abnormal;
 
     // Transient data

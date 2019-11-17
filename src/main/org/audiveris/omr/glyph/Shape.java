@@ -78,7 +78,7 @@ public enum Shape
 {
     /**
      * =================================================================================
-     * Nota: Avoid changing the order of these physical shapes, otherwise the evaluators
+     * Nota: Avoid changing the order of the physical shapes, otherwise the evaluators
      * won't detect this and you'll have to retrain them on your own.
      * =============================================================================================
      */
@@ -383,8 +383,6 @@ public enum Shape
     REPEAT_DOT_PAIR("Pair of repeat dots"),
     NOISE("Too small stuff", Colors.SHAPE_UNKNOWN),
     LEDGER("Ledger"),
-    ENDING_HORIZONTAL("Horizontal part of ending"),
-    ENDING_VERTICAL("Vertical part of ending"),
     SEGMENT("Wedge or ending segment"),
     LYRICS("Lyrics", Colors.SCORE_LYRICS),
 
@@ -751,14 +749,18 @@ public enum Shape
      */
     public ShapeSymbol getDecoratedSymbol ()
     {
-        // Avoid a new search, just use the undecorated symbol instead
         if (hasNoDecoratedSymbol) {
+            // Avoid a new search, just use the undecorated symbol instead
             return getSymbol();
         }
 
-        // Try to build / load a decorated symbol
         if (decoratedSymbol == null) {
-            setDecoratedSymbol(Symbols.getSymbol(this, true));
+            // Try to build / load a decorated symbol
+            ShapeSymbol symb = getSymbol();
+
+            if (symb != null) {
+                setDecoratedSymbol(symb.getDecoratedSymbol());
+            }
 
             if (decoratedSymbol == null) {
                 hasNoDecoratedSymbol = true;
@@ -767,7 +769,7 @@ public enum Shape
             }
         }
 
-        // Simply return the cached decorated symbol
+        // Return the cached decorated symbol
         return decoratedSymbol;
     }
 

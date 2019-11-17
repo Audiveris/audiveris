@@ -48,6 +48,7 @@ public interface NearLine
      * Return the approximating straight line computed on the glyph.
      *
      * @return The absolute line
+     * @see #getCenterLine()
      */
     Line2D getLine ();
 
@@ -59,6 +60,15 @@ public interface NearLine
      * @return the absolute value of the mean distance
      */
     double getMeanDistance ();
+
+    /**
+     * Report the approximating straight line computed on glyph pixels, focused on pixel
+     * centers rather than pixel top left corner and going from border to border.
+     *
+     * @return the center line, ready to be displayed
+     * @see #getLine()
+     */
+    Line2D getCenterLine ();
 
     /**
      * Report the tangent of glyph line angle with abscissa axis.

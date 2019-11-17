@@ -55,6 +55,7 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import static org.audiveris.omr.util.VerticalSide.*;
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.Version;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +78,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -101,6 +103,12 @@ public class HeadInter
     // Persistent data
     //----------------
     //
+    /** Deprecated. Old mirror instance, if any. */
+    @Deprecated
+    @XmlIDREF
+    @XmlAttribute(name = "mirror")
+    protected AbstractInter oldMirror;
+
     /** Absolute location of head template pivot. */
     @XmlElement
     @XmlJavaTypeAdapter(Jaxb.PointAdapter.class)
@@ -220,6 +228,8 @@ public class HeadInter
         Line2D midLine = getMidLine();
 
         if (midLine != null) {
+            // This head is "shared" with another head, and we use the point location with respect
+            // to head mid line to disambiguate which head is pointed at.
             return midLine.relativeCCW(point) < 0;
         }
 
@@ -499,7 +509,7 @@ public class HeadInter
      * @return the head relation center, shifted for a shared head
      */
     @Override
-    public Point getRelationCenter ()
+    public Point2D getRelationCenter ()
     {
         final Point center = getCenter();
 
@@ -508,19 +518,17 @@ public class HeadInter
         }
 
         final Rectangle box = getBounds();
-        final int dx = box.width / 5;
-        final int dy = box.height / 5;
+        final double dx = box.width / 5.0;
+        final double dy = box.height / 5.0;
 
         for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
             final HeadStemRelation rel = (HeadStemRelation) relation;
 
             if (rel.getHeadSide() == HorizontalSide.LEFT) {
-                center.translate(-dx, +dy);
+                return new Point2D.Double(center.getX() - dx, center.getY() + dy);
             } else {
-                center.translate(+dx, -dy);
+                return new Point2D.Double(center.getX() + dx, center.getY() - dy);
             }
-
-            return center;
         }
 
         return center; // Should not occur...
@@ -721,61 +729,49 @@ public class HeadInter
      * @return stem link, perhaps empty
      */
     @Override
-    public Collection<Link> searchLinks (SystemInfo system,
-                                         boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system)
     {
+        Link link = null;
+
         if (ShapeSet.StemHeads.contains(shape)) {
-            // Not very optimized!
             List<Inter> systemStems = system.getSig().inters(StemInter.class);
             Collections.sort(systemStems, Inters.byAbscissa);
 
-            Link link = lookupLink(systemStems);
-
-            if (link != null) {
-                if (doit) {
-                    link.applyTo(this);
-                }
-
-                return Collections.singleton(link);
-            }
+            link = lookupLink(systemStems, system);
         }
 
-        return Collections.emptyList();
+        return (link == null) ? Collections.EMPTY_LIST : Collections.singleton(link);
     }
-//
-//    //------------------//
-//    // fixDuplicateWith //
-//    //------------------//
-//    /**
-//     * Fix head duplication on two staves.
-//     * <p>
-//     * We have two note heads from different staves and with overlapping bound.
-//     * Vertical gap between the staves must be small and crowded, leading to head being "duplicated"
-//     * in both staves.
-//     * <p>
-//     * Assuming there is a linked stem, we could use sibling stem/head in a beam group if any.
-//     * Or we can simply use stem direction, assumed to point to the "true" containing staff.
-//     *
-//     * @param that the other inter
-//     */
-//    private void fixDuplicateWith (HeadInter that)
-//            throws DeletedInterException
-//    {
-//        for (Relation rel : sig.getRelations(this, HeadStemRelation.class)) {
-//            StemInter thisStem = (StemInter) sig.getOppositeInter(this, rel);
-//            int thisDir = thisStem.computeDirection();
-//            Inter dupli = ((thisDir * (that.getStaff().getId() - this.getStaff().getId())) > 0)
-//                    ? this : that;
-//
-//            logger.debug("Deleting duplicated {}", dupli);
-//            dupli.remove();
-//            throw new DeletedInterException(dupli);
-//        }
-//
-//        //TODO: What if we have no stem? It's a WHOLE_NOTE or SMALL_WHOLE_NOTE
-//        // Perhaps check for a weak ledger, tangent to the note towards staff
-//    }
-//
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, HeadStemRelation.class);
+    }
+
+    //-----------------//
+    // upgradeOldStuff //
+    //-----------------//
+    @Override
+    public boolean upgradeOldStuff (List<Version> upgrade)
+    {
+        boolean upgraded = false;
+
+        // NOTA: no need to specify a particular version, existence of non-null oldMirror is enough
+        if (oldMirror != null) {
+            // Upgrade from oldMirror field to MirrorRelation
+            // [We keep only Head mirrors (not HeadChord "mirrors" any more)]
+            setMirror(oldMirror);
+            oldMirror = null;
+            upgraded = true;
+        }
+
+        return upgraded;
+    }
 
     //------------//
     // lookupLink //
@@ -786,16 +782,17 @@ public class HeadInter
      * 1/ Use a lookup area on each horizontal side of the head to filter candidate stems.
      * 2/ Select the best connection among the compatible candidates.
      *
-     * @param systemStems abscissa-ordered collection of stems in system
+     * @param candidateStems abscissa-ordered collection of candidate stems
+     * @param system         containing system
      * @return the link found or null
      */
-    private Link lookupLink (List<Inter> systemStems)
+    public Link lookupLink (List<Inter> candidateStems,
+                            SystemInfo system)
     {
-        if (systemStems.isEmpty()) {
+        if (candidateStems.isEmpty()) {
             return null;
         }
 
-        final SystemInfo system = systemStems.get(0).getSig().getSystem();
         final Scale scale = system.getSheet().getScale();
         final int interline = scale.getInterline();
         final int maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum(manual));
@@ -810,7 +807,8 @@ public class HeadInter
             int xMin = refPt.x - ((corner.hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
             int yMin = refPt.y - ((corner.vSide == TOP) ? maxYGap : 0);
             Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
-            List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
+            List<Inter> stems = Inters
+                    .intersectedInters(candidateStems, GeoOrder.BY_ABSCISSA, luBox);
             int xDir = (corner.hSide == RIGHT) ? 1 : (-1);
 
             for (Inter inter : stems) {

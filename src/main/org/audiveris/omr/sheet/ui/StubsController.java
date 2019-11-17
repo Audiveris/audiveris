@@ -58,6 +58,7 @@ import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -510,15 +511,15 @@ public class StubsController
         }
     }
 
-    //-----------//
-    // reDisplay //
-    //-----------//
+    //---------//
+    // display //
+    //---------//
     /**
-     * Refresh display for provided stub.
+     * Display/redisplay the provided stub.
      *
      * @param stub the provided stub
      */
-    public void reDisplay (final SheetStub stub)
+    public void display (final SheetStub stub)
     {
         Callable<Void> task = new Callable<Void>()
         {
@@ -544,6 +545,18 @@ public class StubsController
                                 // Tell the selected assembly that it now has the focus
                                 // (to display stub related boards and error pane)
                                 stub.getAssembly().assemblySelected();
+
+                                // GUI: Perform sheets upgrade?
+                                final Book book = stub.getBook();
+
+                                if (!book.isCheckedForUpgrade()) {
+                                    book.setCheckedForUpgrade(true);
+                                    final List<SheetStub> stubsToUpgrade = book.getStubsToUpgrade();
+
+                                    if (!stubsToUpgrade.isEmpty()) {
+                                        promptForUpgrades(stub, stubsToUpgrade);
+                                    }
+                                }
                             } else {
                                 logger.debug("Too late for {}", stub);
                             }
@@ -653,7 +666,7 @@ public class StubsController
             // This is the new current stub
             callAboutStub(stub);
 
-            reDisplay(stub);
+            display(stub);
         }
     }
 
@@ -786,6 +799,60 @@ public class StubsController
         } else {
             logger.debug("{} currently busy, checkStubStatus giving up.", stub);
         }
+    }
+
+    //-------------------//
+    // promptForUpgrades //
+    //-------------------//
+    private void promptForUpgrades (final SheetStub stub,
+                                    final List<SheetStub> stubsToUpgrade)
+    {
+        final Book book = stub.getBook();
+
+        // Dialog title
+        final int size = stubsToUpgrade.size();
+        final boolean plural = size > 1;
+        final String title = "Upgrade still needed for " + size + " sheet" + (plural ? "s" : "")
+                                     + " in " + book.getRadix() + " book";
+
+        // Dialog message
+        final String status = stub.isUpgraded()
+                ? "Current sheet " + stub.getNum()
+                          + " has just been upgraded but not yet stored in this multi-sheet book.\n"
+                : "";
+        final String question = status + "Should we upgrade and store the whole book in background?";
+
+        SwingUtilities.invokeLater(new Runnable()
+        {
+            @Override
+            public void run ()
+            {
+                if (OMR.gui.displayConfirmation(question, title)) {
+                    new SwingWorker<Void, Void>()
+                    {
+                        @Override
+                        protected Void doInBackground ()
+                                throws Exception
+                        {
+                            try {
+                                LogUtil.start(book);
+
+                                book.upgradeStubs();
+                                return null;
+                            } finally {
+                                LogUtil.stopBook();
+                            }
+                        }
+
+                        @Override
+                        protected void done ()
+                        {
+                            logger.info("Upgrade completed for book " + book.getRadix());
+                        }
+                    }.execute();
+                }
+            }
+        });
     }
 
     //----------------//

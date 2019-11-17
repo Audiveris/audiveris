@@ -25,9 +25,14 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.MarkerBarRelation;
 
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -83,17 +88,51 @@ public class MarkerInter
      */
     public boolean linkWithStaffBarline ()
     {
-        Point center = getCenter();
-        List<StaffBarlineInter> staffBars = getStaff().getStaffBarlines();
-        StaffBarlineInter staffBar = StaffBarlineInter.getClosestStaffBarline(staffBars, center);
+        Collection<Link> links = searchLinks(getStaff().getSystem());
 
-        if ((staffBar != null) && (GeoUtil.xOverlap(getBounds(), staffBar.getBounds()) > 0)) {
-            sig.addEdge(this, staffBar, new MarkerBarRelation());
+        if (!links.isEmpty()) {
+            Link link = links.iterator().next();
+            link.applyTo(this);
 
             return true;
         }
 
         return false;
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final Point center = getCenter();
+        final Rectangle box = getBounds();
+
+        if (getStaff() == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        final List<StaffBarlineInter> staffBars = getStaff().getStaffBarlines();
+        final StaffBarlineInter staffBar
+                = StaffBarlineInter.getClosestStaffBarline(staffBars, center);
+        Link link = null;
+
+        if ((staffBar != null) && (GeoUtil.xOverlap(box, staffBar.getBounds()) > 0)) {
+            link = new Link(staffBar, new MarkerBarRelation(), true);
+        }
+
+        return (link == null) ? Collections.EMPTY_LIST : Collections.singleton(link);
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, MarkerBarRelation.class);
     }
 
     //--------//

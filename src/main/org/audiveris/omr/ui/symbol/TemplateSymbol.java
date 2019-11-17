@@ -27,10 +27,10 @@ import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -80,7 +80,7 @@ public class TemplateSymbol
      */
     public Rectangle getSymbolBounds (MusicFont font)
     {
-        return getParams(font).symbolRect;
+        return getParams(font).symbolRect.getBounds();
     }
 
     //-----------//
@@ -111,16 +111,17 @@ public class TemplateSymbol
         // For full size symbol, add some margin on each direction of the symbol
         int dx = 2;
         int dy = 2;
-        p.rect = new Rectangle(
+        p.rect = new Rectangle2D.Double(
+                0,
+                0,
                 isSmall ? fullRect.width : (symWidth + dx),
                 isSmall ? interline : (symHeight + dy));
 
         // Bounds of symbol within template rectangle
-        p.symbolRect = new Rectangle(
-                (p.rect.width - symWidth) / 2,
-                (p.rect.height - symHeight) / 2,
-                symWidth,
-                symHeight);
+        p.symbolRect = new Rectangle2D.Double((p.rect.getWidth() - symWidth) / 2,
+                                              (p.rect.getHeight() - symHeight) / 2,
+                                              symWidth,
+                                              symHeight);
 
         return p;
     }
@@ -131,7 +132,7 @@ public class TemplateSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         final MyParams p = (MyParams) params;
@@ -143,17 +144,17 @@ public class TemplateSymbol
         // Naked symbol
         g.setColor(Color.BLACK);
 
-        Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+        Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
         MusicFont.paint(g, p.layout, loc, AREA_CENTER);
     }
 
     //----------//
     // MyParams //
     //----------//
-    protected class MyParams
+    protected static class MyParams
             extends Params
     {
 
-        Rectangle symbolRect; // Bounds for symbol inside template image
+        Rectangle2D symbolRect; // Bounds for symbol inside template image
     }
 }

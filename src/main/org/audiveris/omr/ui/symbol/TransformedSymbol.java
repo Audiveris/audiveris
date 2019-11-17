@@ -25,10 +25,8 @@ import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.Point2D;
 
 /**
  * Class {@code TransformedSymbol} displays a baseShape symbol with AffineTransform.
@@ -51,15 +49,29 @@ public class TransformedSymbol
     /**
      * Creates a new TransformedSymbol object.
      *
+     * @param shape     the related shape
+     * @param baseShape the baseShape shape which is reused
+     * @param at        the AffineTransform to apply
+     */
+    public TransformedSymbol (Shape shape,
+                              Shape baseShape,
+                              AffineTransform at)
+    {
+        this(false, shape, baseShape, at);
+    }
+
+    /**
+     * Creates a new TransformedSymbol object.
+     *
      * @param isIcon    true for an icon
      * @param shape     the related shape
      * @param baseShape the baseShape shape which is reused
      * @param at        the AffineTransform to apply
      */
-    public TransformedSymbol (boolean isIcon,
-                              Shape shape,
-                              Shape baseShape,
-                              AffineTransform at)
+    protected TransformedSymbol (boolean isIcon,
+                                 Shape shape,
+                                 Shape baseShape,
+                                 AffineTransform at)
     {
         super(isIcon, shape, false);
         this.baseShape = baseShape;
@@ -85,9 +97,7 @@ public class TransformedSymbol
         Params p = new Params();
 
         p.layout = font.layout(baseSymbol.getString(), at);
-
-        Rectangle2D r = p.layout.getBounds();
-        p.rect = new Rectangle((int) Math.ceil(r.getWidth()), (int) Math.ceil(r.getHeight()));
+        p.rect = p.layout.getBounds();
 
         return p;
     }
@@ -98,10 +108,10 @@ public class TransformedSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params p,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
-        Point loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
         MusicFont.paint(g, p.layout, loc, TOP_LEFT);
     }
 }

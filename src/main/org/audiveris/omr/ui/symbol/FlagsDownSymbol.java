@@ -21,13 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.font.TextLayout;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -74,12 +74,11 @@ public class FlagsDownSymbol
     {
         MyParams p = initParams(font);
 
-        p.rect = new Rectangle(
+        p.rect = new Rectangle2D.Double(
                 0,
                 0,
-                (int) Math.ceil(p.rect2.getWidth()),
-                (((fn / 2) + ((fn + 1) % 2)) * Math.abs(p.dy)) + ((fn % 2) * (int) Math.ceil(
-                p.rect1.getHeight())));
+                p.rect2.getWidth(),
+                (((fn / 2) + ((fn + 1) % 2)) * Math.abs(p.dy)) + ((fn % 2) * p.rect1.getHeight()));
 
         return p;
     }
@@ -113,16 +112,16 @@ public class FlagsDownSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
-        Point loc = alignment.translatedPoint(p.align, p.rect, location);
+        Point2D loc = alignment.translatedPoint(p.align, p.rect, location);
 
         // We draw from tail to head, double(s) then single if needed
         for (int i = 0; i < (fn / 2); i++) {
             MusicFont.paint(g, p.flag2, loc, p.align);
-            loc.y += p.dy;
+            PointUtil.add(loc, 0, p.dy);
         }
 
         if ((fn % 2) != 0) {
@@ -133,7 +132,7 @@ public class FlagsDownSymbol
     //----------//
     // MyParams //
     //----------//
-    protected class MyParams
+    protected static class MyParams
             extends BasicSymbol.Params
     {
 
@@ -145,7 +144,7 @@ public class FlagsDownSymbol
 
         Rectangle2D rect2;
 
-        int dy;
+        double dy;
 
         Alignment align;
     }

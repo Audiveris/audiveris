@@ -292,6 +292,11 @@ public class Glyph
         return centroid;
     }
 
+    public Point2D getCentroidDouble ()
+    {
+        return runTable.computeCentroidDouble(left, top);
+    }
+
     /**
      * Report the glyph geometric moments.
      *
@@ -362,7 +367,15 @@ public class Glyph
     {
         checkLine();
 
-        return line;
+        return new Line2D.Double(line.getX1(), line.getY1(), line.getX2(), line.getY2());
+    }
+
+    public Line2D getCenterLine ()
+    {
+        checkLine();
+
+        return basicLine.toCenterLine();
+
     }
 
     @Override
@@ -578,13 +591,7 @@ public class Glyph
             checkLine(); // To make sure the line has been computed
 
             if (line != null) {
-                ///g.draw(line);
-                g.draw(
-                        new Line2D.Double(
-                                line.getX1(),
-                                line.getY1() + 0.5,
-                                line.getX2() + 1,
-                                line.getY2() + 0.5));
+                g.draw(line);
             }
         }
     }

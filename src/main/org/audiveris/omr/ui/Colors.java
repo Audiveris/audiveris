@@ -82,6 +82,12 @@ public abstract class Colors
     /** Color for unknown distance (neutralized locations). */
     public static final Color DISTANCE_UNKNOWN = Color.GREEN;
 
+    /** Edition handles. */
+    public static final Color EDITION_HANDLE = Color.BLACK;
+
+    /** Edition lines. */
+    public static final Color EDITION_LINE = Color.LIGHT_GRAY;
+
     /** Successful entities. */
     public static final Color ENTITY = Color.BLACK;
 

@@ -1062,7 +1062,7 @@ public class PartwiseBuilder
             Direction direction = factory.createDirection();
             DirectionType directionType = factory.createDirectionType();
             FormattedText pmWords = factory.createFormattedText();
-            Point location = sentence.getLocation();
+            Point2D location = sentence.getLocation();
 
             pmWords.setValue(content);
 
@@ -1072,7 +1072,7 @@ public class PartwiseBuilder
 
             // Placement
             direction.setPlacement(
-                    (location.y < current.note.getCenter().y) ? AboveBelow.ABOVE
+                    (location.getY() < current.note.getCenter().y) ? AboveBelow.ABOVE
                     : AboveBelow.BELOW);
 
             // default-y
@@ -1082,7 +1082,7 @@ public class PartwiseBuilder
             setFontInfo(pmWords, sentence);
 
             // relative-x
-            pmWords.setRelativeX(toTenths(location.x - current.note.getCenterLeft().x));
+            pmWords.setRelativeX(toTenths(location.getX() - current.note.getCenterLeft().x));
 
             // Everything is now OK
             directionType.getWords().add(pmWords);
@@ -2401,9 +2401,9 @@ public class PartwiseBuilder
             setFontInfo(creditWords, sentence);
 
             // Position is wrt page
-            Point pt = sentence.getLocation();
-            creditWords.setDefaultX(toTenths(pt.x));
-            creditWords.setDefaultY(toTenths(current.page.getDimension().height - pt.y));
+            Point2D pt = sentence.getLocation();
+            creditWords.setDefaultX(toTenths(pt.getX()));
+            creditWords.setDefaultY(toTenths(current.page.getDimension().height - pt.getY()));
 
             pmCredit.getCreditTypeOrLinkOrBookmark().add(creditWords);
             scorePartwise.getCredit().add(pmCredit);

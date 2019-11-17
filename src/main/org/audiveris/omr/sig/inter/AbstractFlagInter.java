@@ -27,12 +27,14 @@ import static org.audiveris.omr.glyph.ShapeSet.FlagsUp;
 import static org.audiveris.omr.glyph.ShapeSet.SmallFlags;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.LineUtil;
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.ui.InterEditor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,6 +94,15 @@ public abstract class AbstractFlagInter
         visitor.visit(this);
     }
 
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new Editor(this);
+    }
+
     //----------//
     // getValue //
     //----------//
@@ -126,24 +137,24 @@ public abstract class AbstractFlagInter
     // searchLinks //
     //-------------//
     @Override
-    public Collection<Link> searchLinks (SystemInfo system,
-                                         boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system)
     {
-        // Not very optimized!
         List<Inter> systemStems = system.getSig().inters(StemInter.class);
         Collections.sort(systemStems, Inters.byAbscissa);
 
         Link link = lookupLink(systemStems);
 
-        if (link == null) {
-            return Collections.emptyList();
-        }
+        return (link == null) ? Collections.EMPTY_LIST : Collections.singleton(link);
+    }
 
-        if (doit) {
-            link.applyTo(this);
-        }
-
-        return Collections.singleton(link);
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, FlagStemRelation.class);
     }
 
     //------------//
@@ -329,5 +340,73 @@ public abstract class AbstractFlagInter
         logger.error("Illegal flag shape: {}", shape);
 
         return 0;
+    }
+
+    //--------//
+    // Editor //
+    //--------//
+    /**
+     * User editor for a flag.
+     * <p>
+     * For a flag, we provide only one handle:
+     * <ul>
+     * <li>Middle handle, moving only vertically
+     * </ul>
+     */
+    private static class Editor
+            extends InterEditor
+    {
+
+        // Original data
+        private final Rectangle originalBounds;
+
+        // Latest data
+        private final Rectangle latestBounds;
+
+        public Editor (final AbstractFlagInter flag)
+        {
+            super(flag);
+
+            originalBounds = flag.getBounds();
+            latestBounds = flag.getBounds();
+
+            // Middle handle: move vertically only
+            handles.add(selectedHandle = new Handle(flag.getCenter())
+            {
+                @Override
+                public boolean applyMove (Point vector)
+                {
+                    final double dy = vector.getY();
+
+                    if (dy == 0) {
+                        return false;
+                    }
+
+                    // Data
+                    latestBounds.y += dy;
+
+                    // Handle
+                    for (Handle handle : handles) {
+                        PointUtil.add(handle.getHandleCenter(), 0, dy);
+                    }
+
+                    return true;
+                }
+            });
+        }
+
+        @Override
+        protected void doit ()
+        {
+            inter.setBounds(latestBounds);
+            super.doit(); // No more glyph
+        }
+
+        @Override
+        public void undo ()
+        {
+            inter.setBounds(originalBounds);
+            super.undo();
+        }
     }
 }

@@ -22,18 +22,27 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.AreaUtil;
+import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Scale.BeamScale;
+import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.geom.Area;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code BeamSymbol} implements decorated beam symbols.
- * (non-decorated beams are painted using polygons rather than symbols)
+ * Class {@code BeamSymbol} implements beam symbols.
+ * <p>
+ * Note: on score, beams are painted using areas rather than symbols.
+ * However, beam symbols (decorated and non-decorated) are still needed for user drag and drop.
  *
  * @author Hervé Bitteur
  */
@@ -41,22 +50,32 @@ public class BeamSymbol
         extends ShapeSymbol
 {
 
-    // The head+stem part
+    // The decorating quarter (head + stem) part
     private static final BasicSymbol quarter = Symbols.SYMBOL_QUARTER;
 
-    /** Number of beams. */
-    protected final int beamCount;
+    /** Specified beam thickness, if any, as a ratio of interline. */
+    protected Double thicknessFraction;
 
     /**
      * Create a BeamSymbol.
      *
-     * @param beamCount the number of beams
-     * @param shape     the precise shape
+     * @param decorated true for a decorated image
      */
-    public BeamSymbol (int beamCount,
-                       Shape shape)
+    public BeamSymbol (boolean decorated)
     {
-        this(beamCount, false, shape);
+        this(false, Shape.BEAM, null, decorated);
+    }
+
+    /**
+     * Create a BeamSymbol.
+     *
+     * @param thicknessFraction specified thickness, if any
+     * @param decorated         true for a decorated image
+     */
+    public BeamSymbol (Double thicknessFraction,
+                       boolean decorated)
+    {
+        this(false, Shape.BEAM, thicknessFraction, decorated);
     }
 
     //------------//
@@ -65,16 +84,57 @@ public class BeamSymbol
     /**
      * Create a BeamSymbol.
      *
-     * @param beamCount the number of beams
-     * @param isIcon    true for an icon
-     * @param shape     the precise shape
+     * @param isIcon            true for an icon
+     * @param shape             the precise shape
+     * @param thicknessFraction specified thickness, if any
+     * @param decorated         true for a decorated image
      */
-    protected BeamSymbol (int beamCount,
-                          boolean isIcon,
-                          Shape shape)
+    protected BeamSymbol (boolean isIcon,
+                          Shape shape,
+                          Double thicknessFraction,
+                          boolean decorated)
     {
-        super(isIcon, shape, true); // Decorated
-        this.beamCount = beamCount;
+        super(isIcon, shape, decorated);
+        this.thicknessFraction = thicknessFraction;
+    }
+
+    //----------//
+    // getModel //
+    //----------//
+    @Override
+    public AbstractBeamInter.Model getModel (MusicFont font,
+                                             Point location,
+                                             Alignment alignment)
+    {
+        MyParams p = getParams(font);
+        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        p.model.translate(loc.getX(), loc.getY());
+
+        return p.model;
+    }
+
+    //-------------//
+    // updateModel //
+    //-------------//
+    @Override
+    public void updateModel (Sheet sheet)
+    {
+        // We use this call to precisely adapt beam thickness using sheet scale info on beams
+        final Scale scale = sheet.getScale();
+        final BeamScale beamScale = scale.getBeamScale();
+
+        if (!beamScale.isExtrapolated()) {
+            thicknessFraction = beamScale.getDistanceMean() / scale.getInterline();
+        }
+    }
+
+    //-----------------------//
+    // createDecoratedSymbol //
+    //-----------------------//
+    @Override
+    protected ShapeSymbol createDecoratedSymbol ()
+    {
+        return new BeamSymbol(isIcon, shape, thicknessFraction, true);
     }
 
     //------------//
@@ -83,7 +143,7 @@ public class BeamSymbol
     @Override
     protected ShapeSymbol createIcon ()
     {
-        return new BeamSymbol(beamCount, true, shape);
+        return new BeamSymbol(true, shape, thicknessFraction, decorated);
     }
 
     //-----------//
@@ -93,17 +153,51 @@ public class BeamSymbol
     protected MyParams getParams (MusicFont font)
     {
         MyParams p = new MyParams();
+        p.model = new AbstractBeamInter.Model();
 
-        // Quarter layout
-        p.layout = font.layout(quarter.getString());
+        final int il = font.getStaffInterline();
+        final double fraction = (thicknessFraction != null) ? thicknessFraction : 0.5;
+        p.model.thickness = Math.rint(il * fraction);
+        double width = il * 2.0; // Beam width
+        double yShift = 0; ///-il * 1.0; // Non zero for a slanted beam (p2.y - p1.y)
+        double absShift = Math.abs(yShift);
 
-        Rectangle2D qRect = p.layout.getBounds();
-        p.quarterDx = (int) Math.rint(qRect.getWidth() * 2);
-        p.quarterDy = (int) Math.rint(qRect.getWidth() * 0.8);
+        p.layout = font.layout(quarter.getString()); // Quarter layout
 
-        p.rect = new Rectangle(
-                (int) Math.ceil(qRect.getWidth() + p.quarterDx),
-                (int) Math.ceil(qRect.getHeight() + p.quarterDy));
+        if (decorated) {
+            p.quarterCount = 2;
+            Rectangle2D qRect = p.layout.getBounds();
+            p.rect = new Rectangle2D.Double(0,
+                                            0,
+                                            qRect.getWidth() + width,
+                                            qRect.getHeight() + absShift);
+
+            if (yShift >= 0) {
+                p.model.p1 = new Point2D.Double(qRect.getWidth(), p.model.thickness / 2.0);
+                p.model.p2 = new Point2D.Double(qRect.getWidth() + width,
+                                                p.model.thickness / 2.0 + absShift);
+            } else {
+                p.model.p1 = new Point2D.Double(qRect.getWidth(),
+                                                p.model.thickness / 2.0 + absShift);
+                p.model.p2 = new Point2D.Double(qRect.getWidth() + width, p.model.thickness / 2.0);
+            }
+
+            // Define specific offset to point at center of beam
+            p.offset = new Point(
+                    (int) Math.rint((p.rect.getWidth() - width) / 2.0),
+                    (int) Math.rint((absShift + p.model.thickness - p.rect.getHeight()) / 2.0));
+        } else {
+            if (yShift >= 0) {
+                p.model.p1 = new Point2D.Double(0, p.model.thickness / 2.0);
+                p.model.p2 = new Point2D.Double(width, p.model.thickness / 2.0 + absShift);
+            } else {
+                p.model.p1 = new Point2D.Double(0, p.model.thickness / 2.0 + absShift);
+                p.model.p2 = new Point2D.Double(width, p.model.thickness / 2.0);
+            }
+
+            p.rect = new Rectangle((int) Math.ceil(width),
+                                   (int) Math.ceil(p.model.thickness + absShift));
+        }
 
         return p;
     }
@@ -114,52 +208,52 @@ public class BeamSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
-        Point loc = alignment.translatedPoint(TOP_RIGHT, p.rect, location);
+        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        p.model.translate(loc.getX(), loc.getY());
 
-        // Beams
-        Rectangle2D quarterRect = p.layout.getBounds();
-        int beamHeight = (int) Math.rint(quarterRect.getHeight() * 0.12);
-        int beamDelta = (int) Math.rint(quarterRect.getHeight() * 0.18);
+        // Beam
+        Area area = AreaUtil.horizontalParallelogram(p.model.p1, p.model.p2, p.model.thickness);
+        g.fill(area);
 
-        for (int i = 0; i < beamCount; i++) {
-            Point left = new Point(loc.x - p.quarterDx, loc.y + (i * beamDelta) + p.quarterDy);
-            Point right = new Point(loc.x, loc.y + (i * beamDelta));
-            Polygon polygon = new Polygon();
-            polygon.addPoint(left.x, left.y);
-            polygon.addPoint(left.x, left.y + beamHeight);
-            polygon.addPoint(right.x, right.y + beamHeight);
-            polygon.addPoint(right.x, right.y);
-            g.fill(polygon);
+        if (decorated) {
+            // Draw the two quarters
+            Composite oldComposite = g.getComposite();
+            g.setComposite(decoComposite);
+            final int yShift = (int) Math.rint(p.model.p2.getY() - p.model.p1.getY());
+            final int absShift = Math.abs(yShift);
+
+            if (yShift < 0) {
+                PointUtil.add(loc, 0, absShift);
+            }
+
+            for (int iq = 0; iq < p.quarterCount; iq++) {
+                // begin by left side (p1)
+                MusicFont.paint(g, p.layout, loc, TOP_LEFT);
+                PointUtil.add(loc, p.model.p2.getX() - p.model.p1.getX(), yShift);
+            }
+
+            g.setComposite(oldComposite);
         }
-
-        // Decorations (using composite)
-        Composite oldComposite = g.getComposite();
-        g.setComposite(decoComposite);
-
-        MusicFont.paint(g, p.layout, loc, TOP_RIGHT);
-        loc.translate(-p.quarterDx, p.quarterDy);
-        MusicFont.paint(g, p.layout, loc, TOP_RIGHT);
-
-        g.setComposite(oldComposite);
     }
 
-    //--------//
-    // Params //
-    //--------//
-    protected class MyParams
+    //----------//
+    // MyParams //
+    //----------//
+    protected static class MyParams
             extends Params
     {
 
         // layout for just quarter layout
         // rect for global image
-        // Between the 2 quarters
-        int quarterDx;
+        //
+        // model
+        AbstractBeamInter.Model model;
 
-        // Between the 2 quarters
-        int quarterDy;
+        // number of decorating quarters
+        int quarterCount;
     }
 }

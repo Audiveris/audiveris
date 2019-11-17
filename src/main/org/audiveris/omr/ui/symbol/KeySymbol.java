@@ -21,13 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.inter.KeyInter;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -80,21 +81,23 @@ public abstract class KeySymbol
 
         for (int k = 1; k <= (key * sign); k++) {
             int pitch = KeyInter.getItemPitch(k * sign, null);
-            Rectangle r = new Rectangle(
-                    (int) Math.rint((k - 1) * p.itemDx),
-                    (int) Math.rint(pitch * p.stepDy),
+            Rectangle2D r = new Rectangle2D.Double(
+                    (k - 1) * p.itemDx,
+                    pitch * p.stepDy,
                     p.itemRect.width,
                     p.itemRect.height);
 
             if (p.rect == null) {
                 p.rect = r;
             } else {
-                p.rect = p.rect.union(r);
+                p.rect = p.rect.createUnion(r);
             }
         }
 
-        p.rect.x = (p.rect.width / 2);
-        p.rect.y = -(int) Math.rint(KeyInter.getStandardPosition(key) * p.stepDy);
+        p.rect.setRect(p.rect.getWidth() / 2,
+                       p.rect.getY() - KeyInter.getStandardPosition(key) * p.stepDy,
+                       p.rect.getWidth(),
+                       p.rect.getHeight());
 
         return p;
     }
@@ -105,13 +108,12 @@ public abstract class KeySymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
-        Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
-        loc.x -= (p.rect.width / 2);
-        loc.y -= (int) Math.rint(KeyInter.getStandardPosition(key) * p.stepDy);
+        Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+        PointUtil.add(loc, -p.rect.getWidth() / 2, -KeyInter.getStandardPosition(key) * p.stepDy);
 
         int sign = Integer.signum(key);
 
@@ -120,9 +122,8 @@ public abstract class KeySymbol
             MusicFont.paint(
                     g,
                     p.layout,
-                    new Point(
-                            loc.x + (int) Math.rint((k - 1) * p.itemDx),
-                            loc.y + (int) Math.rint(pitch * p.stepDy)),
+                    new Point2D.Double(loc.getX() + (k - 1) * p.itemDx,
+                                       loc.getY() + pitch * p.stepDy),
                     MIDDLE_LEFT);
         }
     }
@@ -130,7 +131,7 @@ public abstract class KeySymbol
     //----------//
     // MyParams //
     //----------//
-    protected class MyParams
+    protected static class MyParams
             extends Params
     {
 

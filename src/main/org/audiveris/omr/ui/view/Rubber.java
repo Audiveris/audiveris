@@ -234,6 +234,26 @@ public class Rubber
     }
 
     //--------------//
+    // mouseClicked //
+    //--------------//
+    /**
+     * Called when the mouse is clicked.
+     *
+     * @param e the mouse event
+     */
+    @Override
+    public void mouseClicked (MouseEvent e)
+    {
+        if (mouseMonitor == null) {
+            return;
+        }
+
+        if (e.getClickCount() == 2) {
+            mouseMonitor.objectSelected(getCenter(), CLICKING);
+        }
+    }
+
+    //--------------//
     // mouseDragged //
     //--------------//
     /**

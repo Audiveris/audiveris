@@ -143,24 +143,24 @@ public class ArticulationInter
     // searchLinks //
     //-------------//
     @Override
-    public Collection<Link> searchLinks (SystemInfo system,
-                                         boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system)
     {
-        // Not very optimized!
         List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
         Collections.sort(systemHeadChords, Inters.byAbscissa);
 
         Link link = lookupLink(systemHeadChords);
 
-        if (link == null) {
-            return Collections.emptyList();
-        }
+        return (link == null) ? Collections.EMPTY_LIST : Collections.singleton(link);
+    }
 
-        if (doit) {
-            link.applyTo(this);
-        }
-
-        return Collections.singleton(link);
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, ChordArticulationRelation.class);
     }
 
     //------------//

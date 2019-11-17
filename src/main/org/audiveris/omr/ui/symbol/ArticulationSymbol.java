@@ -22,14 +22,14 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 import static org.audiveris.omr.ui.symbol.ShapeSymbol.decoComposite;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.font.TextLayout;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -80,6 +80,15 @@ public class ArticulationSymbol
         super(isIcon, shape, decorated, codes);
     }
 
+    //-----------------------//
+    // createDecoratedSymbol //
+    //-----------------------//
+    @Override
+    protected ShapeSymbol createDecoratedSymbol ()
+    {
+        return new ArticulationSymbol(isIcon, shape, true, codes);
+    }
+
     //------------//
     // createIcon //
     //------------//
@@ -93,7 +102,7 @@ public class ArticulationSymbol
     // getParams //
     //-----------//
     @Override
-    protected Params getParams (MusicFont font)
+    protected MyParams getParams (MusicFont font)
     {
         MyParams p = new MyParams();
 
@@ -108,14 +117,16 @@ public class ArticulationSymbol
 
             // Use a rectangle 'yRatio' times as high as note head
             Rectangle2D rh = p.headLayout.getBounds(); // Head bounds
-            p.rect = new Rectangle(
-                    (int) Math.ceil(Math.max(rh.getWidth(), rs.getWidth())),
-                    (int) Math.ceil(yRatio * rh.getHeight()));
+            p.rect = new Rectangle2D.Double(
+                    0,
+                    0,
+                    Math.max(rh.getWidth(), rs.getWidth()),
+                    yRatio * rh.getHeight());
 
             // Define specific offset
-            p.offset = new Point(0, (int) Math.rint(dyRatio * p.rect.height));
+            p.offset = new Point2D.Double(0, dyRatio * p.rect.getHeight());
         } else {
-            p.rect = rs.getBounds();
+            p.rect = rs;
         }
 
         return p;
@@ -127,14 +138,14 @@ public class ArticulationSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
 
         if (decorated) {
             // Draw a note head (using composite) on the bottom
-            Point loc = alignment.translatedPoint(BOTTOM_CENTER, p.rect, location);
+            Point2D loc = alignment.translatedPoint(BOTTOM_CENTER, p.rect, location);
             Composite oldComposite = g.getComposite();
             g.setComposite(decoComposite);
             MusicFont.paint(g, p.headLayout, loc, BOTTOM_CENTER);
@@ -142,11 +153,11 @@ public class ArticulationSymbol
 
             // Articulation above head
             loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
-            loc.translate(p.offset.x, p.offset.y);
+            PointUtil.add(loc, p.offset);
             MusicFont.paint(g, p.layout, loc, AREA_CENTER);
         } else {
             // Articulation alone
-            Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+            Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
             MusicFont.paint(g, p.layout, loc, AREA_CENTER);
         }
     }
@@ -154,7 +165,7 @@ public class ArticulationSymbol
     //--------//
     // Params //
     //--------//
-    protected class MyParams
+    protected static class MyParams
             extends Params
     {
 

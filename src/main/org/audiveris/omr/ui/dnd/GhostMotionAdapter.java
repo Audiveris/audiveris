@@ -24,7 +24,6 @@ package org.audiveris.omr.ui.dnd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
@@ -40,13 +39,13 @@ public class GhostMotionAdapter
 
     private static final Logger logger = LoggerFactory.getLogger(GhostMotionAdapter.class);
 
-    /** The related glasspane. */
+    /** The related glass pane. */
     protected GhostGlassPane glassPane;
 
     /**
      * Create a new GhostMotionAdapter object
      *
-     * @param glassPane The related glasspane
+     * @param glassPane The related glass pane
      */
     public GhostMotionAdapter (GhostGlassPane glassPane)
     {
@@ -65,7 +64,7 @@ public class GhostMotionAdapter
     @Override
     public void mouseDragged (MouseEvent e)
     {
-        Point absPt = e.getLocationOnScreen();
-        glassPane.setPoint(new ScreenPoint(absPt.x, absPt.y));
+        final ScreenPoint screenPoint = new ScreenPoint(e.getXOnScreen(), e.getYOnScreen());
+        glassPane.setScreenPoint(screenPoint);
     }
 }

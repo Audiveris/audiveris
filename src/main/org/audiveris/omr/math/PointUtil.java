@@ -81,6 +81,35 @@ public abstract class PointUtil
         return new Point2D.Double(p1.getX() + p2.getX(), p1.getY() + p2.getY());
     }
 
+    //-----//
+    // add //
+    //-----//
+    /**
+     * Add to point p the provided vector.
+     *
+     * @param p      point to be modified
+     * @param vector vector to be added
+     */
+    public static void add (Point2D p,
+                            Point2D vector)
+    {
+        add(p, vector.getX(), vector.getY());
+    }
+
+    /**
+     * Add to point p the provided (dx, dy) vector.
+     *
+     * @param p  point to be modified
+     * @param dx abscissa to be added
+     * @param dy ordinate to be added
+     */
+    public static void add (Point2D p,
+                            double dx,
+                            double dy)
+    {
+        p.setLocation(p.getX() + dx, p.getY() + dy);
+    }
+
     //----------//
     // boundsOf //
     //----------//
@@ -210,6 +239,10 @@ public abstract class PointUtil
      */
     public static Point rounded (Point2D p)
     {
+        if (p == null) {
+            return null;
+        }
+
         return new Point((int) Math.rint(p.getX()), (int) Math.rint(p.getY()));
     }
 
@@ -227,6 +260,22 @@ public abstract class PointUtil
                                        Point2D p2)
     {
         return new Point2D.Double(p1.getX() - p2.getX(), p1.getY() - p2.getY());
+    }
+
+    //-------------//
+    // subtraction //
+    //-------------//
+    /**
+     * Report the vector which represent p2 - p1.
+     *
+     * @param p1 a vector
+     * @param p2 another vector
+     * @return the geometric subtraction
+     */
+    public static Point subtraction (Point p1,
+                                     Point p2)
+    {
+        return new Point(p1.x - p2.x, p1.y - p2.y);
     }
 
     //-------//
@@ -254,14 +303,14 @@ public abstract class PointUtil
      * @param p point instance
      * @return string value
      */
-    public static String toString (Point p)
+    public static String toString (Point2D p)
     {
         if (p == null) {
             return "nullPoint";
         }
 
         StringBuilder sb = new StringBuilder("[");
-        sb.append(p.x).append(",").append(p.y).append("]");
+        sb.append(p.getX()).append(",").append(p.getY()).append("]");
 
         return sb.toString();
     }

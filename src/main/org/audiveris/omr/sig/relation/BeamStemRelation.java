@@ -254,15 +254,21 @@ public class BeamStemRelation
          * the graph will automatically remove these relations, so also removing here
          * the beam-head relation might lead to NPE in graph...
          */
-        if (!beam.isRemoved() && !stem.isRemoved()) {
-            final SIGraph sig = stem.getSig();
+        if (!beam.isRemoved()) {
+            if (!stem.isRemoved()) {
+                final SIGraph sig = stem.getSig();
 
-            for (HeadChordInter headChord : stem.getChords()) {
-                for (Inter inter : headChord.getNotes()) {
-                    HeadInter head = (HeadInter) inter;
-                    sig.removeEdge(beam, head);
+                for (HeadChordInter headChord : stem.getChords()) {
+                    for (Inter inter : headChord.getNotes()) {
+                        HeadInter head = (HeadInter) inter;
+                        sig.removeEdge(beam, head);
+                    }
+
+                    headChord.invalidateCache();
                 }
             }
+
+            beam.checkAbnormal();
         }
     }
 

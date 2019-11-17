@@ -22,13 +22,13 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 import static org.audiveris.omr.ui.symbol.ShapeSymbol.decoComposite;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -46,31 +46,32 @@ public class RepeatDotSymbol
     /**
      * Create a {@code RepeatDotSymbol} (with decoration?) standard size
      *
-     * @param shape     the precise shape
      * @param decorated true for a decorated image
-     * @param codes     precise code for articulation part
      */
-    public RepeatDotSymbol (Shape shape,
-                            boolean decorated,
-                            int... codes)
+    public RepeatDotSymbol (boolean decorated)
     {
-        this(false, shape, decorated, codes);
+        this(false, decorated);
     }
 
     /**
      * Create a {@code RepeatDotSymbol} (with decoration?)
      *
      * @param isIcon    true for an icon
-     * @param shape     the precise shape
      * @param decorated true for a decorated image
-     * @param codes     precise code for articulation part
      */
     protected RepeatDotSymbol (boolean isIcon,
-                               Shape shape,
-                               boolean decorated,
-                               int... codes)
+                               boolean decorated)
     {
-        super(isIcon, shape, decorated, codes);
+        super(isIcon, Shape.REPEAT_DOT, decorated, 46);
+    }
+
+    //-----------------------//
+    // createDecoratedSymbol //
+    //-----------------------//
+    @Override
+    protected ShapeSymbol createDecoratedSymbol ()
+    {
+        return new RepeatDotSymbol(isIcon, true);
     }
 
     //------------//
@@ -79,7 +80,7 @@ public class RepeatDotSymbol
     @Override
     protected ShapeSymbol createIcon ()
     {
-        return new RepeatDotSymbol(true, shape, decorated, codes);
+        return new RepeatDotSymbol(true, decorated);
     }
 
     //-----------//
@@ -100,14 +101,12 @@ public class RepeatDotSymbol
 
         if (decorated) {
             // Use a rectangle yTimes times as high as dot
-            p.rect = new Rectangle(
-                    (int) Math.ceil(rs.getWidth()),
-                    (int) Math.ceil(yRatio * rs.getHeight()));
+            p.rect = new Rectangle2D.Double(0, 0, rs.getWidth(), yRatio * rs.getHeight());
 
             // Define specific offset
-            p.offset = new Point(0, (int) Math.rint(rs.getHeight() * ((yRatio - 1) / 2)));
+            p.offset = new Point2D.Double(0, rs.getHeight() * ((yRatio - 1) / 2));
         } else {
-            p.rect = rs.getBounds();
+            p.rect = rs;
         }
 
         return p;
@@ -119,12 +118,12 @@ public class RepeatDotSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params p,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         if (decorated) {
             // Draw a dot (using composite) on the top
-            Point loc = alignment.translatedPoint(TOP_CENTER, p.rect, location);
+            Point2D loc = alignment.translatedPoint(TOP_CENTER, p.rect, location);
             Composite oldComposite = g.getComposite();
             g.setComposite(decoComposite);
             MusicFont.paint(g, p.layout, loc, TOP_CENTER);
@@ -132,11 +131,11 @@ public class RepeatDotSymbol
 
             // Dot below
             loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
-            loc.y += p.offset.y;
+            PointUtil.add(loc, 0, p.offset.getY());
             MusicFont.paint(g, p.layout, loc, AREA_CENTER);
         } else {
             // Dot alone
-            Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+            Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
             MusicFont.paint(g, p.layout, loc, AREA_CENTER);
         }
     }

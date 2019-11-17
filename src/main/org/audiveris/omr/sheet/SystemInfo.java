@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2019. All rights reserved.
+//  Copyright © Audiveris 2021. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,9 +24,11 @@ package org.audiveris.omr.sheet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.GlyphIndex;
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
+import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.StaffPosition;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.grid.PartGroup;
@@ -36,6 +38,7 @@ import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigListener;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -68,7 +71,6 @@ import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omr.score.PageRef;
 
 /**
  * Class {@code SystemInfo} gathers information from the original picture about a
@@ -89,20 +91,16 @@ import org.audiveris.omr.score.PageRef;
 public class SystemInfo
         implements Comparable<SystemInfo>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SystemInfo.class);
 
     /** To sort by system id. */
-    public static final Comparator<SystemInfo> byId = new Comparator<SystemInfo>()
-    {
-        @Override
-        public int compare (SystemInfo o1,
-                            SystemInfo o2)
-        {
-            return Integer.compare(o1.id, o2.id);
-        }
-    };
+    public static final Comparator<SystemInfo> byId = (SystemInfo o1, SystemInfo o2)
+            -> Integer.compare(o1.id, o2.id);
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -151,7 +149,7 @@ public class SystemInfo
     private Sheet sheet;
 
     /** Real staves of this system (no dummy staves included). */
-    private List<Staff> staves = new ArrayList<>();
+    private final List<Staff> staves = new ArrayList<>();
 
     /** Assigned page, if any. */
     private Page page;
@@ -186,6 +184,7 @@ public class SystemInfo
     /** Width of the system. */
     private int width = -1;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a SystemInfo entity, to register the provided parameters.
      *
@@ -213,6 +212,7 @@ public class SystemInfo
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // addFreeGlyph //
     //--------------//
@@ -236,11 +236,32 @@ public class SystemInfo
     /**
      * Add a (real) part to this system.
      *
-     * @param partInfo the part to add
+     * @param part the part to add
      */
-    public void addPart (Part partInfo)
+    public void addPart (Part part)
     {
-        parts.add(partInfo);
+        parts.add(part);
+    }
+
+    //---------//
+    // addPart //
+    //---------//
+    /**
+     * Add a (real) part to this system at provided index.
+     *
+     * @param index insertion index
+     * @param part  the part to add
+     */
+    public void addPart (int index,
+                         Part part)
+    {
+        parts.add(index, part);
+
+        // Update MeasureStack's
+        for (Measure measure : part.getMeasures()) {
+            // Stack O--- Measure
+            measure.getStack().addMeasure(index, measure);
+        }
     }
 
     //----------//
@@ -290,7 +311,8 @@ public class SystemInfo
             }
 
             {
-                // Support for OldStaffBarline (in part left PartBarline and measures PartBarlines)
+                // Support for OldStaffBarline
+                // (In part left PartBarline and in measures PartBarlines)
                 boolean upgraded = false;
 
                 for (Part part : parts) {
@@ -712,6 +734,37 @@ public class SystemInfo
         return sb.toString();
     }
 
+    //---------------//
+    // getLyricLines //
+    //---------------//
+    /**
+     * Report all the lyric lines in this system, sorted by ordinate
+     *
+     * @return the sequence of lyric lines in system
+     */
+    public List<LyricLineInter> getLyricLines ()
+    {
+        if (sig == null) {
+            return Collections.emptyList();
+        }
+
+        List<Inter> lyricInters = sig.inters(LyricLineInter.class);
+
+        if (lyricInters.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<LyricLineInter> lines = new ArrayList<>();
+
+        for (Inter inter : lyricInters) {
+            lines.add((LyricLineInter) inter);
+        }
+
+        Collections.sort(lines, SentenceInter.byOrdinate);
+
+        return lines;
+    }
+
     //------------------------------//
     // getMutableHorizontalSections //
     //------------------------------//
@@ -938,6 +991,19 @@ public class SystemInfo
         return null;
     }
 
+    //------------//
+    // getProfile //
+    //------------//
+    /**
+     * Convenient method to report the sheet processing profile based on poor switch.
+     *
+     * @return sheet processing profile
+     */
+    public int getProfile ()
+    {
+        return getSheet().getStub().getProfile();
+    }
+
     //----------//
     // getRight //
     //----------//
@@ -1000,15 +1066,20 @@ public class SystemInfo
     public MeasureStack getStackAt (Point2D point)
     {
         if (point != null) {
-            final Staff staff = getStavesAround(point).get(0);
-            final double x = point.getX();
+            final List<Staff> stavesAround = getStavesAround(point);
 
-            for (MeasureStack stack : stacks) {
-                final Measure measure = stack.getMeasureAt(staff);
+            if (!stavesAround.isEmpty()) {
+                final Staff staff = stavesAround.get(0);
+                final double x = point.getX();
 
-                if ((measure != null) && (x >= measure.getAbscissa(LEFT, staff)) && (x <= measure
-                        .getAbscissa(RIGHT, staff))) {
-                    return stack;
+                for (MeasureStack stack : stacks) {
+                    final Measure measure = stack.getMeasureAt(staff);
+
+                    if ((measure != null)
+                                && (x >= measure.getAbscissa(LEFT, staff))
+                                && (x <= measure.getAbscissa(RIGHT, staff))) {
+                        return stack;
+                    }
                 }
             }
         }
@@ -1124,7 +1195,7 @@ public class SystemInfo
     // getStaves //
     //-----------//
     /**
-     * Report the list of (real) staves that compose this system.
+     * Report the list of (real) staves that compose this system, tablatures included.
      *
      * @return the staves
      */
@@ -1141,13 +1212,17 @@ public class SystemInfo
      */
     public final void setStaves (List<Staff> staves)
     {
-        this.staves = staves;
+        this.staves.clear();
 
-        for (Staff staff : staves) {
-            staff.setSystem(this);
+        if (staves != null) {
+            this.staves.addAll(staves);
+
+            for (Staff staff : staves) {
+                staff.setSystem(this);
+            }
+
+            updateCoordinates();
         }
-
-        updateCoordinates();
     }
 
     //-----------------//
@@ -1161,11 +1236,16 @@ public class SystemInfo
      * if any in system.
      *
      * @param point the provided point
-     * @return proper sublist of staves (top down)
+     * @return proper sub-list of staves (top down)
      */
     public List<Staff> getStavesAround (Point2D point)
     {
         final Staff closest = getClosestStaff(point);
+
+        if (closest == null) {
+            return Collections.emptyList();
+        }
+
         final double toTop = closest.getFirstLine().yAt(point.getX()) - point.getY();
         final double toBottom = closest.getLastLine().yAt(point.getX()) - point.getY();
 
@@ -1199,6 +1279,29 @@ public class SystemInfo
     public List<Staff> getStavesOf (Point2D point)
     {
         return StaffManager.getStavesOf(point, staves);
+    }
+
+    //---------------//
+    // getTablatures //
+    //---------------//
+    /**
+     * Report the list of tablature staves.
+     *
+     * @return the tablatures list, perhaps empty but not null
+     */
+    public List<Staff> getTablatures ()
+    {
+        List<Staff> tablatures = null;
+
+        for (Staff staff : staves) {
+            if (tablatures == null) {
+                tablatures = new ArrayList<>();
+            }
+
+            tablatures.add(staff);
+        }
+
+        return (tablatures != null) ? tablatures : Collections.emptyList();
     }
 
     //--------//
@@ -1277,6 +1380,38 @@ public class SystemInfo
         this.indented = indented;
     }
 
+    //--------------------//
+    // isMeasureRestShape //
+    //--------------------//
+    /**
+     * Report whether the provided shape is a measure-long rest.
+     * <ul>
+     * <li>This is always the case for LONG_REST and BREVE_REST.
+     * <li>This is the case for WHOLE_REST provided that flag partialWholeRests is not 'on' for the
+     * containing sheet.
+     * </ul>
+     *
+     * @param shape provided shape
+     * @return true if rest is measure-long
+     */
+    public boolean isMeasureRestShape (Shape shape)
+    {
+        switch (shape) {
+        case LONG_REST:
+        case BREVE_REST:
+            return true;
+
+        case WHOLE_REST: {
+            final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
+
+            return !switches.getValue(ProcessingSwitches.Switch.partialWholeRests);
+        }
+
+        default:
+            return false;
+        }
+    }
+
     //--------------//
     // isMultiStaff //
     //--------------//
@@ -1313,8 +1448,9 @@ public class SystemInfo
         // parts
         parts.addAll(systemBelow.parts);
 
-        for (Part part : systemBelow.parts) {
-            part.setSystem(this);
+        for (Part partBelow : systemBelow.parts) {
+            partBelow.setSystem(this);
+            partBelow.setId(1 + parts.indexOf(partBelow));
         }
 
         // partGroups
@@ -1328,6 +1464,10 @@ public class SystemInfo
         }
 
         // staves
+        for (Staff staff : systemBelow.staves) {
+            staff.setSystem(this);
+        }
+
         staves.addAll(systemBelow.staves);
 
         // sections
@@ -1352,6 +1492,34 @@ public class SystemInfo
         sig.includeSig(systemBelow.getSig());
 
         return removedPageRef;
+    }
+
+    //------------------//
+    // numberLyricLines //
+    //------------------//
+    /**
+     * Number the system lyric lines per part, above and below.
+     */
+    public void numberLyricLines ()
+    {
+        for (Part part : parts) {
+            part.sortLyricLines();
+        }
+    }
+
+    //-------------//
+    // numberParts //
+    //-------------//
+    /**
+     * (Re-)assign sequential numbers to parts within this system.
+     */
+    public void numberParts ()
+    {
+        int id = 1;
+
+        for (Part part : parts) {
+            part.setId(id++);
+        }
     }
 
     //---------------//
@@ -1432,6 +1600,26 @@ public class SystemInfo
                 }
             }
         }
+    }
+
+    //------------//
+    // removePart //
+    //------------//
+    /**
+     * Remove the provided part as well as its measures from system stacks
+     *
+     * @param part the part to remove
+     */
+    public void removePart (Part part)
+    {
+        // Update MeasureStack's
+        for (Measure measure : part.getMeasures()) {
+            // Stack O--- Measure
+            measure.getStack().removeMeasure(measure);
+        }
+
+        // System O--- Part
+        parts.remove(part);
     }
 
     //-------------//

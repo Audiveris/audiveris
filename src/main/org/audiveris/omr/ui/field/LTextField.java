@@ -51,9 +51,11 @@ public class LTextField
         JTextField textField = getField();
         textField.setEditable(editable);
 
-        textField.setHorizontalAlignment(JTextField.CENTER);
+        if (!editable) {
+            textField.setFocusable(false);
+        }
 
-        textField.setEditable(editable);
+        textField.setHorizontalAlignment(JTextField.CENTER);
     }
 
     //------------//

@@ -239,7 +239,85 @@ public class DynamicsInter
      */
     public boolean linkWithChord ()
     {
-        return !searchLinks(sig.getSystem(), true).isEmpty();
+        Collection<Link> links = searchLinks(sig.getSystem());
+
+        if (links.isEmpty()) {
+            return false;
+        }
+
+        for (Link link : links) {
+            link.applyTo(this);
+        }
+
+        return true;
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        Link link = lookupLink(system);
+
+        return (link == null) ? Collections.EMPTY_LIST : Collections.singleton(link);
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, ChordDynamicsRelation.class);
+    }
+
+    //------------------------//
+    // swallowShorterDynamics //
+    //------------------------//
+    /**
+     * For a complex dynamics, try to swallow shorter ones.
+     * <p>
+     * We check a complex dynamics for overlap with shorter dynamics.
+     * If shorter box is (nearly) included in complex box, we have a fit.
+     * Then we assign complex the max grade of complex and shorter, and remove shorter
+     *
+     * @param dynamics candidate dynamics to be searched
+     */
+    public void swallowShorterDynamics (List<Inter> dynamics)
+    {
+        final Rectangle cplBox = getBounds();
+        final String cplString = getSymbolString();
+        final int cplLength = cplString.length();
+
+        // Look for relevant candidate for the complex at hand
+        for (Inter inter : Inters.intersectedInters(dynamics, GeoOrder.NONE, cplBox)) {
+            final DynamicsInter shorter = (DynamicsInter) inter;
+            final String shortString = shorter.getSymbolString();
+
+            if ((shorter == this) || (shortString.length() >= cplLength)
+                        || !cplString.contains(shortString)) {
+                continue;
+            }
+
+            // Measure area of intersection over area of shorter box
+            Rectangle shortBox = shorter.getBounds();
+            double shortArea = shortBox.width * shortBox.height;
+            int intArea = GeoUtil.xOverlap(shortBox, cplBox) * GeoUtil.yOverlap(shortBox, cplBox);
+            double ios = intArea / shortArea;
+            logger.debug("ios:{} {} intersects {}", ios, shorter, this);
+
+            if (ios >= constants.iosMinRatio.getValue()) {
+                setGrade(Math.max(getGrade(), shorter.getGrade()));
+
+                if (shorter.isVip()) {
+                    logger.info("VIP simple {} discarded for complex {}", shorter, this);
+                }
+
+                shorter.remove();
+            }
+        }
     }
 
     //------------//
@@ -251,7 +329,7 @@ public class DynamicsInter
      * @param system containing system
      * @return link or null
      */
-    public Link lookupLink (SystemInfo system)
+    private Link lookupLink (SystemInfo system)
     {
         if (isVip()) {
             logger.info("VIP lookupLink for {}", this);
@@ -318,73 +396,6 @@ public class DynamicsInter
         }
 
         return null;
-    }
-
-    //-------------//
-    // searchLinks //
-    //-------------//
-    @Override
-    public Collection<Link> searchLinks (SystemInfo system,
-                                         boolean doit)
-    {
-        Link link = lookupLink(system);
-
-        if (link == null) {
-            return Collections.emptySet();
-        }
-
-        if (doit) {
-            link.applyTo(this);
-        }
-
-        return Collections.singleton(link);
-    }
-
-    //------------------------//
-    // swallowShorterDynamics //
-    //------------------------//
-    /**
-     * For a complex dynamics, try to swallow shorter ones.
-     * <p>
-     * We check a complex dynamics for overlap with shorter dynamics.
-     * If shorter box is (nearly) included in complex box, we have a fit.
-     * Then we assign complex the max grade of complex and shorter, and remove shorter
-     *
-     * @param dynamics candidate dynamics to be searched
-     */
-    public void swallowShorterDynamics (List<Inter> dynamics)
-    {
-        final Rectangle cplBox = getBounds();
-        final String cplString = getSymbolString();
-        final int cplLength = cplString.length();
-
-        // Look for relevant candidate for the complex at hand
-        for (Inter inter : Inters.intersectedInters(dynamics, GeoOrder.NONE, cplBox)) {
-            final DynamicsInter shorter = (DynamicsInter) inter;
-            final String shortString = shorter.getSymbolString();
-
-            if ((shorter == this) || (shortString.length() >= cplLength)
-                        || !cplString.contains(shortString)) {
-                continue;
-            }
-
-            // Measure area of intersection over area of shorter box
-            Rectangle shortBox = shorter.getBounds();
-            double shortArea = shortBox.width * shortBox.height;
-            int intArea = GeoUtil.xOverlap(shortBox, cplBox) * GeoUtil.yOverlap(shortBox, cplBox);
-            double ios = intArea / shortArea;
-            logger.debug("ios:{} {} intersects {}", ios, shorter, this);
-
-            if (ios >= constants.iosMinRatio.getValue()) {
-                setGrade(Math.max(getGrade(), shorter.getGrade()));
-
-                if (shorter.isVip()) {
-                    logger.info("VIP simple {} discarded for complex {}", shorter, this);
-                }
-
-                shorter.remove();
-            }
-        }
     }
 
     //-----------//

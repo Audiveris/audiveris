@@ -15,5 +15,7 @@
 <!--    <logger name="org.audiveris.omr.sheet.rhythm.MeasureRhythm" level="DEBUG"/>-->
 <!--    <logger name="org.audiveris.omr.sheet.rhythm.SlotsRetriever" level="DEBUG"/>-->
 <!--    <logger name="org.audiveris.omr.sheet.rhythm.Slot" level="DEBUG"/>-->
+<!--    <logger name="org.audiveris.omr.ui.selection.SelectionService" level="DEBUG"/>-->
+    <logger name="org.audiveris.omr.sig.ui.TaskHistory" level="DEBUG"/>
 
 </configuration>

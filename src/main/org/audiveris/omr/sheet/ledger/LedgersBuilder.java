@@ -390,7 +390,7 @@ public class LedgersBuilder
 
                     // Middle of stick may fall outside of ledger width
                     if (GeoUtil.xEmbraces(ledgerBox, xMid)) {
-                        return LineUtil.intersectionAtX(ledgerGlyph.getLine(), xMid).y;
+                        return LineUtil.intersectionAtX(ledgerGlyph.getCenterLine(), xMid).y;
                     } else {
                         return LineUtil.yAtX(
                                 ledgerGlyph.getStartPoint(HORIZONTAL),

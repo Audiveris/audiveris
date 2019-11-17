@@ -124,12 +124,14 @@ public class HeadChordInter
     @Override
     public boolean contains (Point point)
     {
+        // First, check if stem contains the point
         final StemInter stem = getStem();
 
         if ((stem != null) && stem.contains(point)) {
             return true;
         }
 
+        // Second, check if the ensemble of heads contains the point
         return super.contains(point);
     }
 

@@ -25,13 +25,14 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.GeoUtil;
-import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.curve.Curves;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
@@ -53,10 +54,9 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
-import org.audiveris.omr.sig.inter.SentenceInter;
+import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
-import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
@@ -94,10 +94,14 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
+import java.awt.geom.Area;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -165,8 +169,8 @@ public abstract class SigPainter
     /** Music font for heads in small staves, if any. */
     private final MusicFont musicHeadFontSmall;
 
-    /** Global stroke for staff lines. */
-    private final Stroke lineStroke;
+    /** Global stroke for curves (slur, wedge, ending). */
+    private final Stroke curveStroke;
 
     /** Global stroke for stems. */
     private final Stroke stemStroke;
@@ -202,13 +206,25 @@ public abstract class SigPainter
             musicHeadFontSmall = (small != null) ? MusicFont.getHeadFont(scale, small) : null;
         }
 
-        // Determine lines parameters
-        lineStroke = new BasicStroke(
-                (scale != null) ? scale.getFore() : 2f,
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND);
-        stemStroke = new BasicStroke(3f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
-        ledgerStroke = new BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
+        // Stroke for curves (slurs, wedges and endings)
+        {
+            Integer fore = (scale != null) ? scale.getFore() : null;
+            float width = (float) ((fore != null) ? fore : Curves.DEFAULT_THICKNESS);
+            curveStroke = new BasicStroke(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+        }
+
+        // Stroke for stems
+        {
+            Integer stem = (scale != null) ? scale.getStemThickness() : null;
+            float width = (float) ((stem != null) ? stem : StemInter.DEFAULT_THICKNESS);
+            stemStroke = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
+        }
+
+        // Stroke for ledgers
+        {
+            float width = (float) LedgerInter.DEFAULT_THICKNESS;
+            ledgerStroke = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
+        }
     }
 
     //---------------//
@@ -279,7 +295,8 @@ public abstract class SigPainter
     //---------//
     public void process (SIGraph sig)
     {
-        final int bracketGrowth = 2 * sig.getSystem().getSheet().getInterline();
+        final Sheet sheet = sig.getSystem().getSheet();
+        final int bracketGrowth = 2 * sheet.getInterline();
 
         // Use a COPY of vertices, to reduce risks of concurrent modifications (but not all...)
         Set<Inter> copy = new LinkedHashSet<>(sig.vertexSet());
@@ -309,12 +326,8 @@ public abstract class SigPainter
     @Override
     public void visit (AbstractBeamInter beam)
     {
-        try {
-            setColor(beam);
-            g.fill(beam.getArea());
-        } catch (Exception ex) {
-            logger.warn("Error painting {} {}", beam, ex.toString(), ex);
-        }
+        setColor(beam);
+        g.fill(beam.getArea());
     }
 
     //-------//
@@ -326,7 +339,8 @@ public abstract class SigPainter
         setColor(flag);
 
         SIGraph sig = flag.getSig();
-        Set<Relation> rels = sig.getRelations(flag, FlagStemRelation.class);
+        Set<Relation> rels = (sig != null) ? sig.getRelations(flag, FlagStemRelation.class)
+                : Collections.EMPTY_SET;
 
         if (rels.isEmpty()) {
             // The flag exists in sig, but is not yet linked to a stem, use default painting
@@ -334,7 +348,7 @@ public abstract class SigPainter
         } else {
             // Paint the flag precisely on stem abscissa
             StemInter stem = (StemInter) sig.getOppositeInter(flag, rels.iterator().next());
-            Point location = new Point(stem.getCenterLeft().x, flag.getCenter().y);
+            Point location = new Point(stem.getCenter().x, flag.getCenter().y);
             ShapeSymbol symbol = Symbols.getSymbol(flag.getShape());
 
             if (symbol != null) {
@@ -370,7 +384,10 @@ public abstract class SigPainter
         Dimension dim = symbol.getDimension(font);
 
         bx.grow(dim.width, 0); // To avoid any clipping on x
-        g.setClip(clip.intersection(bx));
+
+        if (clip != null) {
+            g.setClip(clip.intersection(bx));
+        }
 
         // Nb of symbols to draw, one below the other
         int nb = (int) Math.ceil((double) bx.height / dim.height);
@@ -380,7 +397,9 @@ public abstract class SigPainter
             location.y += dim.height;
         }
 
-        g.setClip(clip);
+        if (clip != null) {
+            g.setClip(clip);
+        }
     }
 
     //-------//
@@ -432,10 +451,10 @@ public abstract class SigPainter
     // visit //
     //-------//
     @Override
-    public void visit (BracketConnectorInter connection)
+    public void visit (BracketConnectorInter connector)
     {
-        setColor(connection);
-        g.fill(connection.getArea());
+        setColor(connector);
+        g.fill(connector.getArea());
     }
 
     //-------//
@@ -446,65 +465,60 @@ public abstract class SigPainter
     {
         setColor(bracket);
 
-        // Serif symbol
+        final MusicFont font = getMusicFont(false);
+        final BracketInter.BracketKind kind = bracket.getKind();
+        final Line2D median = bracket.getMedian();
+        final double width = bracket.getWidth();
+
+        // Serif symbol (its dimension is defined by ratio of trunck width)
         final double widthRatio = 2.7; // Symbol width WRT bar width
         final double heightRatio = widthRatio * 1.25; // Symbol height WRT bar width
-        final double barRatio = 2.3; // Symbol bar height WRT bar width
-
-        final Rectangle box = bracket.getBounds();
-        final Rectangle glyphBox = bracket.getGlyph().getBounds();
-        final BracketInter.BracketKind kind = bracket.getKind();
-        final double width = bracket.getWidth();
-        final Dimension dim = new Dimension(
+        final Dimension serifDim = new Dimension(
                 (int) Math.rint(widthRatio * width),
                 (int) Math.rint(heightRatio * width));
-        final MusicFont font = getMusicFont(false);
 
-        Integer top = null;
+        Integer trunkTop = null;
 
         if ((kind == BracketInter.BracketKind.TOP) || (kind == BracketInter.BracketKind.BOTH)) {
-            // Draw upper symbol part
-            final Point left = new Point(box.x, glyphBox.y + (int) Math.rint(barRatio * width));
-            OmrFont.paint(g, font.layout(SYMBOL_BRACKET_UPPER_SERIF, dim), left, BOTTOM_LEFT);
-            top = left.y;
+            // Upper symbol part
+            final TextLayout topLayout = font.layout(SYMBOL_BRACKET_UPPER_SERIF, serifDim);
+            final Rectangle2D topRect = topLayout.getBounds();
+            final Point2D topLeft = new Point2D.Double(median.getX1() - width / 2,
+                                                       median.getY1() + topRect.getY());
+            final Rectangle tx = new Rectangle2D.Double(topLeft.getX(),
+                                                        topLeft.getY(),
+                                                        topRect.getWidth(),
+                                                        median.getY1() - topLeft.getY()).getBounds();
+            g.setClip(clip.intersection(tx));
+            OmrFont.paint(g, topLayout, topLeft, TOP_LEFT);
+            trunkTop = tx.y + tx.height;
         }
 
-        Integer bottom = null;
+        Integer trunkBot = null;
 
         if ((kind == BracketInter.BracketKind.BOTTOM) || (kind == BracketInter.BracketKind.BOTH)) {
-            // Draw lower symbol part
-            final Point left = new Point(
-                    box.x,
-                    (glyphBox.y + glyphBox.height) - (int) Math.rint(barRatio * width));
-            OmrFont.paint(g, font.layout(SYMBOL_BRACKET_LOWER_SERIF, dim), left, TOP_LEFT);
-            bottom = left.y;
-        }
-
-        // Bracket area
-        Rectangle bx = null;
-
-        if (top != null) {
-            bx = bracket.getArea().getBounds();
-            bx = bx.intersection(new Rectangle(bx.x, top, bx.width, bx.height));
-        }
-
-        if (bottom != null) {
-            if (bx == null) {
-                bx = bracket.getArea().getBounds();
-            }
-
-            bx = bx.intersection(new Rectangle(bx.x, bx.y, bx.width, bottom - bx.y));
-        }
-
-        if (bx != null) {
+            // Lower symbol part
+            final TextLayout botLayout = font.layout(SYMBOL_BRACKET_LOWER_SERIF, serifDim);
+            final Rectangle2D botRect = botLayout.getBounds();
+            final Point2D botLeft = new Point2D.Double(
+                    median.getX2() - width / 2,
+                    median.getY2() + botRect.getHeight() + botRect.getY());
+            final Rectangle bx = new Rectangle2D.Double(botLeft.getX(),
+                                                        median.getY2(),
+                                                        botRect.getWidth(),
+                                                        botLeft.getY() - median.getY2()).getBounds();
             g.setClip(clip.intersection(bx));
+            OmrFont.paint(g, botLayout, botLeft, BOTTOM_LEFT);
+            trunkBot = bx.y;
         }
 
-        g.fill(bracket.getArea());
-
-        if (bx != null) {
-            g.setClip(clip);
-        }
+        // Trunk area
+        final Area trunk = AreaUtil.verticalParallelogram(
+                new Point2D.Double(median.getX1(), (trunkTop != null) ? trunkTop : median.getY1()),
+                new Point2D.Double(median.getX2(), (trunkBot != null) ? trunkBot : median.getY2()),
+                width);
+        g.setClip(clip);
+        g.fill(trunk);
     }
 
     //-------//
@@ -523,7 +537,7 @@ public abstract class SigPainter
     public void visit (EndingInter ending)
     {
         setColor(ending);
-        g.setStroke(lineStroke);
+        g.setStroke(curveStroke);
         g.draw(ending.getLine());
 
         if (ending.getLeftLeg() != null) {
@@ -585,8 +599,9 @@ public abstract class SigPainter
             return;
         }
 
-        final ShapeSymbol symbol = Symbols.getSymbol(shape);
         setColor(inter);
+
+        final ShapeSymbol symbol = Symbols.getSymbol(shape);
 
         if (symbol != null) {
             final Staff staff = inter.getStaff();
@@ -619,19 +634,28 @@ public abstract class SigPainter
         setColor(inter);
 
         Point center = GeoUtil.centerOf(inter.getBounds());
-        SystemInfo system = inter.getSig().getSystem();
-        Staff staff = system.getClosestStaff(center);
+
+        Staff staff = inter.getStaff();
+
+        if (staff == null) {
+            SystemInfo system = inter.getSig().getSystem();
+            staff = system.getClosestStaff(center);
+        }
+
         double y = staff.pitchToOrdinate(center.x, inter.getPitch());
+
         center.y = (int) Math.rint(y);
 
         Shape shape = inter.getShape();
+
         ShapeSymbol symbol = Symbols.getSymbol(shape);
 
-        if (shape == Shape.SHARP) {
+        if (shape
+                    == Shape.SHARP) {
             symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
         } else {
             Dimension dim = symbol.getDimension(font);
-            center.y += dim.width;
+            center.y += dim.width; // Roughly...
             symbol.paintSymbol(g, font, center, Alignment.BOTTOM_CENTER);
         }
     }
@@ -655,46 +679,42 @@ public abstract class SigPainter
     @Override
     public void visit (LedgerInter ledger)
     {
-        try {
-            setColor(ledger);
+        setColor(ledger);
 
-            final Glyph glyph = ledger.getGlyph();
+        final double thickness = ledger.getThickness();
 
-            if (glyph != null) {
-                g.setStroke(
-                        new BasicStroke(
-                                (float) Math.rint(glyph.getMeanThickness(Orientation.HORIZONTAL)),
-                                BasicStroke.CAP_BUTT,
-                                BasicStroke.JOIN_ROUND));
-                glyph.renderLine(g);
-            } else {
-                g.setStroke(ledgerStroke);
-
-                final Rectangle b = ledger.getBounds();
-                g.drawLine(b.x, b.y + (b.height / 2), b.x + b.width, b.y + (b.height / 2));
-            }
-        } catch (Exception ex) {
-            logger.warn("Error painting {} {}", ledger, ex, ex);
+        if (thickness != 0) {
+            g.setStroke(
+                    new BasicStroke(
+                            (float) Math.rint(thickness),
+                            BasicStroke.CAP_BUTT,
+                            BasicStroke.JOIN_ROUND));
+        } else {
+            g.setStroke(ledgerStroke); // Should not occur
         }
-    }
 
+        g.draw(ledger.getMedian());
+    }
+//
+//    //-------//
+//    // visit //
+//    //-------//
+//    @Override
+//    public void visit (SentenceInter sentence)
+//    {
+//        ///FontInfo lineMeanFont = sentence.getMeanFont();
+//
+//        for (Inter member : sentence.getMembers()) {
+//            WordInter word = (WordInter) member;
+//            ///paintWord(word, lineMeanFont);
+//            paintWord(word, word.getFontInfo());
+//        }
+//    }
+//
     //-------//
     // visit //
     //-------//
-    @Override
-    public void visit (SentenceInter sentence)
-    {
-        FontInfo lineMeanFont = sentence.getMeanFont();
 
-        for (Inter member : sentence.getMembers()) {
-            WordInter word = (WordInter) member;
-            paintWord(word, lineMeanFont);
-        }
-    }
-
-    //-------//
-    // visit //
-    //-------//
     @Override
     public void visit (SlurInter slur)
     {
@@ -702,7 +722,7 @@ public abstract class SigPainter
 
         if (curve != null) {
             setColor(slur);
-            g.setStroke(lineStroke);
+            g.setStroke(curveStroke);
             g.draw(curve);
         }
     }
@@ -715,16 +735,9 @@ public abstract class SigPainter
     {
         setColor(stem);
 
-        //TODO: use proper stem thickness! (see ledger)
         g.setStroke(stemStroke);
 
-        final Glyph glyph = stem.getGlyph();
-
-        if (glyph != null) {
-            glyph.renderLine(g);
-        } else {
-            g.fill(stem.getBounds());
-        }
+        g.draw(stem.getMedian());
     }
 
     //-------//
@@ -733,7 +746,7 @@ public abstract class SigPainter
     @Override
     public void visit (StaffBarlineInter inter)
     {
-        List<Inter> members = inter.getMembers();
+        List<Inter> members = inter.getMembers(); // Needs sig, thus it can't be used for ghost.
 
         if (!members.isEmpty()) {
             for (Inter member : members) {
@@ -750,7 +763,7 @@ public abstract class SigPainter
     @Override
     public void visit (TimePairInter pair)
     {
-        for (Inter member : pair.getMembers()) {
+        for (Inter member : pair.getMembers()) { // Needs sig, thus it can't be used for ghost.
             visit((Inter) member);
         }
     }
@@ -771,9 +784,19 @@ public abstract class SigPainter
     public void visit (WedgeInter wedge)
     {
         setColor(wedge);
-        g.setStroke(lineStroke);
+        g.setStroke(curveStroke);
         g.draw(wedge.getLine1());
         g.draw(wedge.getLine2());
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (WordInter word)
+    {
+        FontInfo fontInfo = word.getFontInfo();
+        paintWord(word, fontInfo);
     }
 
     //----------//
@@ -898,7 +921,7 @@ public abstract class SigPainter
      * @param alignment how: the way the symbol is aligned wrt the location
      */
     protected void paint (TextLayout layout,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         OmrFont.paint(g, layout, location, alignment);
@@ -919,13 +942,14 @@ public abstract class SigPainter
     private void paintHalf (Inter inter,
                             Class<? extends Relation> classe)
     {
-        if (!splitMirrors()) {
+        final SIGraph sig = inter.getSig();
+
+        if (!splitMirrors() || (sig == null)) {
             visit(inter);
 
             return;
         }
 
-        final SIGraph sig = inter.getSig();
         final List<HeadInter> heads = new ArrayList<>();
 
         for (Relation rel : sig.getRelations(inter, classe)) {
@@ -944,14 +968,15 @@ public abstract class SigPainter
             final Rectangle box = inter.getBounds();
             final int height = box.height;
             final Point center = inter.getCenter();
-            final Point ref = inter.getRelationCenter(); // Not always the area center
             final Shape shape = inter.getShape();
             final Staff staff = inter.getStaff();
             final ShapeSymbol symbol = Symbols.getSymbol(shape);
             final MusicFont font = getMusicFont(staff);
             final Dimension dim = symbol.getDimension(font);
             final int w = dim.width;
-            final Line2D line = new Line2D.Double(ref.x - w, ref.y, ref.x + w, ref.y);
+            final Point2D ref = inter.getRelationCenter(); // Not always the area center
+            final Line2D line = new Line2D.Double(ref.getX() - w, ref.getY(),
+                                                  ref.getX() + w, ref.getY());
 
             // Draw each inter half
             for (HeadInter h : heads) {
@@ -980,17 +1005,20 @@ public abstract class SigPainter
     private void paintWord (WordInter word,
                             FontInfo lineMeanFont)
     {
-        if (lineMeanFont != null) {
-            Font font = new TextFont(lineMeanFont);
-            FontRenderContext frc = g.getFontRenderContext();
-            TextLayout layout = new TextLayout(word.getValue(), font, frc);
-            setColor(word);
-
-            if (word.getValue().length() > 2) {
-                paint(layout, word.getLocation(), BASELINE_LEFT);
-            } else {
-                paint(layout, word.getCenter(), AREA_CENTER);
-            }
+        if (word.getValue().isBlank()) {
+            return;
         }
+
+        if (lineMeanFont == null) {
+            logger.warn("No font information for {}", word);
+            return;
+        }
+
+        Font font = new TextFont(lineMeanFont);
+        FontRenderContext frc = g.getFontRenderContext();
+        TextLayout layout = new TextLayout(word.getValue(), font, frc);
+        setColor(word);
+
+        paint(layout, word.getLocation(), BASELINE_LEFT);
     }
 }

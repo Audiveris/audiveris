@@ -1277,6 +1277,27 @@ public class BookActions
         controller.undo();
     }
 
+    //-------------//
+    // upgradeBook //
+    //-------------//
+    /**
+     * Complete the upgrade of all sheets.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = BOOK_UPGRADABLE)
+    public Task<Void, Void> upgradeBook (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == null) {
+            return null;
+        }
+
+        return new UpgradeBookTask(stub.getBook());
+    }
+
     //--------------------//
     // viewBookRepository //
     //--------------------//
@@ -2228,6 +2249,37 @@ public class BookActions
                 logger.warn("Could not transcribe sheet", ex);
             } finally {
                 LogUtil.stopStub();
+            }
+
+            return null;
+        }
+    }
+
+    //-----------------//
+    // UpgradeBookTask //
+    //-----------------//
+    private static class UpgradeBookTask
+            extends VoidTask
+    {
+
+        private final Book book;
+
+        UpgradeBookTask (Book book)
+        {
+            this.book = book;
+        }
+
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            try {
+                LogUtil.start(book);
+                book.upgradeStubs();
+            } catch (Throwable ex) {
+                logger.warn("Error while upgrading book", ex);
+            } finally {
+                LogUtil.stopBook();
             }
 
             return null;

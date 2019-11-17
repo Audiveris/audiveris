@@ -24,14 +24,26 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sig.ui.InterEditor;
+import org.audiveris.omr.sig.ui.InterUIModel;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextWord;
+import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.ui.symbol.TextFont;
+import org.audiveris.omr.ui.symbol.TextSymbol;
 import org.audiveris.omr.util.Jaxb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.font.TextLayout;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -50,6 +62,9 @@ public class WordInter
 
     private static final Logger logger = LoggerFactory.getLogger(WordInter.class);
 
+    // Persistent data
+    //----------------
+    //
     /** Word text content. */
     @XmlAttribute
     protected String value;
@@ -57,12 +72,12 @@ public class WordInter
     /** Detected font attributes. */
     @XmlAttribute(name = "font")
     @XmlJavaTypeAdapter(FontInfo.Adapter.class)
-    protected final FontInfo fontInfo;
+    protected FontInfo fontInfo;
 
-    /** Precise word starting point. */
+    /** Precise word starting point on the baseline. */
     @XmlElement
-    @XmlJavaTypeAdapter(Jaxb.PointAdapter.class)
-    protected Point location;
+    @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
+    protected Point2D location;
 
     /**
      * Creates a new {@code WordInter} object, with TEXT shape.
@@ -83,11 +98,10 @@ public class WordInter
     public WordInter (TextWord textWord,
                       Shape shape)
     {
-        super(
-                textWord.getGlyph(),
-                textWord.getBounds(),
-                shape,
-                textWord.getConfidence() * Grades.intrinsicRatio);
+        super(textWord.getGlyph(),
+              textWord.getBounds(),
+              shape,
+              textWord.getConfidence() * Grades.intrinsicRatio);
         value = textWord.getValue();
         fontInfo = textWord.getFontInfo();
         location = textWord.getLocation();
@@ -96,11 +110,13 @@ public class WordInter
     /**
      * Creates a new {@code WordInter} object meant for manual assignment.
      *
+     * @param shape specific shape (TEXT or LYRICS)
      * @param grade inter grade
      */
-    public WordInter (double grade)
+    public WordInter (Shape shape,
+                      double grade)
     {
-        super(null, null, Shape.TEXT, grade);
+        super(null, null, shape, grade);
 
         this.value = "";
         this.fontInfo = null;
@@ -125,6 +141,63 @@ public class WordInter
         visitor.visit(this);
     }
 
+    //----------//
+    // contains //
+    //----------//
+    @Override
+    public boolean contains (Point point)
+    {
+        getBounds();
+
+        return bounds.contains(point);
+    }
+
+    //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public void deriveFrom (ShapeSymbol symbol,
+                            MusicFont font,
+                            Point dropLocation,
+                            Alignment alignment)
+    {
+        TextSymbol textSymbol = (TextSymbol) symbol;
+        Model model = textSymbol.getModel(font, dropLocation, alignment);
+        setValue(model.value);
+        fontInfo = model.fontInfo;
+        location = new Point2D.Double(model.baseLoc.getX(), model.baseLoc.getY());
+        setBounds(null);
+    }
+
+    //-----------//
+    // getBounds //
+    //-----------//
+    @Override
+    public Rectangle getBounds ()
+    {
+        if (bounds != null) {
+            return new Rectangle(bounds);
+        }
+
+        TextFont textFont = new TextFont(fontInfo);
+        TextLayout layout = textFont.layout(value);
+        Rectangle2D rect = layout.getBounds();
+
+        return new Rectangle(bounds = new Rectangle((int) Math.rint(location.getX()),
+                                                    (int) Math.rint(location.getY() + rect.getY()),
+                                                    (int) Math.rint(rect.getWidth()),
+                                                    (int) Math.rint(rect.getHeight())));
+    }
+
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new Editor(this);
+    }
+
     //-------------//
     // getFontInfo //
     //-------------//
@@ -144,7 +217,7 @@ public class WordInter
     /**
      * @return the location
      */
-    public Point getLocation ()
+    public Point2D getLocation ()
     {
         return location;
     }
@@ -171,6 +244,17 @@ public class WordInter
     public void setValue (String value)
     {
         this.value = value;
+
+        setBounds(null);
+
+        if (sig != null) {
+            // Update containing sentence
+            Inter sentence = getEnsemble();
+
+            if (sentence != null) {
+                sentence.invalidateCache();
+            }
+        }
     }
 
     //----------//
@@ -205,5 +289,147 @@ public class WordInter
         sb.append(" \"").append(value).append("\"");
 
         return sb.toString();
+    }
+
+    //--------//
+    // Editor //
+    //--------//
+    /**
+     * User editor for a word.
+     * <p>
+     * For a word, there are 2 handles:
+     * <ul>
+     * <li>Middle handle, moving the word in any direction
+     * <li>TopRight handle, to increase/decrease font size
+     * </ul>
+     */
+    private static class Editor
+            extends InterEditor
+    {
+
+        private final Model originalModel;
+
+        private final Model model;
+
+        private final Point2D middle;
+
+        private final Point2D right;
+
+        public Editor (WordInter word)
+        {
+            super(word);
+
+            originalModel = new Model(word.getValue(), word.getLocation(), word.getFontInfo());
+            model = new Model(word.getValue(), word.getLocation(), word.getFontInfo());
+
+            final Rectangle box = word.getBounds();
+
+            middle = new Point2D.Double(box.x + box.width / 2.0, box.y + box.height / 2.0);
+            right = new Point2D.Double(box.x + box.width, box.y + box.height / 2.0);
+
+            handles.add(selectedHandle = new InterEditor.Handle(middle)
+            {
+                @Override
+                public boolean applyMove (Point vector)
+                {
+                    // Data
+                    PointUtil.add(model.baseLoc, vector);
+
+                    // Handles
+                    for (InterEditor.Handle handle : handles) {
+                        PointUtil.add(handle.getHandleCenter(), vector);
+                    }
+
+                    return true;
+                }
+            });
+
+            // Move right, only horizontally
+            handles.add(new Handle(right)
+            {
+                @Override
+                public boolean applyMove (Point vector)
+                {
+                    final int dx = vector.x;
+
+                    if (dx == 0) {
+                        return false;
+                    }
+
+                    // Data
+                    box.width += dx;
+
+                    if (box.width > 0) {
+                        WordInter word = (WordInter) inter;
+                        String value = word.getValue();
+                        int fontSize = (int) Math.rint(
+                                TextFont.computeFontSize(value, FontInfo.DEFAULT, box.width));
+                        model.fontInfo = FontInfo.createDefault(fontSize);
+
+                        // Handles
+                        TextFont textFont = new TextFont(model.fontInfo);
+                        TextLayout layout = textFont.layout(value);
+                        Rectangle2D rect = layout.getBounds();
+                        double y = model.baseLoc.getY() + rect.getY() + rect.getHeight() / 2;
+                        middle.setLocation(box.x + rect.getWidth() / 2, y);
+                        right.setLocation(box.x + rect.getWidth(), y);
+                    }
+
+                    return true;
+                }
+            });
+        }
+
+        @Override
+        protected void doit ()
+        {
+            WordInter word = (WordInter) inter;
+            word.location.setLocation(model.baseLoc);
+            word.fontInfo = model.fontInfo;
+
+            inter.setBounds(null);
+            super.doit(); // No more glyph
+        }
+
+        @Override
+        public void undo ()
+        {
+            WordInter word = (WordInter) inter;
+            word.location.setLocation(originalModel.baseLoc);
+            word.fontInfo = originalModel.fontInfo;
+
+            inter.setBounds(null);
+            super.undo();
+        }
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements InterUIModel
+    {
+
+        public final String value;
+
+        public final Point2D baseLoc;
+
+        public FontInfo fontInfo;
+
+        public Model (String value,
+                      Point2D baseLoc,
+                      FontInfo fontInfo)
+        {
+            this.value = value;
+            this.baseLoc = new Point2D.Double(baseLoc.getX(), baseLoc.getY());
+            this.fontInfo = fontInfo;
+        }
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(baseLoc, dx, dy);
+        }
     }
 }

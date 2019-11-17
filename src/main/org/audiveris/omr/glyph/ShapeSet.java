@@ -235,7 +235,11 @@ public class ShapeSet
     public static final ShapeSet Attributes = new ShapeSet(
             PEDAL_MARK,
             Colors.SCORE_MODIFIERS,
-            shapesOf(OTTAVA_ALTA, OTTAVA_BASSA, PEDAL_MARK, PEDAL_UP_MARK, ARPEGGIATO));
+            shapesOf(/* OTTAVA_ALTA, */
+                    /* OTTAVA_BASSA, */
+                    PEDAL_MARK,
+                    PEDAL_UP_MARK,
+                    ARPEGGIATO));
 
     public static final ShapeSet Barlines = new ShapeSet(
             LEFT_REPEAT_SIGN,
@@ -373,7 +377,14 @@ public class ShapeSet
     public static final ShapeSet Physicals = new ShapeSet(
             LEDGER,
             Colors.SCORE_PHYSICALS,
-            shapesOf(LYRICS, TEXT, CHARACTER, CLUTTER, SLUR, LEDGER, STEM, ENDING));
+            shapesOf(LYRICS,
+                     TEXT,
+                     /// CHARACTER,
+                     /// CLUTTER,
+                     SLUR,
+                     LEDGER,
+                     STEM,
+                     ENDING));
 
     // =========================================================================
     // Below are EnumSet instances, used programmatically.

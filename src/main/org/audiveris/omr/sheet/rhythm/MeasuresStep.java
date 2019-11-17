@@ -115,9 +115,8 @@ public class MeasuresStep
             MeasureStack stack = system.getStackAt(centerLeft);
             final boolean isAddition = isAddition(seq);
 
-            if ((!isAddition && (opKind != UITask.OpKind.UNDO)) || (isAddition
-                                                                            && (opKind
-                                                                                == UITask.OpKind.UNDO))) {
+            if ((!isAddition && (opKind != UITask.OpKind.UNDO))
+                        || (isAddition && (opKind == UITask.OpKind.UNDO))) {
                 // Remove barlines
                 MeasureStack rightStack = stack.getNextSibling();
 

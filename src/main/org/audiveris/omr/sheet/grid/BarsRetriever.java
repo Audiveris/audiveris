@@ -918,6 +918,8 @@ public class BarsRetriever
      */
     private void createInters ()
     {
+        final double halfLine = scale.getFore() / 2.0;
+
         for (SystemInfo system : sheet.getSystems()) {
             SIGraph sig = system.getSig();
 
@@ -929,9 +931,11 @@ public class BarsRetriever
                         continue;
                     }
 
-                    double x = (peak.getStart() + peak.getStop()) / 2d;
-                    Line2D median = new Line2D.Double(x, peak.getTop(), x, peak.getBottom());
-
+                    double x = peak.getStart() + peak.getWidth() / 2d;
+                    // At this point in time, peak top & bottom are integers (inside extrema)
+                    // and thus these ordinate values must be adjusted
+                    Line2D median = new Line2D.Double(x, peak.getTop() - halfLine + 0.5,
+                                                      x, peak.getBottom() + halfLine + 0.5);
                     final Glyph glyph = sheet.getGlyphIndex().registerOriginal(
                             peak.getFilament().toGlyph(null));
                     final AbstractVerticalInter inter;
@@ -1258,11 +1262,12 @@ public class BarsRetriever
                         // Check for serif shape
                         Filament serif;
 
-                        if ((ext <= params.maxBracketExtension) && (null != (serif = getSerif(
-                                staff,
-                                peak,
-                                rightPeak,
-                                side)))) {
+                        if ((ext <= params.maxBracketExtension)
+                                    && (null != (serif = getSerif(
+                                        staff,
+                                        peak,
+                                        rightPeak,
+                                        side)))) {
                             logger.debug("Staff#{} {} bracket end", staff.getId(), side);
 
                             peak.setBracketEnd(side, serif);

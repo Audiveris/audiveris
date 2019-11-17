@@ -97,12 +97,11 @@ public abstract class GhostDropAdapter<A>
     @Override
     public void mousePressed (MouseEvent e)
     {
+        final ScreenPoint screenPoint = new ScreenPoint(e.getXOnScreen(), e.getYOnScreen());
+
         glassPane.setVisible(true);
-
-        ScreenPoint screenPoint = new ScreenPoint(e.getXOnScreen(), e.getYOnScreen());
-
         glassPane.setImage(image);
-        glassPane.setPoint(screenPoint);
+        glassPane.setScreenPoint(screenPoint);
     }
 
     //---------------//
@@ -111,7 +110,7 @@ public abstract class GhostDropAdapter<A>
     @Override
     public void mouseReleased (MouseEvent e)
     {
-        ScreenPoint screenPoint = new ScreenPoint(e.getXOnScreen(), e.getYOnScreen());
+        final ScreenPoint screenPoint = new ScreenPoint(e.getXOnScreen(), e.getYOnScreen());
 
         glassPane.setVisible(false);
         glassPane.setImage(null);
@@ -123,7 +122,7 @@ public abstract class GhostDropAdapter<A>
     // removeDropListener //
     //--------------------//
     /**
-     * Unregister a drop listener
+     * Un-register a drop listener
      *
      * @param listener the listener to remove
      */

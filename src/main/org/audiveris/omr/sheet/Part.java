@@ -601,7 +601,7 @@ public class Part
      * @param point coordinates of the given point
      * @return the containing measure
      */
-    public Measure getMeasureAt (Point point)
+    public Measure getMeasureAt (Point2D point)
     {
         Staff staff = getStaffJustAbove(point);
 
@@ -609,11 +609,11 @@ public class Part
             return null;
         }
 
-        if ((point.x >= staff.getAbscissa(LEFT)) && (point.x <= staff.getAbscissa(RIGHT))) {
+        if ((point.getX() >= staff.getAbscissa(LEFT)) && (point.getX() <= staff.getAbscissa(RIGHT))) {
             for (Measure measure : measures) {
                 PartBarline barline = measure.getRightPartBarline();
 
-                if ((barline == null) || (point.x <= barline.getRightX(this, staff))) {
+                if ((barline == null) || (point.getX() <= barline.getRightX(this, staff))) {
                     return measure;
                 }
             }
@@ -724,7 +724,7 @@ public class Part
      * @param point the provided point
      * @return the staff just above
      */
-    public Staff getStaffJustAbove (Point point)
+    public Staff getStaffJustAbove (Point2D point)
     {
         List<Staff> relevants = StaffManager.getStavesOf(point, staves);
 

@@ -52,7 +52,7 @@ class TaskHistory
      * @param tasks one (or several related) task(s)
      * @return the action sequence
      */
-    public UITaskList add (UITaskList seq)
+    public synchronized UITaskList add (UITaskList seq)
     {
         sequences.add(cursor + 1, seq);
         cursor++;
@@ -62,6 +62,8 @@ class TaskHistory
             sequences.remove(i);
         }
 
+        logger.debug("TaskHistory seqs:{} cursor:{} added {}", sequences.size(), cursor, seq);
+
         return seq;
     }
 
@@ -70,7 +72,7 @@ class TaskHistory
      *
      * @return true if OK
      */
-    public boolean canRedo ()
+    public synchronized boolean canRedo ()
     {
         return cursor < (sequences.size() - 1);
     }
@@ -80,7 +82,7 @@ class TaskHistory
      *
      * @return true if OK
      */
-    public boolean canUndo ()
+    public synchronized boolean canUndo ()
     {
         return cursor >= 0;
     }
@@ -88,7 +90,7 @@ class TaskHistory
     /**
      * Clear history.
      */
-    public void clear ()
+    public synchronized void clear ()
     {
         sequences.clear();
         cursor = -1;
@@ -99,12 +101,17 @@ class TaskHistory
      *
      * @return the task sequence to redo
      */
-    public UITaskList toRedo ()
+    public synchronized UITaskList toRedo ()
     {
-        UITaskList seq = sequences.get(cursor + 1);
-        cursor++;
+        if (cursor < (sequences.size() - 1)) {
+            UITaskList seq = sequences.get(cursor + 1);
+            cursor++;
 
-        return seq;
+            logger.debug("TaskHistory seqs:{} cursor:{} redo {}", sequences.size(), cursor, seq);
+            return seq;
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -125,11 +132,16 @@ class TaskHistory
      *
      * @return the task sequence to undo
      */
-    public UITaskList toUndo ()
+    public synchronized UITaskList toUndo ()
     {
-        UITaskList seq = sequences.get(cursor);
-        cursor--;
+        if (cursor >= 0) {
+            UITaskList seq = sequences.get(cursor);
+            cursor--;
 
-        return seq;
+            logger.debug("TaskHistory seqs:{} cursor:{} undo {}", sequences.size(), cursor, seq);
+            return seq;
+        } else {
+            return null;
+        }
     }
 }

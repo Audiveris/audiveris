@@ -21,15 +21,15 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 import static org.audiveris.omr.ui.symbol.ShapeSymbol.decoComposite;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.font.TextLayout;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -69,6 +69,15 @@ public class AugmentationSymbol
         super(isIcon, Shape.AUGMENTATION_DOT, decorated, 46);
     }
 
+    //-----------------------//
+    // createDecoratedSymbol //
+    //-----------------------//
+    @Override
+    protected ShapeSymbol createDecoratedSymbol ()
+    {
+        return new AugmentationSymbol(isIcon, true);
+    }
+
     //------------//
     // createIcon //
     //------------//
@@ -82,14 +91,12 @@ public class AugmentationSymbol
     // getParams //
     //-----------//
     @Override
-    protected BasicSymbol.Params getParams (MusicFont font)
+    protected MyParams getParams (MusicFont font)
     {
         MyParams p = new MyParams();
 
         // Augmentation symbol layout
         p.layout = font.layout(getString());
-
-        Rectangle2D rs = p.layout.getBounds(); // Symbol bounds
 
         if (decorated) {
             // Head layout
@@ -97,14 +104,12 @@ public class AugmentationSymbol
 
             // Use a rectangle twice as wide as note head
             Rectangle2D hRect = p.headLayout.getBounds();
-            p.rect = new Rectangle(
-                    (int) Math.ceil(2 * hRect.getWidth()),
-                    (int) Math.ceil(hRect.getHeight()));
+            p.rect = new Rectangle2D.Double(0, 0, 2 * hRect.getWidth(), hRect.getHeight());
 
             // Define specific offset
-            p.offset = new Point((int) Math.rint(dxRatio * p.rect.width), 0);
+            p.offset = new Point2D.Double(dxRatio * p.rect.getWidth(), 0);
         } else {
-            p.rect = rs.getBounds();
+            p.rect = p.layout.getBounds();
         }
 
         return p;
@@ -116,25 +121,25 @@ public class AugmentationSymbol
     @Override
     protected void paint (Graphics2D g,
                           BasicSymbol.Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
 
         if (decorated) {
             // Draw a note head (using composite) on the left side
-            Point loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
+            Point2D loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
             Composite oldComposite = g.getComposite();
             g.setComposite(decoComposite);
             MusicFont.paint(g, p.headLayout, loc, MIDDLE_LEFT);
             g.setComposite(oldComposite);
 
             // Augmentation on right side
-            loc.x += ((3 * p.rect.width) / 4);
+            PointUtil.add(loc, (3 * p.rect.getWidth()) / 4, 0);
             MusicFont.paint(g, p.layout, loc, AREA_CENTER);
         } else {
             // Augmentation alone
-            Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+            Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
             MusicFont.paint(g, p.layout, loc, AREA_CENTER);
         }
     }
@@ -142,7 +147,7 @@ public class AugmentationSymbol
     //--------//
     // Params //
     //--------//
-    protected class MyParams
+    protected static class MyParams
             extends BasicSymbol.Params
     {
 

@@ -159,7 +159,6 @@ public class ChordsBuilder
 
         for (Inter rest : rests) {
             RestChordInter chord = new RestChordInter(-1);
-            chord.setBounds(rest.getBounds());
             sig.addVertex(chord);
             chord.setStaff(system.getClosestStaff(rest.getCenter()));
             chord.addMember(rest);
@@ -351,7 +350,6 @@ public class ChordsBuilder
 
             // Start a brand new stem-less chord (whole note)
             chord = new HeadChordInter(-1);
-            chord.setBounds(h1.getBounds()); // Initial chord bounds
             sig.addVertex(chord);
             chord.setStaff(h1.getStaff());
             chord.addMember(h1);

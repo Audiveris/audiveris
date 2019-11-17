@@ -77,6 +77,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -293,6 +294,9 @@ public class Sheet
 
     /** Related symbols editor, if any. */
     private SymbolsEditor symbolsEditor;
+
+    /** Stroke for slurs, wedges and endings lines. */
+    private Stroke lineStroke;
 
     //-- resettable members ------------------------------------------------------------------------
     //

@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.curve;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import static org.audiveris.omr.math.CubicUtil.*;
 import org.audiveris.omr.math.GeoPath;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
@@ -53,6 +54,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
+import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import static java.lang.Math.abs;
@@ -119,11 +121,11 @@ public class SlurLinker
      */
     public Map<HorizontalSide, Area> defineAreaPair (SlurInter slur)
     {
-        final SlurInfo info = slur.getInfo();
-        final Point first = info.getEnd(true);
-        final Point last = info.getEnd(false);
+        final CubicCurve2D curve = slur.getCurve();
+        final Point first = rounded(curve.getP1());
+        final Point last = rounded(curve.getP2());
         final int slurWidth = abs(last.x - first.x);
-        final int vDir = info.above();
+        final int vDir = above(curve);
         final int hDir = Integer.signum(last.x - first.x);
         final Point2D mid = new Point2D.Double((first.x + last.x) / 2d, (first.y + last.y) / 2d);
         final Point2D firstExt;
@@ -135,10 +137,8 @@ public class SlurLinker
         final Point2D lastBase;
 
         // Qualify the slur as horizontal or vertical
-        if ((abs(LineUtil.getSlope(first, last)) <= params.slopeSeparator)
-                    || (slurWidth >= params.wideSlurWidth)) {
+        if (isHorizontal(slur)) {
             // Horizontal: Use base parallel to slur
-            info.setHorizontal(true);
             firstExt = extension(mid, first, params.coverageHExt);
             lastExt = extension(mid, last, params.coverageHExt);
             firstBase = new Point2D.Double(
@@ -172,11 +172,10 @@ public class SlurLinker
             }
         } else {
             // Vertical: Use slanted separation
-            info.setHorizontal(false);
             firstExt = extension(mid, first, params.coverageVExt);
             lastExt = extension(mid, last, params.coverageVExt);
 
-            Point2D bisUnit = info.getBisUnit();
+            Point2D bisUnit = getBisUnit(slur);
             double vDepth = (slurWidth <= params.maxSmallSlurWidth) ? params.coverageVDepthSmall
                     : params.coverageVDepth;
             Point2D depth = new Point2D.Double(vDepth * bisUnit.getX(), vDepth * bisUnit.getY());
@@ -254,7 +253,7 @@ public class SlurLinker
      * </ul>
      * </ul>
      * Possible orphan slurs are accepted for those close to staff side and rather horizontal.
-     * The other slurs must exhibit links on both sides.
+     * The other slurs, except manual ones, must exhibit links on both sides.
      *
      * @param slur   the slur candidate to check for links
      * @param areas  the lookup area on each slur side
@@ -381,10 +380,13 @@ public class SlurLinker
             return null;
         }
 
-        // One link is missing, check whether this slur candidate can be an orphan
-        for (HorizontalSide side : HorizontalSide.values()) {
-            if ((linkPair.get(side) == null) && !canBeOrphan(slur, side, system)) {
-                return null; // TODO: Too strict for manual usage
+        // One link is missing
+        // Except for a manual slur, check whether this slur candidate can be an orphan
+        if (!slur.isManual()) {
+            for (HorizontalSide side : HorizontalSide.values()) {
+                if ((linkPair.get(side) == null) && !canBeOrphan(slur, side, system)) {
+                    return null;
+                }
             }
         }
 
@@ -406,10 +408,10 @@ public class SlurLinker
                                  HorizontalSide side,
                                  SystemInfo system)
     {
-        final SlurInfo info = slur.getInfo();
+        final CubicCurve2D curve = slur.getCurve();
 
         // Check if slur is rather horizontal
-        if (abs(LineUtil.getSlope(info.getEnd(true), info.getEnd(false))) > params.maxOrphanSlope) {
+        if (abs(LineUtil.getSlope(curve.getP1(), curve.getP2())) > params.maxOrphanSlope) {
             logger.debug("{} too sloped orphan", slur);
 
             return false;
@@ -417,7 +419,7 @@ public class SlurLinker
 
         // A left orphan must start in first measure.
         // A right orphan must stop in last measure.
-        Point slurEnd = info.getEnd(side == LEFT);
+        Point2D slurEnd = (side == LEFT) ? curve.getP1() : curve.getP2();
         Staff staff = system.getClosestStaff(slurEnd);
         Part part = staff.getPart();
         Measure sideMeasure = (side == LEFT) ? part.getFirstMeasure() : part.getLastMeasure();
@@ -432,7 +434,7 @@ public class SlurLinker
         // Also, check horizontal gap to staff limit
         int staffEnd = (side == LEFT) ? staff.getHeaderStop() : staff.getAbscissa(side);
 
-        if (abs(slurEnd.x - staffEnd) > params.maxOrphanDx) {
+        if (abs(slurEnd.getX() - staffEnd) > params.maxOrphanDx) {
             logger.debug("{} too far orphan", slur);
 
             return false;
@@ -454,13 +456,55 @@ public class SlurLinker
     private Point getTargetPoint (SlurInter slur,
                                   HorizontalSide side)
     {
-        final boolean rev = side == LEFT;
-        final SlurInfo info = slur.getInfo();
-        final Point end = info.getEnd(rev);
-        final Point2D vector = info.getEndVector(rev);
+        final CubicCurve2D curve = slur.getCurve();
+        final Point2D end = (side == LEFT) ? curve.getP1() : curve.getP2();
+        final Point2D vector = (side == LEFT) ? getEndVector1(curve) : getEndVector2(curve);
         final double ext = params.targetExtension;
 
-        return PointUtil.rounded(PointUtil.addition(end, PointUtil.times(vector, ext)));
+        return rounded(PointUtil.addition(end, PointUtil.times(vector, ext)));
+    }
+
+    /**
+     * Compute bisector vector.
+     *
+     * @param above is the slur above (or below)
+     * @return the unit bisector
+     */
+    private Point2D getBisUnit (SlurInter slur)
+    {
+        final boolean above = slur.isAbove();
+        final CubicCurve2D curve = slur.getCurve();
+        final Point2D one = above ? curve.getP1() : curve.getP2();
+        final Point2D two = above ? curve.getP2() : curve.getP1();
+
+        Line2D bisector = LineUtil.bisector(one, two);
+
+        // Normalization
+        double length = bisector.getP1().distance(bisector.getP2());
+
+        return new Point2D.Double(
+                (bisector.getX2() - bisector.getX1()) / length,
+                (bisector.getY2() - bisector.getY1()) / length);
+    }
+
+    //--------------//
+    // isHorizontal //
+    //--------------//
+    /**
+     * Report whether the provided slur is rather horizontal (vs rather vertical).
+     *
+     * @param slur the provided slur
+     * @return true if rather horizontal
+     */
+    private boolean isHorizontal (SlurInter slur)
+    {
+        final CubicCurve2D curve = slur.getCurve();
+        final Point2D first = curve.getP1();
+        final Point2D last = curve.getP2();
+        final double slurWidth = abs(last.getX() - first.getX());
+
+        return (abs(LineUtil.getSlope(first, last)) <= params.slopeSeparator)
+                       || (slurWidth >= params.wideSlurWidth);
     }
 
     //--------//
@@ -481,10 +525,10 @@ public class SlurLinker
                                              List<Inter> chords)
     {
         final Map<Inter, SlurHeadLink> found = new HashMap<>();
-        final SlurInfo info = slur.getInfo();
-        final Point end = info.getEnd(side == LEFT);
+        final CubicCurve2D curve = slur.getCurve();
+        final Point end = rounded((side == LEFT) ? curve.getP1() : curve.getP2());
         final Point target = getTargetPoint(slur, side);
-        final Point2D bisUnit = info.getBisUnit();
+        final Point2D bisUnit = getBisUnit(slur);
 
         // Look for intersected chords
         for (Inter chordInter : chords) {
@@ -525,7 +569,7 @@ public class SlurLinker
                                       Point2D bisUnit,
                                       Area area)
     {
-        final boolean horizontal = slur.getInfo().isHorizontal();
+        final boolean horizontal = isHorizontal(slur);
         final boolean above = slur.isAbove();
 
         double bestDist = Double.MAX_VALUE;

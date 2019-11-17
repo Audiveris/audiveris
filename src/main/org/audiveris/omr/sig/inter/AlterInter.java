@@ -194,6 +194,28 @@ public class AlterInter
         return isAbnormal();
     }
 
+    //---------------//
+    // getAreaOffset //
+    //---------------//
+    /**
+     * Report for the center offset WRT area center.
+     * <p>
+     * This is 0, except for flat and double flat shapes.
+     *
+     * @return offset (as a height ratio) of pitch center WRT area center
+     */
+    public double getAreaOffset ()
+    {
+        switch (shape) {
+        case FLAT:
+        case DOUBLE_FLAT:
+            return getFlatAreaOffset();
+
+        default:
+            return 0;
+        }
+    }
+
     //------------//
     // getDetails //
     //------------//
@@ -219,16 +241,15 @@ public class AlterInter
     // getRelationCenter //
     //-------------------//
     @Override
-    public Point getRelationCenter ()
+    public Point2D getRelationCenter ()
     {
         Point center = getCenter();
 
         switch (shape) {
         case FLAT:
         case DOUBLE_FLAT:
-            return new Point(
-                    center.x,
-                    (int) Math.rint(center.y + (getFlatAreaOffset() * getBounds().height)));
+            return new Point2D.Double(center.x,
+                                      center.y + (getFlatAreaOffset() * getBounds().height));
 
         default:
             return center;
@@ -252,22 +273,44 @@ public class AlterInter
     // searchLinks //
     //-------------//
     @Override
-    public Collection<Link> searchLinks (SystemInfo system,
-                                         boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system)
     {
-        // Not very optimized!
         List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
         Collections.sort(systemHeads, Inters.byAbscissa);
 
-        Collection<Link> links = lookupLinks(systemHeads);
+        return lookupLinks(systemHeads);
+    }
 
-        if (doit) {
-            for (Link link : links) {
-                link.applyTo(this);
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, AlterHeadRelation.class);
+    }
+
+    //-----------//
+    // setBounds //
+    //-----------//
+    @Override
+    public void setBounds (Rectangle bounds)
+    {
+        if (bounds == null) {
+            this.bounds = null;
+            setPitch(null);
+        } else {
+            this.bounds = new Rectangle(bounds);
+
+            if (staff == null) {
+                setPitch(null);
+            } else {
+                Point ctr = GeoUtil.centerOf(bounds);
+                setPitch(staff.pitchPositionOf(
+                        new Point2D.Double(ctr.x, ctr.y + (getAreaOffset() * bounds.height))));
             }
         }
-
-        return links;
     }
 
     //----------//

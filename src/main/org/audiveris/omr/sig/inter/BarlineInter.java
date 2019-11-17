@@ -47,13 +47,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class {@code BarlineInter} represents an interpretation of barline (thin or thick
  * vertical segment).
+ * <p>
+ * A barline that spans several staves is modeled as one BarlineInter per staff, interleaved by
+ * {@link BarConnectorInter} instances.
  *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "barline")
 public class BarlineInter
-        extends AbstractVerticalInter
+        extends AbstractStaffVerticalInter
 {
 
     /** Does this bar line define a staff side?. */
@@ -147,6 +150,9 @@ public class BarlineInter
         }
     }
 
+    //---------------//
+    // getGroupItems //
+    //---------------//
     /**
      * Report the sequence of items (barlines and repeat dots if any) this barline
      * is part of.
@@ -325,28 +331,6 @@ public class BarlineInter
         staffEnd = side;
     }
 
-    //-------------//
-    // browseGroup //
-    //-------------//
-    private void browseGroup (BarlineInter bar,
-                              SortedSet<Inter> items)
-    {
-        for (Relation rel : sig.getRelations(
-                bar,
-                BarGroupRelation.class,
-                RepeatDotBarRelation.class)) {
-            Inter other = sig.getOppositeInter(bar, rel);
-
-            if (!items.contains(other)) {
-                items.add(other);
-
-                if (other instanceof BarlineInter) {
-                    browseGroup((BarlineInter) other, items);
-                }
-            }
-        }
-    }
-
     //-------------------//
     // getClosestBarline //
     //-------------------//
@@ -374,5 +358,27 @@ public class BarlineInter
         }
 
         return bestBar;
+    }
+
+    //-------------//
+    // browseGroup //
+    //-------------//
+    private void browseGroup (BarlineInter bar,
+                              SortedSet<Inter> items)
+    {
+        for (Relation rel : sig.getRelations(
+                bar,
+                BarGroupRelation.class,
+                RepeatDotBarRelation.class)) {
+            Inter other = sig.getOppositeInter(bar, rel);
+
+            if (!items.contains(other)) {
+                items.add(other);
+
+                if (other instanceof BarlineInter) {
+                    browseGroup((BarlineInter) other, items);
+                }
+            }
+        }
     }
 }

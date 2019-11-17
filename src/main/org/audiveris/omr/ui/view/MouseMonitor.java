@@ -74,6 +74,15 @@ public interface MouseMonitor
                         MouseMovement movement);
 
     /**
+     * Selection (by left button double-click)
+     *
+     * @param pt       the selected point in model pixel coordinates
+     * @param movement the mouse movement
+     */
+    void objectSelected (Point pt,
+                         MouseMovement movement);
+
+    /**
      * Selection (by left or right button drag + shift) of a rectangle
      *
      * @param rect     the selected rectangle in model pixel coordinates

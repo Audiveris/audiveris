@@ -29,8 +29,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Seen from an Inter instance, class {@code Link} describes a potential relation with
- * another Inter instance (the partner).
+ * Seen from an Inter instance, class {@code Link} describes a <b>potential</b> relation
+ * with another Inter instance (the partner).
  * <p>
  * This is meant to deal with a <b>potential</b> relation between the inter instance and the
  * partner, before perhaps recording the relation as an edge within the SIG.
@@ -89,8 +89,9 @@ public class Link
      * of the same relation class already exists between them.
      *
      * @param inter the provided inter
+     * @return true if the relation was actually added
      */
-    public void applyTo (Inter inter)
+    public boolean applyTo (Inter inter)
     {
         final SIGraph sig = inter.getSig();
         final Inter source = outgoing ? inter : partner;
@@ -98,9 +99,33 @@ public class Link
 
         if (!source.isRemoved() && !target.isRemoved()) {
             if (null == sig.getRelation(source, target, relation.getClass())) {
-                sig.addEdge(source, target, relation);
+                return sig.addEdge(source, target, relation);
             }
         }
+
+        return false;
+    }
+
+    //------------//
+    // removeFrom //
+    //------------//
+    /**
+     * Remove the relation between the provided inter and the partner.
+     *
+     * @param inter the provided inter
+     * @return true if the relation was actually removed
+     */
+    public boolean removeFrom (Inter inter)
+    {
+        final SIGraph sig = inter.getSig();
+        final Inter source = outgoing ? inter : partner;
+        final Inter target = outgoing ? partner : inter;
+
+        if (!source.isRemoved() && !target.isRemoved()) {
+            return sig.removeEdge(relation);
+        }
+
+        return false;
     }
 
     //----------//

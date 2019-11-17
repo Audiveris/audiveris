@@ -22,6 +22,7 @@
 package org.audiveris.omr.sheet.grid;
 
 import org.audiveris.omr.math.AreaUtil;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.GradeImpacts;
 
 import java.awt.geom.Area;
@@ -39,6 +40,9 @@ public class BarConnection
         extends BarAlignment
 {
 
+    /** Related sheet. */
+    private final Sheet sheet;
+
     /** Physical portion of the connection line, excluding portions within staves. */
     private Area area;
 
@@ -48,11 +52,13 @@ public class BarConnection
     /**
      * Creates a new BarConnection object.
      *
+     * @param sheet       containing sheet
      * @param align       the underlying barline alignment
      * @param gapImpact   impact of gap
      * @param whiteImpact impact of white ratio
      */
-    public BarConnection (BarAlignment align,
+    public BarConnection (Sheet sheet,
+                          BarAlignment align,
                           double gapImpact,
                           double whiteImpact)
     {
@@ -66,6 +72,7 @@ public class BarConnection
                         ((BarAlignment.Impacts) align.getImpacts()).getWidthImpact(),
                         gapImpact,
                         whiteImpact));
+        this.sheet = sheet;
     }
 
     //--------//
@@ -109,9 +116,13 @@ public class BarConnection
     public Line2D getMedian ()
     {
         if (median == null) {
-            double xTop = (topPeak.getStart() + topPeak.getStop()) / 2d;
-            double xBot = (bottomPeak.getStart() + bottomPeak.getStop()) / 2d;
-            median = new Line2D.Double(xTop, topPeak.getBottom(), xBot, bottomPeak.getTop());
+            final double halfLine = sheet.getScale().getFore() / 2.0;
+            double xTop = topPeak.getStart() + topPeak.getWidth() / 2d;
+            double xBot = bottomPeak.getStart() + bottomPeak.getWidth() / 2d;
+            // At this point in time, peak top & bottom are integers (inside extrema)
+            // and thus these ordinate values must be adjusted
+            median = new Line2D.Double(xTop, topPeak.getBottom() + halfLine + 0.5,
+                                       xBot, bottomPeak.getTop() - halfLine + 0.5);
         }
 
         return median;
