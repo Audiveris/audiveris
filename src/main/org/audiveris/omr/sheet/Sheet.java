@@ -69,7 +69,6 @@ import org.audiveris.omr.ui.util.ItemRenderer;
 import org.audiveris.omr.ui.util.WeakItemRenderer;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.FileUtil;
-import org.audiveris.omr.util.IndentingXMLStreamWriter;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
@@ -97,7 +96,6 @@ import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -106,9 +104,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 /**
  * Class {@code Sheet} corresponds to one image in a book image file.
@@ -1263,18 +1259,7 @@ public class Sheet
             Files.deleteIfExists(structurePath);
             Files.createDirectories(sheetFolder);
 
-            try (OutputStream os = Files.newOutputStream(structurePath, CREATE);) {
-                Marshaller m = getJaxbContext().createMarshaller();
-                XMLStreamWriter writer = new IndentingXMLStreamWriter(
-                        XMLOutputFactory.newInstance().createXMLStreamWriter(os, "UTF-8"));
-
-                if (constants.useMarshalLogger.isSet()) {
-                    m.setListener(new Jaxb.MarshalLogger());
-                }
-
-                m.marshal(this, writer);
-                os.flush();
-            }
+            Jaxb.marshal(this, structurePath, getJaxbContext());
 
             stub.setModified(false);
             stub.setUpgraded(false);
