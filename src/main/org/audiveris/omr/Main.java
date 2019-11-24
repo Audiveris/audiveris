@@ -28,6 +28,7 @@ import org.audiveris.omr.constant.ConstantManager;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.sheet.BookManager;
+import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.ui.MainGui;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -145,6 +146,9 @@ public class Main
         } else {
             ///System.setProperty("java.awt.headless", "true"); //TODO: Useful?
             logger.info("Running in batch mode");
+
+            // Perhaps time to check for a new release?
+            Versions.considerPolling();
 
             // Check MusicFont is loaded
             MusicFont.checkMusicFont();

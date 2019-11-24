@@ -282,7 +282,7 @@ public class BookActions
             final String frameTitle = stub.getId() + " parameters";
             final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, true); // Modal flag
             dialog.setContentPane(optionPane);
-            dialog.setName("sheetParams");
+            dialog.setName("SheetParamsDialog");  // For SAF life cycle
 
             optionPane.addPropertyChangeListener(new PropertyChangeListener()
             {
@@ -776,7 +776,6 @@ public class BookActions
     /**
      * Action that allows to display the horizontal projection of a selected staff.
      * We need a sub-menu to select proper staff.
-     * TODO: this is really a dirty hack!
      *
      * @param e the event that triggered this action
      */
@@ -1546,7 +1545,7 @@ public class BookActions
                     : "General parameters";
             final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, true); // Modal flag
             dialog.setContentPane(optionPane);
-            dialog.setName("scoreParams");
+            dialog.setName("ScoreParamsDialog");  // For SAF life cycle
 
             optionPane.addPropertyChangeListener(new PropertyChangeListener()
             {

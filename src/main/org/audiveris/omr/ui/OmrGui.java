@@ -95,7 +95,16 @@ public abstract class OmrGui
      *
      * @param htmlStr the HTML string
      */
-    public abstract void displayMessage (String htmlStr);
+    public abstract void displayHtmlMessage (String htmlStr);
+
+    /**
+     * Allow to display a modal dialog with a string content.
+     *
+     * @param message the message string
+     * @param title   dialog title
+     */
+    public abstract void displayMessage (String message,
+                                         String title);
 
     /**
      * Allow to display a non-modal confirmation dialog.

@@ -38,18 +38,12 @@ import org.audiveris.omr.sheet.grid.StaffPeak.Attribute;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.util.ChartPlotter;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Navigable;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartFrame;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
 
 import org.jgrapht.Graph;
 
@@ -65,8 +59,6 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.swing.WindowConstants;
 
 /**
  * Class {@code StaffProjector} is in charge of analyzing a staff projection onto
@@ -452,7 +444,116 @@ public class StaffProjector
             computeLineThresholds();
         }
 
-        new Plotter().plot();
+        final String title = sheet.getId() + " staff#" + getStaff().getId();
+        final ChartPlotter plotter = new ChartPlotter(
+                title, // Title
+                "Abscissae - staff interline:" + staff.getSpecificInterline(), // X-Axis label
+                "Counts"); // Y-Axis label
+
+        final int xMin = 0;
+        final int xMax = sheet.getWidth() - 1;
+
+        {
+            // Values
+            XYSeries valueSeries = new XYSeries("Cumuls", false); // No autosort
+
+            for (int x = xMin; x <= xMax; x++) {
+                valueSeries.add(x, projection.getValue(x));
+            }
+
+            plotter.add(valueSeries, Colors.CHART_VALUE, false);
+        }
+
+        {
+            // Derivatives
+            XYSeries derivativeSeries = new XYSeries("Derivatives", false); // No autosort
+
+            for (int x = xMin; x <= xMax; x++) {
+                derivativeSeries.add(x, projection.getDerivative(x));
+            }
+
+            plotter.add(derivativeSeries, Colors.CHART_DERIVATIVE, false);
+        }
+
+        {
+            // Derivatives positive threshold
+            XYSeries derSeries = new XYSeries("Der+", false); // No autosort
+
+            derSeries.add(xMin, params.minDerivative);
+            derSeries.add(xMax, params.minDerivative);
+            plotter.add(derSeries, Colors.CHART_DERIVATIVE, false);
+        }
+
+        {
+            // Derivatives negative threshold
+            XYSeries derSeries = new XYSeries("Der-", false); // No autosort
+
+            derSeries.add(xMin, -params.minDerivative);
+            derSeries.add(xMax, -params.minDerivative);
+            plotter.add(derSeries, Colors.CHART_DERIVATIVE, false);
+        }
+
+        {
+            // Theoretical staff height (assuming a 5-line staff)
+            XYSeries heightSeries = new XYSeries("StaffHeight", false); // No autosort
+            int totalHeight = 4 * staff.getSpecificInterline();
+            heightSeries.add(xMin, totalHeight);
+            heightSeries.add(xMax, totalHeight);
+            plotter.add(heightSeries, Color.BLACK, true);
+        }
+
+        {
+            // BarPeak min threshold
+            XYSeries minSeries = new XYSeries("MinBar", false); // No autosort
+            minSeries.add(xMin, params.barThreshold);
+            minSeries.add(xMax, params.barThreshold);
+            plotter.add(minSeries, Color.GREEN, true);
+        }
+
+        {
+            // Chunk threshold (assuming a 5-line staff)
+            XYSeries chunkSeries = new XYSeries("MaxChunk", false); // No autosort
+            chunkSeries.add(xMin, params.chunkThreshold);
+            chunkSeries.add(xMax, params.chunkThreshold);
+            plotter.add(chunkSeries, Color.YELLOW, true);
+        }
+
+        {
+            // BracePeak min threshold
+            XYSeries minSeries = new XYSeries("MinBrace", false); // No autosort
+            minSeries.add(xMin, params.braceThreshold);
+            minSeries.add(xMax, params.braceThreshold);
+            plotter.add(minSeries, Color.ORANGE, true);
+        }
+
+        {
+            // Cumulated staff lines (assuming a 5-line staff)
+            XYSeries linesSeries = new XYSeries("Lines", false); // No autosort
+            linesSeries.add(xMin, params.linesThreshold);
+            linesSeries.add(xMax, params.linesThreshold);
+            plotter.add(linesSeries, Color.MAGENTA, true);
+        }
+
+        {
+            // Threshold for no staff
+            final int nostaff = params.blankThreshold;
+            XYSeries holeSeries = new XYSeries("NoStaff", false); // No autosort
+            holeSeries.add(xMin, nostaff);
+            holeSeries.add(xMax, nostaff);
+            plotter.add(holeSeries, Color.CYAN, true);
+        }
+
+        {
+            // Zero
+            XYSeries zeroSeries = new XYSeries("Zero", false); // No autosort
+            zeroSeries.add(xMin, 0);
+            zeroSeries.add(xMax, 0);
+            plotter.add(zeroSeries, Colors.CHART_ZERO, true);
+        }
+
+        // Display frame
+        plotter.display(title, new Point(20 * staff.getId(), 20 * staff.getId()));
+
     }
 
     //---------//
@@ -1162,162 +1263,6 @@ public class StaffProjector
         }
 
         return x;
-    }
-
-    //---------//
-    // Plotter //
-    //---------//
-    /**
-     * Handles the display of projection chart.
-     */
-    private class Plotter
-    {
-
-        final XYSeriesCollection dataset = new XYSeriesCollection();
-
-        // Chart
-        final JFreeChart chart = ChartFactory.createXYLineChart(
-                sheet.getId() + " staff#" + getStaff().getId(), // Title
-                "Abscissae - staff interline:" + staff.getSpecificInterline(), // X-Axis label
-                "Counts", // Y-Axis label
-                dataset, // Dataset
-                PlotOrientation.VERTICAL, // orientation,
-                true, // Show legend
-                false, // Show tool tips
-                false // urls
-        );
-
-        final XYPlot plot = (XYPlot) chart.getPlot();
-
-        final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-
-        // Series index
-        int index = -1;
-
-        public void plot ()
-        {
-            plot.setRenderer(renderer);
-
-            final int xMin = 0;
-            final int xMax = sheet.getWidth() - 1;
-
-            {
-                // Values
-                XYSeries valueSeries = new XYSeries("Cumuls", false); // No autosort
-
-                for (int x = xMin; x <= xMax; x++) {
-                    valueSeries.add(x, projection.getValue(x));
-                }
-
-                add(valueSeries, Colors.CHART_VALUE, false);
-            }
-
-            {
-                // Derivatives
-                XYSeries derivativeSeries = new XYSeries("Derivatives", false); // No autosort
-
-                for (int x = xMin; x <= xMax; x++) {
-                    derivativeSeries.add(x, projection.getDerivative(x));
-                }
-
-                add(derivativeSeries, Colors.CHART_DERIVATIVE, false);
-            }
-
-            {
-                // Derivatives positive threshold
-                XYSeries derSeries = new XYSeries("Der+", false); // No autosort
-
-                derSeries.add(xMin, params.minDerivative);
-                derSeries.add(xMax, params.minDerivative);
-                add(derSeries, Colors.CHART_DERIVATIVE, false);
-            }
-
-            {
-                // Derivatives negative threshold
-                XYSeries derSeries = new XYSeries("Der-", false); // No autosort
-
-                derSeries.add(xMin, -params.minDerivative);
-                derSeries.add(xMax, -params.minDerivative);
-                add(derSeries, Colors.CHART_DERIVATIVE, false);
-            }
-
-            {
-                // Theoretical staff height (assuming a 5-line staff)
-                XYSeries heightSeries = new XYSeries("StaffHeight", false); // No autosort
-                int totalHeight = 4 * staff.getSpecificInterline();
-                heightSeries.add(xMin, totalHeight);
-                heightSeries.add(xMax, totalHeight);
-                add(heightSeries, Color.BLACK, true);
-            }
-
-            {
-                // BarPeak min threshold
-                XYSeries minSeries = new XYSeries("MinBar", false); // No autosort
-                minSeries.add(xMin, params.barThreshold);
-                minSeries.add(xMax, params.barThreshold);
-                add(minSeries, Color.GREEN, true);
-            }
-
-            {
-                // Chunk threshold (assuming a 5-line staff)
-                XYSeries chunkSeries = new XYSeries("MaxChunk", false); // No autosort
-                chunkSeries.add(xMin, params.chunkThreshold);
-                chunkSeries.add(xMax, params.chunkThreshold);
-                add(chunkSeries, Color.YELLOW, true);
-            }
-
-            {
-                // BracePeak min threshold
-                XYSeries minSeries = new XYSeries("MinBrace", false); // No autosort
-                minSeries.add(xMin, params.braceThreshold);
-                minSeries.add(xMax, params.braceThreshold);
-                add(minSeries, Color.ORANGE, true);
-            }
-
-            {
-                // Cumulated staff lines (assuming a 5-line staff)
-                XYSeries linesSeries = new XYSeries("Lines", false); // No autosort
-                linesSeries.add(xMin, params.linesThreshold);
-                linesSeries.add(xMax, params.linesThreshold);
-                add(linesSeries, Color.MAGENTA, true);
-            }
-
-            {
-                // Threshold for no staff
-                final int nostaff = params.blankThreshold;
-                XYSeries holeSeries = new XYSeries("NoStaff", false); // No autosort
-                holeSeries.add(xMin, nostaff);
-                holeSeries.add(xMax, nostaff);
-                add(holeSeries, Color.CYAN, true);
-            }
-
-            {
-                // Zero
-                XYSeries zeroSeries = new XYSeries("Zero", false); // No autosort
-                zeroSeries.add(xMin, 0);
-                zeroSeries.add(xMax, 0);
-                add(zeroSeries, Colors.CHART_ZERO, true);
-            }
-
-            // Hosting frame
-            ChartFrame frame = new ChartFrame(
-                    sheet.getId() + " staff#" + getStaff().getId(),
-                    chart,
-                    true);
-            frame.pack();
-            frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            frame.setLocation(new Point(20 * getStaff().getId(), 20 * getStaff().getId()));
-            frame.setVisible(true);
-        }
-
-        private void add (XYSeries series,
-                          Color color,
-                          boolean displayShapes)
-        {
-            dataset.addSeries(series);
-            renderer.setSeriesPaint(++index, color);
-            renderer.setSeriesShapesVisible(index, displayShapes);
-        }
     }
 
     //-----------//

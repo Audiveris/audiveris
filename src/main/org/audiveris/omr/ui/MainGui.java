@@ -35,6 +35,7 @@ import org.audiveris.omr.plugin.PluginsManager;
 import org.audiveris.omr.score.PartwiseBuilder;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.sig.ui.SigPainter;
@@ -88,7 +89,7 @@ import javax.swing.SwingUtilities;
  * Class {@code MainGui} is the Java User Interface, the main class for displaying a
  * sheet, the message log and the various tools.
  * <p>
- * This user interface is structured according to BSAF lifecycle.
+ * This user interface is structured according to BSAF life-cycle.
  *
  * @author Hervé Bitteur
  */
@@ -125,7 +126,7 @@ public class MainGui
     /** Main pane with Sheet on top and Log+Errors on bottom. */
     private JSplitPane mainPane;
 
-    /** Application pane with Main pane on left and Boeards on right. */
+    /** Application pane with Main pane on left and Boards on right. */
     private Panel appPane;
 
     /** Step menu. */
@@ -199,15 +200,28 @@ public class MainGui
                 JOptionPane.ERROR_MESSAGE);
     }
 
-    //----------------//
-    // displayMessage //
-    //----------------//
+    //--------------------//
+    // displayHtmlMessage //
+    //--------------------//
     @Override
-    public void displayMessage (String htmlStr)
+    public void displayHtmlMessage (String htmlStr)
     {
         JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
         htmlPane.setEditable(false);
         JOptionPane.showMessageDialog(frame, htmlPane, appName, JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    //----------------//
+    // displayMessage //
+    //----------------//
+    @Override
+    public void displayMessage (String message,
+                                String title)
+    {
+        JOptionPane.showMessageDialog(frame,
+                                      message,
+                                      title + " - " + appName,
+                                      JOptionPane.INFORMATION_MESSAGE);
     }
 
     //------------------------//
@@ -482,6 +496,9 @@ public class MainGui
         // Just in case we already have messages pending
         notifyLog();
 
+        // Perhaps time to check for a new release?
+        Versions.considerPolling();
+
         // Launch inputs, books & scripts
         for (Callable<Void> task : Main.getCli().getCliTasks()) {
             logger.info("MainGui submitting {}", task);
@@ -507,6 +524,7 @@ public class MainGui
         OMR.gui = this;
 
         frame = getMainFrame();
+        frame.setName("AudiverisMainFrame"); // For SAF life cycle
 
         stubsController = StubsController.getInstance();
         stubsController.subscribe(this);

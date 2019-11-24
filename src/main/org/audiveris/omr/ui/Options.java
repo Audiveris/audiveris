@@ -47,13 +47,12 @@ import javax.swing.Box;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
-import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -68,7 +67,7 @@ public class Options
     private static final Logger logger = LoggerFactory.getLogger(Options.class);
 
     /** The interface window. */
-    private final JFrame frame;
+    private final JDialog dialog;
 
     /** The underlying tree/table of all units. */
     private UnitTreeTable unitTreeTable;
@@ -213,11 +212,10 @@ public class Options
         // Preload constant units
         UnitManager.getInstance().preLoadUnits();
 
-        frame = new JFrame();
-        frame.setName("optionsFrame");
-        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        dialog = new JDialog(OMR.gui.getFrame());
+        dialog.setName("OptionsFrame");  // For SAF life cycle
 
-        JComponent framePane = (JComponent) frame.getContentPane();
+        JComponent framePane = (JComponent) dialog.getContentPane();
         framePane.setLayout(new BorderLayout());
 
         InputMap inputMap = framePane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -284,10 +282,10 @@ public class Options
 
         // Resources injection
         ResourceMap resource = Application.getInstance().getContext().getResourceMap(getClass());
-        resource.injectComponents(frame);
+        resource.injectComponents(dialog);
 
         // Make sure the search entry field gets the focus at creation time
-        frame.addWindowListener(new WindowAdapter()
+        dialog.addWindowListener(new WindowAdapter()
         {
             @Override
             public void windowOpened (WindowEvent e)
@@ -300,9 +298,9 @@ public class Options
     //--------------//
     // getComponent //
     //--------------//
-    public JFrame getComponent ()
+    public JDialog getComponent ()
     {
-        return frame;
+        return dialog;
     }
 
     //--------------//
