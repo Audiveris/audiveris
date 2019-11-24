@@ -644,7 +644,9 @@ public class StemInter
         }));
 
         // Include also the heads already connected to the stem
-        heads.addAll(getHeads());
+        if (sig != null) {
+            heads.addAll(getHeads());
+        }
 
         // Now, keep only heads that would still link to this stem
         final List<Inter> thisStem = new ArrayList<>();
