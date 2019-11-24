@@ -89,6 +89,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.swing.AbstractAction;
 
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -459,8 +460,8 @@ public class SymbolsEditor
 
             sheet.getInterIndex().getEntityService().subscribeStrongly(EntityListEvent.class, this);
 
-            // Arrow keys for inter editor
-            bindArrowKeys();
+            // Arrow keys + Enter key for inter editor
+            bindInterEditionKeys();
         }
 
         //--------------//
@@ -610,10 +611,8 @@ public class SymbolsEditor
                     return;
                 }
 
-                interEditor.getInter().getSig().publish(null);
+                interEditor = null;
             }
-
-            interEditor = null;
 
             // Handle relation vector
             if (null != movement) {
@@ -875,10 +874,10 @@ public class SymbolsEditor
             return (!inters.isEmpty()) ? inters.get(0).getEditor() : null;
         }
 
-        //---------------//
-        // bindArrowKeys //
-        //---------------//
-        private void bindArrowKeys ()
+        //----------------------//
+        // bindInterEditionKeys //
+        //----------------------//
+        private void bindInterEditionKeys ()
         {
             final InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
             final ActionMap actionMap = getActionMap();
@@ -895,6 +894,27 @@ public class SymbolsEditor
 
             inputMap.put(KeyStroke.getKeyStroke("alt RIGHT"), "RightTranslateAction");
             actionMap.put("RightTranslateAction", new MyTranslateAction(1, 0));
+
+            // End of edition
+            inputMap.put(KeyStroke.getKeyStroke("ENTER"), "EndInterEditionAction");
+            actionMap.put("EndInterEditionAction", new EndInterEditionAction());
+        }
+
+        //-----------------------//
+        // EndInterEditionAction //
+        //-----------------------//
+        private class EndInterEditionAction
+                extends AbstractAction
+        {
+
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                if (interEditor != null) {
+                    interEditor.processEnd();
+                    refresh();
+                }
+            }
         }
 
         //-------------------//
