@@ -1403,6 +1403,7 @@ public class InterController
             // Staff is uniquely defined
             staff = staves.get(0);
             system = staff.getSystem();
+            ghost.setStaff(staff);
             links.addAll(ghost.searchLinks(system));
 
             return staff;
@@ -1427,6 +1428,7 @@ public class InterController
                 system = stf.getSystem();
 
                 if (system != prevSystem) {
+                    ghost.setStaff(stf); // Start of hack ...
                     links.addAll(ghost.searchLinks(system));
 
                     for (Link p : links) {
@@ -1438,6 +1440,7 @@ public class InterController
                         }
                     }
 
+                    ghost.setStaff(null); // End of hack
                     links.clear();
                 }
 
