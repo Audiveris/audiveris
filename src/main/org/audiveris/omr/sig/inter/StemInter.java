@@ -66,6 +66,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -630,7 +631,7 @@ public class StemInter
         final Rectangle luBox = getBounds();
         luBox.grow(maxHeadOutDx, maxYGap);
 
-        List<Inter> heads = system.getSig().inters(new Predicate<Inter>()
+        Set<Inter> heads = new HashSet<>(system.getSig().inters(new Predicate<Inter>()
         {
             @Override
             public boolean check (Inter inter)
@@ -640,9 +641,12 @@ public class StemInter
                                && inter.getBounds().intersects(luBox)
                                && ((HeadInter) inter).getStems().isEmpty();
             }
-        });
+        }));
 
-        // Keep only heads that would link to this stem
+        // Include also the heads already connected to the stem
+        heads.addAll(getHeads());
+
+        // Now, keep only heads that would still link to this stem
         final List<Inter> thisStem = new ArrayList<>();
         thisStem.add(this);
 
