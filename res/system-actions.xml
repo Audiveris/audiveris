@@ -98,8 +98,9 @@
     <action domain="DEBUG" section="70" class="org.audiveris.omr.sheet.ui.BookActions" method="dumpEventServices"   topic="DEBUG"/>
     
     <action domain="HELP" section="20" class="org.audiveris.omr.ui.GuiActions" method="showManual" />
-    <action domain="HELP" section="20" class="org.audiveris.omr.ui.GuiActions" method="visitWiki" />
-    <action domain="HELP" section="20" class="org.audiveris.omr.ui.GuiActions" method="visitWebSite" />
+    <action domain="HELP" section="30" class="org.audiveris.omr.ui.GuiActions" method="visitWiki" />
+    <action domain="HELP" section="30" class="org.audiveris.omr.ui.GuiActions" method="visitWebSite" />
+    <action domain="HELP" section="30" class="org.audiveris.omr.ui.GuiActions" method="checkUpdate" />
     <action domain="HELP" section="40" class="org.audiveris.omr.ui.GuiActions" method="showAbout" />
 
 </actions>

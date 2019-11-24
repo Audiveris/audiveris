@@ -171,6 +171,7 @@ public abstract class Symbols
         sym.put(BREVE_REST, new RestSymbol(BREVE_REST, false, 227));
 
         mapShape(CAESURA, 34);
+        sym.put(CLUTTER, new TextSymbol(CLUTTER, "?"));
         mapShape(COMMON_TIME, 99);
         sym.put(CUSTOM_TIME, new CustomNumDenSymbol());
         mapShape(CUT_TIME, 67);

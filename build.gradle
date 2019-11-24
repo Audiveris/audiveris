@@ -100,6 +100,7 @@ dependencies {
 
 dependencies {
     compile(
+        [group: 'org.kohsuke', name: 'github-api', version: '1.99'],
         [group: 'args4j', name: 'args4j', version: '2.33'],
         [group: 'org.jdesktop.bsaf', name: 'bsaf', version: '1.9.2'],
         [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'],

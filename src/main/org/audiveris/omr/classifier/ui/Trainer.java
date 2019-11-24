@@ -110,16 +110,19 @@ public class Trainer
     /** Standard width for fields/buttons in DLUs. */
     static final String FIELD_WIDTH = "30dlu";
 
-    /** Related frame. */
+    /**
+     * Related frame.
+     * We need a frame rather than a dialog because this class can be run in standalone.
+     */
     private JFrame frame;
 
     /** Panel for selection in repository. */
     private final SelectionPanel selectionPanel;
 
     /**
-     * Create an instance of Glyph Trainer (there should be just one)
+     * Create an instance of Glyph Trainer. (there should be just one)
      */
-    public Trainer ()
+    private Trainer ()
     {
         // Create the companions
         selectionPanel = new SelectionPanel();
@@ -216,6 +219,9 @@ public class Trainer
         return frame;
     }
 
+    //-------------//
+    // definePanel //
+    //-------------//
     private JPanel definePanel (Classifier classifier)
     {
         final String pi = Panel.getPanelInterline();
@@ -266,12 +272,11 @@ public class Trainer
     // launch //
     //--------//
     /**
-     * (Re)activate the trainer tool
+     * (Re)activate the trainer tool.
      */
     public static void launch ()
     {
-        if (standAlone) {
-        } else {
+        if (!standAlone) {
             final JFrame frame = getInstance().frame;
             OmrGui.getApplication().show(frame);
             UIUtil.unMinimize(frame);
@@ -298,6 +303,9 @@ public class Trainer
         Application.launch(Trainer.class, args);
     }
 
+    //------//
+    // Task //
+    //------//
     public static class Task
             extends Observable
     {

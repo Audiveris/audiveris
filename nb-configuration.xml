@@ -31,6 +31,7 @@ Without this configuration present, some functionality in the IDE may be limited
         <word>runtime</word>
         <word>staccatissimo</word>
         <word>tuplet</word>
+        <word>uncomment</word>
         <word>unmarshalled</word>
     </spellchecker-wordlist>
 </project-shared-configuration>

@@ -46,7 +46,8 @@ import javax.swing.JPanel;
  * @author Hervé Bitteur
  */
 public class Panel
-        extends JPanel ///FormDebugPanel
+        extends JPanel // This line,
+///extends FormDebugPanel // Or this line
 
 {
 
@@ -260,8 +261,9 @@ public class Panel
                 sbc.append(",").append(fieldInterval).append(",");
             }
 
-            sbc.append(labelAlignment).append(labelWidth).append(",").append(labelInterval).append(
-                    ",").append(fieldWidth);
+            sbc.append(labelAlignment).append(labelWidth)
+                    .append(",").append(labelInterval)
+                    .append(",").append(fieldWidth);
         }
 
         return sbc.toString();
@@ -355,7 +357,9 @@ public class Panel
                                                String labelInterval,
                                                String labelWidth)
     {
-        return new FormLayout(makeLabelsColumns(cols, labelInterval, labelWidth), makeRows(rows));
+        return new FormLayout(
+                makeLabelsColumns(cols, labelInterval, labelWidth),
+                makeRows(rows));
     }
 
     //----------//

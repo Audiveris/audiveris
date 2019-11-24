@@ -2502,7 +2502,7 @@ public class Book
         try {
             logger.debug("Book file system opened");
 
-            FileSystem fileSystem = FileSystems.newFileSystem(bookPath, null);
+            FileSystem fileSystem = FileSystems.newFileSystem(bookPath, (ClassLoader) null);
 
             return fileSystem.getPath(fileSystem.getSeparator());
         } catch (FileNotFoundException ex) {

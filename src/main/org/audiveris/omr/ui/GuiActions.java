@@ -21,12 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.OMR;
-import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.ui.SampleBrowser;
 import org.audiveris.omr.classifier.ui.Trainer;
@@ -34,7 +29,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.ui.ShapeColorChooser;
 import org.audiveris.omr.sheet.BookManager;
-import org.audiveris.omr.text.tesseract.TesseractOCR;
+import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.ui.action.AdvancedTopics;
 import org.audiveris.omr.ui.symbol.SymbolRipper;
 import org.audiveris.omr.ui.util.CursorController;
@@ -42,40 +37,21 @@ import org.audiveris.omr.ui.util.OmrFileFilter;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.util.WebBrowser;
 import org.audiveris.omr.util.Memory;
-import org.audiveris.omr.util.UriUtil;
+import org.audiveris.omr.util.VoidTask;
 
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.Task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Path;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import javax.swing.ImageIcon;
-import javax.swing.JDialog;
-import javax.swing.JEditorPane;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.text.JTextComponent;
 
 /**
  * Class {@code GuiActions} gathers general actions triggered from the main GUI.
@@ -101,10 +77,6 @@ public class GuiActions
 
     /** Options UI */
     private static Options options;
-
-    // Resource injection
-    private static ResourceMap resource = Application.getInstance().getContext().getResourceMap(
-            GuiActions.class);
 
     /** Create this action just once */
     private static volatile AboutAction aboutAction;
@@ -174,6 +146,21 @@ public class GuiActions
         }
     }
 
+    //-------------//
+    // checkUpdate //
+    //-------------//
+    /**
+     * Check current program version against latest release available on GitHub.
+     *
+     * @param e the event which triggered this action
+     * @return the task to launch
+     */
+    @Action
+    public Task checkUpdate (ActionEvent e)
+    {
+        return new CheckUpdateTask();
+    }
+
     //----------//
     // clearLog //
     //----------//
@@ -229,7 +216,7 @@ public class GuiActions
     @Action
     public void defineTopics (ActionEvent e)
     {
-        OmrGui.getApplication().show(AdvancedTopics.getComponent());
+        AdvancedTopics.show();
     }
 
     //------//
@@ -317,12 +304,12 @@ public class GuiActions
     // launchSymbolRipper //
     //--------------------//
     /**
-     * Launch the utility to rip a symbol
+     * Launch the utility to rip a symbol.
      */
     @Action
     public void launchSymbolRipper ()
     {
-        SymbolRipper.main();
+        new SymbolRipper();
     }
 
     //---------------//
@@ -336,14 +323,16 @@ public class GuiActions
     @Action
     public void launchTrainer (ActionEvent e)
     {
-        CursorController.launchWithDelayedMessage("Launching trainer...", new Runnable()
-                                          {
-                                              @Override
-                                              public void run ()
-                                              {
-                                                  Trainer.launch();
-                                              }
-                                          });
+        CursorController.launchWithDelayedMessage(
+                "Launching trainer...",
+                new Runnable()
+        {
+            @Override
+            public void run ()
+            {
+                Trainer.launch();
+            }
+        });
     }
 
     //-------------------//
@@ -524,202 +513,19 @@ public class GuiActions
         static final GuiActions INSTANCE = new GuiActions();
     }
 
-    public static class AboutAction
+    //-----------------//
+    // CheckUpdateTask //
+    //-----------------//
+    private static class CheckUpdateTask
+            extends VoidTask
     {
 
-        // Dialog
-        private JDialog aboutBox = null;
-
-        private HyperlinkListener linkListener = new LinkListener();
-
-        public void actionPerformed (ActionEvent e)
+        @Override
+        protected Void doInBackground ()
+                throws Exception
         {
-            if (aboutBox == null) {
-                aboutBox = createAboutBox();
-            }
-
-            OmrGui.getApplication().show(aboutBox);
-        }
-
-        private JDialog createAboutBox ()
-        {
-            StringBuilder rows = new StringBuilder("pref,10dlu,pref,5dlu");
-
-            for (int i = 0; i < (Topic.values().length); i++) {
-                rows.append(",pref,3dlu");
-            }
-
-            // Layout
-            final FormLayout layout = new FormLayout(
-                    "right:pref, 5dlu, pref, 200dlu",
-                    rows.toString());
-            final PanelBuilder builder = new PanelBuilder(layout);
-            final CellConstraints cst = new CellConstraints();
-
-            ///builder.setDefaultDialogBorder();
-            int iRow = 1;
-
-            URI uri = UriUtil.toURI(WellKnowns.RES_URI, "splash.png");
-
-            try {
-                JPanel logoPanel = new ImagePanel(uri);
-                builder.add(logoPanel, cst.xyw(1, iRow, 4));
-            } catch (MalformedURLException ex) {
-                logger.warn("Error on " + uri, ex);
-            }
-
-            iRow += 2;
-
-            JLabel titleLabel = new JLabel();
-            titleLabel.setName("aboutTitleLabel");
-            builder.add(titleLabel, cst.xyw(1, iRow, 3));
-
-            for (Topic topic : Topic.values()) {
-                iRow += 2;
-
-                JLabel label = new JLabel();
-                label.setName(topic + "Label");
-                builder.add(label, cst.xy(1, iRow));
-
-                topic.comp.setName(topic + "TextField");
-                topic.comp.setEditable(false);
-                topic.comp.setBorder(null);
-                topic.comp.setBackground(Color.WHITE);
-
-                if (topic.comp instanceof JEditorPane) {
-                    ((JEditorPane) topic.comp).addHyperlinkListener(linkListener);
-                }
-
-                builder.add(topic.comp, cst.xy(3, iRow));
-            }
-
-            JPanel panel = builder.getPanel();
-            panel.setOpaque(true);
-            panel.setBackground(Color.WHITE);
-            panel.setName("panel");
-
-            JDialog dialog = new JDialog();
-            dialog.setName("aboutDialog");
-            dialog.add(panel, BorderLayout.CENTER);
-
-            // Manual injection
-            resource.injectComponents(dialog);
-            Topic.version.comp.setText(WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD);
-            Topic.classes.comp.setText(WellKnowns.CLASS_CONTAINER.toString());
-            Topic.license.comp.setText("GNU Affero GPL v3");
-
-            Topic.ocr.comp.setText(TesseractOCR.getInstance().identify());
-
-            Topic.javaVendor.comp.setText(System.getProperty("java.vendor"));
-            Topic.javaVersion.comp.setText(System.getProperty("java.version"));
-            Topic.javaRuntime.comp.setText(
-                    System.getProperty("java.runtime.name") + " (build "
-                            + System.getProperty("java.runtime.version")
-                            + ")");
-            Topic.javaVm.comp.setText(
-                    System.getProperty("java.vm.name") + " (build "
-                            + System.getProperty("java.vm.version")
-                            + ", "
-                            + System.getProperty("java.vm.info")
-                            + ")");
-            Topic.os.comp.setText(
-                    System.getProperty("os.name") + " " + System.getProperty("os.version"));
-            Topic.osArch.comp.setText(System.getProperty("os.arch"));
-
-            return dialog;
-        }
-
-        private static enum Topic
-        {
-            /** Longer application description */
-            description(new JTextField()),
-            /** Current version */
-            version(new JTextField()),
-            /** Precise classes */
-            classes(new JTextField()),
-            /** Link to web site */
-            home(new JEditorPane("text/html", "")),
-            /** Link to book site */
-            book(new JEditorPane("text/html", "")),
-            /** License */
-            license(new JTextField()),
-            /** OCR version */
-            ocr(new JTextField()),
-            /** Java vendor */
-            javaVendor(new JTextField()),
-            /** Java version */
-            javaVersion(new JTextField()),
-            /** Java runtime */
-            javaRuntime(new JTextField()),
-            /** Java VM */
-            javaVm(new JTextField()),
-            /** OS */
-            os(new JTextField()),
-            /** Arch */
-            osArch(new JTextField());
-
-            public final JTextComponent comp;
-
-            Topic (JTextComponent comp)
-            {
-                this.comp = comp;
-            }
-        }
-
-        //------------//
-        // ImagePanel //
-        //------------//
-        private static class ImagePanel
-                extends JPanel
-        {
-
-            private Image img;
-
-            ImagePanel (Image img)
-            {
-                this.img = img;
-
-                Dimension size = new Dimension(img.getWidth(null), img.getHeight(null));
-                setPreferredSize(size);
-                setMinimumSize(size);
-                setMaximumSize(size);
-                setSize(size);
-                setLayout(null);
-            }
-
-            ImagePanel (URI uri)
-                    throws MalformedURLException
-            {
-                this(new ImageIcon(uri.toURL()).getImage());
-            }
-
-            @Override
-            public void paintComponent (Graphics g)
-            {
-                g.drawImage(img, 0, 0, null);
-            }
-        }
-
-        private static class LinkListener
-                implements HyperlinkListener
-        {
-
-            @Override
-            public void hyperlinkUpdate (HyperlinkEvent event)
-            {
-                HyperlinkEvent.EventType type = event.getEventType();
-                final URL url = event.getURL();
-
-                if (type == HyperlinkEvent.EventType.ACTIVATED) {
-                    try {
-                        //System.out.println("Activated URL " + url);
-                        URI uri = new URI(url.toString());
-                        WebBrowser.getBrowser().launch(uri);
-                    } catch (URISyntaxException ex) {
-                        logger.warn("Illegal URI " + url, ex);
-                    }
-                }
-            }
+            Versions.poll(true /* manual */);
+            return null;
         }
     }
 

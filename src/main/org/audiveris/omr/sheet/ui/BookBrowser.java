@@ -188,7 +188,7 @@ public class BookBrowser
             // Set up a GUI framework
             frame = new JFrame();
             frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            frame.setName("scoreTreeFrame");
+            frame.setName("BookBrowserFrame");  // For SAF life cycle
 
             // Add a REFRESH button
             JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
@@ -211,6 +211,7 @@ public class BookBrowser
             ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(getClass());
             resource.injectComponents(frame);
             frame.setTitle(resource.getString("frameTitleMask", book.getRadix()));
+            frame.setIconImage(OmrGui.getApplication().getMainFrame().getIconImage());
         }
 
         return frame;

@@ -35,6 +35,10 @@ import org.audiveris.omr.ui.field.SpinnerUtil;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UILookAndFeel;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.SingleFrameApplication;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +57,7 @@ import java.awt.font.GlyphVector;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.Locale;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -71,24 +76,23 @@ import javax.swing.event.ChangeListener;
  * @author Hervé Bitteur
  */
 public class SymbolRipper
+        extends SingleFrameApplication
 {
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolRipper.class);
 
-    static {
-        // UI Look and Feel
-        UILookAndFeel.setUI(null);
-    }
+    /** Stand-alone run (vs part of Audiveris). */
+    private static boolean standAlone = false;
 
-    /** Related frame */
-    private final JFrame frame;
+    /**
+     * Related frame.
+     * We need a frame rather than a dialog because this class can be run in standalone.
+     */
+    private JFrame frame;
 
-    /** Image being built */
+    /** Image being built. */
     private BufferedImage image;
 
-    //---------------//
-    // paramListener //
-    //---------------//
     private final ChangeListener paramListener = new ChangeListener()
     {
         @Override
@@ -179,10 +183,6 @@ public class SymbolRipper
      */
     public SymbolRipper ()
     {
-        // Related frame
-        frame = new JFrame();
-        frame.setTitle("Symbol Ripper");
-
         // Actors
         drawing = new Drawing();
 
@@ -220,16 +220,10 @@ public class SymbolRipper
         height.addChangeListener(paramListener);
 
         // Global layout
-        defineLayout();
-
-        // Frame behavior
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        OmrGui.getApplication().show(frame);
-
-        // Actions
-        image = buildImage();
-        frame.repaint();
+        if (!standAlone) {
+            frame = defineLayout(new JFrame("Symbol Ripper"));
+            OmrGui.getApplication().show(frame);
+        }
     }
 
     //----------//
@@ -243,6 +237,19 @@ public class SymbolRipper
     public JFrame getFrame ()
     {
         return frame;
+    }
+
+    //---------//
+    // startup //
+    //---------//
+    @Override
+    protected void startup ()
+    {
+        logger.debug("SymbolRipper. 2/startup");
+
+        frame = defineLayout(getMainFrame());
+
+        show(frame); // Here we go...
     }
 
     //------------//
@@ -310,8 +317,14 @@ public class SymbolRipper
     //--------------//
     // defineLayout //
     //--------------//
-    private void defineLayout ()
+    private JFrame defineLayout (final JFrame frame)
     {
+        frame.setName("SymbolRipperFrame"); // For SAF life cycle
+
+        ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(getClass());
+        resource.injectComponents(frame);
+        frame.setIconImage(OmrGui.getApplication().getMainFrame().getIconImage());
+
         Container pane = frame.getContentPane();
         pane.setLayout(new BorderLayout());
 
@@ -321,6 +334,8 @@ public class SymbolRipper
 
         JScrollPane scrollPane = new JScrollPane(drawing);
         pane.add(scrollPane, BorderLayout.CENTER);
+
+        return frame;
     }
 
     //---------------//
@@ -412,7 +427,14 @@ public class SymbolRipper
      */
     public static void main (String... args)
     {
-        new SymbolRipper();
+        standAlone = true;
+
+        // Set UI Look and Feel
+        UILookAndFeel.setUI(null);
+        Locale.setDefault(Locale.ENGLISH);
+
+        // Off we go...
+        Application.launch(SymbolRipper.class, args);
     }
 
     //---------//
@@ -427,6 +449,10 @@ public class SymbolRipper
         {
             // For background
             super.paintComponent(g);
+
+            if (image == null) {
+                image = buildImage();
+            }
 
             // Meant for visual check
             if (image != null) {

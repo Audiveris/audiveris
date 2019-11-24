@@ -25,6 +25,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.plugin.PluginsManager;
@@ -45,11 +46,9 @@ import java.util.Collection;
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.WindowConstants;
 
 /**
  * Class {@code AdvancedTopics} gathers all topics that are relevant for advanced users
@@ -70,27 +69,36 @@ public abstract class AdvancedTopics
     /** Layout for 3 items. */
     private static final FormLayout layout3 = new FormLayout("12dlu,1dlu,65dlu,2dlu,pref", "pref");
 
+    private static final ResourceMap resource = Application.getInstance().getContext()
+            .getResourceMap(AdvancedTopics.class);
+
     /** Not meant to be instantiated. */
     private AdvancedTopics ()
     {
     }
 
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Report the selection dialog to be displayed to the user
-     *
-     * @return the dialog frame
-     */
-    public static JFrame getComponent ()
+    //------//
+    // show //
+    //------//
+    public static void show ()
     {
-        final JFrame frame = new JFrame();
-        frame.setName("topicsFrame");
-        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        JOptionPane.showMessageDialog(
+                OMR.gui.getFrame(),
+                getMessage(),
+                resource.getString("AdvancedTopics.title"),
+                JOptionPane.PLAIN_MESSAGE);
+    }
 
-        JComponent framePane = (JComponent) frame.getContentPane();
-
+    //------------//
+    // getMessage //
+    //------------//
+    /**
+     * Report the message panel to be displayed to the user
+     *
+     * @return the panel
+     */
+    private static JPanel getMessage ()
+    {
         Panel panel = new Panel();
         FormLayout layout = new FormLayout("pref", "pref, 1dlu, pref, 1dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout, panel);
@@ -104,16 +112,12 @@ public abstract class AdvancedTopics
         r += 2;
         builder.add(new AllTopicsPane(), cst.xy(1, r));
 
-        framePane.add(panel);
-
-        // Resources injection
-        ResourceMap resource = Application.getInstance().getContext().getResourceMap(
-                AdvancedTopics.class);
-        resource.injectComponents(frame);
-
-        return frame;
+        return panel;
     }
 
+    //-------//
+    // Topic //
+    //-------//
     /**
      * All advanced topics.
      */

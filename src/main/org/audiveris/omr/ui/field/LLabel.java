@@ -33,7 +33,7 @@ public class LLabel
 {
 
     /**
-     * Creates a new {@code LLabel} object.
+     * Creates a new {@code LLabel} object, with default center alignment
      *
      * @param label the string to be used as label text
      * @param tip   the related tool tip text
@@ -41,8 +41,22 @@ public class LLabel
     public LLabel (String label,
                    String tip)
     {
+        this(label, tip, JLabel.CENTER);
+    }
+
+    /**
+     * Creates a new {@code LLabel} object.
+     *
+     * @param label               the string to be used as label text
+     * @param tip                 the related tool tip text
+     * @param horizontalAlignment horizontal alignment
+     */
+    public LLabel (String label,
+                   String tip,
+                   int horizontalAlignment)
+    {
         super(label, tip, new JLabel());
-        getField().setHorizontalAlignment(JLabel.CENTER);
+        getField().setHorizontalAlignment(horizontalAlignment);
     }
 
     //---------//
