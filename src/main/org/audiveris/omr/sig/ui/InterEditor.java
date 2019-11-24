@@ -158,12 +158,7 @@ public abstract class InterEditor
                     // Keep underlying inter as selected
                     inter.getSig().publish(inter, SelectionHint.ENTITY_TRANSIENT);
                 } else {
-                    logger.debug("End of edition");
-
-                    if (hasMoved) {
-                        final Sheet sheet = inter.getSig().getSystem().getSheet();
-                        sheet.getInterController().editInter(this);
-                    }
+                    processEnd();
                 }
 
                 hasMoved = false;
@@ -227,6 +222,25 @@ public abstract class InterEditor
                 doit();
             }
         }
+    }
+
+    //------------//
+    // processEnd //
+    //------------//
+    /**
+     * End of edition, triggered by keyboard Enter or by pointing outside a handle.
+     */
+    public void processEnd ()
+    {
+        logger.debug("End of edition");
+        final Sheet sheet = inter.getSig().getSystem().getSheet();
+
+        if (hasMoved) {
+            sheet.getInterController().editInter(this);
+        }
+
+        inter.getSig().publish(inter); // To update the edit checkbox on interboard
+        sheet.getSymbolsEditor().closeEditMode();
     }
 
     //--------//
