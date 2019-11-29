@@ -32,12 +32,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Stroke;
+import java.awt.geom.Line2D;
 import java.util.Collection;
 
 /**
- * Class {@code InterTracker} paints a moving Inter together with its support relations
- * dynamically evaluated.
+ * Class {@code InterTracker} paints a moving Inter together with decorations dynamically
+ * evaluated, such as its support relations or intermediate ledgers for note heads.
  * <p>
  * It is used in Dnd operation and in inter edition.
  *
@@ -49,13 +51,13 @@ public class InterTracker
     private static final Logger logger = LoggerFactory.getLogger(InterTracker.class);
 
     /** The Inter instance being tracked. */
-    private final Inter inter;
+    protected final Inter inter;
 
     /** The containing sheet. */
-    private final Sheet sheet;
+    protected final Sheet sheet;
 
     /** The containing system. */
-    private SystemInfo system;
+    protected SystemInfo system;
 
     /**
      * Creates an {@code InterTracker} object.
@@ -96,11 +98,13 @@ public class InterTracker
      *
      * @param g           graphics context
      * @param renderInter true for rendering inter
+     * @return the bounding box of all decorations
      */
-    public void render (Graphics2D g,
-                        boolean renderInter)
+    public Rectangle render (Graphics2D g,
+                             boolean renderInter)
     {
         final SelectionPainter painter = new SelectionPainter(sheet, g);
+        Rectangle box = inter.getBounds();
 
         if (renderInter) {
             painter.render(inter); // Inter
@@ -116,8 +120,11 @@ public class InterTracker
             Collection<Link> links = inter.searchLinks(system);
 
             for (Link link : links) {
-                painter.drawSupport(inter, link.partner, link.relation.getClass());
+                Line2D line = painter.drawSupport(inter, link.partner, link.relation.getClass());
+                box.add(line.getBounds());
             }
         }
+
+        return box;
     }
 }

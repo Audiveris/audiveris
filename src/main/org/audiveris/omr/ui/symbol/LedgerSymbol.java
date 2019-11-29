@@ -108,8 +108,9 @@ public class LedgerSymbol
     {
         MyParams p = new MyParams();
 
-        // A ledger length
-        int width = (int) Math.ceil(font.getStaffInterline() * 2.5);
+        // Typical ledger length
+        final int width = (int) Math.ceil(
+                font.getStaffInterline() * LedgerInter.getDefaultLength().getValue());
         p.thickness = (int) Math.ceil(LedgerInter.DEFAULT_THICKNESS);
 
         if (decorated) {
@@ -121,10 +122,8 @@ public class LedgerSymbol
             p.rect = new Rectangle2D.Double(0, 0, width, p.thickness);
         }
 
-        p.model = new LedgerInter.Model(0,
-                                        p.rect.getHeight() / 2.0,
-                                        width,
-                                        p.rect.getHeight() / 2.0);
+        final double y = p.rect.getHeight() / 2.0;
+        p.model = new LedgerInter.Model(0, y, width, y);
 
         return p;
     }

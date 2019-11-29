@@ -248,7 +248,7 @@ public abstract class InterEditor
     //--------//
     /**
      * Render the editor handles onto the provided graphics, together with current status
-     * inter and its support links.
+     * inter and its decorations (support links, needed ledgers).
      *
      * @param g provided graphics
      */
@@ -261,7 +261,7 @@ public abstract class InterEditor
         }
 
         final SystemInfo system = sig.getSystem();
-        final InterTracker tracker = new InterTracker(inter, system.getSheet());
+        final InterTracker tracker = inter.getTracker(system.getSheet());
         tracker.setSystem(system);
         tracker.render(g, true);
 

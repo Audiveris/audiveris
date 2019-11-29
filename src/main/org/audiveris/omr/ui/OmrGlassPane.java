@@ -31,11 +31,12 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 
 /**
  * Class {@code OmrGlassPane} is a GhostGlassPane to draw draggable shape plus
- * related decoration (such as a link to some neighboring entity).
+ * related decoration (such as links to some neighboring entities, or ledgers for heads).
  *
  * @author Hervé Bitteur
  */
@@ -79,12 +80,34 @@ public class OmrGlassPane
                 final AffineTransform saveAT = g2.getTransform();
                 g2.transform(targetTransform);
 
-                // Draw inter links
-                ghostTracker.render(g2, false);
+                // Draw inter decorations
+                Rectangle box = ghostTracker.render(g2, false);
 
                 g2.setTransform(saveAT);
             }
         }
+    }
+
+    //----------------//
+    // getSceneBounds //
+    //----------------//
+    /**
+     * The scene is composed of inter image plus its decorations if any
+     * (staff reference, support links, ledgers).
+     *
+     * @param center inter center
+     * @return bounding box of inter + reference point if any
+     */
+    @Override
+    protected Rectangle getSceneBounds (Point center)
+    {
+        Rectangle rect = getImageBounds(center);
+
+        if (staffReference != null) {
+            rect.add(staffReference);
+        }
+
+        return rect;
     }
 
     //-----------------//

@@ -24,6 +24,7 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
@@ -31,6 +32,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.ui.InterEditor;
+import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
@@ -104,7 +106,7 @@ public interface Inter
      *
      * @param symbol       the dropped symbol
      * @param font         properly sized font
-     * @param dropLocation current drop location
+     * @param dropLocation (input/output) current drag/drop location
      * @param alignment    relative position of provided location WRT symbol
      */
     void deriveFrom (ShapeSymbol symbol,
@@ -335,6 +337,14 @@ public interface Inter
      * @see #getBounds()
      */
     Rectangle getSymbolBounds (int interline);
+
+    /**
+     * Report a suitable tracker, to render decorations on the fly.
+     *
+     * @param sheet containing sheet
+     * @return suitable tracker for this inter
+     */
+    InterTracker getTracker (Sheet sheet);
 
     /**
      * Report the voice, if any, this inter belongs to

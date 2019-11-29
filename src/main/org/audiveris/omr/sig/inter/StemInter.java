@@ -747,7 +747,7 @@ public class StemInter
 
         public Editor (StemInter stem)
         {
-            super(stem, true);
+            super(stem, true /* full */);
         }
 
         /**
