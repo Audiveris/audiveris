@@ -255,6 +255,21 @@ public class EvaluationBoard
         }
     }
 
+    //--------------//
+    // selectButton //
+    //--------------//
+    /**
+     * Programmatic use of a selector button.
+     *
+     * @param buttonID button ID to use (1..5)
+     */
+    public void selectButton (int buttonID)
+    {
+        if (buttonID <= selector.buttons.size()) {
+            selector.buttons.get(buttonID - 1).actionPerformed(null);
+        }
+    }
+
     //----------//
     // Selector //
     //----------//
