@@ -77,10 +77,11 @@ public class SelectionPainter
      * @param one          first inter
      * @param two          second inter
      * @param supportClass provided support class
+     * @return the line drawn
      */
-    public void drawSupport (Inter one,
-                             Inter two,
-                             Class<? extends Relation> supportClass)
+    public Line2D drawSupport (Inter one,
+                               Inter two,
+                               Class<? extends Relation> supportClass)
     {
         final double zoom = g.getTransform().getScaleX();
 
@@ -108,6 +109,8 @@ public class SelectionPainter
             final TextLayout layout = basicLayout(Relations.nameOf(supportClass), at);
             paint(layout, GeoUtil.centerOf(line.getBounds()), AREA_CENTER);
         }
+
+        return line;
     }
 
     //--------//

@@ -812,6 +812,11 @@ public class ShapeBoard
     /**
      * Adapter in charge of forwarding the current mouse location and
      * updating the dragged image according to the target under the mouse.
+     * <p>
+     * Generally, the ghost image is displayed exactly on the mouse location.
+     * But we can also display the image at a slightly different location than the current user
+     * dragging point, for example for a head shape, we can snap the image on the grid of staff
+     * lines and ledgers.
      */
     private class MyMotionAdapter
             extends GhostMotionAdapter
@@ -842,7 +847,7 @@ public class ShapeBoard
         @Override
         public void mouseDragged (MouseEvent e)
         {
-            final ScreenPoint screenPoint = new ScreenPoint(e.getXOnScreen(), e.getYOnScreen());
+            ScreenPoint screenPoint = new ScreenPoint(e.getXOnScreen(), e.getYOnScreen());
 
             if (screenPoint.equals(prevScreenPoint)) {
                 return;
@@ -898,6 +903,11 @@ public class ShapeBoard
                     Point glassRef = (sheetRef == null) ? null
                             : SwingUtilities.convertPoint(view, zoom.scaled(sheetRef), glass);
                     glass.setStaffReference(glassRef);
+
+                    // Recompute screenPoint from modified sheetPt
+                    Point pt = new Point(zoom.scaled(sheetPt));
+                    SwingUtilities.convertPointToScreen(pt, view);
+                    screenPoint = new ScreenPoint(pt.x, pt.y);
                 }
             } else if (prevComponent.get() != null) {
                 // No longer on a droppable target, reuse initial image & size

@@ -41,7 +41,9 @@ import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.Staff.IndexedLedger;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.note.NotePosition;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
@@ -49,6 +51,11 @@ import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
+import org.audiveris.omr.sig.ui.InterEditor;
+import org.audiveris.omr.sig.ui.InterTracker;
+import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.ByteUtil;
 import org.audiveris.omr.util.Corner;
 import org.audiveris.omr.util.HorizontalSide;
@@ -60,6 +67,8 @@ import org.audiveris.omr.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
@@ -234,6 +243,24 @@ public class HeadInter
         }
 
         return true;
+    }
+
+    //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public void deriveFrom (ShapeSymbol symbol,
+                            MusicFont font,
+                            Point dropLocation,
+                            Alignment alignment)
+    {
+        // For a note head, we force ordinate to integral pitch value (snap to lines & ledgers)
+        if (staff != null) {
+            double y = getSnapOrdinate(dropLocation, staff);
+            dropLocation.y = (int) Math.rint(y);
+        }
+
+        super.deriveFrom(symbol, font, dropLocation, alignment);
     }
 
     //-----------//
@@ -462,6 +489,15 @@ public class HeadInter
         return descriptor;
     }
 
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new Editor(this);
+    }
+
     //------------//
     // getMidLine //
     //------------//
@@ -603,6 +639,15 @@ public class HeadInter
         }
 
         return set;
+    }
+
+    //------------//
+    // getTracker //
+    //------------//
+    @Override
+    public InterTracker getTracker (Sheet sheet)
+    {
+        return new Tracker(this, sheet);
     }
 
     //----------//
@@ -844,6 +889,48 @@ public class HeadInter
         return bestLink;
     }
 
+    //------------------//
+    // getNeededLedgers //
+    //------------------//
+    /**
+     * Report the ledger lines that should be added to support this head.
+     *
+     * @return the sequence of needed ledger lines
+     */
+    public List<Line2D> getNeededLedgers ()
+    {
+        if (staff == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        final Point center = getCenter();
+        final NotePosition np = staff.getNotePosition(center);
+        final int thePitch = (int) Math.rint(np.getPitchPosition());
+        List<Line2D> lines = null;
+
+        if (Math.abs(thePitch) >= 6) {
+            final IndexedLedger iLedger = np.getLedger();
+            final int closestIndex = (iLedger != null) ? iLedger.index : 0;
+            final Scale scale = staff.getSystem().getSheet().getScale();
+            final int ledgerLength = scale.toPixels(LedgerInter.getDefaultLength());
+            final int x1 = center.x - ledgerLength / 2;
+            final int x2 = center.x + ledgerLength / 2;
+            final int dir = Integer.signum(thePitch);
+
+            for (int p = 6 * dir + 2 * closestIndex; p * dir <= thePitch * dir; p += 2 * dir) {
+                int y = (int) Math.rint(staff.pitchToOrdinate(center.x, p));
+
+                if (lines == null) {
+                    lines = new ArrayList<>();
+                }
+
+                lines.add(new Line2D.Double(x1, y, x2, y));
+            }
+        }
+
+        return (lines != null) ? lines : Collections.EMPTY_LIST;
+    }
+
     //--------------------//
     // getShrinkHoriRatio //
     //--------------------//
@@ -868,6 +955,32 @@ public class HeadInter
     public static double getShrinkVertRatio ()
     {
         return constants.shrinkVertRatio.getValue();
+    }
+
+    //-----------------//
+    // getSnapOrdinate //
+    //-----------------//
+    /**
+     * Report the theoretical ordinate of a head center when correctly aligned with staff
+     * lines and ledgers.
+     *
+     * @param point the raw input location
+     * @param staff the reference staff
+     * @return the proper location
+     */
+    private static Double getSnapOrdinate (Point2D point,
+                                           Staff staff)
+    {
+        if (staff == null) {
+            return null;
+        }
+
+        NotePosition notePosition = staff.getNotePosition(point);
+        double doublePitch = notePosition.getPitchPosition();
+        double roundedPitch = Math.rint(doublePitch);
+        double y = staff.pitchToOrdinate(point.getX(), roundedPitch);
+
+        return y;
     }
 
     //--------//
@@ -931,5 +1044,116 @@ public class HeadInter
         private final Constant.Ratio maxOverlapAreaRatio = new Constant.Ratio(
                 0.25,
                 "Maximum acceptable box area overlap ratio between notes");
+    }
+
+    //--------//
+    // Editor //
+    //--------//
+    /**
+     * User editor for a head.
+     * <p>
+     * For a head, we provide only one handle:
+     * <ul>
+     * <li>Middle handle, moving in any direction, but vertically it snaps to lines and ledgers.
+     * </ul>
+     */
+    private static class Editor
+            extends InterEditor
+    {
+
+        // Original data
+        private final Rectangle originalBounds;
+
+        // Latest data
+        private final Rectangle latestBounds;
+
+        private final double halfHeight;
+
+        /** Target ordinate, as defined by surrounding lines/ledgers. */
+        private Double targetY;
+
+        public Editor (final HeadInter head)
+        {
+            super(head);
+
+            originalBounds = head.getBounds();
+            latestBounds = head.getBounds();
+            halfHeight = latestBounds.height / 2.0;
+
+            // Middle handle: move horizontally and (by increments) vertically
+            handles.add(selectedHandle = new InterEditor.Handle(head.getCenter())
+            {
+                @Override
+                public boolean applyMove (Point vector)
+                {
+                    final double dx = vector.getX();
+                    final double dy = vector.getY();
+
+                    // Handle
+                    PointUtil.add(selectedHandle.getHandleCenter(), dx, dy);
+
+                    // Data
+                    latestBounds.x += dx;
+                    targetY = getSnapOrdinate(selectedHandle.getHandleCenter(), inter.getStaff());
+                    if (targetY != null) {
+                        latestBounds.y = (int) Math.rint(targetY - halfHeight);
+                    } else {
+                        latestBounds.y += dy;
+                    }
+
+                    return true;
+                }
+            });
+        }
+
+        @Override
+        protected void doit ()
+        {
+            inter.setBounds(latestBounds);
+            super.doit(); // No more glyph
+        }
+
+        @Override
+        public void undo ()
+        {
+            inter.setBounds(originalBounds);
+            super.undo();
+        }
+    }
+
+    //---------//
+    // Tracker //
+    //---------//
+    /**
+     * Specific tracker for a note head, able to display needed ledgers.
+     */
+    private static class Tracker
+            extends InterTracker
+    {
+
+        public Tracker (HeadInter head,
+                        Sheet sheet)
+        {
+            super(head, sheet);
+        }
+
+        @Override
+        public Rectangle render (Graphics2D g,
+                                 boolean renderInter)
+        {
+            Rectangle box = super.render(g, renderInter);
+
+            // Add needed ledgers
+            final HeadInter head = (HeadInter) inter;
+
+            for (Line2D line : head.getNeededLedgers()) {
+                g.setColor(Color.RED);
+                g.draw(line);
+
+                box.add(line.getBounds());
+            }
+
+            return box;
+        }
     }
 }

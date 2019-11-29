@@ -28,6 +28,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
@@ -40,6 +41,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.sig.ui.DefaultEditor;
 import org.audiveris.omr.sig.ui.InterEditor;
+import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -847,6 +849,15 @@ public abstract class AbstractInter
                 center.y - (int) Math.rint(bounds.getHeight() / 2),
                 (int) Math.rint(bounds.getWidth()),
                 (int) Math.rint(bounds.getHeight()));
+    }
+
+    //------------//
+    // getTracker //
+    //------------//
+    @Override
+    public InterTracker getTracker (Sheet sheet)
+    {
+        return new InterTracker(this, sheet);
     }
 
     //----------//

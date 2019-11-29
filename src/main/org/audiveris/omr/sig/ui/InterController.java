@@ -53,6 +53,7 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.Inters;
+import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
@@ -1164,6 +1165,15 @@ public class InterController
                     HeadChordInter headChord = new HeadChordInter(-1);
                     seq.add(new AdditionTask(sig, headChord, ghostBounds, Collections.EMPTY_SET));
                     seq.add(new LinkTask(sig, headChord, ghost, new Containment()));
+                }
+
+                // Addition of needed ledgers
+                HeadInter head = (HeadInter) ghost;
+                for (Line2D line : head.getNeededLedgers()) {
+                    LedgerInter ledger = new LedgerInter(line, LedgerInter.DEFAULT_THICKNESS, 1);
+                    ledger.setManual(true);
+                    seq.add(new AdditionTask(sig, ledger, ledger.getBounds(),
+                                             Collections.EMPTY_SET));
                 }
             } else if (ghost instanceof LyricItemInter) {
                 LyricItemInter item = (LyricItemInter) ghost;

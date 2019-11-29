@@ -104,7 +104,7 @@ public class DndOperation
 
         curveStroke = buildCurveStroke();
 
-        ghostTracker = new InterTracker(ghost, sheet);
+        ghostTracker = ghost.getTracker(sheet);
     }
 
     //------//
@@ -144,7 +144,7 @@ public class DndOperation
         // Staff
         ghost.setStaff(staff);
 
-        updateGhost(dropPoint);
+        updateGhost(dropPoint); // dropPoint can be modified
 
         sheet.getInterController().addInters(Arrays.asList(ghost));
         sheet.getSymbolsEditor().openEditMode(ghost);
@@ -188,7 +188,8 @@ public class DndOperation
      * <p>
      * We use a "sticky staff" approach to visually indicate the current related staff.
      *
-     * @param location current inter location
+     * @param location (input/output) current inter location, which can be modified to locate the
+     *                 inter differently (typically for a snap to grid)
      * @return the location of reference entity
      */
     public Point getStaffReference (Point location)
@@ -227,7 +228,7 @@ public class DndOperation
             return null;
         }
 
-        updateGhost(location);
+        updateGhost(location); // This may modify location slightly
 
         LineInfo line = staff.getLines().get(2); // Middle staff line
 
@@ -287,7 +288,7 @@ public class DndOperation
     /**
      * Update ghost location and geometry according to the provided new location.
      *
-     * @param location ghost new location
+     * @param location (input/output) ghost new location
      */
     private void updateGhost (Point location)
     {

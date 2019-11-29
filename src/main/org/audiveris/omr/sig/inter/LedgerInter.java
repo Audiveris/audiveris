@@ -28,6 +28,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.run.Orientation;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.ui.InterEditor;
@@ -64,12 +65,12 @@ public class LedgerInter
 
     private static final Constants constants = new Constants();
 
-    // Persistent data
-    //----------------
-    //
     /** Default thickness of a ledger. */
     public static final double DEFAULT_THICKNESS = constants.defaultThickness.getValue();
 
+    // Persistent data
+    //----------------
+    //
     /** Mean ledger thickness. */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
@@ -88,15 +89,15 @@ public class LedgerInter
      * <p>
      * Above staff, if index is negative (-1, -2, etc)
      * <pre>
-     * -2 -
-     * -1 -
+     * -2 --
+     * -1 --
      * ---------------------------------
      * ---------------------------------
      * ---------------------------------
      * ---------------------------------
      * ---------------------------------
-     * +1 -
-     * +2 -
+     * +1 --
+     * +2 --
      * </pre>
      * Below staff, if index is positive (+1, +2, etc)
      */
@@ -138,6 +139,26 @@ public class LedgerInter
 
             computeArea();
         }
+    }
+
+    /**
+     * Creates a new LedgerInter object.
+     *
+     * @param median    horizontal median line
+     * @param thickness ledger thickness
+     * @param grade     quality
+     */
+    public LedgerInter (Line2D median,
+                        double thickness,
+                        double grade)
+    {
+        super(null, null, Shape.LEDGER, grade);
+
+        this.median = new Line2D.Double();
+        this.median.setLine(median);
+        this.thickness = thickness;
+
+        computeArea();
     }
 
     /**
@@ -407,6 +428,19 @@ public class LedgerInter
         }
     }
 
+    //------------------//
+    // getDefaultLength //
+    //------------------//
+    /**
+     * Report the default length for a ledger.
+     *
+     * @return default length (in interline fraction)
+     */
+    public static Scale.Fraction getDefaultLength ()
+    {
+        return constants.defaultLength;
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -415,9 +449,13 @@ public class LedgerInter
     {
 
         private final Constant.Double defaultThickness = new Constant.Double(
-                "pixels",
+                "Pixels",
                 3.0,
                 "Default ledger thickness");
+
+        private final Scale.Fraction defaultLength = new Scale.Fraction(
+                2.0,
+                "Default ledger length (WRT interline)");
     }
 
     //--------//
