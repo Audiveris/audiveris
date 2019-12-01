@@ -748,6 +748,7 @@ public class ShapeBoard
             implements KeyListener
     {
 
+        /** First character typed. */
         Character c1 = null;
 
         @Override
@@ -775,6 +776,12 @@ public class ShapeBoard
                     c1 = c;
                 } else {
                     reset();
+
+                    // Direct use of classifier buttons
+                    if (c >= '1' && c <= '5') {
+                        int id = c - '0';
+                        sheet.getSymbolsEditor().getEvaluationBoard().selectButton(id);
+                    }
                 }
             } else {
                 String str = String.valueOf(new char[]{c1, c});

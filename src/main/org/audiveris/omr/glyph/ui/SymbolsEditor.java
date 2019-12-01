@@ -230,6 +230,17 @@ public class SymbolsEditor
         refresh();
     }
 
+    //--------------------//
+    // getEvaluationBoard //
+    //--------------------//
+    /**
+     * Report the Evaluation board (basic classifier).
+     */
+    public EvaluationBoard getEvaluationBoard ()
+    {
+        return evaluationBoard;
+    }
+
     //----------------//
     // getEditedInter //
     //----------------//
@@ -899,22 +910,6 @@ public class SymbolsEditor
             // End of edition
             inputMap.put(KeyStroke.getKeyStroke("ENTER"), "EndInterEditionAction");
             actionMap.put("EndInterEditionAction", new EndInterEditionAction());
-
-            // Direct use of classifier buttons (1..5)
-            inputMap.put(KeyStroke.getKeyStroke("typed 1"), "Eval1");
-            actionMap.put("Eval1", new EvaluationAction(1));
-
-            inputMap.put(KeyStroke.getKeyStroke("typed 2"), "Eval2");
-            actionMap.put("Eval2", new EvaluationAction(2));
-
-            inputMap.put(KeyStroke.getKeyStroke("typed 3"), "Eval3");
-            actionMap.put("Eval3", new EvaluationAction(3));
-
-            inputMap.put(KeyStroke.getKeyStroke("typed 4"), "Eval4");
-            actionMap.put("Eval4", new EvaluationAction(4));
-
-            inputMap.put(KeyStroke.getKeyStroke("typed 5"), "Eval5");
-            actionMap.put("Eval5", new EvaluationAction(5));
         }
 
         //-----------------------//
@@ -931,28 +926,6 @@ public class SymbolsEditor
                     interEditor.processEnd();
                     refresh();
                 }
-            }
-        }
-
-        //------------------//
-        // EvaluationAction //
-        //------------------//
-        private class EvaluationAction
-                extends AbstractAction
-        {
-
-            /** ID of selected button (1..5). */
-            final int buttonID;
-
-            public EvaluationAction (int buttonNumber)
-            {
-                this.buttonID = buttonNumber;
-            }
-
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                evaluationBoard.selectButton(buttonID);
             }
         }
 

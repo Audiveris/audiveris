@@ -716,6 +716,8 @@ public class InterFactory
         final double GRADE = 1.0; // Grade value for any manual shape
 
         switch (shape) {
+        case CLUTTER:
+            return null;
         //
         // Ottava TODO ???
         //        case OTTAVA_ALTA:
