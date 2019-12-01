@@ -270,6 +270,19 @@ public class EvaluationBoard
         }
     }
 
+    //-------------------//
+    // getVisibleButtons //
+    //-------------------//
+    /**
+     * Report the number of buttons in evaluation board.
+     *
+     * @return count of visible buttons
+     */
+    public static int getVisibleButtons ()
+    {
+        return constants.visibleButtons.getValue();
+    }
+
     //----------//
     // Selector //
     //----------//

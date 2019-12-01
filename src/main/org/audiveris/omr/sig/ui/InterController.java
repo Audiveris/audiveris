@@ -257,8 +257,13 @@ public class InterController
             return;
         }
 
-        final Glyph glyph = sheet.getGlyphIndex().registerOriginal(aGlyph);
         final Inter ghost = InterFactory.createManual(shape, sheet);
+
+        if (ghost == null) {
+            return;
+        }
+
+        final Glyph glyph = sheet.getGlyphIndex().registerOriginal(aGlyph);
         ghost.setBounds(glyph.getBounds());
         ghost.setGlyph(glyph);
 
