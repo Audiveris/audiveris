@@ -1239,19 +1239,19 @@ public class BookActions
         }
     }
 
-    //-----------------//
-    // toggleNoteInput //
-    //-----------------//
+    //-----------------------//
+    // toggleRepetitiveInput //
+    //-----------------------//
     /**
-     * Toggle note input mode.
+     * Toggle repetitive input mode.
      * <p>
-     * When this mode is active, focus is on manual insertion of notes, with as few user actions as
+     * When this mode is active, focus is on manual insertion of items, with as few user actions as
      * possible.
      *
      * @param e the event that triggered this action
      */
     @Action(enabledProperty = REPETITIVE_INPUT_SELECTABLE)
-    public void toggleNoteInput (ActionEvent e)
+    public void toggleRepetitiveInput (ActionEvent e)
     {
         final SheetStub stub = StubsController.getCurrentStub();
 

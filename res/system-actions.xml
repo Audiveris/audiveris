@@ -41,7 +41,7 @@
     
     <action domain="SHEET" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="undo"                                            button="javax.swing.JButton"/>
     <action domain="SHEET" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="redo"                                            button="javax.swing.JButton"/>
-    <action domain="SHEET" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="toggleNoteInput"     item="javax.swing.JCheckBoxMenuItem"   button="javax.swing.JToggleButton" />
+    <action domain="SHEET" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="toggleRepetitiveInput"     item="javax.swing.JCheckBoxMenuItem"   button="javax.swing.JToggleButton" />
     <action domain="SHEET" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetSheet"/>
     <action domain="SHEET" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetSheetToBinary"/>
     <action domain="SHEET" section="15" class="org.audiveris.omr.sheet.ui.BookActions" method="transcribeSheet"/>
