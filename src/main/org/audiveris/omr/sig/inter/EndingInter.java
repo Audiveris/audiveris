@@ -48,6 +48,7 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.Version;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -116,7 +117,7 @@ public class EndingInter
                         Rectangle bounds,
                         GradeImpacts impacts)
     {
-        super(null, bounds, Shape.ENDING, impacts);
+        super(null, bounds, (rightLeg != null) ? Shape.ENDING_WRL : Shape.ENDING, impacts);
         this.line = line;
         this.leftLeg = leftLeg;
         this.rightLeg = rightLeg;
@@ -125,11 +126,13 @@ public class EndingInter
     /**
      * Creates a new {@code EndingInter} object, meant for user manual handling.
      *
-     * @param grade interpretation quality
+     * @param withRightLeg true for an ending with a right leg
+     * @param grade        interpretation quality
      */
-    public EndingInter (double grade)
+    public EndingInter (boolean withRightLeg,
+                        double grade)
     {
-        super(null, null, Shape.ENDING, grade);
+        super(null, null, withRightLeg ? Shape.ENDING_WRL : Shape.ENDING, grade);
     }
 
     /**
@@ -429,6 +432,22 @@ public class EndingInter
                                            Collection<Link> links)
     {
         return searchObsoletelinks(links, EndingBarRelation.class);
+    }
+
+    //-----------------//
+    // upgradeOldStuff //
+    //-----------------//
+    @Override
+    public boolean upgradeOldStuff (List<Version> upgrades)
+    {
+        boolean upgraded = false;
+
+        if ((rightLeg != null) && (shape == Shape.ENDING)) {
+            shape = Shape.ENDING_WRL;
+            upgraded = true;
+        }
+
+        return upgraded;
     }
 
     //-----------//

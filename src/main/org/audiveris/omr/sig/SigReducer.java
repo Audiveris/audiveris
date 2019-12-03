@@ -148,7 +148,7 @@ public class SigReducer
 
     /** Shapes that can overlap with a stem. */
     private static final EnumSet<Shape> stemCompShapes = EnumSet.copyOf(
-            Arrays.asList(Shape.SLUR, Shape.CRESCENDO, Shape.DIMINUENDO));
+            Arrays.asList(Shape.SLUR_ABOVE, Shape.SLUR_BELOW, Shape.CRESCENDO, Shape.DIMINUENDO));
 
     /** The dedicated system. */
     @Navigable(false)

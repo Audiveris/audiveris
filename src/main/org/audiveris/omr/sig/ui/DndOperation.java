@@ -147,7 +147,7 @@ public class DndOperation
         updateGhost(dropPoint); // dropPoint can be modified
 
         sheet.getInterController().addInters(Arrays.asList(ghost));
-        sheet.getSymbolsEditor().openEditMode(ghost);
+        ///sheet.getSymbolsEditor().openEditMode(ghost);
 
         logger.debug("Dropped {} at {}", this, dropPoint);
     }

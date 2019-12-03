@@ -1808,11 +1808,6 @@ public class InterController
             this.ghost = ghost;
             this.links = links;
         }
-
-        public LinkedGhost (Inter ghost)
-        {
-            this(ghost, Collections.EMPTY_LIST);
-        }
     }
 
     //---------//

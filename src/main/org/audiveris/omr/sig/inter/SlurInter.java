@@ -231,7 +231,10 @@ public class SlurInter
     public SlurInter (SlurInfo info,
                       GradeImpacts impacts)
     {
-        super(info.getGlyph(), null, Shape.SLUR, impacts);
+        super(info.getGlyph(),
+              null,
+              (info.above() == 1) ? Shape.SLUR_ABOVE : Shape.SLUR_BELOW,
+              impacts);
         this.info = info;
 
         above = info.above() == 1;
@@ -246,11 +249,13 @@ public class SlurInter
     /**
      * Creates a new {@code SlurInter} object (meant for manual assignment).
      *
+     * @param above true for a slur above notes, false for a slur below notes
      * @param grade inter grade
      */
-    public SlurInter (double grade)
+    public SlurInter (boolean above,
+                      double grade)
     {
-        super(null, null, Shape.SLUR, grade);
+        super(null, null, above ? Shape.SLUR_ABOVE : Shape.SLUR_BELOW, grade);
     }
 
     /**
@@ -1022,6 +1027,12 @@ public class SlurInter
     public boolean upgradeOldStuff (List<Version> upgrades)
     {
         boolean upgraded = false;
+
+        // Shape SLUR is obsolete, replaced by SLUR_ABOVE or SLUR_BELOW
+        if (shape == Shape.SLUR) {
+            shape = above ? Shape.SLUR_ABOVE : Shape.SLUR_BELOW;
+            upgraded = true;
+        }
 
         if (upgrades.contains(Versions.INTER_GEOMETRY)) {
             // Force bounds recomputation from curve (including control points)

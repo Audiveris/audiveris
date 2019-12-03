@@ -61,7 +61,7 @@ public class EndingSymbol
     protected EndingSymbol (boolean withRightLeg,
                             boolean isIcon)
     {
-        super(isIcon, Shape.ENDING, false);
+        super(isIcon, withRightLeg ? Shape.ENDING_WRL : Shape.ENDING, false);
         this.withRightLeg = withRightLeg;
     }
 

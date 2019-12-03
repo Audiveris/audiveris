@@ -166,17 +166,18 @@ public abstract class InterEditor
                 break;
             case DRAGGING:
                 if (selectedHandle != null) {
-                    Point vector = PointUtil.subtraction(pt, lastReference);
+                    if (lastReference != null) {
+                        Point vector = PointUtil.subtraction(pt, lastReference);
 
-                    if ((vector.x != 0) || (vector.y != 0)) {
-                        if (selectedHandle.applyMove(vector)) {
-                            doit();
-                            hasMoved = true;
+                        if ((vector.x != 0) || (vector.y != 0)) {
+                            if (selectedHandle.applyMove(vector)) {
+                                doit();
+                                hasMoved = true;
+                            }
                         }
-
-                        lastReference = pt;
                     }
 
+                    lastReference = pt;
                     active = true;
                 } else {
                     lastReference = null;

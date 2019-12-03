@@ -83,6 +83,9 @@ public abstract class StubDependent
     /** Name of property linked to redoable. */
     public static final String REDOABLE = "redoable";
 
+    /** Name of property linked to repetitive input mode. */
+    public static final String REPETITIVE_INPUT_SELECTABLE = "repetitiveInputSelectable";
+
     /** Indicates whether the sheet initial image is available. */
     protected boolean initialAvailable = false;
 
@@ -115,6 +118,9 @@ public abstract class StubDependent
 
     /** Indicates whether we can redo user action. */
     protected boolean redoable = false;
+
+    /** Indicates whether repetitive input mode can be selected. */
+    protected boolean repetitiveInputSelectable = true;
 
     /**
      * Creates a new {@code StubDependent} object.
@@ -246,6 +252,37 @@ public abstract class StubDependent
 
         if (bookUpgradable != oldValue) {
             firePropertyChange(BOOK_UPGRADABLE, oldValue, this.bookUpgradable);
+        }
+    }
+
+    //-----------------------------//
+    // isRepetitiveInputSelectable //
+    //-----------------------------//
+    /**
+     * Getter for repetitiveInputSelectable property
+     *
+     * @return the current property value
+     */
+    public boolean isRepetitiveInputSelectable ()
+    {
+        return repetitiveInputSelectable;
+    }
+
+    //------------------------------//
+    // setRepetitiveInputSelectable //
+    //------------------------------//
+    /**
+     * Setter for repetitiveInputSelectable property
+     *
+     * @param repetitiveInputSelectable the new property value
+     */
+    public void setRepetitiveInputSelectable (boolean repetitiveInputSelectable)
+    {
+        boolean oldValue = this.repetitiveInputSelectable;
+        this.repetitiveInputSelectable = repetitiveInputSelectable;
+
+        if (repetitiveInputSelectable != oldValue) {
+            firePropertyChange(REPETITIVE_INPUT_SELECTABLE, oldValue, this.repetitiveInputSelectable);
         }
     }
 
@@ -496,15 +533,17 @@ public abstract class StubDependent
             // Update stubValid
             setStubValid((stub != null) && stub.isValid());
 
-            // Update stubIdle & stubTranscribable
+            // Update stubIdle & stubTranscribable & repetitiveInputSelectable
             if (stub != null) {
                 final Step currentStep = stub.getCurrentStep();
                 final boolean idle = currentStep == null;
                 setStubIdle(idle);
                 setStubTranscribable(idle && stub.isValid() && !stub.isDone(Step.last()));
+                setRepetitiveInputSelectable(idle && stub.isDone(Step.HEADS));
             } else {
                 setStubIdle(false);
                 setStubTranscribable(false);
+                setRepetitiveInputSelectable(false);
             }
 
             // Update bookIdle & bookTranscribable & bookUpgradable

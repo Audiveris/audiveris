@@ -21,10 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.glyph.ui;
 
+import org.audiveris.omr.OMR;
 import org.audiveris.omr.classifier.BasicClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.GlyphIndex;
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.dynamic.Filament;
 import org.audiveris.omr.lag.BasicLag;
 import org.audiveris.omr.lag.Lag;
@@ -40,6 +42,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
+import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sheet.ui.PixelBoard;
 import org.audiveris.omr.sheet.ui.SelectionPainter;
@@ -52,6 +55,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Support;
+import org.audiveris.omr.sig.ui.DndOperation;
 import org.audiveris.omr.sig.ui.InterBoard;
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.sig.ui.InterEditor;
@@ -61,8 +65,10 @@ import org.audiveris.omr.sig.ui.ShapeBoard;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.OmrGlassPane;
 import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.ViewParameters.SelectionMode;
+import org.audiveris.omr.ui.dnd.ScreenPoint;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
@@ -82,6 +88,7 @@ import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
+import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -403,6 +410,35 @@ public class SymbolsEditor
         view.repaint();
     }
 
+    //-----------------------//
+    // isRepetitiveInputMode //
+    //-----------------------//
+    /**
+     * Report whether the repetitive input mode is ON.
+     *
+     * @return true if ON, false if OFF
+     */
+    public boolean isRepetitiveInputMode ()
+    {
+        return view.repetitiveInputMode;
+    }
+
+    //------------------------//
+    // setRepetitiveInputMode //
+    //------------------------//
+    /**
+     * Set the specific repetitive input mode to true or false.
+     *
+     * @param repetitiveInputMode the new value
+     */
+    public void setRepetitiveInputMode (boolean repetitiveInputMode)
+    {
+        view.repetitiveInputMode = repetitiveInputMode;
+        logger.info("{} Repetitive input mode is {}",
+                    sheet.getId(),
+                    view.repetitiveInputMode ? "ON" : "OFF");
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -454,6 +490,12 @@ public class SymbolsEditor
 
         /** Inter being edited, if any. */
         private InterEditor interEditor;
+
+        /** Repetitive input mode. */
+        private boolean repetitiveInputMode = false;
+
+        /** On-going DnD operation in repetitive input mode. */
+        private DndOperation dndOperation;
 
         private MyView (GlyphIndex glyphIndex)
         {
@@ -609,7 +651,7 @@ public class SymbolsEditor
         public void pointSelected (Point pt,
                                    MouseMovement movement)
         {
-            super.pointSelected(pt, movement);
+            super.pointSelected(pt, movement); // Publish location
 
             // Cancel slot highlighting
             highLight(null);
@@ -617,7 +659,7 @@ public class SymbolsEditor
             // Request focus to allow key handling
             requestFocusInWindow();
 
-            // Look for an editor handle
+            // On-going inter edition?
             if (interEditor != null) {
                 if (interEditor.process(pt, movement)) {
                     return;
@@ -626,34 +668,114 @@ public class SymbolsEditor
                 interEditor = null;
             }
 
+            // Specific repetitive input mode?
+            if (repetitiveInputMode) {
+                processRepetitiveInput(pt, movement);
+
+                return;
+            }
+
             // Handle relation vector
-            if (null != movement) {
-                switch (movement) {
-                case PRESSING:
-                    relationVector = tryVector(pt); // Starting vector, perhaps null
+            processRelationVector(pt, movement);
+        }
 
-                    break;
+        //------------------------//
+        // processRepetitiveInput //
+        //------------------------//
+        private void processRepetitiveInput (Point pt,
+                                             MouseMovement movement)
+        {
+            final List<Shape> history = shapeBoard.getHistory();
 
-                case DRAGGING:
+            if (history.isEmpty()) {
+                return;
+            }
 
-                    if (relationVector != null) {
-                        relationVector.extendTo(pt); // Extension
-                    }
+            final Shape shape = history.get(0);
 
-                    break;
+            if (!shape.isDraggable()) {
+                return;
+            }
 
-                case RELEASING:
+            final OmrGlassPane glass = OMR.gui.getGlassPane();
 
-                    if ((relationVector != null)) {
-                        relationVector.process(); // Handle end of vector
-                        relationVector = null; // This is the end
-                    }
+            switch (movement) {
+            case PRESSING:
+                // Start Dnd
+                Point gOffset = SwingUtilities.convertPoint(this, 0, 0, glass);
+                double z = zoom.getRatio();
+                glass.setOverTarget(true);
+                glass.setVisible(true);
+                glass.setTargetTransform(new AffineTransform(z, 0, 0, z, gOffset.x, gOffset.y));
+                dndOperation = new DndOperation(
+                        sheet,
+                        zoom,
+                        InterFactory.createManual(shape, sheet),
+                        shape.getSymbol());
+                dndOperation.enteringTarget();
+                glass.setGhostTracker(dndOperation.getGhostTracker());
 
-                    break;
+            ///break; // Fall through
+            case DRAGGING:
+                // Move Dnd
+                Point sheetRef = dndOperation.getStaffReference(pt); // pt can be slightly modified
+                Point glassRef = (sheetRef == null) ? null
+                        : SwingUtilities.convertPoint(view, zoom.scaled(sheetRef), glass);
+                glass.setStaffReference(glassRef);
 
-                default:
-                    break;
+                // Recompute screenPoint from modified sheetPt
+                Point scaledPt = new Point(zoom.scaled(pt));
+                SwingUtilities.convertPointToScreen(scaledPt, view);
+                ScreenPoint screenPoint = new ScreenPoint(scaledPt.x, scaledPt.y);
+                glass.setScreenPoint(screenPoint); // This triggers a repaint of glassPane
+
+                break;
+
+            case RELEASING:
+                // Drop Dnd
+                dndOperation.drop(pt);
+                glass.setOverTarget(false);
+                glass.setVisible(false);
+                glass.setImage(null);
+
+                break;
+
+            default:
+                break;
+            }
+        }
+
+        //-----------------------//
+        // processRelationVector //
+        //-----------------------//
+        private void processRelationVector (Point pt,
+                                            MouseMovement movement)
+        {
+            switch (movement) {
+            case PRESSING:
+                relationVector = tryVector(pt); // Starting vector, perhaps null
+
+                break;
+
+            case DRAGGING:
+
+                if (relationVector != null) {
+                    relationVector.extendTo(pt); // Extension
                 }
+
+                break;
+
+            case RELEASING:
+
+                if ((relationVector != null)) {
+                    relationVector.process(); // Handle end of vector
+                    relationVector = null; // This is the end
+                }
+
+                break;
+
+            default:
+                break;
             }
         }
 

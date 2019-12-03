@@ -44,9 +44,7 @@ import org.audiveris.omr.ui.dnd.GhostGlassPane;
 import org.audiveris.omr.ui.dnd.GhostMotionAdapter;
 import org.audiveris.omr.ui.dnd.ScreenPoint;
 import org.audiveris.omr.ui.selection.UserEvent;
-import org.audiveris.omr.ui.symbol.EndingSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.SlurSymbol;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.ui.util.Panel;
@@ -177,7 +175,7 @@ public class ShapeBoard
 
                 if (glyph != null) {
                     ShapeButton button = (ShapeButton) e.getSource();
-                    assignGlyph(glyph, button.shape);
+                    assignGlyph(glyph, button.getShape());
                 }
             }
         }
@@ -316,7 +314,8 @@ public class ShapeBoard
         setMap.put(c = 'p', ShapeSet.Physicals);
         shapeMap.put("" + c + 'l', Shape.LYRICS);
         shapeMap.put("" + c + 't', Shape.TEXT);
-        shapeMap.put("" + c + 'a', Shape.SLUR);
+        shapeMap.put("" + c + 'a', Shape.SLUR_ABOVE);
+        shapeMap.put("" + c + 'b', Shape.SLUR_BELOW);
         shapeMap.put("" + c + 's', Shape.STEM);
     }
 
@@ -327,33 +326,16 @@ public class ShapeBoard
                              List<Shape> shapes)
     {
         for (Shape shape : shapes) {
-            switch (shape) {
-            case SLUR:
-                // Slur: Provide different buttons for above and for below
-                addButton(p, new ShapeButton(shape, new SlurSymbol(true)));
-                addButton(p, new ShapeButton(shape, new SlurSymbol(false)));
+            // Preference for plain symbol
+            ShapeSymbol symbol = Symbols.getSymbol(shape);
 
-                break;
-            case ENDING:
-                // Ending: Provide different buttons with and without right leg
-                addButton(p, new ShapeButton(shape, new EndingSymbol(false)));
-                addButton(p, new ShapeButton(shape, new EndingSymbol(true)));
+            if (symbol == null) {
+                // Fall back to decorated symbol
+                symbol = Symbols.getSymbol(shape, true);
+            }
 
-                break;
-            default:
-                // Preference for plain symbol
-                ShapeSymbol symbol = Symbols.getSymbol(shape);
-
-                if (symbol == null) {
-                    // Fall back to decorated symbol
-                    symbol = Symbols.getSymbol(shape, true);
-                }
-
-                if (symbol != null) {
-                    addButton(p, new ShapeButton(shape, symbol));
-                }
-
-                break;
+            if (symbol != null) {
+                addButton(p, new ShapeButton(symbol));
             }
         }
     }
@@ -591,8 +573,6 @@ public class ShapeBoard
             extends JButton
     {
 
-        final Shape shape;
-
         /**
          * Precise symbol, since some shapes may exhibit variants.
          * Example: slur above and slur below.
@@ -604,19 +584,21 @@ public class ShapeBoard
         /**
          * Create a button for a shape.
          *
-         * @param shape  the underlying shape
          * @param symbol precise plain (non-decorated) symbol
          */
-        public ShapeButton (Shape shape,
-                            ShapeSymbol symbol)
+        public ShapeButton (ShapeSymbol symbol)
         {
-            this.shape = shape;
             this.symbol = symbol;
             setIcon(symbol.getDecoratedSymbol().getIcon());
-            setName(shape.toString());
+            setName(symbol.getShape().toString());
             setToolTipText(symbol.getTip());
 
             setBorderPainted(true);
+        }
+
+        public Shape getShape ()
+        {
+            return symbol.getShape();
         }
     }
 
@@ -665,7 +647,7 @@ public class ShapeBoard
             motionAdapter.reset();
 
             ShapeButton button = (ShapeButton) e.getSource();
-            Shape shape = button.shape;
+            Shape shape = button.getShape();
 
             // Set shape & image
             if (shape.isDraggable()) {
@@ -863,7 +845,7 @@ public class ShapeBoard
             prevScreenPoint = screenPoint;
 
             final ShapeButton button = (ShapeButton) e.getSource();
-            final Shape shape = button.shape;
+            final Shape shape = button.getShape();
             final OmrGlassPane glass = (OmrGlassPane) glassPane;
 
             // The (zoomed) sheet view

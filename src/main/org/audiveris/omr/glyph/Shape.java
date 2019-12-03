@@ -333,7 +333,9 @@ public enum Shape
     BEAM_SMALL("Small beam for cue notes"),
     BEAM_HOOK("Hook of a beam attached on one stem"),
     BEAM_HOOK_SMALL("Small hook of a beam for cue notes"),
-    SLUR("Slur tying notes"),
+    SLUR("Slur above or below notes"), // Kept for compatibility with old .omr files
+    SLUR_ABOVE("Slur above notes"),
+    SLUR_BELOW("Slur below notes"),
 
     //
     // Key signatures ---
@@ -368,6 +370,7 @@ public enum Shape
     RIGHT_REPEAT_SIGN("Repeat dots + Thin / Thick bar line"),
     BACK_TO_BACK_REPEAT_SIGN("Repeat dots + Thin / Thick / Thin + REPEAT_DOTS"),
     ENDING("Alternate ending"),
+    ENDING_WRL("Alternate ending with right leg"),
 
     //
     // Wedges ---

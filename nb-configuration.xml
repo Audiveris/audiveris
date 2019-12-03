@@ -19,6 +19,7 @@ Without this configuration present, some functionality in the IDE may be limited
         <word>covariant</word>
         <word>draggable</word>
         <word>droppable</word>
+        <word>glasspane</word>
         <word>informations</word>
         <word>marcato</word>
         <word>Marshalled</word>
@@ -33,5 +34,6 @@ Without this configuration present, some functionality in the IDE may be limited
         <word>tuplet</word>
         <word>uncomment</word>
         <word>unmarshalled</word>
+        <word>unmarshalling</word>
     </spellchecker-wordlist>
 </project-shared-configuration>
