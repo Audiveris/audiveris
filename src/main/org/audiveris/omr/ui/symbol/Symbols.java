@@ -224,6 +224,7 @@ public abstract class Symbols
         //        slanted(DYNAMICS_SFPP, 83, 185);
 
         sym.put(ENDING, new EndingSymbol(false));
+        sym.put(ENDING_WRL, new EndingSymbol(true));
         mapShape(EIGHTH_REST, 228);
 
         mapShape(FERMATA, 85);
@@ -327,7 +328,8 @@ public abstract class Symbols
 
         mapShape(SEGNO, 37);
         mapShape(SHARP, 35);
-        sym.put(SLUR, new SlurSymbol(true));
+        sym.put(SLUR_ABOVE, new SlurSymbol(true));
+        sym.put(SLUR_BELOW, new SlurSymbol(false));
         small(SMALL_FLAG, 106);
         sym.put(SMALL_FLAG_SLASH, new SlashedFlagSymbol());
         sym.put(STACCATISSIMO, new ArticulationSymbol(STACCATISSIMO, false, 174));

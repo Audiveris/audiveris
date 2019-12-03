@@ -65,6 +65,8 @@ import org.audiveris.omr.util.WrappedBoolean;
 import org.audiveris.omr.util.param.Param;
 
 import org.jdesktop.application.Action;
+import org.jdesktop.application.ApplicationAction;
+import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.Task;
 
 import org.slf4j.Logger;
@@ -77,6 +79,7 @@ import java.beans.PropertyChangeListener;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import javax.swing.AbstractButton;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -120,6 +123,9 @@ public class BookActions
     /** Sub-menu on books history. */
     private final HistoryMenu bookHistoryMenu;
 
+    /** The action that toggles repetitive input mode. */
+    private final ApplicationAction repetitiveInputAction;
+
     /**
      * Creates a new BookActions object.
      */
@@ -128,6 +134,9 @@ public class BookActions
         final BookManager mgr = BookManager.getInstance();
         imageHistoryMenu = new HistoryMenu(mgr.getImageHistory(), LoadImageTask.class);
         bookHistoryMenu = new HistoryMenu(mgr.getBookHistory(), LoadBookTask.class);
+
+        ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(this);
+        repetitiveInputAction = (ApplicationAction) actionMap.get("toggleRepetitiveInput");
     }
 
     //--------------//
@@ -1209,6 +1218,56 @@ public class BookActions
             book.swapAllSheets();
         } catch (Throwable ex) {
             logger.warn("Error in swapSheets {}", ex.toString(), ex);
+        }
+    }
+
+    //-----------------------//
+    // updateRepetitiveInput //
+    //-----------------------//
+    /**
+     * Update checkbox of repetitiveInput mode according to the current sheet
+     *
+     * @param sheet the current sheet
+     */
+    public void updateRepetitiveInput (Sheet sheet)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == sheet.getStub()) {
+            final boolean repetitiveInput = sheet.getSymbolsEditor().isRepetitiveInputMode();
+            repetitiveInputAction.setSelected(repetitiveInput);
+        }
+    }
+
+    //-----------------//
+    // toggleNoteInput //
+    //-----------------//
+    /**
+     * Toggle note input mode.
+     * <p>
+     * When this mode is active, focus is on manual insertion of notes, with as few user actions as
+     * possible.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = REPETITIVE_INPUT_SELECTABLE)
+    public void toggleNoteInput (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == null) {
+            return;
+        }
+
+        final Object source = e.getSource();
+
+        // JCheckBoxMenuItem and JToggleButton both derive from AbstractButton
+        if (source instanceof AbstractButton) {
+            final AbstractButton button = (AbstractButton) source;
+            final boolean selected = button.isSelected();
+            stub.getSheet().getSymbolsEditor().setRepetitiveInputMode(selected);
+        } else {
+            logger.error("Unexpected event source: {}", source);
         }
     }
 

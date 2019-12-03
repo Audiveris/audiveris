@@ -381,10 +381,12 @@ public class ShapeSet
                      TEXT,
                      /// CHARACTER,
                      /// CLUTTER,
-                     SLUR,
+                     SLUR_ABOVE,
+                     SLUR_BELOW,
                      LEDGER,
                      STEM,
-                     ENDING));
+                     ENDING,
+                     ENDING_WRL));
 
     // =========================================================================
     // Below are EnumSet instances, used programmatically.

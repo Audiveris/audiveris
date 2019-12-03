@@ -61,7 +61,7 @@ public class SlurSymbol
     protected SlurSymbol (boolean above,
                           boolean isIcon)
     {
-        super(isIcon, Shape.SLUR, false);
+        super(isIcon, above ? Shape.SLUR_ABOVE : Shape.SLUR_BELOW, false);
         this.above = above;
     }
 

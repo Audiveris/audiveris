@@ -27,6 +27,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Objects;
 
 /**
  * Class {@code PointUtil} gathers utility methods for points (and vectors).
@@ -275,6 +276,8 @@ public abstract class PointUtil
     public static Point subtraction (Point p1,
                                      Point p2)
     {
+        Objects.requireNonNull(p1, "PointUtil.subtraction. p1 must be non-null");
+        Objects.requireNonNull(p2, "PointUtil.subtraction. p2 must be non-null");
         return new Point(p1.x - p2.x, p1.y - p2.y);
     }
 

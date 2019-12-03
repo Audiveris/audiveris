@@ -81,7 +81,7 @@ public class OmrGlassPane
                 g2.transform(targetTransform);
 
                 // Draw inter decorations
-                Rectangle box = ghostTracker.render(g2, false);
+                Rectangle box = ghostTracker.render(g2, false /* renderInter */);
 
                 g2.setTransform(saveAT);
             }

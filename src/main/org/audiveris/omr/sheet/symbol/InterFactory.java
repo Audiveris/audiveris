@@ -768,11 +768,17 @@ public class InterFactory
             return new RepeatDotInter(null, GRADE, null, null); // No visit
 
         // Curves
-        case SLUR:
-            return new SlurInter(GRADE);
+        case SLUR_ABOVE:
+            return new SlurInter(true, GRADE);
+
+        case SLUR_BELOW:
+            return new SlurInter(false, GRADE);
 
         case ENDING:
-            return new EndingInter(GRADE);
+            return new EndingInter(false, GRADE);
+
+        case ENDING_WRL:
+            return new EndingInter(true, GRADE);
 
         // Text
         case LYRICS:
