@@ -79,6 +79,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.audiveris.omr.sheet.ui.BookActions;
 
@@ -455,16 +456,21 @@ public class ShapeBoard
         layout.setAlignment(FlowLayout.LEADING);
         panel.setLayout(layout);
 
-        // Button to close this shapes panel and return to sets panel
-        JButton close = new JButton(set.getName());
+        // Button to close this family and return to all-families panel
+        JButton close = new JButton("<");
         close.addActionListener(closeListener);
-        close.setToolTipText("Back to shape sets");
-        close.setBorderPainted(false);
+        close.setToolTipText("Back to all families");
+        close.setBorderPainted(false); // To avoid visual confusion with draggable items
         panel.add(close);
-        panel.addKeyListener(keyListener);
+
+        // Title for this family
+        panel.add(new JLabel(set.getName()));
 
         // One button (or more) per shape
         addButtons(panel, set.getSortedShapes());
+
+        // Specific listener for keyboard
+        panel.addKeyListener(keyListener);
 
         return panel;
     }
