@@ -80,6 +80,7 @@ import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
+import org.audiveris.omr.sheet.ui.BookActions;
 
 /**
  * Class {@code ShapeBoard} hosts a palette of shapes for insertion and assignment of
@@ -749,6 +750,7 @@ public class ShapeBoard
             char c = e.getKeyChar();
 
             if (c1 == null) {
+                // First character
                 ShapeSet set = setMap.get(c);
                 closeShapeSet();
 
@@ -759,13 +761,19 @@ public class ShapeBoard
                 } else {
                     reset();
 
-                    // Direct use of classifier buttons
+                    // Enter/exit repetitive input mode?
+                    if (c == 'n') {
+                        BookActions.getInstance().toggleRepetitiveInput(null);
+                    }
+
+                    // Direct use of classifier buttons?
                     if (c >= '1' && c <= '5') {
                         int id = c - '0';
                         sheet.getSymbolsEditor().getEvaluationBoard().selectButton(id);
                     }
                 }
             } else {
+                // Second character
                 String str = String.valueOf(new char[]{c1, c});
                 Shape shape = shapeMap.get(str);
                 logger.debug("shape:{}", shape);
