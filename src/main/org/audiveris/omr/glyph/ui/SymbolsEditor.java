@@ -439,6 +439,17 @@ public class SymbolsEditor
                     view.repetitiveInputMode ? "ON" : "OFF");
     }
 
+    //---------------------------//
+    // toggleRepetitiveInputMode //
+    //---------------------------//
+    /**
+     * Toggle the specific repetitive input mode.
+     */
+    public void toggleRepetitiveInputMode ()
+    {
+        setRepetitiveInputMode(!view.repetitiveInputMode);
+    }
+
     //-----------//
     // Constants //
     //-----------//

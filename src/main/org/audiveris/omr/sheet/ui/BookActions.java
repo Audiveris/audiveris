@@ -79,7 +79,6 @@ import java.beans.PropertyChangeListener;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import javax.swing.AbstractButton;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -88,6 +87,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import org.audiveris.omr.glyph.ui.SymbolsEditor;
 
 /**
  * Class {@code BookActions} gathers all UI actions related to current book.
@@ -1234,8 +1234,7 @@ public class BookActions
         final SheetStub stub = StubsController.getCurrentStub();
 
         if (stub == sheet.getStub()) {
-            final boolean repetitiveInput = sheet.getSymbolsEditor().isRepetitiveInputMode();
-            repetitiveInputAction.setSelected(repetitiveInput);
+            repetitiveInputAction.setSelected(sheet.getSymbolsEditor().isRepetitiveInputMode());
         }
     }
 
@@ -1259,16 +1258,9 @@ public class BookActions
             return;
         }
 
-        final Object source = e.getSource();
-
-        // JCheckBoxMenuItem and JToggleButton both derive from AbstractButton
-        if (source instanceof AbstractButton) {
-            final AbstractButton button = (AbstractButton) source;
-            final boolean selected = button.isSelected();
-            stub.getSheet().getSymbolsEditor().setRepetitiveInputMode(selected);
-        } else {
-            logger.error("Unexpected event source: {}", source);
-        }
+        final SymbolsEditor symbolsEditor = stub.getSheet().getSymbolsEditor();
+        symbolsEditor.toggleRepetitiveInputMode();
+        repetitiveInputAction.setSelected(symbolsEditor.isRepetitiveInputMode());
     }
 
     //----------------//
