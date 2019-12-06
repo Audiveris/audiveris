@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
+import org.audiveris.omr.ui.OmrGui;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.JFreeChart;
@@ -131,6 +133,8 @@ public class ChartPlotter
                          Point location)
     {
         ChartFrame frame = new ChartFrame(title, chart, true);
+        frame.setName("ChartFrame"); // For SAF life cycle
+        frame.setIconImage(OmrGui.getApplication().getMainFrame().getIconImage());
         frame.pack();
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.setLocation(location);

@@ -33,7 +33,6 @@ import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UITaskList;
-import org.audiveris.omr.sig.ui.UITaskList.Option;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.StepException;
 
@@ -106,7 +105,7 @@ public class MeasuresStep
 
         final List<Inter> staffBarlines = seq.getInters(StaffBarlineInter.class);
 
-        if (!staffBarlines.isEmpty() && seq.isOptionSet(Option.UPDATE_MEASURES)) {
+        if (!staffBarlines.isEmpty()) {
             final StaffBarlineInter oneBar = (StaffBarlineInter) staffBarlines.get(0);
             final SystemInfo system = oneBar.getStaff().getSystem();
 
@@ -115,9 +114,8 @@ public class MeasuresStep
             MeasureStack stack = system.getStackAt(centerLeft);
             final boolean isAddition = isAddition(seq);
 
-            if ((!isAddition && (opKind != UITask.OpKind.UNDO)) || (isAddition
-                                                                            && (opKind
-                                                                                == UITask.OpKind.UNDO))) {
+            if ((!isAddition && (opKind != UITask.OpKind.UNDO))
+                        || (isAddition && (opKind == UITask.OpKind.UNDO))) {
                 // Remove barlines
                 MeasureStack rightStack = stack.getNextSibling();
 

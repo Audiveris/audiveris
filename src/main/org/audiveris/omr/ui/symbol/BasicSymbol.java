@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import org.slf4j.Logger;
@@ -34,6 +35,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Stroke;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -46,8 +48,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class {@code BasicSymbol} is the base for implementing instances of {@link SymbolIcon}
  * interface.
- * It does not handle a specific Shape as its subclass ShapeSymbol, but only handles a sequence of
- * MusicFont codes.
+ * <p>
+ * It does not handle a specific Shape as its subclass {@link ShapeSymbol}, but only handles a
+ * sequence of MusicFont codes.
  *
  * @author Hervé Bitteur
  */
@@ -111,7 +114,7 @@ public class BasicSymbol
     /**
      * Creates a new BasicSymbol object.
      *
-     * @param isIcon true for an icon
+     * @param isIcon true for an icon, false for standard size
      * @param codes  the codes for MusicFont characters
      */
     public BasicSymbol (boolean isIcon,
@@ -146,16 +149,34 @@ public class BasicSymbol
     @Override
     public SymbolImage buildImage (MusicFont font)
     {
+        return buildImage(font, null);
+    }
+
+    //------------//
+    // buildImage //
+    //------------//
+    @Override
+    public SymbolImage buildImage (MusicFont font,
+                                   Stroke curveStroke)
+    {
         // Params
         Params p = getParams(font);
 
         // Allocate image of proper size
-        SymbolImage img = new SymbolImage(p.rect.width, p.rect.height, p.offset);
+        SymbolImage img = new SymbolImage((int) Math.rint(p.rect.getWidth()),
+                                          (int) Math.rint(p.rect.getHeight()),
+                                          PointUtil.rounded(p.offset));
 
         // Paint the image
         Graphics2D g = (Graphics2D) img.getGraphics();
+
+        if (curveStroke != null) {
+            g.setStroke(curveStroke);
+        }
+
         g.setColor(OmrFont.defaultImageColor);
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+
         paint(g, p, ORIGIN, TOP_LEFT);
 
         return img;
@@ -184,7 +205,8 @@ public class BasicSymbol
     {
         Params p = getParams(font);
 
-        return new Dimension(p.rect.width, p.rect.height);
+        return new Dimension((int) Math.rint(p.rect.getWidth()),
+                             (int) Math.rint(p.rect.getHeight()));
     }
 
     //---------------//
@@ -298,8 +320,7 @@ public class BasicSymbol
     // createIcon //
     //------------//
     /**
-     * To be redefined by each subclass in order to create a icon symbol
-     * using the subclass.
+     * To be redefined by each subclass to create a icon symbol using the subclass.
      *
      * @return the icon-sized instance of proper symbol class
      */
@@ -373,10 +394,7 @@ public class BasicSymbol
         Params p = new Params();
 
         p.layout = layout(font);
-
-        Rectangle2D r = p.layout.getBounds();
-
-        p.rect = new Rectangle((int) Math.ceil(r.getWidth()), (int) Math.ceil(r.getHeight()));
+        p.rect = p.layout.getBounds();
 
         return p;
     }
@@ -414,11 +432,6 @@ public class BasicSymbol
             sb.append(" icon");
         }
 
-        //        sb.append(" dim:")
-        //          .append(getWidth())
-        //          .append("x")
-        //          .append(getHeight());
-        //
         if (codes != null) {
             sb.append(" codes:").append(Arrays.toString(codes));
         }
@@ -450,11 +463,11 @@ public class BasicSymbol
      * @param g         graphics context
      * @param p         the parameters fed by getParams()
      * @param location  where to paint
-     * @param alignment relative position of provided location wrt symbol
+     * @param alignment relative position of provided location WRT symbol
      */
     protected void paint (Graphics2D g,
                           Params p,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         OmrFont.paint(g, p.layout, location, alignment);
@@ -507,17 +520,22 @@ public class BasicSymbol
     //---------//
     // getIcon //
     //---------//
-    private BasicSymbol getIcon ()
+    /**
+     * Report the icon version of this symbol.
+     *
+     * @return the related icon for a standard symbol, this symbol if already the icon.
+     */
+    public BasicSymbol getIcon ()
     {
         if (isIcon) {
-            return null;
-        } else {
-            if (icon == null) {
-                icon = createIcon();
-            }
-
-            return icon;
+            return this;
         }
+
+        if (icon == null) {
+            icon = createIcon();
+        }
+
+        return icon;
     }
 
     //----------------//
@@ -548,18 +566,21 @@ public class BasicSymbol
     // Params //
     //--------//
     /**
-     * A set of parameters used for building an image and for painting a symbol.
+     * The set of parameters used for building an image and for painting a symbol.
      */
-    protected class Params
+    protected static class Params
     {
 
-        /** Specific offset, if any, from area center. */
-        Point offset;
+        /**
+         * Specific offset, if any, for user pointer off of area center.
+         * Since user pointing location is by default taken as center of 'rect' bounds.
+         */
+        public Point2D offset;
 
         /** (Main) layout. */
-        TextLayout layout;
+        public TextLayout layout;
 
-        /** Image bounds. */
-        Rectangle rect;
+        /** By convention, <b>FULL</b> symbol bounds, including decorations if any. */
+        public Rectangle2D rect;
     }
 }

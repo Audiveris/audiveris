@@ -30,16 +30,12 @@ import org.audiveris.omr.glyph.dynamic.FilamentFactory;
 import org.audiveris.omr.glyph.dynamic.StraightFilament;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.Sections;
-import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.LineUtil;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
-import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.rhythm.Measure;
-import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.EndingInter;
@@ -47,11 +43,11 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SegmentInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
-import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.relation.EndingBarRelation;
 import org.audiveris.omr.sig.relation.EndingSentenceRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.util.Dumping;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -62,6 +58,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -162,7 +159,6 @@ public class EndingsBuilder
         List<Inter> systemSentences = sig.inters(SentenceInter.class);
 
         for (Inter si : systemSentences) {
-            ///if (box.intersects(si.getBounds())) {
             if (box.contains(si.getBounds())) {
                 found.add((SentenceInter) si);
             }
@@ -174,46 +170,6 @@ public class EndingsBuilder
             SentenceInter sentence = found.get(0);
             sig.addEdge(ending, sentence, new EndingSentenceRelation());
         }
-    }
-
-    //-----------//
-    // lookupBar //
-    //-----------//
-    /**
-     * Look for a StaffBarline vertically aligned with the ending side.
-     * <p>
-     * It is not very important to select a precise barline within a group, since for left end we
-     * choose the right-most bar and the opposite for right end.
-     * We simply have to make sure that the lookup area is wide enough.
-     * <p>
-     * An ending which starts a staff may have its left side after the clef and key signature, which
-     * means far after the starting barline (if any).
-     * Perhaps we should consider the staff header in such case.
-     *
-     * @param seg        the horizontal segment
-     * @param reverse    which side is at stake
-     * @param staff      related staff
-     * @param systemBars the collection of StaffBarlines in the containing system
-     * @return the selected bar line, or null if none
-     */
-    private StaffBarlineInter lookupBar (SegmentInfo seg,
-                                         boolean reverse,
-                                         Staff staff,
-                                         List<Inter> systemBars)
-    {
-        Point end = seg.getEnd(reverse);
-        Rectangle box = new Rectangle(end);
-        box.grow(params.maxBarShift, 0);
-        box.height = staff.getLastLine().yAt(end.x) - end.y;
-
-        List<Inter> bars = Inters.intersectedInters(systemBars, GeoOrder.NONE, box);
-        Collections.sort(bars, Inters.byAbscissa);
-
-        if (bars.isEmpty()) {
-            return null;
-        }
-
-        return (StaffBarlineInter) bars.get(reverse ? (bars.size() - 1) : 0);
     }
 
     //-----------//
@@ -265,9 +221,8 @@ public class EndingsBuilder
         for (Iterator<StraightFilament> it = filaments.iterator(); it.hasNext();) {
             StraightFilament fil = it.next();
 
-            if ((fil.getLength(VERTICAL) < params.minLegLow) || ((fil.getStartPoint().getY()
-                                                                          - end.y)
-                                                                 > params.maxLegYGap)) {
+            if ((fil.getLength(VERTICAL) < params.minLegLow)
+                        || ((fil.getStartPoint().getY() - end.y) > params.maxLegYGap)) {
                 it.remove();
             }
         }
@@ -301,6 +256,9 @@ public class EndingsBuilder
     /**
      * Check the horizontal segment for being an ending.
      * <p>
+     * We first create an ending inter with left and perhaps right leg.
+     * We then try to link left and right ends with a barline.
+     * <p>
      * TODO: Grab text (such as '1.' or '1,2' etc) located in left corner of the ending.
      * Perhaps force local OCR processing there (or symbol extraction/recognition)?
      *
@@ -308,9 +266,54 @@ public class EndingsBuilder
      */
     private void processSegment (SegmentInter segment)
     {
-        final Scale scale = sheet.getScale();
+        final SegmentInfo seg = segment.getInfo();
+        final Point leftEnd = seg.getEnd(true);
+        final Point rightEnd = seg.getEnd(false);
 
-        // Check segment characteristics: length, slope, bar line alignments, legs.
+        // Relevant system(s)
+        final List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(leftEnd, null);
+        systems.retainAll(sheet.getSystemManager().getSystemsOf(rightEnd, null));
+
+        for (SystemInfo system : systems) {
+            final EndingInter ending = createInter(segment, system);
+
+            if (ending != null) {
+                final Collection<Link> links = ending.searchLinks(system);
+                boolean abnormal = true;
+
+                for (Link link : links) {
+                    final EndingBarRelation ebRel = (EndingBarRelation) link.relation;
+                    final HorizontalSide side = ebRel.getEndingSide();
+
+                    if (side == HorizontalSide.LEFT) {
+                        abnormal = false;
+                    }
+
+                    link.applyTo(ending);
+                }
+
+                ending.setAbnormal(abnormal);
+            }
+        }
+    }
+
+    //-------------//
+    // createInter //
+    //-------------//
+    /**
+     * Try to create an ending inter from the provided segment, but with yet no link
+     * attempt for left or right barline.
+     * <p>
+     * It is created with left leg and perhaps with right leg.
+     * Sentence number is searched for also.
+     *
+     * @param segment the horizontal segment
+     * @param system  the containing system
+     * @return the created ending inter inserted to SIG, with sentence link if possible
+     */
+    private EndingInter createInter (SegmentInter segment,
+                                     SystemInfo system)
+    {
         SegmentInfo seg = segment.getInfo();
         Point leftEnd = seg.getEnd(true);
         Point rightEnd = seg.getEnd(false);
@@ -319,7 +322,7 @@ public class EndingsBuilder
         double length = seg.getXLength();
 
         if (length < params.minLengthLow) {
-            return;
+            return null;
         }
 
         // Slope
@@ -327,110 +330,61 @@ public class EndingsBuilder
         double slope = Math.abs(LineUtil.getSlope(line) - sheet.getSkew().getSlope());
 
         if (slope > params.maxSlope) {
-            return;
+            return null;
         }
 
-        // Relevant system(s)
-        List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(leftEnd, null);
-        systems.retainAll(sheet.getSystemManager().getSystemsOf(rightEnd, null));
+        // Consider the staff just below the segment
+        Staff staff = system.getStaffAtOrBelow(leftEnd);
 
-        for (SystemInfo system : systems) {
+        if (staff == null) {
+            return null;
+        }
+
+        // Left leg (mandatory)
+        Filament leftLeg = lookupLeg(seg, true, staff);
+
+        if (leftLeg == null) {
+            return null;
+        }
+
+        // Right leg (optional)
+        Filament rightLeg = lookupLeg(seg, false, staff);
+
+        // Create ending inter
+        GradeImpacts segImp = segment.getImpacts();
+        double straight = segImp.getGrade() / segImp.getIntrinsicRatio();
+        GradeImpacts impacts = new EndingInter.Impacts(
+                straight,
+                1 - (slope / params.maxSlope),
+                (length - params.minLengthLow) / (params.minLengthHigh - params.minLengthLow));
+
+        if (impacts.getGrade() >= EndingInter.getMinGrade()) {
+            Line2D leftLine = new Line2D.Double(
+                    leftLeg.getStartPoint(),
+                    leftLeg.getStopPoint());
+            Line2D rightLine = (rightLeg == null) ? null
+                    : new Line2D.Double(rightLeg.getStartPoint(), rightLeg.getStopPoint());
+            EndingInter endingInter = new EndingInter(
+                    line,
+                    leftLine,
+                    rightLine,
+                    segment.getBounds(),
+                    impacts);
+            endingInter.setStaff(staff);
+
+            // Underlying glyph
+            endingInter.setGlyph(buildGlyph(segment, leftLeg, rightLeg));
+
             SIGraph sig = system.getSig();
+            sig.addVertex(endingInter);
 
-            // Consider the staff just below the segment
-            Staff staff = system.getStaffAtOrBelow(leftEnd);
+            // Ending text?
+            grabSentence(endingInter);
 
-            if (staff == null) {
-                continue;
-            }
-
-            List<Inter> systemBars = sig.inters(StaffBarlineInter.class);
-
-            // Left leg (mandatory)
-            Filament leftLeg = lookupLeg(seg, true, staff);
-
-            if (leftLeg == null) {
-                continue;
-            }
-
-            // Left bar (or header)
-            StaffBarlineInter leftBar = lookupBar(seg, true, staff, systemBars);
-            final EndingBarRelation leftRel = new EndingBarRelation(LEFT, 0.5);
-
-            if (leftBar == null) {
-                // Check the special case of a staff start (with header?, with no barline?)
-                MeasureStack firstStack = system.getFirstStack();
-                Measure firstMeasure = firstStack.getMeasureAt(staff);
-
-                if (leftEnd.x >= firstMeasure.getAbscissa(RIGHT, staff)) {
-                    continue; // segment starts after end of first measure
-                }
-
-                PartBarline partLine = staff.getPart().getLeftPartBarline();
-
-                if (partLine != null) {
-                    leftBar = partLine.getStaffBarline(staff.getPart(), staff);
-                    leftRel.setOutGaps(0, 0, false);
-                }
-            } else {
-                double leftDist = scale.pixelsToFrac(Math.abs(leftBar.getCenter().x - leftEnd.x));
-                leftRel.setOutGaps(leftDist, 0, false);
-            }
-
-            // Right leg (optional)
-            Filament rightLeg = lookupLeg(seg, false, staff);
-
-            // Right bar
-            StaffBarlineInter rightBar = lookupBar(seg, false, staff, systemBars);
-
-            if (rightBar == null) {
-                continue;
-            }
-
-            final double rightDist = scale.pixelsToFrac(
-                    Math.abs(rightBar.getCenter().x - rightEnd.x));
-            final EndingBarRelation rightRel = new EndingBarRelation(RIGHT, rightDist);
-            rightRel.setOutGaps(rightDist, 0, false);
-
-            // Create ending inter
-            GradeImpacts segImp = segment.getImpacts();
-            double straight = segImp.getGrade() / segImp.getIntrinsicRatio();
-            GradeImpacts impacts = new EndingInter.Impacts(
-                    straight,
-                    1 - (slope / params.maxSlope),
-                    (length - params.minLengthLow) / (params.minLengthHigh - params.minLengthLow),
-                    leftRel.getGrade(),
-                    rightRel.getGrade());
-
-            if (impacts.getGrade() >= EndingInter.getMinGrade()) {
-                Line2D leftLine = new Line2D.Double(
-                        leftLeg.getStartPoint(),
-                        leftLeg.getStopPoint());
-                Line2D rightLine = (rightLeg == null) ? null
-                        : new Line2D.Double(rightLeg.getStartPoint(), rightLeg.getStopPoint());
-                EndingInter endingInter = new EndingInter(
-                        segment,
-                        line,
-                        leftLine,
-                        rightLine,
-                        segment.getBounds(),
-                        impacts);
-
-                // Underlying glyph
-                endingInter.setGlyph(buildGlyph(segment, leftLeg, rightLeg));
-
-                sig.addVertex(endingInter);
-
-                if (leftBar != null) {
-                    sig.addEdge(endingInter, leftBar, leftRel);
-                }
-
-                sig.addEdge(endingInter, rightBar, rightRel);
-
-                // Ending text?
-                grabSentence(endingInter);
-            }
+            return endingInter;
         }
+
+        return null;
     }
 
     //-----------//

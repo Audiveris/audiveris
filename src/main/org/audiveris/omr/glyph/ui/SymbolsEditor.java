@@ -21,10 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.glyph.ui;
 
+import org.audiveris.omr.OMR;
 import org.audiveris.omr.classifier.BasicClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.GlyphIndex;
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.dynamic.Filament;
 import org.audiveris.omr.lag.BasicLag;
 import org.audiveris.omr.lag.Lag;
@@ -40,6 +42,8 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
+import org.audiveris.omr.sheet.symbol.InterFactory;
+import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sheet.ui.PixelBoard;
 import org.audiveris.omr.sheet.ui.SelectionPainter;
 import org.audiveris.omr.sheet.ui.SheetAssembly;
@@ -51,19 +55,24 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Support;
+import org.audiveris.omr.sig.ui.DndOperation;
 import org.audiveris.omr.sig.ui.InterBoard;
 import org.audiveris.omr.sig.ui.InterController;
+import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterService;
+import org.audiveris.omr.sig.ui.RelationVector;
 import org.audiveris.omr.sig.ui.ShapeBoard;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.OmrGlassPane;
 import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.ViewParameters.SelectionMode;
+import org.audiveris.omr.ui.dnd.ScreenPoint;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
-import static org.audiveris.omr.ui.selection.SelectionHint.*;
+import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.Navigable;
@@ -78,6 +87,8 @@ import java.awt.Rectangle;
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
 import java.awt.Stroke;
+import java.awt.event.ActionEvent;
+import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -85,8 +96,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.swing.AbstractAction;
 
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 /**
@@ -111,6 +127,8 @@ public class SymbolsEditor
     private final MyView view;
 
     private final ShapeBoard shapeBoard;
+
+    private final EvaluationBoard evaluationBoard;
 
     /** Pop-up menu related to page selection. */
     private final EditorMenu pageMenu;
@@ -182,14 +200,13 @@ public class SymbolsEditor
                 new SymbolGlyphBoard(glyphsController, constants.selectGlyphBoard.isSet(), true));
         boards.add(new InterBoard(sheet, constants.selectInterBoard.isSet()));
         boards.add(shapeBoard = new ShapeBoard(sheet, this, constants.selectShapeBoard.isSet()));
-        boards.add(
-                new EvaluationBoard(
-                        true,
-                        sheet,
-                        BasicClassifier.getInstance(),
-                        sheet.getGlyphIndex().getEntityService(),
-                        interController,
-                        constants.selectBasicClassifierBoard.isSet()));
+        boards.add(evaluationBoard = new EvaluationBoard(
+                true,
+                sheet,
+                BasicClassifier.getInstance(),
+                sheet.getGlyphIndex().getEntityService(),
+                interController,
+                constants.selectBasicClassifierBoard.isSet()));
 
         //        boards.add(
         //                new EvaluationBoard(
@@ -206,6 +223,49 @@ public class SymbolsEditor
         final SheetAssembly assembly = sheet.getStub().getAssembly();
         assembly.addViewTab(SheetTab.DATA_TAB, new ScrollView(view), boardsPane);
         assembly.lockViewTab(SheetTab.DATA_TAB);
+    }
+
+    //---------------//
+    // closeEditMode //
+    //---------------//
+    /**
+     * Quit inter edit mode.
+     */
+    public void closeEditMode ()
+    {
+        view.interEditor = null;
+        refresh();
+    }
+
+    //--------------------//
+    // getEvaluationBoard //
+    //--------------------//
+    /**
+     * Report the Evaluation board (basic classifier).
+     */
+    public EvaluationBoard getEvaluationBoard ()
+    {
+        return evaluationBoard;
+    }
+
+    //----------------//
+    // getEditedInter //
+    //----------------//
+    public Inter getEditedInter ()
+    {
+        if (view.interEditor == null) {
+            return null;
+        }
+
+        return view.interEditor.getInter();
+    }
+
+    //----------------//
+    // getInterEditor //
+    //----------------//
+    public InterEditor getInterEditor ()
+    {
+        return view.interEditor;
     }
 
     //---------------//
@@ -314,6 +374,21 @@ public class SymbolsEditor
         });
     }
 
+    //--------------//
+    // openEditMode //
+    //--------------//
+    /**
+     * Set the provided inter into edit mode.
+     *
+     * @param inter inter to edit
+     */
+    public void openEditMode (Inter inter)
+    {
+        view.interEditor = inter.getEditor();
+        BookActions.getInstance().setUndoable(true);
+        refresh();
+    }
+
     //----------------//
     // propertyChange //
     //----------------//
@@ -333,6 +408,46 @@ public class SymbolsEditor
     public void refresh ()
     {
         view.repaint();
+    }
+
+    //-----------------------//
+    // isRepetitiveInputMode //
+    //-----------------------//
+    /**
+     * Report whether the repetitive input mode is ON.
+     *
+     * @return true if ON, false if OFF
+     */
+    public boolean isRepetitiveInputMode ()
+    {
+        return view.repetitiveInputMode;
+    }
+
+    //------------------------//
+    // setRepetitiveInputMode //
+    //------------------------//
+    /**
+     * Set the specific repetitive input mode to true or false.
+     *
+     * @param repetitiveInputMode the new value
+     */
+    public void setRepetitiveInputMode (boolean repetitiveInputMode)
+    {
+        view.repetitiveInputMode = repetitiveInputMode;
+        logger.info("{} Repetitive input mode is {}",
+                    sheet.getId(),
+                    view.repetitiveInputMode ? "ON" : "OFF");
+    }
+
+    //---------------------------//
+    // toggleRepetitiveInputMode //
+    //---------------------------//
+    /**
+     * Toggle the specific repetitive input mode.
+     */
+    public void toggleRepetitiveInputMode ()
+    {
+        setRepetitiveInputMode(!view.repetitiveInputMode);
     }
 
     //-----------//
@@ -381,8 +496,17 @@ public class SymbolsEditor
         /** Currently highlighted slot, if any. */
         private Slot highlightedSlot;
 
-        /** Current vector. */
-        private RelationVector vector;
+        /** Current relation vector. */
+        private RelationVector relationVector;
+
+        /** Inter being edited, if any. */
+        private InterEditor interEditor;
+
+        /** Repetitive input mode. */
+        private boolean repetitiveInputMode = false;
+
+        /** On-going DnD operation in repetitive input mode. */
+        private DndOperation dndOperation;
 
         private MyView (GlyphIndex glyphIndex)
         {
@@ -400,6 +524,9 @@ public class SymbolsEditor
             }
 
             sheet.getInterIndex().getEntityService().subscribeStrongly(EntityListEvent.class, this);
+
+            // Arrow keys + Enter key for inter editor
+            bindInterEditionKeys();
         }
 
         //--------------//
@@ -409,28 +536,18 @@ public class SymbolsEditor
         public void contextAdded (Point pt,
                                   MouseMovement movement)
         {
-            vector = null;
+            relationVector = null;
+            interEditor = null;
 
             if (viewParams.getSelectionMode() != SelectionMode.MODE_SECTION) {
                 // Glyph or Inter modes
-                setFocusLocation(new Rectangle(pt), movement, CONTEXT_ADD);
+                setFocusLocation(new Rectangle(pt), movement, SelectionHint.CONTEXT_ADD);
 
                 // Update highlighted slot if possible
                 if (movement != MouseMovement.RELEASING) {
                     highLight(getStrictSlotAt(pt));
                 }
             }
-
-            //
-            //            // Regardless of the selection mode (section or glyph)
-            //            // we let the user play with the current glyph if so desired.
-            //            List<Glyph> glyphs = glyphIndex.getSelectedGlyphList();
-            //
-            //            if (movement == MouseMovement.RELEASING) {
-            //                if ((glyphs != null) && !glyphs.isEmpty()) {
-            //                    showPagePopup(pt, getRubberRectangle());
-            //                }
-            //            }
         }
 
         //-----------------//
@@ -440,11 +557,12 @@ public class SymbolsEditor
         public void contextSelected (Point pt,
                                      MouseMovement movement)
         {
-            vector = null;
+            relationVector = null;
+            interEditor = null;
 
             if (viewParams.getSelectionMode() != SelectionMode.MODE_SECTION) {
                 // Glyph or Inter mode
-                setFocusLocation(new Rectangle(pt), movement, CONTEXT_INIT);
+                setFocusLocation(new Rectangle(pt), movement, SelectionHint.CONTEXT_INIT);
 
                 // Update highlighted slot if possible
                 if (movement != MouseMovement.RELEASING) {
@@ -496,6 +614,31 @@ public class SymbolsEditor
             //            showFocusLocation(rect, false);
         }
 
+        //----------------//
+        // objectSelected //
+        //----------------//
+        @Override
+        public void objectSelected (Point pt,
+                                    MouseMovement movement)
+        {
+            relationVector = null;
+
+            // Focus, entity selection
+            super.objectSelected(pt, movement);
+
+            // Cancel slot highlighting
+            highLight(null);
+
+            // Try to select an inter and put it into edit mode
+            interEditor = tryEditor(pt);
+
+            if (interEditor != null) {
+                Inter inter = interEditor.getInter();
+                inter.getSig().publish(inter, SelectionHint.ENTITY_TRANSIENT);
+                BookActions.getInstance().setUndoable(true);
+            }
+        }
+
         //------------//
         // pointAdded //
         //------------//
@@ -503,7 +646,8 @@ public class SymbolsEditor
         public void pointAdded (Point pt,
                                 MouseMovement movement)
         {
-            vector = null;
+            relationVector = null;
+            interEditor = null;
 
             // Cancel slot highlighting
             highLight(null);
@@ -518,7 +662,7 @@ public class SymbolsEditor
         public void pointSelected (Point pt,
                                    MouseMovement movement)
         {
-            super.pointSelected(pt, movement);
+            super.pointSelected(pt, movement); // Publish location
 
             // Cancel slot highlighting
             highLight(null);
@@ -526,34 +670,123 @@ public class SymbolsEditor
             // Request focus to allow key handling
             requestFocusInWindow();
 
-            // Handle vector
-            if (null != movement) {
-                switch (movement) {
-                case PRESSING:
-                    vector = tryVector(pt); // Starting vector, perhaps null
-
-                    break;
-
-                case DRAGGING:
-
-                    if (vector != null) {
-                        vector.extendTo(pt); // Extension
-                    }
-
-                    break;
-
-                case RELEASING:
-
-                    if ((vector != null)) {
-                        vector.process(true); // Handle end of vector
-                        vector = null; // This is the end
-                    }
-
-                    break;
-
-                default:
-                    break;
+            // On-going inter edition?
+            if (interEditor != null) {
+                if (interEditor.process(pt, movement)) {
+                    return;
                 }
+
+                interEditor = null;
+            }
+
+            // Specific repetitive input mode?
+            if (repetitiveInputMode) {
+                processRepetitiveInput(pt, movement);
+
+                return;
+            }
+
+            // Handle relation vector
+            processRelationVector(pt, movement);
+        }
+
+        //------------------------//
+        // processRepetitiveInput //
+        //------------------------//
+        private void processRepetitiveInput (Point pt,
+                                             MouseMovement movement)
+        {
+            final List<Shape> history = shapeBoard.getHistory();
+
+            if (history.isEmpty()) {
+                return;
+            }
+
+            final Shape shape = history.get(0);
+
+            if (!shape.isDraggable()) {
+                return;
+            }
+
+            final OmrGlassPane glass = OMR.gui.getGlassPane();
+
+            switch (movement) {
+            case PRESSING:
+                // Start Dnd
+                Point gOffset = SwingUtilities.convertPoint(this, 0, 0, glass);
+                double z = zoom.getRatio();
+                glass.setOverTarget(true);
+                glass.setVisible(true);
+                glass.setTargetTransform(new AffineTransform(z, 0, 0, z, gOffset.x, gOffset.y));
+                dndOperation = new DndOperation(
+                        sheet,
+                        zoom,
+                        InterFactory.createManual(shape, sheet),
+                        shape.getSymbol());
+                dndOperation.enteringTarget();
+                glass.setGhostTracker(dndOperation.getGhostTracker());
+
+            ///break; // Fall through
+            case DRAGGING:
+                // Move Dnd
+                Point sheetRef = dndOperation.getStaffReference(pt); // pt can be slightly modified
+                Point glassRef = (sheetRef == null) ? null
+                        : SwingUtilities.convertPoint(view, zoom.scaled(sheetRef), glass);
+                glass.setStaffReference(glassRef);
+
+                // Recompute screenPoint from modified sheetPt
+                Point scaledPt = new Point(zoom.scaled(pt));
+                SwingUtilities.convertPointToScreen(scaledPt, view);
+                ScreenPoint screenPoint = new ScreenPoint(scaledPt.x, scaledPt.y);
+                glass.setScreenPoint(screenPoint); // This triggers a repaint of glassPane
+
+                break;
+
+            case RELEASING:
+                // Drop Dnd
+                dndOperation.drop(pt);
+                glass.setOverTarget(false);
+                glass.setVisible(false);
+                glass.setImage(null);
+
+                break;
+
+            default:
+                break;
+            }
+        }
+
+        //-----------------------//
+        // processRelationVector //
+        //-----------------------//
+        private void processRelationVector (Point pt,
+                                            MouseMovement movement)
+        {
+            switch (movement) {
+            case PRESSING:
+                relationVector = tryVector(pt); // Starting vector, perhaps null
+
+                break;
+
+            case DRAGGING:
+
+                if (relationVector != null) {
+                    relationVector.extendTo(pt); // Extension
+                }
+
+                break;
+
+            case RELEASING:
+
+                if ((relationVector != null)) {
+                    relationVector.process(); // Handle end of vector
+                    relationVector = null; // This is the end
+                }
+
+                break;
+
+            default:
+                break;
             }
         }
 
@@ -674,7 +907,8 @@ public class SymbolsEditor
                     SelectionPainter painter = new SelectionPainter(sheet, g);
 
                     for (Inter inter : inters) {
-                        if ((inter != null) && !inter.isRemoved()) {
+                        if ((inter != null) && !inter.isRemoved()
+                                    && (interEditor == null || inter != interEditor.getInter())) {
                             // Highlight selected inter
                             painter.render(inter);
 
@@ -692,7 +926,7 @@ public class SymbolsEditor
                                 if (!supports.isEmpty()) {
                                     for (Relation rel : supports) {
                                         Inter opp = sig.getOppositeInter(inter, rel);
-                                        painter.drawSupport(inter, opp, rel.getClass(), false);
+                                        painter.drawSupport(inter, opp, rel.getClass());
                                     }
                                 }
                             }
@@ -712,11 +946,14 @@ public class SymbolsEditor
                 }
             }
 
-            // Vector?
-            if (vector != null) {
-                g.setColor(Color.BLACK);
-                UIUtil.setAbsoluteDashedStroke(g, 1f);
-                g.draw(vector.line);
+            // Relation vector?
+            if (relationVector != null) {
+                relationVector.render(g);
+            }
+
+            // Inter editor?
+            if (interEditor != null) {
+                interEditor.render(g);
             }
         }
 
@@ -743,15 +980,15 @@ public class SymbolsEditor
         // tryVector //
         //-----------//
         /**
-         * Try to create a vector, from just a starting point, which requires to find
-         * an inter at this location.
+         * Try to create a relation vector, from just a starting point, which requires to
+         * find an inter at this location.
          *
          * @param p1 starting point
          * @return the created vector, if any Inter was found at p1 location
          */
         private RelationVector tryVector (Point p1)
         {
-            // Look for required sinter
+            // Look for required starting inters
             List<Inter> starts = sheet.getInterIndex().getContainingEntities(p1);
 
             if (starts.size() > 1) {
@@ -759,6 +996,95 @@ public class SymbolsEditor
             }
 
             return (!starts.isEmpty()) ? new RelationVector(p1, starts) : null;
+        }
+
+        //-----------//
+        // tryEditor //
+        //-----------//
+        /**
+         * Try to create an inter editor, by looking for a suitable inter at provided
+         * location.
+         *
+         * @param p provided location
+         * @return the create editor, if proper Inter was found at p location.
+         */
+        private InterEditor tryEditor (Point p)
+        {
+            List<Inter> inters = sheet.getInterIndex().getContainingEntities(p);
+
+            if (inters.size() > 1) {
+                Collections.sort(inters, Inters.membersFirst);
+            }
+
+            return (!inters.isEmpty()) ? inters.get(0).getEditor() : null;
+        }
+
+        //----------------------//
+        // bindInterEditionKeys //
+        //----------------------//
+        private void bindInterEditionKeys ()
+        {
+            final InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+            final ActionMap actionMap = getActionMap();
+
+            // Slight translation
+            inputMap.put(KeyStroke.getKeyStroke("alt UP"), "UpTranslateAction");
+            actionMap.put("UpTranslateAction", new MyTranslateAction(0, -1));
+
+            inputMap.put(KeyStroke.getKeyStroke("alt DOWN"), "DownTranslateAction");
+            actionMap.put("DownTranslateAction", new MyTranslateAction(0, 1));
+
+            inputMap.put(KeyStroke.getKeyStroke("alt LEFT"), "LeftTranslateAction");
+            actionMap.put("LeftTranslateAction", new MyTranslateAction(-1, 0));
+
+            inputMap.put(KeyStroke.getKeyStroke("alt RIGHT"), "RightTranslateAction");
+            actionMap.put("RightTranslateAction", new MyTranslateAction(1, 0));
+
+            // End of edition
+            inputMap.put(KeyStroke.getKeyStroke("ENTER"), "EndInterEditionAction");
+            actionMap.put("EndInterEditionAction", new EndInterEditionAction());
+        }
+
+        //-----------------------//
+        // EndInterEditionAction //
+        //-----------------------//
+        private class EndInterEditionAction
+                extends AbstractAction
+        {
+
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                if (interEditor != null) {
+                    interEditor.processEnd();
+                    refresh();
+                }
+            }
+        }
+
+        //-------------------//
+        // MyTranslateAction //
+        //-------------------//
+        private class MyTranslateAction
+                extends TranslateAction
+        {
+
+            public MyTranslateAction (int dx,
+                                      int dy)
+            {
+                super(dx, dy);
+            }
+
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                super.actionPerformed(e);
+
+                if (interEditor != null) {
+                    interEditor.process(new Point(dx, dy));
+                    refresh();
+                }
+            }
         }
     }
 }

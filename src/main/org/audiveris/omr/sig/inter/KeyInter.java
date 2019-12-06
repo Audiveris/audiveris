@@ -210,6 +210,10 @@ public class KeyInter
             }
         }
 
+        if (bounds == null) {
+            return null;
+        }
+
         return new Rectangle(bounds);
     }
 

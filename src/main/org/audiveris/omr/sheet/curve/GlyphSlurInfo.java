@@ -64,22 +64,6 @@ public class GlyphSlurInfo
         return curve;
     }
 
-    //--------------//
-    // getEndVector //
-    //--------------//
-    @Override
-    public Point2D getEndVector (boolean reverse)
-    {
-        // We use the control points to retrieve tangent vector
-        Point2D vector = reverse ? PointUtil.subtraction(curve.getP1(), curve.getCtrlP1())
-                : PointUtil.subtraction(curve.getP2(), curve.getCtrlP2());
-
-        // Normalize
-        vector = PointUtil.times(vector, 1.0 / PointUtil.length(vector));
-
-        return vector;
-    }
-
     //-------------//
     // getMidPoint //
     //-------------//
@@ -106,26 +90,16 @@ public class GlyphSlurInfo
         final List<Point> points = new KeyPointsBuilder(glyph).retrieveKeyPoints();
         final GlyphSlurInfo info = new GlyphSlurInfo(glyph, points);
 
-        // Curve (nota: s1 and s2 are not control points, but intermediate points located on curve)
+        // Curve points
         final Point s0 = points.get(0);
         final Point s1 = points.get(1);
         final Point s2 = points.get(2);
         final Point s3 = points.get(3);
 
-        info.curve = new CubicCurve2D.Double(
-                s0.x,
-                s0.y,
-                ((-(5 * s0.x) + (18 * s1.x)) - (9 * s2.x) + (2 * s3.x)) / 6.0,
-                ((-(5 * s0.y) + (18 * s1.y)) - (9 * s2.y) + (2 * s3.y)) / 6.0,
-                (((2 * s0.x) - (9 * s1.x) + (18 * s2.x)) - (5 * s3.x)) / 6.0,
-                (((2 * s0.y) - (9 * s1.y) + (18 * s2.y)) - (5 * s3.y)) / 6.0,
-                s3.x,
-                s3.y);
+        info.curve = CubicUtil.createCurve(s0, s1, s2, s3);
 
         // Above or below?
-        final int ccw = new Line2D.Double(s0, s1).relativeCCW(s3);
-        info.above = -ccw;
-        info.bisUnit = info.computeBisector(info.above > 0);
+        info.above = CubicUtil.above(info.curve);
 
         return info;
     }

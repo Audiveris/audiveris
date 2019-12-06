@@ -44,7 +44,6 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.ChordNameInter;
-import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
@@ -80,17 +79,17 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Class {@code TextBuilder} works at system level, to provide features to check, build
+ * Class {@code TextBuilder} works at system level, providing features to check, build
  * and reorganize text items, including interacting with the OCR engine.
  * <p>
  * This builder can operate in 3 different modes:
  * <ol>
  * <li><b>Free mode</b>: Engine mode, text role can be any role, determined by heuristics.
- * manualLyrics == null;
+ * <br>{@code manualLyrics == null;}
  * <li><b>Manual as lyrics</b>: Manual mode, for which text role is imposed as lyrics.
- * manualLyrics == true;
+ * <br>{@code manualLyrics == true;}
  * <li><b>Manual as non-lyrics</b>: Manual mode, for which text role is imposed as non lyrics.
- * manualLyrics == false;
+ * <br>{@code manualLyrics == false;}
  * </ol>
  *
  * @author Hervé Bitteur
@@ -135,7 +134,7 @@ public class TextBuilder
     private final Boolean manualLyrics;
 
     /**
-     * Creates a new TextBuilder object.
+     * Creates a new TextBuilder object in engine mode (TEXTS step).
      *
      * @param system the related system
      */
@@ -166,6 +165,67 @@ public class TextBuilder
         params = new Parameters(sheet.getScale(), true);
     }
 
+    //-----------------//
+    // lookupLyricLine //
+    //-----------------//
+    /**
+     * Look for an existing lyric line that a lyric item at provided baseline location
+     * should join.
+     *
+     * @param baseLocation baseline location for a new text line
+     * @return the lyric line to join, if any
+     */
+    public LyricLineInter lookupLyricLine (Point2D baseLocation)
+    {
+        final double newY = skew.deskewed(baseLocation).getY();
+        final List<LyricLineInter> lines = system.getLyricLines();
+        Double bestDy = Double.MAX_VALUE;
+        LyricLineInter bestLine = null;
+
+        for (LyricLineInter line : lines) {
+            final double y = skew.deskewed(line.getLocation()).getY();
+            final double dy = Math.abs(y - newY);
+
+            if (bestDy > dy) {
+                bestDy = dy;
+                bestLine = line;
+            }
+        }
+
+        if (bestDy <= params.maxLyricsDy) {
+            return bestLine;
+        }
+
+        return null;
+    }
+
+    //------------------//
+    // numberLyricLines //
+    //------------------//
+    /**
+     * Order and number the system lyric lines per part.
+     */
+    public void numberLyricLines ()
+    {
+        final List<LyricLineInter> lines = system.getLyricLines();
+
+        // Assign sequential number to lyric line in its part
+        int lyricNumber = 0;
+        Part part = null;
+
+        for (LyricLineInter line : lines) {
+            Staff staff = line.getStaff();
+            Part newPart = staff.getPart();
+
+            if (newPart != part) {
+                lyricNumber = 0;
+                part = newPart;
+            }
+
+            line.setNumber(++lyricNumber);
+        }
+    }
+
     //--------------------//
     // retrieveGlyphLines //
     //--------------------//
@@ -181,7 +241,7 @@ public class TextBuilder
                                               List<TextLine> glyphLines,
                                               Point offset)
     {
-        // Pre-assign text roleas lyrics?
+        // Pre-assign text role as lyrics?
         if (isManual() && manualLyrics) {
             for (TextLine line : glyphLines) {
                 line.setRole(TextRole.Lyrics);
@@ -751,10 +811,21 @@ public class TextBuilder
      */
     private boolean isValidFontSize (TextLine line)
     {
+        // Heuristic: Allow large font only before first staff
+        final Point2D origin = line.getBaseline().getP1();
+        final int maxFontSize;
+
+        if ((system.getId() == 1)
+                    && (origin.getY() < system.getFirstStaff().getFirstLine().yAt(origin.getX()))) {
+            maxFontSize = params.maxTitleFontSize;
+        } else {
+            maxFontSize = params.maxFontSize;
+        }
+
         for (TextWord word : line.getWords()) {
             FontInfo fontInfo = word.getFontInfo();
 
-            if (fontInfo.pointsize > params.maxFontSize) {
+            if (fontInfo.pointsize > maxFontSize) {
                 logger.debug(
                         "Too big font {} vs {} on {}",
                         fontInfo.pointsize,
@@ -1079,47 +1150,6 @@ public class TextBuilder
             line.addWords(toAdd);
             line.removeWords(toRemove);
             checkRole(line);
-        }
-    }
-
-    //------------------//
-    // numberLyricLines //
-    //------------------//
-    /**
-     * Order and number the lyric lines per part.
-     */
-    private void numberLyricLines ()
-    {
-        // Sort lyric lines by (deskewed) ordinate
-        final SIGraph sig = system.getSig();
-        List<Inter> lyricInters = sig.inters(LyricLineInter.class);
-
-        if (lyricInters.isEmpty()) {
-            return;
-        }
-
-        List<LyricLineInter> lines = new ArrayList<>();
-
-        for (Inter inter : lyricInters) {
-            lines.add((LyricLineInter) inter);
-        }
-
-        Collections.sort(lines, SentenceInter.byOrdinate);
-
-        // Assign sequential number to lyric line in its part
-        int lyricNumber = 0;
-        Part part = null;
-
-        for (LyricLineInter line : lines) {
-            Staff staff = line.getStaff();
-            Part newPart = staff.getPart();
-
-            if (newPart != part) {
-                lyricNumber = 0;
-                part = newPart;
-            }
-
-            line.setNumber(++lyricNumber);
         }
     }
 
@@ -1609,8 +1639,12 @@ public class TextBuilder
                 "Minimum font size with respect to interline");
 
         private final Scale.Fraction maxFontSize = new Scale.Fraction(
-                8.0,
+                4.0,
                 "Maximum font size with respect to interline");
+
+        private final Scale.Fraction maxTitleFontSize = new Scale.Fraction(
+                8.0,
+                "Maximum font size for titles with respect to interline");
 
         private final Scale.Fraction maxLyricsDy = new Scale.Fraction(
                 1.0,
@@ -1643,6 +1677,8 @@ public class TextBuilder
 
         final int maxFontSize;
 
+        final int maxTitleFontSize;
+
         final int maxLyricsDy;
 
         final int maxCharDx;
@@ -1671,6 +1707,7 @@ public class TextBuilder
             // TODO: check all these constant for specific manual work...
             minFontSize = scale.toPixels(constants.minFontSize);
             maxFontSize = scale.toPixels(constants.maxFontSize);
+            maxTitleFontSize = scale.toPixels(constants.maxTitleFontSize);
             maxLyricsDy = scale.toPixels(constants.maxLyricsDy);
             maxCharDx = scale.toPixels(constants.maxCharDx);
             maxWordDxFontRatio = constants.maxWordDxFontRatio.getValue();

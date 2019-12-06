@@ -27,6 +27,7 @@ import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -69,7 +70,10 @@ public abstract class InterTask
         super(sig, actionName);
         this.inter = inter;
         this.initialBounds = (initialBounds != null) ? new Rectangle(initialBounds) : null;
-        this.links = links;
+
+        if (links != null) {
+            this.links = new ArrayList<>(links);
+        }
     }
 
     /**
@@ -121,10 +125,8 @@ public abstract class InterTask
                 links = new LinkedHashSet<>();
             }
 
-            Inter partner = sig.getOppositeInter(inter, rel);
-
-            links.add(new Link(sig.getOppositeInter(inter, rel), rel, sig.getEdgeTarget(rel)
-                                                                              == partner));
+            final Inter partner = sig.getOppositeInter(inter, rel);
+            links.add(new Link(partner, rel, sig.getEdgeTarget(rel) == partner));
         }
 
         if (links == null) {

@@ -23,7 +23,6 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
-import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -36,8 +35,8 @@ import org.audiveris.omr.util.Entities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.Comparator;
 import java.util.List;
 
@@ -84,7 +83,7 @@ public class SentenceInter
     /** Average font for the sentence. */
     @XmlAttribute(name = "font")
     @XmlJavaTypeAdapter(FontInfo.Adapter.class)
-    protected final FontInfo meanFont;
+    protected FontInfo meanFont;
 
     /** Role of this sentence. */
     @XmlAttribute
@@ -112,14 +111,13 @@ public class SentenceInter
     /**
      * Creates a new {@code SentenceInter} object, meant for user handling of glyph.
      *
+     * @param role  the sentence role, if known
      * @param grade the interpretation quality
      */
-    public SentenceInter (double grade)
+    public SentenceInter (TextRole role,
+                          double grade)
     {
-        super(null, null, Shape.LYRICS, grade);
-
-        this.meanFont = null;
-        this.role = TextRole.Lyrics;
+        this(null, grade, null, null);
     }
 
     /**
@@ -128,8 +126,6 @@ public class SentenceInter
     protected SentenceInter ()
     {
         super(null, null, null, null);
-        this.meanFont = null;
-        this.role = null;
     }
 
     //--------//
@@ -165,7 +161,7 @@ public class SentenceInter
      * @return the related staff if found, null otherwise
      */
     public Staff assignStaff (SystemInfo system,
-                              Point location)
+                              Point2D location)
     {
         if ((staff == null) && (role != TextRole.ChordName)) {
             staff = system.getStaffAtOrAbove(location);
@@ -250,7 +246,7 @@ public class SentenceInter
      *
      * @return starting point
      */
-    public Point getLocation ()
+    public Point2D getLocation ()
     {
         final Inter first = getFirstWord();
 
@@ -349,6 +345,15 @@ public class SentenceInter
     public void invalidateCache ()
     {
         bounds = null;
+
+        if (meanFont == null) {
+            List<Inter> members = getMembers();
+
+            if (!members.isEmpty()) {
+                WordInter firstWord = (WordInter) members.get(0);
+                meanFont = new FontInfo(firstWord.getFontInfo(), firstWord.getFontInfo().pointsize);
+            }
+        }
     }
 
     //--------------//
@@ -381,8 +386,9 @@ public class SentenceInter
     {
         StringBuilder sb = new StringBuilder(super.internals());
 
-        sb.append(' ').append(meanFont.getMnemo());
-        sb.append(' ').append(role);
+        sb.append(' ').append((meanFont != null) ? meanFont.getMnemo() : "NO_FONT");
+
+        sb.append(' ').append((role != null) ? role : "NO_ROLE");
 
         return sb.toString();
     }

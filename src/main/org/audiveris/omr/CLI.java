@@ -417,6 +417,11 @@ public class CLI
                 if (OMR.gui != null) {
                     Integer focus = (sheetIds != null) ? sheetIds.first() : null;
                     book.createStubsTabs(focus); // Tabs are now accessible
+                } else {
+                    // Batch: Perform sheets upgrade?
+                    if (Book.batchUpgradeBooks() || params.upgrade) {
+                        book.upgradeStubs();
+                    }
                 }
 
                 // Specific step to reach on all sheets in the book?
@@ -769,6 +774,10 @@ public class CLI
         /** Should book be transcribed?. */
         @Option(name = "-transcribe", usage = "Transcribe whole book")
         boolean transcribe;
+
+        /** Should book file be upgraded?. */
+        @Option(name = "-upgrade", usage = "Upgrade whole book file")
+        boolean upgrade;
 
         /** Optional "--" separator. */
         @Argument

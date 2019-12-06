@@ -62,6 +62,9 @@ public class Curves
 
     private static final Logger logger = LoggerFactory.getLogger(Curves.class);
 
+    /** Default thickness for a curve display. */
+    public static final double DEFAULT_THICKNESS = constants.defaultThickness.getValue();
+
     private static final List<Point> breakPoints = getBreakPoints();
 
     /** The related sheet. */
@@ -319,5 +322,10 @@ public class Curves
         private final Constant.String breakPointCoordinates = new Constant.String(
                 "",
                 "(Debug) Comma-separated coordinates of curve break points if any");
+
+        private final Constant.Double defaultThickness = new Constant.Double(
+                "pixels",
+                2.0,
+                "Default thickness for a curve display");
     }
 }

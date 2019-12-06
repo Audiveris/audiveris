@@ -26,8 +26,7 @@ import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 import static org.audiveris.omr.ui.symbol.Alignment.MIDDLE_LEFT;
 
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -56,17 +55,14 @@ public class EvenStepSymbol
     // getParams //
     //-----------//
     @Override
-    protected Params getParams (MusicFont font)
+    protected MyParams getParams (MusicFont font)
     {
         MyParams p = new MyParams();
         p.layout = layout(font);
-
-        Rectangle2D rect = p.layout.getBounds();
-
-        p.rect = new Rectangle((int) Math.ceil(rect.getWidth()), (int) Math.ceil(rect.getHeight()));
+        p.rect = p.layout.getBounds();
 
         int interline = font.getStaffInterline();
-        p.line = Math.max(1, (int) Math.rint(interline * 0.17));
+        p.line = Math.max(1, interline * 0.17);
 
         return p;
     }
@@ -77,27 +73,31 @@ public class EvenStepSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
 
         // Paint naked symbol
-        Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+        Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
         MusicFont.paint(g, p.layout, loc, AREA_CENTER);
 
         // Paint ledger at middle position
         loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
-        g.fillRect(loc.x, loc.y - (p.line / 2), p.rect.width - 1, p.line);
+        ///g.fillRect(loc.x, loc.y - (p.line / 2), p.rect.width - 1, p.line);
+        g.fill(new Rectangle2D.Double(loc.getX(),
+                                      loc.getY() - (p.line / 2),
+                                      p.rect.getWidth() - 1,
+                                      p.line));
     }
 
     //----------//
     // MyParams //
     //----------//
-    protected class MyParams
+    protected static class MyParams
             extends Params
     {
 
-        int line; // Thickness of a ledger or staff line
+        double line; // Thickness of a ledger or staff line
     }
 }

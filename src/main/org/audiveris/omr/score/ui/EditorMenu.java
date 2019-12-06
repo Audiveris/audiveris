@@ -24,10 +24,12 @@ package org.audiveris.omr.score.ui;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.ui.TribesMenu;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
@@ -61,8 +63,6 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
-import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.sheet.Scale;
 
 /**
  * Class {@code EditorMenu} defines the pop-up menu which is linked to the current
@@ -300,10 +300,7 @@ public class EditorMenu
                     toRemove.addAll(pb.getStaffBarlines());
                 }
 
-                sheet.getInterController().removeInters(
-                        toRemove,
-                        Option.VALIDATED,
-                        Option.UPDATE_MEASURES);
+                sheet.getInterController().removeInters(toRemove, Option.VALIDATED);
             }
 
             @Override

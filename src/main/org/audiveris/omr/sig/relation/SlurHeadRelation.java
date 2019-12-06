@@ -162,6 +162,7 @@ public class SlurHeadRelation
     @Override
     public boolean isSingleSource ()
     {
+        // A source slur can be linked to two heads, one on left side and one of right side
         return false;
     }
 
@@ -171,6 +172,7 @@ public class SlurHeadRelation
     @Override
     public boolean isSingleTarget ()
     {
+        // A target head can be linked to both an ending slur on left and a starting slur on right.
         return false;
     }
 

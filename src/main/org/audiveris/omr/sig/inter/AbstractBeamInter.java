@@ -30,6 +30,7 @@ import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
@@ -37,13 +38,23 @@ import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.ui.InterEditor;
+import org.audiveris.omr.sig.ui.InterEditor.Handle;
+import org.audiveris.omr.sig.ui.InterUIModel;
+import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.BeamSymbol;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
@@ -203,7 +214,7 @@ public abstract class AbstractBeamInter
 
         // Relation beam -> stem (if not yet present)
         BeamStemRelation bRel;
-        final int yDir = (headToBeam == VerticalSide.TOP) ? (-1) : 1;
+        final int yDir = (headToBeam == TOP) ? (-1) : 1;
         final Line2D beamBorder = getBorder(headToBeam.opposite());
         bRel = new BeamStemRelation();
 
@@ -251,6 +262,29 @@ public abstract class AbstractBeamInter
         }
     }
 
+    //----------//
+    // contains //
+    //----------//
+    @Override
+    public boolean contains (Point point)
+    {
+        getBounds();
+
+        if ((bounds != null) && !bounds.contains(point)) {
+            return false;
+        }
+
+        if ((glyph != null) && glyph.contains(point)) {
+            return true;
+        }
+
+        if (area == null) {
+            computeArea();
+        }
+
+        return area.contains(point);
+    }
+
     //-----------//
     // getBorder //
     //-----------//
@@ -262,13 +296,34 @@ public abstract class AbstractBeamInter
      */
     public Line2D getBorder (VerticalSide side)
     {
-        final double dy = (side == VerticalSide.TOP) ? (-height / 2) : (height / 2);
+        final double dy = (side == TOP) ? (-height / 2) : (height / 2);
 
         return new Line2D.Double(
                 median.getX1(),
                 median.getY1() + dy,
                 median.getX2(),
                 median.getY2() + dy);
+    }
+
+    //-----------//
+    // getBounds //
+    //-----------//
+    @Override
+    public Rectangle getBounds ()
+    {
+        if (bounds != null) {
+            return new Rectangle(bounds);
+        }
+
+        if (glyph != null) {
+            return new Rectangle(bounds = glyph.getBounds());
+        }
+
+        if (area == null) {
+            computeArea();
+        }
+
+        return new Rectangle(bounds = area.getBounds());
     }
 
     //-----------//
@@ -309,6 +364,15 @@ public abstract class AbstractBeamInter
         }
 
         return sb.toString();
+    }
+
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new Editor(this);
     }
 
     //----------//
@@ -425,6 +489,22 @@ public abstract class AbstractBeamInter
         return null;
     }
 
+    //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public void deriveFrom (ShapeSymbol symbol,
+                            MusicFont font,
+                            Point dropLocation,
+                            Alignment alignment)
+    {
+        BeamSymbol beamSymbol = (BeamSymbol) symbol;
+        Model model = beamSymbol.getModel(font, dropLocation, alignment);
+        median = new Line2D.Double(model.p1, model.p2);
+        height = model.thickness;
+        computeArea();
+    }
+
     //--------//
     // isGood //
     //--------//
@@ -468,22 +548,22 @@ public abstract class AbstractBeamInter
     // searchLinks //
     //-------------//
     @Override
-    public Collection<Link> searchLinks (SystemInfo system,
-                                         boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system)
     {
-        // Not very optimized!
         List<Inter> systemStems = system.getSig().inters(StemInter.class);
         Collections.sort(systemStems, Inters.byAbscissa);
 
-        Collection<Link> links = lookupLinks(systemStems, system);
+        return lookupLinks(systemStems, system);
+    }
 
-        if (doit) {
-            for (Link link : links) {
-                link.applyTo(this);
-            }
-        }
-
-        return links;
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, BeamStemRelation.class);
     }
 
     //----------//
@@ -494,10 +574,10 @@ public abstract class AbstractBeamInter
     {
         super.setGlyph(glyph);
 
-        if (area == null) {
+        if ((median == null) && (glyph != null)) {
             // Case of manual beam: Compute height and median parameters and area
             height = (int) Math.rint(glyph.getMeanThickness(Orientation.HORIZONTAL));
-            median = glyph.getLine();
+            median = glyph.getCenterLine();
 
             computeArea();
         }
@@ -535,18 +615,38 @@ public abstract class AbstractBeamInter
         this.group = group;
     }
 
+    //-----------------//
+    // upgradeOldStuff //
+    //-----------------//
+    @Override
+    public boolean upgradeOldStuff (List<Version> upgrades)
+    {
+        boolean upgraded = false;
+
+        if (upgrades.contains(Versions.INTER_GEOMETRY)) {
+            if (median != null) {
+                median.setLine(median.getX1(), median.getY1() + 0.5,
+                               median.getX2() + 1, median.getY2() + 0.5);
+                computeArea();
+                upgraded = true;
+            }
+        }
+
+        return upgraded;
+    }
+
     //-------------//
     // computeArea //
     //-------------//
     /**
-     *
+     * Compute the beam area.
      */
-    protected void computeArea ()
+    protected final void computeArea ()
     {
         setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height));
 
         // Define precise bounds based on this path
-        setBounds(getArea().getBounds());
+        bounds = getArea().getBounds();
     }
 
     //----------------//
@@ -572,8 +672,8 @@ public abstract class AbstractBeamInter
      */
     private Area getLookupArea (Scale scale)
     {
-        final Line2D top = getBorder(VerticalSide.TOP);
-        final Line2D bottom = getBorder(VerticalSide.BOTTOM);
+        final Line2D top = getBorder(TOP);
+        final Line2D bottom = getBorder(BOTTOM);
         final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum(manual));
         final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum(manual));
 
@@ -677,6 +777,132 @@ public abstract class AbstractBeamInter
         public double getDistImpact ()
         {
             return getImpact(DIST_INDEX);
+        }
+    }
+
+    //--------//
+    // Editor //
+    //--------//
+    /**
+     * User editor for a beam.
+     * <p>
+     * For a beam, there are 3 handles:
+     * <ul>
+     * <li>left handle, moving in any direction
+     * <li>middle handle, moving the whole beam in any direction
+     * <li>right handle, moving in any direction
+     * </ul>
+     */
+    private static class Editor
+            extends InterEditor
+    {
+
+        private final Point2D originalLeft;
+
+        private final Point2D left;
+
+        private final Point2D originalRight;
+
+        private final Point2D right;
+
+        private final Point2D middle;
+
+        public Editor (AbstractBeamInter beam)
+        {
+            super(beam);
+
+            originalLeft = beam.median.getP1();
+            left = beam.median.getP1();
+
+            originalRight = beam.median.getP2();
+            right = beam.median.getP2();
+
+            middle = PointUtil.middle(left, right);
+
+            // Move left
+            handles.add(new Handle(left)
+            {
+                @Override
+                public boolean applyMove (Point vector)
+                {
+                    PointUtil.add(left, vector);
+                    PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
+
+                    return true;
+                }
+            });
+
+            // Global move
+            handles.add(selectedHandle = new Handle(middle)
+            {
+                @Override
+                public boolean applyMove (Point vector)
+                {
+                    for (Handle handle : handles) {
+                        PointUtil.add(handle.getHandleCenter(), vector);
+                    }
+
+                    return true;
+                }
+            });
+
+            // Move right
+            handles.add(new Handle(right)
+            {
+                @Override
+                public boolean applyMove (Point vector)
+                {
+                    PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
+                    PointUtil.add(right, vector);
+
+                    return true;
+                }
+            });
+        }
+
+        @Override
+        protected void doit ()
+        {
+            final AbstractBeamInter beam = (AbstractBeamInter) inter;
+            beam.median.setLine(left, right);
+            beam.computeArea(); // Set bounds also
+
+            super.doit(); // No more glyph
+        }
+
+        @Override
+        public void undo ()
+        {
+            final AbstractBeamInter beam = (AbstractBeamInter) inter;
+            beam.median.setLine(originalLeft, originalRight);
+            beam.computeArea(); // Set bounds also
+
+            super.undo();
+        }
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements InterUIModel
+    {
+
+        // Left point of median line
+        public Point2D p1;
+
+        // Right point of median line
+        public Point2D p2;
+
+        // Beam thickness
+        public double thickness;
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(p1, dx, dy);
+            PointUtil.add(p2, dx, dy);
         }
     }
 }

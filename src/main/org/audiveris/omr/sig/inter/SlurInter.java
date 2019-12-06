@@ -32,6 +32,7 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.curve.GlyphSlurInfo;
 import org.audiveris.omr.sheet.curve.SlurHeadLink;
@@ -44,18 +45,29 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
+import org.audiveris.omr.sig.ui.InterEditor;
+import org.audiveris.omr.sig.ui.InterUIModel;
+import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.ui.symbol.SlurSymbol;
+import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Predicate;
+import org.audiveris.omr.util.Version;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -219,7 +231,10 @@ public class SlurInter
     public SlurInter (SlurInfo info,
                       GradeImpacts impacts)
     {
-        super(info.getGlyph(), info.getBounds(), Shape.SLUR, impacts);
+        super(info.getGlyph(),
+              null,
+              (info.above() == 1) ? Shape.SLUR_ABOVE : Shape.SLUR_BELOW,
+              impacts);
         this.info = info;
 
         above = info.above() == 1;
@@ -234,13 +249,13 @@ public class SlurInter
     /**
      * Creates a new {@code SlurInter} object (meant for manual assignment).
      *
+     * @param above true for a slur above notes, false for a slur below notes
      * @param grade inter grade
      */
-    public SlurInter (double grade)
+    public SlurInter (boolean above,
+                      double grade)
     {
-        super(null, null, Shape.SLUR, grade);
-
-        info = null;
+        super(null, null, above ? Shape.SLUR_ABOVE : Shape.SLUR_BELOW, grade);
     }
 
     /**
@@ -248,7 +263,6 @@ public class SlurInter
      */
     private SlurInter ()
     {
-        info = null;
     }
 
     //--------//
@@ -424,6 +438,59 @@ public class SlurInter
     }
 
     //----------//
+    // contains //
+    //----------//
+    @Override
+    public boolean contains (Point point)
+    {
+        getBounds();
+
+        if ((bounds != null) && !bounds.contains(point)) {
+            return false;
+        }
+
+        if ((glyph != null) && glyph.contains(point)) {
+            return true;
+        }
+
+        // Check ordinate difference between point and (approximate) curve point at same abscissa
+        // Nothing to be proud of :-)
+        final double y = CubicUtil.yAtX(curve, point.x);
+        final double dy = point.y - y;
+
+        return Math.abs(dy) <= constants.maxPointingDy.getValue();
+    }
+
+    //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public void deriveFrom (ShapeSymbol symbol,
+                            MusicFont font,
+                            Point dropLocation,
+                            Alignment alignment)
+    {
+        SlurSymbol slurSymbol = (SlurSymbol) symbol;
+        curve = new CubicCurve2D.Double();
+        curve.setCurve(slurSymbol.getModel(font, dropLocation, alignment).points, 0);
+        above = CubicUtil.above(curve) > 0;
+        setBounds(null);
+    }
+
+    //-----------//
+    // getBounds //
+    //-----------//
+    @Override
+    public Rectangle getBounds ()
+    {
+        if (bounds != null) {
+            return new Rectangle(bounds);
+        }
+
+        return new Rectangle(bounds = curve.getBounds());
+    }
+
+    //----------//
     // getCurve //
     //----------//
     /**
@@ -478,6 +545,15 @@ public class SlurInter
         Objects.requireNonNull(side, "No side provided for slur getExtension");
 
         return (side == HorizontalSide.LEFT) ? leftExtension : rightExtension;
+    }
+
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new Editor(this);
     }
 
     //---------//
@@ -569,9 +645,9 @@ public class SlurInter
      * @return curve middle point
      */
     @Override
-    public Point getRelationCenter ()
+    public Point2D getRelationCenter ()
     {
-        return PointUtil.rounded(CubicUtil.getMidPoint(curve));
+        return CubicUtil.getMidPoint(curve);
     }
 
     //----------//
@@ -759,22 +835,22 @@ public class SlurInter
     // searchLinks //
     //-------------//
     @Override
-    public Collection<Link> searchLinks (SystemInfo system,
-                                         boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system)
     {
-        // Not very optimized!
         List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
         Collections.sort(systemHeads, Inters.byAbscissa);
 
-        Collection<Link> links = lookupLinks(systemHeads, system);
+        return lookupLinks(systemHeads, system);
+    }
 
-        if (doit) {
-            for (Link link : links) {
-                link.applyTo(this);
-            }
-        }
-
-        return links;
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, SlurHeadRelation.class);
     }
 
     //--------------//
@@ -808,7 +884,7 @@ public class SlurInter
     {
         super.setGlyph(glyph);
 
-        if (info == null) {
+        if ((glyph != null) && (info == null)) {
             // Slur manually created out of a glyph
             info = GlyphSlurInfo.create(glyph);
             above = info.above() > 0;
@@ -944,6 +1020,29 @@ public class SlurInter
         }
     }
 
+    //-----------------//
+    // upgradeOldStuff //
+    //-----------------//
+    @Override
+    public boolean upgradeOldStuff (List<Version> upgrades)
+    {
+        boolean upgraded = false;
+
+        // Shape SLUR is obsolete, replaced by SLUR_ABOVE or SLUR_BELOW
+        if (shape == Shape.SLUR) {
+            shape = above ? Shape.SLUR_ABOVE : Shape.SLUR_BELOW;
+            upgraded = true;
+        }
+
+        if (upgrades.contains(Versions.INTER_GEOMETRY)) {
+            // Force bounds recomputation from curve (including control points)
+            setBounds(null);
+            upgraded = true;
+        }
+
+        return upgraded;
+    }
+
     //---------//
     // Impacts //
     //---------//
@@ -994,5 +1093,224 @@ public class SlurInter
         private final Constant.Ratio maxTieIntersection = new Constant.Ratio(
                 0.25,
                 "Maximum intersection for a chord invading a tie");
+
+        private final Constant.Double maxPointingDy = new Constant.Double(
+                "pixels",
+                2,
+                "Maximum ordinate distance for pointing a slur");
+    }
+
+    //--------//
+    // Editor //
+    //--------//
+    /**
+     * User editor for a slur.
+     * <p>
+     * For a slur editor, there are 6 handles:
+     * <ul>
+     * <li>Left point, middle of left and right points, right point.
+     * <li>Left control point, middle of left and right control points, right control point,
+     * </ul>
+     */
+    private static class Editor
+            extends InterEditor
+    {
+
+        private final Model originalModel;
+
+        private final Model model;
+
+        public Editor (SlurInter slur)
+        {
+            super(slur);
+
+            final CubicCurve2D curve = slur.getCurve();
+
+            originalModel = new Model(curve);
+            model = new Model(curve);
+
+            final Point2D middle = PointUtil.middle(model.p1, model.p2);
+            final Point2D midC = PointUtil.middle(model.c1, model.c2);
+
+            handles.add(new Handle(model.p1)
+            {
+                @Override
+                public boolean applyMove (Point vector)
+                {
+                    PointUtil.add(model.p1, vector);
+                    PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
+
+                    PointUtil.add(model.c1, vector); // Move ctrl point like end point
+                    midC.setLocation(PointUtil.middle(model.c1, model.c2));
+
+                    return true;
+                }
+            });
+
+            handles.add(selectedHandle = new Handle(middle)
+            {
+                @Override
+                public boolean applyMove (Point vector)
+                {
+                    for (Handle handle : handles) {
+                        PointUtil.add(handle.getHandleCenter(), vector);
+                    }
+
+                    return true;
+                }
+            });
+
+            handles.add(new Handle(model.p2)
+            {
+                @Override
+                public boolean applyMove (Point vector)
+                {
+                    PointUtil.add(model.p2, vector);
+                    PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
+
+                    PointUtil.add(model.c2, vector); // Move ctrl point like end point
+                    midC.setLocation(PointUtil.middle(model.c1, model.c2));
+
+                    return true;
+                }
+            });
+
+            handles.add(new Handle(model.c2)
+            {
+                @Override
+                public boolean applyMove (Point vector)
+                {
+                    PointUtil.add(model.c2, vector);
+                    PointUtil.add(midC, vector.x / 2.0, vector.y / 2.0);
+
+                    return true;
+                }
+            });
+
+            handles.add(new Handle(midC)
+            {
+                @Override
+                public boolean applyMove (Point vector)
+                {
+                    PointUtil.add(midC, vector);
+                    PointUtil.add(model.c1, vector);
+                    PointUtil.add(model.c2, vector);
+
+                    return true;
+                }
+            });
+
+            handles.add(new Handle(model.c1)
+            {
+                @Override
+                public boolean applyMove (Point vector)
+                {
+                    PointUtil.add(model.c1, vector);
+                    PointUtil.add(midC, vector.x / 2.0, vector.y / 2.0);
+
+                    return true;
+                }
+            });
+        }
+
+        @Override
+        public void render (Graphics2D g)
+        {
+            // First, draw lines between handles
+            if (!handles.isEmpty()) {
+                g.setColor(Colors.EDITION_LINE);
+                UIUtil.setAbsoluteStroke(g, 1f);
+                Point2D last = null;
+
+                for (Handle handle : handles) {
+                    Point2D p = handle.getHandleCenter();
+
+                    if (last != null) {
+                        g.draw(new Line2D.Double(last, p));
+                    }
+
+                    last = p;
+                }
+
+                // Close path?
+                if (handles.size() > 2) {
+                    g.draw(new Line2D.Double(last, handles.get(0).getHandleCenter()));
+                }
+            }
+
+            // Second, draw handles themselves
+            super.render(g);
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+            sb.append('{');
+            sb.append(inter);
+            sb.append(" org:").append(PointUtil.toString(originalModel.p1)).append('-')
+                    .append(PointUtil.toString(originalModel.p2));
+            sb.append(" new:").append(PointUtil.toString(model.p1)).append('-')
+                    .append(PointUtil.toString(model.p2));
+            sb.append('}');
+            return sb.toString();
+        }
+
+        @Override
+        protected void doit ()
+        {
+            final SlurInter slur = (SlurInter) inter;
+            slur.getCurve().setCurve(model.points, 0);
+
+            inter.setBounds(null);
+            super.doit(); // No more glyph
+        }
+
+        @Override
+        public void undo ()
+        {
+            final SlurInter slur = (SlurInter) inter;
+            slur.getCurve().setCurve(originalModel.points, 0);
+
+            inter.setBounds(null);
+            super.undo();
+        }
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements InterUIModel
+    {
+
+        public final Point2D p1;
+
+        public final Point2D c1;
+
+        public final Point2D c2;
+
+        public final Point2D p2;
+
+        // Array of 4 points used to update cubic curve via setCurve() method
+        public final Point2D[] points;
+
+        public Model (CubicCurve2D curve)
+        {
+            p1 = curve.getP1();
+            c1 = curve.getCtrlP1();
+            c2 = curve.getCtrlP2();
+            p2 = curve.getP2();
+            points = new Point2D[]{p1, c1, c2, p2};
+        }
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            for (Point2D pt : points) {
+                PointUtil.add(pt, dx, dy);
+            }
+        }
     }
 }

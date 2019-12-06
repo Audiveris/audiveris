@@ -47,6 +47,7 @@ import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.util.AbstractMouseListener;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
 import org.audiveris.omr.util.ClassUtil;
+import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +65,6 @@ import java.util.TreeMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
-import org.audiveris.omr.util.Entities;
 
 /**
  * Class {@code ChordListMenu} displays a collection of chords.

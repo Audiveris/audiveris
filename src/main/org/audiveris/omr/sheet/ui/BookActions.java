@@ -65,6 +65,8 @@ import org.audiveris.omr.util.WrappedBoolean;
 import org.audiveris.omr.util.param.Param;
 
 import org.jdesktop.application.Action;
+import org.jdesktop.application.ApplicationAction;
+import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.Task;
 
 import org.slf4j.Logger;
@@ -85,6 +87,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import org.audiveris.omr.glyph.ui.SymbolsEditor;
 
 /**
  * Class {@code BookActions} gathers all UI actions related to current book.
@@ -120,6 +123,9 @@ public class BookActions
     /** Sub-menu on books history. */
     private final HistoryMenu bookHistoryMenu;
 
+    /** The action that toggles repetitive input mode. */
+    private final ApplicationAction repetitiveInputAction;
+
     /**
      * Creates a new BookActions object.
      */
@@ -128,6 +134,9 @@ public class BookActions
         final BookManager mgr = BookManager.getInstance();
         imageHistoryMenu = new HistoryMenu(mgr.getImageHistory(), LoadImageTask.class);
         bookHistoryMenu = new HistoryMenu(mgr.getBookHistory(), LoadBookTask.class);
+
+        ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(this);
+        repetitiveInputAction = (ApplicationAction) actionMap.get("toggleRepetitiveInput");
     }
 
     //--------------//
@@ -282,7 +291,7 @@ public class BookActions
             final String frameTitle = stub.getId() + " parameters";
             final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, true); // Modal flag
             dialog.setContentPane(optionPane);
-            dialog.setName("sheetParams");
+            dialog.setName("SheetParamsDialog");  // For SAF life cycle
 
             optionPane.addPropertyChangeListener(new PropertyChangeListener()
             {
@@ -776,7 +785,6 @@ public class BookActions
     /**
      * Action that allows to display the horizontal projection of a selected staff.
      * We need a sub-menu to select proper staff.
-     * TODO: this is really a dirty hack!
      *
      * @param e the event that triggered this action
      */
@@ -1213,6 +1221,48 @@ public class BookActions
         }
     }
 
+    //-----------------------//
+    // updateRepetitiveInput //
+    //-----------------------//
+    /**
+     * Update checkbox of repetitiveInput mode according to the current sheet
+     *
+     * @param sheet the current sheet
+     */
+    public void updateRepetitiveInput (Sheet sheet)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == sheet.getStub()) {
+            repetitiveInputAction.setSelected(sheet.getSymbolsEditor().isRepetitiveInputMode());
+        }
+    }
+
+    //-----------------------//
+    // toggleRepetitiveInput //
+    //-----------------------//
+    /**
+     * Toggle repetitive input mode.
+     * <p>
+     * When this mode is active, focus is on manual insertion of items, with as few user actions as
+     * possible.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = REPETITIVE_INPUT_SELECTABLE)
+    public void toggleRepetitiveInput (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == null) {
+            return;
+        }
+
+        final SymbolsEditor symbolsEditor = stub.getSheet().getSymbolsEditor();
+        symbolsEditor.toggleRepetitiveInputMode();
+        repetitiveInputAction.setSelected(symbolsEditor.isRepetitiveInputMode());
+    }
+
     //----------------//
     // transcribeBook //
     //----------------//
@@ -1275,6 +1325,27 @@ public class BookActions
         Sheet sheet = stub.getSheet();
         InterController controller = sheet.getInterController();
         controller.undo();
+    }
+
+    //-------------//
+    // upgradeBook //
+    //-------------//
+    /**
+     * Complete the upgrade of all sheets.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = BOOK_UPGRADABLE)
+    public Task<Void, Void> upgradeBook (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == null) {
+            return null;
+        }
+
+        return new UpgradeBookTask(stub.getBook());
     }
 
     //--------------------//
@@ -1525,7 +1596,7 @@ public class BookActions
                     : "General parameters";
             final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, true); // Modal flag
             dialog.setContentPane(optionPane);
-            dialog.setName("scoreParams");
+            dialog.setName("ScoreParamsDialog");  // For SAF life cycle
 
             optionPane.addPropertyChangeListener(new PropertyChangeListener()
             {
@@ -2228,6 +2299,37 @@ public class BookActions
                 logger.warn("Could not transcribe sheet", ex);
             } finally {
                 LogUtil.stopStub();
+            }
+
+            return null;
+        }
+    }
+
+    //-----------------//
+    // UpgradeBookTask //
+    //-----------------//
+    private static class UpgradeBookTask
+            extends VoidTask
+    {
+
+        private final Book book;
+
+        UpgradeBookTask (Book book)
+        {
+            this.book = book;
+        }
+
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            try {
+                LogUtil.start(book);
+                book.upgradeStubs();
+            } catch (Throwable ex) {
+                logger.warn("Error while upgrading book", ex);
+            } finally {
+                LogUtil.stopBook();
             }
 
             return null;

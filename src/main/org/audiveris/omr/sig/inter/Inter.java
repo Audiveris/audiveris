@@ -24,21 +24,32 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.ui.InterEditor;
+import org.audiveris.omr.sig.ui.InterTracker;
+import org.audiveris.omr.sig.ui.UITask;
+import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.util.Entity;
+import org.audiveris.omr.util.Version;
+import org.audiveris.omr.util.WrappedBoolean;
 
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -91,6 +102,19 @@ public interface Inter
      * @param ratio ratio applied
      */
     void decrease (double ratio);
+
+    /**
+     * Derive inter geometry from the provided symbol, font and current drop location.
+     *
+     * @param symbol       the dropped symbol
+     * @param font         properly sized font
+     * @param dropLocation (input/output) current drag/drop location
+     * @param alignment    relative position of provided location WRT symbol
+     */
+    void deriveFrom (ShapeSymbol symbol,
+                     MusicFont font,
+                     Point dropLocation,
+                     Alignment alignment);
 
     /**
      * Mark this inter as frozen, that cannot be deleted even by a conflicting
@@ -178,6 +202,20 @@ public interface Inter
     String getDetails ();
 
     /**
+     * Report whether the inter can be manually edited.
+     *
+     * @return true id editable
+     */
+    boolean isEditable ();
+
+    /**
+     * Report a proper editor for manual inter edition.
+     *
+     * @return proper editor
+     */
+    InterEditor getEditor ();
+
+    /**
      * Report the ensemble this inter is member of, if any.
      * Actually, it returns the first containing ensemble found.
      *
@@ -256,7 +294,7 @@ public interface Inter
      *
      * @return center for relation
      */
-    Point getRelationCenter ();
+    Point2D getRelationCenter ();
 
     /**
      * Report the shape related to interpretation.
@@ -301,6 +339,14 @@ public interface Inter
      * @see #getBounds()
      */
     Rectangle getSymbolBounds (int interline);
+
+    /**
+     * Report a suitable tracker, to render decorations on the fly.
+     *
+     * @param sheet containing sheet
+     * @return suitable tracker for this inter
+     */
+    InterTracker getTracker (Sheet sheet);
 
     /**
      * Report the voice, if any, this inter belongs to
@@ -431,6 +477,30 @@ public interface Inter
             throws DeletedInterException;
 
     /**
+     * Prepare the manual addition of this inter, for which staff and bounds have been
+     * set.
+     * <p>
+     * Build <b>all</b> the UI tasks to insert this inter: the addition task itself, together with
+     * related tasks if any (other additions, links, ...).
+     *
+     * @param cancel (output) ability to cancel processing by setting its value to true
+     * @return the sequence of UI tasks
+     */
+    List<? extends UITask> preAdd (WrappedBoolean cancel);
+
+    /**
+     * Prepare the manual removal of this inter.
+     *
+     * @param cancel (input/output)
+     *               A null-value for cancel means user has already validated the decision, so the
+     *               user should not be prompted for further confirmation.
+     *               If non null, the method can cancel processing by setting its value to true.
+     * @return the inters to remove: that is this inter plus all other inters to remove,
+     *         with the exception of ensemble members since those are handled automatically.
+     */
+    Set<? extends Inter> preRemove (WrappedBoolean cancel);
+
+    /**
      * Remove this Inter instance from its containing SIG.
      * This is equivalent to remove(true).
      */
@@ -455,7 +525,7 @@ public interface Inter
      * <li>For a head: 1 stem
      * <li>For a stem: 1 head
      * <li>For an alteration: 1 head
-     * <li>For an arpeggiato: 1 headChord
+     * <li>For an arpeggiato: 1 headChord, perhaps 2 vertically aligned
      * <li>For an articulation: 1 headChord
      * <li>For an augmentation dot: 1 note or another dot
      * <li>For a dynamic: 1 chord (really?)
@@ -466,11 +536,19 @@ public interface Inter
      * Manual inters survive but are displayed in red, to show they are not yet in normal status.
      *
      * @param system containing system
-     * @param doit   if true, relations are actually added to the sig
      * @return the collection of links found, perhaps empty
      */
-    Collection<Link> searchLinks (SystemInfo system,
-                                  boolean doit);
+    Collection<Link> searchLinks (SystemInfo system);
+
+    /**
+     * Look for existing relations that would be discarded in favor of the provided links.
+     *
+     * @param system containing system
+     * @param links  potential links
+     * @return links to be discarded
+     */
+    Collection<Link> searchUnlinks (SystemInfo system,
+                                    Collection<Link> links);
 
     /**
      * Assign the bounding box for this interpretation.
@@ -486,4 +564,14 @@ public interface Inter
      * @return shape.toString() by default. To be overridden if shape is null.
      */
     String shapeString ();
+
+    /**
+     * Check inter instance for an upgrade with respect to its persisted data.
+     * <p>
+     * This is meant to ease transition of .omr files produced by previous Audiveris versions.
+     *
+     * @param upgrades sequence of upgrading versions to apply
+     * @return true if any upgrade was actually performed
+     */
+    boolean upgradeOldStuff (List<Version> upgrades);
 }

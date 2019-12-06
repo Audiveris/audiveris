@@ -44,5 +44,9 @@ public enum MouseMovement
     /**
      * User releases the mouse button.
      */
-    RELEASING;
+    RELEASING,
+    /**
+     * User clicks the mouse button.
+     */
+    CLICKING;
 }

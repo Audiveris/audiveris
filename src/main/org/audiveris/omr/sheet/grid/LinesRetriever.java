@@ -497,7 +497,7 @@ public class LinesRetriever
      * At this point, all clusters have been constructed and trimmed to the right number of lines
      * per cluster.
      * Each cluster can now give birth to a staff, with preliminary values, since we don't know yet
-     * precisely the starting and ending abscissae of each staff.
+     * precisely the starting and ending abscissa values of each staff.
      * This will be refined later, using staff projection to retrieve major bar lines as well as
      * staff side limits.
      */

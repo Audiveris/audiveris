@@ -315,11 +315,10 @@ public class PartBarline
     // upgradeOldStuff //
     //-----------------//
     /**
-     * Temporary method to upgrade from oldStaffBarlines to staffBarlines.
+     * Upgrade from oldStaffBarlines to staffBarlines.
      *
      * @return true if really upgraded
      */
-    @Deprecated
     public boolean upgradeOldStuff ()
     {
         if (oldStaffBarlines != null) {

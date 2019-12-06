@@ -22,6 +22,7 @@
 package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
@@ -31,8 +32,6 @@ import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.IdEvent;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.SelectionHint;
-import static org.audiveris.omr.ui.selection.SelectionHint.ENTITY_INIT;
-import static org.audiveris.omr.ui.selection.SelectionHint.ENTITY_TRANSIENT;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.util.EntityIndex;
 
@@ -105,9 +104,7 @@ public class InterService
     protected void handleEntityListEvent (EntityListEvent<Inter> listEvent)
     {
         // Publish underlying glyph, perhaps null
-        final SelectionHint hint = listEvent.hint;
-
-        if (hint == ENTITY_INIT) {
+        if (listEvent.hint == SelectionHint.ENTITY_INIT) {
             final Inter inter = listEvent.getEntity();
 
             if (inter != null) {
@@ -115,7 +112,8 @@ public class InterService
 
                 if (sig != null) {
                     final Glyph glyph = inter.getGlyph();
-                    sig.getSystem().getSheet().getGlyphIndex().publish(glyph, ENTITY_TRANSIENT);
+                    final GlyphIndex glyphIndex = sig.getSystem().getSheet().getGlyphIndex();
+                    glyphIndex.publish(glyph, SelectionHint.ENTITY_TRANSIENT);
                 }
             }
         }

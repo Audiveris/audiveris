@@ -25,6 +25,7 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 
 import javax.swing.Icon;
@@ -72,10 +73,21 @@ public interface SymbolIcon
      * Build the image that represents the related shape, using the scaled font.
      * The main difficulty is to determine up-front the size of the image to allocate.
      *
-     * @param font properly-scaled font (for interline &amp; zoom)
+     * @param font properly-scaled font (for interline and zoom)
      * @return the image built, or null if failed
      */
     SymbolImage buildImage (MusicFont font);
+
+    /**
+     * Build the image that represents the related shape, using the scaled font.
+     * The main difficulty is to determine up-front the size of the image to allocate.
+     *
+     * @param font        properly-scaled font (for interline and zoom)
+     * @param curveStroke optional stroke for slurs, wedges and endings, or null
+     * @return the image built, or null if failed
+     */
+    SymbolImage buildImage (MusicFont font,
+                            Stroke curveStroke);
 
     /**
      * Report the symbol mass center.

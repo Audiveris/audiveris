@@ -271,6 +271,11 @@ public class SheetAssembly
         if (GuiActions.getInstance().isErrorsWindowDisplayed()) {
             OMR.gui.setErrorsPane(stub.getSheet().getErrorsEditor().getComponent());
         }
+
+        if (stub.hasSheet()) {
+            // Update repetitiveInput checkbox
+            BookActions.getInstance().updateRepetitiveInput(stub.getSheet());
+        }
     }
 
     //-------//

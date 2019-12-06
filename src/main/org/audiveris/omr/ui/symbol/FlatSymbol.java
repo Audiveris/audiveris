@@ -67,7 +67,7 @@ public class FlatSymbol
     /**
      * {@inheritDoc}
      * <p>
-     * For a flat symbol, the reference point is lower than area center.
+     * For a flat symbol, the reference point is significantly lower than area center.
      */
     @Override
     public Point getRefPoint (Rectangle box)

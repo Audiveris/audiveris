@@ -26,10 +26,9 @@ import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Stroke;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 
 /**
  * Class {@code SlashedFlagSymbol} displays a SMALL_FLAG_SLASH.
@@ -45,10 +44,18 @@ public class SlashedFlagSymbol
 
     /**
      * Creates a new {@code SmallFlagSymbol} object.
+     */
+    public SlashedFlagSymbol ()
+    {
+        this(false);
+    }
+
+    /**
+     * Creates a new {@code SmallFlagSymbol} object.
      *
      * @param isIcon true for an icon
      */
-    public SlashedFlagSymbol (boolean isIcon)
+    protected SlashedFlagSymbol (boolean isIcon)
     {
         super(isIcon, Shape.SMALL_FLAG_SLASH, false);
     }
@@ -66,15 +73,14 @@ public class SlashedFlagSymbol
     // getParams //
     //-----------//
     @Override
-    protected Params getParams (MusicFont font)
+    protected MyParams getParams (MusicFont font)
     {
         MyParams p = new MyParams();
 
         p.layout = flagSymbol.layout(font);
 
-        Rectangle2D r = p.layout.getBounds();
-        p.rect = new Rectangle((int) Math.ceil(r.getWidth()), (int) Math.ceil(r.getHeight()));
-        p.stroke = new BasicStroke(Math.max(1f, p.rect.width / 10f));
+        p.rect = p.layout.getBounds();
+        p.stroke = new BasicStroke(Math.max(1f, (float) p.rect.getWidth() / 10f));
 
         return p;
     }
@@ -85,27 +91,27 @@ public class SlashedFlagSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
-        Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+        Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
         MusicFont.paint(g, p.layout, loc, AREA_CENTER);
 
         Stroke oldStroke = g.getStroke();
         g.setStroke(p.stroke);
-        g.drawLine(
-                loc.x - (p.rect.width / 2),
-                loc.y + (p.rect.height / 5),
-                loc.x + (p.rect.width / 2),
-                loc.y - (p.rect.height / 5));
+        g.draw(new Line2D.Double(
+                loc.getX() - (p.rect.getWidth() / 2),
+                loc.getY() + (p.rect.getHeight() / 5),
+                loc.getX() + (p.rect.getWidth() / 2),
+                loc.getY() - (p.rect.getHeight() / 5)));
         g.setStroke(oldStroke);
     }
 
     //--------//
     // Params //
     //--------//
-    private class MyParams
+    protected static class MyParams
             extends Params
     {
 

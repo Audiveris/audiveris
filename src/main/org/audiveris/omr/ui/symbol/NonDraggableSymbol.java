@@ -25,10 +25,8 @@ import org.audiveris.omr.glyph.Shape;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.Point2D;
 
 /**
  * Class {@code NonDraggableSymbol} implements a double-size non-draggable symbol: X
@@ -81,10 +79,7 @@ public class NonDraggableSymbol
         Params p = new Params();
 
         p.layout = font.layout(getString(), at);
-
-        Rectangle2D r = p.layout.getBounds();
-
-        p.rect = new Rectangle((int) Math.ceil(r.getWidth()), (int) Math.ceil(r.getHeight()));
+        p.rect = p.layout.getBounds();
 
         return p;
     }
@@ -95,7 +90,7 @@ public class NonDraggableSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params p,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         Color oldColor = g.getColor();

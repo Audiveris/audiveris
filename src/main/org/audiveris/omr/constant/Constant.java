@@ -26,6 +26,9 @@ import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -583,6 +586,66 @@ public abstract class Constant<E>
                     color.getRed(),
                     color.getGreen(),
                     color.getBlue());
+        }
+    }
+
+    //------//
+    // Date //
+    //------//
+    public static class Date
+            extends Constant<java.util.Date>
+    {
+
+        private static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MMM-yyyy");
+
+        public Date (java.util.Date defaultValue,
+                     java.lang.String description)
+        {
+            super(null, encode(defaultValue), description);
+        }
+
+        public Date (java.lang.String str,
+                     java.lang.String description)
+        {
+            super(null, str, description);
+            setValue(str);
+        }
+
+        @Override
+        protected java.util.Date decode (java.lang.String str)
+        {
+            try {
+                return DATE_FORMAT.parse(str);
+            } catch (ParseException ex) {
+                logger.error("Error parsing {}", str, ex);
+                return null;
+            }
+        }
+
+        @Override
+        public void setValue (java.util.Date date)
+        {
+            setTuple(encode(date), date);
+        }
+
+        public final void setValue (java.lang.String str)
+        {
+            setTuple(str, decode(str));
+        }
+
+        public static java.lang.String encode (java.util.Date date)
+        {
+            return DATE_FORMAT.format(date);
+        }
+
+        public static java.util.Date decodeDate (java.lang.String str)
+        {
+            try {
+                return DATE_FORMAT.parse(str);
+            } catch (ParseException ex) {
+                logger.error("Error parsing {}", str, ex);
+                return null;
+            }
         }
     }
 

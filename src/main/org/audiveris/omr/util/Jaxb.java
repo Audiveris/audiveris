@@ -94,8 +94,9 @@ public abstract class Jaxb
 
         try (OutputStream os = Files.newOutputStream(path, CREATE);) {
             Marshaller m = jaxbContext.createMarshaller();
-            XMLStreamWriter writer = new IndentingXMLStreamWriter(
+            XMLStreamWriter writer = new CustomXMLStreamWriter(
                     XMLOutputFactory.newInstance().createXMLStreamWriter(os, "UTF-8"));
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             m.marshal(object, writer);
             os.flush();
         }
@@ -120,8 +121,9 @@ public abstract class Jaxb
                    XMLStreamException
     {
         Marshaller m = jaxbContext.createMarshaller();
-        XMLStreamWriter writer = new IndentingXMLStreamWriter(
+        XMLStreamWriter writer = new CustomXMLStreamWriter(
                 XMLOutputFactory.newInstance().createXMLStreamWriter(os, "UTF-8"));
+        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         m.marshal(object, writer);
     }
 

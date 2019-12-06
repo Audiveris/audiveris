@@ -43,24 +43,21 @@ import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
-import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
-import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.DotFermataRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.LEFT;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -116,7 +113,7 @@ public class SymbolsLinker
                 return;
             }
 
-            final Point location = sentence.getLocation();
+            final Point2D location = sentence.getLocation();
             final Rectangle bounds = sentence.getBounds();
             final Scale scale = system.getSheet().getScale();
 
@@ -420,13 +417,11 @@ public class SymbolsLinker
                     logger.info("VIP linkPedal for {}", pedal);
                 }
 
-                final Point location = pedal.getCenter();
-                final Rectangle bounds = pedal.getBounds();
-                final MeasureStack stack = system.getStackAt(location);
-                final AbstractChordInter chordAbove = stack.getStandardChordAbove(location, bounds);
+                final Collection<Link> links = pedal.searchLinks(system);
 
-                if (chordAbove != null) {
-                    sig.addEdge(chordAbove, pedal, new ChordPedalRelation());
+                if (!links.isEmpty()) {
+                    Link link = links.iterator().next();
+                    link.applyTo(pedal);
                 } else {
                     logger.info("No chord above {}", pedal);
                 }
@@ -472,9 +467,6 @@ public class SymbolsLinker
      */
     private void linkWedges ()
     {
-        final Scale scale = system.getSheet().getScale();
-        final double xMargin = scale.toPixels(WedgeInter.getStackAbscissaMargin());
-
         for (Inter inter : sig.inters(WedgeInter.class)) {
             try {
                 if (inter.isVip()) {
@@ -482,29 +474,10 @@ public class SymbolsLinker
                 }
 
                 final WedgeInter wedge = (WedgeInter) inter;
-                final Line2D topLine = wedge.getLine1();
+                final Collection<Link> links = wedge.searchLinks(system);
 
-                for (HorizontalSide side : HorizontalSide.values()) {
-                    final Point2D location = (side == LEFT) ? new Point2D.Double(
-                            topLine.getX1() + xMargin,
-                            topLine.getY1())
-                            : new Point2D.Double(topLine.getX2() - xMargin, topLine.getY2());
-                    final MeasureStack stack = system.getStackAt(location);
-                    final AbstractChordInter chordAbove = stack.getStandardChordAbove(
-                            location,
-                            null);
-
-                    if (chordAbove != null) {
-                        sig.addEdge(chordAbove, wedge, new ChordWedgeRelation(side));
-                    } else {
-                        AbstractChordInter chordBelow = stack.getStandardChordBelow(location, null);
-
-                        if (chordBelow != null) {
-                            sig.addEdge(chordBelow, wedge, new ChordWedgeRelation(side));
-                        } else {
-                            logger.info("No chord for {} {}", wedge, side);
-                        }
-                    }
+                for (Link link : links) {
+                    link.applyTo(wedge);
                 }
             } catch (Exception ex) {
                 logger.warn("Error in linkWedges for {} {}", inter, ex.toString(), ex);

@@ -24,13 +24,21 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.Collection;
+import java.util.Collections;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code PedalInter} represents a pedal (start) or pedal up (stop) event
+ * Class {@code PedalInter} represents a pedal (start) or pedal up (stop) event.
  *
  * @author Hervé Bitteur
  */
@@ -104,5 +112,37 @@ public class PedalInter
         }
 
         return staff;
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final Point location = getCenter();
+        final Rectangle box = getBounds();
+        final MeasureStack stack = system.getStackAt(location);
+        Link link = null;
+
+        if (stack != null) {
+            final AbstractChordInter chordAbove = stack.getStandardChordAbove(location, box);
+
+            if (chordAbove != null) {
+                link = new Link(chordAbove, new ChordPedalRelation(), false);
+            }
+        }
+
+        return (link == null) ? Collections.EMPTY_LIST : Collections.singleton(link);
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, ChordPedalRelation.class);
     }
 }

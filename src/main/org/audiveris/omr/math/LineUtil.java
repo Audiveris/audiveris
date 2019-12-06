@@ -286,7 +286,10 @@ public abstract class LineUtil
     public static Point2D.Double intersectionAtX (Line2D line,
                                                   double x)
     {
-        return intersection(line.getX1(), line.getY1(), line.getX2(), line.getY2(), x, 0, x, 1_000);
+        return intersection(line.getX1(), line.getY1(),
+                            line.getX2(), line.getY2(),
+                            x, 0,
+                            x, 1_000);
     }
 
     //-----------------//
@@ -305,8 +308,10 @@ public abstract class LineUtil
                                                   double slope,
                                                   double x)
     {
-        return intersection(p1.getX(), p1.getY(), p1.getX() + 1_000, p1.getY() + (1_000 * slope), x,
-                            0, x, 1_000);
+        return intersection(p1.getX(), p1.getY(),
+                            p1.getX() + 1_000, p1.getY() + (1_000 * slope),
+                            x, 0,
+                            x, 1_000);
     }
 
     //-----------------//
@@ -325,7 +330,10 @@ public abstract class LineUtil
                                                   Point2D p2,
                                                   double y)
     {
-        return intersection(p1.getX(), p1.getY(), p2.getX(), p2.getY(), 0, y, 1_000, y);
+        return intersection(p1.getX(), p1.getY(),
+                            p2.getX(), p2.getY(),
+                            0, y,
+                            1_000, y);
     }
 
     //-----------------//
@@ -344,8 +352,9 @@ public abstract class LineUtil
                                                   double invertedSlope,
                                                   double y)
     {
-        return intersection(p1.getX(), p1.getY(), p1.getX() + (1_000 * invertedSlope), p1.getY()
-                                                                                       + 1_000, 0, y,
+        return intersection(p1.getX(), p1.getY(),
+                            p1.getX() + (1_000 * invertedSlope), p1.getY() + 1_000,
+                            0, y,
                             1_000, y);
     }
 
@@ -363,7 +372,10 @@ public abstract class LineUtil
     public static Point2D.Double intersectionAtY (Line2D line,
                                                   double y)
     {
-        return intersection(line.getX1(), line.getY1(), line.getX2(), line.getY2(), 0, y, 1_000, y);
+        return intersection(line.getX1(), line.getY1(),
+                            line.getX2(), line.getY2(),
+                            0, y,
+                            1_000, y);
     }
 
     //----------//
@@ -423,7 +435,10 @@ public abstract class LineUtil
                                Point2D p2,
                                double y)
     {
-        return intersection(p1.getX(), p1.getY(), p2.getX(), p2.getY(), 0, y, 1_000, y).x;
+        return intersection(p1.getX(), p1.getY(),
+                            p2.getX(), p2.getY(),
+                            0, y,
+                            1_000, y).x;
     }
 
     //------//
@@ -440,7 +455,10 @@ public abstract class LineUtil
     public static double xAtY (Line2D line,
                                double y)
     {
-        return intersection(line.getX1(), line.getY1(), line.getX2(), line.getY2(), 0, y, 1_000, y).x;
+        return intersection(line.getX1(), line.getY1(),
+                            line.getX2(), line.getY2(),
+                            0, y,
+                            1_000, y).x;
     }
 
     //------//
@@ -459,8 +477,10 @@ public abstract class LineUtil
                                double slope,
                                double x)
     {
-        return intersection(p1.getX(), p1.getY(), p1.getX() + 1_000, p1.getY() + (1_000 * slope), x,
-                            0, x, 1_000).y;
+        return intersection(p1.getX(), p1.getY(),
+                            p1.getX() + 1_000, p1.getY() + (1_000 * slope),
+                            x, 0,
+                            x, 1_000).y;
     }
 
     //------//
@@ -477,7 +497,10 @@ public abstract class LineUtil
     public static double yAtX (Line2D line,
                                double x)
     {
-        return intersection(line.getX1(), line.getY1(), line.getX2(), line.getY2(), x, 0, x, 1_000).y;
+        return intersection(line.getX1(), line.getY1(),
+                            line.getX2(), line.getY2(),
+                            x, 0,
+                            x, 1_000).y;
     }
 
     //------//
@@ -496,7 +519,28 @@ public abstract class LineUtil
                                Point2D p2,
                                double x)
     {
-        return intersection(p1.getX(), p1.getY(), p2.getX(), p2.getY(), x, 0, x, 1_000).y;
+        return intersection(p1.getX(), p1.getY(),
+                            p2.getX(), p2.getY(),
+                            x, 0,
+                            x, 1_000).y;
+    }
+
+    //-----------//
+    // translate //
+    //-----------//
+    /**
+     * Translate the provided Line2D along the (dx, dy) vector.
+     *
+     * @param line the line to translate
+     * @param dx   translation in abscissa
+     * @param dy   translation in ordinate
+     */
+    public static void translate (Line2D line,
+                                  double dx,
+                                  double dy)
+    {
+        line.setLine(line.getX1() + dx, line.getY1() + dy,
+                     line.getX2() + dx, line.getY2() + dy);
     }
 
     private LineUtil ()

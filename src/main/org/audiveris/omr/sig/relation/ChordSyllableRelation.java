@@ -21,11 +21,22 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
+import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.HeadChordInter;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.LyricItemInter;
+import org.audiveris.omr.sig.inter.LyricLineInter;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code ChordSyllableRelation} represents a support relation between a chord
- * and a lyric item (syllable).
+ * and a lyric item (of syllable kind).
  *
  * @author Hervé Bitteur
  */
@@ -33,6 +44,32 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordSyllableRelation
         extends Support
 {
+
+    private static final Logger logger = LoggerFactory.getLogger(ChordSyllableRelation.class);
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        if (isManual()) {
+            // Discard any competing syllable
+            final HeadChordInter chord = (HeadChordInter) e.getEdgeSource();
+            final LyricItemInter item = (LyricItemInter) e.getEdgeTarget();
+            final SIGraph sig = chord.getSig();
+            final LyricLineInter line = (LyricLineInter) item.getEnsemble();
+
+            for (Relation rel : sig.getRelations(chord, ChordSyllableRelation.class)) {
+                LyricItemInter other = (LyricItemInter) sig.getOppositeInter(chord, rel);
+
+                if ((other != item) && (other.getEnsemble() == line)) {
+                    logger.info("{} preferred to {} in chord-lyric link.", item, other);
+                    sig.removeEdge(rel);
+                }
+            }
+        }
+    }
 
     //----------------//
     // isSingleSource //
@@ -49,7 +86,8 @@ public class ChordSyllableRelation
     @Override
     public boolean isSingleTarget ()
     {
-        return true;
+        // A chord can be linked to several lyric items, from different lyric lines.
+        return false;
     }
 
     @Override

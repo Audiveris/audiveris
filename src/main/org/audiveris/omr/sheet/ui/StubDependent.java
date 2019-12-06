@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet.ui;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.selection.MouseMovement;
@@ -67,6 +68,9 @@ public abstract class StubDependent
     /** Name of property linked to book transcription ability. */
     public static final String BOOK_TRANSCRIBABLE = "bookTranscribable";
 
+    /** Name of property linked to book upgrade ability. */
+    public static final String BOOK_UPGRADABLE = "bookUpgradable";
+
     /** Name of property linked to book lack of activity. */
     public static final String BOOK_IDLE = "bookIdle";
 
@@ -78,6 +82,9 @@ public abstract class StubDependent
 
     /** Name of property linked to redoable. */
     public static final String REDOABLE = "redoable";
+
+    /** Name of property linked to repetitive input mode. */
+    public static final String REPETITIVE_INPUT_SELECTABLE = "repetitiveInputSelectable";
 
     /** Indicates whether the sheet initial image is available. */
     protected boolean initialAvailable = false;
@@ -97,6 +104,9 @@ public abstract class StubDependent
     /** Indicates whether the current book can be transcribed. */
     protected boolean bookTranscribable = false;
 
+    /** Indicates whether the current book can be upgraded. */
+    protected boolean bookUpgradable = false;
+
     /** Indicates whether current book is idle (all its sheets are idle). */
     protected boolean bookIdle = false;
 
@@ -108,6 +118,9 @@ public abstract class StubDependent
 
     /** Indicates whether we can redo user action. */
     protected boolean redoable = false;
+
+    /** Indicates whether repetitive input mode can be selected. */
+    protected boolean repetitiveInputSelectable = true;
 
     /**
      * Creates a new {@code StubDependent} object.
@@ -208,6 +221,68 @@ public abstract class StubDependent
 
         if (bookTranscribable != oldValue) {
             firePropertyChange(BOOK_TRANSCRIBABLE, oldValue, this.bookTranscribable);
+        }
+    }
+
+    //------------------//
+    // isBookUpgradable //
+    //------------------//
+    /**
+     * Getter for bookUpgradable property
+     *
+     * @return the current property value
+     */
+    public boolean isBookUpgradable ()
+    {
+        return bookUpgradable;
+    }
+
+    //-------------------//
+    // setBookUpgradable //
+    //-------------------//
+    /**
+     * Setter for bookUpgradable property.
+     *
+     * @param bookUpgradable the new property value
+     */
+    public void setBookUpgradable (boolean bookUpgradable)
+    {
+        boolean oldValue = this.bookUpgradable;
+        this.bookUpgradable = bookUpgradable;
+
+        if (bookUpgradable != oldValue) {
+            firePropertyChange(BOOK_UPGRADABLE, oldValue, this.bookUpgradable);
+        }
+    }
+
+    //-----------------------------//
+    // isRepetitiveInputSelectable //
+    //-----------------------------//
+    /**
+     * Getter for repetitiveInputSelectable property
+     *
+     * @return the current property value
+     */
+    public boolean isRepetitiveInputSelectable ()
+    {
+        return repetitiveInputSelectable;
+    }
+
+    //------------------------------//
+    // setRepetitiveInputSelectable //
+    //------------------------------//
+    /**
+     * Setter for repetitiveInputSelectable property
+     *
+     * @param repetitiveInputSelectable the new property value
+     */
+    public void setRepetitiveInputSelectable (boolean repetitiveInputSelectable)
+    {
+        boolean oldValue = this.repetitiveInputSelectable;
+        this.repetitiveInputSelectable = repetitiveInputSelectable;
+
+        if (repetitiveInputSelectable != oldValue) {
+            firePropertyChange(REPETITIVE_INPUT_SELECTABLE, oldValue, this.repetitiveInputSelectable);
         }
     }
 
@@ -458,25 +533,29 @@ public abstract class StubDependent
             // Update stubValid
             setStubValid((stub != null) && stub.isValid());
 
-            // Update stubIdle & stubTranscribable
+            // Update stubIdle & stubTranscribable & repetitiveInputSelectable
             if (stub != null) {
                 final Step currentStep = stub.getCurrentStep();
                 final boolean idle = currentStep == null;
                 setStubIdle(idle);
                 setStubTranscribable(idle && stub.isValid() && !stub.isDone(Step.last()));
+                setRepetitiveInputSelectable(idle && stub.isDone(Step.HEADS));
             } else {
                 setStubIdle(false);
                 setStubTranscribable(false);
+                setRepetitiveInputSelectable(false);
             }
 
-            // Update bookIdle & bookTranscribable
+            // Update bookIdle & bookTranscribable & bookUpgradable
             if (stub != null) {
                 final boolean idle = isBookIdle(stub.getBook());
                 setBookIdle(idle);
                 setBookTranscribable(idle && isBookTranscribable(stub.getBook()));
+                setBookUpgradable(idle && isBookUpgradable(stub.getBook()));
             } else {
                 setBookIdle(false);
                 setBookTranscribable(false);
+                setBookUpgradable(false);
             }
 
             // Update bookModifiedOrUpgraded
@@ -538,5 +617,20 @@ public abstract class StubDependent
         }
 
         return book.isDirty();
+    }
+
+    //------------------//
+    // isBookUpgradable //
+    //------------------//
+    private boolean isBookUpgradable (Book book)
+    {
+        // Book is assumed idle
+        for (SheetStub stub : book.getValidStubs()) {
+            if (stub.getVersion().compareTo(Versions.LATEST_UPGRADE) < 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

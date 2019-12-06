@@ -24,6 +24,10 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.RepeatDotInter;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +58,17 @@ public class RepeatDotBarRelation
             throws CloneNotSupportedException
     {
         return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final RepeatDotInter dot = (RepeatDotInter) e.getEdgeSource();
+
+        dot.checkAbnormal();
     }
 
     //-------------------//
@@ -127,6 +142,19 @@ public class RepeatDotBarRelation
     protected Scale.Fraction getYGapMax (boolean manual)
     {
         return getYGapMaximum(manual);
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final RepeatDotInter dot = (RepeatDotInter) e.getEdgeSource();
+
+        if (!dot.isRemoved()) {
+            dot.checkAbnormal();
+        }
     }
 
     //-----------//

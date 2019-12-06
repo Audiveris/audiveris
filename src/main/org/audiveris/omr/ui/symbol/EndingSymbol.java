@@ -22,14 +22,17 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sig.inter.EndingInter;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code EndingSymbol} implements a decorated ending symbol
+ * Class {@code EndingSymbol} implements an ending symbol
  *
  * @author Hervé Bitteur
  */
@@ -37,22 +40,53 @@ public class EndingSymbol
         extends ShapeSymbol
 {
 
+    final boolean withRightLeg;
+
     /**
-     * Create an EndingSymbol
+     * Create an EndingSymbol.
+     *
+     * @param withRightLeg true to provide the optional right leg
      */
-    public EndingSymbol ()
+    public EndingSymbol (boolean withRightLeg)
     {
-        this(false);
+        this(withRightLeg, false);
     }
 
     /**
-     * Create an EndingSymbol
+     * Create an EndingSymbol.
      *
-     * @param isIcon true for an icon
+     * @param withRightLeg true to provide the optional right leg
+     * @param isIcon       true for an icon
      */
-    protected EndingSymbol (boolean isIcon)
+    protected EndingSymbol (boolean withRightLeg,
+                            boolean isIcon)
     {
-        super(isIcon, Shape.ENDING, true); // Decorated
+        super(isIcon, withRightLeg ? Shape.ENDING_WRL : Shape.ENDING, false);
+        this.withRightLeg = withRightLeg;
+    }
+
+    //----------//
+    // getModel //
+    //----------//
+    @Override
+    public EndingInter.Model getModel (MusicFont font,
+                                       Point location,
+                                       Alignment alignment)
+    {
+        MyParams p = getParams(font);
+        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        p.model.translate(loc.getX(), loc.getY());
+
+        return p.model;
+    }
+
+    //--------//
+    // getTip //
+    //--------//
+    @Override
+    public String getTip ()
+    {
+        return shape + (withRightLeg ? " (w/ right leg)" : "");
     }
 
     //------------//
@@ -61,18 +95,27 @@ public class EndingSymbol
     @Override
     protected ShapeSymbol createIcon ()
     {
-        return new EndingSymbol(true);
+        return new EndingSymbol(withRightLeg, true);
     }
 
     //-----------//
     // getParams //
     //-----------//
     @Override
-    protected Params getParams (MusicFont font)
+    protected MyParams getParams (MusicFont font)
     {
-        Params p = new Params();
-        int il = font.getStaffInterline();
-        p.rect = new Rectangle(4 * il, il);
+        MyParams p = new MyParams();
+        double width = font.getStaffInterline() * 4.0;
+        double height = font.getStaffInterline() * 1.0;
+        p.rect = new Rectangle2D.Double(0, 0, width, height);
+
+        p.model.topLeft = new Point2D.Double(0, 0);
+        p.model.topRight = new Point2D.Double(width - 1, 0);
+        p.model.bottomLeft = new Point2D.Double(0, height);
+
+        if (withRightLeg) {
+            p.model.bottomRight = new Point2D.Double(width - 1, height);
+        }
 
         return p;
     }
@@ -82,13 +125,35 @@ public class EndingSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params p,
-                          Point location,
+                          Params params,
+                          Point2D location,
                           Alignment alignment)
     {
-        Point loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        MyParams p = (MyParams) params;
 
-        g.drawLine(loc.x, loc.y, (loc.x + p.rect.width) - 1, loc.y);
-        g.drawLine(loc.x, loc.y, loc.x, loc.y + p.rect.height);
+        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        p.model.translate(loc.getX(), loc.getY());
+
+        g.draw(new Line2D.Double(p.model.topLeft, p.model.topRight));
+        g.draw(new Line2D.Double(p.model.topLeft, p.model.bottomLeft));
+
+        if (withRightLeg) {
+            g.draw(new Line2D.Double(p.model.topRight, p.model.bottomRight));
+        }
+    }
+
+    //--------//
+    // Params //
+    //--------//
+    protected static class MyParams
+            extends BasicSymbol.Params
+    {
+
+        // offset: not used
+        // layout: not used
+        // rect:   global image
+        //
+        // model
+        EndingInter.Model model = new EndingInter.Model();
     }
 }

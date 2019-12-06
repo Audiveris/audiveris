@@ -662,23 +662,28 @@ public class BeamGroup
                                  boolean checkGroupSplit)
     {
         measure.clearBeamGroups();
+
         // Retrieve beams in this measure
         Set<AbstractBeamInter> beams = new LinkedHashSet<>();
+
         for (AbstractChordInter chord : measure.getHeadChords()) {
             beams.addAll(chord.getBeams());
         }
+
         // Reset group info in each beam
         for (AbstractBeamInter beam : beams) {
             beam.setGroup(null);
         }
+
         // Build beam groups for this measure stack
         for (AbstractBeamInter beam : beams) {
-            if (beam.getGroup() == null) {
+            if (!beam.isRemoved() && (beam.getGroup() == null)) {
                 BeamGroup group = new BeamGroup(measure);
                 assignGroup(group, beam);
                 logger.debug("{}", group);
             }
         }
+
         if (checkGroupSplit) {
             // In case something goes wrong, use an upper limit to loop
             int loopNb = constants.maxSplitLoops.getValue();
@@ -691,6 +696,7 @@ public class BeamGroup
                 }
             }
         }
+
         // Detect groups that are linked to more than one staff
         for (BeamGroup group : measure.getBeamGroups()) {
             group.countStaves();

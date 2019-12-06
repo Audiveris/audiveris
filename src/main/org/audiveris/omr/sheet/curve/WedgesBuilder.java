@@ -209,6 +209,12 @@ public class WedgesBuilder
             l2 = temp;
         }
 
+        // Adjust lines precisely
+        l1.setLine(l1.getX1(), l1.getY1() + 0.5,
+                   l1.getX2() + 1, l1.getY2() + 0.5);
+        l2.setLine(l2.getX1(), l2.getY1() + 0.5,
+                   l2.getX2() + 1, l2.getY2() + 0.5);
+
         WedgeInter inter = new WedgeInter(l1, l2, box, shape, impacts);
 
         /* For a wedge, we can restrict the containing systems as just the closest one. */

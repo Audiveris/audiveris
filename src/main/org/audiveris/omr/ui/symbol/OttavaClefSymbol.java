@@ -21,13 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -73,9 +74,9 @@ public class OttavaClefSymbol
     // getParams //
     //-----------//
     @Override
-    protected Params getParams (MusicFont font)
+    protected MyParams getParams (MusicFont font)
     {
-        return new MyParams(font);
+        return new MyParams(font, codes);
     }
 
     //-------//
@@ -84,19 +85,19 @@ public class OttavaClefSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
-        Point loc = alignment.translatedPoint(TOP_CENTER, p.rect, location);
+        Point2D loc = alignment.translatedPoint(TOP_CENTER, p.rect, location);
 
         if (isAlta) {
             MusicFont.paint(g, p.ottavaLayout, loc, TOP_CENTER);
-            loc.y += p.ottavaRect.getHeight();
+            PointUtil.add(loc, 0, p.ottavaRect.getHeight());
             MusicFont.paint(g, p.layout, loc, TOP_CENTER);
         } else {
             MusicFont.paint(g, p.layout, loc, TOP_CENTER);
-            loc.y += p.clefRect.getHeight();
+            PointUtil.add(loc, 0, p.clefRect.getHeight());
             MusicFont.paint(g, p.ottavaLayout, loc, TOP_CENTER);
         }
     }
@@ -104,7 +105,7 @@ public class OttavaClefSymbol
     //----------//
     // MyParams //
     //----------//
-    private class MyParams
+    protected static class MyParams
             extends Params
     {
 
@@ -114,7 +115,8 @@ public class OttavaClefSymbol
 
         final Rectangle2D clefRect;
 
-        MyParams (MusicFont font)
+        MyParams (MusicFont font,
+                  int[] codes)
         {
             ottavaLayout = Symbols.SYMBOL_OTTAVA.layout(font);
             ottavaRect = ottavaLayout.getBounds();

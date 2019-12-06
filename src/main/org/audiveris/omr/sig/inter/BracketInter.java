@@ -23,22 +23,43 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.AreaUtil;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.BracketSymbol;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.ui.symbol.Symbols;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.font.TextLayout;
+import java.awt.geom.Area;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omr.sig.ui.InterEditor;
 
 /**
- * Class {@code BracketInter}
+ * Class {@code BracketInter} represents the portion of a bracket limited to a staff.
+ * <p>
+ * A bracket that spans several staves is modeled as one BracketInter per staff, interleaved by
+ * {@link BracketConnectorInter} instances.
  *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "bracket")
 public class BracketInter
-        extends AbstractVerticalInter
+        extends AbstractStaffVerticalInter
 {
+
+    private static final Logger logger = LoggerFactory.getLogger(BracketInter.class);
 
     /** Bracket kind. */
     @XmlAttribute(name = "kind")
@@ -49,7 +70,7 @@ public class BracketInter
      *
      * @param glyph   the underlying glyph
      * @param impacts the assignment details
-     * @param median  the median line
+     * @param median  the median line (without the serifs, from upper to lower staff lines)
      * @param width   the bar line width
      * @param kind    precise kind of bracket item
      */
@@ -61,6 +82,17 @@ public class BracketInter
     {
         super(glyph, Shape.BRACKET, impacts, median, width);
         this.kind = kind;
+    }
+
+    /**
+     * Creates a new {@code BracketInter} object, meant for manual use.
+     *
+     * @param grade inter quality
+     */
+    public BracketInter (double grade)
+    {
+        super(null, Shape.BRACKET, grade, null, null);
+        this.kind = BracketKind.BOTH;
     }
 
     /**
@@ -93,6 +125,15 @@ public class BracketInter
         return sb.toString();
     }
 
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new AbstractVerticalInter.Editor(this, isManual());
+    }
+
     //---------//
     // getKind //
     //---------//
@@ -106,14 +147,88 @@ public class BracketInter
         return kind;
     }
 
+    //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public void deriveFrom (ShapeSymbol symbol,
+                            MusicFont font,
+                            Point dropLocation,
+                            Alignment alignment)
+    {
+        BracketSymbol bracketSymbol = (BracketSymbol) symbol;
+        Model model = bracketSymbol.getModel(font, dropLocation, alignment);
+        median = new Line2D.Double(model.p1, model.p2);
+        width = model.width;
+        computeArea(font);
+    }
+
+    //-----------//
+    // setBounds //
+    //-----------//
+    @Override
+    public void setBounds (Rectangle bounds)
+    {
+        // We cannot use super.setBounds()
+        // because AbstractVerticalInter.setBounds() assigns bounds width to item width variable.
+        // And bracket width variable is only the trunk width, much less than the serifs width.
+        this.bounds = (bounds != null) ? new Rectangle(bounds) : null;
+    }
+
+    //-------------//
+    // computeArea //
+    //-------------//
+    @Override
+    protected void computeArea ()
+    {
+        if (sig != null) {
+            Scale scale = sig.getSystem().getSheet().getScale();
+            MusicFont font = MusicFont.getBaseFont(scale.getInterline());
+            computeArea(font);
+        }
+    }
+
+    //-------------//
+    // computeArea //
+    //-------------//
+    protected void computeArea (MusicFont font)
+    {
+        TextLayout upperLayout = font.layout(Symbols.SYMBOL_BRACKET_UPPER_SERIF.getString());
+        Rectangle2D upperRect = upperLayout.getBounds();
+
+        TextLayout lowerLayout = font.layout(Symbols.SYMBOL_BRACKET_LOWER_SERIF.getString());
+        Rectangle2D lowerRect = lowerLayout.getBounds();
+
+        area = AreaUtil.verticalParallelogram(median.getP1(), median.getP2(), getWidth());
+        Rectangle2D tr = new Rectangle2D.Double(median.getX1() - width / 2,
+                                                median.getY1() + upperRect.getY(),
+                                                upperRect.getWidth(),
+                                                -upperRect.getY());
+        Rectangle2D br = new Rectangle2D.Double(median.getX1() - width / 2,
+                                                median.getY2(),
+                                                lowerRect.getWidth(),
+                                                lowerRect.getHeight() + lowerRect.getY());
+        area.add(new Area(tr));
+        area.add(new Area(br));
+
+        bounds = area.getBounds();
+    }
+
+    //-------------//
+    // BracketKind //
+    //-------------//
     /**
      * Kind of bracket.
      */
     public static enum BracketKind
     {
+        /** With upper serif. */
         TOP,
+        /** With upper and lower serifs. */
         BOTH,
+        /** With lower serif. */
         BOTTOM,
+        /** With no serif. */
         NONE
     }
 }

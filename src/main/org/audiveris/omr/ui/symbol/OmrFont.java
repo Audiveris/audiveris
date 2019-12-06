@@ -32,8 +32,8 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
-import java.awt.Point;
 import java.awt.font.FontRenderContext;
+import java.awt.font.LineMetrics;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -75,9 +75,17 @@ public abstract class OmrFont
      */
     protected OmrFont (String name,
                        int style,
-                       int pointSize)
+                       float pointSize)
     {
         super(createFont(name, style, pointSize));
+    }
+
+    //----------------//
+    // getLineMetrics //
+    //----------------//
+    public LineMetrics getLineMetrics (String str)
+    {
+        return this.getLineMetrics(str, frc);
     }
 
     //--------//
@@ -141,19 +149,17 @@ public abstract class OmrFont
      */
     public static void paint (Graphics2D g,
                               TextLayout layout,
-                              Point location,
+                              Point2D location,
                               Alignment alignment)
     {
         try {
             // Compute symbol origin
             Rectangle2D bounds = layout.getBounds();
             Point2D toTextOrigin = alignment.toTextOrigin(bounds);
-            Point2D origin = new Point2D.Double(
-                    location.x + toTextOrigin.getX(),
-                    location.y + toTextOrigin.getY());
 
             // Draw the symbol
-            layout.draw(g, (float) origin.getX(), (float) origin.getY());
+            layout.draw(g, (float) (location.getX() + toTextOrigin.getX()),
+                        (float) (location.getY() + toTextOrigin.getY()));
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warn("Cannot paint at " + location, ex);
@@ -165,7 +171,7 @@ public abstract class OmrFont
     //------------//
     private static Font createFont (String fontName,
                                     int style,
-                                    int pointSize)
+                                    float pointSize)
     {
         Font font;
 
@@ -205,7 +211,7 @@ public abstract class OmrFont
         }
 
         // Finally, try a platform font
-        font = new Font(fontName, style, pointSize);
+        font = new Font(fontName, style, (int) pointSize);
         fontCache.put(fontName, font);
         logger.debug("Using platform font {}", font.getFamily());
 

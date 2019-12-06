@@ -240,13 +240,13 @@ public enum TextRole
 
             if (leftOfStaves) {
                 return PartName;
-            } else if (lyricsAllowed && (switches.getValue(Switch.lyrics) || switches.getValue(
-                    Switch.lyricsAboveStaff))
+            } else if (lyricsAllowed
+                               && (switches.getValue(Switch.lyrics)
+                                           || switches.getValue(Switch.lyricsAboveStaff))
                                && ((partPosition == StaffPosition.BELOW_STAVES)
                                            || ((partPosition == StaffPosition.ABOVE_STAVES)
-                                               && switches.getValue(
-                            Switch.lyricsAboveStaff)))
-                               && !isMainlyItalic) {
+                                               && switches.getValue(Switch.lyricsAboveStaff)))
+                               && (!isMainlyItalic)) {
                 return Lyrics;
             } else if (!tinySentence) {
                 return Direction;
@@ -278,6 +278,30 @@ public enum TextRole
 
         // Default
         return UnknownRole;
+    }
+
+    //------------------//
+    // valuesSansLyrics //
+    //------------------//
+    /**
+     * Report all TextRole values except the Lyrics item.
+     *
+     * @return TextRole values without Lyrics
+     */
+    public static TextRole[] valuesSansLyrics ()
+    {
+        TextRole[] all = TextRole.values();
+        TextRole[] sans = new TextRole[all.length - 1];
+
+        int i = 0;
+
+        for (TextRole role : all) {
+            if (role != TextRole.Lyrics) {
+                sans[i++] = role;
+            }
+        }
+
+        return sans;
     }
 
     //-----------//

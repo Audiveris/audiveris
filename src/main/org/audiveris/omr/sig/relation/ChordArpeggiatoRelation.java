@@ -78,7 +78,8 @@ public class ChordArpeggiatoRelation
     @Override
     public boolean isSingleSource ()
     {
-        return true;
+        // An arpeggiato can be linked to 2 chords, one below the other, each in its own staff
+        return false;
     }
 
     //----------------//

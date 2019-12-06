@@ -26,9 +26,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
-import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
@@ -191,21 +189,18 @@ public class DotFactory
      */
     private void buildRepeatPairs ()
     {
-        List<Inter> repeatDots = sig.inters(Shape.REPEAT_DOT);
+        final List<Inter> repeatDots = sig.inters(Shape.REPEAT_DOT);
         Collections.sort(repeatDots, Inters.byAbscissa);
 
         for (int i = 0; i < repeatDots.size(); i++) {
-            RepeatDotInter dot = (RepeatDotInter) repeatDots.get(i);
-            int dotPitch = dot.getIntegerPitch();
-            Rectangle luBox = dot.getBounds();
-            luBox.y -= (scale.getInterline() * dotPitch);
-
-            final int xBreak = luBox.x + luBox.width;
+            final RepeatDotInter dot = (RepeatDotInter) repeatDots.get(i);
+            final Rectangle dotLuBox = dot.getDotLuBox(system);
+            final int xBreak = dotLuBox.x + dotLuBox.width;
 
             for (Inter inter : repeatDots.subList(i + 1, repeatDots.size())) {
                 Rectangle otherBox = inter.getBounds();
 
-                if (luBox.intersects(otherBox)) {
+                if (dotLuBox.intersects(otherBox)) {
                     RepeatDotInter other = (RepeatDotInter) inter;
                     logger.debug("Pair {} and {}", dot, other);
                     sig.addEdge(dot, other, new RepeatDotPairRelation());
@@ -355,6 +350,8 @@ public class DotFactory
                 int staffCount = system.getStaves().size();
                 logger.trace("{} {} staves:{} dots:{}", stack, side, staffCount, dotCount);
 
+                // In theory, we should have dotCount == 2 * staffCount
+                // Let's simply use quorum of 50% to decide on true repeat indication
                 if (dotCount >= staffCount) {
                     // It's a repeat side, delete inters that conflict with repeat dots
                     // This works for real dots only, not for virtual ones
@@ -460,83 +457,39 @@ public class DotFactory
      */
     private void instantCheckRepeat (Dot dot)
     {
-        // Check vertical pitch position within the staff: close to +1 or -1
+        // Sanity check on pitch
         final Rectangle dotBounds = dot.getBounds();
         final Point dotPt = GeoUtil.centerOf(dotBounds);
+
+        if (!RepeatDotInter.checkPitch(system, dotPt, false)) {
+            return;
+        }
+
+        // Allocate inter
         final double pp = system.estimatedPitch(dotPt);
-        double pitchDif = Math.abs(Math.abs(pp) - 1);
-        double maxDif = RepeatDotBarRelation.getYGapMaximum(false).getValue();
+        final double pitch = (pp > 0) ? 1 : (-1);
+        final Glyph glyph = dot.getGlyph();
+        final Staff staff = system.getClosestStaff(dotPt); // Staff is OK
+        final RepeatDotInter repeat = new RepeatDotInter(glyph, 0, staff, pitch);
 
-        // Rough sanity check
-        if (pitchDif > (2 * maxDif)) {
+        // Check barline nearby
+        final Link barLink = repeat.lookupBarLink(system, interFactory.getSystemBars());
+
+        if (barLink == null) {
             return;
         }
 
-        final int maxDx = scale.toPixels(RepeatDotBarRelation.getXOutGapMaximum(false));
-        final int maxDy = scale.toPixels(RepeatDotBarRelation.getYGapMaximum(false));
-        final Rectangle luBox = new Rectangle(dotPt);
-        luBox.grow(maxDx, maxDy);
+        repeat.setGrade(Grades.intrinsicRatio * dot.getGrade());
 
-        final List<Inter> bars = Inters.intersectedInters(
-                interFactory.getSystemBars(),
-                GeoOrder.BY_ABSCISSA,
-                luBox);
+        sig.addVertex(repeat);
+        barLink.applyTo(repeat);
 
-        if (bars.isEmpty()) {
-            return;
-        }
-
-        RepeatDotBarRelation bestRel = null;
-        Inter bestBar = null;
-        double bestXGap = Double.MAX_VALUE;
-
-        for (Inter barInter : bars) {
-            BarlineInter bar = (BarlineInter) barInter;
-            Rectangle box = bar.getBounds();
-            Point barCenter = bar.getCenter();
-
-            // Select proper bar reference point (left or right side and proper vertical side)
-            double barY = barCenter.y + ((box.height / 8d) * Integer.signum(dotPt.y - barCenter.y));
-            double barX = LineUtil.xAtY(bar.getMedian(), barY) + ((bar.getWidth() / 2) * Integer
-                    .signum(dotPt.x - barCenter.x));
-
-            double xGap = Math.abs(barX - dotPt.x);
-            double yGap = Math.abs(barY - dotPt.y);
-            RepeatDotBarRelation rel = new RepeatDotBarRelation();
-            rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
-
-            if (rel.getGrade() >= rel.getMinGrade()) {
-                if ((bestRel == null) || (bestXGap > xGap)) {
-                    bestRel = rel;
-                    bestBar = bar;
-                    bestXGap = xGap;
-                }
-            }
-        }
-
-        if (bestRel != null) {
-            final Staff staff = system.getClosestStaff(dotPt); // Staff is OK
-            double grade = Grades.intrinsicRatio * dot.getGrade();
-            double pitch = (pp > 0) ? 1 : (-1);
-            Glyph glyph = dot.getGlyph();
-            int annId = dot.getAnnotationId();
-            final RepeatDotInter repeat;
-
+        if (dot.isVip()) {
             if (glyph != null) {
-                repeat = new RepeatDotInter(glyph, grade, staff, pitch);
+                logger.info("VIP Created {} from glyph#{}", repeat, glyph.getId());
             } else {
-                repeat = null; // Placeholder
-            }
-
-            sig.addVertex(repeat);
-            sig.addEdge(repeat, bestBar, bestRel);
-
-            if (dot.isVip()) {
-                if (glyph != null) {
-                    logger.info("VIP Created {} from glyph#{}", repeat, glyph.getId());
-                } else {
-                    logger.info("VIP Created {} from annotation#{}", repeat, annId);
-                }
+                int annId = dot.getAnnotationId();
+                logger.info("VIP Created {} from annotation#{}", repeat, annId);
             }
         }
     }
@@ -562,15 +515,6 @@ public class DotFactory
                     Grades.intrinsicRatio * dot.getGrade(),
                     system,
                     interFactory.getSystemHeadChords());
-
-            //        } else {
-            //            ArticulationInter.createValidAdded(
-            //                    dot.getAnnotationId(),
-            //                    dot.getBounds(),
-            //                    dot.getOmrShape(),
-            //                    Grades.intrinsicRatio * dot.getGrade(),
-            //                    system,
-            //                    interFactory.getSystemHeadChords());
         }
     }
 

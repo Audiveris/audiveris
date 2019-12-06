@@ -7,8 +7,33 @@ therefore it is assumed to be part of version control checkout.
 Without this configuration present, some functionality in the IDE may be limited or fail altogether.
 -->
     <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+        <word>arg</word>
+        <word>arpeggiato</word>
+        <word>Audiveris</word>
+        <word>barline</word>
+        <word>barlines</word>
+        <word>bezier</word>
+        <word>binarization</word>
+        <word>boolean</word>
+        <word>Bézier</word>
         <word>covariant</word>
+        <word>draggable</word>
+        <word>droppable</word>
+        <word>glasspane</word>
         <word>informations</word>
+        <word>marcato</word>
+        <word>Marshalled</word>
+        <word>marshalling</word>
+        <word>omr</word>
+        <word>Overridable</word>
+        <word>pre</word>
+        <word>programmatically</word>
+        <word>runtable</word>
+        <word>runtime</word>
+        <word>staccatissimo</word>
         <word>tuplet</word>
+        <word>uncomment</word>
+        <word>unmarshalled</word>
+        <word>unmarshalling</word>
     </spellchecker-wordlist>
 </project-shared-configuration>

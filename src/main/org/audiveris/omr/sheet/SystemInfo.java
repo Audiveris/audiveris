@@ -27,6 +27,7 @@ import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
+import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.StaffPosition;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.grid.PartGroup;
@@ -36,6 +37,7 @@ import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigListener;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -68,7 +70,6 @@ import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omr.score.PageRef;
 
 /**
  * Class {@code SystemInfo} gathers information from the original picture about a
@@ -290,7 +291,8 @@ public class SystemInfo
             }
 
             {
-                // Support for OldStaffBarline (in part left PartBarline and measures PartBarlines)
+                // Support for OldStaffBarline
+                // (In part left PartBarline and in measures PartBarlines)
                 boolean upgraded = false;
 
                 for (Part part : parts) {
@@ -712,6 +714,37 @@ public class SystemInfo
         return sb.toString();
     }
 
+    //---------------//
+    // getLyricLines //
+    //---------------//
+    /**
+     * Report all the lyric lines in this system, sorted by ordinate
+     *
+     * @return the sequence of lyric lines in system
+     */
+    public List<LyricLineInter> getLyricLines ()
+    {
+        if (sig == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        List<Inter> lyricInters = sig.inters(LyricLineInter.class);
+
+        if (lyricInters.isEmpty()) {
+            return Collections.EMPTY_LIST;
+        }
+
+        List<LyricLineInter> lines = new ArrayList<>();
+
+        for (Inter inter : lyricInters) {
+            lines.add((LyricLineInter) inter);
+        }
+
+        Collections.sort(lines, SentenceInter.byOrdinate);
+
+        return lines;
+    }
+
     //------------------------------//
     // getMutableHorizontalSections //
     //------------------------------//
@@ -1000,15 +1033,20 @@ public class SystemInfo
     public MeasureStack getStackAt (Point2D point)
     {
         if (point != null) {
-            final Staff staff = getStavesAround(point).get(0);
-            final double x = point.getX();
+            final List<Staff> stavesAround = getStavesAround(point);
 
-            for (MeasureStack stack : stacks) {
-                final Measure measure = stack.getMeasureAt(staff);
+            if (!stavesAround.isEmpty()) {
+                final Staff staff = stavesAround.get(0);
+                final double x = point.getX();
 
-                if ((measure != null) && (x >= measure.getAbscissa(LEFT, staff)) && (x <= measure
-                        .getAbscissa(RIGHT, staff))) {
-                    return stack;
+                for (MeasureStack stack : stacks) {
+                    final Measure measure = stack.getMeasureAt(staff);
+
+                    if ((measure != null)
+                                && (x >= measure.getAbscissa(LEFT, staff))
+                                && (x <= measure.getAbscissa(RIGHT, staff))) {
+                        return stack;
+                    }
                 }
             }
         }
@@ -1161,11 +1199,16 @@ public class SystemInfo
      * if any in system.
      *
      * @param point the provided point
-     * @return proper sublist of staves (top down)
+     * @return proper sub-list of staves (top down)
      */
     public List<Staff> getStavesAround (Point2D point)
     {
         final Staff closest = getClosestStaff(point);
+
+        if (closest == null) {
+            return Collections.EMPTY_LIST;
+        }
+
         final double toTop = closest.getFirstLine().yAt(point.getX()) - point.getY();
         final double toBottom = closest.getLastLine().yAt(point.getX()) - point.getY();
 

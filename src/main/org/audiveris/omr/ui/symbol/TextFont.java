@@ -91,7 +91,7 @@ public class TextFont
      *
      * @param size the point size of the {@code Font}
      */
-    public TextFont (int size)
+    public TextFont (float size)
     {
         super(fontName, Font.PLAIN, size);
     }
@@ -125,6 +125,33 @@ public class TextFont
         } else {
             return fontSize * (dim.height / (float) basicRect.getHeight());
         }
+    }
+
+    //-----------------//
+    // computeFontSize //
+    //-----------------//
+    /**
+     * Convenient method to compute a font size using a string content and width.
+     *
+     * @param content  the string value
+     * @param fontInfo OCR-based font information
+     * @param width    string width in pixels
+     * @return the computed font size
+     */
+    public static Float computeFontSize (String content,
+                                         FontInfo fontInfo,
+                                         int width)
+    {
+        if (content == null) {
+            return null;
+        }
+
+        Font font = new TextFont(fontInfo);
+        float fontSize = font.getSize2D();
+        GlyphVector glyphVector = font.createGlyphVector(frc, content);
+        Rectangle2D basicRect = glyphVector.getVisualBounds();
+
+        return fontSize * (width / (float) basicRect.getWidth());
     }
 
     //-----------//

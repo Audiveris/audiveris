@@ -747,7 +747,7 @@ public class KeyBuilder
                                     slice.getId(),
                                     String.format("%.1f", alter.getMeasuredPitch()),
                                     std);
-                            alter.setPitch(std);
+                            alter.setPitch(Double.valueOf(std));
                         }
                     }
                 }

@@ -35,9 +35,11 @@ import org.audiveris.omr.ui.util.SeparableMenu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
@@ -57,7 +59,7 @@ public class InterMenu
 
     private final RelationListener relationListener = new RelationListener();
 
-    private InterController interController;
+    private final InterController interController;
 
     /**
      * Creates a new {@code InterMenu} object.
@@ -71,13 +73,25 @@ public class InterMenu
         this.inter = inter;
 
         final Sheet sheet = inter.getSig().getSystem().getSheet();
+        interController = sheet.getInterController();
+
         menu = new SeparableMenu(new InterAction(inter, null));
 
-        // Title
-        menu.add(buildTitle(sheet, inter));
-        menu.addSeparator();
+        // To ensemble
+        Inter ensemble = inter.getEnsemble();
 
-        interController = sheet.getInterController();
+        if (ensemble != null) {
+            menu.add(new JMenuItem(new ToEnsembleAction(ensemble)));
+        }
+
+        // Edit mode
+        if (inter.isEditable()) {
+            menu.add(new JMenuItem(new EditAction(inter)));
+        }
+
+        // Relations
+        menu.addSeparator();
+        menu.add(buildRelationsTitle(sheet, inter));
 
         for (Relation relation : relations) {
             JMenuItem item = new JMenuItem(new RelationAction(inter, relation));
@@ -99,11 +113,11 @@ public class InterMenu
         return menu;
     }
 
-    //------------//
-    // buildTitle //
-    //------------//
-    private JMenuItem buildTitle (final Sheet sheet,
-                                  final Inter inter)
+    //---------------------//
+    // buildRelationsTitle //
+    //---------------------//
+    private JMenuItem buildRelationsTitle (final Sheet sheet,
+                                           final Inter inter)
     {
         JMenuItem title = new JMenuItem("Relations:");
         title.setEnabled(false);
@@ -151,6 +165,64 @@ public class InterMenu
             if (OMR.gui.displayConfirmation("Remove " + relStr + " relation?")) {
                 interController.unlink(sig, relation);
             }
+        }
+    }
+
+    //------------//
+    // EditAction //
+    //------------//
+    /**
+     * Ability to set the underlying inter into edit mode.
+     */
+    private static class EditAction
+            extends AbstractAction
+    {
+
+        /** Originating inter. */
+        private final Inter inter;
+
+        public EditAction (Inter inter)
+        {
+            this.inter = inter;
+
+            putValue(NAME, "Edit");
+            putValue(SHORT_DESCRIPTION, "Set inter into edit mode");
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            final Sheet sheet = inter.getSig().getSystem().getSheet();
+            sheet.getSymbolsEditor().openEditMode(inter);
+            inter.getSig().publish(inter, SelectionHint.ENTITY_TRANSIENT);
+        }
+    }
+
+    //------------------//
+    // ToEnsembleAction //
+    //------------------//
+    /**
+     * Ability to select the ensemble of the provided inter.
+     */
+    private static class ToEnsembleAction
+            extends AbstractAction
+    {
+
+        /** Originating inter. */
+        private final Inter inter;
+
+        public ToEnsembleAction (Inter ensemble)
+        {
+            this.inter = ensemble;
+
+            putValue(NAME, "To ensemble");
+            putValue(SHORT_DESCRIPTION, "Select the containing ensemble");
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            inter.getSig().publish(inter, SelectionHint.ENTITY_INIT);
         }
     }
 }

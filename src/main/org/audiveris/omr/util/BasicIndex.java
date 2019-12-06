@@ -321,10 +321,8 @@ public class BasicIndex<E extends Entity>
     public void publish (E entity,
                          SelectionHint hint)
     {
-        final EntityService<E> entityService = this.getEntityService();
-
         if (entityService != null) {
-            final EntityListEvent event = new EntityListEvent<E>(
+            final EntityListEvent event = new EntityListEvent<>(
                     this,
                     hint,
                     MouseMovement.PRESSING,

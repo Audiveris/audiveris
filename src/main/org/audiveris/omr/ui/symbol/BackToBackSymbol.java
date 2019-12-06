@@ -21,14 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.font.TextLayout;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -56,11 +56,19 @@ public class BackToBackSymbol
     private final ShapeSymbol dotsSymbol = Symbols.getSymbol(REPEAT_DOT_PAIR);
 
     /**
-     * Create a BackToBackSymbol
+     * Create a BackToBackSymbol.
+     */
+    public BackToBackSymbol ()
+    {
+        this(false);
+    }
+
+    /**
+     * Create a BackToBackSymbol.
      *
      * @param isIcon true for an icon
      */
-    public BackToBackSymbol (boolean isIcon)
+    protected BackToBackSymbol (boolean isIcon)
     {
         super(isIcon, Shape.DOUBLE_BARLINE, false);
     }
@@ -88,9 +96,10 @@ public class BackToBackSymbol
 
         Rectangle2D rightRect = p.layout.getBounds();
         p.dx = (int) Math.ceil(rightRect.getWidth() * DX_RATIO);
-        p.rect = new Rectangle(
-                (int) Math.ceil(rightRect.getWidth() * WIDTH_RATIO),
-                (int) Math.ceil(rightRect.getHeight()));
+        p.rect = new Rectangle2D.Double(0,
+                                        0,
+                                        rightRect.getWidth() * WIDTH_RATIO,
+                                        rightRect.getHeight());
 
         return p;
     }
@@ -101,25 +110,24 @@ public class BackToBackSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
-        Point loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
+        Point2D loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
         MusicFont.paint(g, p.layout, loc, MIDDLE_LEFT);
 
-        loc.x += p.dx;
+        PointUtil.add(loc, p.dx, 0);
         MusicFont.paint(g, p.thinLayout, loc, AREA_CENTER);
 
-        loc.x -= p.dx;
-        loc.x += p.rect.width;
+        PointUtil.add(loc, p.rect.getWidth() - p.dx, 0);
         MusicFont.paint(g, p.dotsLayout, loc, MIDDLE_RIGHT);
     }
 
     //----------//
     // MyParams //
     //----------//
-    protected class MyParams
+    protected static class MyParams
             extends Params
     {
 

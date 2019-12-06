@@ -35,7 +35,9 @@ public interface Entity
 {
 
     /**
-     * Tell whether the entity contains the provided point
+     * Tell whether the entity contains the provided point.
+     * <p>
+     * This is mostly used to detect when an entity is pointed at.
      *
      * @param point the provided point
      * @return true if point is found as contained by the entity

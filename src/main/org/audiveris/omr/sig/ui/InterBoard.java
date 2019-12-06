@@ -35,14 +35,18 @@ import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.PixelCount;
+import org.audiveris.omr.ui.field.LCheckBox;
 import org.audiveris.omr.ui.field.LComboBox;
+import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.field.LTextField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
+import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.util.Panel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
@@ -52,6 +56,7 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
@@ -76,19 +81,25 @@ public class InterBoard
     private final JLabel shapeIcon = new JLabel();
 
     /** Output : grade (intrinsic/contextual). */
-    private final LTextField grade = new LTextField("Grade", "Intrinsic / Contextual");
+    private final LLabel grade = new LLabel("Grade:", "Intrinsic / Contextual");
 
     /** Output : implicit / manual. */
     private final JLabel specific = new JLabel("");
 
     /** Output : shape. */
-    private final LTextField shapeField = new LTextField("", "Shape for this interpretation");
+    private final LLabel shapeName = new LLabel("", "Shape for this interpretation");
 
     /** Output : grade details. */
     private final JLabel details = new JLabel("");
 
-    /** To delete/deassign. */
+    /** To delete/de-assign. */
     private final DeassignAction deassignAction = new DeassignAction();
+
+    /** To select ensemble. */
+    private final ToEnsembleAction toEnsAction = new ToEnsembleAction();
+
+    /** To set into Edit mode. */
+    private final LCheckBox edit = new LCheckBox("Edit", "Set inter into edit mode");
 
     //    /** Numerator of time signature */
     //    private final LIntegerField timeNum;
@@ -100,7 +111,7 @@ public class InterBoard
     private final LComboBox<TextRole> roleCombo = new LComboBox<>(
             "Role",
             "Role of the Sentence",
-            TextRole.values());
+            TextRole.valuesSansLyrics());
 
     /** Input/Output : textual content. */
     private final LTextField textField = new LTextField(true, "Text", "Content of textual item");
@@ -144,14 +155,41 @@ public class InterBoard
         details.setToolTipText("Grade details");
         details.setHorizontalAlignment(SwingConstants.CENTER);
 
+        edit.addActionListener(this);
+
         paramAction = new ParamAction();
 
         // Initial status
         grade.setEnabled(false);
         specific.setEnabled(false);
         details.setEnabled(false);
+        edit.setEnabled(false);
 
         defineLayout();
+    }
+
+    //-----------------//
+    // actionPerformed //
+    //-----------------//
+    /**
+     * Triggered by Edit check box (and by VIP check box and by dump button)
+     *
+     * @param e the event that triggered this action
+     */
+    @Override
+    public void actionPerformed (ActionEvent e)
+    {
+        if (edit.getField() == e.getSource()) {
+            final Inter inter = InterBoard.this.getSelectedEntity();
+
+            if (edit.getField().isSelected()) {
+                sheet.getSymbolsEditor().openEditMode(inter);
+            } else {
+                sheet.getSymbolsEditor().closeEditMode();
+            }
+        } else {
+            super.actionPerformed(e); // VIP or DUMP
+        }
     }
 
     //---------------------//
@@ -176,7 +214,7 @@ public class InterBoard
     @Override
     protected FormLayout getFormLayout ()
     {
-        return Panel.makeFormLayout(4, 3);
+        return Panel.makeFormLayout(5, 3);
     }
 
     //-----------------------//
@@ -198,10 +236,10 @@ public class InterBoard
         Shape shape = (inter != null) ? inter.getShape() : null;
 
         if (shape != null) {
-            shapeField.setText(shape.toString());
+            shapeName.setText(shape.toString());
             shapeIcon.setIcon(shape.getDecoratedSymbol());
         } else {
-            shapeField.setText((inter != null) ? inter.shapeString() : "");
+            shapeName.setText((inter != null) ? inter.shapeString() : "");
             shapeIcon.setIcon(null);
         }
 
@@ -238,24 +276,33 @@ public class InterBoard
                 SentenceInter sentence = (SentenceInter) inter;
                 textField.setText(sentence.getValue());
                 textField.setVisible(true);
-                roleCombo.setSelectedItem(sentence.getRole());
-                roleCombo.setVisible(true);
-                roleCombo.setEnabled(!(sentence instanceof LyricLineInter));
 
+                if (!(inter instanceof LyricLineInter)) {
+                    roleCombo.setSelectedItem(sentence.getRole());
+                    roleCombo.setVisible(true);
+                    roleCombo.setEnabled(!(sentence instanceof LyricLineInter));
+                }
                 selfUpdatingText = false;
             } else {
+                // edit?
+                Inter editedInter = sheet.getSymbolsEditor().getEditedInter();
+                edit.getField().setSelected(inter == editedInter);
             }
         } else {
             grade.setText("");
             specific.setText("");
             details.setText("");
             deassignAction.putValue(Action.NAME, " ");
+            edit.getField().setSelected(false);
         }
 
         deassignAction.setEnabled((inter != null) && !inter.isRemoved());
         grade.setEnabled(inter != null);
-        shapeField.setEnabled(inter != null);
+        shapeName.setEnabled(inter != null);
         details.setEnabled(inter != null);
+        edit.setEnabled((inter != null) && !inter.isRemoved() && inter.isEditable());
+        toEnsAction.setEnabled((inter != null) && !inter.isRemoved() && (inter.getSig() != null)
+                                       && (inter.getEnsemble() != null));
     }
 
     //--------------//
@@ -274,9 +321,11 @@ public class InterBoard
         // Shape Icon (start, spans several rows) + grade + Deassign button
         builder.add(shapeIcon, cst.xywh(1, r, 1, 5));
 
+        // Grade
         builder.add(grade.getLabel(), cst.xy(5, r));
         builder.add(grade.getField(), cst.xy(7, r));
 
+        // Deassign
         JButton deassignButton = new JButton(deassignAction);
         deassignButton.setHorizontalTextPosition(SwingConstants.LEFT);
         deassignButton.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -285,23 +334,44 @@ public class InterBoard
 
         r += 2; // --------------------------------
 
-        builder.add(specific, cst.xyw(3, r, 4));
-        builder.add(shapeField.getField(), cst.xyw(7, r, 5));
+        // Edit
+        JPanel editPane = new JPanel(new BorderLayout());
+        edit.getLabel().setHorizontalAlignment(SwingConstants.CENTER);
+        editPane.add(edit.getLabel(), BorderLayout.CENTER);
+        editPane.add(edit.getField(), BorderLayout.EAST);
+        builder.add(editPane, cst.xyw(3, r, 1));
+
+        // Specific (MANUAL or IMPLICIT) if any
+        builder.add(specific, cst.xyw(5, r, 4));
+
+        // To ensemble
+        JButton toEnsButton = new JButton(toEnsAction);
+        toEnsButton.setHorizontalTextPosition(SwingConstants.LEFT);
+        toEnsButton.setHorizontalAlignment(SwingConstants.RIGHT);
+        toEnsAction.setEnabled(false);
+        builder.add(toEnsButton, cst.xyw(11, r, 1));
 
         r += 2; // --------------------------------
 
-        roleCombo.getField().setMaximumRowCount(TextRole.values().length);
+        // Role
+        roleCombo.getField().setMaximumRowCount(TextRole.valuesSansLyrics().length);
         roleCombo.addActionListener(paramAction);
         roleCombo.setVisible(false);
         builder.add(roleCombo.getField(), cst.xyw(3, r, 4));
 
-        // Text field
-        textField.getField().setHorizontalAlignment(JTextField.LEFT);
-        textField.setVisible(false);
-        builder.add(textField.getField(), cst.xyw(7, r, 5));
+        // Shape name
+        builder.add(shapeName.getField(), cst.xyw(7, r, 5));
 
         r += 2; // --------------------------------
 
+        // Text field
+        textField.getField().setHorizontalAlignment(JTextField.LEFT);
+        textField.setVisible(false);
+        builder.add(textField.getField(), cst.xyw(3, r, 9));
+
+        r += 2; // --------------------------------
+
+        // Details
         builder.add(details, cst.xyw(1, r, 11));
 
         // Needed to process user input when RETURN/ENTER is pressed
@@ -393,19 +463,33 @@ public class InterBoard
                     final TextRole newRole = roleCombo.getSelectedItem();
 
                     if (newRole != sentence.getRole()) {
-                        logger.debug(
-                                "Sentence=\"{}\" Role={}",
-                                textField.getText().trim(),
-                                newRole);
-
-                        if (newRole == TextRole.Lyrics) {
-                            logger.info("You cannot change role to lyrics");
-                        } else {
-                            sheet.getInterController().changeSentence(sentence, newRole);
-                        }
+                        logger.debug("Sentence=\"{}\" Role={}", textField.getText().trim(), newRole);
+                        sheet.getInterController().changeSentence(sentence, newRole);
                     }
                 }
             }
+        }
+    }
+
+    //------------------//
+    // ToEnsembleAction //
+    //------------------//
+    private class ToEnsembleAction
+            extends AbstractAction
+    {
+
+        public ToEnsembleAction ()
+        {
+            super("To Ens.");
+            putValue(Action.SHORT_DESCRIPTION, "Move to containing ensemble");
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            // Select the containing ensemble of current inter
+            final Inter inter = InterBoard.this.getSelectedEntity();
+            inter.getSig().publish(inter.getEnsemble(), SelectionHint.ENTITY_INIT);
         }
     }
 }

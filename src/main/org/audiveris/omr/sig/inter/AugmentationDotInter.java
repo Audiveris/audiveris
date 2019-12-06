@@ -483,14 +483,11 @@ public class AugmentationDotInter
      * In case of a shared head, a pair of links can be returned.
      *
      * @param system containing system
-     * @param doit   true to apply
      * @return a collection of 0, 1 or 2 best link(s) found
      */
     @Override
-    public Collection<Link> searchLinks (SystemInfo system,
-                                         boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system)
     {
-        // Not very optimized!
         List<Inter> systemRests = system.getSig().inters(RestInter.class);
         Collections.sort(systemRests, Inters.byAbscissa);
 
@@ -503,24 +500,24 @@ public class AugmentationDotInter
         Link link = lookupLink(systemRests, systemHeadChords, systemDots, system);
 
         if (link == null) {
-            return Collections.emptyList();
+            return Collections.EMPTY_LIST;
         }
-
-        final Collection<Link> links;
 
         if (link.partner instanceof HeadInter) {
-            links = sharedHeadLinks(link);
+            return sharedHeadLinks(link);
         } else {
-            links = Collections.singleton(link);
+            return Collections.singleton(link);
         }
+    }
 
-        if (doit) {
-            for (Link lnk : links) {
-                lnk.applyTo(this);
-            }
-        }
-
-        return links;
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, AugmentationRelation.class, DoubleDotRelation.class);
     }
 
     //-----------------//

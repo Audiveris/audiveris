@@ -34,12 +34,14 @@
     <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="viewBookRepository" topic="SAMPLES"/>
     <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBookRepository" topic="SAMPLES"/>
     <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="annotateBook"       topic="ANNOTATIONS"/>
+    <action domain="BOOK" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="upgradeBook"/>
     <action domain="BOOK" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBook"                                 button="javax.swing.JButton"/>
     <action domain="BOOK" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBookAs"/>
     <action domain="BOOK" section="60" class="org.audiveris.omr.sheet.ui.BookActions" method="closeBook"/>
     
     <action domain="SHEET" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="undo"                                            button="javax.swing.JButton"/>
     <action domain="SHEET" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="redo"                                            button="javax.swing.JButton"/>
+    <action domain="SHEET" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="toggleRepetitiveInput"     item="javax.swing.JCheckBoxMenuItem"   button="javax.swing.JToggleButton" />
     <action domain="SHEET" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetSheet"/>
     <action domain="SHEET" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetSheetToBinary"/>
     <action domain="SHEET" section="15" class="org.audiveris.omr.sheet.ui.BookActions" method="transcribeSheet"/>
@@ -97,8 +99,9 @@
     <action domain="DEBUG" section="70" class="org.audiveris.omr.sheet.ui.BookActions" method="dumpEventServices"   topic="DEBUG"/>
     
     <action domain="HELP" section="20" class="org.audiveris.omr.ui.GuiActions" method="showManual" />
-    <action domain="HELP" section="20" class="org.audiveris.omr.ui.GuiActions" method="visitWiki" />
-    <action domain="HELP" section="20" class="org.audiveris.omr.ui.GuiActions" method="visitWebSite" />
+    <action domain="HELP" section="30" class="org.audiveris.omr.ui.GuiActions" method="visitWiki" />
+    <action domain="HELP" section="30" class="org.audiveris.omr.ui.GuiActions" method="visitWebSite" />
+    <action domain="HELP" section="30" class="org.audiveris.omr.ui.GuiActions" method="checkUpdate" />
     <action domain="HELP" section="40" class="org.audiveris.omr.ui.GuiActions" method="showAbout" />
 
 </actions>

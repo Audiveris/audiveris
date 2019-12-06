@@ -22,7 +22,6 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.OMR;
-import org.audiveris.omr.ProgramId;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.classifier.Annotations;
 import org.audiveris.omr.classifier.SampleRepository;
@@ -41,7 +40,9 @@ import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.score.ui.BookPdfOutput;
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
+import org.audiveris.omr.sheet.Versions.CheckResult;
 import org.audiveris.omr.sheet.rhythm.Voices;
+import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sheet.ui.BookBrowser;
 import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.StubsController;
@@ -55,6 +56,7 @@ import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Memory;
 import org.audiveris.omr.util.OmrExecutors;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.ZipFileSystem;
 import org.audiveris.omr.util.param.Param;
 import org.audiveris.omr.util.param.StringParam;
@@ -318,6 +320,9 @@ public class Book
     /** Book-level sample repository. */
     private SampleRepository repository;
 
+    /** Has book already been checked for upgrade?. */
+    private boolean checkedForUpgrade = false;
+
     /**
      * Create a Book with a path to an input images file.
      *
@@ -403,6 +408,19 @@ public class Book
                 }
             }
         }
+    }
+
+    //-------------------//
+    // batchUpgradeBooks //
+    //-------------------//
+    /**
+     * In batch, should we automatically upgrade book sheets?
+     *
+     * @return true if so
+     */
+    public static boolean batchUpgradeBooks ()
+    {
+        return constants.batchUpgradeBooks.isSet();
     }
 
     //-------//
@@ -533,6 +551,7 @@ public class Book
                     Integer focusIndex = null;
 
                     if (focusStub != null) {
+                        // This triggers the display of focusStub sheet...
                         controller.addAssembly(focusStub.getAssembly(), null);
                         focusIndex = controller.getIndex(focusStub);
 
@@ -653,6 +672,28 @@ public class Book
     {
         this.alias = alias;
         radix = alias;
+    }
+
+    //---------------------//
+    // isCheckedForUpgrade //
+    //---------------------//
+    /**
+     * @return the checkedForUpgrade
+     */
+    public boolean isCheckedForUpgrade ()
+    {
+        return checkedForUpgrade;
+    }
+
+    //----------------------//
+    // setCheckedForUpgrade //
+    //----------------------//
+    /**
+     * @param checkedForUpgrade the checkedForUpgrade to set
+     */
+    public void setCheckedForUpgrade (boolean checkedForUpgrade)
+    {
+        this.checkedForUpgrade = checkedForUpgrade;
     }
 
     //-----------------------//
@@ -995,6 +1036,30 @@ public class Book
         }
 
         return valids;
+    }
+
+    //------------//
+    // getVersion //
+    //------------//
+    public Version getVersion ()
+    {
+        return new Version(version);
+    }
+
+    //-----------------//
+    // getVersionValue //
+    //-----------------//
+    public String getVersionValue ()
+    {
+        return version;
+    }
+
+    //-----------------//
+    // setVersionValue //
+    //-----------------//
+    public void setVersionValue (String version)
+    {
+        this.version = version;
     }
 
     //------------------------//
@@ -1553,8 +1618,8 @@ public class Book
             checkRadixChange(bookPath);
             logger.debug("Storing book...");
 
-            if ((this.bookPath == null) || this.bookPath.toAbsolutePath().equals(
-                    bookPath.toAbsolutePath())) {
+            if ((this.bookPath == null)
+                        || this.bookPath.toAbsolutePath().equals(bookPath.toAbsolutePath())) {
                 if (this.bookPath == null) {
                     root = ZipFileSystem.create(bookPath);
                     diskWritten = true;
@@ -1562,7 +1627,7 @@ public class Book
                     root = ZipFileSystem.open(bookPath);
                 }
 
-                if (modified) {
+                if (isModified() || isUpgraded()) {
                     storeBookInfo(root); // Book info (book.xml)
                     diskWritten = true;
                 }
@@ -1656,6 +1721,13 @@ public class Book
     public void storeBookInfo (Path root)
             throws Exception
     {
+        // Book version should always be the oldest of all sheets versions
+        Version oldest = getOldestSheetVersion();
+
+        if (oldest != null) {
+            setVersionValue(oldest.value);
+        }
+
         Path bookInternals = root.resolve(BOOK_INTERNALS);
         Files.deleteIfExists(bookInternals);
         Jaxb.marshal(this, bookInternals, getJaxbContext());
@@ -1667,7 +1739,7 @@ public class Book
     // swapAllSheets //
     //---------------//
     /**
-     * Swap all sheets, except the current one if any.
+     * Swap out all sheets, except the current one if any.
      */
     public void swapAllSheets ()
     {
@@ -1829,60 +1901,92 @@ public class Book
         }
     }
 
-    //-----------------------//
-    // areVersionsCompatible //
-    //-----------------------//
+    //--------------//
+    // upgradeStubs //
+    //--------------//
     /**
-     * Check whether the program version can operate on the file version.
+     * Upgrade the book sheets.
      * <p>
-     * (Quoting semantic versioning)
-     * <br>
-     * Given a version number MAJOR.MINOR.PATCH, increment the:
-     * <ol>
-     * <li>MAJOR version when you make incompatible API changes,
-     * <li>MINOR version when you add functionality in a backwards-compatible manner, and
-     * <li>PATCH version when you make backwards-compatible bug fixes.
-     * </ol>
-     * Additional labels for pre-release and build metadata are available as extensions to the
-     * MAJOR.MINOR.PATCH format.
-     *
-     * @param programVersion version of software
-     * @param fileVersion    version of book file
-     * @return true if OK
-     *
-     * @see https://semver.org/
+     * Among book stubs:
+     * <ul>
+     * <li>Some may have already been loaded, and thus perhaps upgraded but not necessarily stored.
+     * <li>Some may not have been loaded yet, so we need to check/load/swap them.
+     * </ul>
      */
-    private boolean areVersionsCompatible (String programVersion,
-                                           String fileVersion)
+    public void upgradeStubs ()
     {
+        StopWatch watch = new StopWatch("upgradeStubs for " + this);
         try {
-            logger.debug("Book file version: {}", fileVersion);
+            // Let's begin with current stub if any
+            if (OMR.gui != null) {
+                SheetStub currentStub = StubsController.getCurrentStub();
 
-            final String[] programTokens = programVersion.split("\\.");
-
-            if (programTokens.length < 2) {
-                throw new IllegalArgumentException("Illegal Audiveris version " + programVersion);
-            }
-
-            final String[] fileTokens = fileVersion.split("\\.");
-
-            if (fileTokens.length < 2) {
-                throw new IllegalArgumentException("Illegal Book file version " + fileVersion);
-            }
-
-            // Only MAJOR token is considered for compatibility
-            for (int i = 0; i < 1; i++) {
-                if (Integer.decode(fileTokens[i]) < Integer.decode(programTokens[i])) {
-                    return false;
+                if ((currentStub != null) && currentStub.isUpgraded()) {
+                    logger.info("Store current " + currentStub);
+                    watch.start("Store current " + currentStub);
+                    currentStub.storeSheet();
                 }
             }
 
-            return true;
-        } catch (IllegalArgumentException ex) {
-            logger.error("Error while checking versions " + ex, ex);
+            for (SheetStub stub : getValidStubs()) {
+                if (stub.isUpgraded()) {
+                    logger.info("Store upgraded " + stub);
+                    watch.start("Store upgraded " + stub);
+                    stub.storeSheet();
+                } else {
+                    Version stubVersion = stub.getVersion();
 
-            return false; // Safer
+                    if (stubVersion.compareTo(Versions.LATEST_UPGRADE) < 0) {
+                        logger.info("Load & check " + stub);
+                        watch.start("Load & check " + stub);
+                        stub.getSheet(); // Load sheet, this performs the upgrade
+                        stub.swapSheet(); // Store if needed, then dispose
+                    }
+                }
+            }
+
+            if (OMR.gui != null) {
+                BookActions.getInstance().setBookModifiedOrUpgraded(isModified() || isUpgraded());
+            }
+        } catch (Exception ex) {
+            logger.warn("Error upgrading stubs", ex);
         }
+
+        watch.print();
+    }
+
+    //-------------------//
+    // getStubsToUpgrade //
+    //-------------------//
+    /**
+     * Gather the sheet stubs that still need an upgrade.
+     *
+     * @return the set of sheet stubs to upgrade
+     */
+    public List<SheetStub> getStubsToUpgrade ()
+    {
+        final List<SheetStub> list = new ArrayList<>();
+        final Version bookVersion = new Version(getVersionValue());
+
+        if (bookVersion.compareTo(Versions.LATEST_UPGRADE) < 0) {
+            // Check each and every valid sheet
+            //TODO: Should we check invalid sheets as well?
+            for (SheetStub stub : getValidStubs()) {
+                final String stubVersionStr = stub.getVersionValue();
+
+                if (stubVersionStr != null) {
+                    // Use sheet specific version
+                    if (new Version(stubVersionStr).compareTo(Versions.LATEST_UPGRADE) < 0) {
+                        list.add(stub);
+                    }
+                } else {
+                    // No sheet specific version, therefore we use book version
+                    list.add(stub);
+                }
+            }
+        }
+
+        return list;
     }
 
     //---------------//
@@ -2030,6 +2134,39 @@ public class Book
         return least;
     }
 
+    //-----------------------//
+    // getOldestSheetVersion //
+    //-----------------------//
+    /**
+     * Report the oldest version among all (valid) sheet stubs.
+     *
+     * @return the oldest version found or null if none found
+     */
+    private Version getOldestSheetVersion ()
+    {
+        Version oldest = null;
+
+        for (SheetStub stub : stubs) {
+            if (stub.isValid()) {
+                final Version stubVersion;
+                final String stubVersionValue = stub.getVersionValue();
+
+                if (stubVersionValue != null) {
+                    stubVersion = new Version(stubVersionValue);
+                } else {
+                    // Stub without explicit version is assumed to have book version
+                    stubVersion = getVersion();
+                }
+
+                if ((oldest == null) || oldest.compareWithLabelTo(stubVersion) > 0) {
+                    oldest = stubVersion;
+                }
+            }
+        }
+
+        return oldest;
+    }
+
     //----------//
     // getScore //
     //----------//
@@ -2105,28 +2242,46 @@ public class Book
             version = WellKnowns.TOOL_REF;
         } else {
             if (constants.checkBookVersion.isSet()) {
-                // Check compatibility between file version and program version
-                if (!areVersionsCompatible(ProgramId.PROGRAM_VERSION, version)) {
-                    if (constants.resetOldBooks.isSet()) {
-                        final String msg = bookPath + " version " + version;
-                        logger.warn(msg);
+                // Check compatibility between book file version and program version
+                final CheckResult status = Versions.check(new Version(version));
 
-                        // Prompt user for resetting project sheets?
-                        if ((OMR.gui == null) || OMR.gui.displayConfirmation(
-                                msg + "\nConfirm reset to binary?",
-                                "Non compatible book version")) {
-                            resetToBinary();
-                            logger.info("Book {} reset to binary.", radix);
-                            version = WellKnowns.TOOL_REF;
-                            build = WellKnowns.TOOL_BUILD;
+                switch (status) {
+                case BOOK_TOO_OLD: {
+                    final String msg = bookPath + " version " + version;
+                    logger.warn(msg);
 
-                            return true;
-                        }
+                    // Reset book sheets to binary?
+                    if (((OMR.gui == null) && constants.resetOldBooks.isSet())
+                                || OMR.gui.displayConfirmation(
+                                    msg + "\nConfirm reset to binary?",
+                                    "Too old book version")) {
+                        resetToBinary();
+                        logger.info("Book {} reset to binary.", radix);
+                        version = WellKnowns.TOOL_REF;
+                        build = WellKnowns.TOOL_BUILD;
+
+                        return true;
                     } else {
-                        logger.info("Incompatible book version, but not reset.");
+                        logger.info("Too old book version, ignored.");
                     }
 
                     return false;
+                }
+
+                case PROGRAM_TOO_OLD: {
+                    final String msg = bookPath + " version " + version
+                                               + "\nPlease use a more recent Audiveris version";
+                    logger.warn(msg);
+
+                    if (OMR.gui != null) {
+                        OMR.gui.displayWarning(msg, "Too old Audiveris software version");
+                    }
+
+                    return false;
+                }
+
+                case COMPATIBLE:
+                    return true;
                 }
             }
         }
@@ -2289,7 +2444,6 @@ public class Book
             try (InputStream is = Files.newInputStream(internalsPath, StandardOpenOption.READ)) {
                 JAXBContext ctx = getJaxbContext();
                 Unmarshaller um = ctx.createUnmarshaller();
-                ///Unmarshaller um = getJaxbContext().createUnmarshaller();
                 book = (Book) um.unmarshal(is);
                 LogUtil.start(book);
                 book.getLock().lock();
@@ -2305,6 +2459,7 @@ public class Book
 
                 book.checkScore(); // TODO: remove ASAP
 
+                // Book successfully loaded (but sheets may need upgrade later).
                 return book;
             }
         } catch (IOException |
@@ -2347,7 +2502,7 @@ public class Book
         try {
             logger.debug("Book file system opened");
 
-            FileSystem fileSystem = FileSystems.newFileSystem(bookPath, null);
+            FileSystem fileSystem = FileSystems.newFileSystem(bookPath, (ClassLoader) null);
 
             return fileSystem.getPath(fileSystem.getSeparator());
         } catch (FileNotFoundException ex) {
@@ -2445,8 +2600,12 @@ public class Book
                 "Should we check version of loaded book files?");
 
         private final Constant.Boolean resetOldBooks = new Constant.Boolean(
-                true,
-                "Should we reset to binary the too old book files?");
+                false,
+                "In batch, should we reset to binary the too old book files?");
+
+        private final Constant.Boolean batchUpgradeBooks = new Constant.Boolean(
+                false,
+                "In batch, should we automatically upgrade all book sheets?");
     }
 
     //------------------//

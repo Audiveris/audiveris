@@ -38,8 +38,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code LyricLineInter} gathers one line of lyrics.
- * A lyric line is composed of instances of LyricItem, which can be Syllables, Hyphens, Extensions
- * or Elisions
+ * <p>
+ * A lyric line is composed of instances of {@link LyricItemInter}, which can be Syllables, Hyphens,
+ * Extensions or Elisions
  *
  * @author Hervé Bitteur
  */
@@ -55,7 +56,7 @@ public class LyricLineInter
     private int number;
 
     /**
-     * Creates a new LyricLine object.
+     * Creates a new {@code LyricLineInter} object.
      *
      * @param bounds   the bounding box
      * @param grade    the interpretation quality
@@ -67,6 +68,16 @@ public class LyricLineInter
                             FontInfo meanFont)
     {
         super(bounds, grade, meanFont, TextRole.Lyrics);
+    }
+
+    /**
+     * Creates a new {@code LyricLineInter} object, meant for manual use.
+     *
+     * @param grade the interpretation quality
+     */
+    public LyricLineInter (double grade)
+    {
+        this(null, grade, null);
     }
 
     /**

@@ -21,13 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
 
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.Point2D;
 
 /**
  * Class {@code ArpeggiatosSymbol} displays a column of several arpeggiato.
@@ -44,11 +43,21 @@ public class ArpeggiatosSymbol
     /**
      * Creates a new ArpeggiatosSymbol object.
      *
+     * @param count the number of arpeggiato
+     */
+    public ArpeggiatosSymbol (int count)
+    {
+        this(count, false);
+    }
+
+    /**
+     * Creates a new ArpeggiatosSymbol object.
+     *
      * @param count  the number of arpeggiato
      * @param isIcon true for an icon
      */
-    public ArpeggiatosSymbol (int count,
-                              boolean isIcon)
+    protected ArpeggiatosSymbol (int count,
+                                 boolean isIcon)
     {
         super(isIcon, Shape.ARPEGGIATO, false, 103);
         this.count = count;
@@ -71,11 +80,7 @@ public class ArpeggiatosSymbol
     {
         Params p = new Params();
         p.layout = layout(font);
-
-        Rectangle2D r = p.layout.getBounds();
-        p.rect = new Rectangle(
-                (int) Math.ceil(r.getWidth()),
-                count * (int) Math.rint(r.getHeight()));
+        p.rect = p.layout.getBounds();
 
         return p;
     }
@@ -86,16 +91,16 @@ public class ArpeggiatosSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         Params p = params;
-        Point loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
-        int dy = (int) Math.rint(p.layout.getBounds().getHeight());
+        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        double dy = p.layout.getBounds().getHeight();
 
         for (int i = 0; i < count; i++) {
             MusicFont.paint(g, p.layout, loc, TOP_LEFT);
-            loc.y += dy;
+            PointUtil.add(loc, 0, dy);
         }
     }
 }

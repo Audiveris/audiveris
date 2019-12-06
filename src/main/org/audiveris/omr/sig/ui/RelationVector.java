@@ -19,7 +19,7 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.glyph.ui;
+package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Sheet;
@@ -28,10 +28,13 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Relations;
+import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.util.Collections;
@@ -53,7 +56,7 @@ public class RelationVector
     private final Sheet sheet;
 
     /** Line from starting point to current stopping point. */
-    final Line2D line;
+    private final Line2D line;
 
     /** Starting inters, needed to initially create a vector. */
     private final List<Inter> starts;
@@ -91,10 +94,8 @@ public class RelationVector
     //---------//
     /**
      * Process the vector into a relation.
-     *
-     * @param doit (unused) true to actually set the relation, false for just a dry run
      */
-    public void process (boolean doit)
+    public void process ()
     {
         final Point p2 = PointUtil.rounded(line.getP2());
         final List<Inter> stops = sheet.getInterIndex().getContainingEntities(p2);
@@ -141,6 +142,21 @@ public class RelationVector
                 }
             }
         }
+    }
+
+    //--------//
+    // render //
+    //--------//
+    /**
+     * Render the vector onto the provided graphics.
+     *
+     * @param g provided graphics
+     */
+    public void render (Graphics2D g)
+    {
+        g.setColor(Color.GRAY);
+        UIUtil.setAbsoluteStroke(g, 1f);
+        g.draw(line);
     }
 
     //----------//
