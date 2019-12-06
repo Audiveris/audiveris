@@ -23,9 +23,13 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.util.Jaxb;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
+
+import java.util.Collections;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -146,6 +150,20 @@ public abstract class Relation
      * @return true if target number is limited to 1, false by default
      */
     public abstract boolean isSingleTarget ();
+
+    //---------//
+    // preLink //
+    //---------//
+    /**
+     * Prepare the manual linking of provided source and target inters.
+     *
+     * @param pair (input/output) the {source,target} pair of inters
+     * @return the sequence of additional UI tasks to perform, perhaps empty but not null.
+     */
+    public List<? extends UITask> preLink (RelationPair pair)
+    {
+        return Collections.EMPTY_LIST;
+    }
 
     //---------//
     // removed //

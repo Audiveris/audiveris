@@ -52,9 +52,7 @@ public class UITaskList
         /** Sequence not to be kept in history. */
         NO_HISTORY,
         /** User has validated the choice. */
-        VALIDATED,
-        /** Measures are to be updated. */
-        UPDATE_MEASURES;
+        VALIDATED;
     }
 
     /** Sequence of related actions. */
@@ -62,6 +60,9 @@ public class UITaskList
 
     /** Options for the actions list. */
     private final Set<Option> options = new HashSet<>();
+
+    /** For a graceful cancel. */
+    private boolean cancelled = false;
 
     /**
      * Creates a new {@code InterTaskList} object.
@@ -78,7 +79,7 @@ public class UITaskList
      *
      * @param tasks sequence of related tasks
      */
-    public UITaskList (List<UITask> tasks)
+    public UITaskList (List<? extends UITask> tasks)
     {
         list.addAll(tasks);
     }
@@ -94,6 +95,16 @@ public class UITaskList
     public void add (UITask task)
     {
         list.add(task);
+    }
+
+    /**
+     * Add a sequence of tasks to the task sequence.
+     *
+     * @param tasks sequence of tasks to add
+     */
+    public void addAll (List<? extends UITask> tasks)
+    {
+        list.addAll(tasks);
     }
 
     //-----------//
@@ -249,5 +260,27 @@ public class UITaskList
     public void unsetOptions (Option... keys)
     {
         options.removeAll(Arrays.asList(keys));
+    }
+
+    //-------------//
+    // isCancelled //
+    //-------------//
+    /**
+     * @return the cancelled
+     */
+    public boolean isCancelled ()
+    {
+        return cancelled;
+    }
+
+    //--------------//
+    // setCancelled //
+    //--------------//
+    /**
+     * @param cancelled the cancelled to set
+     */
+    public void setCancelled (boolean cancelled)
+    {
+        this.cancelled = cancelled;
     }
 }

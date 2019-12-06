@@ -32,6 +32,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -484,6 +486,26 @@ public class HeadChordInter
         } else {
             return Integer.signum(getTailLocation().y - getHeadLocation().y);
         }
+    }
+
+    //-----------//
+    // preRemove //
+    //-----------//
+    @Override
+    public Set<? extends Inter> preRemove (WrappedBoolean cancel)
+    {
+        final Set<Inter> inters = new LinkedHashSet<>();
+
+        inters.add(this);
+
+        // Remove the chord stem if any as well
+        final StemInter stem = getStem();
+
+        if (stem != null) {
+            inters.add(stem);
+        }
+
+        return inters;
     }
 
     //-------------//

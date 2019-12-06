@@ -729,7 +729,7 @@ public class InterFactory
             return new BraceInter(GRADE);
         case BRACKET:
             return new BracketInter(GRADE);
-        //
+
         // Barlines
         case THIN_BARLINE:
         case THICK_BARLINE:

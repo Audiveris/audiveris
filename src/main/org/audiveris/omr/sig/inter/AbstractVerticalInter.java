@@ -224,6 +224,8 @@ public abstract class AbstractVerticalInter
             median = new Line2D.Double(bounds.x + bounds.width / 2.0, bounds.y,
                                        bounds.x + bounds.width / 2.0, bounds.y + bounds.height);
             width = Double.valueOf(bounds.width);
+
+            computeArea();
         }
     }
 

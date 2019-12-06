@@ -25,16 +25,22 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sig.relation.Containment;
+import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterUIModel;
+import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextWord;
+import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.ui.symbol.TextSymbol;
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +50,9 @@ import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -267,6 +276,29 @@ public class WordInter
 
         // Location?
         // FontInfo?
+    }
+
+    //--------//
+    // preAdd //
+    //--------//
+    @Override
+    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    {
+        // Standard addition task for this word
+        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
+
+        // Wrap this word into a new sentence
+        SentenceInter sentence = new SentenceInter(TextRole.Direction, 1);
+        sentence.setManual(true);
+        sentence.setStaff(staff);
+
+        tasks.add(new AdditionTask(
+                sig,
+                sentence,
+                getBounds(),
+                Arrays.asList(new Link(this, new Containment(), true))));
+
+        return tasks;
     }
 
     //-------------//

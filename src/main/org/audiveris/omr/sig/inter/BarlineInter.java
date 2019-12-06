@@ -24,18 +24,23 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.PartBarline;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.BarGroupRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
+import org.audiveris.omr.step.Step;
 import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.util.WrappedBoolean;
 
 import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -258,6 +263,9 @@ public class BarlineInter
         return null;
     }
 
+    //------------------//
+    // getSystemBarline //
+    //------------------//
     /**
      * Report the system-level barline structure this barline is involved in.
      *
@@ -296,6 +304,35 @@ public class BarlineInter
     public boolean isStaffEnd (HorizontalSide side)
     {
         return staffEnd == side;
+    }
+
+    //-----------//
+    // preRemove //
+    //-----------//
+    @Override
+    public Set<? extends Inter> preRemove (WrappedBoolean cancel)
+    {
+        final Set<Inter> inters = new LinkedHashSet<>();
+        final Sheet sheet = sig.getSystem().getSheet();
+
+        inters.add(this);
+
+        if (sheet.getStub().getLatestStep().compareTo(Step.MEASURES) < 0) {
+            return inters;
+        }
+
+        // Now that measures exist, it's whole system height or nothing
+        final StaffBarlineInter sb = getStaffBarline();
+
+        if (sb != null) {
+            final List<Inter> closure = sb.getClosureToRemove(cancel);
+
+            if ((cancel == null) || !cancel.isSet()) {
+                inters.addAll(closure);
+            }
+        }
+
+        return inters;
     }
 
     //--------//
