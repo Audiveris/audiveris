@@ -39,9 +39,11 @@ import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.MirrorRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Support;
+import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.DefaultEditor;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
+import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -52,6 +54,7 @@ import org.audiveris.omr.util.AbstractEntity;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Version;
+import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +69,7 @@ import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -1103,6 +1107,27 @@ public abstract class AbstractInter
         }
 
         return true;
+    }
+
+    //--------//
+    // preAdd //
+    //--------//
+    @Override
+    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    {
+        final SystemInfo system = staff.getSystem();
+
+        return Arrays.asList(
+                new AdditionTask(system.getSig(), this, getBounds(), searchLinks(system)));
+    }
+
+    //-----------//
+    // preRemove //
+    //-----------//
+    @Override
+    public Set<? extends Inter> preRemove (WrappedBoolean cancel)
+    {
+        return Collections.singleton(this);
     }
 
     //--------//

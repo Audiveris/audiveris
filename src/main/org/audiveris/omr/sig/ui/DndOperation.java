@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Stroke;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -146,7 +145,7 @@ public class DndOperation
 
         updateGhost(dropPoint); // dropPoint can be modified
 
-        sheet.getInterController().addInters(Arrays.asList(ghost));
+        sheet.getInterController().addInter(ghost);
         ///sheet.getSymbolsEditor().openEditMode(ghost);
 
         logger.debug("Dropped {} at {}", this, dropPoint);

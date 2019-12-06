@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.OMR;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.BACK_TO_BACK_REPEAT_SIGN;
 import static org.audiveris.omr.glyph.Shape.LEFT_REPEAT_SIGN;
@@ -30,7 +31,10 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.PartBarline.Style;
 import static org.audiveris.omr.sheet.PartBarline.Style.*;
+import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
@@ -39,8 +43,15 @@ import org.audiveris.omr.sig.relation.EndingBarRelation;
 import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
+import org.audiveris.omr.sig.ui.AdditionTask;
+import org.audiveris.omr.sig.ui.UITask;
+import org.audiveris.omr.step.Step;
+import org.audiveris.omr.ui.selection.EntityListEvent;
+import org.audiveris.omr.ui.selection.MouseMovement;
+import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -801,6 +812,91 @@ public final class StaffBarlineInter
         }
     }
 
+    //--------//
+    // preAdd //
+    //--------//
+    @Override
+    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    {
+        // Standard addition task for this staffBarline
+        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
+        final SystemInfo system = staff.getSystem();
+        final Sheet sheet = system.getSheet();
+
+        if (sheet.getStub().getLatestStep().compareTo(Step.MEASURES) < 0) {
+            return tasks;
+        }
+
+        // Include a staffBarline per system staff, properly positioned in abscissa
+        final SIGraph sig = system.getSig();
+        final List<Inter> bars = new ArrayList<>();
+        final Skew skew = sheet.getSkew();
+        final Point center = getCenter();
+        final double slope = skew.getSlope();
+
+        for (Staff st : system.getStaves()) {
+            if (st == staff) {
+                bars.add(this);
+            } else {
+                double y1 = st.getFirstLine().yAt(center.getX());
+                double y2 = st.getLastLine().yAt(center.getX());
+                double y = (y1 + y2) / 2;
+                double x = center.x - ((y - center.y) * slope);
+                Rectangle box = new Rectangle((int) Math.rint(x), (int) Math.rint(y), 0, 0);
+                box.grow(bounds.width / 2, bounds.height / 2);
+
+                StaffBarlineInter b = new StaffBarlineInter(shape, 1);
+                b.setManual(true);
+                b.setStaff(st);
+                b.setBounds(box);
+                bars.add(b);
+                tasks.add(new AdditionTask(sig, b, box, b.searchLinks(system)));
+            }
+        }
+
+        if (bars.size() > 1) {
+            // Display closure staff barlines to user
+            sheet.getInterIndex().getEntityService().publish(
+                    new EntityListEvent<>(
+                            this, SelectionHint.ENTITY_INIT, MouseMovement.PRESSING, bars));
+
+            if (!OMR.gui.displayConfirmation(
+                    "Do you confirm whole system-height addition?",
+                    "Insertion of " + bars.size() + " barlines")) {
+                cancel.set(true);
+
+                return Collections.EMPTY_LIST;
+            }
+        }
+
+        return tasks;
+    }
+
+    //-----------//
+    // preRemove //
+    //-----------//
+    @Override
+    public Set<? extends Inter> preRemove (WrappedBoolean cancel)
+    {
+        final Set<Inter> inters = new LinkedHashSet<>();
+        final Sheet sheet = sig.getSystem().getSheet();
+
+        inters.add(this);
+
+        if (sheet.getStub().getLatestStep().compareTo(Step.MEASURES) < 0) {
+            return inters;
+        }
+
+        // Now that measures exist, it's whole system height or nothing
+        final List<Inter> closure = getClosureToRemove(cancel);
+
+        if ((cancel == null) || !cancel.isSet()) {
+            inters.addAll(closure);
+        }
+
+        return inters;
+    }
+
     //--------------//
     // removeMember //
     //--------------//
@@ -828,6 +924,43 @@ public final class StaffBarlineInter
         }
 
         return null;
+    }
+
+    //--------------------//
+    // getClosureToRemove //
+    //--------------------//
+    /**
+     * Retrieve the system-high closure of StaffBarline instance this one is part of,
+     * and prompt user for removal confirmation.
+     *
+     * @param cancel (output) if not null, ability to cancel processing by setting it to true
+     * @return the closure to remove, empty if user did not confirm.
+     */
+    List<Inter> getClosureToRemove (WrappedBoolean cancel)
+    {
+        final List<Inter> closure = new ArrayList<>();
+
+        for (PartBarline pb : getSystemBarline()) {
+            closure.addAll(pb.getStaffBarlines());
+        }
+
+        // Display closure staff barlines to user
+        final Sheet sheet = sig.getSystem().getSheet();
+        sheet.getInterIndex().getEntityService().publish(
+                new EntityListEvent<>(
+                        this,
+                        SelectionHint.ENTITY_INIT,
+                        MouseMovement.PRESSING,
+                        closure));
+
+        if ((cancel == null) || OMR.gui.displayConfirmation(
+                "Do you confirm whole system-height removal?",
+                "Removal of " + closure.size() + " barline(s)")) {
+            return closure;
+        } else {
+            cancel.set(true);
+            return Collections.EMPTY_LIST;
+        }
     }
 
     //-----------//

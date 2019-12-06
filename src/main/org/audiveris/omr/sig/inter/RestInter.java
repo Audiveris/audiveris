@@ -30,14 +30,21 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sig.relation.Containment;
+import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.ui.AdditionTask;
+import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.Predicate;
+import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -102,6 +109,29 @@ public class RestInter
     public RestChordInter getChord ()
     {
         return (RestChordInter) getEnsemble();
+    }
+
+    //--------//
+    // preAdd //
+    //--------//
+    @Override
+    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    {
+        // Standard addition task for this rest
+        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
+
+        // Wrap this rest within a rest chord
+        final RestChordInter restChord = new RestChordInter(-1);
+        restChord.setManual(true);
+        restChord.setStaff(staff);
+
+        tasks.add(new AdditionTask(
+                sig,
+                restChord,
+                getBounds(),
+                Arrays.asList(new Link(this, new Containment(), true))));
+
+        return tasks;
     }
 
     //-------------//

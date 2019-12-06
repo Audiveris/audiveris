@@ -34,6 +34,11 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
 import static org.audiveris.omr.sig.relation.StemPortion.*;
+import org.audiveris.omr.sig.ui.AdditionTask;
+import org.audiveris.omr.sig.ui.LinkTask;
+import org.audiveris.omr.sig.ui.RemovalTask;
+import org.audiveris.omr.sig.ui.UITask;
+import org.audiveris.omr.sig.ui.UnlinkTask;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 
@@ -46,6 +51,10 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -257,6 +266,80 @@ public class HeadStemRelation
     }
 
     //---------//
+    // preLink //
+    //---------//
+    @Override
+    public List<? extends UITask> preLink (RelationPair pair)
+    {
+        final HeadInter head = (HeadInter) pair.source;
+        final StemInter stem = (StemInter) pair.target;
+
+        final HeadChordInter headChord = head.getChord();
+        if (headChord == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        final List<UITask> tasks = new ArrayList<>();
+        final SIGraph sig = head.getSig();
+        final List<HeadChordInter> stemChords = stem.getChords();
+        HeadChordInter stemChord = (!stemChords.isEmpty()) ? stemChords.get(0) : null;
+
+        // Check for a canonical head share, to share head
+        final HorizontalSide headSide = (stem.getCenter().x < head.getCenter().x) ? LEFT : RIGHT;
+        final StemInter headStem = headChord.getStem();
+
+        final boolean sharing;
+        if (headSide == LEFT) {
+            sharing = HeadStemRelation.isCanonicalShare(stem, head, headStem);
+        } else {
+            sharing = HeadStemRelation.isCanonicalShare(headStem, head, stem);
+        }
+
+        if (sharing) {
+            // Duplicate head and link as mirror
+            HeadInter newHead = head.duplicate();
+            newHead.setManual(true);
+            tasks.add(
+                    new AdditionTask(
+                            sig,
+                            newHead,
+                            newHead.getBounds(),
+                            Arrays.asList(new Link(head, new MirrorRelation(), false))));
+
+            // Insert newHead to stem chord
+            if (stemChord == null) {
+                stemChord = buildStemChord(tasks, stem);
+            }
+
+            tasks.add(new LinkTask(sig, stemChord, newHead, new Containment()));
+
+            pair.source = newHead; // Instead of initial head
+            return tasks;
+        }
+
+        // If resulting chords are not compatible, move head to stemChord
+        if ((stemChords.isEmpty() && (headChord.getStem() != null))
+                    || (!stemChords.isEmpty() && !stemChords.contains(headChord))) {
+            // Extract head from headChord
+            tasks.add(new UnlinkTask(sig, sig.getRelation(headChord, head, Containment.class)));
+
+            if (headChord.getNotes().size() <= 1) {
+                // Remove headChord getting empty
+                tasks.add(new RemovalTask(headChord));
+            }
+
+            if (stemChord == null) {
+                stemChord = buildStemChord(tasks, stem);
+            }
+
+            // Insert head to stem chord
+            tasks.add(new LinkTask(sig, stemChord, head, new Containment()));
+        }
+
+        return tasks;
+    }
+
+    //---------//
     // removed //
     //---------//
     @Override
@@ -426,6 +509,27 @@ public class HeadStemRelation
         StemPortion rightPortion = getStemPortion(head, rightLine, yRightExt);
 
         return leftPortion == STEM_TOP && rightPortion == STEM_BOTTOM;
+    }
+
+    //----------------//
+    // buildStemChord //
+    //----------------//
+    /**
+     * Create a HeadChord on the fly based on provided stem.
+     *
+     * @param seq  action sequence to populate
+     * @param stem the provided stem
+     * @return a HeadChord around this stem
+     */
+    private HeadChordInter buildStemChord (List<UITask> tasks,
+                                           StemInter stem)
+    {
+        final SIGraph sig = stem.getSig();
+        final HeadChordInter stemChord = new HeadChordInter(-1);
+        tasks.add(new AdditionTask(sig, stemChord, stem.getBounds(), Collections.EMPTY_SET));
+        tasks.add(new LinkTask(sig, stemChord, stem, new ChordStemRelation()));
+
+        return stemChord;
     }
 
     //-----------//

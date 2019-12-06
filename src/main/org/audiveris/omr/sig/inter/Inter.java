@@ -33,12 +33,14 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
+import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.util.Entity;
 import org.audiveris.omr.util.Version;
+import org.audiveris.omr.util.WrappedBoolean;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -473,6 +475,30 @@ public interface Inter
      */
     boolean overlaps (Inter that)
             throws DeletedInterException;
+
+    /**
+     * Prepare the manual addition of this inter, for which staff and bounds have been
+     * set.
+     * <p>
+     * Build <b>all</b> the UI tasks to insert this inter: the addition task itself, together with
+     * related tasks if any (other additions, links, ...).
+     *
+     * @param cancel (output) ability to cancel processing by setting its value to true
+     * @return the sequence of UI tasks
+     */
+    List<? extends UITask> preAdd (WrappedBoolean cancel);
+
+    /**
+     * Prepare the manual removal of this inter.
+     *
+     * @param cancel (input/output)
+     *               A null-value for cancel means user has already validated the decision, so the
+     *               user should not be prompted for further confirmation.
+     *               If non null, the method can cancel processing by setting its value to true.
+     * @return the inters to remove: that is this inter plus all other inters to remove,
+     *         with the exception of ensemble members since those are handled automatically.
+     */
+    Set<? extends Inter> preRemove (WrappedBoolean cancel);
 
     /**
      * Remove this Inter instance from its containing SIG.

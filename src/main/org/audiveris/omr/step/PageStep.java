@@ -256,8 +256,7 @@ public class PageStep
                     impact.onVoices = true;
                 }
 
-                if (isImpactedBy(classe, forMeasures)
-                            && seq.isOptionSet(UITaskList.Option.UPDATE_MEASURES)) {
+                if (isImpactedBy(classe, forMeasures)) {
                     impact.onMeasures = true;
                 }
             } else if (task instanceof StackTask) {

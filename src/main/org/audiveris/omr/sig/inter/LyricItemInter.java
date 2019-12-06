@@ -29,14 +29,22 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.ui.AdditionTask;
+import org.audiveris.omr.sig.ui.LinkTask;
+import org.audiveris.omr.sig.ui.UITask;
+import org.audiveris.omr.text.TextBuilder;
 import org.audiveris.omr.text.TextWord;
 import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -303,6 +311,33 @@ public class LyricItemInter
         }
 
         link.applyTo(this);
+    }
+
+    //--------//
+    // preAdd //
+    //--------//
+    @Override
+    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    {
+        // Standard addition task for this lyric item
+        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
+
+        // Look for a containing lyric line
+        final Point2D loc = getLocation();
+        LyricLineInter line = new TextBuilder(sig.getSystem(), true).lookupLyricLine(loc);
+
+        if (line == null) {
+            // Create a new lyric line
+            line = new LyricLineInter(1);
+            line.setManual(true);
+            line.setStaff(staff);
+            tasks.add(new AdditionTask(sig, line, getBounds(), Collections.EMPTY_SET));
+        }
+
+        // Wrap lyric item into lyric line
+        tasks.add(new LinkTask(sig, line, this, new Containment()));
+
+        return tasks;
     }
 
     //-------------//
