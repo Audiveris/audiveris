@@ -77,6 +77,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -121,11 +122,18 @@ public class ShapeBoard
     /** Map first typed char to selected shape set. */
     private static final Map<Character, ShapeSet> setMap = new HashMap<>();
 
+    /** Reverse of setMap. */
+    private static final Map<ShapeSet, Character> reverseSetMap = new HashMap<>();
+
     /** Map 2-char typed string to selected shape. */
     private static final Map<String, Shape> shapeMap = new HashMap<>();
 
+    /** Reverse of shapeMap. */
+    private static final Map<Shape, String> reverseShapeMap = new HashMap<>();
+
     static {
         populateCharMaps();
+        populateReverseCharMaps();
     }
 
     /** Related sheet. */
@@ -321,6 +329,22 @@ public class ShapeBoard
         shapeMap.put("" + c + 's', Shape.STEM);
     }
 
+    //-------------------------//
+    // populateReverseCharMaps //
+    //-------------------------//
+    private static void populateReverseCharMaps ()
+    {
+        // Build reverse of setMap
+        for (Entry<Character, ShapeSet> entry : setMap.entrySet()) {
+            reverseSetMap.put(entry.getValue(), entry.getKey());
+        }
+
+        // Build reverse of shapeMap
+        for (Entry<String, Shape> entry : shapeMap.entrySet()) {
+            reverseShapeMap.put(entry.getValue(), entry.getKey());
+        }
+    }
+
     //------------//
     // addButtons //
     //------------//
@@ -423,8 +447,10 @@ public class ShapeBoard
                 button.setIcon(rep.getDecoratedSymbol());
                 button.setName(set.getName());
                 button.addActionListener(setListener);
-                button.setToolTipText(set.getName());
                 button.setBorderPainted(false);
+                final Character shortcut = reverseSetMap.get(set);
+                final String suffix = (shortcut != null) ? ("   " + shortcut) : "";
+                button.setToolTipText(set.getName() + suffix);
                 panel.add(button);
 
                 // Create the child shapesPanel
@@ -598,7 +624,10 @@ public class ShapeBoard
             this.symbol = symbol;
             setIcon(symbol.getDecoratedSymbol().getIcon());
             setName(symbol.getShape().toString());
-            setToolTipText(symbol.getTip());
+
+            final String shortcut = reverseShapeMap.get(symbol.getShape());
+            final String suffix = (shortcut != null) ? ("   " + shortcut) : "";
+            setToolTipText(symbol.getTip() + suffix);
 
             setBorderPainted(true);
         }
@@ -743,6 +772,27 @@ public class ShapeBoard
         @Override
         public void keyPressed (KeyEvent e)
         {
+            if (c1 == null) {
+                // Zoom level?
+                if (e.isControlDown()) {
+                    char c = e.getKeyChar();
+
+                    if (c == '+') {
+                        sheet.getSymbolsEditor().getView().getRubber().modifyZoomRatio(1);
+                        return;
+                    }
+
+                    if (c == '-') {
+                        sheet.getSymbolsEditor().getView().getRubber().modifyZoomRatio(-1);
+                        return;
+                    }
+
+                    if (c == '0') {
+                        sheet.getSymbolsEditor().getView().getRubber().modifyZoomRatio(0);
+                        return;
+                    }
+                }
+            }
         }
 
         @Override
@@ -756,7 +806,7 @@ public class ShapeBoard
             char c = e.getKeyChar();
 
             if (c1 == null) {
-                // First character
+                // First character (family)
                 ShapeSet set = setMap.get(c);
                 closeShapeSet();
 
@@ -770,16 +820,18 @@ public class ShapeBoard
                     // Enter/exit repetitive input mode?
                     if (c == 'n') {
                         BookActions.getInstance().toggleRepetitiveInput(null);
+                        return;
                     }
 
                     // Direct use of classifier buttons?
                     if (c >= '1' && c <= '5') {
                         int id = c - '0';
                         sheet.getSymbolsEditor().getEvaluationBoard().selectButton(id);
+                        return;
                     }
                 }
             } else {
-                // Second character
+                // Second character (shape within family)
                 String str = String.valueOf(new char[]{c1, c});
                 Shape shape = shapeMap.get(str);
                 logger.debug("shape:{}", shape);

@@ -104,11 +104,12 @@ public class Rubber
     private static AtomicInteger globalId = new AtomicInteger(0);
 
     /** To handle zoom through mouse wheel. */
-    private static final double base = 2;
+    private static final double BASE = 2;
 
-    private static final double intervals = 5;
+    private static final double INTERVALS = 5;
 
-    private static final double factor = Math.pow(base, 1d / intervals);
+    /** Factor by which zoom level is increased/decreased for one increment. */
+    private static final double ZOOM_FACTOR = Math.pow(BASE, 1d / INTERVALS);
 
     /** View from which the rubber will receive physical mouse events. */
     protected JComponent component;
@@ -231,6 +232,41 @@ public class Rubber
     public Rectangle getRectangle ()
     {
         return rect;
+    }
+
+    //-----------------//
+    // modifyZoomRatio //
+    //-----------------//
+    /**
+     * Adjust the zoom ratio, according to the provided increment value.
+     * <ul>
+     * <li> +1 to increase
+     * <li> -1 to decrease
+     * <li> 0 to reset to 100%
+     * </ul>
+     *
+     * @param increment how to modify
+     */
+    public void modifyZoomRatio (int increment)
+    {
+        double ratio = zoom.getRatio();
+
+        switch (increment) {
+        case -1:
+            ratio /= ZOOM_FACTOR;
+            break;
+        case 0:
+            ratio = 1.0;
+            break;
+        case +1:
+            ratio *= ZOOM_FACTOR;
+            break;
+        default:
+            return;
+        }
+
+        zoom.setRatio(ratio);
+
     }
 
     //--------------//
@@ -404,9 +440,9 @@ public class Rubber
             double ratio = zoom.getRatio();
 
             if (e.getWheelRotation() > 0) {
-                ratio /= factor;
+                ratio /= ZOOM_FACTOR;
             } else {
-                ratio *= factor;
+                ratio *= ZOOM_FACTOR;
             }
 
             zoom.setRatio(ratio);

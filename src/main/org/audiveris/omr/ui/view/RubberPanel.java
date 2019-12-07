@@ -208,6 +208,14 @@ public class RubberPanel
         return super.getPreferredSize();
     }
 
+    //-----------//
+    // getRubber //
+    //-----------//
+    public Rubber getRubber ()
+    {
+        return rubber;
+    }
+
     //--------------------//
     // getRubberRectangle //
     //--------------------//
