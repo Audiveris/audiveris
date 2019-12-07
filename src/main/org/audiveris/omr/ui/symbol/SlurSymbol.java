@@ -65,15 +65,6 @@ public class SlurSymbol
         this.above = above;
     }
 
-    //--------//
-    // getTip //
-    //--------//
-    @Override
-    public String getTip ()
-    {
-        return shape + " (" + (above ? "above" : "below") + ")";
-    }
-
     //------------//
     // createIcon //
     //------------//
