@@ -71,8 +71,8 @@ import javax.swing.event.MouseInputAdapter;
  * is moved.</li>
  * <li>Zoom the display to the area delimited by the rubber. Default trigger is <b>Shift +
  * Control</b> when mouse is released.</li>
- * <li>Drag the component itself. Default trigger is when both <b>Left + Right</b> buttons are
- * dragged.</li>
+ * <li>Drag the component itself. One trigger is when both <b>Left + Right</b> buttons are
+ * dragged. Another one is when <b>Middle</b> button (mouse wheel) is dragged.</li>
  * </ul>
  * Note: Actual triggers are defined by protected predicate methods that can be redefined in a
  * subclass.

@@ -86,7 +86,7 @@ public abstract class UIPredicates
     /**
      * Predicate to check whether the zoomed display must be dragged.
      * This method can simply be overridden to adapt to another policy.
-     * Default is to have both left and right buttons pressed when moving.
+     * Default is to have both left and right buttons, or just middle button, pressed when moving.
      *
      * @param e the mouse event to check
      * @return true if drag is desired
@@ -96,10 +96,23 @@ public abstract class UIPredicates
         if (WellKnowns.MAC_OS_X) {
             return e.isAltDown();
         } else {
+            // Mouse buttons 1 & 3 pressed
             int onmask = BUTTON1_DOWN_MASK | BUTTON3_DOWN_MASK;
             int offmask = 0;
 
-            return (e.getModifiersEx() & (onmask | offmask)) == onmask;
+            if ((e.getModifiersEx() & (onmask | offmask)) == onmask) {
+                return true;
+            }
+
+            // Mouse button 2 (wheel) pressed
+            int onmask2 = BUTTON2_DOWN_MASK;
+            int offmask2 = 0;
+
+            if ((e.getModifiersEx() & (onmask2 | offmask2)) == onmask2) {
+                return true;
+            }
+
+            return false;
         }
     }
 
