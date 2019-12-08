@@ -96,7 +96,7 @@ public abstract class UIPredicates
         if (WellKnowns.MAC_OS_X) {
             return e.isAltDown();
         } else {
-            // Mouse buttons 1 & 3 pressed
+            // Mouse buttons 1 & 3 pressed and only those ones
             int onmask = BUTTON1_DOWN_MASK | BUTTON3_DOWN_MASK;
             int offmask = 0;
 
@@ -104,7 +104,7 @@ public abstract class UIPredicates
                 return true;
             }
 
-            // Mouse button 2 (wheel) pressed
+            // Mouse button 2 (wheel) pressed and only this one
             int onmask2 = BUTTON2_DOWN_MASK;
             int offmask2 = 0;
 
