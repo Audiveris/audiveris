@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet.ui;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.GuiActions;
@@ -272,7 +273,7 @@ public class SheetAssembly
             OMR.gui.setErrorsPane(stub.getSheet().getErrorsEditor().getComponent());
         }
 
-        if (stub.hasSheet()) {
+        if (stub.hasSheet() && stub.getLatestStep().compareTo(Step.HEADS) >= 0) {
             // Update repetitiveInput checkbox
             BookActions.getInstance().updateRepetitiveInput(stub.getSheet());
         }
