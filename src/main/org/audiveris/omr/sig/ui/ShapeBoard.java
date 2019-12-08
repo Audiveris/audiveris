@@ -449,8 +449,7 @@ public class ShapeBoard
                 button.addActionListener(setListener);
                 button.setBorderPainted(false);
                 final Character shortcut = reverseSetMap.get(set);
-                final String suffix = (shortcut != null) ? ("   " + shortcut) : "";
-                button.setToolTipText(set.getName() + suffix);
+                button.setToolTipText(set.getName() + standardized(shortcut));
                 panel.add(button);
 
                 // Create the child shapesPanel
@@ -596,6 +595,42 @@ public class ShapeBoard
         shapesPanel.requestFocusInWindow();
     }
 
+    //--------------//
+    // standardized //
+    //--------------//
+    static String standardized (Character shortcut)
+    {
+        if (shortcut == null) {
+            return "";
+        }
+
+        return standardized(shortcut.toString());
+    }
+
+    //--------------//
+    // standardized //
+    //--------------//
+    static String standardized (String shortcut)
+    {
+        if (shortcut == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder("   (");
+
+        for (int i = 0; i < shortcut.length(); i++) {
+            if (i > 0) {
+                sb.append('-');
+            }
+
+            sb.append(shortcut.charAt(i));
+        }
+
+        sb.append(')');
+
+        return sb.toString().toUpperCase();
+    }
+
     //-------------//
     // ShapeButton //
     //-------------//
@@ -626,8 +661,7 @@ public class ShapeBoard
             setName(symbol.getShape().toString());
 
             final String shortcut = reverseShapeMap.get(symbol.getShape());
-            final String suffix = (shortcut != null) ? ("   " + shortcut) : "";
-            setToolTipText(symbol.getTip() + suffix);
+            setToolTipText(symbol.getTip() + standardized(shortcut));
 
             setBorderPainted(true);
         }
