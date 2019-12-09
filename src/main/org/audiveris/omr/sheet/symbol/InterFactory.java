@@ -844,6 +844,7 @@ public class InterFactory
             return new TimeWholeInter(null, shape, GRADE);
 
         // Noteheads
+        case NOTEHEAD_CROSS:
         case NOTEHEAD_BLACK:
         case NOTEHEAD_BLACK_SMALL:
         case NOTEHEAD_VOID:

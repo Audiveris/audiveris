@@ -61,6 +61,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.audiveris.omr.step.Step;
 
 /**
  * Class {@code SheetAssembly} is a UI assembly dedicated to the display of various
@@ -272,7 +273,7 @@ public class SheetAssembly
             OMR.gui.setErrorsPane(stub.getSheet().getErrorsEditor().getComponent());
         }
 
-        if (stub.hasSheet()) {
+        if (stub.hasSheet() && stub.getLatestStep().compareTo(Step.HEADS) >= 0) {
             // Update repetitiveInput checkbox
             BookActions.getInstance().updateRepetitiveInput(stub.getSheet());
         }

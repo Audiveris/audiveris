@@ -764,7 +764,7 @@ public class Template
                 "Global ratio applied to small (cue/grace) templates");
 
         private final Constant.Ratio foreWeight = new Constant.Ratio(
-                1.0,
+                5.0, // Was 1.0, now modified for cross heads
                 "Weight assigned to template foreground pixels");
 
         private final Constant.Ratio backWeight = new Constant.Ratio(

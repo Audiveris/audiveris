@@ -156,6 +156,7 @@ public class ProcessingSwitches
         smallBlackHeads(constants.smallBlackHeads),
         smallVoidHeads(constants.smallVoidHeads),
         smallWholeHeads(constants.smallWholeHeads),
+        crossHeads(constants.crossHeads),
         implicitTuplets(constants.implicitTuplets);
 
         /** Underlying boolean constant. */
@@ -288,6 +289,10 @@ public class ProcessingSwitches
         private final Constant.Boolean smallWholeHeads = new Constant.Boolean(
                 false,
                 "Support for small whole note heads");
+
+        private final Constant.Boolean crossHeads = new Constant.Boolean(
+                false,
+                "Support for cross note heads");
 
         private final Constant.Boolean implicitTuplets = new Constant.Boolean(
                 false,

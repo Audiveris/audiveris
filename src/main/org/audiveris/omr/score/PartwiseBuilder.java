@@ -1880,6 +1880,13 @@ public class PartwiseBuilder
                 }
 
                 current.pmNote.setPitch(pitch);
+
+                // Cross(x)?
+                if (note.getShape() == Shape.NOTEHEAD_CROSS) {
+                    Notehead notehead = factory.createNotehead();
+                    notehead.setValue(NoteheadValue.X);
+                    current.pmNote.setNotehead(notehead);
+                }
             }
 
             // Default-x (use left side of the note wrt measure)

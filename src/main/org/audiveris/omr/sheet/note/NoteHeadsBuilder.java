@@ -1076,6 +1076,11 @@ public class NoteHeadsBuilder
                                     Anchor anchor)
         {
             final ShapeDescriptor desc = catalog.getDescriptor(shape);
+
+            if (desc == null) {
+                return null;
+            }
+
             final Rectangle symBox = desc.getSymbolBoundsAt(x, y, anchor);
 
             // Skip if frozen barline/connector is too close
