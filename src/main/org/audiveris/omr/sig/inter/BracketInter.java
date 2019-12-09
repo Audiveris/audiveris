@@ -200,16 +200,24 @@ public class BracketInter
         Rectangle2D lowerRect = lowerLayout.getBounds();
 
         area = AreaUtil.verticalParallelogram(median.getP1(), median.getP2(), getWidth());
-        Rectangle2D tr = new Rectangle2D.Double(median.getX1() - width / 2,
-                                                median.getY1() + upperRect.getY(),
-                                                upperRect.getWidth(),
-                                                -upperRect.getY());
-        Rectangle2D br = new Rectangle2D.Double(median.getX1() - width / 2,
-                                                median.getY2(),
-                                                lowerRect.getWidth(),
-                                                lowerRect.getHeight() + lowerRect.getY());
-        area.add(new Area(tr));
-        area.add(new Area(br));
+
+        // Top serif?
+        if (kind == BracketKind.TOP || kind == BracketKind.BOTH) {
+            Rectangle2D tr = new Rectangle2D.Double(median.getX1() - width / 2,
+                                                    median.getY1() + upperRect.getY(),
+                                                    upperRect.getWidth(),
+                                                    -upperRect.getY());
+            area.add(new Area(tr));
+        }
+
+        // Bottom serif?
+        if (kind == BracketKind.BOTTOM || kind == BracketKind.BOTH) {
+            Rectangle2D br = new Rectangle2D.Double(median.getX1() - width / 2,
+                                                    median.getY2(),
+                                                    lowerRect.getWidth(),
+                                                    lowerRect.getHeight() + lowerRect.getY());
+            area.add(new Area(br));
+        }
 
         bounds = area.getBounds();
     }
