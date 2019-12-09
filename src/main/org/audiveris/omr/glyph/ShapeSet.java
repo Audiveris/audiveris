@@ -187,6 +187,7 @@ public class ShapeSet
 
     /** All heads with a stem. */
     public static final EnumSet<Shape> StemHeads = EnumSet.of(
+            NOTEHEAD_CROSS,
             NOTEHEAD_BLACK,
             NOTEHEAD_BLACK_SMALL,
             NOTEHEAD_VOID,
@@ -197,6 +198,7 @@ public class ShapeSet
             BREVE,
             WHOLE_NOTE,
             WHOLE_NOTE_SMALL,
+            NOTEHEAD_CROSS,
             NOTEHEAD_BLACK,
             NOTEHEAD_BLACK_SMALL,
             NOTEHEAD_VOID,
@@ -747,6 +749,7 @@ public class ShapeSet
     public static EnumSet<Shape> getTemplateNotes (Sheet sheet)
     {
         final EnumSet<Shape> set = EnumSet.of(
+                NOTEHEAD_CROSS,
                 NOTEHEAD_BLACK,
                 NOTEHEAD_VOID,
                 WHOLE_NOTE,
@@ -770,6 +773,10 @@ public class ShapeSet
 
         if (!switches.getValue(Switch.smallWholeHeads)) {
             set.remove(WHOLE_NOTE_SMALL);
+        }
+
+        if (!switches.getValue(Switch.crossHeads)) {
+            set.remove(NOTEHEAD_CROSS);
         }
 
         return set;
@@ -814,6 +821,7 @@ public class ShapeSet
     public static EnumSet<Shape> getStemTemplateNotes (Sheet sheet)
     {
         final EnumSet<Shape> set = EnumSet.of(
+                NOTEHEAD_CROSS,
                 NOTEHEAD_BLACK,
                 NOTEHEAD_VOID,
                 NOTEHEAD_BLACK_SMALL,
@@ -831,6 +839,10 @@ public class ShapeSet
 
         if (!switches.getValue(Switch.smallVoidHeads)) {
             set.remove(NOTEHEAD_VOID_SMALL);
+        }
+
+        if (!switches.getValue(Switch.crossHeads)) {
+            set.remove(NOTEHEAD_CROSS);
         }
 
         return set;

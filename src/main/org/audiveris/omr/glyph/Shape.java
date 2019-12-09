@@ -315,6 +315,7 @@ public enum Shape
     //
     // Noteheads ---
     //
+    NOTEHEAD_CROSS("Ghost node with rhythmic value but no discernible pitch"),
     NOTEHEAD_BLACK("Filled node head for quarters and less"),
     NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue"),
     NOTEHEAD_VOID("Hollow node head for halves"),
