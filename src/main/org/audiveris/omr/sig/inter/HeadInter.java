@@ -1209,10 +1209,10 @@ public class HeadInter
         }
 
         @Override
-        public Rectangle render (Graphics2D g,
-                                 boolean renderInter)
+        public void render (Graphics2D g,
+                            boolean renderInter)
         {
-            Rectangle box = super.render(g, renderInter);
+            super.render(g, renderInter);
 
             // Add needed ledgers
             final HeadInter head = (HeadInter) inter;
@@ -1220,7 +1220,18 @@ public class HeadInter
             for (Line2D line : head.getNeededLedgers()) {
                 g.setColor(Color.RED);
                 g.draw(line);
+            }
+        }
 
+        @Override
+        public Rectangle getSceneBounds ()
+        {
+            Rectangle box = super.getSceneBounds();
+
+            // Include needed ledgers if any
+            final HeadInter head = (HeadInter) inter;
+
+            for (Line2D line : head.getNeededLedgers()) {
                 box.add(line.getBounds());
             }
 

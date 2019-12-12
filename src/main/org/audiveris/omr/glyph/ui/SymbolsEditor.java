@@ -88,7 +88,6 @@ import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
-import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -587,7 +586,7 @@ public class SymbolsEditor
         {
             this.highlightedSlot = slot;
 
-            repaint(); // To erase previous highlight
+            ///repaint(); // To erase previous highlight
             //
             //            // Make the measure visible
             //            // Safer
@@ -662,8 +661,6 @@ public class SymbolsEditor
         public void pointSelected (Point pt,
                                    MouseMovement movement)
         {
-            super.pointSelected(pt, movement); // Publish location
-
             // Cancel slot highlighting
             highLight(null);
 
@@ -688,6 +685,9 @@ public class SymbolsEditor
 
             // Handle relation vector
             processRelationVector(pt, movement);
+
+            // Publish location (and let all subscribers react to location value)
+            super.pointSelected(pt, movement);
         }
 
         //------------------------//
@@ -713,11 +713,9 @@ public class SymbolsEditor
             switch (movement) {
             case PRESSING:
                 // Start Dnd
-                Point gOffset = SwingUtilities.convertPoint(this, 0, 0, glass);
-                double z = zoom.getRatio();
                 glass.setOverTarget(true);
                 glass.setVisible(true);
-                glass.setTargetTransform(new AffineTransform(z, 0, 0, z, gOffset.x, gOffset.y));
+                glass.setTargetTransform(view.getTransformToGlass(glass));
                 dndOperation = new DndOperation(
                         sheet,
                         zoom,
@@ -726,7 +724,7 @@ public class SymbolsEditor
                 dndOperation.enteringTarget();
                 glass.setGhostTracker(dndOperation.getGhostTracker());
 
-            ///break; // Fall through
+            // Fall through (no break)
             case DRAGGING:
                 // Move Dnd
                 Point sheetRef = dndOperation.getStaffReference(pt); // pt can be slightly modified

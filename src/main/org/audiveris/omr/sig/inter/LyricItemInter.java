@@ -324,18 +324,19 @@ public class LyricItemInter
 
         // Look for a containing lyric line
         final Point2D loc = getLocation();
-        LyricLineInter line = new TextBuilder(sig.getSystem(), true).lookupLyricLine(loc);
+        final SystemInfo system = staff.getSystem();
+        LyricLineInter line = new TextBuilder(system, true).lookupLyricLine(loc);
 
         if (line == null) {
             // Create a new lyric line
             line = new LyricLineInter(1);
             line.setManual(true);
             line.setStaff(staff);
-            tasks.add(new AdditionTask(sig, line, getBounds(), Collections.EMPTY_SET));
+            tasks.add(new AdditionTask(system.getSig(), line, getBounds(), Collections.EMPTY_SET));
         }
 
         // Wrap lyric item into lyric line
-        tasks.add(new LinkTask(sig, line, this, new Containment()));
+        tasks.add(new LinkTask(system.getSig(), line, this, new Containment()));
 
         return tasks;
     }

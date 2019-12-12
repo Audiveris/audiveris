@@ -293,7 +293,7 @@ public class WordInter
         sentence.setStaff(staff);
 
         tasks.add(new AdditionTask(
-                sig,
+                staff.getSystem().getSig(),
                 sentence,
                 getBounds(),
                 Arrays.asList(new Link(this, new Containment(), true))));

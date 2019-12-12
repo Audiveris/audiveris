@@ -126,7 +126,7 @@ public class RestInter
         restChord.setStaff(staff);
 
         tasks.add(new AdditionTask(
-                sig,
+                staff.getSystem().getSig(),
                 restChord,
                 getBounds(),
                 Arrays.asList(new Link(this, new Containment(), true))));

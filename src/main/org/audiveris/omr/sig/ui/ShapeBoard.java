@@ -34,6 +34,7 @@ import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.ui.SymbolsEditor;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.symbol.InterFactory;
+import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.OmrGlassPane;
 import org.audiveris.omr.ui.dnd.AbstractGhostDropListener;
@@ -68,7 +69,6 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
@@ -82,7 +82,6 @@ import java.util.Map.Entry;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
-import org.audiveris.omr.sheet.ui.BookActions;
 
 /**
  * Class {@code ShapeBoard} hosts a palette of shapes for insertion and assignment of
@@ -961,9 +960,7 @@ public class ShapeBoard
                 // Moving into this component?
                 if (component != prevComponent.get()) {
                     // Set glass transform to fit current sheet view status
-                    Point gOffset = SwingUtilities.convertPoint(view, 0, 0, glass);
-                    double z = zoom.getRatio();
-                    glass.setTargetTransform(new AffineTransform(z, 0, 0, z, gOffset.x, gOffset.y));
+                    glass.setTargetTransform(view.getTransformToGlass(glass));
 
                     if (shape.isDraggable()) {
                         if (dndOperation == null) {
