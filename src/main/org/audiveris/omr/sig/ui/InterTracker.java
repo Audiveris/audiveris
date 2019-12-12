@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
-import java.awt.geom.Line2D;
 import java.util.Collection;
 
 /**
@@ -98,13 +97,11 @@ public class InterTracker
      *
      * @param g           graphics context
      * @param renderInter true for rendering inter
-     * @return the bounding box of all decorations
      */
-    public Rectangle render (Graphics2D g,
-                             boolean renderInter)
+    public void render (Graphics2D g,
+                        boolean renderInter)
     {
         final SelectionPainter painter = new SelectionPainter(sheet, g);
-        Rectangle box = inter.getBounds();
 
         if (renderInter) {
             painter.render(inter); // Inter
@@ -120,8 +117,27 @@ public class InterTracker
             Collection<Link> links = inter.searchLinks(system);
 
             for (Link link : links) {
-                Line2D line = painter.drawSupport(inter, link.partner, link.relation.getClass());
-                box.add(line.getBounds());
+                painter.drawSupport(inter, link.partner, link.relation.getClass());
+            }
+        }
+    }
+
+    //----------------//
+    // getSceneBounds //
+    //----------------//
+    /**
+     * Report the bounding box of the whole scene to be drawn.
+     *
+     * @return the scene bounds
+     */
+    public Rectangle getSceneBounds ()
+    {
+        Rectangle box = inter.getBounds();
+
+        if (system != null) {
+            // Inter links
+            for (Link link : inter.searchLinks(system)) {
+                box.add(link.partner.getRelationCenter());
             }
         }
 

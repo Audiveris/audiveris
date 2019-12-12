@@ -43,6 +43,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.geom.AffineTransform;
 import java.util.ConcurrentModificationException;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -254,6 +255,26 @@ public class RubberPanel
                 LocationEvent.class);
 
         return (locationEvent != null) ? locationEvent.getData() : null;
+    }
+
+    //---------------------//
+    // getTransformToGlass //
+    //---------------------//
+    /**
+     * Report the affine transform that converts sheet-based coordinates to coordinates
+     * in the provided glass, taking account zoom, scroll and view vs glass shift.
+     * <p>
+     * In fact, this method can be used with any other target JPanel.
+     *
+     * @param glass the target (glass) panel
+     * @return the affine transform from sheet to (glass) panel
+     */
+    public AffineTransform getTransformToGlass (JPanel glass)
+    {
+        Point gOffset = SwingUtilities.convertPoint(this, 0, 0, glass);
+        double z = zoom.getRatio();
+
+        return new AffineTransform(z, 0, 0, z, gOffset.x, gOffset.y);
     }
 
     //---------//

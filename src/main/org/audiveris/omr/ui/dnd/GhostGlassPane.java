@@ -60,8 +60,8 @@ public class GhostGlassPane
     /** The image to be dragged. */
     protected BufferedImage draggedImage = null;
 
-    /** The previous display bounds (glass-based). */
-    protected Rectangle prevRectangle = null;
+    /** The previous scene display bounds (glass-based). */
+    protected Rectangle prevSceneBounds = null;
 
     /** The current location (glass-based). */
     protected Point localPoint = null;
@@ -178,7 +178,7 @@ public class GhostGlassPane
      */
     protected Rectangle getSceneBounds (Point center)
     {
-        return getImageBounds(center); // By default
+        return getImageBounds(center); // By default, just the image
     }
 
     //---------------//
@@ -194,23 +194,26 @@ public class GhostGlassPane
     {
         // Anything to repaint since last time the point was set?
         if (draggedImage != null) {
-            Rectangle rect = getSceneBounds(localPoint);
-            Rectangle dirty = new Rectangle(rect);
+            // Bounds of new scene to paint
+            Rectangle newSceneBounds = getSceneBounds(localPoint);
+            Rectangle dirty = new Rectangle(newSceneBounds);
 
-            if (prevRectangle != null) {
-                dirty.add(prevRectangle);
+            // Bounds of previous scene if any
+            if (prevSceneBounds != null) {
+                dirty.add(prevSceneBounds);
             }
 
-            dirty.grow(1, 1); // To cope with rounding errors
+            // To cope with rounding errors
+            dirty.grow(1, 1);
 
             // Set new values now, to avoid race condition with repaint
             this.localPoint = localPoint;
-            prevRectangle = rect;
+            prevSceneBounds = newSceneBounds;
 
             repaint(dirty.x, dirty.y, dirty.width, dirty.height);
         } else {
             this.localPoint = localPoint;
-            prevRectangle = null;
+            prevSceneBounds = null;
         }
     }
 }

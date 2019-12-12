@@ -477,8 +477,8 @@ public interface Inter
             throws DeletedInterException;
 
     /**
-     * Prepare the manual addition of this inter, for which staff and bounds have been
-     * set.
+     * Prepare the manual addition of this inter, for which only staff and bounds have
+     * been set (notably, sig is not yet set).
      * <p>
      * Build <b>all</b> the UI tasks to insert this inter: the addition task itself, together with
      * related tasks if any (other additions, links, ...).

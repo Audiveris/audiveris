@@ -183,6 +183,11 @@ public class ChordsStep
         }
 
         final MeasureStack stack = system.getStackAt(center);
+
+        if (stack == null) {
+            return null;
+        }
+
         final Staff staff = inter.getStaff();
 
         if (staff != null) {

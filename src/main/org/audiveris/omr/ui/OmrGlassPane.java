@@ -49,7 +49,7 @@ public class OmrGlassPane
     /** The transform to apply when painting on top of target (zoomed sheet view). */
     private AffineTransform targetTransform;
 
-    /** Current staff reference point (sheet-based), if any. */
+    /** Current staff reference point (glass-based), if any. */
     private Point staffReference;
 
     /** Current ghost tracker, if any. */
@@ -60,7 +60,7 @@ public class OmrGlassPane
     //----------------//
     /**
      * Paint inter image, plus a line from inter center to staff reference point if any,
-     * plus inter links if any.
+     * plus inter decorations if any.
      *
      * @param g graphic environment
      */
@@ -81,7 +81,7 @@ public class OmrGlassPane
                 g2.transform(targetTransform);
 
                 // Draw inter decorations
-                Rectangle box = ghostTracker.render(g2, false /* renderInter */);
+                ghostTracker.render(g2, false /* renderInter */);
 
                 g2.setTransform(saveAT);
             }
@@ -95,16 +95,25 @@ public class OmrGlassPane
      * The scene is composed of inter image plus its decorations if any
      * (staff reference, support links, ledgers).
      *
-     * @param center inter center
-     * @return bounding box of inter + reference point if any
+     * @param center inter center (glass-based)
+     * @return bounding box of inter + reference point + decorations if any
      */
     @Override
     protected Rectangle getSceneBounds (Point center)
     {
-        Rectangle rect = getImageBounds(center);
+        Rectangle rect = super.getSceneBounds(center);
 
-        if (staffReference != null) {
+        if (staffReference != null && overTarget) {
             rect.add(staffReference);
+
+            if (ghostTracker != null) {
+                // Use inter decorations
+                Rectangle box = ghostTracker.getSceneBounds();
+
+                if (box != null) {
+                    rect.add(targetTransform.createTransformedShape(box).getBounds());
+                }
+            }
         }
 
         return rect;
@@ -148,19 +157,5 @@ public class OmrGlassPane
     public void setTargetTransform (AffineTransform targetTransform)
     {
         this.targetTransform = targetTransform;
-    }
-
-    //---------------//
-    // setLocalPoint //
-    //---------------//
-    @Override
-    protected void setLocalPoint (Point localPoint)
-    {
-        this.localPoint = localPoint;
-
-        if (draggedImage != null) {
-            // Repaint whole glass, since we don't keep information on ghost past and new links
-            repaint();
-        }
     }
 }
