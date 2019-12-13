@@ -1005,7 +1005,7 @@ public abstract class SigPainter
     private void paintWord (WordInter word,
                             FontInfo lineMeanFont)
     {
-        if (word.getValue().isBlank()) {
+        if (word.getValue().trim().isEmpty()) {
             return;
         }
 
