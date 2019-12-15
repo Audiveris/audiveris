@@ -423,6 +423,7 @@ public abstract class Board
     //--------------//
     private void defineLayout ()
     {
+        component.setName(name + " board");
         component.setNoInsets();
         body.setNoInsets();
 

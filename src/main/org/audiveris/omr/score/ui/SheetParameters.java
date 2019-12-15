@@ -86,6 +86,7 @@ public class SheetParameters
         }
 
         scopedPanel = new ScopedPanel("Sheet settings", sheetPanes);
+        scopedPanel.setName("SheetParametersPanel");
 
         initialDisplay();
     }

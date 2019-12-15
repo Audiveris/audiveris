@@ -26,6 +26,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,7 +136,8 @@ public class LogPane
                         StyleConstants.setFontFamily(attributes, constants.fontName.getValue());
 
                         // Font size
-                        StyleConstants.setFontSize(attributes, constants.fontSize.getValue());
+                        int fontSize = UIUtil.adjustedSize(constants.fontSize.getValue());
+                        StyleConstants.setFontSize(attributes, fontSize);
 
                         try {
                             Map<String, String> mdc = event.getMDCPropertyMap();

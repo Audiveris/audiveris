@@ -89,6 +89,7 @@ public class EditorMenu
     {
         super(sheet);
         defineLayout();
+        popup.setName("EditorMenu");
     }
 
     //--------------//

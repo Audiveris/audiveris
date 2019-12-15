@@ -57,6 +57,8 @@ public class SheetPopupMenu
     public SheetPopupMenu (Sheet sheet)
     {
         this.sheet = sheet;
+
+        popup.setName("SheetPopupMenu");
     }
 
     //---------//

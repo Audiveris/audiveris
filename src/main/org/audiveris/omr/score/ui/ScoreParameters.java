@@ -129,6 +129,7 @@ public class ScoreParameters
             book = null;
         }
 
+        component.setName("ScoreParametersPane");
         component.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
 
         // Allocate all required panels (default / book? / sheets??)
