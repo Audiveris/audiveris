@@ -64,10 +64,10 @@ public abstract class AdvancedTopics
     private static final Logger logger = LoggerFactory.getLogger(AdvancedTopics.class);
 
     /** Layout for 2 items. */
-    private static final FormLayout layout2 = new FormLayout("68dlu,15dlu,pref", "pref");
+    private static final FormLayout layout2 = new FormLayout("pref,15dlu,pref", "pref");
 
     /** Layout for 3 items. */
-    private static final FormLayout layout3 = new FormLayout("12dlu,1dlu,65dlu,2dlu,pref", "pref");
+    private static final FormLayout layout3 = new FormLayout("12dlu,1dlu,pref,10dlu,pref", "pref");
 
     private static final ResourceMap resource = Application.getInstance().getContext()
             .getResourceMap(AdvancedTopics.class);
@@ -100,6 +100,8 @@ public abstract class AdvancedTopics
     private static JPanel getMessage ()
     {
         Panel panel = new Panel();
+        panel.setName("AdvancedTopicsPanel");
+
         FormLayout layout = new FormLayout("pref", "pref, 1dlu, pref, 1dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout, panel);
         CellConstraints cst = new CellConstraints();

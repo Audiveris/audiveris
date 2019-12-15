@@ -334,7 +334,7 @@ public class MainGui
                     // Update frame title
                     sb.append(" - ");
 
-                    sb.append(resources.getString("mainFrame.title"));
+                    sb.append(resources.getString("Application.title"));
                     frame.setTitle(sb.toString());
                 }
             });

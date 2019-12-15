@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.ui.util;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.WellKnowns;
 
 import org.slf4j.Logger;
@@ -31,6 +33,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FileDialog;
+import java.awt.Font;
 import java.awt.Frame;
 import static java.awt.Frame.ICONIFIED;
 import java.awt.Graphics;
@@ -56,6 +59,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 /**
@@ -66,7 +70,12 @@ import javax.swing.border.Border;
 public abstract class UIUtil
 {
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(UIUtil.class);
+
+    /** Ratio to be applied on all font size. */
+    public static final float GLOBAL_FONT_RATIO = constants.globalFontRatio.getValue().floatValue();
 
     /**
      * Customized border for tool buttons, to use consistently in all UI components.
@@ -84,6 +93,82 @@ public abstract class UIUtil
             e.getWindow().dispose();
         }
     };
+
+    public static void adjustDefaults ()
+    {
+        // Control
+        final Font defaultFont = new Font(constants.defaultFontName.getValue(),
+                                          Font.PLAIN,
+                                          adjustedSize(constants.defaultFontSize.getValue()));
+        final Font controlFont = defaultFont;
+        UIManager.put("Button.font", controlFont);
+        UIManager.put("CheckBox.font", controlFont);
+        UIManager.put("ComboBox.font", controlFont);
+        UIManager.put("DesktopIcon.font", controlFont);
+        UIManager.put("IconButton.font", controlFont); // ???
+        UIManager.put("Label.font", controlFont);
+        UIManager.put("List.font", controlFont); // ???
+        UIManager.put("ProgressBar.font", controlFont);
+        UIManager.put("RadioButton.font", controlFont);
+        UIManager.put("Slider.font", controlFont);
+        UIManager.put("Spinner.font", controlFont);
+        UIManager.put("TabbedPane.font", controlFont);
+        UIManager.put("ToggleButton.font", controlFont);
+
+        // Menu
+        final Font menuFont = defaultFont;
+        UIManager.put("CheckBoxMenuItem.font", menuFont);
+        UIManager.put("Menu.font", menuFont);
+        UIManager.put("MenuBar.font", menuFont);
+        UIManager.put("MenuItem.font", menuFont);
+        UIManager.put("PopupMenu.font", menuFont);
+        UIManager.put("RadioButtonMenuItem.font", menuFont);
+        UIManager.put("ToolBar.font", menuFont);
+
+        // User
+        final Font userFont = defaultFont;
+        UIManager.put("EditorPane.font", userFont);
+        UIManager.put("FormattedTextField.font", userFont);
+        UIManager.put("PasswordField.font", userFont);
+        UIManager.put("Table.font", userFont);
+        UIManager.put("TableHeader.font", userFont);
+        UIManager.put("TextArea.font", userFont);
+        UIManager.put("TextField.font", userFont);
+        UIManager.put("TextPane.font", userFont);
+        UIManager.put("Tree.font", userFont);
+
+        // Window title (was Dialog font)
+        final Font windowTitleFont = defaultFont;
+        UIManager.put("ColorChooser.font", windowTitleFont);
+        UIManager.put("OptionPane.font", windowTitleFont);
+        UIManager.put("Panel.font", windowTitleFont);
+        UIManager.put("ScrollPane.font", windowTitleFont);
+        UIManager.put("Viewport.font", windowTitleFont);
+
+        // Miscellaneous
+        UIManager.put("ToolTip.font", new Font(
+                      constants.defaultFontName.getValue(),
+                      Font.ITALIC,
+                      adjustedSize(constants.defaultFontSize.getValue())));
+        UIManager.put("TitledBorder.font", new Font(
+                      constants.defaultFontName.getValue(),
+                      Font.BOLD,
+                      adjustedSize(constants.defaultFontSize.getValue())));
+    }
+
+    //--------------//
+    // adjustedSize //
+    //--------------//
+    /**
+     * Report the size multiplied by global font ratio.
+     *
+     * @param size provided size
+     * @return adjusted size
+     */
+    public static int adjustedSize (double size)
+    {
+        return (int) Math.rint(size * GLOBAL_FONT_RATIO);
+    }
 
     //--------------------//
     // complementaryColor //
@@ -520,7 +605,29 @@ public abstract class UIUtil
         frame.toFront();
     }
 
+    /** Not meant to be instantiated. */
     private UIUtil ()
     {
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Ratio globalFontRatio = new Constant.Ratio(
+                1.0,
+                "Ratio to be applied on every font size (restart needed)");
+
+        private final Constant.Integer defaultFontSize = new Constant.Integer(
+                "Points",
+                12,
+                "Default font size");
+
+        private final Constant.String defaultFontName = new Constant.String(
+                "Arial",
+                "Default font name (e.g. Arial, Dialog, Segoe UI, ...");
     }
 }

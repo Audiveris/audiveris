@@ -102,6 +102,7 @@ public class PictureView
 
         pageMenu = new SheetPopupMenu(sheet);
         pageMenu.addMenu(new ExtractionMenu(sheet));
+        pageMenu.getPopup().setName("PicturePopupMenu");
     }
 
     //----------------//

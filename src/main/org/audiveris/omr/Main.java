@@ -32,6 +32,7 @@ import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.ui.MainGui;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.OmrExecutors;
 
 import org.jdesktop.application.Application;
@@ -140,7 +141,13 @@ public class Main
 
         if (!cli.isBatchMode()) {
             logger.debug("Running in interactive mode");
+
+            // Select proper font size
+            UIUtil.adjustDefaults();
+
+            // Log all events to LogPane
             LogUtil.addGuiAppender();
+
             logger.debug("Main. Launching MainGui");
             Application.launch(MainGui.class, args);
         } else {

@@ -240,7 +240,7 @@ public abstract class SigPainter
     public static JPanel getVoicePanel ()
     {
         final int length = voiceColors.length;
-        final Font font = new Font("SansSerif", Font.BOLD, 22);
+        final Font font = new Font("Arial", Font.BOLD, UIUtil.adjustedSize(18));
         final Color background = Color.WHITE;
         final StringBuilder sbc = new StringBuilder();
 
@@ -278,7 +278,7 @@ public abstract class SigPainter
         // Separation between staves
         {
             final Color color = Color.BLACK;
-            final JLabel label = new JLabel("=");
+            final JLabel label = new JLabel(" /");
             label.setPreferredSize(cellDim);
             label.setFont(font);
             label.setOpaque(true);
