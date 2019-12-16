@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2019. All rights reserved.
+//  Copyright © Audiveris 2021. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -37,8 +37,9 @@ import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sheet.ui.BookActions;
+import org.audiveris.omr.sheet.ui.SheetPainter;
+import org.audiveris.omr.sheet.ui.SheetView;
 import org.audiveris.omr.sheet.ui.StubsController;
-import org.audiveris.omr.sig.ui.SigPainter;
 import org.audiveris.omr.step.ui.StepMenu;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.text.OCR;
@@ -69,10 +70,11 @@ import java.awt.GridLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EventObject;
+import java.util.List;
 import java.util.concurrent.Callable;
 
-import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -80,7 +82,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
@@ -96,11 +97,13 @@ public class MainGui
         extends OmrGui
         implements EventSubscriber<StubEvent>, PropertyChangeListener
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(MainGui.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Sheet tabbed pane, which may contain several views. */
     public StubsController stubsController;
 
@@ -116,17 +119,11 @@ public class MainGui
     /** Log pane, which displays logging info. */
     private LogPane logPane;
 
-    /** Boards pane, which displays a specific set of boards per sheet. */
-    private BoardsScrollPane boardsScrollPane;
-
     /** GlassPane needed to handle drag and drop from shape palette. */
     private final OmrGlassPane glassPane = new OmrGlassPane();
 
     /** Main pane with Sheet on top and Log+Errors on bottom. */
     private JSplitPane mainPane;
-
-    /** Application pane with Main pane on left and Boards on right. */
-    private JSplitPane appPane;
 
     /** Step menu. */
     private StepMenu stepMenu;
@@ -134,6 +131,7 @@ public class MainGui
     /** Map of class resources. */
     private ResourceMap resources;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MainGui} instance, to handle any user display and interaction.
      */
@@ -141,6 +139,7 @@ public class MainGui
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // clearLog //
     //----------//
@@ -154,7 +153,7 @@ public class MainGui
     // displayConfirmation //
     //---------------------//
     @Override
-    public boolean displayConfirmation (String message)
+    public boolean displayConfirmation (Object message)
     {
         return displayConfirmation(message, "Confirm");
     }
@@ -163,40 +162,34 @@ public class MainGui
     // displayConfirmation //
     //---------------------//
     @Override
-    public boolean displayConfirmation (String message,
+    public boolean displayConfirmation (Object message,
                                         String title)
     {
-        int answer = JOptionPane.showConfirmDialog(
-                frame,
-                message,
-                title + " - " + appName,
-                JOptionPane.YES_NO_OPTION);
-
-        return answer == JOptionPane.YES_OPTION;
+        return displayConfirmation(
+                message, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
     }
 
     //---------------------//
     // displayConfirmation //
     //---------------------//
     @Override
-    public int displayConfirmation (String message,
-                                    String title,
-                                    int optionType)
+    public boolean displayConfirmation (Object message,
+                                        String title,
+                                        int optionType,
+                                        int messageType)
     {
-        return JOptionPane.showConfirmDialog(frame, message, title + " - " + appName, optionType);
+        int answer = JOptionPane.showConfirmDialog(frame, message, title, optionType, messageType);
+
+        return answer == JOptionPane.YES_OPTION;
     }
 
     //--------------//
     // displayError //
     //--------------//
     @Override
-    public void displayError (String message)
+    public void displayError (Object message)
     {
-        JOptionPane.showMessageDialog(
-                frame,
-                message,
-                "Error - " + appName,
-                JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(frame, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     //--------------------//
@@ -214,25 +207,22 @@ public class MainGui
     // displayMessage //
     //----------------//
     @Override
-    public void displayMessage (String message,
+    public void displayMessage (Object message,
                                 String title)
     {
-        JOptionPane.showMessageDialog(frame,
-                                      message,
-                                      title + " - " + appName,
-                                      JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(frame, message, title, JOptionPane.INFORMATION_MESSAGE);
     }
 
     //------------------------//
     // displayModelessConfirm //
     //------------------------//
     @Override
-    public int displayModelessConfirm (String message)
+    public int displayModelessConfirm (Object message)
     {
         return ModelessOptionPane.showModelessConfirmDialog(
                 frame,
                 message,
-                "Confirm - " + appName,
+                "Confirm",
                 JOptionPane.YES_NO_OPTION);
     }
 
@@ -240,23 +230,19 @@ public class MainGui
     // displayWarning //
     //----------------//
     @Override
-    public void displayWarning (String message)
+    public void displayWarning (Object message)
     {
-        displayWarning(message, "Warning - " + appName);
+        displayWarning(message, "Warning");
     }
 
     //----------------//
     // displayWarning //
     //----------------//
     @Override
-    public void displayWarning (String message,
+    public void displayWarning (Object message,
                                 String title)
     {
-        JOptionPane.showMessageDialog(
-                frame,
-                message,
-                title + " - " + appName,
-                JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(frame, message, title, JOptionPane.WARNING_MESSAGE);
     }
 
     //----------//
@@ -317,25 +303,20 @@ public class MainGui
             }
 
             final SheetStub stub = stubEvent.getData();
-            SwingUtilities.invokeLater(new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    final StringBuilder sb = new StringBuilder();
+            SwingUtilities.invokeLater(() -> {
+                final StringBuilder sb = new StringBuilder();
 
-                    if (stub != null) {
-                        Book book = stub.getBook();
-                        // Frame title tells score name
-                        sb.append(book.getRadix());
-                    }
-
-                    // Update frame title
-                    sb.append(" - ");
-
-                    sb.append(resources.getString("Application.title"));
-                    frame.setTitle(sb.toString());
+                if (stub != null) {
+                    Book book = stub.getBook();
+                    // Frame title tells score name
+                    sb.append(book.getRadix());
                 }
+
+                // Update frame title
+                sb.append(" - ");
+
+                sb.append(resources.getString("Application.title"));
+                frame.setTitle(sb.toString());
             });
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
@@ -346,7 +327,7 @@ public class MainGui
     // propertyChange //
     //----------------//
     /**
-     * Called when notified from GuiActions.
+     * Notified on property change (such as local mainPane divider).
      *
      * @param evt the event details
      */
@@ -354,106 +335,21 @@ public class MainGui
     public void propertyChange (PropertyChangeEvent evt)
     {
         String propertyName = evt.getPropertyName();
-        Boolean display = (Boolean) evt.getNewValue();
 
-        switch (propertyName) {
-        case GuiActions.BOARDS_WINDOW_DISPLAYED:
+        if (propertyName.equals(JSplitPane.DIVIDER_LOCATION_PROPERTY)) {
+            SheetStub stub = stubsController.getSelectedStub();
 
-            // Toggle display of boards
-            if (display) {
-                ///appPane.add(boardsScrollPane, BorderLayout.EAST);
-                appPane.setRightComponent(boardsScrollPane);
-            } else {
-                appPane.remove(boardsScrollPane);
-            }
+            if ((stub != null) && stub.hasSheet()) {
+                SheetView view = stub.getAssembly().getCurrentView();
 
-            appPane.revalidate();
-
-            break;
-
-        case GuiActions.LOG_WINDOW_DISPLAYED:
-
-            // Toggle display of log
-            if (display) {
-                bottomPane.setLeftComponent(logPane.getComponent());
-            } else {
-                bottomPane.setLeftComponent(null);
-            }
-
-            break;
-
-        case GuiActions.ERRORS_WINDOW_DISPLAYED:
-
-            // Toggle display of errors
-            if (display) {
-                JComponent comp = null;
-                SheetStub stub = stubsController.getSelectedStub();
-
-                if (stub != null) {
-                    ErrorsEditor editor = stub.getSheet().getErrorsEditor();
-
-                    if (editor != null) {
-                        comp = editor.getComponent();
+                if (view != null) {
+                    if (view.getBoardsPane() != null) {
+                        // Force resizing of boards when log windows is resized.
+                        view.getBoardsPane().resize();
                     }
                 }
-
-                bottomPane.setRightComponent(comp);
-            } else {
-                bottomPane.setRightComponent(null);
             }
-
-            break;
-
-        default:
-            break;
         }
-
-        // BottomPane = LogPane | ErrorsPane
-        // Totally remove it when it displays no log and no errors
-        if (needBottomPane()) {
-            mainPane.setBottomComponent(bottomPane);
-        } else {
-            mainPane.setBottomComponent(null);
-        }
-    }
-
-    //------------------//
-    // removeBoardsPane //
-    //------------------//
-    @Override
-    public void removeBoardsPane ()
-    {
-        boardsScrollPane.setBoards(null);
-    }
-
-    //------------------//
-    // removeErrorsPane //
-    //------------------//
-    @Override
-    public void removeErrorsPane (JComponent errorsPane)
-    {
-        // To avoid race conditions, check we remove the proper errors pane
-        if ((errorsPane != null) && (errorsPane == bottomPane.getRightComponent())) {
-            bottomPane.setRightComponent(null);
-        }
-    }
-
-    //---------------//
-    // setBoardsPane //
-    //---------------//
-    @Override
-    public void setBoardsPane (JComponent boards)
-    {
-        boardsScrollPane.setBoards(boards);
-    }
-
-    //---------------//
-    // setErrorsPane //
-    //---------------//
-    @Override
-    public void setErrorsPane (JComponent errorsPane)
-    {
-        bottomPane.setRightComponent(errorsPane);
     }
 
     //------------//
@@ -482,6 +378,9 @@ public class MainGui
 
         // Get resources, now that application is available
         resources = Application.getInstance().getContext().getResourceMap(getClass());
+
+        // Adjust default texts
+        UIUtil.adjustDefaultTexts();
 
         // Set application exit listener
         addExitListener(new GuiExitListener());
@@ -551,91 +450,59 @@ public class MainGui
     private void defineLayout ()
     {
         // +=============================================================+
-        // |toolKeyPanel . . . . . . . . . . . . . . . . . . . . . . . . |
-        // |+=================+=============================+===========+|
-        // || toolBar . . . . . . . . . .| progressBar . . .| Memory . .||
-        // |+=================+=============================+===========+|
+        // | menuBar               | voices |   progressBar     | memory |
         // +=============================================================+
-        // | appPane . . . . . . . . . . . . . . . . . . . . . . . . . . |
-        // |+=========================================+=================+|
-        // | . . . . . . . . . . . . . . . . . . . . .|boardsScrollPane ||
-        // | +========================================+ . . . . . . . . ||
-        // | | stubsController . . . . . . . . . . . .| . . . . . . . . ||
-        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // |m| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // |a| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // |i| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // |n| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // |P+=====================+==================+ . . . . . . . . ||
-        // |a| logPane . . . . . . | errors . . . . . | . . . . . . . . ||
-        // |n| . . . . . . . . . . |. . . . . . . . . | . . . . . . . . ||
-        // |e| . . . . . . . . . . |. . . . . . . . . | . . . . . . . . ||
-        // | +=====================+==================+=================+|
+        // | toolBar                                                     |
+        // +=============================================================+
+        // | +=========================================================+ |
+        // | | stubsPane                                               | |
+        // | | +=====================================================+ | |
+        // | | | viewsPane                                           | | |
+        // | | | +===================================+=============+ | | |
+        // | | | | scrollView                        | boardsPane  | | | |
+        // | | | |                                   |             | | | |
+        // | | | |                                   |             | | | |
+        // | | | |                                   |             | | | |
+        // | | | |                                   |             | | | |
+        // | | | |                                   |             | | | |
+        // |m| | |                                   |             | | | |
+        // |a| | |                                   |             | | | |
+        // |i| | +===================================+=============+ | | |
+        // |n| +=====================================================+ | |
+        // |P+=========================================================+ |
+        // |a| bottomPane (logPane)                                    | |
+        // |n|                                                         | |
+        // |e|                                                         | |
+        // | +=========================================================+ |
         // +=============================================================+
         //
 
-        // Log
+        // Global layout: toolbar on top, stubsPane at center, log at bottom
+        final Container content = frame.getContentPane();
+        content.setLayout(new BorderLayout());
+
+        // Top: ToolBar
+        content.add(ActionManager.getInstance().getToolBar(), BorderLayout.NORTH);
+
+        // Center: stubsPane on top and Log on bottom
+        mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, stubsController.getComponent(), null);
+        mainPane.setBorder(null);
+        mainPane.setContinuousLayout(true);
+        mainPane.setOneTouchExpandable(true);
+        mainPane.setResizeWeight(0.9d); // Give bulk space to upper part
+        mainPane.setMinimumSize(new Dimension(500, 500)); // To make sure it is always visible
+        content.add(mainPane, BorderLayout.CENTER);
+        mainPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, this);
+
+        // Bottom = Log (other things removed)
         logPane = new LogPane();
 
-        // Boards
-        final Dimension boardsDim = new Dimension(UIUtil.adjustedSize(350), 500);
-        boardsScrollPane = new BoardsScrollPane();
-        boardsScrollPane.setPreferredSize(boardsDim);
-        boardsScrollPane.setMinimumSize(boardsDim);
-        boardsScrollPane.setMaximumSize(boardsDim);
-
-        // Bottom = Log & Errors
         bottomPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         bottomPane.setBorder(null);
         bottomPane.setDividerSize(1);
         bottomPane.setResizeWeight(0.5d); // Cut in half initially
-
-        // mainPane =  stubsController / bottomPane
-        mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, stubsController.getComponent(), null);
-        mainPane.setBorder(null);
-        mainPane.setOneTouchExpandable(true);
-        mainPane.setResizeWeight(0.9d); // Give bulk space to upper part
-        mainPane.setMinimumSize(new Dimension(500, 500)); // To make sure it is always visible
-
-        // appPane = mainPane | boards
-        appPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        appPane.setName("appPane");
-        appPane.setBorder(null);
-        appPane.setDividerSize(2);
-        appPane.setResizeWeight(0.99d); // Give bulk space to left part
-        appPane.setLeftComponent(mainPane);
-
-        // Global layout: Use a toolbar on top and a double split pane below
-        Container content = frame.getContentPane();
-        content.setLayout(new BorderLayout());
-        content.add(ActionManager.getInstance().getToolBar(), BorderLayout.NORTH);
-        content.add(appPane, BorderLayout.CENTER);
-
-        // Display the boards pane?
-        if (GuiActions.getInstance().isBoardsWindowDisplayed()) {
-            appPane.setRightComponent(boardsScrollPane);
-        }
-
-        // Display the log pane?
-        if (GuiActions.getInstance().isLogWindowDisplayed()) {
-            bottomPane.setLeftComponent(logPane.getComponent());
-        }
-
-        // Display the errors pane?
-        if (GuiActions.getInstance().isErrorsWindowDisplayed()) {
-            bottomPane.setRightComponent(null);
-        }
-
-        // BottomPane = Log & Errors
-        if (needBottomPane()) {
-            mainPane.setBottomComponent(bottomPane);
-        }
+        bottomPane.setLeftComponent(logPane.getComponent());
+        mainPane.setBottomComponent(bottomPane);
     }
 
     //-------------//
@@ -705,7 +572,7 @@ public class MainGui
         // Gauges = voices | progress | memory
         JPanel gauges = new JPanel();
         gauges.setLayout(new BorderLayout());
-        gauges.add(SigPainter.getVoicePanel(), BorderLayout.WEST);
+        gauges.add(SheetPainter.getVoicePanel(), BorderLayout.WEST);
         gauges.add(StepMonitoring.createMonitor().getComponent(), BorderLayout.CENTER);
         gauges.add(new MemoryMeter().getComponent(), BorderLayout.EAST);
 
@@ -728,38 +595,7 @@ public class MainGui
         }
     }
 
-    //----------------//
-    // needBottomPane //
-    //----------------//
-    /**
-     * Check whether we should keep the bottomPane.
-     *
-     * @return true if bottomPane is not empty
-     */
-    private boolean needBottomPane ()
-    {
-        return GuiActions.getInstance().isLogWindowDisplayed() || GuiActions.getInstance()
-                .isErrorsWindowDisplayed();
-    }
-
-    //------------------//
-    // BoardsScrollPane //
-    //------------------//
-    /**
-     * Just a scrollPane to host the pane of user boards, trying to offer
-     * enough room for the boards.
-     */
-    private static class BoardsScrollPane
-            extends JScrollPane
-    {
-
-        public void setBoards (JComponent boards)
-        {
-            setViewportView(boards);
-            revalidate();
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -790,11 +626,6 @@ public class MainGui
         public boolean canExit (EventObject eo)
         {
             for (Book book : OMR.engine.getAllBooks()) {
-                //                // Is script stored (or explicitly ignored)?
-                //                if (!ScriptActions.checkStored(book.getScript())) {
-                //                    return false;
-                //                }
-                //
                 // Check whether the book has been saved (or user has declined)
                 if (!BookActions.checkStored(book)) {
                     return false;
@@ -807,19 +638,34 @@ public class MainGui
         @Override
         public void willExit (EventObject eo)
         {
-            // Store latest constant values on disk
-            ConstantManager.getInstance().storeResource();
-
             // Close all books
             int count = 0;
 
+            final SheetStub currentStub = StubsController.getCurrentStub();
+            final Book currentBook = (currentStub != null) ? currentStub.getBook() : null;
+
             // NB: Use a COPY of instances, to avoid concurrent modification
-            for (Book book : new ArrayList<>(OMR.engine.getAllBooks())) {
-                book.close();
+            final List<Book> allBooks = new ArrayList<>(OMR.engine.getAllBooks());
+            Collections.reverse(allBooks);
+
+            if (currentBook != null) {
+                allBooks.remove(currentBook);
+            }
+
+            for (Book book : allBooks) {
+                book.close(null);
+                count++;
+            }
+
+            if (currentBook != null) {
+                currentBook.close(currentStub.getNumber());
                 count++;
             }
 
             logger.debug("{} book(s) closed", count);
+
+            // Store latest constant values on disk
+            ConstantManager.getInstance().storeResource();
         }
     }
 }
