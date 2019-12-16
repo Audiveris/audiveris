@@ -49,7 +49,6 @@ import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.StubEvent;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.ModelessOptionPane;
-import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.SeparableMenu;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.OmrExecutors;
@@ -127,7 +126,7 @@ public class MainGui
     private JSplitPane mainPane;
 
     /** Application pane with Main pane on left and Boards on right. */
-    private Panel appPane;
+    private JSplitPane appPane;
 
     /** Step menu. */
     private StepMenu stepMenu;
@@ -361,24 +360,14 @@ public class MainGui
         case GuiActions.BOARDS_WINDOW_DISPLAYED:
 
             // Toggle display of boards
-            if (display) {
-                appPane.add(boardsScrollPane, BorderLayout.EAST);
-            } else {
-                appPane.remove(boardsScrollPane);
-            }
-
-            appPane.revalidate();
+            appPane.setRightComponent(display ? boardsScrollPane : null);
 
             break;
 
         case GuiActions.LOG_WINDOW_DISPLAYED:
 
             // Toggle display of log
-            if (display) {
-                bottomPane.setLeftComponent(logPane.getComponent());
-            } else {
-                bottomPane.setLeftComponent(null);
-            }
+            bottomPane.setLeftComponent(display ? logPane.getComponent() : null);
 
             break;
 
@@ -410,11 +399,7 @@ public class MainGui
 
         // BottomPane = LogPane | ErrorsPane
         // Totally remove it when it displays no log and no errors
-        if (needBottomPane()) {
-            mainPane.setBottomComponent(bottomPane);
-        } else {
-            mainPane.setBottomComponent(null);
-        }
+        mainPane.setBottomComponent(needBottomPane() ? bottomPane : null);
     }
 
     //------------------//
@@ -556,7 +541,7 @@ public class MainGui
         // || toolBar . . . . . . . . . .| progressBar . . .| Memory . .||
         // |+=================+=============================+===========+|
         // +=============================================================+
-        // | horiSplitPane . . . . . . . . . . . . . . . . . . . . . . . |
+        // | appPane . . . . . . . . . . . . . . . . . . . . . . . . . . |
         // |+=========================================+=================+|
         // | . . . . . . . . . . . . . . . . . . . . .|boardsScrollPane ||
         // | +========================================+ . . . . . . . . ||
@@ -580,10 +565,15 @@ public class MainGui
         // +=============================================================+
         //
 
-        // Individual panes
+        // Log
         logPane = new LogPane();
+
+        // Boards
+        final Dimension boardsDim = new Dimension(UIUtil.adjustedSize(350), 500);
         boardsScrollPane = new BoardsScrollPane();
-        boardsScrollPane.setPreferredSize(new Dimension(350, 500));
+        boardsScrollPane.setPreferredSize(boardsDim);
+        boardsScrollPane.setMinimumSize(boardsDim);
+        boardsScrollPane.setMaximumSize(boardsDim);
 
         // Bottom = Log & Errors
         bottomPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -596,17 +586,17 @@ public class MainGui
         mainPane.setBorder(null);
         mainPane.setOneTouchExpandable(true);
         mainPane.setResizeWeight(0.9d); // Give bulk space to upper part
+        mainPane.setMinimumSize(new Dimension(500, 500)); // To make sure it is always visible
 
-        // horiSplitPane = mainPane | boards
-        appPane = new Panel();
-        appPane.setNoInsets();
-        appPane.setBorder(null);
-        appPane.setLayout(new BorderLayout());
-        appPane.add(mainPane, BorderLayout.CENTER); // + boardsScrollPane later
+        // appPane = mainPane | boards
+        appPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         appPane.setName("appPane");
+        appPane.setBorder(null);
+        appPane.setDividerSize(2);
+        appPane.setResizeWeight(0.99d); // Give bulk space to left part
+        appPane.setLeftComponent(mainPane);
 
         // Global layout: Use a toolbar on top and a double split pane below
-        ///toolBar.add(toolKeyPanel);
         Container content = frame.getContentPane();
         content.setLayout(new BorderLayout());
         content.add(ActionManager.getInstance().getToolBar(), BorderLayout.NORTH);
@@ -614,7 +604,7 @@ public class MainGui
 
         // Display the boards pane?
         if (GuiActions.getInstance().isBoardsWindowDisplayed()) {
-            appPane.add(boardsScrollPane, BorderLayout.EAST);
+            appPane.setRightComponent(boardsScrollPane);
         }
 
         // Display the log pane?
@@ -733,8 +723,8 @@ public class MainGui
      */
     private boolean needBottomPane ()
     {
-        return GuiActions.getInstance().isLogWindowDisplayed() || GuiActions.getInstance()
-                .isErrorsWindowDisplayed();
+        return GuiActions.getInstance().isLogWindowDisplayed()
+                       || GuiActions.getInstance().isErrorsWindowDisplayed();
     }
 
     //------------------//
