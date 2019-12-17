@@ -102,6 +102,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.audiveris.omr.sig.inter.AbstractVerticalConnectorInter;
+import org.audiveris.omr.sig.relation.NoExclusion;
 
 /**
  * Class {@code BarsRetriever} focuses on the retrieval of vertical barlines, brackets
@@ -727,31 +729,37 @@ public class BarsRetriever
                 }
 
                 try {
-                    BarConnectorInter connector = null;
+                    final AbstractVerticalConnectorInter connector;
 
                     if (topPeak.isBracket()) {
-                        sig.addVertex(
-                                new BracketConnectorInter(connection, connection.getImpacts()));
+                        connector = new BracketConnectorInter(connection, connection.getImpacts());
                     } else {
-                        sig.addVertex(
-                                connector = new BarConnectorInter(
-                                        connection,
-                                        topPeak.isSet(THICK) ? Shape.THICK_CONNECTOR
-                                        : Shape.THIN_CONNECTOR,
-                                        connection.getImpacts()));
+                        connector = new BarConnectorInter(
+                                connection,
+                                topPeak.isSet(THICK) ? Shape.THICK_CONNECTOR
+                                : Shape.THIN_CONNECTOR,
+                                connection.getImpacts());
                     }
 
-                    // Also, connected bars support each other
+                    sig.addVertex(connector);
+
                     final Inter topInter = topPeak.getInter();
                     final StaffPeak bottomPeak = connection.bottomPeak;
                     final Inter bottomInter = bottomPeak.getInter();
 
+                    // No exclusion between bar (or bracket) and connector,
+                    // even though they may share one line of border pixels
+                    sig.addEdge(topInter, connector, new NoExclusion());
+
                     if ((topInter != null) && (bottomInter != null)) {
+                        sig.addEdge(connector, bottomInter, new NoExclusion());
+
+                        // Connected bars (or bracket) support each other
                         Relation bcRel = new BarConnectionRelation(connection.getImpacts());
                         sig.addEdge(topInter, bottomInter, bcRel);
 
                         // Extend this information to sibling barlines in system height
-                        if ((connector != null) && connector.isGood()) {
+                        if ((connector instanceof BarConnectorInter) && connector.isGood()) {
                             connector.freeze();
                             extendConnection(connection);
                         }
