@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.constant;
 
+import org.audiveris.omr.OMR;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.StubsController;
@@ -29,8 +30,6 @@ import org.audiveris.omr.ui.treetable.TreeTableModel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.swing.JOptionPane;
 
 /**
  * Class {@code UnitModel} implements a data model for units suitable for use in a
@@ -449,7 +448,7 @@ public class UnitModel
                     // column (brute force!)
                     fireTreeNodesChanged(this, new Object[]{getRoot()}, null, null);
                 } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(null, "Illegal number format");
+                    OMR.gui.displayError("Illegal number format");
                 }
 
                 break;

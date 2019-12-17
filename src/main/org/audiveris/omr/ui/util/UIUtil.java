@@ -407,6 +407,31 @@ public abstract class UIUtil
         return toolBorder;
     }
 
+    //----------//
+    // htmlLink //
+    //----------//
+    /**
+     * Report the HTML fragment for an active link to the provided URL string.
+     *
+     * @param url URL as a string
+     * @return HTML text
+     */
+    public static String htmlLink (String url)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        final int size = UIUtil.adjustedSize(constants.urlFontSize.getValue());
+        final String name = constants.defaultFontName.getValue();
+        sb.append("<style> body ")
+                .append("{font-family: ").append(name).append(';')
+                .append(" font-size: ").append(size).append("px;")
+                .append("} </style>");
+
+        sb.append("<A HREF=\"").append(url).append("\">").append(url).append("</A>");
+
+        return sb.toString();
+    }
+
     //-------------//
     // insertTitle //
     //-------------//
@@ -625,6 +650,11 @@ public abstract class UIUtil
                 "Points",
                 12,
                 "Default font size");
+
+        private final Constant.Integer urlFontSize = new Constant.Integer(
+                "Points",
+                9,
+                "Font size for URL");
 
         private final Constant.String defaultFontName = new Constant.String(
                 "Arial",
