@@ -322,7 +322,8 @@ public class ShapeDescriptor
         final int left = sym.x + dx;
         final int right = (sym.x + sym.width) - dx - 1;
 
-        final int dy = (int) Math.rint(constants.stemDy.getValue() * sym.height);
+        final int dy = (template.getShape() == Shape.NOTEHEAD_CROSS) ? 0
+                : (int) Math.rint(constants.stemDy.getValue() * sym.height);
         final int top = sym.y + dy;
         final int bottom = (sym.y + sym.height) - dy - 1;
 
@@ -844,6 +845,9 @@ public class ShapeDescriptor
     private static int getCode (Shape shape)
     {
         switch (shape) {
+        case NOTEHEAD_CROSS:
+            return 192;
+
         case NOTEHEAD_BLACK:
         case NOTEHEAD_BLACK_SMALL:
             return 207;

@@ -62,6 +62,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.audiveris.omr.step.Step;
 
 /**
  * Class {@code SheetAssembly} is a UI assembly dedicated to the display of various
