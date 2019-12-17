@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -596,7 +597,8 @@ public abstract class Constant<E>
             extends Constant<java.util.Date>
     {
 
-        private static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MMM-yyyy");
+        private static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MMM-yyyy",
+                                                                           Locale.US);
 
         public Date (java.util.Date defaultValue,
                      java.lang.String description)

@@ -173,10 +173,10 @@ public class AboutAction
                 .setText(WellKnowns.CLASS_CONTAINER.toString());
 
         String homePage = resources.getString("Application.homepage");
-        ((JTextComponent) Topic.home.comp).setText(htmlLink(homePage));
+        ((JTextComponent) Topic.home.comp).setText(UIUtil.htmlLink(homePage));
 
         String projectPage = resources.getString("Application.projectpage");
-        ((JTextComponent) Topic.project.comp).setText(htmlLink(projectPage));
+        ((JTextComponent) Topic.project.comp).setText(UIUtil.htmlLink(projectPage));
 
         ((JLabel) Topic.license.comp)
                 .setText("GNU Affero GPL v3");
@@ -206,24 +206,6 @@ public class AboutAction
                 .setText(System.getProperty("os.arch"));
 
         return panel;
-    }
-
-    //----------//
-    // htmlLink //
-    //----------//
-    private String htmlLink (String url)
-    {
-        StringBuilder sb = new StringBuilder();
-
-        final int size = UIUtil.adjustedSize(constants.urlFontSize.getValue());
-        sb.append("<style> body ")
-                .append("{font-family: sans-serif;")
-                .append(" font-size: ").append(size).append("px;")
-                .append("} </style>");
-
-        sb.append("<A HREF=\"").append(url).append("\">").append(url).append("</A>");
-
-        return sb.toString();
     }
 
     //-------//

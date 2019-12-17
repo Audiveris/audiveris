@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.util.LabeledEnum;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -33,7 +34,11 @@ import org.audiveris.omr.ui.field.LComboBox;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.util.BrowserLinkListener;
 import org.audiveris.omr.ui.util.Panel;
+import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.Version;
+
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
 
 import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRelease;
@@ -56,6 +61,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -82,17 +88,14 @@ public abstract class Versions
 
     private static final Logger logger = LoggerFactory.getLogger(Versions.class);
 
-    /** How to format dates. */
-    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MMM-yyyy");
-
     /** GitHub organization name. */
-    public static String AUDIVERIS_ORGANIZATION_NAME = WellKnowns.TOOL_NAME;
+    public static final String AUDIVERIS_ORGANIZATION_NAME = WellKnowns.TOOL_NAME;
 
     /** GitHub repository name. */
-    public static String AUDIVERIS_REPOSITORY_NAME = WellKnowns.TOOL_ID;
+    public static final String AUDIVERIS_REPOSITORY_NAME = WellKnowns.TOOL_ID;
 
     /** Version of current Audiveris software. */
-    public final static Version CURRENT_SOFTWARE = new Version(WellKnowns.TOOL_REF);
+    public static final Version CURRENT_SOFTWARE = new Version(WellKnowns.TOOL_REF);
 
     /**
      * Version focused on better precision in inter geometry.
@@ -104,7 +107,7 @@ public abstract class Versions
      * <li>Ledger now uses thickness and horizontal median line.
      * </ul>
      */
-    public final static Version INTER_GEOMETRY = new Version("5.2.1");
+    public static final Version INTER_GEOMETRY = new Version("5.2.1");
     //
     // NOTA: Add here below any new version for which some upgrade is necessary.
     //
@@ -113,12 +116,25 @@ public abstract class Versions
      * Sequence of upgrade versions to check.
      * NOTA: This sequence must be manually updated when a new version is added above.
      */
-    public final static List<Version> UPGRADE_VERSIONS = Arrays.asList(INTER_GEOMETRY);
+    public static final List<Version> UPGRADE_VERSIONS = Arrays.asList(INTER_GEOMETRY);
 
     /** Latest upgrade version. */
-    public final static Version LATEST_UPGRADE = UPGRADE_VERSIONS.get(UPGRADE_VERSIONS.size() - 1);
+    public static final Version LATEST_UPGRADE = UPGRADE_VERSIONS.get(UPGRADE_VERSIONS.size() - 1);
 
-    // No instance needed for this functional class
+    /** Resource injection. */
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(Versions.class);
+
+    /** Localized values of Frequency enum type. */
+    private static final LabeledEnum<Frequency>[] localeFrequencies = LabeledEnum.values(
+            Frequency.values(),
+            resources,
+            Frequency.class);
+
+    /** How to format dates. */
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MMM-yyyy", Locale.US);
+
+    /** No instance needed for this functional class. */
     private Versions ()
     {
     }
@@ -266,7 +282,9 @@ public abstract class Versions
             if (OMR.gui == null) {
                 logger.info("See {}", latest.getHtmlUrl());
             } else {
-                BasicPanel panel = new PositivePanel(latest);
+                // Explicitly tell the user that check result is positive
+                AbstractPanel panel = new PositivePanel(latest);
+                resources.injectComponents(panel);
 
                 JOptionPane.showMessageDialog(
                         OMR.gui.getFrame(),
@@ -279,7 +297,8 @@ public abstract class Versions
 
             if ((OMR.gui != null) && manual) {
                 // Explicitly tell the user that check result is negative
-                BasicPanel panel = new NegativePanel(latest);
+                AbstractPanel panel = new NegativePanel(latest);
+                resources.injectComponents(panel);
 
                 JOptionPane.showMessageDialog(
                         OMR.gui.getFrame(),
@@ -350,22 +369,23 @@ public abstract class Versions
         return now.compareTo(next) > 0;
     }
 
-    //------------//
-    // BasicPanel //
-    //------------//
-    private static abstract class BasicPanel
+    //---------------//
+    // AbstractPanel //
+    //---------------//
+    /**
+     * Common part between Negative and Positive panels.
+     */
+    private static abstract class AbstractPanel
             extends Panel
     {
 
         protected final String title;
 
-        protected LLabel status = new LLabel("Status:", "Software status", JLabel.LEFT);
+        protected LLabel status = new LLabel(JLabel.LEFT);
 
-        protected LLabel tag = new LLabel("Release:", "Latest release", JLabel.LEFT);
+        protected LLabel tag = new LLabel(JLabel.LEFT);
 
-        protected LComboBox<Frequency> polling = new LComboBox<>("Polling:",
-                                                                 "Frequency for release check",
-                                                                 Frequency.values());
+        protected LComboBox<LabeledEnum<Frequency>> polling = new LComboBox<>(localeFrequencies);
 
         /** The JGoodies/Form layout to be used by all subclasses. */
         protected final FormLayout layout = new FormLayout(getColumnsSpec(), getRowsSpec());
@@ -376,18 +396,23 @@ public abstract class Versions
         /** Handling of entered / selected values. */
         private final Action paramAction;
 
-        BasicPanel (String title,
-                    GHRelease release)
+        AbstractPanel (String title,
+                       GHRelease release)
         {
-            ///super(OMR.gui.getFrame(), title, false /* modal */);
             this.title = title;
+
+            status.setName("status");
+            tag.setName("tag");
+            polling.setName("polling");
 
             paramAction = new ParamAction();
             builder = new PanelBuilder(layout, this);
             defineLayout();
 
             tag.setText(release.getTagName());
-            polling.setSelectedItem(constants.releaseCheckFrequency.getValue());
+
+            Frequency f = constants.releaseCheckFrequency.getValue();
+            polling.setSelectedItem(LabeledEnum.valueOf(f, localeFrequencies));
         }
 
         String getTitle ()
@@ -397,7 +422,7 @@ public abstract class Versions
 
         protected String getColumnsSpec ()
         {
-            return "right:pref, 5dlu, 45dlu, 5dlu, 75dlu";
+            return "right:pref, 5dlu, pref, 5dlu";
         }
 
         protected String getRowsSpec ()
@@ -407,7 +432,6 @@ public abstract class Versions
 
         private void defineLayout ()
         {
-
             final CellConstraints cst = new CellConstraints();
 
             // Status
@@ -444,7 +468,7 @@ public abstract class Versions
             public void actionPerformed (ActionEvent e)
             {
                 if (polling.getField() == e.getSource()) {
-                    final Frequency newFrequency = polling.getSelectedItem();
+                    final Frequency newFrequency = polling.getSelectedItem().value;
                     constants.releaseCheckFrequency.setValue(newFrequency);
                 }
             }
@@ -455,16 +479,22 @@ public abstract class Versions
     // NegativePanel //
     //---------------//
     private static class NegativePanel
-            extends BasicPanel
+            extends AbstractPanel
     {
 
         NegativePanel (GHRelease release)
         {
-            super("Software is up-to-date", release);
-            setName("PollingNegativeDialog"); // For SAF life cycle
+            super(resources.getString("Negative.title"), release);
+            setName("PollingNegativeDialog");
 
             // Status
-            status.setText("You already have the latest release");
+            status.setText(resources.getString("Negative.msg"));
+        }
+
+        @Override
+        protected String getColumnsSpec ()
+        {
+            return super.getColumnsSpec() + ", 75dlu";
         }
     }
 
@@ -472,53 +502,57 @@ public abstract class Versions
     // PositivePanel //
     //---------------//
     private static class PositivePanel
-            extends BasicPanel
+            extends AbstractPanel
     {
 
-        private final LLabel published
-                = new LLabel("Published on:", "Publication date", JLabel.LEFT);
+        private final LLabel published = new LLabel(null, null, JLabel.LEFT);
 
-        private final JLabel urlLabel = new JLabel("URL:");
+        private final JLabel urlLabel = new JLabel();
 
         private final JEditorPane urlField = new JEditorPane();
 
-        private final LLabel title = new LLabel("Title:", "Release title", JLabel.LEFT);
+        private final LLabel releaseTitle = new LLabel(JLabel.LEFT);
 
-        private final JLabel contentLabel = new JLabel("Content:");
+        private final JLabel contentLabel = new JLabel();
 
         private final JTextPane contentField = new JTextPane();
 
         PositivePanel (GHRelease release)
         {
-            super("New Audiveris release available", release);
-            setName("PollingPositiveDialog"); // For SAF life cycle
+            super(resources.getString("Positive.title"), release);
+            setName("PollingPositiveDialog");
 
             // Status
-            status.setText("A new Audiveris release is available!");
+            status.setText(resources.getString("Positive.msg"));
 
             defineLayout();
 
             // Published
-            published.setText(release.getPublished_at().toString());
+            published.setName("published");
+            DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG);
+            published.setText(dateFormat.format(release.getPublished_at()));
 
             // Url
             final URL url = release.getHtmlUrl();
+
+            urlLabel.setName("urlLabel");
+
+            urlField.setName("urlField");
             urlField.addHyperlinkListener(new BrowserLinkListener());
             urlField.setContentType("text/html");
-            urlLabel.setToolTipText("Hyperlink to release web page");
-            urlField.setToolTipText("Hyperlink to release web page");
             urlField.setEditable(false);
             urlField.setBackground(Color.WHITE);
-            urlField.setText("<style> body {font-family: sans-serif; font-size: 9px;} </style>"
-                                     + " <A HREF=" + url + ">" + url + "</A>");
+            urlField.setText(UIUtil.htmlLink(url.toString()));
 
-            // Title
-            title.setText(release.getName());
+            // Release Title
+            releaseTitle.setName("releaseTitle");
+            releaseTitle.setText(release.getName());
 
             // Content
+            contentLabel.setName("contentLabel");
+
+            contentField.setName("contentField");
             contentField.setBackground(Color.WHITE);
-            contentLabel.setToolTipText("Release content");
-            contentField.setToolTipText("Release content");
             contentField.setEditable(false);
             contentField.setMargin(new Insets(5, 5, 5, 5));
             contentField.setText(release.getBody().trim());
@@ -527,7 +561,7 @@ public abstract class Versions
         @Override
         protected String getColumnsSpec ()
         {
-            return "right:pref, 5dlu, 45dlu, 5dlu, 250dlu";
+            return super.getColumnsSpec() + ", 250dlu";
         }
 
         @Override
@@ -552,8 +586,8 @@ public abstract class Versions
 
             // Title
             r += 2; // -----------------------------------
-            builder.add(title.getLabel(), cst.xy(1, r));
-            builder.add(title.getField(), cst.xyw(3, r, 3));
+            builder.add(releaseTitle.getLabel(), cst.xy(1, r));
+            builder.add(releaseTitle.getField(), cst.xyw(3, r, 3));
 
             // Content
             r += 2; // -----------------------------------

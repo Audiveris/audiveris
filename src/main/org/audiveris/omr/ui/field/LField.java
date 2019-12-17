@@ -38,10 +38,10 @@ public class LField<C extends JComponent>
 {
 
     /** The label. */
-    private final JLabel label;
+    protected final JLabel label;
 
     /** The field. */
-    private final C field;
+    protected final C field;
 
     /**
      * Creates a new LField object.
@@ -115,5 +115,19 @@ public class LField<C extends JComponent>
     {
         label.setVisible(bool);
         field.setVisible(bool);
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assign a name to label and field parts.
+     *
+     * @param name name radix
+     */
+    public void setName (String name)
+    {
+        label.setName(name + "Label");
+        field.setName(name + "Field");
     }
 }
