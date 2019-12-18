@@ -884,7 +884,7 @@ public class SlotsRetriever
     {
 
         private final Scale.Fraction maxSlotDxHigh = new Scale.Fraction(
-                1.0,
+                1.1, // Was 1.0, too strict for manual addition of heads on other stem side
                 "High maximum horizontal delta between a slot and a chord");
 
         private final Scale.Fraction maxSlotDxLow = new Scale.Fraction(

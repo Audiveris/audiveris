@@ -1534,7 +1534,7 @@ public class InterController
                 // 1) Build task(s) sequence
                 build();
 
-                if (seq.isCancelled()) {
+                if ((seq == null) || seq.isCancelled()) {
                     return null; // Stop!
                 }
 
