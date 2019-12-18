@@ -343,9 +343,15 @@ public class AugmentationDotInter
             for (Inter ih : chordHeads) {
                 HeadInter head = (HeadInter) ih;
 
-                // Check head is within reach and not yet augmented
-                if (GeoUtil.yEmbraces(luBox, head.getCenter().y)
-                            && (head.getFirstAugmentationDot() == null)) {
+                // Check head is within reach
+                if (!GeoUtil.yEmbraces(luBox, head.getCenter().y)) {
+                    continue;
+                }
+
+                // Check head is already linked to this dot, or not yet augmented
+                AugmentationDotInter headDot = head.getFirstAugmentationDot();
+
+                if ((headDot == null) || (headDot == this)) {
                     Point refPt = head.getCenterRight();
                     double xGap = dotCenter.x - refPt.x;
 

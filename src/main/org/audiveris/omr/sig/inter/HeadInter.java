@@ -262,13 +262,29 @@ public class HeadInter
                             Point dropLocation,
                             Alignment alignment)
     {
-        // For a note head, we force ordinate to integral pitch value (snap to lines & ledgers)
-        if (staff != null) {
-            double y = getSnapOrdinate(dropLocation, staff);
-            dropLocation.y = (int) Math.rint(y);
-        }
-
+        // Needed to get head bounds
         super.deriveFrom(symbol, font, dropLocation, alignment);
+
+        // For a note head, we snap to stems for x & lines/ledgers for y
+        if (staff != null) {
+            boolean modified = false;
+
+            final Double x = getSnapAbscissa();
+            if (x != null) {
+                dropLocation.x = (int) Math.rint(x);
+                modified = true;
+            }
+
+            final Double y = getSnapOrdinate();
+            if (y != null) {
+                dropLocation.y = (int) Math.rint(y);
+                modified = true;
+            }
+
+            if (modified) {
+                super.deriveFrom(symbol, font, dropLocation, alignment);
+            }
+        }
     }
 
     //-----------//
@@ -1029,27 +1045,60 @@ public class HeadInter
     }
 
     //-----------------//
+    // getSnapAbscissa //
+    //-----------------//
+    /**
+     * Report the theoretical abscissa of a steam-head center when correctly aligned with
+     * a suitable stem.
+     *
+     * @return the proper location
+     */
+    private Double getSnapAbscissa ()
+    {
+        if (staff == null) {
+            return null;
+        }
+
+        if (ShapeSet.StemLessHeads.contains(shape)) {
+            return null;
+        }
+
+        // Stems nearby?
+        final Collection<Link> links = searchLinks(staff.getSystem());
+
+        for (Link link : links) {
+            // We can have at most one link
+            StemInter stem = (StemInter) link.partner;
+            double stemX = LineUtil.xAtY(stem.getMedian(), getCenter().y);
+            double halfWidth = getBounds().width / 2.0;
+            HorizontalSide headSide = (stemX < getCenter().x) ? LEFT : RIGHT;
+
+            return (headSide == LEFT) ? stemX + halfWidth : stemX - halfWidth;
+        }
+
+        return null;
+    }
+
+    //-----------------//
     // getSnapOrdinate //
     //-----------------//
     /**
      * Report the theoretical ordinate of a head center when correctly aligned with staff
      * lines and ledgers.
      *
-     * @param point the raw input location
-     * @param staff the reference staff
      * @return the proper location
      */
-    private static Double getSnapOrdinate (Point2D point,
-                                           Staff staff)
+    private Double getSnapOrdinate ()
     {
         if (staff == null) {
             return null;
         }
 
-        NotePosition notePosition = staff.getNotePosition(point);
+        Point center = getCenter();
+        NotePosition notePosition = staff.getNotePosition(center);
         double doublePitch = notePosition.getPitchPosition();
         double roundedPitch = Math.rint(doublePitch);
-        double y = staff.pitchToOrdinate(point.getX(), roundedPitch);
+        double y = staff.pitchToOrdinate(center.x, roundedPitch);
 
         return y;
     }
@@ -1125,7 +1174,8 @@ public class HeadInter
      * <p>
      * For a head, we provide only one handle:
      * <ul>
-     * <li>Middle handle, moving in any direction, but vertically it snaps to lines and ledgers.
+     * <li>Middle handle, moving in any direction, but vertically it snaps to lines and ledgers,
+     * and horizontally, for shapes that need a stem, it tries to snap to stem.
      * </ul>
      */
     private static class Editor
@@ -1138,38 +1188,41 @@ public class HeadInter
         // Latest data
         private final Rectangle latestBounds;
 
-        private final double halfHeight;
-
-        /** Target ordinate, as defined by surrounding lines/ledgers. */
-        private Double targetY;
-
         public Editor (final HeadInter head)
         {
             super(head);
 
             originalBounds = head.getBounds();
             latestBounds = head.getBounds();
-            halfHeight = latestBounds.height / 2.0;
 
-            // Middle handle: move horizontally and (by increments) vertically
+            final double halfHeight = latestBounds.height / 2.0;
+            final double halfWidth = latestBounds.width / 2.0;
+
             handles.add(selectedHandle = new InterEditor.Handle(head.getCenter())
             {
                 @Override
                 public boolean applyMove (Point vector)
                 {
-                    final double dx = vector.getX();
-                    final double dy = vector.getY();
+                    final int dx = vector.x;
+                    final int dy = vector.y;
 
                     // Handle
                     PointUtil.add(selectedHandle.getHandleCenter(), dx, dy);
 
                     // Data
-                    latestBounds.x += dx;
-                    targetY = getSnapOrdinate(selectedHandle.getHandleCenter(), inter.getStaff());
-                    if (targetY != null) {
-                        latestBounds.y = (int) Math.rint(targetY - halfHeight);
-                    } else {
-                        latestBounds.y += dy;
+                    Point2D center = selectedHandle.getHandleCenter();
+                    latestBounds.x = (int) Math.rint(center.getX() - halfWidth);
+                    latestBounds.y = (int) Math.rint(center.getY() - halfHeight);
+                    head.setBounds(latestBounds);
+
+                    final Double x = head.getSnapAbscissa();
+                    if (x != null) {
+                        latestBounds.x = (int) Math.rint(x - halfWidth);
+                    }
+
+                    final Double y = head.getSnapOrdinate();
+                    if (y != null) {
+                        latestBounds.y = (int) Math.rint(y - halfHeight);
                     }
 
                     return true;
