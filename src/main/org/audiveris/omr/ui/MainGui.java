@@ -117,7 +117,7 @@ public class MainGui
     private LogPane logPane;
 
     /** Boards pane, which displays a specific set of boards per sheet. */
-    private BoardsScrollPane boardsScrollPane;
+    private JComponent boardsPane;
 
     /** GlassPane needed to handle drag and drop from shape palette. */
     private final OmrGlassPane glassPane = new OmrGlassPane();
@@ -126,7 +126,7 @@ public class MainGui
     private JSplitPane mainPane;
 
     /** Application pane with Main pane on left and Boards on right. */
-    private JSplitPane appPane;
+    private final JSplitPane appPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
     /** Step menu. */
     private StepMenu stepMenu;
@@ -259,6 +259,15 @@ public class MainGui
                 JOptionPane.WARNING_MESSAGE);
     }
 
+    //------------//
+    // getAppPane //
+    //------------//
+    @Override
+    public JSplitPane getAppPane ()
+    {
+        return appPane;
+    }
+
     //----------//
     // getFrame //
     //----------//
@@ -360,7 +369,7 @@ public class MainGui
         case GuiActions.BOARDS_WINDOW_DISPLAYED:
 
             // Toggle display of boards
-            appPane.setRightComponent(display ? boardsScrollPane : null);
+            appPane.setRightComponent(display ? boardsPane : null);
 
             break;
 
@@ -403,15 +412,6 @@ public class MainGui
     }
 
     //------------------//
-    // removeBoardsPane //
-    //------------------//
-    @Override
-    public void removeBoardsPane ()
-    {
-        boardsScrollPane.setBoards(null);
-    }
-
-    //------------------//
     // removeErrorsPane //
     //------------------//
     @Override
@@ -429,7 +429,13 @@ public class MainGui
     @Override
     public void setBoardsPane (JComponent boards)
     {
-        boardsScrollPane.setBoards(boards);
+        boardsPane = boards;
+
+        if ((boardsPane != null) && GuiActions.getInstance().isBoardsWindowDisplayed()) {
+            appPane.setRightComponent(boardsPane);
+        } else {
+            appPane.setRightComponent(null);
+        }
     }
 
     //---------------//
@@ -543,7 +549,7 @@ public class MainGui
         // +=============================================================+
         // | appPane . . . . . . . . . . . . . . . . . . . . . . . . . . |
         // |+=========================================+=================+|
-        // | . . . . . . . . . . . . . . . . . . . . .|boardsScrollPane ||
+        // | . . . . . . . . . . . . . . . . . . . . .| boardsPane. . . ||
         // | +========================================+ . . . . . . . . ||
         // | | stubsController . . . . . . . . . . . .| . . . . . . . . ||
         // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
@@ -568,13 +574,6 @@ public class MainGui
         // Log
         logPane = new LogPane();
 
-        // Boards
-        final Dimension boardsDim = new Dimension(UIUtil.adjustedSize(350), 500);
-        boardsScrollPane = new BoardsScrollPane();
-        boardsScrollPane.setPreferredSize(boardsDim);
-        boardsScrollPane.setMinimumSize(boardsDim);
-        boardsScrollPane.setMaximumSize(boardsDim);
-
         // Bottom = Log & Errors
         bottomPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         bottomPane.setBorder(null);
@@ -589,8 +588,8 @@ public class MainGui
         mainPane.setMinimumSize(new Dimension(500, 500)); // To make sure it is always visible
 
         // appPane = mainPane | boards
-        appPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         appPane.setName("appPane");
+        appPane.setContinuousLayout(true);
         appPane.setBorder(null);
         appPane.setDividerSize(2);
         appPane.setResizeWeight(0.99d); // Give bulk space to left part
@@ -601,11 +600,6 @@ public class MainGui
         content.setLayout(new BorderLayout());
         content.add(ActionManager.getInstance().getToolBar(), BorderLayout.NORTH);
         content.add(appPane, BorderLayout.CENTER);
-
-        // Display the boards pane?
-        if (GuiActions.getInstance().isBoardsWindowDisplayed()) {
-            appPane.setRightComponent(boardsScrollPane);
-        }
 
         // Display the log pane?
         if (GuiActions.getInstance().isLogWindowDisplayed()) {

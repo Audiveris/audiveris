@@ -26,6 +26,7 @@ import org.jdesktop.application.SingleFrameApplication;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JSplitPane;
 
 /**
  * Class {@code OmrGui} defines the minimum offered by an OMR GUI.
@@ -131,6 +132,13 @@ public abstract class OmrGui
                                          String title);
 
     /**
+     * Report the appPane split pane.
+     *
+     * @return the JSplitPane made of (mainPane | boardsPane)
+     */
+    public abstract JSplitPane getAppPane ();
+
+    /**
      * Report the concrete Swing frame.
      *
      * @return the OmrGui frame
@@ -148,11 +156,6 @@ public abstract class OmrGui
      * Notify that one or several new log records are available for display.
      */
     public abstract void notifyLog ();
-
-    /**
-     * Remove the current boards pane, if any.
-     */
-    public abstract void removeBoardsPane ();
 
     /**
      * Remove the specific component of the errors pane.

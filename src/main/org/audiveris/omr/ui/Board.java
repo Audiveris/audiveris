@@ -44,6 +44,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 import javax.swing.text.JTextComponent;
 
 /**
@@ -82,6 +83,9 @@ public abstract class Board
 {
 
     private static final Logger logger = LoggerFactory.getLogger(Board.class);
+
+    /** Minimum width available for a board. */
+    public static final int MIN_BOARD_WIDTH = 350;
 
     // Predefined boards names with preferred display positions
     public static final Desc PIXEL = new Desc("Pixel", 100);
@@ -206,7 +210,12 @@ public abstract class Board
         this.selected = selected;
 
         // Layout header and body parts
-        header = new Header(name, useCount, useVip, useDump);
+        header = (useCount || useVip || useDump) ? new Header(useCount, useVip, useDump) : null;
+
+        if (header != null) {
+            header.setInsets(0, 0, 3, 0); // TLBR
+        }
+
         defineLayout();
     }
 
@@ -376,6 +385,10 @@ public abstract class Board
     //---------------//
     protected JLabel getCountField ()
     {
+        if (header == null) {
+            return null;
+        }
+
         return header.count;
     }
 
@@ -389,6 +402,10 @@ public abstract class Board
      */
     protected JButton getDumpButton ()
     {
+        if (header == null) {
+            return null;
+        }
+
         return header.dump;
     }
 
@@ -415,6 +432,10 @@ public abstract class Board
      */
     protected LCheckBox getVipBox ()
     {
+        if (header == null) {
+            return null;
+        }
+
         return header.vip;
     }
 
@@ -424,15 +445,30 @@ public abstract class Board
     private void defineLayout ()
     {
         component.setName(name + " board");
-        component.setNoInsets();
+        component.setBorder(new TitledBorder(name));
+        component.setInsets(12, 10, 5, 5); // TLBR sides
+
         body.setNoInsets();
 
         CellConstraints cst = new CellConstraints();
-        FormLayout layout = new FormLayout("pref", "pref," + Panel.getFieldInterline() + ",pref");
+
+        StringBuilder rowsSpec = new StringBuilder();
+
+        if (header != null) {
+            rowsSpec.append("pref,").append(Panel.getFieldInterline()).append(',');
+        }
+
+        rowsSpec.append("pref");
+
+        FormLayout layout = new FormLayout("fill:pref:grow", rowsSpec.toString());
+
         PanelBuilder builder = new PanelBuilder(layout, component);
 
-        builder.add(header, cst.xy(1, 1));
-        builder.add(body, cst.xy(1, 3));
+        if (header != null) {
+            builder.add(header, cst.xy(1, 1));
+        }
+
+        builder.add(body, cst.xy(1, (header != null) ? 3 : 1));
     }
 
     //-------------//
@@ -479,15 +515,11 @@ public abstract class Board
     // Header //
     //--------//
     /**
-     * The board header is a horizontal line with the board title,
-     * and perhaps a dump button.
+     * The board header provides a line of perhaps count, vip, dump button.
      */
     private static class Header
             extends Panel
     {
-
-        /** The board title. */
-        private final String title;
 
         /** Output: Count of entities, if any. */
         private final JLabel count;
@@ -498,18 +530,14 @@ public abstract class Board
         /** Dump button, if any. */
         private final JButton dump;
 
-        Header (String title,
-                boolean withCount,
+        Header (boolean withCount,
                 boolean withVip,
                 boolean withDump)
         {
-            this.title = title;
-
             count = withCount ? new JLabel("") : null;
             vip = withVip ? new LCheckBox("Vip", "Is this entity flagged as VIP?") : null;
             dump = withDump ? new JButton("Dump") : null;
 
-            setNoInsets();
             defineLayout();
         }
 
@@ -517,38 +545,31 @@ public abstract class Board
         {
             CellConstraints cst = new CellConstraints();
             StringBuilder sb = new StringBuilder();
-            // title & separator
-            sb.append("107dlu");
             // count label
-            sb.append(",").append(Panel.getFieldInterval()).append(",15dlu");
-            // vip label+box
-            sb.append(",").append(Panel.getFieldInterval()).append(",12dlu,").append(
-                    Panel.getLabelInterval()).append(",10dlu");
+            sb.append("15dlu:grow");
+            // vip label+field
+            sb.append(",")
+                    .append(Panel.getFieldInterval()).append(",12dlu,")
+                    .append(Panel.getLabelInterval()).append(",10dlu");
             // dump button
-            sb.append(",").append(Panel.getFieldInterval()).append(",35dlu");
+            sb.append(",")
+                    .append(Panel.getFieldInterval()).append(",35dlu");
 
             FormLayout layout = new FormLayout(sb.toString(), "pref");
             PanelBuilder builder = new PanelBuilder(layout, this);
 
-            int sepEnd = 9;
-
             if (dump != null) {
-                sepEnd = 7;
-                builder.add(dump, cst.xyw(9, 1, 1));
+                builder.add(dump, cst.xyw(7, 1, 1));
             }
 
             if (vip != null) {
-                sepEnd = 3;
-                builder.add(vip.getLabel(), cst.xy(5, 1));
-                builder.add(vip.getField(), cst.xy(7, 1));
+                builder.add(vip.getLabel(), cst.xy(3, 1));
+                builder.add(vip.getField(), cst.xy(5, 1));
             }
 
             if (count != null) {
-                sepEnd = 1;
-                builder.add(count, cst.xy(3, 1, "right, center"));
+                builder.add(count, cst.xy(1, 1, "right, center"));
             }
-
-            builder.addSeparator(title, cst.xyw(1, 1, sepEnd));
         }
     }
 }
