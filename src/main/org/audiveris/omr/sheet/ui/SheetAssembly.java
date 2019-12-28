@@ -226,7 +226,7 @@ public class SheetAssembly
             UIUtil.suppressBorders(scrollPane);
 
             if (boardsPane != null) {
-                boardsPane.setName(label);
+                boardsPane.setName(label + " boards");
             }
 
             logger.debug("addViewTab begin {} boardsPane={}", label, boardsPane);

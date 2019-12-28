@@ -49,6 +49,8 @@ import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.ui.util.Panel;
+import org.audiveris.omr.ui.util.UIUtil;
+import org.audiveris.omr.ui.util.WrapLayout;
 import org.audiveris.omr.ui.view.RubberPanel;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.ui.view.Zoom;
@@ -59,7 +61,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -70,6 +71,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -81,6 +84,7 @@ import java.util.Map.Entry;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
 /**
@@ -107,16 +111,6 @@ public class ShapeBoard
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ShapeBoard.class);
-
-    /** To force the width of the various panels. */
-    private static final int BOARD_WIDTH = 317;
-
-    /**
-     * To force the height of the various shape panels.
-     * This is just a dirty hack, to force Swing FlowLayout to wrap its flow.
-     * A better solution might be to use JGoodies Layout, when we have some time to migrate...
-     */
-    private static final Map<ShapeSet, Integer> heights = buildHeightMap();
 
     /** Map first typed char to selected shape set. */
     private static final Map<Character, ShapeSet> setMap = new HashMap<>();
@@ -235,6 +229,18 @@ public class ShapeBoard
         shapeHistory = new ShapeHistory();
         setsPanel = buildSetsPanel();
 
+        OMR.gui.getAppPane().addPropertyChangeListener(
+                JSplitPane.DIVIDER_LOCATION_PROPERTY,
+                new PropertyChangeListener()
+        {
+            @Override
+            public void propertyChange (
+                    PropertyChangeEvent pce)
+            {
+                resizeBoard();
+            }
+        });
+
         defineLayout();
 
         // Support for user shape keys
@@ -280,6 +286,35 @@ public class ShapeBoard
     public void onEvent (UserEvent event)
     {
         // Empty
+    }
+
+    //-------------//
+    // resizeBoard //
+    //-------------//
+    @Override
+    public void resizeBoard ()
+    {
+        Integer space = UIUtil.getSplitSpace(getComponent());
+        logger.debug("resizeBoard space:{}", space);
+
+        if (space != null) {
+            // Resize all visible panels in this board
+            if (setsPanel.isVisible()) {
+                setsPanel.setSize(space, 1);
+            }
+
+            if (shapeHistory.panel.isVisible()) {
+                shapeHistory.panel.setSize(space, 1);
+            }
+
+            for (Panel panel : shapesPanels.values()) {
+                if (panel.isVisible()) {
+                    panel.setSize(space, 1);
+                }
+            }
+        }
+
+        super.resizeBoard();
     }
 
     //------------------//
@@ -391,35 +426,6 @@ public class ShapeBoard
     }
 
     //----------------//
-    // buildHeightMap //
-    //----------------//
-    private static Map<ShapeSet, Integer> buildHeightMap ()
-    {
-        Map<ShapeSet, Integer> map = new HashMap<>();
-        map.put(ShapeSet.Accidentals, 40);
-        map.put(ShapeSet.Articulations, 40);
-        map.put(ShapeSet.Attributes, 60);
-        map.put(ShapeSet.Barlines, 140);
-        map.put(ShapeSet.BeamsAndTuplets, 60);
-        map.put(ShapeSet.Clefs, 140);
-        map.put(ShapeSet.Digits, 40);
-        map.put(ShapeSet.Dynamics, 70);
-        map.put(ShapeSet.Flags, 140);
-        map.put(ShapeSet.Keys, 180);
-        map.put(ShapeSet.Holds, 40);
-        map.put(ShapeSet.Markers, 40);
-        map.put(ShapeSet.HeadsAndDot, 60);
-        map.put(ShapeSet.Ornaments, 70);
-        map.put(ShapeSet.Physicals, 80);
-        map.put(ShapeSet.Pluckings, 40);
-        map.put(ShapeSet.Rests, 120);
-        map.put(ShapeSet.Romans, 60);
-        map.put(ShapeSet.Times, 120);
-
-        return map;
-    }
-
-    //----------------//
     // buildSetsPanel //
     //----------------//
     /**
@@ -430,12 +436,9 @@ public class ShapeBoard
     private Panel buildSetsPanel ()
     {
         Panel panel = new Panel();
+        panel.setName("setsPanel");
         panel.setNoInsets();
-        panel.setPreferredSize(new Dimension(BOARD_WIDTH, 160));
-
-        FlowLayout layout = new FlowLayout();
-        layout.setAlignment(FlowLayout.LEADING);
-        panel.setLayout(layout);
+        panel.setLayout(new WrapLayout(FlowLayout.LEADING));
         panel.setBackground(Color.LIGHT_GRAY);
 
         for (ShapeSet set : ShapeSet.getShapeSets()) {
@@ -473,12 +476,9 @@ public class ShapeBoard
     private Panel buildShapesPanel (ShapeSet set)
     {
         Panel panel = new Panel();
+        panel.setName(set.getName());
         panel.setNoInsets();
-        panel.setPreferredSize(new Dimension(BOARD_WIDTH, getSetHeight(set)));
-
-        FlowLayout layout = new FlowLayout();
-        layout.setAlignment(FlowLayout.LEADING);
-        panel.setLayout(layout);
+        panel.setLayout(new WrapLayout(FlowLayout.LEADING));
 
         // Button to close this family and return to all-families panel
         JButton close = new JButton("<");
@@ -522,15 +522,17 @@ public class ShapeBoard
     private void defineLayout ()
     {
         CellConstraints cst = new CellConstraints();
-        FormLayout layout = new FormLayout("190dlu", "pref," + Panel.getFieldInterline() + ",pref");
+        FormLayout layout = new FormLayout("pref",
+                                           "pref," + Panel.getFieldInterline() + ",pref");
         PanelBuilder builder = new PanelBuilder(layout, getBody());
+        getBody().setName("ShapeBody");
 
         builder.add(shapeHistory.panel, cst.xy(1, 1));
         builder.add(setsPanel, cst.xy(1, 3));
 
-        for (Panel shapesPanel : shapesPanels.values()) {
-            builder.add(shapesPanel, cst.xy(1, 3)); // All overlap setsPanel
-            shapesPanel.setVisible(false);
+        for (Panel sp : shapesPanels.values()) {
+            builder.add(sp, cst.xy(1, 3)); // All overlap setsPanel
+            sp.setVisible(false);
         }
     }
 
@@ -550,27 +552,6 @@ public class ShapeBoard
         int zoomedInterline = (int) Math.rint(zoom.getRatio() * sheet.getScale().getInterline());
 
         return MusicFont.buildImage(Shape.NON_DRAGGABLE, zoomedInterline, true); // Decorated
-    }
-
-    //--------------//
-    // getSetHeight //
-    //--------------//
-    /**
-     * Safe method to report the preferred panel height for the provided set.
-     *
-     * @param set provided set
-     * @return preferred height (or a default value)
-     */
-    private int getSetHeight (ShapeSet set)
-    {
-        Integer height = heights.get(set);
-
-        if (height == null) {
-            logger.error("No panel height for set {}", set.getName());
-            height = 100;
-        }
-
-        return height;
     }
 
     //----------------//
@@ -1027,12 +1008,9 @@ public class ShapeBoard
         public ShapeHistory ()
         {
             panel.setNoInsets();
-            panel.setPreferredSize(new Dimension(BOARD_WIDTH, 80));
+            panel.setName("history");
             panel.setVisible(false);
-
-            FlowLayout layout = new FlowLayout();
-            layout.setAlignment(FlowLayout.LEADING);
-            panel.setLayout(layout);
+            panel.setLayout(new WrapLayout(FlowLayout.LEADING));
         }
 
         /**
