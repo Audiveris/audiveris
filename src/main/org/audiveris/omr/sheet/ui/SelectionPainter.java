@@ -103,8 +103,9 @@ public class SelectionPainter
 
         // Print support name at center of line?
         if (zoom >= constants.minZoomForSupportNames.getValue()) {
-            final double z = Math.max(0.5, zoom);
-            final AffineTransform at = AffineTransform.getScaleInstance(0.5 / z, 0.5 / z);
+            final double std = 0.5 * UIUtil.GLOBAL_FONT_RATIO;
+            final double z = Math.max(std, zoom);
+            final AffineTransform at = AffineTransform.getScaleInstance(std / z, std / z);
             final TextLayout layout = basicLayout(Relations.nameOf(supportClass), at);
             paint(layout, GeoUtil.centerOf(line.getBounds()), AREA_CENTER);
         }

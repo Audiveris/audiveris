@@ -47,6 +47,16 @@ public class LLabel
     /**
      * Creates a new {@code LLabel} object.
      *
+     * @param horizontalAlignment horizontal alignment
+     */
+    public LLabel (int horizontalAlignment)
+    {
+        this(null, null, horizontalAlignment);
+    }
+
+    /**
+     * Creates a new {@code LLabel} object.
+     *
      * @param label               the string to be used as label text
      * @param tip                 the related tool tip text
      * @param horizontalAlignment horizontal alignment

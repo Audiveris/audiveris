@@ -24,15 +24,16 @@ package org.audiveris.omr.ui;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import java.awt.Dimension;
 
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.SeparablePopupMenu;
 import static org.audiveris.omr.ui.util.UIPredicates.*;
+import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -45,7 +46,6 @@ import java.util.List;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 
@@ -93,9 +93,14 @@ public class BoardsPane
         Collections.sort(this.boards, Board.byPosition);
 
         component = new Panel();
-        component.setNoInsets();
-        component.add(defineLayout());
+        component.setName("boardsPane");
+        component.setBorder(null);
+        final int inset = UIUtil.adjustedSize(6);
+        component.setInsets(inset, inset, inset, inset); // TLBR
+        component.setMinimumSize(new Dimension(Board.MIN_BOARD_WIDTH + 2 * inset, 1));
         component.addMouseListener(mouseAdapter);
+
+        defineLayout();
     }
 
     //------------//
@@ -265,33 +270,30 @@ public class BoardsPane
     //--------------//
     // defineLayout //
     //--------------//
-    private JPanel defineLayout ()
+    private void defineLayout ()
     {
         // Prepare layout elements
         final String panelInterline = Panel.getPanelInterline();
-        StringBuilder sbr = new StringBuilder();
-        boolean first = true;
+        StringBuilder sbr = null;
 
         for (Board board : boards) {
             if (board.isSelected()) {
-                if (first) {
-                    first = false;
+                if (sbr != null) {
+                    sbr.append(',').append(panelInterline).append(',');
                 } else {
-                    sbr.append(", ").append(panelInterline).append(", ");
+                    sbr = new StringBuilder();
                 }
 
                 sbr.append("pref");
             }
         }
 
-        FormLayout layout = new FormLayout("pref", sbr.toString());
+        if (sbr == null) {
+            return; // No selected boards
+        }
 
-        Panel panel = new Panel();
-        panel.setNoInsets();
-
-        PanelBuilder builder = new PanelBuilder(layout, panel);
-
-        ///builder.setDefaultDialogBorder();
+        FormLayout layout = new FormLayout("fill:pref:grow", sbr.toString());
+        PanelBuilder builder = new PanelBuilder(layout, component);
         CellConstraints cst = new CellConstraints();
 
         // Now add the desired components, using provided order
@@ -303,11 +305,6 @@ public class BoardsPane
                 r += 2;
             }
         }
-
-        JPanel boardsPanel = builder.getPanel();
-        boardsPanel.setBorder(null);
-
-        return boardsPanel;
     }
 
     //----------//
@@ -332,10 +329,10 @@ public class BoardsPane
      */
     void update ()
     {
-        int count = component.getComponentCount();
-        Component comp = component.getComponent(count - 1);
-        component.remove(comp);
-        component.add(defineLayout());
+        component.removeAll();
+        defineLayout();
+
+        component.invalidate();
         component.revalidate();
         component.repaint();
     }

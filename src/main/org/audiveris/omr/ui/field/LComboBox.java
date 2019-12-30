@@ -37,6 +37,16 @@ public class LComboBox<E>
 {
 
     /**
+     * Create an editable labeled combo with provided characteristics.
+     *
+     * @param items the items handled by the combo
+     */
+    public LComboBox (E[] items)
+    {
+        this(null, null, items);
+    }
+
+    /**
      * Create an editable labeled combo with provided
      * characteristics.
      *

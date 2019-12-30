@@ -74,28 +74,6 @@ public class ScopedPanel
     }
 
     /**
-     * Define layout of the pane.
-     */
-    public void defineLayout ()
-    {
-        // Compute the total number of logical rows
-        int logicalRowCount = 0;
-
-        for (XactDataPane pane : panes) {
-            logicalRowCount += pane.getLogicalRowCount();
-        }
-
-        FormLayout layout = new FormLayout(colSpec4, Panel.makeRows(logicalRowCount));
-        PanelBuilder builder = new PanelBuilder(layout, this);
-        CellConstraints cst = new CellConstraints();
-        int r = 1;
-
-        for (XactDataPane pane : panes) {
-            r = pane.defineLayout(builder, cst, r);
-        }
-    }
-
-    /**
      * Report the contained pane of proper class.
      *
      * @param classe desired class
@@ -120,5 +98,27 @@ public class ScopedPanel
     public List<XactDataPane> getPanes ()
     {
         return panes;
+    }
+
+    /**
+     * Define layout of the pane.
+     */
+    private void defineLayout ()
+    {
+        // Compute the total number of logical rows
+        int logicalRowCount = 0;
+
+        for (XactDataPane pane : panes) {
+            logicalRowCount += pane.getLogicalRowCount();
+        }
+
+        FormLayout layout = new FormLayout(colSpec4, Panel.makeRows(logicalRowCount));
+        PanelBuilder builder = new PanelBuilder(layout, this);
+        CellConstraints cst = new CellConstraints();
+        int r = 1;
+
+        for (XactDataPane pane : panes) {
+            r = pane.defineLayout(builder, cst, r);
+        }
     }
 }

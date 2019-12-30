@@ -27,8 +27,12 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
+import org.audiveris.omr.ui.util.BrowserLinkListener;
 import org.audiveris.omr.ui.util.Panel;
+import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.UriUtil;
 
 import org.jdesktop.application.Application;
@@ -39,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -53,7 +58,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.JTextComponent;
-import org.audiveris.omr.ui.util.BrowserLinkListener;
 
 /**
  * Class {@code AboutAction} implements the About dialog.
@@ -63,10 +67,12 @@ import org.audiveris.omr.ui.util.BrowserLinkListener;
 public class AboutAction
 {
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(AboutAction.class);
 
     // Resource injection
-    private static final ResourceMap resource = Application.getInstance().getContext()
+    private static final ResourceMap resources = Application.getInstance().getContext()
             .getResourceMap(AboutAction.class);
 
     // Panel
@@ -84,7 +90,7 @@ public class AboutAction
         JOptionPane.showMessageDialog(
                 OMR.gui.getFrame(),
                 aboutBox,
-                resource.getString("AboutDialog.title"),
+                resources.getString("AboutDialog.title"),
                 JOptionPane.INFORMATION_MESSAGE);
 
     }
@@ -120,6 +126,9 @@ public class AboutAction
         // Software title (Audiveris)
         iRow += 2;
         final JLabel titleLabel = new JLabel();
+        titleLabel.setFont(new Font("Arial",
+                                    Font.BOLD,
+                                    UIUtil.adjustedSize(constants.titleFontSize.getValue())));
         titleLabel.setName("aboutTitleLabel");
         builder.add(titleLabel, cst.xyw(1, iRow, 3));
 
@@ -152,32 +161,47 @@ public class AboutAction
         panel.setInsets(10, 10, 10, 10);
         panel.setOpaque(true);
         panel.setBackground(Color.WHITE);
-        panel.setName("panel");
+        panel.setName("AboutPanel");
 
         // Manual injection
-        resource.injectComponents(panel);
+        resources.injectComponents(panel);
 
         ((JLabel) Topic.version.comp)
                 .setText(WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD);
+
         ((JLabel) Topic.classes.comp)
                 .setText(WellKnowns.CLASS_CONTAINER.toString());
+
+        String homePage = resources.getString("Application.homepage");
+        ((JTextComponent) Topic.home.comp).setText(UIUtil.htmlLink(homePage));
+
+        String projectPage = resources.getString("Application.projectpage");
+        ((JTextComponent) Topic.project.comp).setText(UIUtil.htmlLink(projectPage));
+
         ((JLabel) Topic.license.comp)
                 .setText("GNU Affero GPL v3");
+
         ((JLabel) Topic.ocr.comp)
                 .setText(TesseractOCR.getInstance().identify());
+
         ((JLabel) Topic.javaVendor.comp)
                 .setText(System.getProperty("java.vendor"));
+
         ((JLabel) Topic.javaVersion.comp)
                 .setText(System.getProperty("java.version"));
+
         ((JLabel) Topic.javaRuntime.comp)
                 .setText(System.getProperty("java.runtime.name")
                                  + " (build " + System.getProperty("java.runtime.version") + ")");
+
         ((JLabel) Topic.javaVm.comp)
                 .setText(System.getProperty("java.vm.name") + " (build "
                                  + System.getProperty("java.vm.version") + ", "
                                  + System.getProperty("java.vm.info") + ")");
+
         ((JLabel) Topic.os.comp)
                 .setText(System.getProperty("os.name") + " " + System.getProperty("os.version"));
+
         ((JLabel) Topic.osArch.comp)
                 .setText(System.getProperty("os.arch"));
 
@@ -256,5 +280,23 @@ public class AboutAction
         {
             g.drawImage(img, 1, 1, null);
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer titleFontSize = new Constant.Integer(
+                "Points",
+                14,
+                "Font size for title in about box");
+
+        private final Constant.Integer urlFontSize = new Constant.Integer(
+                "Points",
+                10,
+                "Font size for URL in about box");
     }
 }

@@ -46,6 +46,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.tree.TreePath;
+import org.audiveris.omr.ui.util.UIUtil;
 
 /**
  * Class {@code UnitTreeTable} is a user interface that combines a tree to display the
@@ -368,7 +369,8 @@ public class UnitTreeTable
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
             // Use a bold font
-            setFont(table.getFont().deriveFont(Font.BOLD).deriveFont(12.0f));
+            final float fontSize = 12.0f * UIUtil.GLOBAL_FONT_RATIO;
+            setFont(table.getFont().deriveFont(Font.BOLD).deriveFont(fontSize));
 
             // Use center alignment
             setHorizontalAlignment(SwingConstants.CENTER);

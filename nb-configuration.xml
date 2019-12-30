@@ -19,6 +19,7 @@ Without this configuration present, some functionality in the IDE may be limited
         <word>covariant</word>
         <word>draggable</word>
         <word>droppable</word>
+        <word>Enum</word>
         <word>glasspane</word>
         <word>informations</word>
         <word>marcato</word>

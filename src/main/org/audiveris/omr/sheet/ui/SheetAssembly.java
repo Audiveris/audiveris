@@ -226,7 +226,7 @@ public class SheetAssembly
             UIUtil.suppressBorders(scrollPane);
 
             if (boardsPane != null) {
-                boardsPane.setName(label);
+                boardsPane.setName(label + " boards");
             }
 
             logger.debug("addViewTab begin {} boardsPane={}", label, boardsPane);
@@ -559,6 +559,7 @@ public class SheetAssembly
         component.setNoInsets();
         component.add(slider, BorderLayout.WEST);
         component.add(viewsPane, BorderLayout.CENTER);
+        component.setName("SheetAssemblyPanel");
 
         // Avoid slider to react on (and consume) page up/down keys or arrow keys
         InputMap inputMap = slider.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);

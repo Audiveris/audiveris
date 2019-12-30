@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr;
 
+import java.util.ArrayList;
 import org.audiveris.omr.CLI.CliTask;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.constant.Constant;
@@ -32,6 +33,7 @@ import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.ui.MainGui;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.OmrExecutors;
 
 import org.jdesktop.application.Application;
@@ -140,7 +142,13 @@ public class Main
 
         if (!cli.isBatchMode()) {
             logger.debug("Running in interactive mode");
+
+            // Select proper font size
+            UIUtil.adjustDefaults();
+
+            // Log all events to LogPane
             LogUtil.addGuiAppender();
+
             logger.debug("Main. Launching MainGui");
             Application.launch(MainGui.class, args);
         } else {
@@ -195,6 +203,47 @@ public class Main
         }
     }
 
+    //---------------------//
+    // getSupportedLocales //
+    //---------------------//
+    public static List<Locale> getSupportedLocales ()
+    {
+        final List<Locale> locales = new ArrayList<>();
+        final String str = constants.supportedLocales.getValue();
+        final String[] tokens = str.split("\\s*,\\s*");
+
+        for (String token : tokens) {
+            String trimmedToken = token.trim();
+
+            if (!trimmedToken.isEmpty()) {
+                Locale locale = getLocale(trimmedToken);
+
+                if (locale != null) {
+                    locales.add(locale);
+                }
+            }
+        }
+
+        return locales;
+    }
+
+    //-----------//
+    // setLocale //
+    //-----------//
+    /**
+     * Set application locale value.
+     *
+     * @param locale value to set
+     */
+    public static void setLocale (Locale locale)
+    {
+        if (!Locale.getDefault().equals(locale)) {
+            constants.locale.setValue(locale.toString());
+            Locale.setDefault(locale);
+            logger.info("Locale set to: '{}'", locale);
+        }
+    }
+
     //--------------------------//
     // processSystemsInParallel //
     //--------------------------//
@@ -215,18 +264,30 @@ public class Main
     {
         final String localeStr = constants.locale.getValue().trim();
 
+        Locale locale = getLocale(localeStr);
+
+        if (locale != null) {
+            Locale.setDefault(locale);
+            logger.debug("Locale set to {}", locale);
+        }
+    }
+
+    //-----------//
+    // getLocale //
+    //-----------//
+    private static Locale getLocale (String localeStr)
+    {
         if (!localeStr.isEmpty()) {
             for (Locale locale : Locale.getAvailableLocales()) {
                 if (locale.toString().equalsIgnoreCase(localeStr)) {
-                    Locale.setDefault(locale);
-                    logger.debug("Locale set to {}", locale);
-
-                    return;
+                    return locale;
                 }
             }
 
-            logger.warn("Cannot set locale to {}", localeStr);
+            logger.warn("Not supported locale {}", localeStr);
         }
+
+        return null;
     }
 
     //------------//
@@ -367,6 +428,10 @@ public class Main
         private final Constant.String locale = new Constant.String(
                 "en",
                 "Locale language to be used in the whole application (en, fr)");
+
+        private final Constant.String supportedLocales = new Constant.String(
+                "en,fr",
+                "Comma-separated list of supported locale languages");
 
         private final Constant.Boolean persistBatchCliConstants = new Constant.Boolean(
                 false,

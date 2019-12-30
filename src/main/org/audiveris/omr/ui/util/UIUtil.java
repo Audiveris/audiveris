@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.ui.util;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.WellKnowns;
 
 import org.slf4j.Logger;
@@ -31,10 +33,12 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FileDialog;
+import java.awt.Font;
 import java.awt.Frame;
 import static java.awt.Frame.ICONIFIED;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.Stroke;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -54,8 +58,10 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 /**
@@ -66,7 +72,12 @@ import javax.swing.border.Border;
 public abstract class UIUtil
 {
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(UIUtil.class);
+
+    /** Ratio to be applied on all font size. */
+    public static final float GLOBAL_FONT_RATIO = constants.globalFontRatio.getValue().floatValue();
 
     /**
      * Customized border for tool buttons, to use consistently in all UI components.
@@ -84,6 +95,82 @@ public abstract class UIUtil
             e.getWindow().dispose();
         }
     };
+
+    public static void adjustDefaults ()
+    {
+        // Control
+        final Font defaultFont = new Font(constants.defaultFontName.getValue(),
+                                          Font.PLAIN,
+                                          adjustedSize(constants.defaultFontSize.getValue()));
+        final Font controlFont = defaultFont;
+        UIManager.put("Button.font", controlFont);
+        UIManager.put("CheckBox.font", controlFont);
+        UIManager.put("ComboBox.font", controlFont);
+        UIManager.put("DesktopIcon.font", controlFont);
+        UIManager.put("IconButton.font", controlFont); // ???
+        UIManager.put("Label.font", controlFont);
+        UIManager.put("List.font", controlFont); // ???
+        UIManager.put("ProgressBar.font", controlFont);
+        UIManager.put("RadioButton.font", controlFont);
+        UIManager.put("Slider.font", controlFont);
+        UIManager.put("Spinner.font", controlFont);
+        UIManager.put("TabbedPane.font", controlFont);
+        UIManager.put("ToggleButton.font", controlFont);
+
+        // Menu
+        final Font menuFont = defaultFont;
+        UIManager.put("CheckBoxMenuItem.font", menuFont);
+        UIManager.put("Menu.font", menuFont);
+        UIManager.put("MenuBar.font", menuFont);
+        UIManager.put("MenuItem.font", menuFont);
+        UIManager.put("PopupMenu.font", menuFont);
+        UIManager.put("RadioButtonMenuItem.font", menuFont);
+        UIManager.put("ToolBar.font", menuFont);
+
+        // User
+        final Font userFont = defaultFont;
+        UIManager.put("EditorPane.font", userFont);
+        UIManager.put("FormattedTextField.font", userFont);
+        UIManager.put("PasswordField.font", userFont);
+        UIManager.put("Table.font", userFont);
+        UIManager.put("TableHeader.font", userFont);
+        UIManager.put("TextArea.font", userFont);
+        UIManager.put("TextField.font", userFont);
+        UIManager.put("TextPane.font", userFont);
+        UIManager.put("Tree.font", userFont);
+
+        // Window title (was Dialog font)
+        final Font windowTitleFont = defaultFont;
+        UIManager.put("ColorChooser.font", windowTitleFont);
+        UIManager.put("OptionPane.font", windowTitleFont);
+        UIManager.put("Panel.font", windowTitleFont);
+        UIManager.put("ScrollPane.font", windowTitleFont);
+        UIManager.put("Viewport.font", windowTitleFont);
+
+        // Miscellaneous
+        UIManager.put("ToolTip.font", new Font(
+                      constants.defaultFontName.getValue(),
+                      Font.ITALIC,
+                      adjustedSize(constants.defaultFontSize.getValue())));
+        UIManager.put("TitledBorder.font", new Font(
+                      constants.defaultFontName.getValue(),
+                      Font.BOLD,
+                      adjustedSize(constants.defaultFontSize.getValue())));
+    }
+
+    //--------------//
+    // adjustedSize //
+    //--------------//
+    /**
+     * Report the size multiplied by global font ratio.
+     *
+     * @param size provided size
+     * @return adjusted size
+     */
+    public static int adjustedSize (double size)
+    {
+        return (int) Math.rint(size * GLOBAL_FONT_RATIO);
+    }
 
     //--------------------//
     // complementaryColor //
@@ -322,6 +409,90 @@ public abstract class UIUtil
         return toolBorder;
     }
 
+    //---------------//
+    // getSplitSpace //
+    //---------------//
+    /**
+     * Report the available space for a child component within first JSplitPane ancestor,
+     * taking into account the JSplitPane size, the divider location and size and all
+     * the insets of ancestors until the JSplitPane.
+     *
+     * @param comp the child component
+     * @return the available space (width for a horizontal JSplitPane, height for a vertical one).
+     *         Null, if no JSplitPane ancestor could be found.
+     */
+    public static Integer getSplitSpace (JComponent comp)
+    {
+        if (comp == null) {
+            return null;
+        }
+
+        synchronized (comp.getTreeLock()) {
+            // First find the JSplitPane ancestor and the used side of the split
+            Container ancestor = comp.getParent();
+            Component child = comp;
+
+            while (ancestor != null && !(ancestor instanceof JSplitPane)) {
+                child = ancestor;
+                ancestor = child.getParent();
+            }
+
+            if (ancestor == null) {
+                return null; // No JSplitPane container found
+            }
+
+            final JSplitPane sp = (JSplitPane) ancestor;
+            final int divLoc = sp.getDividerLocation();
+            final int divSize = sp.getDividerSize();
+            final boolean first = (sp.getLeftComponent() == child);
+
+            // Now compute available space
+            int space;
+
+            if (first) {
+                space = divLoc;
+            } else {
+                if (sp.getOrientation() == JSplitPane.HORIZONTAL_SPLIT) {
+                    space = sp.getSize().width;
+                } else {
+                    space = sp.getSize().height;
+                }
+
+                space -= (divLoc + divSize);
+            }
+
+            space -= cumulateInsets(comp, sp, sp.getOrientation());
+            logger.debug("space: {}", space);
+
+            return space;
+        }
+    }
+
+    //----------//
+    // htmlLink //
+    //----------//
+    /**
+     * Report the HTML fragment for an active link to the provided URL string.
+     *
+     * @param url URL as a string
+     * @return HTML text
+     */
+    public static String htmlLink (String url)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        final int size = UIUtil.adjustedSize(constants.urlFontSize.getValue());
+        final String name = constants.defaultFontName.getValue();
+        sb.append("<style> body ")
+                .append("{font-family: ").append(name).append(';')
+                .append(" font-size: ").append(size).append("px;")
+                .append("} </style>");
+
+        sb.append("<A HREF=\"").append(url).append("\">").append(url).append("</A>");
+
+        return sb.toString();
+    }
+
     //-------------//
     // insertTitle //
     //-------------//
@@ -520,7 +691,157 @@ public abstract class UIUtil
         frame.toFront();
     }
 
+    //--------------------//
+    // getDefaultFontSize //
+    //--------------------//
+    /**
+     * Report the font size used by default when no ratio is applied.
+     *
+     * @return the default font size in application
+     */
+    public static int getDefaultFontSize ()
+    {
+        return constants.defaultFontSize.getValue();
+    }
+
+    //--------------------//
+    // getGlobalFontRatio //
+    //--------------------//
+    /**
+     * Report the current global font ratio.
+     *
+     * @return current global font ratio
+     */
+    public static double getGlobalFontRatio ()
+    {
+        return constants.globalFontRatio.getValue();
+    }
+
+    //--------------------//
+    // setGlobalFontRatio //
+    //--------------------//
+    /**
+     * Set value for global font ratio.
+     *
+     * @param ratio value to set
+     */
+    public static void setGlobalFontRatio (double ratio)
+    {
+        if (ratio != constants.globalFontRatio.getValue()) {
+            constants.globalFontRatio.setValue(ratio);
+            logger.info("Global font ratio: {} at next restart", ratio);
+        }
+    }
+
+    //-----------------------//
+    // getMaxGlobalFontRatio //
+    //-----------------------//
+    /**
+     * Report the maximum allowed value for global font ratio.
+     *
+     * @return maximum allowed value
+     */
+    public static double getMaxGlobalFontRatio ()
+    {
+        return constants.maxGlobalFontRatio.getValue();
+    }
+
+    //-----------------------//
+    // getMinGlobalFontRatio //
+    //-----------------------//
+    /**
+     * Report the minimum allowed value for global font ratio.
+     *
+     * @return minimum allowed value
+     */
+    public static double getMinGlobalFontRatio ()
+    {
+        return constants.minGlobalFontRatio.getValue();
+    }
+
+    /** Not meant to be instantiated. */
     private UIUtil ()
     {
+    }
+
+    //----------------//
+    // cumulateInsets //
+    //----------------//
+    /**
+     * Cumulate the insets of all ancestors of the provided component, until the provided
+     * ancestor (included) is reached.
+     *
+     * @param comp     the provided component
+     * @param ancestor the target ancestor
+     * @param split    either HORIZONTAL_SPLIT or VERTICAL_SPLIT
+     * @return the cumulated insets on split orientation
+     */
+    private static int cumulateInsets (JComponent comp,
+                                       JComponent ancestor,
+                                       int split)
+    {
+        int sum = 0;
+
+        Container parent = comp.getParent();
+
+        while (parent != null) {
+            Insets insets = parent.getInsets();
+            logger.debug("{} {}", parent.getName(), insets);
+
+            switch (split) {
+            case JSplitPane.VERTICAL_SPLIT:
+                sum += insets.top;
+                sum += insets.bottom;
+
+                break;
+            case JSplitPane.HORIZONTAL_SPLIT:
+                sum += insets.left;
+                sum += insets.right;
+                break;
+            }
+
+            if (parent == ancestor) {
+                break;
+            }
+
+            parent = parent.getParent();
+        }
+
+        logger.debug("cumulateInsets: {}", sum);
+        return sum;
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Ratio minGlobalFontRatio = new Constant.Ratio(
+                1.0,
+                "Minimum value for global font ratio");
+
+        private final Constant.Ratio maxGlobalFontRatio = new Constant.Ratio(
+                2.0,
+                "Maximum value for global font ratio");
+
+        private final Constant.Ratio globalFontRatio = new Constant.Ratio(
+                1.0,
+                "Ratio to be applied on every font size (restart needed)");
+
+        private final Constant.Integer defaultFontSize = new Constant.Integer(
+                "Points",
+                12,
+                "Default font size");
+
+        private final Constant.Integer urlFontSize = new Constant.Integer(
+                "Points",
+                9,
+                "Font size for URL");
+
+        private final Constant.String defaultFontName = new Constant.String(
+                "Arial",
+                "Default font name (e.g. Arial, Dialog, Segoe UI, ...");
     }
 }

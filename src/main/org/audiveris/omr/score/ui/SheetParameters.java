@@ -29,10 +29,14 @@ import org.audiveris.omr.sheet.Scale.Item;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.util.param.Param;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -47,6 +51,10 @@ public class SheetParameters
 {
 
     private static final Logger logger = LoggerFactory.getLogger(SheetParameters.class);
+
+    /** Resource injection. */
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(SheetParameters.class);
 
     /** The swing component of this panel. */
     private final ScopedPanel scopedPanel;
@@ -82,7 +90,7 @@ public class SheetParameters
                 ip = new ScalingParam(key);
             }
 
-            sheetPanes.add(new ScalingPane(key, null, ip));
+            sheetPanes.add(new ScaledPane(key, null, ip));
         }
 
         scopedPanel = new ScopedPanel("Sheet settings", sheetPanes);
@@ -132,6 +140,15 @@ public class SheetParameters
     public ScopedPanel getComponent ()
     {
         return scopedPanel;
+    }
+
+    //----------//
+    // getTitle //
+    //----------//
+    public String getTitle ()
+    {
+        final String pattern = resources.getString("SheetParameters.titlePattern");
+        return MessageFormat.format(pattern, sheet.getId());
     }
 
     //----------------//
@@ -213,23 +230,23 @@ public class SheetParameters
         }
     }
 
-    //-------------//
-    // ScalingPane //
-    //-------------//
+    //------------//
+    // ScaledPane //
+    //------------//
     /**
-     * Pane to define a scaling parameter (sheet scope only).
+     * Pane to define a scaled parameter (sheet scope only).
      */
-    private static class ScalingPane
+    private static class ScaledPane
             extends IntegerPane
     {
 
         final Scale.Item key;
 
-        ScalingPane (Scale.Item key,
-                     XactDataPane parent,
-                     ScalingParam model)
+        ScaledPane (Scale.Item key,
+                    XactDataPane parent,
+                    ScalingParam model)
         {
-            super(key.getDescription(), parent, "", null, model);
+            super(description(key), parent, "", null, model);
             this.key = key;
         }
 
@@ -265,6 +282,17 @@ public class SheetParameters
         public int getLogicalRowCount ()
         {
             return 1;
+        }
+
+        private static String description (Scale.Item key)
+        {
+            String desc = resources.getString("Item." + key + ".toolTipText");
+
+            if (desc != null) {
+                return desc;
+            }
+
+            return key.getDescription();
         }
     }
 }

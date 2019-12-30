@@ -21,6 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.Dumping.Relevance;
 
 import java.lang.reflect.Field;
@@ -73,6 +76,8 @@ import java.util.Map;
  */
 public class Dumper
 {
+
+    private static final Constants constants = new Constants();
 
     /** Maximum number of collection items printed */
     private static final int MAX_COLLECTION_INDEX = 9;
@@ -421,8 +426,13 @@ public class Dumper
         public String toString ()
         {
             // Style
-            sb.append("<style> td {").append(" font-family: Lucida Console, Verdana, sans-serif;")
-                    .append(" font-size: 9px;").append(" font-style: normal;").append("} </style>");
+            final String name = constants.fontName.getValue();
+            final int size = UIUtil.adjustedSize(constants.fontSize.getValue());
+            sb.append("<style> td {")
+                    .append(" font-family: ").append(name).append(", Verdana, sans-serif;")
+                    .append(" font-size: ").append(size).append("px;")
+                    .append(" font-style: normal;")
+                    .append("} </style>");
 
             // Table begin
             sb.append("<table border=0 cellpadding=3>");
@@ -441,8 +451,9 @@ public class Dumper
         protected void printClassProlog ()
         {
             // Class name
-            sb.append("<tr><td colspan=2><font color='BLUE'>").append(classe.getName()).append(
-                    "</font></td></tr>");
+            sb.append("<tr><td colspan=2><font color='BLUE'>")
+                    .append(classe.getName())
+                    .append("</font></td></tr>");
         }
 
         @Override
@@ -514,5 +525,22 @@ public class Dumper
             sb.append(name).append("=");
             super.printField(name, value);
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer fontSize = new Constant.Integer(
+                "Points",
+                9,
+                "Font size for HTML dump");
+
+        private final Constant.String fontName = new Constant.String(
+                "Lucida Console",
+                "Font name for HTML dump");
     }
 }
