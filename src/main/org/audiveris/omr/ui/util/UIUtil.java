@@ -691,6 +691,74 @@ public abstract class UIUtil
         frame.toFront();
     }
 
+    //--------------------//
+    // getDefaultFontSize //
+    //--------------------//
+    /**
+     * Report the font size used by default when no ratio is applied.
+     *
+     * @return the default font size in application
+     */
+    public static int getDefaultFontSize ()
+    {
+        return constants.defaultFontSize.getValue();
+    }
+
+    //--------------------//
+    // getGlobalFontRatio //
+    //--------------------//
+    /**
+     * Report the current global font ratio.
+     *
+     * @return current global font ratio
+     */
+    public static double getGlobalFontRatio ()
+    {
+        return constants.globalFontRatio.getValue();
+    }
+
+    //--------------------//
+    // setGlobalFontRatio //
+    //--------------------//
+    /**
+     * Set value for global font ratio.
+     *
+     * @param ratio value to set
+     */
+    public static void setGlobalFontRatio (double ratio)
+    {
+        if (ratio != constants.globalFontRatio.getValue()) {
+            constants.globalFontRatio.setValue(ratio);
+            logger.info("Global font ratio: {} at next restart", ratio);
+        }
+    }
+
+    //-----------------------//
+    // getMaxGlobalFontRatio //
+    //-----------------------//
+    /**
+     * Report the maximum allowed value for global font ratio.
+     *
+     * @return maximum allowed value
+     */
+    public static double getMaxGlobalFontRatio ()
+    {
+        return constants.maxGlobalFontRatio.getValue();
+    }
+
+    //-----------------------//
+    // getMinGlobalFontRatio //
+    //-----------------------//
+    /**
+     * Report the minimum allowed value for global font ratio.
+     *
+     * @return minimum allowed value
+     */
+    public static double getMinGlobalFontRatio ()
+    {
+        return constants.minGlobalFontRatio.getValue();
+    }
+
     /** Not meant to be instantiated. */
     private UIUtil ()
     {
@@ -749,6 +817,14 @@ public abstract class UIUtil
     private static class Constants
             extends ConstantSet
     {
+
+        private final Constant.Ratio minGlobalFontRatio = new Constant.Ratio(
+                1.0,
+                "Minimum value for global font ratio");
+
+        private final Constant.Ratio maxGlobalFontRatio = new Constant.Ratio(
+                2.0,
+                "Maximum value for global font ratio");
 
         private final Constant.Ratio globalFontRatio = new Constant.Ratio(
                 1.0,

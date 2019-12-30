@@ -158,7 +158,7 @@ public class MemoryMeter
         component.setLayout(new BorderLayout());
 
         // Progress bar
-        progressBar.setPreferredSize(new Dimension(90, 20));
+        progressBar.setPreferredSize(new Dimension(UIUtil.adjustedSize(90), 20));
         progressBar.setName("progressBar");
         progressBar.setToolTipText("Used memory / Global memory");
         progressBar.setStringPainted(true);
@@ -241,13 +241,11 @@ public class MemoryMeter
             extends ConstantSet
     {
 
-        /** Display period */
         private final Constant.Integer samplingPeriod = new Constant.Integer(
                 "MilliSeconds",
                 2_000,
                 "Memory display period");
 
-        /** Alarm threshold ratio */
         private final Constant.Ratio alarmThreshold = new Constant.Ratio(
                 0.75,
                 "Memory alarm threshold, expressed in ratio of total memory");

@@ -198,6 +198,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -2267,6 +2268,7 @@ public class PartwiseBuilder
                     scaling.setMillimeters(
                             new BigDecimal(
                                     String.format(
+                                            Locale.US,
                                             "%.4f",
                                             (current.scale.getInterline() * 25.4 * 4) / 300)));
                     scaling.setTenths(new BigDecimal(40));

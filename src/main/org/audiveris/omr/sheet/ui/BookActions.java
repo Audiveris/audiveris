@@ -288,7 +288,7 @@ public class BookActions
                     sheetParams.getComponent(),
                     JOptionPane.QUESTION_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION);
-            final String frameTitle = stub.getId() + " parameters";
+            final String frameTitle = sheetParams.getTitle();
             final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, true); // Modal flag
             dialog.setContentPane(optionPane);
             dialog.setName("SheetParamsDialog");  // For SAF life cycle
@@ -1592,8 +1592,7 @@ public class BookActions
                     scoreParams.getComponent(),
                     JOptionPane.QUESTION_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION);
-            final String frameTitle = (stub != null) ? (stub.getBook().getRadix() + " parameters")
-                    : "General parameters";
+            final String frameTitle = scoreParams.getTitle();
             final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, true); // Modal flag
             dialog.setContentPane(optionPane);
             dialog.setName("ScoreParamsDialog");  // For SAF life cycle

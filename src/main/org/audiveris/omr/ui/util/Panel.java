@@ -258,7 +258,13 @@ public class Panel
 
         for (int i = 0; i < cols; i++) {
             if (i != 0) {
-                sbc.append(",").append(fieldInterval).append(",");
+                sbc.append(",").append(fieldInterval);
+
+                if (i == 1) {
+                    sbc.append(":grow");
+                }
+
+                sbc.append(",");
             }
 
             sbc.append(labelAlignment).append(labelWidth)

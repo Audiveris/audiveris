@@ -29,6 +29,7 @@ import java.awt.Dimension;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.SeparablePopupMenu;
 import static org.audiveris.omr.ui.util.UIPredicates.*;
+import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +95,7 @@ public class BoardsPane
         component = new Panel();
         component.setName("boardsPane");
         component.setBorder(null);
-        final int inset = 6;
+        final int inset = UIUtil.adjustedSize(6);
         component.setInsets(inset, inset, inset, inset); // TLBR
         component.setMinimumSize(new Dimension(Board.MIN_BOARD_WIDTH + 2 * inset, 1));
         component.addMouseListener(mouseAdapter);

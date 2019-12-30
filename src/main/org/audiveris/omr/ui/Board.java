@@ -29,6 +29,7 @@ import org.audiveris.omr.ui.field.LCheckBox;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.Panel;
+import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.ClassUtil;
 
 import org.bushe.swing.event.EventSubscriber;
@@ -85,7 +86,7 @@ public abstract class Board
     private static final Logger logger = LoggerFactory.getLogger(Board.class);
 
     /** Minimum width available for a board. */
-    public static final int MIN_BOARD_WIDTH = 350;
+    public static final int MIN_BOARD_WIDTH = UIUtil.adjustedSize(350);
 
     // Predefined boards names with preferred display positions
     public static final Desc PIXEL = new Desc("Pixel", 100);
@@ -213,7 +214,7 @@ public abstract class Board
         header = (useCount || useVip || useDump) ? new Header(useCount, useVip, useDump) : null;
 
         if (header != null) {
-            header.setInsets(0, 0, 3, 0); // TLBR
+            header.setInsets(0, 0, UIUtil.adjustedSize(3), 0); // TLBR
         }
 
         defineLayout();
@@ -446,7 +447,10 @@ public abstract class Board
     {
         component.setName(name + " board");
         component.setBorder(new TitledBorder(name));
-        component.setInsets(12, 10, 5, 5); // TLBR sides
+        component.setInsets(UIUtil.adjustedSize(12),
+                            UIUtil.adjustedSize(10),
+                            UIUtil.adjustedSize(5),
+                            UIUtil.adjustedSize(5)); // TLBR sides
 
         body.setNoInsets();
 
