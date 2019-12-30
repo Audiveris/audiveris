@@ -37,10 +37,14 @@ import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.ui.field.SpinnerUtil;
 import org.audiveris.omr.util.param.Param;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -107,6 +111,10 @@ public class ScoreParameters
 
     private static final Logger logger = LoggerFactory.getLogger(ScoreParameters.class);
 
+    /** Resource injection. */
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(ScoreParameters.class);
+
     /** The swing component of this panel. */
     private final JTabbedPane component = new JTabbedPane();
 
@@ -153,8 +161,9 @@ public class ScoreParameters
             defaultPanes.add(switchPane);
         }
 
-        defaultPanel = new ScopedPanel("Default settings", defaultPanes);
-        component.addTab("Default", null, defaultPanel, defaultPanel.getName());
+        defaultPanel = new ScopedPanel(resources.getString("defaultTab.toolTipText"), defaultPanes);
+        component.addTab(resources.getString("defaultTab.text"),
+                         null, defaultPanel, defaultPanel.getName());
 
         // Book panel?
         if (book != null) {
@@ -177,7 +186,7 @@ public class ScoreParameters
                 bookPanes.add(new SwitchPane(key, getPane(defaultPanel, key), bp));
             }
 
-            bookPanel = new ScopedPanel("Book settings", bookPanes);
+            bookPanel = new ScopedPanel(resources.getString("bookTab.toolTipText"), bookPanes);
             component.addTab(book.getRadix(), null, bookPanel, bookPanel.getName());
 
             // Sheets panels?
@@ -202,8 +211,10 @@ public class ScoreParameters
                         sheetPanes.add(new SwitchPane(key, getPane(bookPanel, key), bp));
                     }
 
-                    ScopedPanel panel = new ScopedPanel("Sheet settings", sheetPanes);
-                    String label = "S#" + s.getNumber();
+                    ScopedPanel panel = new ScopedPanel(resources.getString("sheetTab.toolTipText"),
+                                                        sheetPanes);
+                    String initial = resources.getString("sheetInitialChar");
+                    String label = initial + "#" + s.getNumber();
 
                     if (s == stub) {
                         sheetPanel = panel;
@@ -270,6 +281,18 @@ public class ScoreParameters
     public JTabbedPane getComponent ()
     {
         return component;
+    }
+
+    //----------//
+    // getTitle //
+    //----------//
+    public String getTitle ()
+    {
+        if (book != null) {
+            return MessageFormat.format(resources.getString("bookTitlePattern"), book.getRadix());
+        } else {
+            return resources.getString("defaultTitle");
+        }
     }
 
     //--------------//
@@ -378,32 +401,33 @@ public class ScoreParameters
         /** ComboBox for filter kind */
         private final JComboBox<FilterKind> kindCombo = new JComboBox<>(FilterKind.values());
 
-        private final JLabel kindLabel = new JLabel("Filter", SwingConstants.RIGHT);
+        private final JLabel kindLabel = new JLabel(resources.getString("kindLabel.text"),
+                                                    SwingConstants.RIGHT);
 
         // Data for global
         private final SpinData globalData = new SpinData(
-                "Threshold",
-                "Global threshold for foreground pixels",
+                resources.getString("FilterPane.globalData.text"),
+                resources.getString("FilterPane.globalData.toolTipText"),
                 new SpinnerNumberModel(0, 0, 255, 1));
 
         // Data for local
         private final SpinData localDataMean = new SpinData(
-                "Coeff for Mean",
-                "Coefficient for mean pixel value",
+                resources.getString("FilterPane.localDataMean.text"),
+                resources.getString("FilterPane.localDataMean.toolTipText"),
                 new SpinnerNumberModel(0.5, 0.5, 1.5, 0.1));
 
         private final SpinData localDataDev = new SpinData(
-                "Coeff for StdDev",
-                "Coefficient for standard deviation value",
+                resources.getString("FilterPane.localDataDev.text"),
+                resources.getString("FilterPane.localDataDev.toolTipText"),
                 new SpinnerNumberModel(0.2, 0.2, 1.5, 0.1));
 
         FilterPane (FilterPane parent,
                     Param<FilterDescriptor> model)
         {
-            super("Binarization", parent, model);
+            super(resources.getString("FilterPane.title"), parent, model);
 
             // ComboBox for filter kind
-            kindCombo.setToolTipText("Specific filter on image pixels");
+            kindCombo.setToolTipText(resources.getString("FilterPane.kindCombo.toolTipText"));
             kindCombo.addActionListener(this);
         }
 
@@ -604,7 +628,7 @@ public class ScoreParameters
                     XactDataPane parent,
                     Param<Boolean> model)
         {
-            super(key.getConstant().getDescription(), parent, "", null, model);
+            super(description(key), parent, "", null, model);
             this.key = key;
         }
 
@@ -641,6 +665,13 @@ public class ScoreParameters
         {
             return 1;
         }
+
+        private static String description (Switch key)
+        {
+            final String desc = resources.getString("Switch." + key + ".toolTipText");
+
+            return (desc != null) ? desc : key.getConstant().getDescription();
+        }
     }
 
     //----------//
@@ -670,19 +701,19 @@ public class ScoreParameters
         TextPane (TextPane parent,
                   Param<String> model)
         {
-            super("OCR language(s)", parent, model);
+            super(resources.getString("TextPane.title"), parent, model);
 
             listModel = new Language.ListModel();
 
             langList = new JList<>(listModel);
             langList.setLayoutOrientation(JList.VERTICAL);
-            langList.setToolTipText("Dominant languages for textual items");
+            langList.setToolTipText(resources.getString("TextPane.langList.toolTipText"));
             langList.setVisibleRowCount(5);
             langList.addListSelectionListener(this);
 
             langScroll = new JScrollPane(langList);
 
-            langSpec.setToolTipText("Resulting specification");
+            langSpec.setToolTipText(resources.getString("TextPane.langSpec.toolTipText"));
         }
 
         @Override
@@ -692,7 +723,7 @@ public class ScoreParameters
         {
             r = super.defineLayout(builder, cst, r);
 
-            builder.add(langSpec, cst.xyw(1, r, 4));
+            builder.add(langSpec, cst.xyw(1, r, 3));
             builder.add(langScroll, cst.xyw(5, r, 3));
 
             return r + 2;

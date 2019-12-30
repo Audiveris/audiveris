@@ -25,6 +25,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -32,8 +33,11 @@ import org.audiveris.omr.plugin.PluginsManager;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.util.Panel;
+import org.audiveris.omr.ui.util.UIUtil;
+import org.audiveris.omr.util.LabeledEnum;
 
 import org.jdesktop.application.Application;
+import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
@@ -41,7 +45,11 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
@@ -49,6 +57,9 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Class {@code AdvancedTopics} gathers all topics that are relevant for advanced users
@@ -69,8 +80,9 @@ public abstract class AdvancedTopics
     /** Layout for 3 items. */
     private static final FormLayout layout3 = new FormLayout("12dlu,1dlu,pref,10dlu,pref", "pref");
 
-    private static final ResourceMap resource = Application.getInstance().getContext()
-            .getResourceMap(AdvancedTopics.class);
+    private static final ApplicationContext context = Application.getInstance().getContext();
+
+    private static final ResourceMap resource = context.getResourceMap(AdvancedTopics.class);
 
     /** Not meant to be instantiated. */
     private AdvancedTopics ()
@@ -169,15 +181,34 @@ public abstract class AdvancedTopics
 
         AllTopicsPane ()
         {
-            setBorder(BorderFactory.createTitledBorder("These switches require a restart"));
+            final String className = getClass().getSimpleName();
+            setBorder(BorderFactory.createTitledBorder(
+                    resource.getString(className + ".titledBorder.text")));
 
-            FormLayout layout = new FormLayout("pref", Panel.makeRows(Topic.values().length));
+            // Localized values of Topic enum type
+            final LabeledEnum<Topic>[] localeTopics = LabeledEnum.values(
+                    Topic.values(),
+                    resource,
+                    Topic.class);
+
+            // Layout
+            FormLayout layout = new FormLayout("pref", Panel.makeRows(2 + Topic.values().length));
             PanelBuilder builder = new PanelBuilder(layout, this);
             CellConstraints cst = new CellConstraints();
             int r = 1;
 
+            // Scaling
+            builder.add(new ScalingPane(), cst.xy(1, r));
+            r += 2;
+
+            // Locale
+            builder.add(new LocalePane(), cst.xy(1, r));
+            r += 2;
+
+            // Switches
             for (Topic topic : Topic.values()) {
-                builder.add(new TopicPane(topic), cst.xy(1, r));
+                String topicName = LabeledEnum.valueOf(topic, localeTopics).label;
+                builder.add(new TopicPane(topic, topicName), cst.xy(1, r));
                 r += 2;
             }
         }
@@ -231,28 +262,77 @@ public abstract class AdvancedTopics
     {
 
         // ComboBox for desired step
-        private final JComboBox<Step> box;
+        private final JComboBox<Step> stepBox;
 
         EarlyPane ()
         {
-            box = new JComboBox<>(Step.values());
-            box.setToolTipText("Which step to trigger on any image input");
-            box.setSelectedItem(StubsController.getEarlyStep());
-            box.addActionListener(this);
+            final String className = getClass().getSimpleName();
+            final String tip = resource.getString(className + ".stepBox.toolTipText");
 
+            // Define stepBox
+            stepBox = new JComboBox<>(Step.values());
+            stepBox.setToolTipText(tip);
+            stepBox.addActionListener(this);
+
+            // Layout
             PanelBuilder builder = new PanelBuilder(layout2, this);
             CellConstraints cst = new CellConstraints();
+            builder.add(stepBox, cst.xy(1, 1));
+            builder.add(new JLabel(tip), cst.xy(3, 1));
 
-            final int r = 1;
-            builder.add(box, cst.xy(1, r));
-            builder.add(new JLabel("Step triggered on image input"), cst.xy(3, r));
+            // Initial status
+            stepBox.setSelectedItem(StubsController.getEarlyStep());
         }
 
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            Step step = box.getItemAt(box.getSelectedIndex());
+            Step step = stepBox.getItemAt(stepBox.getSelectedIndex());
             StubsController.setEarlyStep(step);
+        }
+    }
+
+    //------------//
+    // LocalePane //
+    //------------//
+    /**
+     * Which Locale should be used in application.
+     */
+    private static class LocalePane
+            extends Panel
+            implements ActionListener
+    {
+
+        private static final List<Locale> locales = Main.getSupportedLocales();
+
+        // ComboBox for supported locales
+        private final JComboBox<Locale> localeBox;
+
+        LocalePane ()
+        {
+            final String className = getClass().getSimpleName();
+            final String tip = resource.getString(className + ".localeBox.toolTipText");
+
+            // Define localeBox
+            localeBox = new JComboBox(locales.toArray(new Locale[locales.size()]));
+            localeBox.setToolTipText(tip);
+            localeBox.addActionListener(this);
+
+            // Layout
+            PanelBuilder builder = new PanelBuilder(layout3, this);
+            CellConstraints cst = new CellConstraints();
+            builder.add(localeBox, cst.xyw(1, 1, 3));
+            builder.add(new JLabel(tip), cst.xy(5, 1));
+
+            // Initial status
+            localeBox.setSelectedItem(Locale.getDefault());
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            Locale locale = localeBox.getItemAt(localeBox.getSelectedIndex());
+            Main.setLocale(locale);
         }
     }
 
@@ -268,27 +348,114 @@ public abstract class AdvancedTopics
     {
 
         // ComboBox for registered plugins
-        private final JComboBox<String> box;
+        private final JComboBox<String> pluginBox;
 
         PluginPane ()
         {
-            final Collection<String> ids = PluginsManager.getInstance().getPluginIds();
-            box = new JComboBox<>(ids.toArray(new String[ids.size()]));
-            box.setToolTipText("Default plugin to be launched");
-            box.setSelectedItem(PluginsManager.defaultPluginId.getValue());
+            final String className = getClass().getSimpleName();
+            final String tip = resource.getString(className + ".pluginBox.toolTipText");
 
+            // Define pluginBox
+            final Collection<String> ids = PluginsManager.getInstance().getPluginIds();
+            pluginBox = new JComboBox<>(ids.toArray(new String[ids.size()]));
+            pluginBox.setToolTipText(tip);
+            pluginBox.addActionListener(this);
+
+            // Layout
             PanelBuilder builder = new PanelBuilder(layout2, this);
             CellConstraints cst = new CellConstraints();
+            builder.add(pluginBox, cst.xy(1, 1));
+            builder.add(new JLabel(tip), cst.xy(3, 1));
 
-            final int r = 1;
-            builder.add(box, cst.xy(1, r));
-            builder.add(new JLabel("Plugin launched on MusicXML output"), cst.xy(3, r));
+            // Initial status
+            pluginBox.setSelectedItem(PluginsManager.defaultPluginId.getValue());
         }
 
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            PluginsManager.defaultPluginId.setSpecific(box.getItemAt(box.getSelectedIndex()));
+            PluginsManager.defaultPluginId.setSpecific(pluginBox.getItemAt(pluginBox
+                    .getSelectedIndex()));
+        }
+    }
+
+    //-------------//
+    // ScalingPane //
+    //-------------//
+    /**
+     * Handling of global font ratio at application level.
+     */
+    private static class ScalingPane
+            extends Panel
+            implements ChangeListener
+    {
+
+        private final int defaultSize = UIUtil.getDefaultFontSize();
+
+        private final double min = UIUtil.getMinGlobalFontRatio();
+
+        private final double max = UIUtil.getMaxGlobalFontRatio();
+
+        private final JSlider slider = new JSlider(0, 100); // 0 for min, 100 for max
+
+        private final JLabel label = new JLabel();
+
+        private final String sliderText;
+
+        ScalingPane ()
+        {
+            String className = getClass().getSimpleName();
+            sliderText = resource.getString(className + ".slider.text");
+
+            // Define slider
+            slider.setToolTipText(sliderText);
+            slider.addChangeListener(this);
+            slider.addMouseListener(new MouseAdapter()
+            {
+                @Override
+                public void mouseReleased (MouseEvent e)
+                {
+                    // Register ratio value
+                    final double ratio = ratioOf(slider.getValue());
+                    UIUtil.setGlobalFontRatio(ratio);
+                }
+            });
+
+            // Layout
+            PanelBuilder builder = new PanelBuilder(layout3, this);
+            CellConstraints cst = new CellConstraints();
+            builder.add(slider, cst.xyw(1, 1, 3));
+            builder.add(label, cst.xy(5, 1));
+
+            // Initial status
+            final double ratio = UIUtil.getGlobalFontRatio();
+            slider.setValue(tickOf(ratio));
+            adjustLabelFont(ratio);
+        }
+
+        @Override
+        public void stateChanged (ChangeEvent e)
+        {
+            final double ratio = ratioOf(slider.getValue());
+            adjustLabelFont(ratio);
+        }
+
+        private double ratioOf (int tick)
+        {
+            return min + tick * (max - min) / 100;
+        }
+
+        private int tickOf (double ratio)
+        {
+            return (int) Math.rint(100 * (ratio - min) / (max - min));
+        }
+
+        private void adjustLabelFont (double ratio)
+        {
+            label.setFont(label.getFont().deriveFont((float) ratio * defaultSize));
+
+            final int percent = (int) Math.rint(ratio * 100);
+            label.setText(sliderText + " " + percent + "%");
         }
     }
 
@@ -304,23 +471,35 @@ public abstract class AdvancedTopics
     {
 
         // Handled topic
-        final Topic topic;
+        private final Topic topic;
 
-        TopicPane (Topic topic)
+        /**
+         * Build a pane for one topic.
+         *
+         * @param topic     enum Topic
+         * @param topicName translated value of enum topic
+         */
+        TopicPane (Topic topic,
+                   String topicName)
         {
             this.topic = topic;
 
-            PanelBuilder builder = new PanelBuilder(layout3, this);
-            CellConstraints cst = new CellConstraints();
+            String desc = resource.getString("Topic." + topic + ".toolTipText");
+
+            if (desc == null) {
+                desc = topic.getDescription();
+            }
 
             JCheckBox box = new JCheckBox();
             box.addActionListener(this);
             box.setSelected(topic.isSet());
 
-            final int r = 1;
-            builder.add(box, cst.xy(1, r));
-            builder.add(new JLabel(topic.name()), cst.xy(3, r));
-            builder.add(new JLabel(topic.getDescription()), cst.xy(5, r));
+            // Layout
+            PanelBuilder builder = new PanelBuilder(layout3, this);
+            CellConstraints cst = new CellConstraints();
+            builder.add(box, cst.xy(1, 1));
+            builder.add(new JLabel(topicName), cst.xy(3, 1));
+            builder.add(new JLabel(desc), cst.xy(5, 1));
         }
 
         @Override
