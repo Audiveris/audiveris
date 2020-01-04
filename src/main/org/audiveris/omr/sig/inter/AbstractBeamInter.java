@@ -29,11 +29,13 @@ import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.Link;
@@ -47,6 +49,8 @@ import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Version;
+import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
 
@@ -494,6 +498,7 @@ public abstract class AbstractBeamInter
     //------------//
     @Override
     public void deriveFrom (ShapeSymbol symbol,
+                            Sheet sheet,
                             MusicFont font,
                             Point dropLocation,
                             Alignment alignment)
@@ -501,8 +506,39 @@ public abstract class AbstractBeamInter
         BeamSymbol beamSymbol = (BeamSymbol) symbol;
         Model model = beamSymbol.getModel(font, dropLocation, alignment);
         median = new Line2D.Double(model.p1, model.p2);
-        height = model.thickness;
+
+        // Beam height adjusted according to sheet scale?
+        final Integer beamThickness = sheet.getScale().getBeamThickness();
+        height = (beamThickness != null) ? beamThickness : model.thickness;
+
         computeArea();
+
+        if (staff != null) {
+            SIGraph sig = staff.getSystem().getSig();
+            List<Inter> systemStems = sig.inters(StemInter.class);
+            Collections.sort(systemStems, Inters.byAbscissa);
+
+            // Snap sides?
+            boolean modified = false;
+
+            final Double x1 = getSnapAbscissa(LEFT, systemStems);
+            if (x1 != null) {
+                model.p1.setLocation(x1, model.p1.getY());
+                modified = true;
+            }
+
+            final Double x2 = getSnapAbscissa(RIGHT, systemStems);
+            if (x2 != null) {
+                model.p2.setLocation(x2, model.p2.getY());
+                modified = true;
+            }
+
+            if (modified) {
+                median.setLine(model.p1, model.p2);
+                computeArea();
+                dropLocation.setLocation(PointUtil.middle(median));
+            }
+        }
     }
 
     //--------//
@@ -739,6 +775,119 @@ public abstract class AbstractBeamInter
         return links;
     }
 
+    //----------------//
+    // lookupSideLink //
+    //----------------//
+    /**
+     * Lookup for a potential Beam-Stem link on the desired horizontal side of this beam
+     *
+     * @param systemStems all stems in system, sorted by abscissa
+     * @param system      containing system
+     * @param side        the desired horizontal side
+     * @return the best potential link if any, null otherwise
+     */
+    private Link lookupSideLink (List<Inter> systemStems,
+                                 SystemInfo system,
+                                 HorizontalSide side)
+    {
+        if (systemStems.isEmpty()) {
+            return null;
+        }
+
+        if (isVip()) {
+            logger.info("VIP lookupSideLink for {} on {}", this, side);
+        }
+
+        final Line2D top = getBorder(VerticalSide.TOP);
+        final Line2D bottom = getBorder(VerticalSide.BOTTOM);
+        final Scale scale = system.getSheet().getScale();
+        final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum(manual));
+        final int xIn = scale.toPixels(BeamStemRelation.getXInGapMaximum(manual));
+        final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum(manual));
+
+        Link bestLink = null;
+        double bestGrade = Double.MAX_VALUE;
+
+        final Rectangle luBox = new Rectangle(-1, -1); // "Non-existant" rectangle
+
+        if (side == HorizontalSide.LEFT) {
+            Point iTop = PointUtil.rounded(top.getP1());
+            luBox.add(iTop.x - xOut, iTop.y - yGap);
+            luBox.add(iTop.x + xIn, iTop.y - yGap);
+
+            Point iBottom = PointUtil.rounded(bottom.getP1());
+            luBox.add(iBottom.x - xOut, iBottom.y + yGap);
+            luBox.add(iBottom.x + xIn, iBottom.y + yGap);
+        } else {
+            Point iTop = PointUtil.rounded(top.getP2());
+            luBox.add(iTop.x - xIn, iTop.y - yGap);
+            luBox.add(iTop.x + xOut, iTop.y - yGap);
+
+            Point iBottom = PointUtil.rounded(bottom.getP2());
+            luBox.add(iBottom.x - xIn, iBottom.y + yGap);
+            luBox.add(iBottom.x + xOut, iBottom.y + yGap);
+        }
+
+        List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.NONE, luBox);
+
+        for (Inter inter : stems) {
+            StemInter stem = (StemInter) inter;
+
+            for (VerticalSide vSide : VerticalSide.values()) {
+                Link link = checkLink(stem, vSide, scale);
+
+                if (link != null) {
+                    BeamStemRelation rel = (BeamStemRelation) link.relation;
+
+                    if ((bestLink == null) || (rel.getGrade() > bestGrade)) {
+                        bestLink = link;
+                        bestGrade = rel.getGrade();
+                    }
+                }
+            }
+        }
+
+        return bestLink;
+    }
+
+    //-----------------//
+    // getSnapAbscissa //
+    //-----------------//
+    /**
+     * Report the theoretical abscissa of the provided beam side when correctly aligned
+     * with a suitable stem.
+     * <p>
+     * Required properties: staff or sig, median, height
+     *
+     * @param side        the desired horizontal side
+     * @param systemStems all stems in containing system
+     * @return the proper abscissa if any, null otherwise
+     */
+    private Double getSnapAbscissa (HorizontalSide side,
+                                    List<Inter> systemStems)
+    {
+        final SystemInfo system;
+
+        if (sig != null) {
+            system = sig.getSystem();
+        } else if (staff != null) {
+            system = staff.getSystem();
+        } else {
+            logger.warn("No system nor staff for {}", this);
+            return null;
+        }
+
+        final Link link = lookupSideLink(systemStems, system, side);
+
+        if (link != null) {
+            final StemInter stem = (StemInter) link.partner;
+            final Point2D beamEnd = (side == LEFT) ? median.getP1() : median.getP2();
+            return LineUtil.xAtY(stem.getMedian(), beamEnd.getY());
+        }
+
+        return null;
+    }
+
     //---------//
     // Impacts //
     //---------//
@@ -792,41 +941,54 @@ public abstract class AbstractBeamInter
      * <li>middle handle, moving the whole beam in any direction
      * <li>right handle, moving in any direction
      * </ul>
+     * Left and right end points can snap their abscissa on stems nearby
      */
     private static class Editor
             extends InterEditor
     {
 
-        private final Point2D originalLeft;
+        // Data
+        private final Model originalModel;
 
-        private final Point2D left;
+        private final Model model;
 
-        private final Point2D originalRight;
+        // To improve speed of stem search
+        private SIGraph sig;
 
-        private final Point2D right;
+        private List<Inter> systemStems;
 
-        private final Point2D middle;
-
-        public Editor (AbstractBeamInter beam)
+        public Editor (final AbstractBeamInter beam)
         {
             super(beam);
 
-            originalLeft = beam.median.getP1();
-            left = beam.median.getP1();
+            originalModel = new Model();
+            originalModel.p1 = beam.median.getP1();
+            originalModel.p2 = beam.median.getP2();
 
-            originalRight = beam.median.getP2();
-            right = beam.median.getP2();
+            model = new Model();
+            model.p1 = beam.median.getP1();
+            model.p2 = beam.median.getP2();
 
-            middle = PointUtil.middle(left, right);
+            // Handles
+            final Point2D p1 = beam.median.getP1();
+            final Point2D p2 = beam.median.getP2();
+            final Point2D middle = PointUtil.middle(p1, p2);
 
             // Move left
-            handles.add(new Handle(left)
+            handles.add(new Handle(p1)
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
-                    PointUtil.add(left, vector);
+                    // Handles
+                    PointUtil.add(p1, vector);
                     PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
+
+                    // Data
+                    beam.median.setLine(p1, p2);
+
+                    final Double x1 = beam.getSnapAbscissa(LEFT, getSystemStems());
+                    model.p1.setLocation((x1 != null) ? x1 : p1.getX(), p1.getY());
 
                     return true;
                 }
@@ -836,35 +998,65 @@ public abstract class AbstractBeamInter
             handles.add(selectedHandle = new Handle(middle)
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
+                    // Handles
                     for (Handle handle : handles) {
                         PointUtil.add(handle.getHandleCenter(), vector);
                     }
+
+                    // Data
+                    beam.median.setLine(p1, p2);
+
+                    final Double x1 = beam.getSnapAbscissa(LEFT, getSystemStems());
+                    model.p1.setLocation((x1 != null) ? x1 : p1.getX(), p1.getY());
+
+                    final Double x2 = beam.getSnapAbscissa(RIGHT, getSystemStems());
+                    model.p2.setLocation((x2 != null) ? x2 : p2.getX(), p2.getY());
 
                     return true;
                 }
             });
 
             // Move right
-            handles.add(new Handle(right)
+            handles.add(new Handle(p2)
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
+                    // Handles
                     PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
-                    PointUtil.add(right, vector);
+                    PointUtil.add(p2, vector);
+
+                    // Data
+                    beam.median.setLine(p1, p2);
+
+                    final Double x2 = beam.getSnapAbscissa(RIGHT, getSystemStems());
+                    model.p2.setLocation((x2 != null) ? x2 : p2.getX(), p2.getY());
 
                     return true;
                 }
             });
         }
 
+        private List<Inter> getSystemStems ()
+        {
+            final AbstractBeamInter beam = (AbstractBeamInter) inter;
+
+            if (sig != beam.getSig()) {
+                sig = beam.getSig();
+                systemStems = sig.inters(StemInter.class);
+                Collections.sort(systemStems, Inters.byAbscissa);
+            }
+
+            return systemStems;
+        }
+
         @Override
         protected void doit ()
         {
             final AbstractBeamInter beam = (AbstractBeamInter) inter;
-            beam.median.setLine(left, right);
+            beam.median.setLine(model.p1, model.p2);
             beam.computeArea(); // Set bounds also
 
             super.doit(); // No more glyph
@@ -874,7 +1066,7 @@ public abstract class AbstractBeamInter
         public void undo ()
         {
             final AbstractBeamInter beam = (AbstractBeamInter) inter;
-            beam.median.setLine(originalLeft, originalRight);
+            beam.median.setLine(originalModel.p1, originalModel.p2);
             beam.computeArea(); // Set bounds also
 
             super.undo();

@@ -22,6 +22,7 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sig.inter.SlurInter;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
@@ -65,6 +66,22 @@ public class SlurSymbol
         this.above = above;
     }
 
+    //----------//
+    // getModel //
+    //----------//
+    @Override
+    public SlurInter.Model getModel (MusicFont font,
+                                     Point location,
+                                     Alignment alignment)
+    {
+        MyParams p = getParams(font);
+        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        loc = PointUtil.subtraction(loc, p.offset);
+        p.model.translate(loc.getX(), loc.getY());
+
+        return p.model;
+    }
+
     //------------//
     // createIcon //
     //------------//
@@ -87,8 +104,10 @@ public class SlurSymbol
         p.rect = new Rectangle2D.Double(0, 0, w, h);
 
         p.model = new SlurInter.Model(above //  /--\ vs \--/
-                ? new CubicCurve2D.Double(0, h, w / 5.0, 0, 4 * w / 5.0, 0, w, h)
-                : new CubicCurve2D.Double(0, 0, w / 5.0, h, 4 * w / 5.0, h, w, 0));
+                ? new CubicCurve2D.Double(0, h, w / 5, 0, 4 * w / 5, 0, w, h)
+                : new CubicCurve2D.Double(0, 0, w / 5, h, 4 * w / 5, h, w, 0));
+
+        p.offset = new Point2D.Double(0, above ? h / 2 : -h / 2);
 
         return p;
     }
@@ -110,21 +129,6 @@ public class SlurSymbol
         g.draw(curve);
     }
 
-    //----------//
-    // getModel //
-    //----------//
-    @Override
-    public SlurInter.Model getModel (MusicFont font,
-                                     Point location,
-                                     Alignment alignment)
-    {
-        MyParams p = getParams(font);
-        Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
-        p.model.translate(loc.getX(), loc.getY());
-
-        return p.model;
-    }
-
     //--------//
     // Params //
     //--------//
@@ -132,7 +136,7 @@ public class SlurSymbol
             extends BasicSymbol.Params
     {
 
-        // offset: not used
+        // offset: used
         // layout: not used
         // rect:   global image
         //

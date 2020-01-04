@@ -76,6 +76,22 @@ public abstract class PointUtil
      * @param p2 another vector
      * @return the geometric addition
      */
+    public static Point addition (Point p1,
+                                  Point p2)
+    {
+        return new Point(p1.x + p2.x, p1.y + p2.y);
+    }
+
+    //----------//
+    // addition //
+    //----------//
+    /**
+     * Report the vector which is the addition of the 2 vectors.
+     *
+     * @param p1 a vector
+     * @param p2 another vector
+     * @return the geometric addition
+     */
     public static Point2D addition (Point2D p1,
                                     Point2D p2)
     {

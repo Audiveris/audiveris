@@ -41,6 +41,8 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.DefaultEditor;
+import org.audiveris.omr.sig.ui.EditionTask;
+import org.audiveris.omr.sig.ui.InterDnd;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.UITask;
@@ -338,6 +340,7 @@ public abstract class AbstractInter
     //------------//
     @Override
     public void deriveFrom (ShapeSymbol symbol,
+                            Sheet sheet,
                             MusicFont font,
                             Point dropLocation,
                             Alignment alignment)
@@ -632,6 +635,16 @@ public abstract class AbstractInter
     public boolean isEditable ()
     {
         return !(this instanceof InterEnsemble);
+    }
+
+    //--------//
+    // getDnd //
+    //--------//
+    @Override
+    public InterDnd getDnd (Sheet sheet,
+                            ShapeSymbol symbol)
+    {
+        return new InterDnd(this, sheet, symbol);
     }
 
     //-----------//
@@ -1119,6 +1132,21 @@ public abstract class AbstractInter
 
         return Arrays.asList(
                 new AdditionTask(system.getSig(), this, getBounds(), searchLinks(system)));
+    }
+
+    //---------//
+    // preEdit //
+    //---------//
+    @Override
+    public List<? extends UITask> preEdit (InterEditor editor)
+    {
+        final SystemInfo system = getSig().getSystem();
+        final Collection<Link> links = searchLinks(system);
+        final Collection<Link> unlinks = searchUnlinks(system, links);
+        final List<UITask> tasks = new ArrayList<>();
+        tasks.add(new EditionTask(editor, links, unlinks));
+
+        return tasks;
     }
 
     //-----------//

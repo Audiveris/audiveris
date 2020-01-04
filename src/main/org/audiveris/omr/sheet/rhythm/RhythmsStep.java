@@ -195,13 +195,13 @@ public class RhythmsStep
 
                     if (center != null) {
                         MeasureStack stack = sig.getSystem().getStackAt(center);
-                        impact.onStacks.add(stack);
+                        impact.add(stack);
 
                         if (inter instanceof BarlineInter || inter instanceof StaffBarlineInter) {
                             if ((task instanceof RemovalTask && (opKind == OpKind.UNDO))
                                         || (task instanceof AdditionTask && (opKind != OpKind.UNDO))) {
                                 // Add next stack as well
-                                impact.onStacks.add(stack.getNextSibling());
+                                impact.add(stack.getNextSibling());
                             }
                         }
                     }
@@ -212,7 +212,7 @@ public class RhythmsStep
                 Class classe = stack.getClass();
 
                 if (isImpactedBy(classe, forStack)) {
-                    impact.onStacks.add(stack);
+                    impact.add(stack);
                 }
             } else if (task instanceof PageTask) {
                 // Reprocess the page
@@ -229,8 +229,8 @@ public class RhythmsStep
 
                 if (isImpactedBy(classe, forStack)) {
                     SystemInfo system = sig.getSystem();
-                    impact.onStacks.add(system.getStackAt(relationTask.getSource().getCenter()));
-                    impact.onStacks.add(system.getStackAt(relationTask.getTarget().getCenter()));
+                    impact.add(system.getStackAt(relationTask.getSource().getCenter()));
+                    impact.add(system.getStackAt(relationTask.getTarget().getCenter()));
                 }
             }
         }
@@ -277,6 +277,13 @@ public class RhythmsStep
             sb.append("}");
 
             return sb.toString();
+        }
+
+        public void add (MeasureStack stack)
+        {
+            if (stack != null) {
+                onStacks.add(stack);
+            }
         }
     }
 }

@@ -21,12 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.glyph.ui;
 
-import org.audiveris.omr.OMR;
 import org.audiveris.omr.classifier.BasicClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.dynamic.Filament;
 import org.audiveris.omr.lag.BasicLag;
 import org.audiveris.omr.lag.Lag;
@@ -55,7 +55,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Support;
-import org.audiveris.omr.sig.ui.DndOperation;
+import org.audiveris.omr.sig.ui.InterDnd;
 import org.audiveris.omr.sig.ui.InterBoard;
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.sig.ui.InterEditor;
@@ -65,14 +65,15 @@ import org.audiveris.omr.sig.ui.ShapeBoard;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.Colors;
-import org.audiveris.omr.ui.OmrGlassPane;
 import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.ViewParameters.SelectionMode;
-import org.audiveris.omr.ui.dnd.ScreenPoint;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
+import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
+import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.Navigable;
@@ -241,6 +242,8 @@ public class SymbolsEditor
     //--------------------//
     /**
      * Report the Evaluation board (basic classifier).
+     *
+     * @return the evaluation board
      */
     public EvaluationBoard getEvaluationBoard ()
     {
@@ -505,7 +508,7 @@ public class SymbolsEditor
         private boolean repetitiveInputMode = false;
 
         /** On-going DnD operation in repetitive input mode. */
-        private DndOperation dndOperation;
+        private InterDnd dnd;
 
         private MyView (GlyphIndex glyphIndex)
         {
@@ -616,6 +619,12 @@ public class SymbolsEditor
         //----------------//
         // objectSelected //
         //----------------//
+        /**
+         * Selection (by left button double-click), this can start inter edition.
+         *
+         * @param pt       the selected point in model pixel coordinates
+         * @param movement the mouse movement
+         */
         @Override
         public void objectSelected (Point pt,
                                     MouseMovement movement)
@@ -629,7 +638,7 @@ public class SymbolsEditor
             highLight(null);
 
             // Try to select an inter and put it into edit mode
-            interEditor = tryEditor(pt);
+            interEditor = selectEditor(pt);
 
             if (interEditor != null) {
                 Inter inter = interEditor.getInter();
@@ -667,20 +676,25 @@ public class SymbolsEditor
             // Request focus to allow key handling
             requestFocusInWindow();
 
+            // Specific repetitive input mode?
+            if (repetitiveInputMode && (movement == MouseMovement.PRESSING)) {
+                interEditor = createEditor(pt);
+            }
+
             // On-going inter edition?
             if (interEditor != null) {
-                if (interEditor.process(pt, movement)) {
+                // Publish (transient) location to allow shifting when getting close to view borders
+                locationService.publish(
+                        new LocationEvent(this,
+                                          SelectionHint.ENTITY_TRANSIENT,
+                                          MouseMovement.DRAGGING,
+                                          new Rectangle(pt)));
+
+                if (interEditor.processMouse(pt, movement)) {
                     return;
                 }
 
                 interEditor = null;
-            }
-
-            // Specific repetitive input mode?
-            if (repetitiveInputMode) {
-                processRepetitiveInput(pt, movement);
-
-                return;
             }
 
             // Handle relation vector
@@ -688,70 +702,6 @@ public class SymbolsEditor
 
             // Publish location (and let all subscribers react to location value)
             super.pointSelected(pt, movement);
-        }
-
-        //------------------------//
-        // processRepetitiveInput //
-        //------------------------//
-        private void processRepetitiveInput (Point pt,
-                                             MouseMovement movement)
-        {
-            final List<Shape> history = shapeBoard.getHistory();
-
-            if (history.isEmpty()) {
-                return;
-            }
-
-            final Shape shape = history.get(0);
-
-            if (!shape.isDraggable()) {
-                return;
-            }
-
-            final OmrGlassPane glass = OMR.gui.getGlassPane();
-
-            switch (movement) {
-            case PRESSING:
-                // Start Dnd
-                glass.setOverTarget(true);
-                glass.setVisible(true);
-                glass.setTargetTransform(view.getTransformToGlass(glass));
-                dndOperation = new DndOperation(
-                        sheet,
-                        zoom,
-                        InterFactory.createManual(shape, sheet),
-                        shape.getSymbol());
-                dndOperation.enteringTarget();
-                glass.setGhostTracker(dndOperation.getGhostTracker());
-
-            // Fall through (no break)
-            case DRAGGING:
-                // Move Dnd
-                Point sheetRef = dndOperation.getStaffReference(pt); // pt can be slightly modified
-                Point glassRef = (sheetRef == null) ? null
-                        : SwingUtilities.convertPoint(view, zoom.scaled(sheetRef), glass);
-                glass.setStaffReference(glassRef);
-
-                // Recompute screenPoint from modified sheetPt
-                Point scaledPt = new Point(zoom.scaled(pt));
-                SwingUtilities.convertPointToScreen(scaledPt, view);
-                ScreenPoint screenPoint = new ScreenPoint(scaledPt.x, scaledPt.y);
-                glass.setScreenPoint(screenPoint); // This triggers a repaint of glassPane
-
-                break;
-
-            case RELEASING:
-                // Drop Dnd
-                dndOperation.drop(pt);
-                glass.setOverTarget(false);
-                glass.setVisible(false);
-                glass.setImage(null);
-
-                break;
-
-            default:
-                break;
-            }
         }
 
         //-----------------------//
@@ -955,6 +905,77 @@ public class SymbolsEditor
             }
         }
 
+        //--------------//
+        // createEditor //
+        //--------------//
+        /**
+         * Create an inter at provided location, together with a brand new editor.
+         * <p>
+         * This is done when repetitive input mode is on.
+         *
+         * @see #selectEditor(Point)
+         */
+        private InterEditor createEditor (Point location)
+        {
+            // Inter is determined my latest history information
+            final List<Shape> history = shapeBoard.getHistory();
+
+            if (history.isEmpty()) {
+                return null;
+            }
+
+            final Shape shape = history.get(0);
+
+            if (!shape.isDraggable()) {
+                return null;
+            }
+
+            Staff staff = sheet.getStaffManager().getClosestStaff(location);
+
+            if (staff == null) {
+                return null;
+            }
+
+            Inter inter = InterFactory.createManual(shape, sheet);
+            inter.setStaff(staff);
+
+            final int staffInterline = staff.getSpecificInterline();
+            final MusicFont font = (ShapeSet.Heads.contains(inter.getShape()))
+                    ? MusicFont.getHeadFont(sheet.getScale(), staffInterline)
+                    : MusicFont.getBaseFont(staffInterline);
+            inter.deriveFrom(shape.getSymbol(), sheet, font, location, Alignment.AREA_CENTER);
+
+            staff.getSystem().getSig().addVertex(inter); // To set inter sig
+            sheet.getInterController().addInter(inter); // NOTA: this runs in a background task...
+
+            return inter.getEditor();
+        }
+
+        //--------------//
+        // selectEditor //
+        //--------------//
+        /**
+         * Try to select an inter, by looking for a suitable inter at provided location
+         * and create an editor on this inter.
+         * <p>
+         * This is done when repetitive input mode if off.
+         *
+         * @param location provided location
+         * @return the create editor, if proper Inter was found at location.
+         *
+         * @see #createEditor(Point)
+         */
+        private InterEditor selectEditor (Point location)
+        {
+            List<Inter> inters = sheet.getInterIndex().getContainingEntities(location);
+
+            if (inters.size() > 1) {
+                Collections.sort(inters, Inters.membersFirst);
+            }
+
+            return (!inters.isEmpty()) ? inters.get(0).getEditor() : null;
+        }
+
         //---------------//
         // showPagePopup //
         //---------------//
@@ -996,27 +1017,6 @@ public class SymbolsEditor
             return (!starts.isEmpty()) ? new RelationVector(p1, starts) : null;
         }
 
-        //-----------//
-        // tryEditor //
-        //-----------//
-        /**
-         * Try to create an inter editor, by looking for a suitable inter at provided
-         * location.
-         *
-         * @param p provided location
-         * @return the create editor, if proper Inter was found at p location.
-         */
-        private InterEditor tryEditor (Point p)
-        {
-            List<Inter> inters = sheet.getInterIndex().getContainingEntities(p);
-
-            if (inters.size() > 1) {
-                Collections.sort(inters, Inters.membersFirst);
-            }
-
-            return (!inters.isEmpty()) ? inters.get(0).getEditor() : null;
-        }
-
         //----------------------//
         // bindInterEditionKeys //
         //----------------------//
@@ -1054,7 +1054,7 @@ public class SymbolsEditor
             public void actionPerformed (ActionEvent e)
             {
                 if (interEditor != null) {
-                    interEditor.processEnd();
+                    interEditor.endProcess();
                     refresh();
                 }
             }
@@ -1079,7 +1079,7 @@ public class SymbolsEditor
                 super.actionPerformed(e);
 
                 if (interEditor != null) {
-                    interEditor.process(new Point(dx, dy));
+                    interEditor.processKeyboard(new Point(dx, dy));
                     refresh();
                 }
             }

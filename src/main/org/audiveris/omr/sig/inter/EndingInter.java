@@ -28,6 +28,7 @@ import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
@@ -343,6 +344,7 @@ public class EndingInter
     //------------//
     @Override
     public void deriveFrom (ShapeSymbol symbol,
+                            Sheet sheet,
                             MusicFont font,
                             Point dropLocation,
                             Alignment alignment)
@@ -560,7 +562,7 @@ public class EndingInter
             handles.add(selectedHandle = new Handle(midTop)
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
                     PointUtil.add(model.topLeft, vector);
                     PointUtil.add(midTop, vector);
@@ -585,7 +587,7 @@ public class EndingInter
                 handles.add(new InterEditor.Handle(midLeft)
                 {
                     @Override
-                    public boolean applyMove (Point vector)
+                    public boolean move (Point vector)
                     {
                         final double dx = vector.getX();
 
@@ -605,7 +607,7 @@ public class EndingInter
                 handles.add(new InterEditor.Handle(model.topLeft)
                 {
                     @Override
-                    public boolean applyMove (Point vector)
+                    public boolean move (Point vector)
                     {
                         final double dx = vector.getX();
 
@@ -626,7 +628,7 @@ public class EndingInter
                 handles.add(new InterEditor.Handle(midRight)
                 {
                     @Override
-                    public boolean applyMove (Point vector)
+                    public boolean move (Point vector)
                     {
                         final double dx = vector.getX();
 
@@ -646,7 +648,7 @@ public class EndingInter
                 handles.add(new InterEditor.Handle(model.topRight)
                 {
                     @Override
-                    public boolean applyMove (Point vector)
+                    public boolean move (Point vector)
                     {
                         final double dx = vector.getX();
 

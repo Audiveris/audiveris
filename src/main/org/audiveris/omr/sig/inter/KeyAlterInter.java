@@ -163,7 +163,7 @@ public class KeyAlterInter
             handles.add(selectedHandle = new Handle(alter.getCenter())
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
                     final double dx = vector.getX();
 

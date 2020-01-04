@@ -31,6 +31,7 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.ui.InterDnd;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.UITask;
@@ -107,11 +108,13 @@ public interface Inter
      * Derive inter geometry from the provided symbol, font and current drop location.
      *
      * @param symbol       the dropped symbol
+     * @param sheet        containing sheet
      * @param font         properly sized font
      * @param dropLocation (input/output) current drag/drop location
      * @param alignment    relative position of provided location WRT symbol
      */
     void deriveFrom (ShapeSymbol symbol,
+                     Sheet sheet,
                      MusicFont font,
                      Point dropLocation,
                      Alignment alignment);
@@ -200,6 +203,16 @@ public interface Inter
      * @return informations for a tip
      */
     String getDetails ();
+
+    /**
+     * Report a suitable InterDnd, to handle drag and drop of this inter.
+     *
+     * @param sheet  containing sheet
+     * @param symbol the originating symbol
+     * @return suitable DnD for this inter
+     */
+    InterDnd getDnd (Sheet sheet,
+                     ShapeSymbol symbol);
 
     /**
      * Report whether the inter can be manually edited.
@@ -487,6 +500,14 @@ public interface Inter
      * @return the sequence of UI tasks
      */
     List<? extends UITask> preAdd (WrappedBoolean cancel);
+
+    /**
+     * Prepare the manual edition of this inter.
+     *
+     * @param editor the current editor on this inter
+     * @return the sequence of additional UI tasks
+     */
+    List<? extends UITask> preEdit (InterEditor editor);
 
     /**
      * Prepare the manual removal of this inter.

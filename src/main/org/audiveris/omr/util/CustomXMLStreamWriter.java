@@ -524,7 +524,7 @@ public class CustomXMLStreamWriter
     /**
      * We finish the saving of current element if any, by flushing the saved items.
      *
-     * @throws XMLStreamException
+     * @throws XMLStreamException if anything goes wrong
      */
     protected void flushItems ()
             throws XMLStreamException
@@ -552,7 +552,7 @@ public class CustomXMLStreamWriter
     /**
      * Insert a new line, followed by proper level of indentation.
      *
-     * @throws XMLStreamException
+     * @throws XMLStreamException if anything goes wrong
      */
     protected void doIndent ()
             throws XMLStreamException
@@ -572,7 +572,7 @@ public class CustomXMLStreamWriter
     /**
      * Indentation before comment. Always indent.
      *
-     * @throws XMLStreamException
+     * @throws XMLStreamException if anything goes wrong
      */
     protected void indentComment ()
             throws XMLStreamException
@@ -588,7 +588,7 @@ public class CustomXMLStreamWriter
     /**
      * Indentation before end tag. Indent except on first close.
      *
-     * @throws XMLStreamException
+     * @throws XMLStreamException if anything goes wrong
      */
     protected void indentEnd ()
             throws XMLStreamException
@@ -613,7 +613,7 @@ public class CustomXMLStreamWriter
      * @param localName the local tag name.
      *                  It can be used by an overriding implementation to decide to include
      *                  on-the-fly any material such as a specific comment.
-     * @throws XMLStreamException
+     * @throws XMLStreamException if anything goes wrong
      */
     protected void indentStart (final String localName)
             throws XMLStreamException
@@ -629,11 +629,11 @@ public class CustomXMLStreamWriter
     // Item //
     //------//
     /**
-     * Class meant to save the processing of an item (such as attribute) related to the
-     * current element.
+     * Interface meant to save the processing of an item (such as attribute) related to
+     * the current element.
      */
-    protected abstract static class Item
-            implements Callable<Void>
+    protected static interface Item
+            extends Callable<Void>
     {
     }
 }

@@ -370,11 +370,8 @@ public class InterController
             @Override
             protected void build ()
             {
-                Inter inter = editor.getInter();
-                SystemInfo system = inter.getSig().getSystem();
-                Collection<Link> links = inter.searchLinks(system);
-                Collection<Link> unlinks = inter.searchUnlinks(system, links);
-                seq.add(new EditionTask(editor, links, unlinks));
+                final Inter inter = editor.getInter();
+                seq.addAll(inter.preEdit(editor));
             }
         }.execute();
     }
@@ -1570,7 +1567,7 @@ public class InterController
                 sheet.getStub().setModified(true);
             }
 
-            // Re-process impacted steps
+            // Re-processKeyboard impacted steps
             final Step latestStep = sheet.getStub().getLatestStep();
             final Step firstStep = firstImpactedStep();
             logger.debug("firstStep: {}", firstStep);

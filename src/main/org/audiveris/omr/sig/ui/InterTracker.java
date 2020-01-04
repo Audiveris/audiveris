@@ -37,10 +37,10 @@ import java.awt.Stroke;
 import java.util.Collection;
 
 /**
- * Class {@code InterTracker} paints a moving Inter together with decorations dynamically
- * evaluated, such as its support relations or intermediate ledgers for note heads.
+ * Class {@code InterTracker} paints a moving Inter together with attachments and
+ * decorations dynamically evaluated (support relations, intermediate ledgers, etc).
  * <p>
- * It is used in Dnd operation and in inter edition.
+ * It is used by {@link InterDnd} and by {@link InterEditor}.
  *
  * @author Hervé Bitteur
  */
@@ -55,7 +55,7 @@ public class InterTracker
     /** The containing sheet. */
     protected final Sheet sheet;
 
-    /** The containing system. */
+    /** The containing system, if any. */
     protected SystemInfo system;
 
     /**
@@ -71,19 +71,25 @@ public class InterTracker
         this.sheet = sheet;
     }
 
-    public Sheet getSheet ()
-    {
-        return sheet;
-    }
-
     public Inter getInter ()
     {
         return inter;
     }
 
+    public Sheet getSheet ()
+    {
+        return sheet;
+    }
+
     //-----------//
     // setSystem //
     //-----------//
+    /**
+     * Assign the current containing system.
+     * A non-null system allows to search for supporting links, etc.
+     *
+     * @param system the new containing system
+     */
     public void setSystem (SystemInfo system)
     {
         this.system = system;
@@ -93,19 +99,16 @@ public class InterTracker
     // render //
     //--------//
     /**
-     * Render the inter with its decorations.
+     * Render the inter with its attachments and decorations.
      *
-     * @param g           graphics context
-     * @param renderInter true for rendering inter
+     * @param g graphics context
      */
-    public void render (Graphics2D g,
-                        boolean renderInter)
+    public void render (Graphics2D g)
     {
         final SelectionPainter painter = new SelectionPainter(sheet, g);
 
-        if (renderInter) {
-            painter.render(inter); // Inter
-        }
+        // Inter itself
+        painter.render(inter);
 
         // Inter attachments
         Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);

@@ -49,7 +49,7 @@ public class DefaultEditor
         handles.add(selectedHandle = new Handle(inter.getCenter())
         {
             @Override
-            public boolean applyMove (Point vector)
+            public boolean move (Point vector)
             {
                 // Data
                 latestBounds.x += vector.x;

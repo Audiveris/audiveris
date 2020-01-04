@@ -258,12 +258,13 @@ public class HeadInter
     //------------//
     @Override
     public void deriveFrom (ShapeSymbol symbol,
+                            Sheet sheet,
                             MusicFont font,
                             Point dropLocation,
                             Alignment alignment)
     {
         // Needed to get head bounds
-        super.deriveFrom(symbol, font, dropLocation, alignment);
+        super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
 
         // For a note head, we snap to stems for x & lines/ledgers for y
         if (staff != null) {
@@ -282,7 +283,7 @@ public class HeadInter
             }
 
             if (modified) {
-                super.deriveFrom(symbol, font, dropLocation, alignment);
+                super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
             }
         }
     }
@@ -746,11 +747,11 @@ public class HeadInter
     {
         final List<UITask> tasks = new ArrayList<>();
         final SystemInfo system = staff.getSystem();
-        final SIGraph sig = system.getSig();
+        final SIGraph theSig = system.getSig();
 
         // Include standard addition task for this head
         final Collection<Link> links = searchLinks(staff.getSystem());
-        tasks.add(new AdditionTask(sig, this, getBounds(), links));
+        tasks.add(new AdditionTask(theSig, this, getBounds(), links));
 
         // If we link head to a stem, create/update the related head chord
         boolean stemFound = false;
@@ -766,7 +767,7 @@ public class HeadInter
                     headChord = new HeadChordInter(-1);
                     tasks.add(
                             new AdditionTask(
-                                    sig, headChord, stem.getBounds(),
+                                    theSig, headChord, stem.getBounds(),
                                     Arrays.asList(new Link(stem, new ChordStemRelation(), true))));
                 } else {
                     if (stemChords.size() > 1) {
@@ -777,7 +778,7 @@ public class HeadInter
                 }
 
                 // Declare head part of head-chord
-                tasks.add(new LinkTask(sig, headChord, this, new Containment()));
+                tasks.add(new LinkTask(theSig, headChord, this, new Containment()));
                 stemFound = true;
 
                 break;
@@ -787,16 +788,26 @@ public class HeadInter
         if (!stemFound) {
             // Head without stem
             HeadChordInter headChord = new HeadChordInter(-1);
-            tasks.add(new AdditionTask(sig, headChord, getBounds(),
+            tasks.add(new AdditionTask(theSig, headChord, getBounds(),
                                        Arrays.asList(new Link(this, new Containment(), true))));
         }
 
         // Addition of needed ledgers
-        for (Line2D line : getNeededLedgers()) {
-            LedgerInter ledger = new LedgerInter(line, LedgerInter.DEFAULT_THICKNESS, 1);
-            ledger.setManual(true);
-            tasks.add(new AdditionTask(sig, ledger, ledger.getBounds(), Collections.EMPTY_SET));
-        }
+        tasks.addAll(neededLedgerAdditions());
+
+        return tasks;
+    }
+
+    //---------//
+    // preEdit //
+    //---------//
+    @Override
+    public List<? extends UITask> preEdit (InterEditor editor)
+    {
+        final List<UITask> tasks = new ArrayList<>(super.preEdit(editor));
+
+        // Addition of needed ledgers
+        tasks.addAll(neededLedgerAdditions());
 
         return tasks;
     }
@@ -1050,8 +1061,10 @@ public class HeadInter
     /**
      * Report the theoretical abscissa of a steam-head center when correctly aligned with
      * a suitable stem.
+     * <p>
+     * Required properties: staff, shape, bounds
      *
-     * @return the proper location
+     * @return the proper abscissa if any, null otherwise
      */
     private Double getSnapAbscissa ()
     {
@@ -1085,8 +1098,10 @@ public class HeadInter
     /**
      * Report the theoretical ordinate of a head center when correctly aligned with staff
      * lines and ledgers.
+     * <p>
+     * Required properties: staff, bounds
      *
-     * @return the proper location
+     * @return the proper ordinate if any, null otherwise
      */
     private Double getSnapOrdinate ()
     {
@@ -1101,6 +1116,28 @@ public class HeadInter
         double y = staff.pitchToOrdinate(center.x, roundedPitch);
 
         return y;
+    }
+
+    //-----------------------//
+    // neededLedgerAdditions //
+    //-----------------------//
+    /**
+     * Report UI tasks to add needed ledgers.
+     *
+     * @return the list of ledger additions, perhaps empty
+     */
+    private List<UITask> neededLedgerAdditions ()
+    {
+        final List<UITask> tasks = new ArrayList<>();
+        final SIGraph theSig = (sig != null) ? sig : staff.getSystem().getSig();
+
+        for (Line2D line : getNeededLedgers()) {
+            LedgerInter ledger = new LedgerInter(line, LedgerInter.DEFAULT_THICKNESS, 1);
+            ledger.setManual(true);
+            tasks.add(new AdditionTask(theSig, ledger, ledger.getBounds(), Collections.EMPTY_SET));
+        }
+
+        return tasks;
     }
 
     //--------//
@@ -1201,7 +1238,7 @@ public class HeadInter
             handles.add(selectedHandle = new InterEditor.Handle(head.getCenter())
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
                     final int dx = vector.x;
                     final int dy = vector.y;
@@ -1262,10 +1299,9 @@ public class HeadInter
         }
 
         @Override
-        public void render (Graphics2D g,
-                            boolean renderInter)
+        public void render (Graphics2D g)
         {
-            super.render(g, renderInter);
+            super.render(g);
 
             // Add needed ledgers
             final HeadInter head = (HeadInter) inter;
