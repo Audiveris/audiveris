@@ -45,6 +45,10 @@ import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
 /**
  * Class {@code AbstractFlagInter} is the basis for (standard) FlagInter as well as
@@ -92,6 +96,30 @@ public abstract class AbstractFlagInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public void deriveFrom (ShapeSymbol symbol,
+                            Sheet sheet,
+                            MusicFont font,
+                            Point dropLocation,
+                            Alignment alignment)
+    {
+        // Needed to get flag  bounds
+        super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+
+        // For a flag we snap to stem on x
+        if (staff != null) {
+            final Double x = getSnapAbscissa();
+
+            if (x != null) {
+                dropLocation.x = (int) Math.rint(x);
+                super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+            }
+        }
     }
 
     //-----------//
@@ -155,6 +183,38 @@ public abstract class AbstractFlagInter
                                            Collection<Link> links)
     {
         return searchObsoletelinks(links, FlagStemRelation.class);
+    }
+
+    //-----------------//
+    // getSnapAbscissa //
+    //-----------------//
+    /**
+     * Report the theoretical abscissa of a stem-flag center when correctly aligned with
+     * a suitable stem.
+     * <p>
+     * Required properties: staff, shape, bounds
+     *
+     * @return the proper abscissa if any, null otherwise
+     */
+    private Double getSnapAbscissa ()
+    {
+        if (staff == null) {
+            return null;
+        }
+
+        // Stems nearby?
+        final Collection<Link> links = searchLinks(staff.getSystem());
+
+        for (Link link : links) {
+            // We can have at most one link, and on left side of flag
+            StemInter stem = (StemInter) link.partner;
+            double stemX = LineUtil.xAtY(stem.getMedian(), getCenter().y);
+            double halfWidth = getBounds().width / 2.0;
+
+            return stemX + halfWidth;
+        }
+
+        return null;
     }
 
     //------------//
