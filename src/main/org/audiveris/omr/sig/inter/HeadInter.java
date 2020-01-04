@@ -1059,7 +1059,7 @@ public class HeadInter
     // getSnapAbscissa //
     //-----------------//
     /**
-     * Report the theoretical abscissa of a steam-head center when correctly aligned with
+     * Report the theoretical abscissa of a stem-head center when correctly aligned with
      * a suitable stem.
      * <p>
      * Required properties: staff, shape, bounds
