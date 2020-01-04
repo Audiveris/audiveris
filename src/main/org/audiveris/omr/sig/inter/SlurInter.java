@@ -30,6 +30,7 @@ import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.Versions;
@@ -466,6 +467,7 @@ public class SlurInter
     //------------//
     @Override
     public void deriveFrom (ShapeSymbol symbol,
+                            Sheet sheet,
                             MusicFont font,
                             Point dropLocation,
                             Alignment alignment)
@@ -1135,7 +1137,7 @@ public class SlurInter
             handles.add(new Handle(model.p1)
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
                     PointUtil.add(model.p1, vector);
                     PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
@@ -1150,7 +1152,7 @@ public class SlurInter
             handles.add(selectedHandle = new Handle(middle)
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
                     for (Handle handle : handles) {
                         PointUtil.add(handle.getHandleCenter(), vector);
@@ -1163,7 +1165,7 @@ public class SlurInter
             handles.add(new Handle(model.p2)
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
                     PointUtil.add(model.p2, vector);
                     PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
@@ -1178,7 +1180,7 @@ public class SlurInter
             handles.add(new Handle(model.c2)
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
                     PointUtil.add(model.c2, vector);
                     PointUtil.add(midC, vector.x / 2.0, vector.y / 2.0);
@@ -1190,7 +1192,7 @@ public class SlurInter
             handles.add(new Handle(midC)
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
                     PointUtil.add(midC, vector);
                     PointUtil.add(model.c1, vector);
@@ -1203,7 +1205,7 @@ public class SlurInter
             handles.add(new Handle(model.c1)
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
                     PointUtil.add(model.c1, vector);
                     PointUtil.add(midC, vector.x / 2.0, vector.y / 2.0);
@@ -1238,7 +1240,7 @@ public class SlurInter
                 }
             }
 
-            // Second, draw handles themselves
+            // Second, draw inter and handles themselves
             super.render(g);
         }
 

@@ -27,6 +27,7 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.GradeImpacts;
@@ -180,6 +181,7 @@ public class WedgeInter
     //------------//
     @Override
     public void deriveFrom (ShapeSymbol symbol,
+                            Sheet sheet,
                             MusicFont font,
                             Point dropLocation,
                             Alignment alignment)
@@ -452,7 +454,7 @@ public class WedgeInter
             handles.add(selectedHandle = new Handle(middle)
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
                     // Data
                     model.translate(vector.x, vector.y);
@@ -470,7 +472,7 @@ public class WedgeInter
             handles.add(new InterEditor.Handle(mid1)
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
                     final int dx = vector.x;
 
@@ -495,7 +497,7 @@ public class WedgeInter
             handles.add(new InterEditor.Handle(mid2)
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
                     final int dx = vector.x;
 
@@ -520,7 +522,7 @@ public class WedgeInter
             handles.add(new InterEditor.Handle(below)
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
                     final int dy = vector.y;
 

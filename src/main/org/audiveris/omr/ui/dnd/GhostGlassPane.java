@@ -48,12 +48,12 @@ public class GhostGlassPane
     private static final Logger logger = LoggerFactory.getLogger(GhostGlassPane.class);
 
     /** Composite to be used over a droppable target. */
-    private static final AlphaComposite targetComposite = AlphaComposite.getInstance(
+    protected static final AlphaComposite targetComposite = AlphaComposite.getInstance(
             AlphaComposite.SRC_OVER,
             0.5f);
 
     /** Composite to be used over a non-droppable target. */
-    private static final AlphaComposite nonTargetComposite = AlphaComposite.getInstance(
+    protected static final AlphaComposite nonTargetComposite = AlphaComposite.getInstance(
             AlphaComposite.SRC_OVER,
             0.25f);
 

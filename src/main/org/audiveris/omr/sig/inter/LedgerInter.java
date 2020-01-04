@@ -29,6 +29,7 @@ import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.ui.InterEditor;
@@ -301,6 +302,7 @@ public class LedgerInter
     //------------//
     @Override
     public void deriveFrom (ShapeSymbol symbol,
+                            Sheet sheet,
                             MusicFont font,
                             Point dropLocation,
                             Alignment alignment)
@@ -479,8 +481,6 @@ public class LedgerInter
 
         private final Model model;
 
-        private final Point2D middle;
-
         public Editor (LedgerInter ledger)
         {
             super(ledger);
@@ -488,13 +488,13 @@ public class LedgerInter
             originalModel = new Model(ledger.median);
             model = new Model(ledger.median);
 
-            middle = PointUtil.middle(model.p1, model.p2);
+            final Point2D middle = PointUtil.middle(model.p1, model.p2);
 
             // Move left, only horizontally
             handles.add(new Handle(model.p1)
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
                     final int dx = vector.x;
 
@@ -513,7 +513,7 @@ public class LedgerInter
             handles.add(selectedHandle = new Handle(middle)
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
                     final int dy = vector.y;
 
@@ -533,7 +533,7 @@ public class LedgerInter
             handles.add(new Handle(model.p2)
             {
                 @Override
-                public boolean applyMove (Point vector)
+                public boolean move (Point vector)
                 {
                     final int dx = vector.x;
 

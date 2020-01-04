@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                     D n d O p e r a t i o n                                    //
+//                                         I n t e r D n d                                        //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -22,6 +22,8 @@
 package org.audiveris.omr.sig.ui;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.PointUtil;
@@ -36,25 +38,34 @@ import org.audiveris.omr.ui.OmrGlassPane;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.view.Zoom;
+import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.util.List;
 
 /**
- * Class {@code DndOperation} handles one DnD operation with a moving inter.
+ * Class {@code InterDnd} handles one DnD operation with a moving inter (ghost).
+ * <p>
+ * The dragged inter originates from the ShapeBoard, it can move between systems
+ * (as opposed to an {@link InterEditor}) until the inter is finally dropped into a system
+ * or abandoned outside the sheet view.
+ * <p>
+ * It cannot shift view limits.
+ *
+ * @see InterEditor
  *
  * @author Hervé Bitteur
  */
-public class DndOperation
+public class InterDnd
 {
 
-    private static final Logger logger = LoggerFactory.getLogger(DndOperation.class);
+    private static final Logger logger = LoggerFactory.getLogger(InterDnd.class);
 
     /** Related sheet. */
     private final Sheet sheet;
@@ -68,8 +79,8 @@ public class DndOperation
     /** Pay-load: the Inter instance being "moved". */
     private final Inter ghost;
 
-    /** Ghost tracker. */
-    private final InterTracker ghostTracker;
+    /** Dedicated ghost tracker. */
+    private final InterTracker tracker;
 
     /** Non-decorated symbol to determine inter geometry. */
     private final ShapeSymbol symbol;
@@ -83,27 +94,30 @@ public class DndOperation
     /** Current system. */
     private SystemInfo system;
 
+    /** Current staff reference point, if any. */
+    private Point staffReference;
+
     /**
-     * Creates a new {@code DndOperation} object.
+     * Creates a new {@code InterDnd} object.
      *
-     * @param sheet  the related sheet
-     * @param zoom   zoom applied on display
      * @param ghost  the inter being dragged
+     * @param sheet  the containing sheet
      * @param symbol the originating symbol
      */
-    public DndOperation (Sheet sheet,
-                         Zoom zoom,
-                         Inter ghost,
-                         ShapeSymbol symbol)
+    public InterDnd (Inter ghost,
+                     Sheet sheet,
+                     ShapeSymbol symbol)
     {
         this.sheet = sheet;
-        this.zoomRatio = zoom.getRatio();
         this.ghost = ghost;
         this.symbol = symbol;
 
+        final ScrollView scrollView = sheet.getStub().getAssembly().getSelectedView();
+        zoomRatio = scrollView.getView().getZoom().getRatio();
+
         curveStroke = buildCurveStroke();
 
-        ghostTracker = ghost.getTracker(sheet);
+        tracker = ghost.getTracker(sheet);
     }
 
     //------//
@@ -171,28 +185,37 @@ public class DndOperation
         return ghost;
     }
 
-    //-----------------//
-    // getGhostTracker //
-    //-----------------//
-    public InterTracker getGhostTracker ()
+    //------------//
+    // getTracker //
+    //------------//
+    public InterTracker getTracker ()
     {
-        return ghostTracker;
+        return tracker;
     }
 
-    //-------------------//
-    // getStaffReference //
-    //-------------------//
+    //--------------//
+    // hasReference //
+    //--------------//
+    public boolean hasReference ()
+    {
+        return staffReference != null;
+    }
+
+    //------//
+    // move //
+    //------//
     /**
-     * Report the staff reference point for the moving inter location.
+     * Move inter, compute the staff reference point if any and perhaps resize the inter.
      * <p>
      * We use a "sticky staff" approach to visually indicate the current related staff.
      *
      * @param location (input/output) current inter location, which can be modified to locate the
      *                 inter differently (typically for a snap to grid)
-     * @return the location of reference entity
      */
-    public Point getStaffReference (Point location)
+    public void move (Point location)
     {
+        staffReference = null;
+
         Staff closestStaff = sheet.getStaffManager().getClosestStaff(location);
 
         if (closestStaff == null) {
@@ -221,25 +244,22 @@ public class DndOperation
         }
 
         ghost.setStaff(staff);
-        ghostTracker.setSystem(system);
+        tracker.setSystem(system);
 
-        if (staff == null) {
-            return null;
+        if (staff != null) {
+            updateGhost(location); // This may modify location slightly
+
+            // Retrieve staff reference
+            LineInfo line = staff.getLines().get(2); // Middle staff line
+
+            if (location.x < line.getEndPoint(HorizontalSide.LEFT).getX()) {
+                staffReference = PointUtil.rounded(line.getEndPoint(HorizontalSide.LEFT));
+            } else if (location.x > line.getEndPoint(HorizontalSide.RIGHT).getX()) {
+                staffReference = PointUtil.rounded(line.getEndPoint(HorizontalSide.RIGHT));
+            } else {
+                staffReference = new Point(location.x, line.yAt(location.x));
+            }
         }
-
-        updateGhost(location); // This may modify location slightly
-
-        LineInfo line = staff.getLines().get(2); // Middle staff line
-
-        if (location.x < line.getEndPoint(HorizontalSide.LEFT).getX()) {
-            return PointUtil.rounded(line.getEndPoint(HorizontalSide.LEFT));
-        }
-
-        if (location.x > line.getEndPoint(HorizontalSide.RIGHT).getX()) {
-            return PointUtil.rounded(line.getEndPoint(HorizontalSide.RIGHT));
-        }
-
-        return new Point(location.x, line.yAt(location.x));
     }
 
     //----------//
@@ -261,6 +281,42 @@ public class DndOperation
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //----------------//
+    // getSceneBounds //
+    //----------------//
+    /**
+     * The scene is composed of inter image plus its decorations if any
+     * (staff reference, support links, ledgers).
+     *
+     * @return bounding box of inter + decorations if any + reference point
+     */
+    public Rectangle getSceneBounds ()
+    {
+        if (staffReference == null) {
+            return null;
+        }
+
+        Rectangle box = tracker.getSceneBounds();
+        box.add(staffReference);
+
+        return box;
+    }
+
+    //--------//
+    // render //
+    //--------//
+    public void render (Graphics2D g)
+    {
+        if (staffReference != null) {
+            // Draw line to staff reference if any
+            g.setColor(Color.RED);
+            Point center = ghost.getCenter();
+            g.drawLine(center.x, center.y, staffReference.x, staffReference.y);
+        }
+
+        tracker.render(g);
     }
 
     //------------------//
@@ -296,7 +352,7 @@ public class DndOperation
         final MusicFont font = (ShapeSet.Heads.contains(ghost.getShape()))
                 ? MusicFont.getHeadFont(sheet.getScale(), staffInterline)
                 : MusicFont.getBaseFont(staffInterline);
-        ghost.deriveFrom(symbol, font, location, Alignment.AREA_CENTER);
+        ghost.deriveFrom(symbol, sheet, font, location, Alignment.AREA_CENTER);
     }
 
     //-------------//

@@ -22,6 +22,7 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sig.inter.EndingInter;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 
@@ -75,6 +76,7 @@ public class EndingSymbol
     {
         MyParams p = getParams(font);
         Point2D loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        loc = PointUtil.subtraction(loc, p.offset);
         p.model.translate(loc.getX(), loc.getY());
 
         return p.model;
@@ -117,6 +119,8 @@ public class EndingSymbol
             p.model.bottomRight = new Point2D.Double(width - 1, height);
         }
 
+        p.offset = new Point2D.Double(0, -height / 2);
+
         return p;
     }
 
@@ -149,7 +153,7 @@ public class EndingSymbol
             extends BasicSymbol.Params
     {
 
-        // offset: not used
+        // offset: used
         // layout: not used
         // rect:   global image
         //

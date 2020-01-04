@@ -25,7 +25,9 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.BracketSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -44,7 +46,6 @@ import java.awt.geom.Rectangle2D;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omr.sig.ui.InterEditor;
 
 /**
  * Class {@code BracketInter} represents the portion of a bracket limited to a staff.
@@ -152,6 +153,7 @@ public class BracketInter
     //------------//
     @Override
     public void deriveFrom (ShapeSymbol symbol,
+                            Sheet sheet,
                             MusicFont font,
                             Point dropLocation,
                             Alignment alignment)

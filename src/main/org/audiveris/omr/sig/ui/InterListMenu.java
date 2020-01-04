@@ -177,18 +177,20 @@ public class InterListMenu
                     insertDeletionItem(system, sysInters);
 
                     for (Inter inter : sysInters) {
-                        // A menu (or simple item) dedicated to this inter instance
-                        final JMenuItem item;
-                        final Set<Relation> relations = inter.getSig().edgesOf(inter);
+                        if (!inter.isRemoved()) {
+                            // A menu (or simple item) dedicated to this inter instance
+                            final JMenuItem item;
+                            final Set<Relation> relations = inter.getSig().edgesOf(inter);
 
-                        if (!relations.isEmpty()) {
-                            item = new InterMenu(inter, relations).getMenu();
-                        } else {
-                            item = new JMenuItem(new InterAction(inter, null));
+                            if (!relations.isEmpty()) {
+                                item = new InterMenu(inter, relations).getMenu();
+                            } else {
+                                item = new JMenuItem(new InterAction(inter, null));
+                            }
+
+                            item.addMouseListener(interListener);
+                            add(item);
                         }
-
-                        item.addMouseListener(interListener);
-                        add(item);
                     }
                 }
 

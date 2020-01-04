@@ -134,7 +134,7 @@ public class ShapeBoard
     private final Sheet sheet;
 
     /** On-going DnD operation, if any. */
-    private DndOperation dndOperation;
+    private InterDnd dnd;
 
     /**
      * Called-back when a set is selected: the panel of shape sets is "replaced" by
@@ -707,7 +707,7 @@ public class ShapeBoard
             } else {
                 action = Shape.NON_DRAGGABLE;
                 image = Shape.NON_DRAGGABLE.getSymbol().getIconImage();
-                ((OmrGlassPane) glassPane).setStaffReference(null);
+                ((OmrGlassPane) glassPane).setInterDnd(null);
             }
 
             super.mousePressed(e);
@@ -720,8 +720,8 @@ public class ShapeBoard
             super.mouseReleased(e);
 
             OmrGlassPane glass = (OmrGlassPane) glassPane;
-            glass.setStaffReference(null);
-            dndOperation = null;
+            glass.setInterDnd(null);
+            dnd = null;
         }
     }
 
@@ -746,7 +746,7 @@ public class ShapeBoard
         {
             Shape shape = e.getAction();
 
-            if (dndOperation != null) {
+            if (dnd != null) {
                 if (shape != Shape.NON_DRAGGABLE) {
                     ScreenPoint screenPoint = e.getDropLocation();
 
@@ -758,10 +758,10 @@ public class ShapeBoard
                         Point localPt = screenPoint.getLocalPoint(view);
                         view.getZoom().unscale(localPt);
 
-                        dndOperation.drop(localPt);
+                        dnd.drop(localPt);
 
                         // Update history
-                        addToHistory(dndOperation.getGhost().getShape());
+                        addToHistory(dnd.getGhost().getShape());
                     }
                 }
             }
@@ -916,77 +916,75 @@ public class ShapeBoard
         @Override
         public void mouseDragged (MouseEvent e)
         {
-            ScreenPoint screenPoint = new ScreenPoint(e.getXOnScreen(), e.getYOnScreen());
+            try {
+                ScreenPoint screenPoint = new ScreenPoint(e.getXOnScreen(), e.getYOnScreen());
 
-            if (screenPoint.equals(prevScreenPoint)) {
-                return;
-            }
+                if (screenPoint.equals(prevScreenPoint)) {
+                    return;
+                }
 
-            prevScreenPoint = screenPoint;
+                prevScreenPoint = screenPoint;
 
-            final ShapeButton button = (ShapeButton) e.getSource();
-            final Shape shape = button.getShape();
-            final OmrGlassPane glass = (OmrGlassPane) glassPane;
+                final ShapeButton button = (ShapeButton) e.getSource();
+                final Shape shape = button.getShape();
+                final OmrGlassPane glass = (OmrGlassPane) glassPane;
 
-            // The (zoomed) sheet view
-            ScrollView scrollView = sheet.getStub().getAssembly().getSelectedView();
-            Component component = scrollView.getComponent().getViewport();
+                // The (zoomed) sheet view
+                ScrollView scrollView = sheet.getStub().getAssembly().getSelectedView();
+                Component component = scrollView.getComponent().getViewport();
 
-            if (screenPoint.isInComponent(component)) {
-                final RubberPanel view = scrollView.getView();
-                final Zoom zoom = view.getZoom();
-                final Point sheetPt = zoom.unscaled(screenPoint.getLocalPoint(view));
-                glass.setOverTarget(true);
+                if (screenPoint.isInComponent(component)) {
+                    // We are over sheet view (our target)
+                    final RubberPanel view = scrollView.getView();
+                    final Zoom zoom = view.getZoom();
+                    final Point sheetPt = zoom.unscaled(screenPoint.getLocalPoint(view));
+                    glass.setOverTarget(true);
 
-                // Moving into this component?
-                if (component != prevComponent.get()) {
-                    // Set glass transform to fit current sheet view status
-                    glass.setTargetTransform(view.getTransformToGlass(glass));
+                    // Moving into this component?
+                    if (component != prevComponent.get()) {
+                        // Set glass transform to fit current sheet view status
+                        glass.setTargetTransform(view.getTransformToGlass(glass));
 
-                    if (shape.isDraggable()) {
-                        if (dndOperation == null) {
-                            // Set payload
-                            dndOperation = new DndOperation(
-                                    sheet,
-                                    zoom,
-                                    InterFactory.createManual(shape, sheet),
-                                    button.symbol);
+                        if (shape.isDraggable()) {
+                            if (dnd == null) {
+                                // Set payload
+                                dnd = new InterDnd(
+                                        InterFactory.createManual(shape, sheet),
+                                        sheet,
+                                        button.symbol);
+                            }
+
+                            dnd.enteringTarget();
+                            glass.setInterDnd(dnd);
+                        } else {
+                            glass.setImage(getNonDraggableImage(zoom));
+                            glass.setInterDnd(null);
                         }
 
-                        dndOperation.enteringTarget();
-                        glass.setGhostTracker(dndOperation.getGhostTracker());
-                    } else {
-                        glass.setImage(getNonDraggableImage(zoom));
-                        glass.setStaffReference(null);
-                        glass.setGhostTracker(null);
+                        prevComponent = new WeakReference<>(component);
                     }
 
-                    prevComponent = new WeakReference<>(component);
+                    if (dnd != null) {
+                        dnd.move(sheetPt); // This may slightly modify sheetPt
+
+                        // Recompute screenPoint from (perhaps modified) sheetPt
+                        Point pt = new Point(zoom.scaled(sheetPt));
+                        SwingUtilities.convertPointToScreen(pt, view);
+                        screenPoint = new ScreenPoint(pt.x, pt.y);
+                    }
+                } else if (prevComponent.get() != null) {
+                    // No longer on a droppable target, reuse initial image & size
+                    glass.setOverTarget(false);
+                    glass.setImage(dropAdapter.getImage());
+                    glass.setInterDnd(null);
+                    prevScreenPoint = null;
+                    reset();
                 }
 
-                if (shape.isDraggable()) {
-                    // Update staff reference point
-                    Point sheetRef = dndOperation.getStaffReference(sheetPt);
-                    Point glassRef = (sheetRef == null) ? null
-                            : SwingUtilities.convertPoint(view, zoom.scaled(sheetRef), glass);
-                    glass.setStaffReference(glassRef);
-
-                    // Recompute screenPoint from modified sheetPt
-                    Point pt = new Point(zoom.scaled(sheetPt));
-                    SwingUtilities.convertPointToScreen(pt, view);
-                    screenPoint = new ScreenPoint(pt.x, pt.y);
-                }
-            } else if (prevComponent.get() != null) {
-                // No longer on a droppable target, reuse initial image & size
-                glass.setOverTarget(false);
-                glass.setImage(dropAdapter.getImage());
-                glass.setStaffReference(null);
-                glass.setGhostTracker(null);
-                prevScreenPoint = null;
-                reset();
+                glass.setScreenPoint(screenPoint); // This triggers a repaint of glassPane
+            } catch (Exception ex) {
+                logger.warn("mouseDragged error: {}", ex.toString(), ex);
             }
-
-            glass.setScreenPoint(screenPoint); // This triggers a repaint of glassPane
         }
     }
 

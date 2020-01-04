@@ -21,13 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.ui;
 
-import org.audiveris.omr.sig.ui.InterTracker;
+import org.audiveris.omr.sheet.curve.Curves;
+import org.audiveris.omr.sig.ui.InterDnd;
 import org.audiveris.omr.ui.dnd.GhostGlassPane;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -35,7 +35,9 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 
 /**
- * Class {@code OmrGlassPane} is a GhostGlassPane to draw draggable shape plus
+ * Class {@code OmrGlassPane} is a GhostGlassPane to draw draggable shape.
+ * <p>
+ * Whenever possible over the sheet target, we draws the ghost inter, plus staff reference plus
  * related decoration (such as links to some neighboring entities, or ledgers for heads).
  *
  * @author Hervé Bitteur
@@ -49,11 +51,8 @@ public class OmrGlassPane
     /** The transform to apply when painting on top of target (zoomed sheet view). */
     private AffineTransform targetTransform;
 
-    /** Current staff reference point (glass-based), if any. */
-    private Point staffReference;
-
-    /** Current ghost tracker, if any. */
-    private InterTracker ghostTracker;
+    /** Current inter Dnd operation, if any. */
+    private InterDnd interDnd;
 
     //----------------//
     // paintComponent //
@@ -67,24 +66,33 @@ public class OmrGlassPane
     @Override
     public void paintComponent (Graphics g)
     {
-        // Paint inter (the symbol image in fact)
-        super.paintComponent(g);
+        if ((draggedImage == null) || (localPoint == null)) {
+            return;
+        }
 
-        if ((staffReference != null) && overTarget) {
-            // Draw line to staff reference
-            g.setColor(Color.RED);
-            g.drawLine(localPoint.x, localPoint.y, staffReference.x, staffReference.y);
+        Graphics2D g2 = (Graphics2D) g;
 
-            if (ghostTracker != null) {
-                final Graphics2D g2 = (Graphics2D) g;
+        if (overTarget) {
+            // Use composition with display underneath
+            g2.setComposite(targetComposite);
+
+            if (interDnd == null || !interDnd.hasReference()) {
+                Rectangle rect = getImageBounds(localPoint);
+                g2.drawImage(draggedImage, null, rect.x, rect.y);
+            } else {
+                // Draw (w/ proper transform) staff reference, inter, decorations
                 final AffineTransform saveAT = g2.getTransform();
                 g2.transform(targetTransform);
 
-                // Draw inter decorations
-                ghostTracker.render(g2, false /* renderInter */);
+                interDnd.render(g2);
 
                 g2.setTransform(saveAT);
             }
+        } else {
+            g2.setComposite(nonTargetComposite);
+
+            Rectangle rect = getImageBounds(localPoint);
+            g2.drawImage(draggedImage, null, rect.x, rect.y);
         }
     }
 
@@ -101,48 +109,39 @@ public class OmrGlassPane
     @Override
     protected Rectangle getSceneBounds (Point center)
     {
+        // Use image bounds
         Rectangle rect = super.getSceneBounds(center);
 
-        if (staffReference != null && overTarget) {
-            rect.add(staffReference);
+        if (interDnd != null && overTarget) {
+            // Use inter decorations, etc (this depends on staff reference availability)
+            Rectangle box = interDnd.getSceneBounds();
 
-            if (ghostTracker != null) {
-                // Use inter decorations
-                Rectangle box = ghostTracker.getSceneBounds();
-
-                if (box != null) {
-                    rect.add(targetTransform.createTransformedShape(box).getBounds());
-                }
+            if (box != null) {
+                rect.add(targetTransform.createTransformedShape(box).getBounds());
             }
+        }
+
+        // To cope with curve thickness, not taken into account in inter bounds
+        if (targetTransform != null) {
+            double ratio = targetTransform.getScaleX();
+            int margin = (int) Math.ceil(ratio * Curves.DEFAULT_THICKNESS / 2.0);
+            rect.grow(margin, margin);
         }
 
         return rect;
     }
 
-    //-----------------//
-    // setGhostTracker //
-    //-----------------//
+    //-------------//
+    // setInterDnd //
+    //-------------//
     /**
-     * Activate inter tracking.
+     * Activate inter Dnd operation.
      *
-     * @param ghostTracker the inter-based ghostTracker, or null
+     * @param interDnd the inter-based Dnd operation, or null
      */
-    public void setGhostTracker (InterTracker ghostTracker)
+    public void setInterDnd (InterDnd interDnd)
     {
-        this.ghostTracker = ghostTracker;
-    }
-
-    //-------------------//
-    // setStaffReference //
-    //-------------------//
-    /**
-     * Set current staff reference point.
-     *
-     * @param staffReference the reference (glass-based) point to set
-     */
-    public void setStaffReference (Point staffReference)
-    {
-        this.staffReference = staffReference;
+        this.interDnd = interDnd;
     }
 
     //--------------------//
