@@ -143,8 +143,8 @@ public class Main
         if (!cli.isBatchMode()) {
             logger.debug("Running in interactive mode");
 
-            // Select proper font size
-            UIUtil.adjustDefaults();
+            // Select proper fonts names and sizes
+            UIUtil.adjustDefaultFonts();
 
             // Log all events to LogPane
             LogUtil.addGuiAppender();

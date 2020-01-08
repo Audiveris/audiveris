@@ -39,7 +39,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import static java.nio.file.StandardOpenOption.CREATE;
-import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -398,11 +399,11 @@ public abstract class Jaxb
             extends XmlAdapter<String, Double>
     {
 
-        private static final DecimalFormat decimal = new DecimalFormat();
+        private static final NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
 
         static {
-            decimal.setGroupingUsed(false);
-            decimal.setMaximumFractionDigits(1); // For a maximum of 1 decimal
+            nf.setGroupingUsed(false);
+            nf.setMaximumFractionDigits(1); // For a maximum of 1 decimal
         }
 
         @Override
@@ -413,7 +414,7 @@ public abstract class Jaxb
                 return null;
             }
 
-            return decimal.format(d);
+            return nf.format(d);
         }
 
         @Override
@@ -438,11 +439,11 @@ public abstract class Jaxb
             extends XmlAdapter<String, Double>
     {
 
-        private static final DecimalFormat decimal = new DecimalFormat();
+        private static final NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
 
         static {
-            decimal.setGroupingUsed(false);
-            decimal.setMaximumFractionDigits(3); // For a maximum of 3 decimals
+            nf.setGroupingUsed(false);
+            nf.setMaximumFractionDigits(3); // For a maximum of 3 decimals
         }
 
         @Override
@@ -453,7 +454,7 @@ public abstract class Jaxb
                 return null;
             }
 
-            return decimal.format(d);
+            return nf.format(d);
         }
 
         @Override
@@ -478,11 +479,11 @@ public abstract class Jaxb
             extends XmlAdapter<String, Double>
     {
 
-        private static final DecimalFormat decimal = new DecimalFormat();
+        private static final NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
 
         static {
-            decimal.setGroupingUsed(false);
-            decimal.setMaximumFractionDigits(5); // For a maximum of 5 decimals
+            nf.setGroupingUsed(false);
+            nf.setMaximumFractionDigits(5); // For a maximum of 5 decimals
         }
 
         @Override
@@ -493,7 +494,7 @@ public abstract class Jaxb
                 return null;
             }
 
-            return decimal.format(d);
+            return nf.format(d);
         }
 
         @Override

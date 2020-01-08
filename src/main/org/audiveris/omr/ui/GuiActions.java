@@ -35,12 +35,15 @@ import org.audiveris.omr.ui.symbol.SymbolRipper;
 import org.audiveris.omr.ui.util.CursorController;
 import org.audiveris.omr.ui.util.OmrFileFilter;
 import org.audiveris.omr.ui.util.UIUtil;
+import org.audiveris.omr.ui.util.WaitingTask;
 import org.audiveris.omr.ui.util.WebBrowser;
 import org.audiveris.omr.util.Memory;
 import org.audiveris.omr.util.VoidTask;
 
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.Task;
 
 import org.slf4j.Logger;
@@ -50,8 +53,6 @@ import java.awt.event.ActionEvent;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Class {@code GuiActions} gathers general actions triggered from the main GUI.
@@ -66,6 +67,9 @@ public class GuiActions
 
     private static final Logger logger = LoggerFactory.getLogger(GuiActions.class);
 
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(GuiActions.class);
+
     /** Should the errors window be displayed. */
     public static final String ERRORS_WINDOW_DISPLAYED = "errorsWindowDisplayed";
 
@@ -75,10 +79,10 @@ public class GuiActions
     /** Should the boards window be displayed. */
     public static final String BOARDS_WINDOW_DISPLAYED = "boardsWindowDisplayed";
 
-    /** Options UI */
+    /** Options UI. */
     private static Options options;
 
-    /** Create this action just once */
+    /** Create this action just once. */
     private static volatile AboutAction aboutAction;
 
     //---------------------//
@@ -90,22 +94,18 @@ public class GuiActions
      * @param e the event which triggered this action
      */
     @Action
-    public void browseGlobalSamples (ActionEvent e)
+    public Task browseGlobalSamples (ActionEvent e)
     {
-        CursorController.launchWithDelayedMessage(
-                "Launching global sample browser...",
-                new Runnable()
+        return new SampleBrowser.Waiter(resources.getString("launchingGlobalSampleBrowser"))
         {
             @Override
-            public void run ()
+            protected SampleBrowser doInBackground ()
+                    throws Exception
             {
-                try {
-                    SampleBrowser.getInstance().setVisible();
-                } catch (Throwable ex) {
-                    logger.warn("Could not launch samples verifier. " + ex, ex);
-                }
+                return SampleBrowser.getInstance();
             }
-        });
+
+        };
     }
 
     //--------------------//
@@ -117,7 +117,7 @@ public class GuiActions
      * @param e the event which triggered this action
      */
     @Action
-    public void browseLocalSamples (ActionEvent e)
+    public Task browseLocalSamples (ActionEvent e)
     {
         // Select local samples repository
         final String ext = SampleRepository.SAMPLES_FILE_NAME;
@@ -127,23 +127,19 @@ public class GuiActions
                 BookManager.getBaseFolder(),
                 new OmrFileFilter(ext, new String[]{ext}));
 
-        if (repoPath != null) {
-            CursorController.launchWithDelayedMessage(
-                    "Launching local sample browser...",
-                    new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    try {
-                        new SampleBrowser(SampleRepository.getInstance(repoPath, true))
-                                .setVisible();
-                    } catch (Throwable ex) {
-                        logger.warn("Could not launch samples browser. " + ex, ex);
-                    }
-                }
-            });
+        if (repoPath == null) {
+            return null;
         }
+
+        return new SampleBrowser.Waiter(resources.getString("launchingLocalSampleBrowser"))
+        {
+            @Override
+            protected SampleBrowser doInBackground ()
+                    throws Exception
+            {
+                return new SampleBrowser(SampleRepository.getInstance(repoPath, true));
+            }
+        };
     }
 
     //-------------//
@@ -565,23 +561,12 @@ public class GuiActions
     // OptionsTask //
     //-------------//
     private static class OptionsTask
-            extends Task<Options, Void>
+            extends WaitingTask<Options, Void>
     {
-
-        final Timer timer = new Timer();
 
         OptionsTask ()
         {
-            super(OmrGui.getApplication());
-
-            timer.schedule(new TimerTask()
-            {
-                @Override
-                public void run ()
-                {
-                    logger.info("Building options window...");
-                }
-            }, CursorController.delay);
+            super(OmrGui.getApplication(), resources.getString("optionTask.message"));
         }
 
         @Override
@@ -593,12 +578,6 @@ public class GuiActions
             }
 
             return options;
-        }
-
-        @Override
-        protected void finished ()
-        {
-            timer.cancel();
         }
 
         @Override

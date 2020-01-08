@@ -1059,7 +1059,7 @@ public class HeadInter
     // getSnapAbscissa //
     //-----------------//
     /**
-     * Report the theoretical abscissa of a stem-head center when correctly aligned with
+     * Report the theoretical abscissa of head center when correctly aligned with
      * a suitable stem.
      * <p>
      * Required properties: staff, shape, bounds
@@ -1096,7 +1096,7 @@ public class HeadInter
     // getSnapOrdinate //
     //-----------------//
     /**
-     * Report the theoretical ordinate of a head center when correctly aligned with staff
+     * Report the theoretical ordinate of head center when correctly aligned with staff
      * lines and ledgers.
      * <p>
      * Required properties: staff, bounds

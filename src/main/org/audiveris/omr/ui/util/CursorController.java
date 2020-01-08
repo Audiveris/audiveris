@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.ui.util;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.ui.OmrGui;
 
 import org.slf4j.Logger;
@@ -45,6 +47,8 @@ import javax.swing.SwingWorker;
 public class CursorController
 {
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(CursorController.class);
 
     /** Cursor when waiting. */
@@ -54,14 +58,17 @@ public class CursorController
     public static final Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 
     /** Delay before busy cursor is displayed. */
-    public static final int delay = 500; // in milliseconds
+    public static final long DELAY = constants.delay.getValue(); // in milliseconds
 
     private CursorController ()
     {
     }
 
+    //----------------//
+    // createListener //
+    //----------------//
     /**
-     * Wraps an action listener with a busy cursor if not performed within delay.
+     * Wraps an action listener with a busy cursor if not performed within DELAY.
      *
      * @param component          owner of cursor
      * @param mainActionListener real listener to be wrapped
@@ -87,7 +94,7 @@ public class CursorController
                 Timer timer = new Timer();
 
                 try {
-                    timer.schedule(timerTask, delay);
+                    timer.schedule(timerTask, DELAY);
                     mainActionListener.actionPerformed(ae);
                 } finally {
                     timer.cancel();
@@ -104,7 +111,7 @@ public class CursorController
     //-------------------------//
     /**
      * Launch the provided runnable with a busy cursor displayed if processing does not
-     * complete within delay.
+     * complete within DELAY.
      *
      * @param runnable the processing to perform
      */
@@ -123,7 +130,7 @@ public class CursorController
         Timer timer = new Timer();
 
         try {
-            timer.schedule(timerTask, delay);
+            timer.schedule(timerTask, DELAY);
             runnable.run(); // Here is the real stuff
         } finally {
             timer.cancel();
@@ -137,7 +144,7 @@ public class CursorController
     /**
      * Launch the provided runnable with a delayed message.
      *
-     * @param message  the message to display if processing does not complete within delay
+     * @param message  the message to display if processing does not complete within DELAY
      * @param runnable the processing to perform
      */
     public static void launchWithDelayedMessage (final String message,
@@ -153,7 +160,7 @@ public class CursorController
         };
 
         final Timer timer = new Timer();
-        timer.schedule(timerTask, delay);
+        timer.schedule(timerTask, DELAY);
 
         new SwingWorker()
         {
@@ -171,5 +178,18 @@ public class CursorController
                 timer.cancel();
             }
         }.execute();
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer delay = new Constant.Integer(
+                "ms",
+                500,
+                "Default delay value in milli-seconds");
     }
 }

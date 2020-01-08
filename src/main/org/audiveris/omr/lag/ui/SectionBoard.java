@@ -31,6 +31,9 @@ import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.field.LIntegerField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,32 +52,41 @@ public class SectionBoard
 
     private static final Logger logger = LoggerFactory.getLogger(SectionBoard.class);
 
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(SectionBoard.class);
+
     /** Underlying lag */
     protected final Lag lag;
 
     /** Field for left abscissa. */
-    private final LIntegerField x = new LIntegerField(false, "X", "Left abscissa in pixels");
+    private final LIntegerField x = new LIntegerField(
+            false,
+            resources.getString("x.text"),
+            resources.getString("x.toolTipText"));
 
     /** Field for top ordinate. */
-    private final LIntegerField y = new LIntegerField(false, "Y", "Top ordinate in pixels");
+    private final LIntegerField y = new LIntegerField(
+            false,
+            resources.getString("y.text"),
+            resources.getString("y.toolTipText"));
 
     /** Field for width. */
     private final LIntegerField width = new LIntegerField(
             false,
-            "Width",
-            "Horizontal width in pixels");
+            resources.getString("width.text"),
+            resources.getString("width.toolTipText"));
 
     /** Field for height. */
     private final LIntegerField height = new LIntegerField(
             false,
-            "Height",
-            "Vertical height in pixels");
+            resources.getString("height.text"),
+            resources.getString("height.toolTipText"));
 
     /** Field for weight. */
     private final LIntegerField weight = new LIntegerField(
             false,
-            "Weight",
-            "Number of pixels in this section");
+            resources.getString("weight.text"),
+            resources.getString("weight.toolTipText"));
 
     /**
      * Create a Section Board
@@ -96,7 +108,12 @@ public class SectionBoard
 
         this.lag = lag;
 
-        // Initial status
+        x.getField().setBorder(null);
+        y.getField().setBorder(null);
+        weight.getField().setBorder(null);
+        width.getField().setBorder(null);
+        height.getField().setBorder(null);
+
         x.setEnabled(false);
         y.setEnabled(false);
         weight.setEnabled(false);

@@ -27,6 +27,9 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.ui.field.LDoubleField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,21 +47,28 @@ public class SymbolGlyphBoard
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolGlyphBoard.class);
 
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(SymbolGlyphBoard.class);
+
     /** Glyph characteristics : normalized weight. */
     private final LDoubleField weight = new LDoubleField(
             false,
-            "Weight",
-            "Normalized weight",
+            resources.getString("weight.text"),
+            resources.getString("weight.toolTipText"),
             "%.3f");
 
     /** Glyph characteristics : normalized width. */
-    private final LDoubleField width = new LDoubleField(false, "Width", "Normalized width", "%.3f");
+    private final LDoubleField width = new LDoubleField(
+            false,
+            resources.getString("width.text"),
+            resources.getString("width.toolTipText"),
+            "%.3f");
 
     /** Glyph characteristics : normalized height. */
     private final LDoubleField height = new LDoubleField(
             false,
-            "Height",
-            "Normalized height",
+            resources.getString("height.text"),
+            resources.getString("height.toolTipText"),
             "%.3f");
 
     /**
@@ -66,16 +76,17 @@ public class SymbolGlyphBoard
      *
      * @param glyphsController the companion which handles glyph (de)assignments
      * @param selected         true to pre-select this board
-     * @param useSpinners      true for use of spinners
      */
     public SymbolGlyphBoard (GlyphsController glyphsController,
-                             boolean selected,
-                             boolean useSpinners)
+                             boolean selected)
     {
         // For all glyphs
-        super(glyphsController, useSpinners, selected);
+        super(glyphsController, selected);
 
-        // Initial status
+        width.getField().setBorder(null);
+        height.getField().setBorder(null);
+        weight.getField().setBorder(null);
+
         width.setEnabled(false);
         height.setEnabled(false);
         weight.setEnabled(false);

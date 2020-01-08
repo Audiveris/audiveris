@@ -43,6 +43,9 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.util.Panel;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +77,9 @@ public class InterBoard
 
     private static final Logger logger = LoggerFactory.getLogger(InterBoard.class);
 
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(InterBoard.class);
+
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -81,13 +87,14 @@ public class InterBoard
     private final JLabel shapeIcon = new JLabel();
 
     /** Output : grade (intrinsic/contextual). */
-    private final LLabel grade = new LLabel("Grade:", "Intrinsic / Contextual");
+    private final LTextField grade = new LTextField(resources.getString("grade.text"),
+                                                    resources.getString("grade.toolTipText"));
 
     /** Output : implicit / manual. */
     private final JLabel specific = new JLabel("");
 
     /** Output : shape. */
-    private final LLabel shapeName = new LLabel("", "Shape for this interpretation");
+    private final LLabel shapeName = new LLabel("", resources.getString("shapeName.toolTipText"));
 
     /** Output : grade details. */
     private final JLabel details = new JLabel("");
@@ -99,7 +106,8 @@ public class InterBoard
     private final ToEnsembleAction toEnsAction = new ToEnsembleAction();
 
     /** To set into Edit mode. */
-    private final LCheckBox edit = new LCheckBox("Edit", "Set inter into edit mode");
+    private final LCheckBox edit = new LCheckBox(resources.getString("edit.text"),
+                                                 resources.getString("edit.toolTipText"));
 
     //    /** Numerator of time signature */
     //    private final LIntegerField timeNum;
@@ -109,12 +117,15 @@ public class InterBoard
     //
     /** ComboBox for text role. */
     private final LComboBox<TextRole> roleCombo = new LComboBox<>(
-            "Role",
-            "Role of the Sentence",
+            resources.getString("roleCombo.text"),
+            resources.getString("roleCombo.toolTipText"),
             TextRole.valuesSansLyrics());
 
     /** Input/Output : textual content. */
-    private final LTextField textField = new LTextField(true, "Text", "Content of textual item");
+    private final LTextField textField = new LTextField(
+            true,
+            resources.getString("textField.text"),
+            resources.getString("textField.toolTipText"));
 
     /** Handling of entered / selected values. */
     private final Action paramAction;
@@ -152,6 +163,9 @@ public class InterBoard
         shapeIcon.setMaximumSize(dim);
         shapeIcon.setMinimumSize(dim);
 
+        grade.getField().setBorder(null);
+        grade.getField().setEditable(false);
+
         details.setToolTipText("Grade details");
         details.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -159,13 +173,13 @@ public class InterBoard
 
         paramAction = new ParamAction();
 
+        defineLayout();
+
         // Initial status
         grade.setEnabled(false);
         specific.setEnabled(false);
         details.setEnabled(false);
         edit.setEnabled(false);
-
-        defineLayout();
     }
 
     //-----------------//
@@ -260,7 +274,9 @@ public class InterBoard
             specific.setText(inter.isImplicit() ? "IMPLICIT" : (inter.isManual() ? "MANUAL" : ""));
 
             details.setText((inter.getImpacts() == null) ? "" : inter.getImpacts().toString());
-            deassignAction.putValue(Action.NAME, inter.isRemoved() ? "deleted" : "Deassign");
+            deassignAction.putValue(Action.NAME, inter.isRemoved()
+                                    ? resources.getString("deassign.Action.deleted")
+                                    : resources.getString("deassign.Action.text"));
 
             if (inter instanceof WordInter) {
                 selfUpdatingText = true;
@@ -349,7 +365,7 @@ public class InterBoard
         toEnsButton.setHorizontalTextPosition(SwingConstants.LEFT);
         toEnsButton.setHorizontalAlignment(SwingConstants.RIGHT);
         toEnsAction.setEnabled(false);
-        builder.add(toEnsButton, cst.xyw(11, r, 1));
+        builder.add(toEnsButton, cst.xyw(9, r, 3));
 
         r += 2; // --------------------------------
 
@@ -406,8 +422,9 @@ public class InterBoard
 
         public DeassignAction ()
         {
-            super("Deassign");
-            this.putValue(Action.SHORT_DESCRIPTION, "Deassign inter");
+            super(resources.getString("deassign.Action.text"));
+            this.putValue(Action.SHORT_DESCRIPTION,
+                          resources.getString("deassign.Action.shortDescription"));
         }
 
         @Override
@@ -480,8 +497,9 @@ public class InterBoard
 
         public ToEnsembleAction ()
         {
-            super("To Ens.");
-            putValue(Action.SHORT_DESCRIPTION, "Move to containing ensemble");
+            super(resources.getString("ToEnsembleAction.text"));
+            putValue(Action.SHORT_DESCRIPTION,
+                     resources.getString("ToEnsembleAction.shortDescription"));
         }
 
         @Override

@@ -28,6 +28,7 @@ import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.ui.SampleBrowser;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.ui.SymbolsEditor;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.plugin.Plugin;
 import org.audiveris.omr.plugin.PluginsManager;
@@ -53,7 +54,6 @@ import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.ViewParameters;
-import org.audiveris.omr.ui.util.CursorController;
 import org.audiveris.omr.ui.util.OmrFileFilter;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.HistoryMenu;
@@ -69,6 +69,9 @@ import org.jdesktop.application.ApplicationAction;
 import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.Task;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,6 +82,7 @@ import java.beans.PropertyChangeListener;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import static java.text.MessageFormat.format;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -87,7 +91,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import org.audiveris.omr.glyph.ui.SymbolsEditor;
 
 /**
  * Class {@code BookActions} gathers all UI actions related to current book.
@@ -110,6 +113,11 @@ public class BookActions
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BookActions.class);
+
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(BookActions.class);
+
+    private static final String doYouConfirm = "\n" + resources.getString("doYouConfirm");
 
     /** Default parameter. */
     public static final Param<Boolean> defaultPrompt = new Default();
@@ -353,7 +361,7 @@ public class BookActions
                     assembly.selectViewTab(tab);
                 }
             } else {
-                logger.info("No binary image available yet.");
+                logger.info(resources.getString("noBinaryImage"));
             }
         } catch (Throwable ex) {
             logger.warn("Error in displayBinary {}", ex.toString(), ex);
@@ -384,7 +392,7 @@ public class BookActions
                     assembly.selectViewTab(tab);
                 }
             } else {
-                logger.info("No data buffer available yet.");
+                logger.info(resources.getString("noDataTab"));
             }
         } catch (Throwable ex) {
             logger.warn("Error in displayData {}", ex.toString(), ex);
@@ -441,7 +449,7 @@ public class BookActions
                 assembly.selectViewTab(tab);
             }
         } else {
-            logger.info("No staff lines available yet.");
+            logger.info(resources.getString("noStaffLines"));
         }
     }
 
@@ -474,7 +482,7 @@ public class BookActions
                 assembly.selectViewTab(tab);
             }
         } else {
-            logger.info("No staff lines available yet.");
+            logger.info(resources.getString("noStaffLines"));
         }
     }
 
@@ -566,7 +574,7 @@ public class BookActions
                 OMR.gui.getFrame(),
                 targetPath,
                 filter(ext),
-                "Choose book export target");
+                resources.getString("chooseBookExport"));
 
         if ((bookPath == null) || !confirmed(bookPath)) {
             return null;
@@ -609,7 +617,7 @@ public class BookActions
                 OMR.gui.getFrame(),
                 defaultSheetPath,
                 filter(ext),
-                "Choose sheet export target");
+                resources.getString("chooseSheetExport"));
 
         if ((sheetPath == null) || !confirmed(sheetPath)) {
             return null;
@@ -648,9 +656,9 @@ public class BookActions
         SheetStub stub = StubsController.getCurrentStub();
 
         if (stub != null) {
-            int answer = JOptionPane.showConfirmDialog(
-                    OMR.gui.getFrame(),
-                    "About to set sheet " + stub.getId() + " as invalid." + "\nDo you confirm?");
+            final String pattern = resources.getString("setSheetInvalid.pattern");
+            final String msg = format(pattern, stub.getId());
+            final int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), msg + doYouConfirm);
 
             if (answer == JOptionPane.YES_OPTION) {
                 stub.invalidate();
@@ -715,7 +723,7 @@ public class BookActions
             if (Files.exists(path)) {
                 return new LoadBookTask(path);
             } else {
-                logger.warn("Path not found {}", path);
+                logger.warn(format(resources.getString("fileNotFound.pattern"), path));
             }
         }
 
@@ -741,14 +749,14 @@ public class BookActions
                 OMR.gui.getFrame(),
                 Paths.get(BookManager.getDefaultImageFolder()),
                 new OmrFileFilter(
-                        "Major image files" + " (" + suffixes + ")",
+                        resources.getString("majorImageFiles") + " (" + suffixes + ")",
                         allSuffixes.split("\\s")));
 
         if (path != null) {
             if (!Files.exists(path)) {
-                logger.warn("{} not found.", path);
+                logger.warn(format(resources.getString("fileNotFound.pattern"), path));
             } else if (Files.isDirectory(path)) {
-                logger.warn("{} is a directory.", path);
+                logger.warn(format(resources.getString("isDirectory.pattern"), path));
             } else {
                 return new LoadImageTask(path);
             }
@@ -774,7 +782,7 @@ public class BookActions
             if (stub.isDone(Step.BINARY)) {
                 new ScaleBuilder(stub.getSheet()).displayChart();
             } else {
-                logger.warn("Cannot display scale plot, for lack of scale data");
+                logger.info(resources.getString("noScaleData"));
             }
         }
     }
@@ -801,7 +809,7 @@ public class BookActions
         final StaffManager staffManager = sheet.getStaffManager();
 
         if (staffManager.getStaffCount() == 0) {
-            logger.info("No staff data available yet");
+            logger.info(resources.getString("noStaffData"));
 
             return;
         }
@@ -858,7 +866,7 @@ public class BookActions
         if (stub.isDone(Step.STEM_SEEDS)) {
             new StemScaler(stub.getSheet()).displayChart();
         } else {
-            logger.warn("Cannot display stem plot, for lack of stem data");
+            logger.info(resources.getString("noStemData"));
         }
     }
 
@@ -981,11 +989,10 @@ public class BookActions
         final Book book = StubsController.getCurrentBook();
 
         if (book != null) {
-            int answer = JOptionPane.showConfirmDialog(
-                    OMR.gui.getFrame(),
-                    "About to reset all valid sheets of " + book.getRadix()
-                            + " to their initial state."
-                            + "\nDo you confirm?");
+            final String msg = format(resources.getString("resetBookTo.pattern"),
+                                      book.getRadix(),
+                                      Step.LOAD);
+            final int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), msg + doYouConfirm);
 
             if (answer == JOptionPane.YES_OPTION) {
                 book.reset();
@@ -1007,11 +1014,10 @@ public class BookActions
         final Book book = StubsController.getCurrentBook();
 
         if (book != null) {
-            int answer = JOptionPane.showConfirmDialog(
-                    OMR.gui.getFrame(),
-                    "About to reset all valid sheets of " + book.getRadix()
-                            + " to their BINARY state."
-                            + "\nDo you confirm?");
+            final String msg = format(resources.getString("resetBookTo.pattern"),
+                                      book.getRadix(),
+                                      Step.BINARY);
+            final int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), msg + doYouConfirm);
 
             if (answer == JOptionPane.YES_OPTION) {
                 book.resetToBinary();
@@ -1033,11 +1039,10 @@ public class BookActions
         SheetStub stub = StubsController.getCurrentStub();
 
         if (stub != null) {
-            int answer = JOptionPane.showConfirmDialog(
-                    OMR.gui.getFrame(),
-                    "About to reset sheet " + stub.getId()
-                            + " to its initial state."
-                            + "\nDo you confirm?");
+            final String msg = format(resources.getString("resetSheetTo.pattern"),
+                                      stub.getId(),
+                                      Step.LOAD);
+            final int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), msg + doYouConfirm);
 
             if (answer == JOptionPane.YES_OPTION) {
                 stub.reset();
@@ -1059,11 +1064,10 @@ public class BookActions
         SheetStub stub = StubsController.getCurrentStub();
 
         if (stub != null) {
-            int answer = JOptionPane.showConfirmDialog(
-                    OMR.gui.getFrame(),
-                    "About to reset sheet " + stub.getId()
-                            + " to its BINARY state."
-                            + "\nDo you confirm?");
+            final String msg = format(resources.getString("resetSheetTo.pattern"),
+                                      stub.getId(),
+                                      Step.BINARY);
+            final int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), msg + doYouConfirm);
 
             if (answer == JOptionPane.YES_OPTION) {
                 stub.resetToBinary();
@@ -1348,38 +1352,34 @@ public class BookActions
         return new UpgradeBookTask(stub.getBook());
     }
 
-    //--------------------//
-    // viewBookRepository //
-    //--------------------//
+    //-------------------//
+    // browseBookSamples //
+    //-------------------//
     /**
-     * Action to view the separate repository of the currently selected book.
+     * Action to browse the separate sample repository of the currently selected book.
      *
      * @param e the event that triggered this action
      * @return the UI task to perform
      */
     @Action(enabledProperty = STUB_AVAILABLE)
-    public Task<Void, Void> viewBookRepository (ActionEvent e)
+    public Task browseBookSamples (ActionEvent e)
     {
         final Book book = StubsController.getCurrentBook();
 
         if (book != null) {
             if (book.hasSpecificRepository()) {
-                CursorController.launchWithDelayedMessage(
-                        "Launching sample browser...",
-                        new Runnable()
+                return new SampleBrowser.Waiter(
+                        resources.getString("launchingBookSampleBrowser"))
                 {
                     @Override
-                    public void run ()
+                    protected SampleBrowser doInBackground ()
+                            throws Exception
                     {
-                        try {
-                            SampleBrowser.getInstance(book).setVisible();
-                        } catch (Throwable ex) {
-                            logger.warn("Could not launch sample browser. " + ex, ex);
-                        }
+                        return SampleBrowser.getInstance(book);
                     }
-                });
+                };
             } else {
-                logger.info("No specific sample repository for {}", book);
+                logger.info(format(resources.getString("noBookRepo.pattern"), book.getRadix()));
             }
         }
 
@@ -1504,13 +1504,13 @@ public class BookActions
      */
     public static boolean checkStored (Book book)
     {
-        final String bookStatus = book.isModified() ? "modified"
-                : (book.isUpgraded() ? "upgraded" : null);
+        final String bookStatus = book.isModified() ? resources.getString("modified")
+                : (book.isUpgraded() ? resources.getString("upgraded") : null);
 
         if (bookStatus != null && defaultPrompt.getValue()) {
-            int answer = JOptionPane.showConfirmDialog(
+            final int answer = JOptionPane.showConfirmDialog(
                     OMR.gui.getFrame(),
-                    "Save " + bookStatus + " book " + book.getRadix() + "?");
+                    format(resources.getString("saveBook.pattern"), bookStatus, book.getRadix()));
 
             if (answer == JOptionPane.YES_OPTION) {
                 Path bookPath;
@@ -1649,7 +1649,9 @@ public class BookActions
      */
     private static boolean confirmed (Path target)
     {
-        return (!Files.exists(target)) || OMR.gui.displayConfirmation("Overwrite " + target + "?");
+        return (!Files.exists(target))
+                       || OMR.gui.displayConfirmation(
+                        format(resources.getString("overwriteFile.pattern"), target));
     }
 
     //--------//
@@ -1682,28 +1684,6 @@ public class BookActions
         return (prjPath == null) ? null : prjPath;
     }
 
-    //---------------//
-    // choosePngPath //
-    //---------------//
-    private Path choosePngPath (SheetStub stub,
-                                String preExt)
-    {
-        final String PNG_EXTENSION = ".png";
-        final Book book = stub.getBook();
-        final String ext = preExt + PNG_EXTENSION;
-        final Path defaultBookPath = BookManager.getDefaultPrintPath(book);
-        final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PRINT_EXTENSION);
-        final String sheetSuffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
-        final Path defaultSheetPath = Paths.get(bookSansExt + sheetSuffix + ext);
-
-        return UIUtil.pathChooser(
-                true,
-                OMR.gui.getFrame(),
-                defaultSheetPath,
-                filter(ext),
-                "Choose sheet png target");
-    }
-
     //-----------------//
     // choosePrintPath //
     //-----------------//
@@ -1725,7 +1705,7 @@ public class BookActions
                 OMR.gui.getFrame(),
                 defaultBookPath,
                 filter(ext),
-                "Choose book print target");
+                resources.getString("chooseBookPrint"));
     }
 
     //-----------------//
@@ -1746,7 +1726,7 @@ public class BookActions
                 OMR.gui.getFrame(),
                 defaultSheetPath,
                 filter(ext),
-                "Choose sheet print target");
+                resources.getString("chooseSheetPrint"));
     }
 
     //--------------//
@@ -1794,7 +1774,7 @@ public class BookActions
                     LogUtil.stopBook();
                 }
             } else {
-                logger.warn("Path {} does not exist", path);
+                logger.warn(format(resources.getString("fileNotFound.pattern"), path));
             }
 
             return null;
@@ -2039,9 +2019,7 @@ public class BookActions
         {
             if (!getValue().equals(specific)) {
                 constants.closeConfirmation.setValue(specific);
-                logger.info(
-                        "You will {} be prompted to save book when closing",
-                        specific ? "now" : "no longer");
+                logger.info(resources.getString("promptOnClose." + specific));
 
                 return true;
             } else {
@@ -2127,35 +2105,6 @@ public class BookActions
                 LogUtil.stopStub();
             }
 
-            return null;
-        }
-    }
-
-    //-------------//
-    // RebuildTask //
-    //-------------//
-    private static class RebuildTask
-            extends VoidTask
-    {
-
-        private final Sheet sheet;
-
-        RebuildTask (Sheet sheet)
-        {
-            this.sheet = sheet;
-        }
-
-        @Override
-        protected Void doInBackground ()
-                throws InterruptedException
-        {
-            // TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-            //            try {
-            //                Stepping.reprocessSheet(Step.SYMBOLS, sheet, null, true);
-            //            } catch (Exception ex) {
-            //                logger.warn("Could not refresh score", ex);
-            //            }
-            //
             return null;
         }
     }
@@ -2258,7 +2207,7 @@ public class BookActions
                 LogUtil.start(book);
                 book.transcribe();
             } catch (Throwable ex) {
-                logger.warn("Could not transcribe book", ex);
+                logger.warn("Could not transcribe book {}", ex.toString(), ex);
             } finally {
                 LogUtil.stopBook();
             }
@@ -2295,7 +2244,7 @@ public class BookActions
                 LogUtil.start(sheet.getStub());
                 sheet.getStub().transcribe();
             } catch (Throwable ex) {
-                logger.warn("Could not transcribe sheet", ex);
+                logger.warn("Could not transcribe sheet {}", ex.toString(), ex);
             } finally {
                 LogUtil.stopStub();
             }
@@ -2326,7 +2275,7 @@ public class BookActions
                 LogUtil.start(book);
                 book.upgradeStubs();
             } catch (Throwable ex) {
-                logger.warn("Error while upgrading book", ex);
+                logger.warn("Error while upgrading book {}", ex.toString(), ex);
             } finally {
                 LogUtil.stopBook();
             }

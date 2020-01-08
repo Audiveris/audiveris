@@ -213,8 +213,9 @@ public class Trainer
         frame.add(builder.getPanel());
 
         // Resource injection
-        ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(getClass());
-        resource.injectComponents(frame);
+        ResourceMap resources = OmrGui.getApplication().getContext().getResourceMap(getClass());
+        resources.injectComponents(frame);
+        frame.setIconImage(OmrGui.getApplication().getMainFrame().getIconImage());
 
         return frame;
     }
