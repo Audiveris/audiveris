@@ -47,8 +47,8 @@ import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.util.FixedWidthIcon;
 import org.audiveris.omr.ui.util.Panel;
-import org.audiveris.omr.ui.util.UILookAndFeel;
 import org.audiveris.omr.ui.util.UIUtil;
+import org.audiveris.omr.ui.util.WaitingTask;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
@@ -148,20 +148,20 @@ public class SampleBrowser
     /** Has repository been checked for duplications and conflicts?. */
     private boolean repoChecked;
 
-    /** Panel for sheets selection. */
-    private final SheetSelector sheetSelector = new SheetSelector();
-
-    /** Panel for shapes selection. */
-    private final ShapeSelector shapeSelector = new ShapeSelector();
-
-    /** Panel for samples display. */
-    private final SampleListing sampleListing;
-
     /** Model for samples. */
     private final SampleModel sampleModel;
 
+    /** Panel for samples display. */
+    private SampleListing sampleListing;
+
     /** Controller for sample handling. */
-    private final SampleController sampleController;
+    private SampleController sampleController;
+
+    /** Panel for sheets selection. */
+    private SheetSelector sheetSelector;
+
+    /** Panel for shapes selection. */
+    private ShapeSelector shapeSelector;
 
     /**
      * Create an instance of {@code SampleBrowser}.
@@ -176,11 +176,6 @@ public class SampleBrowser
         sampleService = new EntityService<>("sampleService", null, eventsAllowed);
         sampleContext.connect(sampleService);
         sampleModel = new SampleModel(repository, sampleService);
-        sampleController = new SampleController(sampleModel);
-
-        // Connect selectors (sheets -> shapes -> samples)
-        sampleListing = new SampleListing(this, repository);
-        connectSelectors(true);
 
         // Stay informed of repository dynamic updates
         repository.addListener(this);
@@ -190,12 +185,29 @@ public class SampleBrowser
                 repository.loadRepository(null);
             }
 
+            sampleController = new SampleController(sampleModel);
+            sheetSelector = new SheetSelector();
+            shapeSelector = new ShapeSelector();
+
+            // Connect selectors (sheets -> shapes -> samples)
+            sampleListing = new SampleListing(this, repository);
+            connectSelectors(true);
+
             frame = defineLayout(new JFrame());
             frame.setTitle(repository.toString());
             frame.addWindowListener(new ClosingAdapter());
+            OmrGui.getApplication().show(frame);
         } else {
             INSTANCE = this;
         }
+    }
+
+    /**
+     * No-arg constructor, used when in stand-alone.
+     */
+    public SampleBrowser ()
+    {
+        this(SampleRepository.getGlobalInstance());
     }
 
     //-----------------//
@@ -683,6 +695,14 @@ public class SampleBrowser
     {
         logger.debug("SampleBrowser. 2/startup");
 
+        sampleController = new SampleController(sampleModel);
+        sheetSelector = new SheetSelector();
+        shapeSelector = new ShapeSelector();
+
+        // Connect selectors (sheets -> shapes -> samples)
+        sampleListing = new SampleListing(this, repository);
+        connectSelectors(true);
+
         frame = defineLayout(getMainFrame());
         frame.setTitle(repository.toString());
         frame.addWindowListener(new ClosingAdapter());
@@ -842,8 +862,9 @@ public class SampleBrowser
         frame.setJMenuBar(buildMenuBar());
 
         // Resource injection
-        ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(getClass());
-        resource.injectComponents(frame);
+        ResourceMap resources = OmrGui.getApplication().getContext().getResourceMap(getClass());
+        resources.injectComponents(frame);
+        frame.setIconImage(OmrGui.getApplication().getMainFrame().getIconImage());
 
         // Wiring
         boardsPane.connect();
@@ -932,13 +953,7 @@ public class SampleBrowser
     {
         standAlone = true;
 
-        // Load repository, with sheet images
-        SampleRepository repo = SampleRepository.getGlobalInstance();
-        repo.loadAllImages();
-
-        // Set UI Look and Feel
-        UILookAndFeel.setUI(null);
-        Locale.setDefault(Locale.ENGLISH);
+        Locale.setDefault(Locale.US);
 
         // Off we go...
         Application.launch(SampleBrowser.class, args);
@@ -1321,6 +1336,30 @@ public class SampleBrowser
                     TitledBorder.LEFT,
                     TitledBorder.TOP));
             this.setInsets(25, 5, 0, 0);
+        }
+    }
+
+    //--------//
+    // Waiter //
+    //--------//
+    /**
+     * A specific waiting task to display a temporary message while the underlying
+     * SampleBrowser instance is being built.
+     * <p>
+     * Building of the sample browser must be done in method {@code doInBackground} of subclass.
+     */
+    public static abstract class Waiter
+            extends WaitingTask<SampleBrowser, Void>
+    {
+
+        /**
+         * Create the waiter, and launch proper browser.
+         *
+         * @param dialogMessage waiting message for the specific browser
+         */
+        public Waiter (String dialogMessage)
+        {
+            super(OmrGui.getApplication(), dialogMessage);
         }
     }
 }

@@ -474,6 +474,9 @@ public class MainGui
         // Get resources, now that application is available
         resources = Application.getInstance().getContext().getResourceMap(getClass());
 
+        // Adjust default texts
+        UIUtil.adjustDefaultTexts();
+
         // Set application exit listener
         addExitListener(new GuiExitListener());
 

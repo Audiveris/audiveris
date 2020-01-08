@@ -70,8 +70,9 @@ import javax.swing.event.ChangeListener;
 
 /**
  * Class {@code SymbolRipper} is a stand-alone utility to generate the
- * textual description of a symbol. Symbol appearance is "ripped" from a musical
- * font.
+ * textual description of a symbol.
+ * <p>
+ * Symbol appearance is "ripped" from a musical font.
  *
  * @author Hervé Bitteur
  */
@@ -321,8 +322,8 @@ public class SymbolRipper
     {
         frame.setName("SymbolRipperFrame"); // For SAF life cycle
 
-        ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(getClass());
-        resource.injectComponents(frame);
+        ResourceMap resources = OmrGui.getApplication().getContext().getResourceMap(getClass());
+        resources.injectComponents(frame);
         frame.setIconImage(OmrGui.getApplication().getMainFrame().getIconImage());
 
         Container pane = frame.getContentPane();

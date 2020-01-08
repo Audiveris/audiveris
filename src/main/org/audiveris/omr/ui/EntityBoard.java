@@ -38,6 +38,9 @@ import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.util.Entity;
 import org.audiveris.omr.util.EntityIndex;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +67,9 @@ public class EntityBoard<E extends Entity>
 {
 
     private static final Logger logger = LoggerFactory.getLogger(EntityBoard.class);
+
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(EntityBoard.class);
 
     /** Events this board is interested in. */
     private static final Class<?>[] eventsRead = new Class<?>[]{EntityListEvent.class};
@@ -130,7 +136,7 @@ public class EntityBoard<E extends Entity>
         // Count
         if (useCount) {
             count = getCountField();
-            count.setToolTipText("Count of selected entities");
+            count.setToolTipText(resources.getString("count.toolTipText"));
         }
 
         // VIP
@@ -143,7 +149,7 @@ public class EntityBoard<E extends Entity>
         // Dump
         if (useDump) {
             dump = getDumpButton();
-            dump.setToolTipText("Dump this entity");
+            dump.setToolTipText(resources.getString("dump.toolTipText"));
             dump.setEnabled(false);
             dump.addActionListener(this);
         }
@@ -151,14 +157,15 @@ public class EntityBoard<E extends Entity>
         // Id
         switch (idOption) {
         case ID_LABEL:
-            idLabel = new LLabel("Id:", "Entity id");
+            idLabel = new LLabel(resources.getString("idLabel.text"),
+                                 resources.getString("idLabel.toolTipText"));
 
             break;
 
         case ID_SPINNER:
             idSpinner = makeIdSpinner(entityService.getIndex());
             idSpinner.setName("idSpinner");
-            idSpinner.setToolTipText("Spinner for any entity id");
+            idSpinner.setToolTipText(resources.getString("idSpinner.toolTipText"));
 
             break;
 

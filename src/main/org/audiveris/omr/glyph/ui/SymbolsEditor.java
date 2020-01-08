@@ -196,8 +196,7 @@ public class SymbolsEditor
             boards.add(new SectionBoard(vLag, constants.selectVerticalSectionBoard.isSet()));
         }
 
-        boards.add(
-                new SymbolGlyphBoard(glyphsController, constants.selectGlyphBoard.isSet(), true));
+        boards.add(new SymbolGlyphBoard(glyphsController, constants.selectGlyphBoard.isSet()));
         boards.add(new InterBoard(sheet, constants.selectInterBoard.isSet()));
         boards.add(shapeBoard = new ShapeBoard(sheet, this, constants.selectShapeBoard.isSet()));
         boards.add(evaluationBoard = new EvaluationBoard(

@@ -25,6 +25,9 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.WellKnowns;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,9 +99,15 @@ public abstract class UIUtil
         }
     };
 
-    public static void adjustDefaults ()
+    //--------------------//
+    // adjustDefaultFonts //
+    //--------------------//
+    /**
+     * Adjust default font names and sizes according to user choices.
+     */
+    public static void adjustDefaultFonts ()
     {
-        // Control
+        // Control font
         final Font defaultFont = new Font(constants.defaultFontName.getValue(),
                                           Font.PLAIN,
                                           adjustedSize(constants.defaultFontSize.getValue()));
@@ -117,7 +126,7 @@ public abstract class UIUtil
         UIManager.put("TabbedPane.font", controlFont);
         UIManager.put("ToggleButton.font", controlFont);
 
-        // Menu
+        // Menu font
         final Font menuFont = defaultFont;
         UIManager.put("CheckBoxMenuItem.font", menuFont);
         UIManager.put("Menu.font", menuFont);
@@ -127,7 +136,7 @@ public abstract class UIUtil
         UIManager.put("RadioButtonMenuItem.font", menuFont);
         UIManager.put("ToolBar.font", menuFont);
 
-        // User
+        // User font
         final Font userFont = defaultFont;
         UIManager.put("EditorPane.font", userFont);
         UIManager.put("FormattedTextField.font", userFont);
@@ -147,7 +156,7 @@ public abstract class UIUtil
         UIManager.put("ScrollPane.font", windowTitleFont);
         UIManager.put("Viewport.font", windowTitleFont);
 
-        // Miscellaneous
+        // Miscellaneous fonts
         UIManager.put("ToolTip.font", new Font(
                       constants.defaultFontName.getValue(),
                       Font.ITALIC,
@@ -156,6 +165,37 @@ public abstract class UIUtil
                       constants.defaultFontName.getValue(),
                       Font.BOLD,
                       adjustedSize(constants.defaultFontSize.getValue())));
+    }
+
+    //--------------------//
+    // adjustDefaultTexts //
+    //--------------------//
+    /**
+     * Adjust default texts according to user chosen locale.
+     */
+    public static void adjustDefaultTexts ()
+    {
+
+        final ResourceMap resources = Application.getInstance().getContext().getResourceMap(
+                UIUtil.class);
+
+        // OptionPane texts
+        final String[] keys = new String[]{
+            "OptionPane.inputDialogTitle",
+            "OptionPane.messageDialogTitle",
+            "OptionPane.titleText",
+            "OptionPane.cancelButtonText",
+            "OptionPane.noButtonText",
+            "OptionPane.yesButtonText"
+        };
+
+        for (String key : keys) {
+            final String localizedString = resources.getString(key);
+
+            if (localizedString != null) {
+                UIManager.put(key, localizedString);
+            }
+        }
     }
 
     //--------------//

@@ -34,6 +34,9 @@ import org.audiveris.omr.util.ClassUtil;
 
 import org.bushe.swing.event.EventSubscriber;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,6 +87,9 @@ public abstract class Board
 {
 
     private static final Logger logger = LoggerFactory.getLogger(Board.class);
+
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(Board.class);
 
     /** Minimum width available for a board. */
     public static final int MIN_BOARD_WIDTH = UIUtil.adjustedSize(350);
@@ -539,7 +545,8 @@ public abstract class Board
                 boolean withDump)
         {
             count = withCount ? new JLabel("") : null;
-            vip = withVip ? new LCheckBox("Vip", "Is this entity flagged as VIP?") : null;
+            vip = withVip ? new LCheckBox(resources.getString("vip.text"),
+                                          resources.getString("vip.toolTipText")) : null;
             dump = withDump ? new JButton("Dump") : null;
 
             defineLayout();

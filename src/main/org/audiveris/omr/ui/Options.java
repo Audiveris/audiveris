@@ -281,8 +281,8 @@ public class Options
         actionMap.put("forwardSearch", forwardSearch);
 
         // Resources injection
-        ResourceMap resource = Application.getInstance().getContext().getResourceMap(getClass());
-        resource.injectComponents(dialog);
+        ResourceMap resources = Application.getInstance().getContext().getResourceMap(getClass());
+        resources.injectComponents(dialog);
 
         // Make sure the search entry field gets the focus at creation time
         dialog.addWindowListener(new WindowAdapter()

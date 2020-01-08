@@ -32,6 +32,9 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.util.Panel;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +55,9 @@ public class GlyphBoard
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphBoard.class);
 
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(GlyphBoard.class);
+
     /** The related glyph model. */
     protected final GlyphsController controller;
 
@@ -61,12 +67,10 @@ public class GlyphBoard
     /**
      * Basic constructor, to set common characteristics.
      *
-     * @param controller  the related glyphs controller, if any
-     * @param useSpinners true for use of spinners
-     * @param selected    true if board must be initially selected
+     * @param controller the related glyphs controller, if any
+     * @param selected   true if board must be initially selected
      */
     public GlyphBoard (GlyphsController controller,
-                       boolean useSpinners,
                        boolean selected)
     {
         super(Board.GLYPH, (EntityService<Glyph>) controller.getGlyphService(), selected);
@@ -74,7 +78,7 @@ public class GlyphBoard
         this.controller = controller;
 
         groupField.setHorizontalAlignment(SwingConstants.CENTER);
-        groupField.setToolTipText("Assigned group(s)");
+        groupField.setToolTipText(resources.getString("groupField.toolTipText"));
 
         defineLayout();
     }
@@ -93,7 +97,7 @@ public class GlyphBoard
         this.controller = null;
 
         groupField.setHorizontalAlignment(SwingConstants.CENTER);
-        groupField.setToolTipText("Assigned group(s)");
+        groupField.setToolTipText(resources.getString("groupField.toolTipText"));
 
         defineLayout();
     }

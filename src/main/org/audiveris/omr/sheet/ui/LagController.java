@@ -98,7 +98,7 @@ public class LagController
                 new BoardsPane(
                         new PixelBoard(sheet),
                         new SectionBoard(lag, false),
-                        new SymbolGlyphBoard(this, true, true)));
+                        new SymbolGlyphBoard(this, true)));
     }
 
     //--------//
