@@ -35,6 +35,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Grades;
 
 /**
  * Class {@code TextLine} defines a non-mutable structure to report all information on
@@ -45,6 +48,8 @@ import java.util.List;
 public class TextLine
         extends TextBasedItem
 {
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TextLine.class);
 
@@ -250,6 +255,50 @@ public class TextLine
         } else {
             return null;
         }
+    }
+
+    //----------//
+    // getGrade //
+    //----------//
+    /**
+     * Compute sentence grade based on OCR-provided confidence and total number of
+     * characters.
+     *
+     * @return the computed grade
+     */
+    public double getGrade ()
+    {
+        final int minLg = constants.sentenceLowerLength.getValue();
+        final int maxLg = constants.sentenceUpperLength.getValue();
+        final int length = getLength();
+
+        double grade = getConfidence() * Grades.intrinsicRatio;
+
+        if (length >= minLg) {
+            double ratio = Math.min(1.0, (length - minLg) / (double) (maxLg - minLg));
+            grade += (ratio * (constants.maxSentenceGrade.getValue() - grade));
+        }
+
+        return grade;
+    }
+
+    //-----------//
+    // getLength //
+    //-----------//
+    /**
+     * Report the total number of characters in this text line.
+     *
+     * @return number of characters in this line
+     */
+    public int getLength ()
+    {
+        int count = 0;
+
+        for (TextWord word : words) {
+            count += word.getLength();
+        }
+
+        return count;
     }
 
     //-------------//
@@ -586,5 +635,27 @@ public class TextLine
                         line2.getDskOrigin(skew).getY());
             }
         };
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer sentenceLowerLength = new Constant.Integer(
+                "Chars",
+                10,
+                "Minimum number of characters to boost a sentence grade");
+
+        private final Constant.Integer sentenceUpperLength = new Constant.Integer(
+                "Chars",
+                50,
+                "Maximum number of characters to boost a sentence grade");
+
+        private final Constant.Ratio maxSentenceGrade = new Constant.Ratio(
+                0.90,
+                "Maximum value for final sentence grade");
     }
 }

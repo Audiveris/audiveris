@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextLine;
@@ -290,7 +289,8 @@ public class LyricLineInter
     {
         LyricLineInter lyricLine = new LyricLineInter(
                 line.getBounds(),
-                line.getConfidence() * Grades.intrinsicRatio,
+                ///line.getConfidence() * Grades.intrinsicRatio,
+                line.getGrade(),
                 line.getMeanFont());
 
         return lyricLine;

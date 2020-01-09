@@ -270,6 +270,11 @@ public class SymbolsFilter
                 "letter count",
                 4,
                 "Minimum number of chars in a sentence word");
+
+        private final Constant.Integer minSentenceLength = new Constant.Integer(
+                "letter count",
+                10,
+                "Minimum number of chars in a sentence");
     }
 
     //----------------//
@@ -328,6 +333,7 @@ public class SymbolsFilter
         public void eraseInters (Map<SystemInfo, List<Glyph>> weaksMap)
         {
             final int minWordLength = constants.minWordLength.getValue();
+            final int minSentenceLength = constants.minSentenceLength.getValue();
 
             for (SystemInfo system : sheet.getSystems()) {
                 final SIGraph sig = system.getSig();
@@ -355,13 +361,16 @@ public class SymbolsFilter
                     if (inter instanceof SentenceInter) {
                         final SentenceInter sentence = (SentenceInter) inter;
                         int maxWordLength = 0;
+                        int sentenceLength = 0;
 
                         for (Inter iw : sentence.getMembers()) {
-                            WordInter word = (WordInter) iw;
-                            maxWordLength = Math.max(maxWordLength, word.getValue().length());
+                            final WordInter word = (WordInter) iw;
+                            final int wordLength = word.getValue().length();
+                            maxWordLength = Math.max(maxWordLength, wordLength);
+                            sentenceLength += wordLength;
                         }
 
-                        if (maxWordLength < minWordLength) {
+                        if ((sentenceLength < minSentenceLength) && (maxWordLength < minWordLength)) {
                             continue;
                         }
                     }

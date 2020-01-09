@@ -234,6 +234,7 @@ public class Skeleton
                         Shape.BEAM_HOOK,
                         Shape.BEAM_SMALL,
                         Shape.BEAM_HOOK_SMALL,
+                        Shape.LYRICS,
                         Shape.TEXT));
 
         // Crossable inters
