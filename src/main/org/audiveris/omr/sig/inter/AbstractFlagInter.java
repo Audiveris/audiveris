@@ -348,7 +348,8 @@ public abstract class AbstractFlagInter
                                                       SystemInfo system,
                                                       List<Inter> systemStems)
     {
-        AbstractFlagInter flag = new FlagInter(glyph, shape, grade);
+        AbstractFlagInter flag = SmallFlags.contains(shape)
+                ? new SmallFlagInter(glyph, shape, grade) : new FlagInter(glyph, shape, grade);
 
         Link link = flag.lookupLink(systemStems);
 
