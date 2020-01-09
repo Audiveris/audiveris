@@ -370,11 +370,9 @@ public class InterFactory
         case FLAG_3_UP:
         case FLAG_4_UP:
         case FLAG_5_UP:
-            return AbstractFlagInter.createValidAdded(glyph, shape, grade, system, systemStems); // Glyph is checked
-
         case SMALL_FLAG:
         case SMALL_FLAG_SLASH:
-            return new SmallFlagInter(glyph, shape, grade);
+            return AbstractFlagInter.createValidAdded(glyph, shape, grade, system, systemStems); // Glyph is checked
 
         // Rests
         case LONG_REST:
