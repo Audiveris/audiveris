@@ -34,6 +34,9 @@ import org.audiveris.omr.sig.ui.SigPainter;
 import org.audiveris.omr.ui.util.UIUtil;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Stroke;
@@ -53,6 +56,8 @@ public class SelectionPainter
 {
 
     private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(SelectionPainter.class);
 
     /**
      * Creates a new {@code SelectionPainter} object.
