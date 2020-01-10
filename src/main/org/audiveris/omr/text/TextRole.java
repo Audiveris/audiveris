@@ -155,6 +155,7 @@ public enum TextRole
         Staff staff = system.getClosestStaff(left);
         int staffDy = staff.distanceTo(box.getLocation());
         boolean closeToStaff = staffDy <= scale.toPixels(constants.maxStaffDy);
+        boolean farFromStaff = staffDy >= scale.toPixels(constants.minStaffDy);
 
         // Begins on left side of the part?
         boolean leftOfStaves = left.x < system.getLeft();
@@ -245,8 +246,8 @@ public enum TextRole
                                            || switches.getValue(Switch.lyricsAboveStaff))
                                && ((partPosition == StaffPosition.BELOW_STAVES)
                                            || ((partPosition == StaffPosition.ABOVE_STAVES)
-                                               && switches.getValue(Switch.lyricsAboveStaff)))
-                               && (!isMainlyItalic)) {
+                                                       && switches.getValue(Switch.lyricsAboveStaff)))
+                       && (!isMainlyItalic)) {
                 return Lyrics;
             } else if (!tinySentence) {
                 return Direction;
@@ -262,12 +263,13 @@ public enum TextRole
                 return Direction;
             }
 
-            if (pageCentered && shortSentence && lastSystem) {
+            if (pageCentered && shortSentence && lastSystem && farFromStaff) {
                 return Rights;
             }
 
             if (part.getStaves().size() == 1) {
-                if (lyricsAllowed && (switches.getValue(Switch.lyrics) || switches.getValue(
+                if (lyricsAllowed
+                            && (switches.getValue(Switch.lyrics) || switches.getValue(
                         Switch.lyricsAboveStaff))
                             && (partPosition == StaffPosition.BELOW_STAVES)
                             && !isMainlyItalic) {
@@ -330,6 +332,10 @@ public enum TextRole
         private final Scale.Fraction maxStaffDy = new Scale.Fraction(
                 7,
                 "Maximum distance above staff for a direction");
+
+        private final Scale.Fraction minStaffDy = new Scale.Fraction(
+                6,
+                "Minimum distance below staff for a copyright");
 
         private final Scale.Fraction minTitleHeight = new Scale.Fraction(
                 3,

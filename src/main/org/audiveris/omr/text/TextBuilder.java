@@ -69,6 +69,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -126,9 +127,6 @@ public class TextBuilder
 
     /** Set of text lines. */
     private final Set<TextLine> textLines = new LinkedHashSet<>();
-
-    /** Processed sections. true/false */
-    private final Set<Section> processedSections = new LinkedHashSet<>();
 
     /** Manual mode. */
     private final Boolean manualLyrics;
@@ -792,14 +790,6 @@ public class TextBuilder
         return manualLyrics != null;
     }
 
-    //-------------//
-    // isProcessed //
-    //-------------//
-    private boolean isProcessed (Section section)
-    {
-        return processedSections.contains(section);
-    }
-
     //-----------------//
     // isValidFontSize //
     //-----------------//
@@ -1212,6 +1202,7 @@ public class TextBuilder
         logger.debug("System#{} recomposeLines", system.getId());
 
         // Separate lyrics and standard lines, based on their roles
+        // At this point, role is determined on each rawLine in isolation
         List<TextLine> standards = new ArrayList<>();
         List<TextLine> lyrics = new ArrayList<>();
         separatePopulations(rawLines, standards, lyrics);
@@ -1302,11 +1293,13 @@ public class TextBuilder
             final Rectangle charBox = charDesc.getBounds();
             final SortedSet<Section> charSections = new TreeSet<>(Section.byFullAbscissa);
 
-            for (Section section : allSections) {
+            for (Iterator<Section> it = allSections.iterator(); it.hasNext();) {
                 // Do we contain a section not (yet) assigned?
-                if (!isProcessed(section) && charBox.contains(section.getBounds())) {
+                Section section = it.next();
+
+                if (charBox.contains(section.getBounds())) {
                     charSections.add(section);
-                    setProcessed(section);
+                    it.remove();
                 }
             }
 
@@ -1365,14 +1358,6 @@ public class TextBuilder
                 }
             }
         }
-    }
-
-    //--------------//
-    // setProcessed //
-    //--------------//
-    private void setProcessed (Section section)
-    {
-        processedSections.add(section);
     }
 
     //--------------------//

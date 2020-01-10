@@ -50,7 +50,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
 
@@ -155,18 +154,10 @@ public class InterBoard
         super(Board.INTER, sheet.getInterIndex().getEntityService(), true);
         this.sheet = sheet;
 
-        // Force a constant height for the shapeIcon field, despite variation in size of the icon
-        Dimension dim = new Dimension(
-                constants.shapeIconWidth.getValue(),
-                constants.shapeIconHeight.getValue());
-        shapeIcon.setPreferredSize(dim);
-        shapeIcon.setMaximumSize(dim);
-        shapeIcon.setMinimumSize(dim);
-
         grade.getField().setBorder(null);
         grade.getField().setEditable(false);
 
-        details.setToolTipText("Grade details");
+        details.setToolTipText(resources.getString("details.toolTipText"));
         details.setHorizontalAlignment(SwingConstants.CENTER);
 
         edit.addActionListener(this);
@@ -335,7 +326,7 @@ public class InterBoard
         int r = 1; // -----------------------------
 
         // Shape Icon (start, spans several rows) + grade + Deassign button
-        builder.add(shapeIcon, cst.xywh(1, r, 1, 5));
+        builder.add(shapeIcon, cst.xywh(1, r, 1, 7, CellConstraints.CENTER, CellConstraints.CENTER));
 
         // Grade
         builder.add(grade.getLabel(), cst.xy(5, r));

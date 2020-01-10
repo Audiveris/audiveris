@@ -27,18 +27,23 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.ui.SigPainter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Color;
 import java.awt.Graphics;
 
 /**
  * Class {@code SheetGradedPainter} paints a sheet using shape-based colors and
- * grade-based opacities.
+ * grade-based opacity.
  *
  * @author Hervé Bitteur
  */
 public class SheetGradedPainter
         extends SheetPainter
 {
+
+    private static final Logger logger = LoggerFactory.getLogger(SheetGradedPainter.class);
 
     private final boolean withVoices;
 
