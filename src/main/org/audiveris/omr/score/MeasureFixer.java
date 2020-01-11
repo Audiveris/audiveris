@@ -242,8 +242,8 @@ public class MeasureFixer
             if (stack.getExpectedDuration() != null) {
                 stack.checkDuration();
             } else {
-                logger.warn("No target duration for measure {}, please check time signature.",
-                            stack.getPageId());
+                logger.warn("{} no target duration for measure {}, please check time signature.",
+                            system.getPage(), stack.getPageId());
             }
 
             // Check if all voices in all parts exhibit the same termination

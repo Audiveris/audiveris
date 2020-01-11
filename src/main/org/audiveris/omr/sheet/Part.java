@@ -25,15 +25,19 @@ import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.StaffPosition;
+import org.audiveris.omr.sheet.beam.BeamGroup;
+import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.ClefInter;
+import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omr.util.VerticalSide;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
@@ -42,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -589,6 +594,52 @@ public class Part
     public List<LyricLineInter> getLyrics ()
     {
         return (lyrics != null) ? Collections.unmodifiableList(lyrics) : Collections.EMPTY_LIST;
+    }
+
+    //--------------------//
+    // getMaximumDistance //
+    //--------------------//
+    /**
+     * Report the maximum distance of key classes of Part inters, into the provided
+     * vertical direction, with respect to the staff border line.
+     *
+     * @param side desired side
+     * @return maximum distance of inter bounds away from proper staff line
+     */
+    public int getMaximumDistance (VerticalSide side)
+    {
+        int maxDy = 0;
+
+        final LineInfo line = (side == VerticalSide.TOP)
+                ? getFirstStaff().getFirstLine()
+                : getLastStaff().getLastLine();
+        final List<Inter> inters = new ArrayList<>();
+
+        for (Measure measure : getMeasures()) {
+            inters.addAll(measure.getHeadChords());
+            inters.addAll(measure.getRestChords());
+            inters.addAll(measure.getTuplets());
+
+            for (BeamGroup beamGroup : measure.getBeamGroups()) {
+                inters.addAll(beamGroup.getBeams());
+            }
+
+            // Articulations?
+            // Dynamics?
+            // Fermata?
+            // Slurs?
+        }
+
+        for (Inter inter : inters) {
+            final Rectangle box = inter.getBounds();
+            final int x = inter.getCenter().x;
+            final int y = (side == VerticalSide.TOP) ? box.y : box.y + box.height - 1;
+            final int yStaff = line.yAt(x);
+            final int dy = (side == VerticalSide.TOP) ? yStaff - y : y - yStaff;
+            maxDy = Math.max(maxDy, dy);
+        }
+
+        return maxDy;
     }
 
     //--------------//

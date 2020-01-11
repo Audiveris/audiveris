@@ -21,14 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.step;
 
-import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.score.MeasureFixer;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageReduction;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SheetReduction;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.SystemManager;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voices;
 import org.audiveris.omr.sig.SIGraph;
@@ -40,8 +38,6 @@ import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.InterEnsemble;
-import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
@@ -70,18 +66,12 @@ import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.text.TextRole;
-import static org.audiveris.omr.util.VerticalSide.BOTTOM;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Rectangle;
-import java.awt.geom.Area;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -202,7 +192,7 @@ public class PageStep
             throws StepException
     {
         // Check gutter between systems one under the other
-        checkSystemGutters(sheet);
+        new SheetReduction(sheet).process();
 
         for (Page page : sheet.getPages()) {
             // Connect parts across systems in the page
@@ -384,111 +374,6 @@ public class PageStep
                 line.refineLyricSyllables();
             }
         }
-    }
-
-    //--------------------//
-    // checkSystemGutters //
-    //--------------------//
-    /**
-     * Check all inter-systems gutters to resolve 'duplicated' inters.
-     *
-     * @param sheet containing sheet
-     */
-    private void checkSystemGutters (Sheet sheet)
-    {
-        final SystemManager systemMgr = sheet.getSystemManager();
-
-        for (SystemInfo systemAbove : systemMgr.getSystems()) {
-            List<SystemInfo> neighbors = systemMgr.verticalNeighbors(systemAbove, BOTTOM);
-
-            for (SystemInfo systemBelow : neighbors) {
-                checkGutter(systemAbove, systemBelow);
-            }
-        }
-    }
-
-    //-------------//
-    // checkGutter //
-    //-------------//
-    /**
-     * Check the gutter between the two provided systems.
-     * <p>
-     * This concerns the area that is below the last line of last staff in system above
-     * and above the first line of first staff in system below.
-     *
-     * @param system1 system above
-     * @param system2 system below
-     */
-    private void checkGutter (SystemInfo system1,
-                              SystemInfo system2)
-    {
-        final Area gutter = new Area(system1.getArea());
-        gutter.intersect(system2.getArea());
-
-        final List<Inter> inters1 = getGutterInters(system1, gutter);
-        final List<Inter> inters2 = getGutterInters(system2, gutter);
-
-        final Staff staff1 = system1.getLastStaff();
-        final Staff staff2 = system2.getFirstStaff();
-
-        Loop1:
-        for (Inter inter1 : inters1) {
-            final Rectangle box1 = inter1.getBounds();
-            final Glyph g1 = inter1.getGlyph();
-            final double d1 = Math.abs(staff1.distanceTo(inter1.getCenter()));
-
-            for (Inter inter2 : inters2) {
-                final Rectangle box2 = inter2.getBounds();
-
-                if (box1.intersects(box2)) {
-                    logger.debug("Gutter {}/{} {} vs {}", system1.getId(), system2.getId(),
-                                 inter1, inter2);
-                    final Glyph g2 = inter2.getGlyph();
-
-                    if ((g1 != null) && (g1 == g2)) {
-                        final double d2 = Math.abs(staff2.distanceTo(inter2.getCenter()));
-
-                        if (d1 <= d2) {
-                            logger.debug("Removing {}", inter2);
-                            inter2.remove();
-                        } else {
-                            logger.debug("Removing {}", inter1);
-                            inter1.remove();
-                            continue Loop1;
-                        }
-                    } else {
-                        logger.info("Gutter. Different glyphs {}/{} {} vs {}",
-                                    system1.getId(), system2.getId(), inter1, inter2);
-                    }
-                }
-            }
-        }
-    }
-
-    //-----------------//
-    // getGutterInters //
-    //-----------------//
-    /**
-     * Report all inters of provided system whose center lies within provided area.
-     *
-     * @param system containing system
-     * @param area   provided area
-     * @return list of found inters, perhaps empty
-     */
-    private List<Inter> getGutterInters (SystemInfo system,
-                                         Area area)
-    {
-        List<Inter> found = new ArrayList<>();
-
-        for (Inter inter : system.getSig().vertexSet()) {
-            if (!(inter instanceof InterEnsemble) && area.contains(inter.getCenter())) {
-                found.add(inter);
-            }
-        }
-
-        Collections.sort(found, Inters.byCenterAbscissa);
-
-        return found;
     }
 
     //--------//
