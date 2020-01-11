@@ -237,6 +237,26 @@ public class SentenceInter
         return (WordInter) words.get(words.size() - 1);
     }
 
+    //-----------//
+    // getLength //
+    //-----------//
+    /**
+     * Report the total number of characters in the sentence.
+     *
+     * @return count of characters, inter-word spaces excluded.
+     */
+    public int getLength ()
+    {
+
+        int length = 0;
+
+        for (Inter word : getMembers()) {
+            length += ((WordInter) word).getValue().length();
+        }
+
+        return length;
+    }
+
     //-------------//
     // getLocation //
     //-------------//
