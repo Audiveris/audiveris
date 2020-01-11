@@ -24,9 +24,12 @@ package org.audiveris.omr.ui.util;
 import java.awt.BorderLayout;
 import java.util.Timer;
 import java.util.TimerTask;
+import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import org.audiveris.omr.ui.Colors;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.Task;
 
@@ -98,7 +101,18 @@ public abstract class WaitingTask<T, V>
 
                 dialog = new JDialog(application.getMainFrame(), dialogTitle, false);
                 JPanel panel = new JPanel();
+                panel.setLayout(new BorderLayout());
+                panel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+
+                // Animated progress bar
+                JProgressBar bar = new JProgressBar();
+                bar.setIndeterminate(true);
+                bar.setForeground(Colors.PROGRESS_BAR);
+                panel.add(bar, BorderLayout.NORTH);
+
+                // Message
                 panel.add(new JLabel(message), BorderLayout.CENTER);
+
                 dialog.setContentPane(panel);
                 dialog.pack();
                 dialog.setLocationRelativeTo(application.getMainFrame());
