@@ -767,6 +767,10 @@ public class SlotsRetriever
     //------------------//
     /**
      * A pair of chords may be linked by an explicit ChordTimeJoinRelation.
+     * <p>
+     * Right now, a ChordTimeJoinRelation is effective only if both source and target chords
+     * belong to the same measure (and thus the same part).
+     * TODO: Should we support time alignment across parts?
      */
     private void inspectTimeJoins ()
     {
@@ -776,8 +780,10 @@ public class SlotsRetriever
             final AbstractChordInter ch1 = (AbstractChordInter) sig.getEdgeSource(same);
             final AbstractChordInter ch2 = (AbstractChordInter) sig.getEdgeTarget(same);
 
-            setRel(ch1, ch2, EQUAL);
-            setRel(ch2, ch1, EQUAL);
+            if ((ch1.getMeasure() == measure) && (ch2.getMeasure() == measure)) {
+                setRel(ch1, ch2, EQUAL);
+                setRel(ch2, ch1, EQUAL);
+            }
         }
     }
 

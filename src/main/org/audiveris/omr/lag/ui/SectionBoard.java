@@ -108,12 +108,6 @@ public class SectionBoard
 
         this.lag = lag;
 
-        x.getField().setBorder(null);
-        y.getField().setBorder(null);
-        weight.getField().setBorder(null);
-        width.getField().setBorder(null);
-        height.getField().setBorder(null);
-
         x.setEnabled(false);
         y.setEnabled(false);
         weight.setEnabled(false);

@@ -34,50 +34,48 @@ import org.audiveris.omr.lag.JunctionRatioPolicy;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.SectionFactory;
 import org.audiveris.omr.math.GeoUtil;
-import org.audiveris.omr.math.LineUtil;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.SystemManager;
+import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.WordInter;
-import org.audiveris.omr.ui.symbol.TextFont;
+import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Pair;
 import org.audiveris.omr.util.StopWatch;
-import org.audiveris.omr.util.WrappedBoolean;
-import org.audiveris.omr.util.XmlUtil;
+import org.audiveris.omr.util.VerticalSide;
+import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.FontRenderContext;
-import java.awt.font.TextLayout;
 import java.awt.geom.Area;
-import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  * Class {@code TextBuilder} works at system level, providing features to check, build
@@ -105,12 +103,6 @@ public class TextBuilder
     /** Needed for font size computation. */
     protected static final FontRenderContext frc = new FontRenderContext(null, true, true);
 
-    /** Abnormal characters. */
-    private static final char[] ABNORMAL_CHARS = new char[]{'\\'};
-
-    /** Regexp for abnormal words. */
-    private static final Pattern ABNORMAL_WORDS = getAbnormalWords();
-
     /** Related system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -119,17 +111,23 @@ public class TextBuilder
     @Navigable(false)
     private final Sheet sheet;
 
+    /** Global scale. */
+    private final Scale scale;
+
     /** Global skew. */
     private final Skew skew;
-
-    /** Scale-dependent parameters. */
-    private final Parameters params;
 
     /** Set of text lines. */
     private final Set<TextLine> textLines = new LinkedHashSet<>();
 
     /** Manual mode. */
     private final Boolean manualLyrics;
+
+    /** Maximum acceptable vertical shift between line chunks. */
+    private final int maxLineDy;
+
+    /** Map with key as staff pair and value as lines partition. */
+    private final Map<Pair<Staff>, Pair<List<TextLine>>> gutterMap = new HashMap<>();
 
     /**
      * Creates a new TextBuilder object in engine mode (TEXTS step).
@@ -138,29 +136,101 @@ public class TextBuilder
      */
     public TextBuilder (SystemInfo system)
     {
-        this.system = system;
-
-        sheet = system.getSheet();
-        skew = sheet.getSkew();
-        manualLyrics = null;
-        params = new Parameters(sheet.getScale(), false);
+        this(system, null);
     }
 
     /**
-     * Creates a new TextBuilder object in manual mode.
+     * Creates a new TextBuilder object, in either engine or manual mode.
+     * <p>
+     * In engine mode, manualLyrics is null, leaving lines roles fully open.
+     * <p>
+     * In manual mode, the user has selected either "lyrics" (which forces lyrics mode) or "text"
+     * (which leaves the role open to anything but lyrics).
      *
      * @param system       the related system
-     * @param manualLyrics true for lyrics, false for any role but lyrics
+     * @param manualLyrics null for any role, true for lyrics, false for any role but lyrics
      */
     public TextBuilder (SystemInfo system,
-                        boolean manualLyrics)
+                        Boolean manualLyrics)
     {
         this.system = system;
         this.manualLyrics = manualLyrics;
 
         sheet = system.getSheet();
+        scale = sheet.getScale();
         skew = sheet.getSkew();
-        params = new Parameters(sheet.getScale(), true);
+        maxLineDy = scale.toPixels(constants.maxLineDy);
+    }
+
+    //-------------//
+    // adjustLines //
+    //-------------//
+    private void adjustLines (List<TextLine> lines)
+    {
+        for (TextLine line : lines) {
+            for (TextWord word : line.getWords()) {
+                word.adjust(scale);
+            }
+        }
+    }
+
+    //----------------//
+    // adjustFontSize //
+    //----------------//
+    private void adjustFontSize (List<TextLine> lines)
+    {
+        for (Iterator<TextLine> it = lines.iterator(); it.hasNext();) {
+            TextLine line = it.next();
+
+            for (Iterator<TextWord> itw = line.getWords().iterator(); itw.hasNext();) {
+                TextWord word = itw.next();
+
+                if (!word.isDashed()) {
+                    boolean ok = word.adjustFontSize();
+
+                    if (!ok) {
+                        itw.remove();
+                    }
+                }
+            }
+
+            if (line.getWords().isEmpty()) {
+                it.remove();
+            }
+        }
+    }
+
+    //----------------//
+    // isMainlyItalic //
+    //----------------//
+    /**
+     * Check whether the (majority of) line is in italic font.
+     *
+     * @param line the line to check
+     * @return true if mainly italics
+     */
+    public static boolean isMainlyItalic (TextLine line)
+    {
+        final double minConfidence = TesseractOCR.getInstance().getMinConfidence();
+        int reliableWords = 0;
+        int italicWords = 0;
+
+        for (TextWord word : line.getWords()) {
+            if ((word.getConfidence() >= minConfidence) && (word.getLength() > 1)) {
+                reliableWords++;
+
+                if (word.getFontInfo().isItalic) {
+                    italicWords++;
+                }
+            }
+        }
+
+        // Check for majority among reliable words
+        if (reliableWords != 0) {
+            return (italicWords * 2) >= reliableWords;
+        } else {
+            return false;
+        }
     }
 
     //-----------------//
@@ -169,6 +239,8 @@ public class TextBuilder
     /**
      * Look for an existing lyric line that a lyric item at provided baseline location
      * should join.
+     * <p>
+     * This method is called in manual mode only.
      *
      * @param baseLocation baseline location for a new text line
      * @return the lyric line to join, if any
@@ -177,6 +249,8 @@ public class TextBuilder
     {
         final double newY = skew.deskewed(baseLocation).getY();
         final List<LyricLineInter> lines = system.getLyricLines();
+
+        // Find closest line, ordinatewise
         Double bestDy = Double.MAX_VALUE;
         LyricLineInter bestLine = null;
 
@@ -190,59 +264,37 @@ public class TextBuilder
             }
         }
 
-        if (bestDy <= params.maxLyricsDy) {
+        // Check we are compatible with this closest line
+        if (bestDy <= maxLineDy) {
             return bestLine;
         }
 
         return null;
     }
 
-    //------------------//
-    // numberLyricLines //
-    //------------------//
-    /**
-     * Order and number the system lyric lines per part.
-     */
-    public void numberLyricLines ()
-    {
-        final List<LyricLineInter> lines = system.getLyricLines();
-
-        // Assign sequential number to lyric line in its part
-        int lyricNumber = 0;
-        Part part = null;
-
-        for (LyricLineInter line : lines) {
-            Staff staff = line.getStaff();
-            Part newPart = staff.getPart();
-
-            if (newPart != part) {
-                lyricNumber = 0;
-                part = newPart;
-            }
-
-            line.setNumber(++lyricNumber);
-        }
-    }
-
-    //--------------------//
-    // retrieveGlyphLines //
-    //--------------------//
+    //--------------//
+    // processGlyph //
+    //--------------//
     /**
      * Retrieve the glyph lines, among the lines OCR'ed from the glyph buffer.
+     * <p>
+     * This method is called in manual mode only.
+     * Boolean 'manualLyrics' is not null and is either true for lyrics imposed or false for lyrics
+     * forbidden.
      *
      * @param buffer     the (glyph) pixel buffer
      * @param glyphLines the glyph raw OCR lines, relative to buffer origin
      * @param offset     glyph top left corner (with respect to sheet origin)
      * @return the final absolute text lines, ready to be inserted in sig
      */
-    public List<TextLine> retrieveGlyphLines (ByteProcessor buffer,
-                                              List<TextLine> glyphLines,
-                                              Point offset)
+    public List<TextLine> processGlyph (ByteProcessor buffer,
+                                        List<TextLine> glyphLines,
+                                        Point offset)
     {
         // Pre-assign text role as lyrics?
         if (isManual() && manualLyrics) {
             for (TextLine line : glyphLines) {
-                line.setRole(TextRole.Lyrics);
+                line.setRole(TextRole.Lyrics); // Here, lyrics role is certain!
             }
         }
 
@@ -259,266 +311,75 @@ public class TextBuilder
         return glyphLines;
     }
 
-    //---------------------//
-    // retrieveSystemLines //
-    //---------------------//
+    //---------------//
+    // processSystem //
+    //---------------//
     /**
      * Retrieve the system-relevant lines, among all the lines OCR'ed at sheet level.
+     * <p>
+     * We may have lines that belong to the system above and lines that belong to the system below.
+     * We try to filter them out immediately.
      *
      * @param buffer     the (sheet) pixel buffer
-     * @param sheetLines the sheet raw OCR lines
+     * @param sheetLines the sheet raw OCR'ed lines
      */
-    public void retrieveSystemLines (ByteProcessor buffer,
-                                     List<TextLine> sheetLines)
+    public void processSystem (ByteProcessor buffer,
+                               List<TextLine> sheetLines)
     {
-        StopWatch watch = new StopWatch("Texts retrieveLines system#" + system.getId());
-        watch.start("Pickup system lines");
+        logger.debug("processSystem #{}", system.getId());
 
-        List<TextLine> systemLines = new ArrayList<>();
+        StopWatch watch = new StopWatch("Texts processSystem #" + system.getId());
+        watch.start("retrieveRawLines");
+        List<TextLine> rawLines = getSystemRawLines(sheetLines);
 
-        // We pick up the words that are contained by system area
-        // Beware: a text located between two systems must be deep copied to each system!
-        final Area area = system.getArea();
-        final Rectangle areaBounds = area.getBounds();
+        // Gather rawLines into long lines
+        watch.start("longLines");
+        List<TextLine> longLines = mergeRawLines(rawLines);
 
-        for (TextLine sheetLine : sheetLines) {
-            if (areaBounds.intersects(sheetLine.getBounds())) {
-                TextLine line = new TextLine();
-
-                for (TextWord sheetWord : sheetLine.getWords()) {
-                    final Rectangle wordBox = sheetWord.getBounds();
-
-                    if (area.contains(wordBox)) {
-                        TextWord word = sheetWord.copy();
-                        line.appendWord(word);
-                    }
-                }
-
-                if (!line.getWords().isEmpty()) {
-                    systemLines.add(line);
-                }
-            }
+        if (logger.isDebugEnabled()) {
+            dump("longLines", longLines, false);
         }
 
-        Collections.sort(systemLines, TextLine.byOrdinate(skew));
+        // Discard lines that pertain to a system above or to a system below
+        purgeExternalLines(longLines);
 
+        // Partition lines between parts of the system
+        partitionPartLines(longLines);
+
+        // Assign a role to each long line
+        guessLongRoles(longLines);
+
+        // Assign each lyric line to proper staff
+        mapLyricLines(longLines);
+
+        // Separate additional work on lyric lines and on standard lines
         watch.start("recomposeLines");
-        systemLines = recomposeLines(systemLines);
+        List<TextLine> lines = recomposeLines(longLines);
 
-        // Retrieve candidate sections and map words to glyphs
+        // Retrieve candidate sections (not the usual horizontal or vertical sheet sections)
         watch.start("getSections");
+        List<Section> relSections = getSections(buffer, lines);
 
-        // Brand new sections (not the usual horizontal or vertical sheet sections)
-        List<Section> relSections = getSections(buffer, systemLines);
+        // Map words to section-based glyphs
         watch.start("mapGlyphs");
-        mapGlyphs(systemLines, relSections, null);
+        mapGlyphs(lines, relSections, null);
 
-        // Allocate corresponding inters based on role (Sentences or LyricLines of LyricItems)
+        // Allocate corresponding inters based on role
+        // - Sentences of Words (or of one ChordName)
+        // - LyricLines of LyricItems
         watch.start("createInters");
         createInters();
 
         watch.start("numberLyricLines()");
-        numberLyricLines();
+        system.numberLyricLines();
 
         if (constants.printWatch.isSet()) {
             watch.print();
         }
 
         if (logger.isDebugEnabled()) {
-            dump("Retrieved lines", systemLines);
+            dump("Retrieved lines", lines, true);
         }
-    }
-
-    //-----------//
-    // checkRole //
-    //-----------//
-    /**
-     * Try to assign a role to the provided line, if none is already assigned.
-     *
-     * @param line the line to check for role
-     */
-    private void checkRole (TextLine line)
-    {
-        if (line.getRole() == null) {
-            try {
-                TextRole role = (isManual() && manualLyrics) ? TextRole.Lyrics
-                        : TextRole.guessRole(line, system, manualLyrics == null);
-
-                if (role != null) {
-                    line.setRole(role);
-                }
-            } catch (Exception ex) {
-                logger.warn("Error in checRole for {} {}", line, ex.toString(), ex);
-            }
-        }
-    }
-
-    //---------------//
-    // checkValidity //
-    //---------------//
-    /**
-     * Check the OCR line, which may get some of its words removed.
-     * <p>
-     * First remove any really invalid word from the line.
-     * Then use average of remaining words confidence value.
-     * Use font size validity.
-     * Use ratio of invalid words.
-     *
-     * @param line the OCR output
-     * @return reason for invalidity if any, otherwise null
-     */
-    private String checkValidity (TextLine line)
-    {
-        {
-            // Discard really invalid words
-            final double lowConf = constants.lowConfidence.getValue();
-            final List<TextWord> toRemove = new ArrayList<>();
-
-            for (TextWord word : line.getWords()) {
-                if (word.getConfidence() < lowConf) {
-                    if (logger.isDebugEnabled()) {
-                        logger.info("    low-conf word {} vs {}", word, lowConf);
-                    }
-
-                    toRemove.add(word);
-                } else {
-                    String reason = checkValidity(word);
-
-                    if (reason != null) {
-                        if (logger.isDebugEnabled()) {
-                            logger.info("    invalid word {} {}", word, reason);
-                        }
-
-                        toRemove.add(word);
-                    }
-                }
-            }
-
-            if (!toRemove.isEmpty()) {
-                line.removeWords(toRemove);
-                checkRole(line);
-            }
-        }
-
-        // Check global line confidence
-        Double conf = line.getConfidence();
-        double minConf = constants.minConfidence.getValue();
-
-        if ((conf == null) || conf.isNaN() || (conf < minConf)) {
-            return "low-confidence";
-        }
-
-        // Check font size
-        if (!isValidFontSize(line)) {
-            return "invalid-font-size";
-        }
-
-        //        // Check ratio of invalid words in the line
-        //        int invalidCount = 0;
-        //
-        //        for (TextWord word : line.getWords()) {
-        //            String reason = checkValidity(word);
-        //
-        //            if (reason != null) {
-        //                invalidCount++;
-        //            }
-        //        }
-        //
-        //        double invalidRatio = (double) invalidCount / line.getWords().size();
-        //
-        //        if (invalidRatio > constants.maxInvalidRatio.getValue()) {
-        //            return "many-invalid-words";
-        //        }
-        //
-        return null; // OK
-    }
-
-    //---------------//
-    // checkValidity //
-    //---------------//
-    /**
-     * Check the provided OCR'ed word. (the word is not modified)
-     *
-     * @param word the word to check
-     * @return reason for invalidity if any, otherwise null
-     */
-    private String checkValidity (TextWord word)
-    {
-        final String value = word.getValue();
-
-        // Check for abnormal characters
-        for (char ch : ABNORMAL_CHARS) {
-            if (value.indexOf(ch) != -1) {
-                logger.debug("Abnormal char {} in {}", ch, word);
-
-                return "abnormal-chars";
-            }
-        }
-
-        // Check for invalid XML characters
-        WrappedBoolean stripped = new WrappedBoolean(false);
-        XmlUtil.stripNonValidXMLCharacters(value, stripped);
-
-        if (stripped.isSet()) {
-            logger.debug("Invalid XML chars in {}", word);
-
-            return "invalid-xml-chars";
-        }
-
-        // Check for invalid word values
-        if (ABNORMAL_WORDS != null) {
-            Matcher matcher = ABNORMAL_WORDS.matcher(value);
-
-            if (matcher.matches()) {
-                logger.debug("Abnormal word value {}", word);
-
-                return "abnormal-word-value";
-            }
-        }
-
-        // (Applicable only for non-tiny width or height)
-        Rectangle box = word.getBounds();
-
-        if ((box.width >= params.minWidthForCheck) && (box.height >= params.minHeightForCheck)) {
-            // Check for non-consistent aspect
-            String str = word.getValue();
-            Font font = new TextFont(word.getFontInfo());
-            TextLayout layout = new TextLayout(str, font, frc);
-            Rectangle2D rect = layout.getBounds();
-            double xRatio = box.width / rect.getWidth();
-            double yRatio = box.height / rect.getHeight();
-            double aRatio = yRatio / xRatio;
-
-            if ((aRatio < params.minAspectRatio) || (aRatio > params.maxAspectRatio)) {
-                logger.debug(
-                        "   Invalid aspect {} vs [{}-{}] for {}",
-                        aRatio,
-                        params.minAspectRatio,
-                        params.maxAspectRatio,
-                        word);
-
-                return "invalid aspect";
-            }
-
-            // Check size
-            double boxDiag = Math.hypot(box.width, box.height);
-            double rectDiag = Math.hypot(rect.getWidth(), rect.getHeight());
-            double diagRatio = boxDiag / rectDiag;
-
-            ///logger.info(String.format("aspect:%.2f diag:%.2f %s", aRatio, diagRatio, word));
-            if ((diagRatio < params.minDiagRatio) || (diagRatio > params.maxDiagRatio)) {
-                logger.debug(
-                        "   Invalid diagonal {} vs [{}-{}] for {}",
-                        diagRatio,
-                        params.minDiagRatio,
-                        params.maxDiagRatio,
-                        word);
-
-                return "invalid diagonal";
-            }
-        }
-
-        return null; // OK
     }
 
     //--------------//
@@ -542,7 +403,13 @@ public class TextBuilder
                             : SentenceInter.create(line));
 
             // Related staff (can still be modified later)
-            Staff staff = sentence.assignStaff(system, line.getLocation());
+            Staff staff = line.getStaff();
+
+            if (staff != null) {
+                sentence.setStaff(staff);
+            } else {
+                staff = sentence.assignStaff(system, line.getLocation());
+            }
 
             if (staff != null) {
                 // Populate sig
@@ -550,11 +417,15 @@ public class TextBuilder
 
                 // Link sentence and words
                 for (TextWord word : line.getWords()) {
-                    WordInter wordInter = (role == TextRole.Lyrics) ? new LyricItemInter(word)
-                            : new WordInter(word);
-                    wordInter.setStaff(staff);
-                    sig.addVertex(wordInter);
-                    sentence.addMember(wordInter);
+                    final WordInter wordInter = (role == TextRole.Lyrics) ? new LyricItemInter(word)
+                            : ((role == TextRole.ChordName) ? ChordNameInter.createValid(word)
+                                    : new WordInter(word));
+
+                    if (wordInter != null) {
+                        wordInter.setStaff(staff);
+                        sig.addVertex(wordInter);
+                        sentence.addMember(wordInter);
+                    }
                 }
             }
         }
@@ -564,101 +435,99 @@ public class TextBuilder
     // dump //
     //------//
     private void dump (String title,
-                       List<TextLine> lines)
+                       List<TextLine> lines,
+                       boolean withWords)
     {
-        logger.info("System#{} --- {}", system.getId(), title);
+        TextLine.dump("System#" + system.getId() + " --- " + title, lines, withWords);
+    }
+
+    //-----------//
+    // findBreak //
+    //-----------//
+    /**
+     * Find the index of the breaking line, if any, between upper and lower systems.
+     *
+     * @param line1 last line of upper staff
+     * @param dy1   ordinate extension of core musical items in upper system
+     * @param line2 first line of lower staff
+     * @param dy2   ordinate extension of core musical items in lower system
+     * @param lines the sequence of gutter lines to check
+     * @return the index of breaking line or -1 if not found
+     */
+    private int findBreak (LineInfo line1,
+                           int dy1,
+                           LineInfo line2,
+                           int dy2,
+                           List<TextLine> lines)
+    {
+        if (lines.isEmpty()) {
+            return -1;
+        }
+
+        // Compute the sequence of vertical gaps
+        final int[] gaps = new int[lines.size() + 1];
+        Point prevCenter = null;
+        int i;
+
+        for (i = 0; i < lines.size(); i++) {
+            TextLine line = lines.get(i);
+            Point center = line.getCenter();
+
+            if (i == 0) {
+                // Gap from upper system core limit
+                gaps[i] = center.y - (line1.yAt(center.x) + dy1);
+            } else {
+                // Gap from previous sentence
+                gaps[i] = center.y - prevCenter.y;
+            }
+
+            prevCenter = center;
+        }
+
+        // Gap to lower system core limit
+        gaps[i] = line2.yAt(prevCenter.x) - dy2 - prevCenter.y;
+
+        // Now pickup the largest gap
+        int breakDy = Integer.MIN_VALUE;
+        int breakIndex = -1;
+
+        for (i = 0; i < gaps.length; i++) {
+            int dy = gaps[i];
+            if (breakDy <= dy) {
+                breakDy = dy;
+                breakIndex = i;
+            }
+        }
+
+        logger.debug("gaps:{} breakIndex:{}", gaps, breakIndex);
+
+        return breakIndex;
+    }
+
+    //----------------//
+    // getGutterLines //
+    //----------------//
+    /**
+     * Among the provided lines, retrieve the ones that are located in gutter area.
+     *
+     * @param lines  the provided lines
+     * @param gutter the gutter area
+     * @return the lines in gutter
+     */
+    private List<TextLine> getGutterLines (List<TextLine> lines,
+                                           Area gutter)
+    {
+        final List<TextLine> found = new ArrayList<>();
 
         for (TextLine line : lines) {
-            logger.info("   {}", line);
+            final Point center = line.getCenter();
 
-            for (TextWord word : line.getWords()) {
-                logger.info("      {}", word);
-            }
-        }
-    }
-
-    //---------------//
-    // dumpTextLines //
-    //---------------//
-    /**
-     * Debug method to list current system text lines.
-     *
-     * @param title a title for the dump
-     */
-    private void dumpTextLines (String title)
-    {
-        logger.info("{} lines: {}", title, textLines.size());
-
-        for (TextLine line : textLines) {
-            logger.info("   {}", line);
-        }
-    }
-
-    //-------------//
-    // findNewWord //
-    //-------------//
-    /**
-     * Try to find in the provided new line the word that corresponds to the provided
-     * old word.
-     *
-     * @param oldWord old word
-     * @param newLine the line to search
-     * @return the corresponding new word, or null if not found
-     */
-    private TextWord findNewWord (TextWord oldWord,
-                                  TextLine newLine)
-    {
-        Rectangle oldBounds = oldWord.getBounds();
-
-        for (TextWord word : newLine.getWords()) {
-            if (word.getBounds().equals(oldBounds)) {
-                return word;
+            if (gutter.contains(center)) {
+                found.add(line);
             }
         }
 
-        return null;
-    }
-
-    //-----------------//
-    // getDeskewedCore //
-    //-----------------//
-    /**
-     * Build a rectangle using de-skewed baseline and min 1 pixel high.
-     *
-     * @param line the TextLine entity
-     * @return the de-skewed core
-     */
-    private Rectangle getDeskewedCore (TextLine line)
-    {
-        Point2D P1 = line.getDskOrigin(skew);
-        Point p1 = new Point((int) Math.rint(P1.getX()), (int) Math.rint(P1.getY()));
-        Point2D P2 = skew.deskewed(line.getBaseline().getP2());
-        Point p2 = new Point((int) Math.rint(P2.getX()), (int) Math.rint(P2.getY()));
-        Rectangle rect = new Rectangle(p1);
-        rect.add(p2);
-
-        rect.height = Math.max(1, rect.height); // To allow containment test
-
-        return rect;
-    }
-
-    //---------------//
-    // getMaxCharGap //
-    //---------------//
-    /**
-     * Compute max abscissa gap between two chars in a word.
-     *
-     * @param word the word at hand
-     * @return max number of pixels for abscissa gap, according to the word font size
-     */
-    private int getMaxCharGap (TextWord word)
-    {
-        int pointSize = word.getFontInfo().pointsize;
-
-        // TODO: very rough value to be refined and explained!
-        int val = (int) Math.rint((constants.maxCharDx.getValue() * pointSize) / 2.0);
-
-        return val;
+        return found;
     }
 
     //-------------//
@@ -688,93 +557,87 @@ public class TextBuilder
         return allSections;
     }
 
-    //-------------//
-    // getSubWords //
-    //-------------//
+    //-------------------//
+    // getSystemRawLines //
+    //-------------------//
     /**
-     * Report the potential sub-words of the provided word, based on the provided
-     * scanner to adapt to OCR or Manual values.
+     * Among the lines OCR'ed from whole sheet, select the ones that could belong to our
+     * system.
+     * <p>
+     * Sheet lines are deep-copied to system lines.
      *
-     * @param word    the word to process
-     * @param line    the containing line
-     * @param scanner how to scan the word
-     * @return the sequence of created (sub)words, perhaps empty
+     * @param sheetLines sheet collection of OCR'ed lines
+     * @return the relevant sheet lines
      */
-    private List<TextWord> getSubWords (TextWord word,
-                                        TextLine line,
-                                        WordScanner scanner)
+    private List<TextLine> getSystemRawLines (List<TextLine> sheetLines)
     {
-        final List<TextWord> subWords = new ArrayList<>();
-        final int contentLength = word.getValue().length();
+        List<TextLine> rawLines = new ArrayList<>();
 
-        while (scanner.hasNext()) {
-            String subValue = scanner.next();
+        final Area area = system.getArea();
+        final Rectangle areaBounds = area.getBounds();
 
-            if (subValue.length() < contentLength) {
-                // We have a real subword
-                List<TextChar> wordChars = scanner.getWordChars();
+        for (TextLine sheetLine : sheetLines) {
+            if (areaBounds.intersects(sheetLine.getBounds())) {
+                TextLine line = new TextLine();
 
-                // Compute (sub) baseline parameters
-                Line2D base = word.getBaseline();
-                int x1 = wordChars.get(0).getBounds().x;
-                Point2D p1 = LineUtil.intersection(
-                        base.getP1(),
-                        base.getP2(),
-                        new Point2D.Double(x1, 0),
-                        new Point2D.Double(x1, 100));
+                for (TextWord sheetWord : sheetLine.getWords()) {
+                    final Rectangle wordBox = sheetWord.getBounds();
 
-                Rectangle box = wordChars.get(wordChars.size() - 1).getBounds();
-                int x2 = (box.x + box.width) - 1;
-                Point2D p2 = LineUtil.intersection(
-                        base.getP1(),
-                        base.getP2(),
-                        new Point2D.Double(x2, 0),
-                        new Point2D.Double(x2, 100));
-                Line2D subBase = new Line2D.Double(p1, p2);
-
-                // Allocate sub-word
-                TextWord newWord = new TextWord(
-                        subBase,
-                        subValue,
-                        word.getFontInfo(),
-                        word.getConfidence(),
-                        wordChars,
-                        line);
-
-                if (logger.isDebugEnabled()) {
-                    logger.info("  subWord '{}' out of '{}'", newWord.getValue(), word.getValue());
+                    if (area.contains(wordBox)) {
+                        TextWord word = sheetWord.copy();
+                        line.appendWord(word);
+                    }
                 }
 
-                subWords.add(newWord);
+                if (!line.getWords().isEmpty()) {
+                    rawLines.add(line);
+                }
             }
         }
 
-        return subWords;
+        adjustLines(rawLines);
+        rawLines = purgeInvalidLines(rawLines);
+        Collections.sort(rawLines, TextLine.byOrdinate(skew));
+
+        return rawLines;
     }
 
-    //------------//
-    // getWordGap //
-    //------------//
+    //----------------//
+    // guessLongRoles //
+    //----------------//
     /**
-     * Report the maximum abscissa gap between two consecutive words of the provided line.
-     * <p>
-     * We use a smaller horizontal gap between chord names than between words of ordinary standard
-     * lines.
+     * Assign suitable TextRole to each of the provided long lines.
      *
-     * @param line the line provided
-     * @return the maximum abscissa gap to use
+     * @param longLines the long lines to process
      */
-    private int getWordGap (TextLine line)
+    private void guessLongRoles (List<TextLine> longLines)
     {
-        // Chord name
-        if (line.isChordName()) {
-            return params.maxChordDx;
+        for (TextLine line : longLines) {
+            guessRole(line);
+
+            if (logger.isDebugEnabled()) {
+                logger.info(String.format("long %16s %s", line.getRole(), line));
+            }
         }
+    }
 
-        // Standard line, adapt inter-word gap to font size
-        int pointSize = line.getMeanFont().pointsize;
-
-        return (int) Math.rint(params.maxWordDxFontRatio * pointSize);
+    //-----------//
+    // guessRole //
+    //-----------//
+    /**
+     * Try to assign a role to the provided line.
+     *
+     * @param line the line to check
+     */
+    private void guessRole (TextLine line)
+    {
+        try {
+            TextRole role = (isManual() && manualLyrics) ? TextRole.Lyrics
+                    : TextRole.guessRole(line, system, manualLyrics == null);
+            line.setRole(role);
+        } catch (Exception ex) {
+            logger.warn("Error in guessRole for {} {}", line, ex.toString(), ex);
+        }
     }
 
     //----------//
@@ -788,53 +651,6 @@ public class TextBuilder
     private boolean isManual ()
     {
         return manualLyrics != null;
-    }
-
-    //-----------------//
-    // isValidFontSize //
-    //-----------------//
-    /**
-     * Check whether all words in the provided line have a valid font size.
-     *
-     * @param line the OCR'ed line to check
-     * @return true if valid
-     */
-    private boolean isValidFontSize (TextLine line)
-    {
-        // Heuristic: Allow large font only before first staff
-        final Point2D origin = line.getBaseline().getP1();
-        final int maxFontSize;
-
-        if ((system.getId() == 1)
-                    && (origin.getY() < system.getFirstStaff().getFirstLine().yAt(origin.getX()))) {
-            maxFontSize = params.maxTitleFontSize;
-        } else {
-            maxFontSize = params.maxFontSize;
-        }
-
-        for (TextWord word : line.getWords()) {
-            FontInfo fontInfo = word.getFontInfo();
-
-            if (fontInfo.pointsize > maxFontSize) {
-                logger.debug(
-                        "Too big font {} vs {} on {}",
-                        fontInfo.pointsize,
-                        params.maxFontSize,
-                        line);
-
-                return false;
-            } else if (fontInfo.pointsize < params.minFontSize) {
-                logger.debug(
-                        "Too small font {} vs {} on {}",
-                        fontInfo.pointsize,
-                        params.minFontSize,
-                        line);
-
-                return false;
-            }
-        }
-
-        return true;
     }
 
     //-----------//
@@ -896,7 +712,7 @@ public class TextBuilder
                     } else {
                         logger.debug("    mapped {}", word);
                     }
-                } else {
+                } else if (!word.isAdjusted()) {
                     logger.debug("No section found for {}", word);
                     toRemove.add(word);
                 }
@@ -906,6 +722,59 @@ public class TextBuilder
             line.removeWords(toRemove);
 
             textLines.add(line);
+        }
+    }
+
+    //---------------//
+    // mapLyricLines //
+    //---------------//
+    /**
+     * Map each lyric line to proper staff.
+     *
+     * @param longLines the long lines (both lyric and standard)
+     */
+    private void mapLyricLines (List<TextLine> longLines)
+    {
+        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
+        final boolean aboveAllowed = switches.getValue(ProcessingSwitches.Switch.lyricsAboveStaff);
+
+        for (TextLine line : longLines) {
+            if (line.getRole() != TextRole.Lyrics) {
+                continue;
+            }
+
+            final Point center = line.getCenter();
+            Staff staff = null;
+
+            final Staff staffAbove = system.getStaffAtOrAbove(center);
+            final Staff staffBelow = system.getStaffAtOrBelow(center);
+
+            if (staffAbove == null) {
+                staff = staffBelow;
+            }
+
+            if (staffBelow == null) {
+                staff = staffAbove;
+            }
+
+            if ((staffAbove != null) && (staffBelow != null)) {
+                if (!aboveAllowed || (staffAbove.getPart() == staffBelow.getPart())) {
+                    staff = staffAbove;
+                } else {
+                    // Use partition of the gutter between the 2 parts
+                    final Pair<Staff> staffPair = new Pair<>(staffAbove, staffBelow);
+                    final Pair<List<TextLine>> linePartition = gutterMap.get(staffPair);
+
+                    if (linePartition.two.contains(line)) {
+                        staff = staffBelow;
+                    } else {
+                        staff = staffAbove;
+                    }
+                }
+
+            }
+
+            line.setStaff(staff);
         }
     }
 
@@ -933,7 +802,6 @@ public class TextBuilder
             }
 
             line = mergeLines(chunks);
-            checkRole(line);
 
             if (line.isVip() || logger.isDebugEnabled()) {
                 logger.info("      merge result {}", line);
@@ -966,31 +834,29 @@ public class TextBuilder
         return new TextLine(words);
     }
 
-    //-----------------//
-    // mergeLyricLines //
-    //-----------------//
+    //---------------//
+    // mergeRawLines //
+    //---------------//
     /**
-     * For lyrics, separate lines with similar ordinate trigger a line merge.
+     * Gather the provided raw lines into long lines, based on their ordinate.
      *
-     * @param oldLyrics collection of lyrics chunks
-     * @return resulting lyrics lines
+     * @param rawLines collection of raw OCR'ed lines
+     * @return resulting long lines
      */
-    private List<TextLine> mergeLyricLines (List<TextLine> oldLyrics)
+    private List<TextLine> mergeRawLines (List<TextLine> rawLines)
     {
-        logger.debug("mergeLyricsLines");
+        final List<TextLine> longLines = new ArrayList<>();
+        Collections.sort(rawLines, TextLine.byOrdinate(skew));
 
-        List<TextLine> newLyrics = new ArrayList<>();
-        Collections.sort(oldLyrics, TextLine.byOrdinate(skew));
-
-        List<TextLine> chunks = new ArrayList<>();
+        final List<TextLine> chunks = new ArrayList<>();
         double lastY = 0;
 
-        for (TextLine line : oldLyrics) {
+        for (TextLine line : rawLines) {
             double y = line.getDskOrigin(skew).getY();
 
             if (chunks.isEmpty()) {
                 chunks.add(line);
-            } else if ((y - lastY) <= params.maxLyricsDy) {
+            } else if ((y - lastY) <= maxLineDy) {
                 // Compatible line
                 chunks.add(line);
             } else {
@@ -998,7 +864,7 @@ public class TextBuilder
 
                 // Complete pending chunks, if any
                 if (!chunks.isEmpty()) {
-                    newLyrics.add(mergeChunks(chunks));
+                    longLines.add(mergeChunks(chunks));
                 }
 
                 // Start a new collection of chunks
@@ -1011,10 +877,10 @@ public class TextBuilder
 
         // Complete pending chunks, if any
         if (!chunks.isEmpty()) {
-            newLyrics.add(mergeChunks(chunks));
+            longLines.add(mergeChunks(chunks));
         }
 
-        return newLyrics;
+        return longLines;
     }
 
     //--------------------//
@@ -1030,47 +896,44 @@ public class TextBuilder
     private List<TextLine> mergeStandardLines (List<TextLine> oldStandards)
     {
         logger.debug("mergeStandardLines");
-
         Collections.sort(oldStandards, TextLine.byOrdinate(skew));
 
         for (TextLine current : oldStandards) {
             current.setProcessed(false);
-
             TextLine candidate = current;
 
             CandidateLoop:
             while (true) {
-                final Rectangle candidateBounds = getDeskewedCore(candidate);
-                final Rectangle candidateFatBox = new Rectangle(candidateBounds);
-                candidateFatBox.grow(getWordGap(candidate), params.maxLyricsDy);
+                final Rectangle candidateBounds = candidate.getDeskewedCore(skew);
 
-                HeadsLoop:
-                for (TextLine head : oldStandards) {
-                    if (head == current) {
+                final Rectangle candidateFatBox = new Rectangle(candidateBounds);
+                candidateFatBox.grow(candidate.selectWordGap(scale), maxLineDy);
+
+                TrunksLoop:
+                for (TextLine trunk : oldStandards) {
+                    if (trunk == current) {
                         break CandidateLoop;
                     }
 
-                    if ((head != candidate) && !head.isProcessed()) {
-                        Rectangle headBounds = getDeskewedCore(head);
+                    if ((trunk != candidate) && !trunk.isProcessed()) {
+                        Rectangle trunkBounds = trunk.getDeskewedCore(skew);
 
-                        if (headBounds.intersects(candidateFatBox)) {
-                            if (head.isChordName()) {
-                                // Check actual dx between head & candidate
-                                int gap = GeoUtil.xGap(headBounds, candidateBounds);
+                        if (trunkBounds.intersects(candidateFatBox)) {
+                            // Check actual dx between trunk & candidate (trunk may be a chordName)
+                            int gap = GeoUtil.xGap(trunkBounds, candidateBounds);
 
-                                if (gap > params.maxChordDx) {
-                                    continue;
-                                }
+                            if (gap > trunk.selectWordGap(scale)) {
+                                continue;
                             }
 
-                            if (candidate.isVip() || head.isVip() || logger.isDebugEnabled()) {
-                                logger.info("  merging {} into {}", candidate, head);
+                            if (candidate.isVip() || trunk.isVip() || logger.isDebugEnabled()) {
+                                logger.info("  merging {} into {}", candidate, trunk);
                             }
 
-                            head.addWords(candidate.getWords());
-                            checkRole(head);
+                            trunk.addWords(candidate.getWords());
+                            guessRole(trunk);
                             candidate.setProcessed(true);
-                            candidate = head;
+                            candidate = trunk;
 
                             break;
                         }
@@ -1084,7 +947,7 @@ public class TextBuilder
 
         for (TextLine line : oldStandards) {
             if (!line.isProcessed()) {
-                checkRole(line);
+                guessRole(line);
                 newStandards.add(line);
             }
         }
@@ -1092,54 +955,116 @@ public class TextBuilder
         return newStandards;
     }
 
-    //--------------------//
-    // mergeStandardWords //
-    //--------------------//
-    private void mergeStandardWords (TextLine line)
+    //----------------//
+    // partitionLines //
+    //----------------//
+    /**
+     * Given two consecutive staves, partition the provided list of lines between those
+     * that relate to upper staff and those that relate to lower staff.
+     *
+     * @param staff1 upper staff
+     * @param staff2 lower staff
+     * @param lines  list of lines to partition
+     * @return the 2 sub-lists
+     */
+    private Pair<List<TextLine>> partitionLines (Staff staff1,
+                                                 Staff staff2,
+                                                 List<TextLine> lines)
     {
-        ///logger.debug("  mergeStandardWords for {}", line);
-        final int minWordDx = (int) Math.rint(
-                line.getMeanFont().pointsize * params.minWordDxFontRatio);
-        List<TextWord> toAdd = new ArrayList<>();
-        List<TextWord> toRemove = new ArrayList<>();
-        TextWord prevWord = null;
+        final LineInfo staffLine1 = staff1.getLastLine();
+        final int margin1 = staff1.getPart().getCoreMargin(BOTTOM);
 
-        for (TextWord word : line.getWords()) {
-            // Look for tiny inter-word gap
-            if (prevWord != null) {
-                Rectangle prevBounds = prevWord.getBounds();
-                int prevStop = prevBounds.x + prevBounds.width;
-                int gap = word.getBounds().x - prevStop;
+        final LineInfo staffLine2 = staff2.getFirstLine();
+        final int margin2 = staff2.getPart().getCoreMargin(TOP);
 
-                if (gap < minWordDx) {
-                    toRemove.add(prevWord);
-                    toRemove.add(word);
-
-                    TextWord bigWord = TextWord.mergeOf(prevWord, word);
-
-                    if (logger.isDebugEnabled()) {
-                        logger.info("    merged {} & {} into {}", prevWord, word, bigWord);
-                    }
-
-                    toAdd.add(bigWord);
-                    word = bigWord;
-                }
+        // Filter lines
+        final List<TextLine> gutterLines = new ArrayList<>();
+        for (TextLine line : lines) {
+            Point center = line.getCenter();
+            double y1 = staffLine1.yAt(center.x);
+            if (y1 > center.y) {
+                continue;
             }
 
-            prevWord = word;
+            double y2 = staffLine2.yAt(center.x);
+            if (y2 < center.y) {
+                continue;
+            }
+
+            gutterLines.add(line);
         }
 
-        if (!toAdd.isEmpty()) {
-            // No use to add & remove the same words
-            List<TextWord> common = new ArrayList<>(toAdd);
-            common.retainAll(toRemove);
-            toAdd.removeAll(common);
-            toRemove.removeAll(common);
+        int bi = findBreak(staffLine1, margin1, staffLine2, margin2, gutterLines);
 
-            // Perform the modifications
-            line.addWords(toAdd);
-            line.removeWords(toRemove);
-            checkRole(line);
+        if (bi == -1) {
+            return null;
+        }
+
+        return new Pair<>(gutterLines.subList(0, bi),
+                          gutterLines.subList(bi, gutterLines.size()));
+    }
+
+    //--------------------//
+    // partitionPartLines //
+    //--------------------//
+    /**
+     * Partition lines for all inter-part gutters in the system
+     *
+     * @param longLines the lines to partition
+     */
+    private void partitionPartLines (List<TextLine> longLines)
+    {
+        final List<Part> parts = system.getParts();
+
+        for (int ip = 1; ip < parts.size(); ip++) {
+            final Part part1 = parts.get(ip - 1);
+            final Staff staff1 = part1.getLastStaff();
+
+            final Part part2 = parts.get(ip);
+            final Staff staff2 = part2.getFirstStaff();
+
+            final Pair<Staff> staffPair = new Pair<>(staff1, staff2);
+            final Pair<List<TextLine>> linePartitions = partitionLines(staff1, staff2, longLines);
+
+            gutterMap.put(staffPair, linePartitions);
+        }
+    }
+
+    //-------------//
+    // purgeGutter //
+    //-------------//
+    /**
+     * Purge the gutter area located between provided upper system1 and lower system2,
+     * of the external lines on provided side.
+     *
+     * @param lines   the lines to purge
+     * @param side    TOP to purge above, BOTTOM to purge below
+     * @param system1 upper system
+     * @param system2 lower system
+     */
+    private void purgeGutter (List<TextLine> lines,
+                              VerticalSide side,
+                              SystemInfo system1,
+                              SystemInfo system2)
+    {
+        // Retrieve lines located in the gutter area
+        final Area gutter = new Area(system1.getArea());
+        gutter.intersect(system2.getArea());
+        final List<TextLine> gutterLines = getGutterLines(lines, gutter);
+
+        final Staff staff1 = system1.getLastStaff();
+        final Staff staff2 = system2.getFirstStaff();
+
+        final Pair<List<TextLine>> linesPair = partitionLines(staff1, staff2, gutterLines);
+
+        if (linesPair != null) {
+            final List<TextLine> toRemove = (side == TOP) ? linesPair.one : linesPair.two;
+
+            if (logger.isDebugEnabled()) {
+                dump("Purged " + side, toRemove, false);
+            }
+
+            lines.removeAll(toRemove);
         }
     }
 
@@ -1149,19 +1074,19 @@ public class TextBuilder
     /**
      * Purge lines whose validity is not confirmed.
      *
-     * @param kind  lyrics or standards
      * @param lines the lines to purge
      * @return the remaining lines
      */
-    private List<TextLine> purgeInvalidLines (String kind,
-                                              List<TextLine> lines)
+    private List<TextLine> purgeInvalidLines (List<TextLine> lines)
     {
-        logger.debug("purgeInvalidLines for {}", kind);
-
-        List<TextLine> newLines = new ArrayList<>();
+        final List<TextLine> validLines = new ArrayList<>();
 
         for (TextLine line : lines) {
-            String reason = checkValidity(line);
+            final Point2D origin = line.getBaseline().getP1();
+            boolean inSheetHeader = (system.getId() == 1) && (origin.getY() < system.getFirstStaff()
+                    .getFirstLine().yAt(origin.getX()));
+
+            String reason = line.checkValidity(scale, inSheetHeader);
 
             if (reason != null) {
                 line.setProcessed(true);
@@ -1174,11 +1099,34 @@ public class TextBuilder
                     }
                 }
             } else {
-                newLines.add(line);
+                validLines.add(line);
             }
         }
 
-        return newLines;
+        return validLines;
+    }
+
+    //--------------------//
+    // purgeExternalLines //
+    //--------------------//
+    /**
+     * Purge the provided sequence of long lines of the lines that pertain to system(s)
+     * above or system(s) below the current system.
+     *
+     * @param lines the list of lines to purge
+     */
+    private void purgeExternalLines (List<TextLine> lines)
+    {
+        final SystemManager systemMgr = sheet.getSystemManager();
+
+        for (VerticalSide side : VerticalSide.values()) {
+            for (SystemInfo alien : systemMgr.verticalNeighbors(system, side)) {
+                purgeGutter(lines,
+                            side,
+                            (side == TOP) ? alien : system, // Upper
+                            (side == TOP) ? system : alien);// Lower
+            }
+        }
     }
 
     //----------------//
@@ -1190,35 +1138,30 @@ public class TextBuilder
      * <li>Except for lyrics line, a too large inter-word gap triggers a line split</li>
      * <li>A too large inter-char gap triggers a word split</li>
      * <li>A too small inter-word gap triggers a word merge</li>
-     * <li>For lyrics, separate lines with similar ordinate trigger a line merge</li>
      * <li>For lyrics, a separation character triggers a word split into syllables</li>
      * </ul>
      *
-     * @param rawLines the lines to process
+     * @param longLines the lines to process
      * @return the sequence of re-composed lines
      */
-    private List<TextLine> recomposeLines (Collection<TextLine> rawLines)
+    private List<TextLine> recomposeLines (Collection<TextLine> longLines)
     {
         logger.debug("System#{} recomposeLines", system.getId());
 
-        // Separate lyrics and standard lines, based on their roles
-        // At this point, role is determined on each rawLine in isolation
+        // Separate lyrics and standard (perhaps long) lines, based on their roles
         List<TextLine> standards = new ArrayList<>();
         List<TextLine> lyrics = new ArrayList<>();
-        separatePopulations(rawLines, standards, lyrics);
+        separatePopulations(longLines, standards, lyrics);
 
         // Process lyrics
         if (!lyrics.isEmpty()) {
             if (!isManual()) {
-                lyrics = purgeInvalidLines("lyrics", lyrics);
+                lyrics = purgeInvalidLines(lyrics);
             }
 
-            lyrics = mergeLyricLines(lyrics);
-
             logger.debug("splitWords for lyrics");
-
             for (TextLine line : lyrics) {
-                splitWords(line.getWords(), line);
+                line.splitWords();
             }
         }
 
@@ -1228,7 +1171,7 @@ public class TextBuilder
 
             // Reject invalid standard lines
             if (!isManual()) {
-                standards = purgeInvalidLines("standards", standards);
+                standards = purgeInvalidLines(standards);
             }
 
             // Recut standard lines
@@ -1239,7 +1182,7 @@ public class TextBuilder
             logger.debug("recutStandardWords");
 
             for (TextLine line : standards) {
-                recutStandardWords(line);
+                line.recutStandardWords();
             }
         }
 
@@ -1249,21 +1192,10 @@ public class TextBuilder
         allLines.addAll(standards);
         Collections.sort(allLines, TextLine.byOrdinate(skew));
 
-        return allLines;
-    }
+        // Precisely adjust font size for words (dashes excepted)
+        adjustFontSize(allLines);
 
-    //--------------------//
-    // recutStandardWords //
-    //--------------------//
-    /**
-     * Re-cut (merge &amp; split) words within a standard TextLine.
-     *
-     * @param line the line to re-cut words
-     */
-    private void recutStandardWords (TextLine line)
-    {
-        mergeStandardWords(line);
-        splitWords(line.getWords(), line);
+        return allLines;
     }
 
     //------------------//
@@ -1341,7 +1273,10 @@ public class TextBuilder
                 line.setProcessed(true);
             } else {
                 line.setProcessed(false);
-                checkRole(line);
+
+                if (line.getRole() == null) {
+                    guessRole(line);
+                }
 
                 if (line.isLyrics()) {
                     lyrics.add(line);
@@ -1373,13 +1308,12 @@ public class TextBuilder
     private List<TextLine> splitStandardLines (List<TextLine> oldStandards)
     {
         logger.debug("splitStandardLines");
-
         Collections.sort(oldStandards, TextLine.byOrdinate(skew));
 
-        List<TextLine> newStandards = new ArrayList<>();
+        final List<TextLine> newStandards = new ArrayList<>();
 
         for (TextLine line : oldStandards) {
-            final int maxAbscissaGap = getWordGap(line); // TODO: should gap depend on font size?
+            final int maxAbscissaGap = line.selectWordGap(scale); // TODO: should gap depend on font size?
             List<TextWord> words = line.getWords();
             boolean splitting = true;
 
@@ -1399,7 +1333,7 @@ public class TextBuilder
                             int splitPos = words.indexOf(word);
                             List<TextWord> lineWords = words.subList(0, splitPos);
                             TextLine newLine = new TextLine(lineWords);
-                            checkRole(newLine);
+                            guessRole(newLine);
 
                             if (line.isVip() || logger.isDebugEnabled()) {
                                 logger.info("  subLine {}", newLine);
@@ -1421,7 +1355,7 @@ public class TextBuilder
             // Pending words?
             if (words.size() < line.getWords().size()) {
                 TextLine newLine = new TextLine(words);
-                checkRole(newLine);
+                guessRole(newLine);
 
                 if (line.isVip() || logger.isDebugEnabled()) {
                     logger.info("  subLine {}", newLine);
@@ -1436,140 +1370,6 @@ public class TextBuilder
         return newStandards;
     }
 
-    //------------//
-    // splitWords //
-    //------------//
-    /**
-     * Check each word in the provided collection and split it in place according to
-     * separating characters ('-' etc).
-     * <p>
-     * The line sequence of words may get modified, because of the addition of new (sub)words and
-     * the removal of words that got split.
-     * The line sequence of words remains sorted.
-     *
-     * @param words the collection of words to check and split
-     * @param line  the containing TextLine instance
-     */
-    private void splitWords (Collection<TextWord> words,
-                             TextLine line)
-    {
-        // To avoid concurrent modification errors
-        Collection<TextWord> toAdd = new ArrayList<>();
-        Collection<TextWord> toRemove = new ArrayList<>();
-
-        for (TextWord word : words) {
-            List<TextWord> subWords = null; // Results of split
-            final int maxCharGap = getMaxCharGap(word); // Max gap depends on word font size
-
-            //            final Glyph wordGlyph = word.getCompound();
-            //            if (wordGlyph != null) {
-            //                if (!wordGlyph.getTextValue().equals(word.getInternalValue())) {
-            //                    // A manual text modification has occurred
-            //                    // Check for a separator in the new manual value
-            //                    if (!word.getChars().isEmpty()) {
-            //                        logger.debug("Manual modif for {}", wordGlyph.idString());
-            //                        subWords = getSubWords(
-            //                                word,
-            //                                line,
-            //                                new WordScanner.ManualScanner(
-            //                                        wordGlyph.getTextValue(),
-            //                                        line.isLyrics(),
-            //                                        maxCharGap,
-            //                                        word.getChars()));
-            //
-            //                        // If no subdivision was made, allocate a new TextWord
-            //                        // just to match the new manual value
-            //                        if (subWords.isEmpty()) {
-            //                            TextWord newWord = new TextWord(
-            //                                    word.getBaseline(),
-            //                                    wordGlyph.getTextValue(),
-            //                                    word.getFontInfo(),
-            //                                    word.getConfidence(),
-            //                                    word.getChars(),
-            //                                    line);
-            //                            newWord.setCompound(wordGlyph);
-            //                            subWords.add(newWord);
-            //                            wordGlyph.setTextWord(wordGlyph.getOcrLanguage(), newWord);
-            //                        }
-            //                    }
-            //                }
-            //            } else {
-            subWords = getSubWords(
-                    word,
-                    line,
-                    new WordScanner.OcrScanner(
-                            word.getValue(),
-                            line.isLyrics(),
-                            maxCharGap,
-                            word.getChars()));
-
-            //            }
-            if (!subWords.isEmpty()) {
-                toRemove.add(word);
-                toAdd.addAll(subWords);
-            }
-        }
-
-        // Now perform modification on the line sequence of words, if so needed
-        if (!toRemove.isEmpty()) {
-            line.addWords(toAdd);
-            line.removeWords(toRemove);
-            checkRole(line);
-        }
-    }
-
-    //----------------//
-    // isMainlyItalic //
-    //----------------//
-    /**
-     * Check whether the (majority of) line is in italic font.
-     *
-     * @param line the line to check
-     * @return true if mainly italics
-     */
-    public static boolean isMainlyItalic (TextLine line)
-    {
-        int reliableWords = 0;
-        int italicWords = 0;
-
-        for (TextWord word : line.getWords()) {
-            if ((word.getConfidence() >= constants.minConfidence.getValue()) && (word
-                    .getLength() > 1)) {
-                reliableWords++;
-
-                if (word.getFontInfo().isItalic) {
-                    italicWords++;
-                }
-            }
-        }
-
-        // Check for majority among reliable words
-        if (reliableWords != 0) {
-            return (italicWords * 2) >= reliableWords;
-        } else {
-            return false;
-        }
-    }
-
-    //------------------//
-    // getAbnormalWords //
-    //------------------//
-    /**
-     * Compile the provided regexp to detect abnormal words
-     *
-     * @return the pattern for abnormal words, if successful
-     */
-    private static Pattern getAbnormalWords ()
-    {
-        try {
-            return Pattern.compile(constants.abnormalWordRegexp.getValue());
-        } catch (PatternSyntaxException pse) {
-            logger.warn("Error in regexp for abnormal words", pse);
-
-            return null;
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
@@ -1581,130 +1381,8 @@ public class TextBuilder
                 false,
                 "Should we print out the stop watch?");
 
-        private final Constant.String abnormalWordRegexp = new Constant.String(
-                "^[°>']$",
-                "Regular expression to detect abnormal words");
-
-        private final Constant.Double minConfidence = new Constant.Double(
-                "0..1",
-                0.65,
-                "Minimum confidence for OCR validity");
-
-        private final Constant.Double lowConfidence = new Constant.Double(
-                "0..1",
-                0.30,
-                "Really low confidence to exclude words");
-
-        private final Scale.Fraction minWidthForCheck = new Scale.Fraction(
-                0.15,
-                "Minimum width to check word aspect");
-
-        private final Scale.Fraction minHeightForCheck = new Scale.Fraction(
-                0.15,
-                "Minimum height to check word aspect");
-
-        private final Constant.Ratio minAspectRatio = new Constant.Ratio(
-                0.5,
-                "Minimum ratio between ocr and glyph aspects");
-
-        private final Constant.Ratio maxAspectRatio = new Constant.Ratio(
-                1.5,
-                "Maximum ratio between ocr and glyph aspects");
-
-        private final Constant.Ratio minDiagRatio = new Constant.Ratio(
-                0.5,
-                "Minimum ratio between ocr and glyph diagonals");
-
-        private final Constant.Ratio maxDiagRatio = new Constant.Ratio(
-                1.5,
-                "Maximum ratio between ocr and glyph diagonals");
-
-        private final Scale.Fraction minFontSize = new Scale.Fraction(
-                1.25,
-                "Minimum font size with respect to interline");
-
-        private final Scale.Fraction maxFontSize = new Scale.Fraction(
-                4.0,
-                "Maximum font size with respect to interline");
-
-        private final Scale.Fraction maxTitleFontSize = new Scale.Fraction(
-                8.0,
-                "Maximum font size for titles with respect to interline");
-
-        private final Scale.Fraction maxLyricsDy = new Scale.Fraction(
+        private final Scale.Fraction maxLineDy = new Scale.Fraction(
                 1.0,
-                "Max vertical gap between two lyrics chunks");
-
-        private final Scale.Fraction maxCharDx = new Scale.Fraction(
-                1.0,
-                "Max horizontal gap between two chars in a word");
-
-        private final Constant.Ratio maxWordDxFontRatio = new Constant.Ratio(
-                1.5,
-                "Max horizontal gap between two non-lyrics words as font ratio");
-
-        private final Constant.Ratio minWordDxFontRatio = new Constant.Ratio(
-                0.125,
-                "Min horizontal gap between two non-lyrics words as font ratio");
-
-        private final Scale.Fraction maxChordDx = new Scale.Fraction(
-                1.0,
-                "Max horizontal gap between two chord words");
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    private static class Parameters
-    {
-
-        final int minFontSize;
-
-        final int maxFontSize;
-
-        final int maxTitleFontSize;
-
-        final int maxLyricsDy;
-
-        final int maxCharDx;
-
-        final double maxWordDxFontRatio;
-
-        final double minWordDxFontRatio;
-
-        final int maxChordDx;
-
-        final int minWidthForCheck;
-
-        final int minHeightForCheck;
-
-        final double minAspectRatio;
-
-        final double maxAspectRatio;
-
-        final double minDiagRatio;
-
-        final double maxDiagRatio;
-
-        Parameters (Scale scale,
-                    boolean isManual)
-        {
-            // TODO: check all these constant for specific manual work...
-            minFontSize = scale.toPixels(constants.minFontSize);
-            maxFontSize = scale.toPixels(constants.maxFontSize);
-            maxTitleFontSize = scale.toPixels(constants.maxTitleFontSize);
-            maxLyricsDy = scale.toPixels(constants.maxLyricsDy);
-            maxCharDx = scale.toPixels(constants.maxCharDx);
-            maxWordDxFontRatio = constants.maxWordDxFontRatio.getValue();
-            minWordDxFontRatio = constants.minWordDxFontRatio.getValue();
-            maxChordDx = scale.toPixels(constants.maxChordDx);
-            minWidthForCheck = scale.toPixels(constants.minWidthForCheck);
-            minHeightForCheck = scale.toPixels(constants.minHeightForCheck);
-
-            minAspectRatio = constants.minAspectRatio.getValue();
-            maxAspectRatio = constants.maxAspectRatio.getValue();
-            minDiagRatio = constants.minDiagRatio.getValue();
-            maxDiagRatio = constants.maxDiagRatio.getValue();
-        }
+                "Max vertical gap between two line chunks");
     }
 }

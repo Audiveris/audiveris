@@ -326,7 +326,7 @@ public class TesseractOrder
             do {
                 nextLevel = RIL_SYMBOL;
 
-                // SKip empty stuff
+                // Skip empty stuff
                 if (it.Empty(RIL_SYMBOL)) {
                     continue;
                 }
@@ -356,7 +356,7 @@ public class TesseractOrder
                             it.Confidence(RIL_WORD) / 100.0,
                             fontInfo,
                             line);
-                    logger.debug("    {}", word);
+                    logger.debug("   {}", word);
                     line.appendWord(word);
 
                     // // Heuristic... (just to test)

@@ -112,6 +112,9 @@ public abstract class Colors
     /** Music for mixed symbols view. */
     public static final Color MUSIC_SYMBOLS = new Color(170, 255, 170, alpha);
 
+    /** Color for a part core limit. */
+    public static final Color PART_CORE_LIMIT = Color.ORANGE;
+
     /** Color for a progress bar. */
     public static final Color PROGRESS_BAR = Color.ORANGE;
 

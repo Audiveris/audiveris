@@ -513,10 +513,12 @@ public class BookBrowser
                 TreePath p = e.getNewLeadSelectionPath();
                 if (p != null) {
                     Object obj = p.getLastPathComponent();
+
                     if (obj instanceof NamedData) {
                         NamedData nd = (NamedData) obj;
                         obj = nd.data;
                     }
+
                     // Publish selection?
                     if (obj instanceof Inter) {
                         Inter inter = (Inter) obj;
@@ -554,6 +556,7 @@ public class BookBrowser
                                             null));
                         }
                     }
+
                     if (obj instanceof WeakReference) {
                         Object o = ((Reference) obj).get();
                         htmlPane.setText(new Dumper.Html(filter, o).toString());

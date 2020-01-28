@@ -22,6 +22,7 @@
 package org.audiveris.omr.text;
 
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.score.StaffPosition;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.ProcessingSwitches;
@@ -31,6 +32,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import static org.audiveris.omr.text.TextRole.*;
+import static org.audiveris.omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,10 +126,10 @@ public enum TextRole
             return null;
         }
 
-        int chordCount = 0;
+        final Point boxCenter = GeoUtil.centerOf(box);
 
         // Is line made entirely of potential chord symbols?
-        boolean isAllChord = chordCount == line.getWords().size();
+        boolean isAllChords = line.isAllChordNames();
 
         // Is line mainly in italic?
         boolean isMainlyItalic = TextBuilder.isMainlyItalic(line);
@@ -151,23 +153,26 @@ public enum TextRole
         Part part = system.getPartAtOrAbove(left);
         StaffPosition partPosition = part.getStaffPosition(left);
 
-        // Vertical distance from staff?
+        // Vertical distance from closest staff
         Staff staff = system.getClosestStaff(left);
-        int staffDy = staff.distanceTo(box.getLocation());
+        int staffMidX = (staff.getAbscissa(LEFT) + staff.getAbscissa(RIGHT)) / 2;
+        int staffDy = staff.distanceTo(boxCenter);
         boolean closeToStaff = staffDy <= scale.toPixels(constants.maxStaffDy);
         boolean farFromStaff = staffDy >= scale.toPixels(constants.minStaffDy);
+        boolean lyricCloseAboveStaff = staffDy <= scale.toPixels(constants.maxLyricsDyAbove);
 
-        // Begins on left side of the part?
-        boolean leftOfStaves = left.x < system.getLeft();
+        // Begins before left side of the part (and stops before staff center abscissa)?
+        boolean leftOfStaves = (left.x < system.getLeft()) && (right.x <= staffMidX);
 
         // At the center of page width?
         int maxCenterDx = scale.toPixels(constants.maxCenterDx);
         int pageCenter = sheet.getWidth() / 2;
         boolean pageCentered = Math.abs((box.x + (box.width / 2)) - pageCenter) <= maxCenterDx;
 
-        // Right aligned with staves?
+        // Right aligned with staves (and starts after staff center abscissa) ?
         int maxRightDx = scale.toPixels(constants.maxRightDx);
-        boolean rightAligned = Math.abs(right.x - system.getRight()) <= maxRightDx;
+        boolean rightAligned = (Math.abs(right.x - system.getRight()) <= maxRightDx)
+                                       && (staffMidX <= left.x);
 
         // Short Sentence?
         int maxShortLength = scale.toPixels(constants.maxShortLength);
@@ -181,11 +186,14 @@ public enum TextRole
         int minTitleHeight = scale.toPixels(constants.minTitleHeight);
         boolean highText = box.height >= minTitleHeight;
 
+        // Some vowels? (for lyrics)
+        boolean hasVowel = line.hasVowell();
+
         logger.debug(
                 "{} firstSystem={} lastSystem={} systemPosition={}"
                         + " partPosition={} closeToStaff={} leftOfStaves={}"
                         + " pageCentered={} rightAligned={} shortSentence={}"
-                        + " highText={}",
+                        + " highText={} hasVowel={} isAllChords={} lyricCloseAboveStaff={}",
                 box,
                 firstSystem,
                 lastSystem,
@@ -196,14 +204,17 @@ public enum TextRole
                 pageCentered,
                 rightAligned,
                 shortSentence,
-                highText);
+                highText,
+                hasVowel,
+                isAllChords,
+                lyricCloseAboveStaff);
 
         // Decisions ...
         switch (systemPosition) {
-        case ABOVE_STAVES: // Title, Number, Creator, Direction, ChordName
+        case ABOVE_STAVES: // Title, Number, Creator, Direction, ChordName, Lyrics above staff
 
             if (tinySentence) {
-                if (isAllChord) {
+                if (isAllChords) {
                     return ChordName;
                 } else {
                     return UnknownRole;
@@ -216,10 +227,18 @@ public enum TextRole
                 } else if (rightAligned) {
                     return CreatorComposer;
                 } else if (closeToStaff) {
-                    if (isAllChord) {
+                    if (isAllChords) {
                         return ChordName;
                     } else {
-                        return Direction;
+                        if (lyricsAllowed
+                                    && hasVowel
+                                    && lyricCloseAboveStaff
+                                    && (switches.getValue(Switch.lyricsAboveStaff))
+                                    && (!isMainlyItalic)) {
+                            return Lyrics;
+                        } else {
+                            return Direction;
+                        }
                     }
                 } else if (pageCentered) { // Title, Number
 
@@ -229,10 +248,18 @@ public enum TextRole
                         return Number;
                     }
                 }
-            } else if (isAllChord) {
+            } else if (isAllChords) {
                 return ChordName;
             } else {
-                return Direction;
+                if (lyricsAllowed
+                            && hasVowel
+                            && lyricCloseAboveStaff
+                            && (switches.getValue(Switch.lyricsAboveStaff))
+                            && (!isMainlyItalic)) {
+                    return Lyrics;
+                } else {
+                    return Direction;
+                }
             }
 
             break;
@@ -241,7 +268,7 @@ public enum TextRole
 
             if (leftOfStaves) {
                 return PartName;
-            } else if (lyricsAllowed
+            } else if (lyricsAllowed && hasVowel
                                && (switches.getValue(Switch.lyrics)
                                            || switches.getValue(Switch.lyricsAboveStaff))
                                && ((partPosition == StaffPosition.BELOW_STAVES)
@@ -268,9 +295,9 @@ public enum TextRole
             }
 
             if (part.getStaves().size() == 1) {
-                if (lyricsAllowed
-                            && (switches.getValue(Switch.lyrics) || switches.getValue(
-                        Switch.lyricsAboveStaff))
+                if (lyricsAllowed && hasVowel
+                            && (switches.getValue(Switch.lyrics)
+                                        || switches.getValue(Switch.lyricsAboveStaff))
                             && (partPosition == StaffPosition.BELOW_STAVES)
                             && !isMainlyItalic) {
                     return Lyrics;
@@ -331,7 +358,11 @@ public enum TextRole
 
         private final Scale.Fraction maxStaffDy = new Scale.Fraction(
                 7,
-                "Maximum distance above staff for a direction");
+                "Maximum distance above staff for a direction (or lyrics above staves)");
+
+        private final Scale.Fraction maxLyricsDyAbove = new Scale.Fraction(
+                4.5,
+                "Maximum distance above staff for lyrics (above staves option)");
 
         private final Scale.Fraction minStaffDy = new Scale.Fraction(
                 6,

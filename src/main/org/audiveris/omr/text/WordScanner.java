@@ -165,24 +165,24 @@ public abstract class WordScanner
         final int contentLength = content.length();
 
         for (strIndex += 1; strIndex < contentLength; strIndex++) {
-            String charValue = content.substring(strIndex, strIndex + 1);
+            final char ch = content.charAt(strIndex);
 
             // Position in sequence of TextChar instances
-            int charPos = stringToDesc(strIndex);
+            final int charPos = stringToDesc(strIndex);
 
-            if (charValue.equals(" ")) {
+            if (ch == ' ') {
                 // White space
                 if (WordSb.length() > 0) {
                     return WordSb.toString();
                 }
-            } else if (bySyllable && LyricItemInter.isSeparator(charValue)) {
+            } else if (bySyllable && LyricItemInter.isSeparator(ch)) {
                 // Special characters (returned as stand-alone words)
                 if (WordSb.length() > 0) {
                     strIndex--; // To get back to this index, next time
                 } else {
                     nextWordStart = charPos;
                     nextWordStop = charPos;
-                    WordSb.append(charValue);
+                    WordSb.append(ch);
                 }
 
                 return WordSb.toString();
@@ -204,7 +204,7 @@ public abstract class WordScanner
                 }
 
                 nextWordStop = charPos;
-                WordSb.append(charValue);
+                WordSb.append(ch);
             }
         }
 
@@ -276,8 +276,6 @@ public abstract class WordScanner
     /**
      * Class {@code OcrScanner} is a basic scanner for which the sequence of TextChar's
      * is parallel to String content.
-     *
-     * @author Hervé Bitteur
      */
     public static class OcrScanner
             extends WordScanner

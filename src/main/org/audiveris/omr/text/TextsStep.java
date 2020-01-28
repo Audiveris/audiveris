@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -84,7 +85,7 @@ public class TextsStep
             throws StepException
     {
         // Process texts at system level
-        new TextBuilder(system).retrieveSystemLines(context.buffer, context.textLines);
+        new TextBuilder(system).processSystem(context.buffer, context.textLines);
     }
 
     //----------//
@@ -101,6 +102,11 @@ public class TextsStep
 
         if (OcrUtil.getOcr().isAvailable()) {
             lines.addAll(scanner.scanSheet());
+            Collections.sort(lines, TextLine.byOrdinate(sheet.getSkew()));
+
+            if (logger.isDebugEnabled()) {
+                TextLine.dump("Sheet raw OCRed lines:", lines, false);
+            }
         } else {
             logger.warn("TEXTS step: {}", OCR.NO_OCR);
         }
@@ -128,7 +134,7 @@ public class TextsStep
                 if (isImpactedBy(interClass, forLyrics)) {
                     if (inter instanceof LyricLineInter) {
                         // Re-number lyric lines
-                        new TextBuilder(system, true).numberLyricLines();
+                        system.numberLyricLines();
                     }
                 }
             }

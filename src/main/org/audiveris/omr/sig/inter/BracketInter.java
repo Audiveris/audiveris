@@ -114,6 +114,21 @@ public class BracketInter
         visitor.visit(this);
     }
 
+    //---------//
+    // getArea //
+    //---------//
+    @Override
+    public Area getArea ()
+    {
+        // For brackets, due to serifs, the computation of area needs SIG information.
+        // Therefore, area computation must be done in a lazy manner.
+        if (area == null) {
+            computeArea();
+        }
+
+        return area;
+    }
+
     //------------//
     // getDetails //
     //------------//

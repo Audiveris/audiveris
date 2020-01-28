@@ -339,14 +339,16 @@ public class ChordNameInter
 
         sb.append(" root:").append(root);
 
-        sb.append(" kind:").append(kind);
+        sb.append(' ').append(kind);
 
         if (bass != null) {
             sb.append(" bass:").append(bass);
         }
 
-        for (Degree degree : degrees) {
-            sb.append(" deg:").append(degree);
+        if (degrees != null) {
+            for (Degree degree : degrees) {
+                sb.append(" deg:").append(degree);
+            }
         }
 
         sb.append("}");
@@ -733,7 +735,7 @@ public class ChordNameInter
             String kindStr = getGroup(matcher, KIND);
 
             String parStr = getGroup(matcher, PARS);
-            Boolean parentheses = (!parStr.isEmpty()) ? Boolean.TRUE : null;
+            boolean parentheses = !parStr.isEmpty();
 
             // Check for suspended first
             String susStr = getGroup(matcher, SUS);
@@ -763,8 +765,9 @@ public class ChordNameInter
             }
 
             // Use of symbol?
-            Boolean symbol = (getGroup(matcher, MAJ).equals(DELTA) || getGroup(matcher, MIN).equals(
-                    "-") || getGroup(matcher, AUG).equals("+")) ? Boolean.TRUE : null;
+            boolean symbol = getGroup(matcher, MAJ).equals(DELTA)
+                                     || getGroup(matcher, MIN).equals("-")
+                                     || getGroup(matcher, AUG).equals("+");
 
             return (type != null) ? new Kind(type, kindStr, symbol, parentheses) : null;
         }

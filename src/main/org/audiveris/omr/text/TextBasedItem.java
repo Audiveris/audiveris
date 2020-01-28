@@ -22,6 +22,7 @@
 package org.audiveris.omr.text;
 
 import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.util.Vip;
 
 import java.awt.Point;
@@ -50,6 +51,9 @@ public abstract class TextBasedItem
 
     /** (Debug) flag this object as VIP. */
     private boolean vip;
+
+    /** Related staff, if any. */
+    private Staff staff;
 
     /**
      * Creates a new TextBasedItem object.
@@ -139,6 +143,28 @@ public abstract class TextBasedItem
         }
 
         return PointUtil.rounded(bl.getP1());
+    }
+
+    //----------//
+    // getStaff //
+    //----------//
+    /**
+     * @return the staff
+     */
+    public Staff getStaff ()
+    {
+        return staff;
+    }
+
+    //----------//
+    // setStaff //
+    //----------//
+    /**
+     * @param staff the staff to set
+     */
+    public void setStaff (Staff staff)
+    {
+        this.staff = staff;
     }
 
     //-------//

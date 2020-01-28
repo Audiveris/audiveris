@@ -199,6 +199,11 @@ public abstract class SheetPainter
                 staff.renderAttachments(g);
             }
 
+            // Part limits
+            if (constants.drawPartLimits.isSet()) {
+                sigPainter.drawPartLimits(system);
+            }
+
             // All interpretations for this system
             sigPainter.process(system.getSig());
         } catch (ConcurrentModificationException ignored) {
@@ -223,5 +228,9 @@ public abstract class SheetPainter
                 "points",
                 5,
                 "Font size for chord annotations");
+
+        private final Constant.Boolean drawPartLimits = new Constant.Boolean(
+                false,
+                "Should we draw part upper and lower core limits");
     }
 }

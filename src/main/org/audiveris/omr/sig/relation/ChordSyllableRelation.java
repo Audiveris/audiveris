@@ -21,11 +21,19 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
+import org.audiveris.omr.sig.ui.LinkTask;
+import org.audiveris.omr.sig.ui.UITask;
+import org.audiveris.omr.sig.ui.UnlinkTask;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
 
@@ -53,22 +61,34 @@ public class ChordSyllableRelation
     @Override
     public void added (GraphEdgeChangeEvent<Inter, Relation> e)
     {
-        if (isManual()) {
-            // Discard any competing syllable
-            final HeadChordInter chord = (HeadChordInter) e.getEdgeSource();
-            final LyricItemInter item = (LyricItemInter) e.getEdgeTarget();
-            final SIGraph sig = chord.getSig();
-            final LyricLineInter line = (LyricLineInter) item.getEnsemble();
+        final HeadChordInter chord = (HeadChordInter) e.getEdgeSource();
+        final LyricItemInter item = (LyricItemInter) e.getEdgeTarget();
+        final boolean above = item.getCenter().y < chord.getCenter().y;
+        final LyricLineInter line = (LyricLineInter) item.getEnsemble();
+        final Part chordPart = chord.getPart();
+        final Part linePart = line.getPart();
+        final Staff chordStaff = above ? chord.getTopStaff() : chord.getBottomStaff();
 
-            for (Relation rel : sig.getRelations(chord, ChordSyllableRelation.class)) {
-                LyricItemInter other = (LyricItemInter) sig.getOppositeInter(chord, rel);
-
-                if ((other != item) && (other.getEnsemble() == line)) {
-                    logger.info("{} preferred to {} in chord-lyric link.", item, other);
-                    sig.removeEdge(rel);
-                }
+        if (linePart != chordPart) {
+            if (linePart != null) {
+                linePart.removeLyric(line);
             }
+
+            chordPart.addLyric(line);
+            line.setStaff(chordStaff);
+
+            for (Inter inter : line.getMembers()) {
+                LyricItemInter it = (LyricItemInter) inter;
+                it.setPart(null);
+                it.setStaff(chordStaff);
+            }
+
+            // Re-numbering of lyric lines
+            chordPart.sortLyricLines();
+            chord.getSig().getSystem().numberLyricLines();
         }
+
+        item.checkAbnormal();
     }
 
     //----------------//
@@ -77,6 +97,7 @@ public class ChordSyllableRelation
     @Override
     public boolean isSingleSource ()
     {
+        // Just one chord can be linked to a given syllable.
         return true;
     }
 
@@ -86,7 +107,7 @@ public class ChordSyllableRelation
     @Override
     public boolean isSingleTarget ()
     {
-        // A chord can be linked to several lyric items, from different lyric lines.
+        // A chord can be linked to several syllables (from different lyric verses).
         return false;
     }
 
@@ -95,5 +116,74 @@ public class ChordSyllableRelation
             throws CloneNotSupportedException
     {
         return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    //---------//
+    // preLink //
+    //---------//
+    @Override
+    public List<? extends UITask> preLink (RelationPair pair)
+    {
+        final List<UITask> tasks = new ArrayList<>();
+        final HeadChordInter chord = (HeadChordInter) pair.source;
+        final LyricItemInter item = (LyricItemInter) pair.target;
+        final LyricLineInter line = (LyricLineInter) item.getEnsemble();
+
+        // Discard any competing syllable
+        final SIGraph sig = chord.getSig();
+        final SystemInfo system = sig.getSystem();
+
+        for (Relation rel : sig.getRelations(chord, ChordSyllableRelation.class)) {
+            final LyricItemInter other = (LyricItemInter) sig.getOppositeInter(chord, rel);
+
+            if ((other != item) && (other.getEnsemble() == line)) {
+                logger.info("{} preferred to {} in chord-syllable link.", item, other);
+                tasks.add(new UnlinkTask(sig, rel));
+            }
+        }
+
+        // If lyric item moves from one chord part to a different chord part,
+        // then we have to switch all lyric items and lyric line as well
+        if (line.getPart() != chord.getPart()) {
+            final boolean above = item.getCenter().y < chord.getCenter().y;
+            final Staff chordStaff = above ? chord.getTopStaff() : chord.getBottomStaff();
+
+            for (Inter inter : line.getMembers()) {
+                final LyricItemInter it = (LyricItemInter) inter;
+
+                if ((it != item) && it.isSyllable()) {
+                    final HeadChordInter ch = it.getHeadChord();
+
+                    if ((ch != null) && (ch.getPart() != chord.getPart())) {
+                        final Relation rel = sig.getRelation(ch, it, this.getClass());
+
+                        if (rel != null) {
+                            tasks.add(new UnlinkTask(sig, rel));
+                        }
+                    }
+
+                    final Link link = it.lookupLink(chordStaff, null);
+
+                    if (link != null) {
+                        tasks.add(new LinkTask(sig, link.partner, it, link.relation));
+                    }
+                }
+            }
+        }
+
+        return tasks;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final LyricItemInter item = (LyricItemInter) e.getEdgeTarget();
+
+        if (!item.isRemoved()) {
+            item.checkAbnormal();
+        }
     }
 }

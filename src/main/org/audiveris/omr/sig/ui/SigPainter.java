@@ -28,12 +28,15 @@ import com.jgoodies.forms.layout.FormLayout;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.curve.Curves;
+import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
@@ -54,6 +57,8 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
+import org.audiveris.omr.sig.inter.LyricLineInter;
+import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
@@ -66,6 +71,7 @@ import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.text.FontInfo;
+import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.Alignment;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -79,6 +85,7 @@ import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
+import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,6 +101,7 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
@@ -112,14 +120,16 @@ import javax.swing.JPanel;
 /**
  * Class {@code SigPainter} paints all the {@link Inter} instances of a SIG.
  * <p>
- * Its life cycle ends with the painting of a sheet.
+ * Its life ends with the painting of a sheet.
  * <p>
- * Remarks on no-op visit() for:
+ * Ensembles are generally not painted directly but via their members:
  * <ul>
- * <li>AbstractChordInter: Notes and stem are painted on their own
- * Only chord ID can be added.
- * <li>KeyInter: Each key item is painted on its own
- * <li>WordInter: Painting is handled from sentence
+ * <li>{@link AbstractChordInter}: Notes and stem are painted on their own.
+ * SigPainter subclass in {@link SheetResultPainter} adds painting of chord ID and voice.
+ * <li>{@link KeyInter}: Each key item member is painted on its own, except for a manual key
+ * because such key has no concrete members.
+ * <li>{@link SentenceInter} and its subclass {@link LyricLineInter}: Each member word is painted
+ * using the sentence mean font.
  * </ul>
  *
  * @author Hervé Bitteur
@@ -315,6 +325,45 @@ public abstract class SigPainter
                     if ((clip == null) || clip.intersects(bounds)) {
                         inter.accept(this);
                     }
+                }
+            }
+        }
+    }
+
+    //----------------//
+    // drawPartLimits //
+    //----------------//
+    /**
+     * Draw the upper and lower core limits of the system.
+     * <p>
+     * This is just for visual inspection of these "real" limits for important musical symbols.
+     *
+     * @param system the system to be processed
+     */
+    public void drawPartLimits (SystemInfo system)
+    {
+        g.setColor(Colors.PART_CORE_LIMIT);
+
+        for (Part part : system.getParts()) {
+            for (VerticalSide side : VerticalSide.values()) {
+                final int dy = part.getCoreMargin(side);
+
+                if (dy != 0) {
+                    final AffineTransform savedAT = g.getTransform();
+                    final LineInfo line;
+                    final AffineTransform at;
+
+                    if (side == VerticalSide.TOP) {
+                        line = part.getFirstStaff().getFirstLine();
+                        at = AffineTransform.getTranslateInstance(0, -dy);
+                    } else {
+                        line = part.getLastStaff().getLastLine();
+                        at = AffineTransform.getTranslateInstance(0, +dy);
+                    }
+
+                    g.transform(at);
+                    line.renderLine(g, false, 0);
+                    g.setTransform(savedAT);
                 }
             }
         }
@@ -695,26 +744,25 @@ public abstract class SigPainter
 
         g.draw(ledger.getMedian());
     }
-//
-//    //-------//
-//    // visit //
-//    //-------//
-//    @Override
-//    public void visit (SentenceInter sentence)
-//    {
-//        ///FontInfo lineMeanFont = sentence.getMeanFont();
-//
-//        for (Inter member : sentence.getMembers()) {
-//            WordInter word = (WordInter) member;
-//            ///paintWord(word, lineMeanFont);
-//            paintWord(word, word.getFontInfo());
-//        }
-//    }
-//
+
     //-------//
     // visit //
     //-------//
+    @Override
+    public void visit (SentenceInter sentence)
+    {
+        FontInfo lineMeanFont = sentence.getMeanFont();
 
+        for (Inter member : sentence.getMembers()) {
+            WordInter word = (WordInter) member;
+            paintWord(word, lineMeanFont);
+            ///paintWord(word, word.getFontInfo());
+        }
+    }
+
+    //-------//
+    // visit //
+    //-------//
     @Override
     public void visit (SlurInter slur)
     {
@@ -795,8 +843,12 @@ public abstract class SigPainter
     @Override
     public void visit (WordInter word)
     {
-        FontInfo fontInfo = word.getFontInfo();
-        paintWord(word, fontInfo);
+        // Usually, words are displayed via their containing sentence, using sentence mean font.
+        // But in the specific case of a (temporarily) orphan word, we display the word as it is.
+        if (word.getSig() == null || word.getEnsemble() == null) {
+            FontInfo fontInfo = word.getFontInfo();
+            paintWord(word, fontInfo);
+        }
     }
 
     //----------//

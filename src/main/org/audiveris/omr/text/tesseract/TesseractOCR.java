@@ -24,9 +24,7 @@ package org.audiveris.omr.text.tesseract;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.text.OCR;
-import org.audiveris.omr.text.TextChar;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextWord;
 
@@ -46,13 +44,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Class {@code TesseractOCR} is an OCR service built on the Google Tesseract engine.
+ * Class {@code TesseractOCR} is an OCR service built on Google Tesseract engine.
  * <p>
  * It relies on <b>tesseract3</b> C++ program, accessed through a <b>JavaCPP</b>-based bridge.
  *
@@ -182,7 +181,7 @@ public class TesseractOCR
 
         try {
             // Allocate a processing order
-            TesseractOrder order = new TesseractOrder(
+            final TesseractOrder order = new TesseractOrder(
                     label,
                     serial.incrementAndGet(),
                     constants.keepImages.isSet(),
@@ -191,34 +190,26 @@ public class TesseractOCR
                     bufferedImage);
 
             // Process the order
-            List<TextLine> lines = order.process();
+            final List<TextLine> lines = order.process();
 
-            // Post-processing
+            // Post-processing: filter out words with too low confidence
             if (lines != null) {
-                final int maxDashWidth = (int) Math.rint(
-                        interline * constants.maxDashWidth.getValue());
+                for (Iterator<TextLine> itLines = lines.iterator(); itLines.hasNext();) {
+                    final TextLine line = itLines.next();
 
-                for (TextLine line : lines) {
-                    for (TextWord word : line.getWords()) {
-                        boolean updated = false;
+                    for (Iterator<TextWord> itWords = line.getWords().iterator(); itWords.hasNext();) {
+                        final TextWord word = itWords.next();
 
-                        for (TextChar ch : word.getChars()) {
-                            String charValue = ch.getValue();
-
-                            // Chars: Fix long "—" vs short "-"
-                            if (charValue.equals("—") && (ch.getBounds().width <= maxDashWidth)) {
-                                ch.setValue("-");
-                                updated = true;
-                            }
-                        }
-
-                        if (updated) {
-                            word.checkValue(); // So that word value is consistent with its chars
+                        if (!word.isConfident()) {
+                            logger.info("OCR. too low confident {}", word);
+                            itWords.remove();
                         }
                     }
 
-                    // Translate relative coordinates to absolute ones?
-                    if (topLeft != null) {
+                    if (line.getWords().isEmpty()) {
+                        itLines.remove();
+                    } else if (topLeft != null) {
+                        // Translate relative coordinates to absolute ones
                         line.translate(topLeft.x, topLeft.y);
                     }
                 }
@@ -336,6 +327,15 @@ public class TesseractOCR
         return LazySingleton.INSTANCE;
     }
 
+    //------------------//
+    // getMinConfidence //
+    //------------------//
+    @Override
+    public double getMinConfidence ()
+    {
+        return constants.minConfidence.getValue();
+    }
+
     //---------------//
     // LazySingleton //
     //---------------//
@@ -359,9 +359,15 @@ public class TesseractOCR
         private final Constant.Boolean keepImages = new Constant.Boolean(
                 false,
                 "Should we keep the images sent to Tesseract?");
+//
+//        private final Scale.Fraction maxDashWidth = new Scale.Fraction(
+//                1.0,
+//                "Maximum width for a dash character");
+//
 
-        private final Scale.Fraction maxDashWidth = new Scale.Fraction(
-                1.0,
-                "Maximum width for a dash character");
+        private final Constant.Double minConfidence = new Constant.Double(
+                "0..1",
+                0.65,
+                "Minimum confidence for OCR validity");
     }
 }
