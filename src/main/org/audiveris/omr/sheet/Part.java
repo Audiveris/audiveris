@@ -25,13 +25,15 @@ import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.StaffPosition;
-import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.ClefInter;
+import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
@@ -51,11 +53,13 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -191,7 +195,9 @@ public class Part
             lyrics = new ArrayList<>();
         }
 
-        lyrics.add(lyric);
+        if (!lyrics.contains(lyric)) {
+            lyrics.add(lyric);
+        }
     }
 
     //------------//
@@ -596,38 +602,39 @@ public class Part
         return (lyrics != null) ? Collections.unmodifiableList(lyrics) : Collections.EMPTY_LIST;
     }
 
-    //--------------------//
-    // getMaximumDistance //
-    //--------------------//
+    //---------------//
+    // getCoreMargin //
+    //---------------//
     /**
      * Report the maximum distance of key classes of Part inters, into the provided
      * vertical direction, with respect to the staff border line.
+     * <p>
+     * Implementation notice: This method can be called at TEXTS step, when head chords are not yet
+     * available, therefore we use only proper staff heads and their related stems.
      *
      * @param side desired side
      * @return maximum distance of inter bounds away from proper staff line
      */
-    public int getMaximumDistance (VerticalSide side)
+    public int getCoreMargin (VerticalSide side)
     {
         int maxDy = 0;
 
         final LineInfo line = (side == VerticalSide.TOP)
                 ? getFirstStaff().getFirstLine()
                 : getLastStaff().getLastLine();
-        final List<Inter> inters = new ArrayList<>();
+        final SIGraph sig = getSystem().getSig();
+        final Set<Inter> inters = new HashSet<>();
 
-        for (Measure measure : getMeasures()) {
-            inters.addAll(measure.getHeadChords());
-            inters.addAll(measure.getRestChords());
-            inters.addAll(measure.getTuplets());
+        // Staff heads
+        final Staff staff = (side == VerticalSide.TOP) ? getFirstStaff() : getLastStaff();
+        List<Inter> heads = sig.inters(HeadInter.class);
+        heads = Inters.inters(staff, heads);
+        inters.addAll(heads);
 
-            for (BeamGroup beamGroup : measure.getBeamGroups()) {
-                inters.addAll(beamGroup.getBeams());
-            }
-
-            // Articulations?
-            // Dynamics?
-            // Fermata?
-            // Slurs?
+        // Related stems
+        for (Inter h : heads) {
+            HeadInter head = (HeadInter) h;
+            inters.addAll(head.getStems());
         }
 
         for (Inter inter : inters) {

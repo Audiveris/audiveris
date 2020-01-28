@@ -54,6 +54,13 @@ public interface OCR
     Set<String> getLanguages ();
 
     /**
+     * Report the minimum confidence for an OCR'ed item.
+     *
+     * @return minimum confidence value
+     */
+    double getMinConfidence ();
+
+    /**
      * Return OCR engine identification.
      *
      * @return string containing the name and the version of the OCR engine.

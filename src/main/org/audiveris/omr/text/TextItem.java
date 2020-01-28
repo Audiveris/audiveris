@@ -21,6 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
+import org.audiveris.omr.math.GeoUtil;
+
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.List;
@@ -33,11 +36,14 @@ import java.util.List;
 public abstract class TextItem
 {
 
+    /** Lowercase vowel characters. */
+    private static final char[] VOWELS = "aeiouy".toCharArray();
+
     /** Item bounds. */
-    private Rectangle bounds;
+    protected Rectangle bounds;
 
     /** Item value. */
-    private String value;
+    protected String value;
 
     //----------//
     // TextItem //
@@ -59,10 +65,31 @@ public abstract class TextItem
     }
 
     //-----------//
+    // hasVowell //
+    //-----------//
+    /**
+     * Report whether the item value contains at least one vowel.
+     *
+     * @return true if so
+     */
+    public boolean hasVowell ()
+    {
+        String lowerCaseValue = getValue().toLowerCase();
+
+        for (char v : VOWELS) {
+            if (lowerCaseValue.indexOf(v) != -1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //-----------//
     // getBounds //
     //-----------//
     /**
-     * Return the bounding box of the item..
+     * Return the bounding box of the item.
      *
      * @return (a copy of) the box
      */
@@ -86,6 +113,23 @@ public abstract class TextItem
     public void setBounds (Rectangle bounds)
     {
         this.bounds = bounds;
+    }
+
+    //-----------//
+    // getCenter //
+    //-----------//
+    /**
+     * Report the bounds center of this item.
+     *
+     * @return center of item bounds
+     */
+    public Point getCenter ()
+    {
+        if (getBounds() == null) {
+            return null;
+        }
+
+        return GeoUtil.centerOf(bounds);
     }
 
     //----------//

@@ -425,7 +425,6 @@ public class SentenceInter
     {
         SentenceInter sentence = new SentenceInter(
                 line.getBounds(),
-                ///line.getConfidence() * Grades.intrinsicRatio,
                 line.getGrade(),
                 line.getMeanFont(),
                 line.getRole());

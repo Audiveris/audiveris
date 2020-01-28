@@ -24,7 +24,6 @@ package org.audiveris.omr.sheet.ui;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
-import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.GuiActions;
@@ -796,6 +795,9 @@ public class SheetAssembly
 
                 // Display the boards pane related to the selected view
                 OMR.gui.setBoardsPane(boardsPane.getComponent());
+
+                // Resize boards
+                boardsPane.resize();
             } else {
                 OMR.gui.setBoardsPane(null);
             }

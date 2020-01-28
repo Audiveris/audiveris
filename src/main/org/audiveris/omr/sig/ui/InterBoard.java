@@ -27,7 +27,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.WordInter;
@@ -37,6 +40,7 @@ import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.PixelCount;
 import org.audiveris.omr.ui.field.LCheckBox;
 import org.audiveris.omr.ui.field.LComboBox;
+import org.audiveris.omr.ui.field.LIntegerField;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.field.LTextField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
@@ -86,7 +90,8 @@ public class InterBoard
     private final JLabel shapeIcon = new JLabel();
 
     /** Output : grade (intrinsic/contextual). */
-    private final LTextField grade = new LTextField(resources.getString("grade.text"),
+    private final LTextField grade = new LTextField(false,
+                                                    resources.getString("grade.text"),
                                                     resources.getString("grade.toolTipText"));
 
     /** Output : implicit / manual. */
@@ -95,8 +100,18 @@ public class InterBoard
     /** Output : shape. */
     private final LLabel shapeName = new LLabel("", resources.getString("shapeName.toolTipText"));
 
-    /** Output : grade details. */
-    private final JLabel details = new JLabel("");
+    /** Output : lyric verse. */
+    private final LIntegerField verse = new LIntegerField(false,
+                                                          resources.getString("verse.text"),
+                                                          resources.getString("verse.toolTipText"));
+
+    /** Output : voice. */
+    private final LIntegerField voice = new LIntegerField(false,
+                                                          resources.getString("voice.text"),
+                                                          resources.getString("voice.toolTipText"));
+
+    /** Output : lyrics above or below related note line. */
+    private final JLabel aboveBelow = new JLabel();
 
     /** To delete/de-assign. */
     private final DeassignAction deassignAction = new DeassignAction();
@@ -154,23 +169,22 @@ public class InterBoard
         super(Board.INTER, sheet.getInterIndex().getEntityService(), true);
         this.sheet = sheet;
 
-        grade.getField().setBorder(null);
-        grade.getField().setEditable(false);
-
-        details.setToolTipText(resources.getString("details.toolTipText"));
-        details.setHorizontalAlignment(SwingConstants.CENTER);
-
         edit.addActionListener(this);
 
         paramAction = new ParamAction();
 
         defineLayout();
 
+        aboveBelow.setToolTipText(resources.getString("aboveBelow.toolTipText"));
+
         // Initial status
         grade.setEnabled(false);
         specific.setEnabled(false);
-        details.setEnabled(false);
         edit.setEnabled(false);
+
+        voice.setVisible(false);
+        verse.setVisible(false);
+        aboveBelow.setVisible(false);
     }
 
     //-----------------//
@@ -252,6 +266,9 @@ public class InterBoard
         textField.setVisible(false);
         textField.setEnabled(false);
         roleCombo.setVisible(false);
+        verse.setVisible(false);
+        aboveBelow.setVisible(false);
+        voice.setVisible(false);
 
         if (inter != null) {
             Double cp = inter.getContextualGrade();
@@ -264,7 +281,6 @@ public class InterBoard
 
             specific.setText(inter.isImplicit() ? "IMPLICIT" : (inter.isManual() ? "MANUAL" : ""));
 
-            details.setText((inter.getImpacts() == null) ? "" : inter.getImpacts().toString());
             deassignAction.putValue(Action.NAME, inter.isRemoved()
                                     ? resources.getString("deassign.Action.deleted")
                                     : resources.getString("deassign.Action.text"));
@@ -284,7 +300,27 @@ public class InterBoard
                 textField.setText(sentence.getValue());
                 textField.setVisible(true);
 
-                if (!(inter instanceof LyricLineInter)) {
+                if (inter instanceof LyricLineInter) {
+                    LyricLineInter lyric = (LyricLineInter) inter;
+                    verse.setVisible(true);
+                    verse.setValue(lyric.getNumber());
+
+                    boolean isAbove = lyric.getStaff().pitchPositionOf(inter.getCenter()) < 0;
+                    aboveBelow.setText(resources.getString(isAbove ? "above" : "below"));
+                    aboveBelow.setVisible(true);
+
+                    LyricItemInter firstNormalItem = lyric.getFirstNormalItem();
+                    if (firstNormalItem != null) {
+                        HeadChordInter firstChord = firstNormalItem.getHeadChord();
+                        Voice theVoice = firstChord.getVoice();
+
+                        if (theVoice != null) {
+                            voice.setVisible(true);
+                            voice.setValue(theVoice.getId());
+                        }
+
+                    }
+                } else {
                     roleCombo.setSelectedItem(sentence.getRole());
                     roleCombo.setVisible(true);
                     roleCombo.setEnabled(!(sentence instanceof LyricLineInter));
@@ -298,7 +334,6 @@ public class InterBoard
         } else {
             grade.setText("");
             specific.setText("");
-            details.setText("");
             deassignAction.putValue(Action.NAME, " ");
             edit.getField().setSelected(false);
         }
@@ -306,7 +341,6 @@ public class InterBoard
         deassignAction.setEnabled((inter != null) && !inter.isRemoved());
         grade.setEnabled(inter != null);
         shapeName.setEnabled(inter != null);
-        details.setEnabled(inter != null);
         edit.setEnabled((inter != null) && !inter.isRemoved() && inter.isEditable());
         toEnsAction.setEnabled((inter != null) && !inter.isRemoved() && (inter.getSig() != null)
                                        && (inter.getEnsemble() != null));
@@ -378,8 +412,14 @@ public class InterBoard
 
         r += 2; // --------------------------------
 
-        // Details
-        builder.add(details, cst.xyw(1, r, 11));
+        // Voice, Verse, Above
+        builder.add(voice.getLabel(), cst.xyw(1, r, 1));
+        builder.add(voice.getField(), cst.xyw(3, r, 1));
+
+        builder.add(verse.getLabel(), cst.xyw(5, r, 1));
+        builder.add(verse.getField(), cst.xyw(7, r, 1));
+
+        builder.add(aboveBelow, cst.xyw(9, r, 3));
 
         // Needed to process user input when RETURN/ENTER is pressed
         getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(

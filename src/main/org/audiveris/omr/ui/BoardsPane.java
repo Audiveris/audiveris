@@ -235,6 +235,16 @@ public class BoardsPane
         update();
     }
 
+    //--------//
+    // resize //
+    //--------//
+    public void resize ()
+    {
+        for (Board board : boards) {
+            board.resizeBoard();
+        }
+    }
+
     //----------//
     // toString //
     //----------//

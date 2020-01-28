@@ -1055,7 +1055,7 @@ public class InterController
                 // Retrieve absolute lines (and the underlying word glyphs)
                 final boolean lyrics = shape == Shape.LYRICS;
                 final TextBuilder textBuilder = new TextBuilder(system, lyrics);
-                final List<TextLine> lines = textBuilder.retrieveGlyphLines(
+                final List<TextLine> lines = textBuilder.processGlyph(
                         buffer,
                         relativeLines,
                         glyph.getTopLeft());
@@ -1081,6 +1081,7 @@ public class InterController
                                 : new WordInter(textWord);
 
                         if (sentence != null) {
+                            staff = sentence.getStaff();
                             seq.add(
                                     new AdditionTask(
                                             sig,

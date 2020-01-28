@@ -21,8 +21,16 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
+import java.awt.Point;
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.Grades;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Skew;
+import org.audiveris.omr.sig.inter.ChordNameInter;
+import org.audiveris.omr.text.WordScanner.OcrScanner;
+import org.audiveris.omr.text.tesseract.TesseractOCR;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,9 +43,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.audiveris.omr.constant.Constant;
-import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.Grades;
 
 /**
  * Class {@code TextLine} defines a non-mutable structure to report all information on
@@ -128,19 +133,52 @@ public class TextLine
         invalidateCache();
     }
 
-    //------//
-    // dump //
-    //------//
+    //---------------//
+    // checkValidity //
+    //---------------//
     /**
-     * Print out internals.
+     * Check the OCR line, which may get some of its words removed.
+     * <p>
+     * First remove any really invalid word from the line.
+     * Then use average of remaining words confidence value.
+     * Use font size validity.
+     *
+     * @param scale         scale of containing sheet
+     * @param inSheetHeader true if line is located above first system
+     * @return reason for invalidity if any, otherwise null
      */
-    public void dump ()
+    public String checkValidity (Scale scale,
+                                 boolean inSheetHeader)
     {
-        logger.info("{}", this);
+        // Discard really invalid words
+        final List<TextWord> toRemove = new ArrayList<>();
 
-        for (TextWord word : words) {
-            logger.info("   {}", word);
+        for (TextWord word : getWords()) {
+            String reason = word.checkValidity(scale, inSheetHeader);
+
+            if (reason != null) {
+                toRemove.add(word);
+            }
         }
+
+        if (!toRemove.isEmpty()) {
+            removeWords(toRemove);
+        }
+
+        // Check global line confidence
+        final double minConfidence = TesseractOCR.getInstance().getMinConfidence();
+        Double conf = getConfidence();
+
+        if ((conf == null) || conf.isNaN() || (conf < minConfidence)) {
+            return "low-confidence";
+        }
+
+        // Check font size
+        if (!isValidFontSize(scale, inSheetHeader)) {
+            return "invalid-font-size";
+        }
+
+        return null; // OK
     }
 
     //-------------//
@@ -218,6 +256,29 @@ public class TextLine
         }
 
         return super.getConfidence();
+    }
+
+    //-----------------//
+    // getDeskewedCore //
+    //-----------------//
+    /**
+     * Build a rectangle using de-skewed baseline and min 1 pixel high.
+     *
+     * @param skew global sheet skew
+     * @return the de-skewed core
+     */
+    public Rectangle getDeskewedCore (Skew skew)
+    {
+        Point2D P1 = getDskOrigin(skew);
+        Point p1 = new Point((int) Math.rint(P1.getX()), (int) Math.rint(P1.getY()));
+        Point2D P2 = skew.deskewed(getBaseline().getP2());
+        Point p2 = new Point((int) Math.rint(P2.getX()), (int) Math.rint(P2.getY()));
+        Rectangle rect = new Rectangle(p1);
+        rect.add(p2);
+
+        rect.height = Math.max(1, rect.height); // To allow containment test
+
+        return rect;
     }
 
     //--------------//
@@ -467,13 +528,13 @@ public class TextLine
     // getWords //
     //----------//
     /**
-     * Report an <b>unmodifiable</b> view of the sequence of words.
+     * Report the live sequence of words.
      *
-     * @return the words view
+     * @return the words
      */
     public List<TextWord> getWords ()
     {
-        return Collections.unmodifiableList(words);
+        return words;
     }
 
     //-------------//
@@ -487,6 +548,25 @@ public class TextLine
     public boolean isChordName ()
     {
         return getRole() == TextRole.ChordName;
+    }
+
+    //-----------------//
+    // isAllChordNames //
+    //-----------------//
+    /**
+     * Report whether this line is composed only of chord names.
+     *
+     * @return true if so
+     */
+    public boolean isAllChordNames ()
+    {
+        for (TextWord word : getWords()) {
+            if (ChordNameInter.createValid(word) == null) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     //----------//
@@ -528,6 +608,68 @@ public class TextLine
         this.processed = processed;
     }
 
+    //--------------------//
+    // mergeStandardWords //
+    //--------------------//
+    public void mergeStandardWords ()
+    {
+        final int minWordDx = (int) Math.rint(
+                getMeanFont().pointsize * constants.minWordDxFontRatio.getValue());
+        final List<TextWord> toAdd = new ArrayList<>();
+        final List<TextWord> toRemove = new ArrayList<>();
+
+        TextWord prevWord = null;
+
+        for (TextWord word : getWords()) {
+            // Look for tiny inter-word gap
+            if (prevWord != null) {
+                Rectangle prevBounds = prevWord.getBounds();
+                int prevStop = prevBounds.x + prevBounds.width;
+                int gap = word.getBounds().x - prevStop;
+
+                if (gap < minWordDx) {
+                    toRemove.add(prevWord);
+                    toRemove.add(word);
+
+                    TextWord bigWord = TextWord.mergeOf(prevWord, word);
+
+                    if (logger.isDebugEnabled()) {
+                        logger.info("   merged {} & {} into {}", prevWord, word, bigWord);
+                    }
+
+                    toAdd.add(bigWord);
+                    word = bigWord;
+                }
+            }
+
+            prevWord = word;
+        }
+
+        if (!toAdd.isEmpty()) {
+            // No use to add & remove the same words
+            List<TextWord> common = new ArrayList<>(toAdd);
+            common.retainAll(toRemove);
+            toAdd.removeAll(common);
+            toRemove.removeAll(common);
+
+            // Perform the modifications, without modifying line role
+            addWords(toAdd);
+            removeWords(toRemove);
+        }
+    }
+
+    //--------------------//
+    // recutStandardWords //
+    //--------------------//
+    /**
+     * Re-cut (merge and split) words within a standard TextLine.
+     */
+    public void recutStandardWords ()
+    {
+        mergeStandardWords();
+        splitWords();
+    }
+
     //-------------//
     // removeWords //
     //-------------//
@@ -541,6 +683,69 @@ public class TextLine
         if ((words != null) && !words.isEmpty()) {
             this.words.removeAll(words);
             invalidateCache();
+        }
+    }
+
+    //---------------//
+    // selectWordGap //
+    //---------------//
+    /**
+     * Report the maximum acceptable abscissa gap between two consecutive words.
+     * <p>
+     * We use a smaller horizontal gap between chord names than between words of ordinary standard
+     * lines.
+     *
+     * @param scale scale of containing sheet
+     * @return the maximum abscissa gap to use
+     */
+    public int selectWordGap (Scale scale)
+    {
+        // Chord name
+        if (isChordName()) {
+            return scale.toPixels(constants.maxChordDx);
+        }
+
+        // Standard line, adapt inter-word gap to font size
+        int pointSize = getMeanFont().pointsize;
+
+        return (int) Math.rint(constants.maxWordDxFontRatio.getValue() * pointSize);
+    }
+
+    //------------//
+    // splitWords //
+    //------------//
+    /**
+     * Check each word in the provided collection and split it in place according to
+     * separating characters ('-' etc).
+     * <p>
+     * The line sequence of words may get modified, because of the addition of new (sub)words and
+     * the removal of words that got split.
+     * <p>
+     * The line sequence of words remains sorted and the line role is not modified.
+     */
+    public void splitWords ()
+    {
+        // To avoid concurrent modification errors
+        final Collection<TextWord> toAdd = new ArrayList<>();
+        final Collection<TextWord> toRemove = new ArrayList<>();
+
+        for (TextWord word : words) {
+            final int maxCharGap = getMaxCharGap(word); // Max gap depends on word font size
+            final List<TextWord> subWords = word.getSubWords(
+                    this,
+                    new OcrScanner(word.getValue(), isLyrics(), maxCharGap, word.getChars()));
+
+            if (!subWords.isEmpty()) {
+                toRemove.add(word);
+                toAdd.addAll(subWords);
+            }
+        }
+
+        // Now perform modification on the line sequence of words, if so needed
+        // Word modification is done "in situ", this does not modify line role
+        if (!toRemove.isEmpty()) {
+            addWords(toAdd);
+            removeWords(toRemove);
         }
     }
 
@@ -566,6 +771,63 @@ public class TextLine
         }
     }
 
+    //---------------//
+    // getMaxCharGap //
+    //---------------//
+    /**
+     * Compute max abscissa gap between two chars in a word.
+     *
+     * @param word the word at hand
+     * @return max number of pixels for abscissa gap, according to the word font size
+     */
+    private int getMaxCharGap (TextWord word)
+    {
+        int pointSize = word.getFontInfo().pointsize;
+
+        // TODO: very rough value to be refined and explained!
+        int val = (int) Math.rint((constants.maxCharDx.getValue() * pointSize) / 2.0);
+
+        return val;
+    }
+
+    //-----------------//
+    // isValidFontSize //
+    //-----------------//
+    /**
+     * Check whether all words in the provided line have a valid font size.
+     * <p>
+     * We just check if no word has a too big font size.
+     *
+     * @return true if valid
+     */
+    private boolean isValidFontSize (Scale scale,
+                                     boolean inSheetHeader)
+    {
+        final int minFontSize = scale.toPixels(constants.minFontSize);
+
+        // Heuristic: Allow large font only before sheet first staff
+        final int maxFontSize = inSheetHeader ? scale.toPixels(constants.maxTitleFontSize)
+                : scale.toPixels(constants.maxFontSize);
+
+        for (TextWord word : getWords()) {
+            FontInfo fontInfo = word.getFontInfo();
+
+            if (fontInfo.pointsize > maxFontSize) {
+                logger.debug("   too big font {} vs {} on {}",
+                             fontInfo.pointsize, maxFontSize, this);
+
+                return false;
+//            } else if (fontInfo.pointsize < minFontSize) {
+//                logger.debug("   too small font {} vs {} on {}",
+//                             fontInfo.pointsize, minFontSize, this);
+//
+//                return false;
+            }
+        }
+
+        return true;
+    }
+
     //-----------//
     // internals //
     //-----------//
@@ -584,14 +846,13 @@ public class TextLine
     //-----------------//
     // invalidateCache //
     //-----------------//
-    private void invalidateCache ()
+    public void invalidateCache ()
     {
         setBounds(null);
 
         setBaseline(null);
         setConfidence(null);
 
-        role = null;
         meanFont = null;
     }
 
@@ -637,12 +898,44 @@ public class TextLine
         };
     }
 
+    //------//
+    // dump //
+    //------//
+    public static void dump (String title,
+                             List<TextLine> lines,
+                             boolean withWords)
+    {
+        logger.info(title);
+
+        for (TextLine line : lines) {
+            logger.info("   {}", line);
+
+            if (withWords) {
+                for (TextWord word : line.getWords()) {
+                    logger.info("      {}", word);
+                }
+            }
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
     private static class Constants
             extends ConstantSet
     {
+
+        private final Scale.Fraction maxFontSize = new Scale.Fraction(
+                5.0,
+                "Maximum font size with respect to interline");
+
+        private final Scale.Fraction minFontSize = new Scale.Fraction(
+                1.25,
+                "Minimum font size with respect to interline");
+
+        private final Scale.Fraction maxTitleFontSize = new Scale.Fraction(
+                8.0,
+                "Maximum font size for titles with respect to interline");
 
         private final Constant.Integer sentenceLowerLength = new Constant.Integer(
                 "Chars",
@@ -657,5 +950,21 @@ public class TextLine
         private final Constant.Ratio maxSentenceGrade = new Constant.Ratio(
                 0.90,
                 "Maximum value for final sentence grade");
+
+        private final Constant.Ratio maxWordDxFontRatio = new Constant.Ratio(
+                1.5,
+                "Max horizontal gap between two non-lyrics words as font ratio");
+
+        private final Constant.Ratio minWordDxFontRatio = new Constant.Ratio(
+                0.125,
+                "Min horizontal gap between two non-lyrics words as font ratio");
+
+        private final Scale.Fraction maxChordDx = new Scale.Fraction(
+                1.0,
+                "Max horizontal gap between two chord words");
+
+        private final Scale.Fraction maxCharDx = new Scale.Fraction(
+                1.0,
+                "Max horizontal gap between two chars in a word");
     }
 }

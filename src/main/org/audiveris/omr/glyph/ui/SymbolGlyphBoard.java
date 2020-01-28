@@ -83,10 +83,6 @@ public class SymbolGlyphBoard
         // For all glyphs
         super(glyphsController, selected);
 
-        width.getField().setBorder(null);
-        height.getField().setBorder(null);
-        weight.getField().setBorder(null);
-
         width.setEnabled(false);
         height.setEnabled(false);
         weight.setEnabled(false);

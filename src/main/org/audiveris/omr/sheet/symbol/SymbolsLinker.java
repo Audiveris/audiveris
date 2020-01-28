@@ -119,7 +119,7 @@ public class SymbolsLinker
 
             switch (role) {
             case Lyrics: {
-                // Map each syllable with proper chord, in staff just above
+                // Map each syllable with proper chord, in assigned staff
                 for (Inter wInter : sentence.getMembers()) {
                     LyricItemInter item = (LyricItemInter) wInter;
                     item.mapToChord();

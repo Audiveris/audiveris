@@ -1397,6 +1397,33 @@ public class SystemInfo
         return removedPageRef;
     }
 
+    //------------------//
+    // numberLyricLines //
+    //------------------//
+    /**
+     * Number the system lyric lines per part.
+     */
+    public void numberLyricLines ()
+    {
+        final List<LyricLineInter> lines = getLyricLines(); // Already sorted by ordinate
+
+        // Assign sequential number to each lyric line in its part
+        int lyricNumber = 0;
+        Part part = null;
+
+        for (LyricLineInter line : lines) {
+            Staff staff = line.getStaff();
+            Part newPart = staff.getPart();
+
+            if (newPart != part) {
+                lyricNumber = 0;
+                part = newPart;
+            }
+
+            line.setNumber(++lyricNumber);
+        }
+    }
+
     //---------------//
     // registerGlyph //
     //---------------//

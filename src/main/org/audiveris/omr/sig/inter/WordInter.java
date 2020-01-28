@@ -41,6 +41,7 @@ import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.ui.symbol.TextSymbol;
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.StringUtil;
 import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
@@ -198,6 +199,25 @@ public class WordInter
                                                     (int) Math.rint(location.getY() + rect.getY()),
                                                     (int) Math.rint(rect.getWidth()),
                                                     (int) Math.rint(rect.getHeight())));
+    }
+
+    //------------//
+    // getDetails //
+    //------------//
+    @Override
+    public String getDetails ()
+    {
+        StringBuilder sb = new StringBuilder(super.getDetails());
+
+        if (value != null) {
+            sb.append(" codes[").append(StringUtil.codesOf(value, false)).append(']');
+        }
+
+        if (fontInfo != null) {
+            sb.append(' ').append(fontInfo.getMnemo());
+        }
+
+        return sb.toString();
     }
 
     //-----------//

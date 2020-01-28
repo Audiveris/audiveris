@@ -50,7 +50,7 @@ public class LyricLineInter
 
     private static final Logger logger = LoggerFactory.getLogger(LyricLineInter.class);
 
-    /** The line number. */
+    /** The verse number (within part). */
     @XmlAttribute
     private int number;
 
@@ -108,6 +108,27 @@ public class LyricLineInter
         }
     }
 
+    //--------------------//
+    // getFirstNormalItem //
+    //--------------------//
+    /**
+     * Report the first item in this line, with a linked head chord.
+     *
+     * @return first item with head chord, null if no such item is found
+     */
+    public LyricItemInter getFirstNormalItem ()
+    {
+        for (Inter wInter : getMembers()) {
+            LyricItemInter item = (LyricItemInter) wInter;
+
+            if (item.getHeadChord() != null) {
+                return item;
+            }
+        }
+
+        return null;
+    }
+
     //------------------//
     // getFollowingLine //
     //------------------//
@@ -137,7 +158,7 @@ public class LyricLineInter
     // getNumber //
     //-----------//
     /**
-     * Report the (1-based) number of this line within the part lyric lines.
+     * Report the (1-based) verse number of this line within the part lyric lines.
      *
      * @return the line number
      */
@@ -150,7 +171,7 @@ public class LyricLineInter
     // setNumber //
     //-----------//
     /**
-     * Set the number of this item within the containing lyrics line.
+     * Set the verse number of this item within the containing lyrics line.
      *
      * @param number 1-based number
      */
@@ -289,7 +310,6 @@ public class LyricLineInter
     {
         LyricLineInter lyricLine = new LyricLineInter(
                 line.getBounds(),
-                ///line.getConfidence() * Grades.intrinsicRatio,
                 line.getGrade(),
                 line.getMeanFont());
 
