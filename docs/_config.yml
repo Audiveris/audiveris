@@ -14,6 +14,6 @@ description: > # this means to ignore newlines until "baseurl:"
 #twitter_username: your-twitter-handle
 github_username:  hbitteur
 
-show_excerpts: true # set to false to remove excerpts on the homepage
+show_excerpts: false # set to false to remove excerpts on the homepage
 
 theme: minima
