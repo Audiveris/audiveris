@@ -16,4 +16,4 @@ github_username:  hbitteur
 
 show_excerpts: false # set to false to remove excerpts on the homepage
 
-theme: minima
+theme: jekyll-theme-leap-day
