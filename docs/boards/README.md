@@ -15,10 +15,10 @@ See [Debug menu](/menus/debug.md) for further details on event services.
 Most boards can be dynamically shown or hidden via a right-click in the boards column.
 
 Here are all the defined boards:
-* [Pixel](/boards/pixel.md)
-* [Binarization](/boards/binarization.md)
-* [Section](/boards/section.md)
-* [Glyph](/boards/glyph.md)
-* [Inter](/boards/inter.md)
-* [Shape](/boards/shape.md)
-* [Basic Classifier](/boards/classifier.md)
+* [Pixel](pixel.md)
+* [Binarization](binarization.md)
+* [Section](section.md)
+* [Glyph](glyph.md)
+* [Inter](inter.md)
+* [Shape](shape.md)
+* [Basic Classifier](classifier.md)
