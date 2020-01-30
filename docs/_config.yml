@@ -10,6 +10,7 @@ description: > # this means to ignore newlines until "baseurl:"
   Content of Audiveris pages.
   Beginning with 5.1 release, it should provide handbook,
   documented OMR file format and link to Javadoc.
+baseurl: /audiveris
 
 # social links
 #twitter_username: your-twitter-handle
@@ -21,3 +22,6 @@ theme: minima
 
 plugins:
   - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true
