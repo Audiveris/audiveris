@@ -5,7 +5,7 @@ These are "known limitations", which should be addressed in future releases.
 
 It is important that the end user be aware of these cases to avoid wasting time on them
 with the current release.
-Apart from these cases, you can fill a bug report or a request for enhancement on
+Apart from these cases, you can fill a bug report or a request for enhancement on 
 [https://github.com/Audiveris/audiveris/issues](https://github.com/Audiveris/audiveris/issues).
 
 We make a distinction between different kinds of OMR limitations:
