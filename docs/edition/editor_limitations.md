@@ -10,7 +10,7 @@ only the ability to add and remove Inter and Relation instances.
 ### Containers
 
 We can assume you are now familiar with the  hierarchy of containers
-(if not, see [Main Entities](/main/entities.md)):
+(if not, see [Main Entities]({{ site.baseurl }}/main/entities.md)):
 
 > Book / Sheet / Page / System / Part / Staff.
 

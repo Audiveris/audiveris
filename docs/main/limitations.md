@@ -6,7 +6,7 @@ These are "known limitations", which should be addressed in future releases.
 It is important that the end user be aware of these cases to avoid wasting time on them
 with the current release.
 Apart from these cases, you can fill a bug report or a request for enhancement on
-https://github.com/Audiveris/audiveris/issues.
+[https://github.com/Audiveris/audiveris/issues](https://github.com/Audiveris/audiveris/issues).
 
 We make a distinction between different kinds of OMR limitations:
 * **Data model**: There is nothing yet in Audiveris data model to simply describe the entity at hand.  
@@ -18,7 +18,7 @@ We make a distinction between different kinds of OMR limitations:
   output and thus allow correct production of MusicXML.
 * **Editor**: The data model is OK, but the current editor does not provide the interactive feature
   to perform a desired action.
-  See [Editor Limitations](/edition/editor_limitations.md) dedicated section.  
+  See [Editor Limitations]({{ site.baseurl }}/edition/editor_limitations.md) dedicated section.  
   Use of an external music editor on Audiveris MusicXML output may bring a solution.
 
 

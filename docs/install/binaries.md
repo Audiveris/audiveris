@@ -4,7 +4,8 @@
 
 #### Installation
 
-Windows installers for Audiveris are available in https://github.com/Audiveris/audiveris/releases
+Windows installers for Audiveris are available in
+[https://github.com/Audiveris/audiveris/releases](https://github.com/Audiveris/audiveris/releases)
 where you can find executables like:
 
 * Audiveris_Setup-5.1.0-windows-x86.exe _(installer for 32-bit JRE)_

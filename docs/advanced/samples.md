@@ -13,7 +13,7 @@ glyph samples (a sample is basically a glyph with the related shape).
 ### Initial samples
 
 There is an Audiveris 5.1 Google drive located at
-https://drive.google.com/drive/folders/1yS8DDSZjn3kWKkHvgJqyAEGwnOu0Gpc_?usp=sharing
+[https://drive.google.com/drive/folders/1yS8DDSZjn3kWKkHvgJqyAEGwnOu0Gpc_?usp=sharing](https://drive.google.com/drive/folders/1yS8DDSZjn3kWKkHvgJqyAEGwnOu0Gpc_?usp=sharing)
 
 This folder contains several files:
 
