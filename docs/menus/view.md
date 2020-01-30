@@ -1,6 +1,6 @@
 ## View menu
 
-![](/assets/view_menu.png)
+![](../assets/view_menu.png)
 
 ### Width Fit
 
@@ -35,7 +35,7 @@ Toggles the selection modes between glyph, inter and section.
 
 ### Switch Layers (F12)
 
-Toggle between the 3 different layer views (see [Sheet display modes](/main/display_modes.md))
+Toggle between the 3 different layer views (see [Sheet display modes](../main/display_modes.md))
 
 ### Show Score Slots
 

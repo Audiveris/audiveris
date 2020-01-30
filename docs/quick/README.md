@@ -17,6 +17,6 @@ All we have to do is, in sequence:
 4. [Export](export.md) the score in MusicXML,
 5. [Play](play.md) the exported MusicXML file with MuseScore.
 
-For the impatient, note that if we have defined a [plugin](/advanced/plugins.md) to a sequencer
+For the impatient, note that if we have defined a [plugin](../advanced/plugins.md) to a sequencer
 like MuseScore, the sub-sequence of bullets \#3, \#4 and \#5 could conveniently be replaced by just
 pressing the plugin button.

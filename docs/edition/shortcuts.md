@@ -15,7 +15,7 @@ the described 2-step shortcut can be used to assign the correct interpretation.
 You will see the selected shapes families on the right column after the first key press
 and the final used interpretation at the left-most position of the last used shapes.
 
-![](/assets/select_lyrics.png)
+![](../assets/select_lyrics.png)
 
 In this example, pressing `p` and `l` assigns the selected items as lyrics.
 
@@ -28,7 +28,7 @@ so that you can easily drag-n-drop it to the desired location.
 
 Example: press `h` and `b` and you get the black head into the list of shapes.
 
-![](/assets/short-cut-head-black.png)
+![](../assets/short-cut-head-black.png)
 
 ### List of supported shortcuts
 

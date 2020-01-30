@@ -3,12 +3,12 @@
 This dialog let you display and modify high-level processing parameters.
 It can be accessed through `Book | Set parameters...` pulldown menu.
 
-![](/assets/book_parameters.png)
+![](../assets/book_parameters.png)
 
 The following example displays the parameters dialog for a book (`Dichterliebe01`) which contains
 two sheets:
 
-![](/assets/score_parameters.png)
+![](../assets/score_parameters.png)
 
 ### Scopes
 

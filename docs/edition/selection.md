@@ -21,7 +21,7 @@ It can be adjusted in the range [1:8 to 32:1] by several ways:
 * By using the mouse wheel while keeping the **CTRL** key pressed.
 * By using a rectangular "lasso" while keeping both the keys **CTRL** and **SHIFT** pressed.
 When releasing the mouse, the zoom will be adjusted so that both rectangle sides get fully visible.
-* By using the predefined buttons ![](/assets/zoom1.png)and ![](/assets/zoom2.png),
+* By using the predefined buttons ![](../assets/zoom1.png)and ![](../assets/zoom2.png),
 you can adjust the zoom according to the sheet's width or height, respectively.
 
 ### Selection of Objects {#selection-of-objects}
@@ -43,7 +43,7 @@ The links appear as short straight lines in light green color. Images next to th
 2. A note head connected to a stem and a slur
 3. Lyrics text with links to the linked chords
 
-| ![](/assets/link_tuplet.png) | ![](/assets/link_stem_slur.png) | ![](/assets/link_lyrics.png) |
+| ![](../assets/link_tuplet.png) | ![](../assets/link_stem_slur.png) | ![](../assets/link_lyrics.png) |
 | :---: | :---: | :---: |
 
 
@@ -51,7 +51,7 @@ The links appear as short straight lines in light green color. Images next to th
 
 A left-click in an entity area selects this entity (and deselects the entity previously selected if any).
 
-![](/assets/multi_select.png)
+![](../assets/multi_select.png)
 
 To select several entities:
 

@@ -3,7 +3,7 @@
 ### Session global log
 
 All messages displayed in Audiveris events window during the same session are also written into a
-separate log file located in Audiveris log folder (see [Cached Folders](/folders/cached.md)).
+separate log file located in Audiveris log folder (see [Cached Folders](../folders/cached.md)).
 
 The log file is named like `20180725T185854.log`, according to the date and time of session start,
 formatted as "yyyymmdd" + T + "hhmmss".
@@ -14,7 +14,7 @@ In particular, it is very useful when filing a bug report on
 
 The advanced user can precisely customize the logged information by manually editing the logging
 configuration file `logback.xml` located in Audiveris config folder
-(see [Essential Folders](/folders/essential.md)).
+(see [Essential Folders](../folders/essential.md)).
 
 ### Batch books logs
 

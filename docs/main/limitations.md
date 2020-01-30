@@ -51,7 +51,7 @@ Audiveris supports no tremolo, whether on a single note or between two notes.
 
 #### Ottava
 
-![](/assets/ottava_alta.png)
+![](../assets/ottava_alta.png)
 
 Ottava signs (ottava alta and ottava bassa) are used to indicate an octave shift between what is
 written on staff and what should be played.
@@ -64,7 +64,7 @@ is yet no support for the dash-line nor the small vertical leg.
 
 #### Natural signs in key signature
 
-![](/assets/hybrid_key.png)
+![](../assets/hybrid_key.png)
 
 In current data model, a key signature is assumed to contain only sharp signs or only flat signs.
 There is yet no room in them for natural signs.
@@ -79,7 +79,7 @@ In this case, the user will have to manually enter the correct key (without the 
 
 #### Key signature change
 
-![](/assets/curtesy_key.png)
+![](../assets/curtesy_key.png)
 
 A key signature appears generally at the beginning of a staff, within what Audiveris calls the staff
 "header" (a sequence of: clef, optional key signature, optional time signature).
@@ -103,7 +103,7 @@ staff.
 We can have two head chords with up and down stems that are located in such a way that they seem
 to be merged, as follows:
 
-![](/assets/opposed_stems.png)
+![](../assets/opposed_stems.png)
 
 The OMR engine may detect just one long stem, instead of two aligned ones.
 The problem is that this single stem has some heads attached near the middle of the stem,

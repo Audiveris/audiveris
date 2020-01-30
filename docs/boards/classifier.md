@@ -1,6 +1,6 @@
 ## Basic Classifier board
 
-![](/assets/basic_classifier_board.png)
+![](../assets/basic_classifier_board.png)
 
 In current Audiveris, the basic classifier is a Glyph classifier.
 

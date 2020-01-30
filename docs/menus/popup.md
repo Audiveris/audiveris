@@ -1,13 +1,13 @@
 ## Popup menu
 
-![](/assets/popup_menu.png)
+![](../assets/popup_menu.png)
 
 This menu appears via a right-click in sheet view.
 
 It displays _contextual_ information and actions that depend on the sheet latest processing step,
 the current location in sheet view and the selected items if any.
 
-Some of its content also depends on user-selected [Advanced Topics](/advanced/topics.md).
+Some of its content also depends on user-selected [Advanced Topics](../advanced/topics.md).
 
 ### Inters
 If at least one Inter instance has been selected, this sub-menu lists the selected Inters,

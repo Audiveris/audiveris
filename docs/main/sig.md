@@ -24,7 +24,7 @@ This is so because the pitches of all flat signs in this key are compatible with
 If ever there was a competing bass clef, there would be an ExclusionRelation between the bass clef
 and this key.
 
-![](/assets/clef_key.png)
+![](../assets/clef_key.png)
 
 #### SIG
 

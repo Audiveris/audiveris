@@ -25,7 +25,7 @@ It provides sheet image and symbol annotations (shape + bounding box) for each r
 ### Global
 
 These files are located in the `TRAIN_FOLDER`.
-See section on [Essential folders](/folders/essential.md).
+See section on [Essential folders](../folders/essential.md).
 
 **samples.zip**:
 This is the global samples repository.

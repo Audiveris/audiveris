@@ -12,7 +12,7 @@ And as of this writing, this is achieved by going through MusicXML-formatted dat
 We thus have to export OMR data as MusicXML data.  
 This can be done via pulldown menu `Book | Export Book...`:
 
-![](/assets/book_export.png)
+![](../assets/book_export.png)
 
 From our "chula" example, this command produces a file named `chula.mxl` (compressed MusicXML).
 
@@ -22,7 +22,7 @@ In our concrete example, the book folder ("chula") will contain the export file 
 
 The default location of all "book folders" depends on the operating system.
 For Windows OS, the default location is the "Audiveris" sub-folder of user's Documents folder.
-More details are available in [Folders](/folders/README.md) chapter.
+More details are available in [Folders](../folders) chapter.
 
 Note that this export is lossy, since a large amount of OMR information can't go into MusicXML.
 A `.omr` file can always be used to regenerate the `.mxl` export, but the reverse is not true.

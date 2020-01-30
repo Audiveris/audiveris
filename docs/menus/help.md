@@ -1,6 +1,6 @@
 ## Help menu
 
-![](/assets/help_menu.png)
+![](../assets/help_menu.png)
 
 ### Handbook
 
@@ -19,4 +19,4 @@ Open Audiveris organization and contained repositories.
 Open an "à propos" dialog with information about Audiveris program and main external components
 it depends upon (Tesseract OCR, Java, OS, machine architecture).
 
-![](/assets/about_dialog.png)
+![](../assets/about_dialog.png)

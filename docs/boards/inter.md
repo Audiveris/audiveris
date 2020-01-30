@@ -1,6 +1,6 @@
 ## Inter board
 
-![](/assets/inter_board.png)
+![](../assets/inter_board.png)
 
 ### Vip
 (input/output)  
@@ -44,9 +44,9 @@ Modifications can be performed at word level only.
 (input/output)  
 Role of the sentence (such as Direction, PartName, Rights, Lyrics, ...).
 
-![](/assets/role_board.png)
+![](../assets/role_board.png)
 
 Nota: `Lyrics` is such a specific sentence role that it cannot be changed in an existing Inter.
 Instead, a new (lyrics) inter must be created.
 
-![](/assets/lyrics_board.png)
+![](../assets/lyrics_board.png)

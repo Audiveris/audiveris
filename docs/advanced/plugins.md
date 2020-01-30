@@ -14,11 +14,11 @@ This sequence can be automated via the use of one or several plugins.
 Once plugins are correctly configured, you can call an external program by selecting the desired one
 in the pulldown `Plugins` menu:
 
-![](/assets/plugins_menu_finale.png)
+![](../assets/plugins_menu_finale.png)
 
 Even simpler, the default plugin can be directly called by pressing the toolbar plugin icon:
 
-![](/assets/plugin_icon.png)
+![](../assets/plugin_icon.png)
 
 In either case, Audiveris makes sure the book has been transcribed, that the MusicXML export file
 exists and is up-to-date with the latest score modifications performed manually by the user,

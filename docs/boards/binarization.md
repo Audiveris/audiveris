@@ -1,6 +1,6 @@
 ## Binarization board
 
-![](/assets/binarization_board.png)
+![](../assets/binarization_board.png)
 
 This board is meant to visualize the behavior of the `adaptive` binarization algorithm.
 According to the current location, it displays the context information and the resulting threshold

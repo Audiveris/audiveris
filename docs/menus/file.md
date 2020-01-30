@@ -1,6 +1,6 @@
 ## File menu
 
-![](/assets/file_menu.png)
+![](../assets/file_menu.png)
 
 ### Recent Inputs
 
@@ -12,7 +12,7 @@ A click on the file name opens the file as source image.
 Opens a dialog box allowing to select the image or pdf-file that shall be transcribed.
 The dialog pre-selects the folder from where the last input image file was loaded.
 
-![](/assets/dialog_file_open.png)
+![](../assets/dialog_file_open.png)
 
 ### Exit
 

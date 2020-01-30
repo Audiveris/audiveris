@@ -5,7 +5,7 @@ menu of Audiveris main window.
 
 Since this chapter if meant for reference, each menu is described in its full extent,
 thus including advanced topics if any.
-Advanced topics must be explicitly selected via the [Advanced Topics](/advanced/topics.md) dialog.
+Advanced topics must be explicitly selected via the [Advanced Topics](../advanced/topics.md) dialog.
 
 ## Pulldown menus
 

@@ -6,7 +6,7 @@ the others.
 Only the final gathering of sheets results, which comparatively is a very fast action,
 is performed at book level.
 
-![](/assets/project.png)
+![](../assets/project.png)
 
 The diagram above presents the typical workflow for an example input file, named `foo.pdf`:
 1. When opening the `foo.pdf` input, Audiveris creates a Book instance.
@@ -29,7 +29,7 @@ applied progressively on the sheet OMR data.
 
 Here below is the sheet pipeline sequence, with the main inputs and outputs of every step:
 
-![](/assets/pipeline.png)
+![](../assets/pipeline.png)
 
 ### Driving the Pipeline
 
@@ -40,7 +40,7 @@ In the selected sheet, the interactive user can decide to move the pipeline forw
 step.
 To do so, he selects the target step in the pulldown `Step` menu:
 
-![Steps](/assets/step_menu.png)
+![Steps](../assets/step_menu.png)
 
 Note that selecting the pulldown menu `Sheet | Transcribe Sheet` is just another way of selecting
 the pulldown menu `Step | PAGE`.

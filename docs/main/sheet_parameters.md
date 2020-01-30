@@ -14,7 +14,7 @@ modified for the sheet at hand, before being used by the depending steps.
 
 Selecting `Sheet | SetSheet Parameters` menu item opens the dialog as follows:
 
-![](/assets/sheet_parameters.png)
+![](../assets/sheet_parameters.png)
 
 Initially, all rows appear in gray, and the data values, if any, are displayed on the right.
 

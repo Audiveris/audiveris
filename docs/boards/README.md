@@ -10,7 +10,7 @@ It is focused on a specific kind of OMR entity (pixel, glyph, inter, section, sa
 offers input and output features related to the OMR entity kind.
 
 A board reads and/or writes to one or several event buses according to the OMR entity kind handled.
-See [Debug menu](/menus/debug.md) for further details on event services.
+See [Debug menu](../menus/debug.md) for further details on event services.
 
 Most boards can be dynamically shown or hidden via a right-click in the boards column.
 

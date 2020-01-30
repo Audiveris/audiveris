@@ -11,7 +11,7 @@ This data is presented as options to the end user, and is modifiable at run time
 The display below combines a tree of classes on the left side, and a table on the right side,
 where details of the options from the containing classes are available for display and modification.
 
-![](/assets/options.png)
+![](../assets/options.png)
 
 The picture represents the top of the scrollable Options view:
 We are located at the top of Audiveris software, with the root packages: `org`, `audiveris`, `omr`.
@@ -27,7 +27,7 @@ We can enter `accid` in the search area and press the search button (perhaps sev
 until we get to several interesting options.
 Here is what we can read:
 
-![](/assets/options_accid.png)
+![](../assets/options_accid.png)
 
 1. We are in the package named `relation`, (its full name is org.audiveris.omr.sig.relation)
 and the class named `AlterHeadRelation`, which governs a potential relation between an alteration

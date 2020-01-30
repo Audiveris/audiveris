@@ -1,6 +1,6 @@
 ## Section board
 
-![](/assets/section_board.png)
+![](../assets/section_board.png)
 
 There are two different section boards, one for sections with horizontal runs,
 one for sections with vertical runs.

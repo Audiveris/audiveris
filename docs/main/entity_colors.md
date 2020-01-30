@@ -3,7 +3,7 @@
 The sheet window uses different colors to display the entities and the kind of entity that was
 recognized:
 
-![](/assets/entity_colors.png)
+![](../assets/entity_colors.png)
 
 In the example the _background_ of the third measure is colored in rose because the rhythm check
 has failed for this measure (the first note of the upper voice was mistaken for a quarter

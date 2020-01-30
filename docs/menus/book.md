@@ -1,11 +1,11 @@
 ## Book menu
 
-![](/assets/book_menu.png)
+![](../assets/book_menu.png)
 
 A book is a collection of one or more sheets, each with its current state of transcription.
 It can be saved and reloaded at any time during a processing session.
 
-As opposed to [Loading an image ](/quick/load.md) which restarts from the initial image,
+As opposed to [Loading an image ](../quick/load.md) which restarts from the initial image,
 loading a saved book allows to resume processing from the last step saved.
 This is especially useful for processing books with many sheets.
 
@@ -37,7 +37,7 @@ During processing, the user may start editing sheets that have already been tran
 ### Set Parameters
 
 Modify parameters for transcription.
-See [Score parameters ](/main/score_parameters.md).
+See [Score parameters ](../main/score_parameters.md).
 
 ### Swap Book Sheets
 
@@ -61,7 +61,7 @@ Same as above, except that the user can define the file name and the directory w
 ### Export Book
 
 Export the transcribed score as a MusicXML `.mxl` file for exchange with a notation program.
-See [Outputs Formats](/main/output_formats.md).
+See [Outputs Formats](../main/output_formats.md).
 
 The file is saved into book folder, a (newly created) subdirectory of the base output directory.
 
@@ -73,19 +73,19 @@ Same as above except that the user can define the file name and the directory wh
 
 Populate the book sample repository with samples derived from relevant inters of all book sheets.
 
-(needs `SAMPLES` topic, see [Samples section](/advanced/samples.md))  
+(needs `SAMPLES` topic, see [Samples section](../advanced/samples.md))  
 
 ### View Book Repository
 
 Open a window to browse, check and filter the samples of book repository.
 
-(needs `SAMPLES` topic, see [Samples section](/advanced/samples.md))
+(needs `SAMPLES` topic, see [Samples section](../advanced/samples.md))
 
 ### Save Book Repository
 
 Save book sample repository to disk into book folder.
 
-(needs `SAMPLES` topic, see [Samples section](/advanced/samples.md))
+(needs `SAMPLES` topic, see [Samples section](../advanced/samples.md))
 
 ### Annotate Book Symbols
 

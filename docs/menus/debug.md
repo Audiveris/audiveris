@@ -1,16 +1,16 @@
 ## Debug menu
 
-![](/assets/debug_menu.png)
+![](../assets/debug_menu.png)
 
 This menu makes a few debug actions conveniently available.
 
 NOTA: The casual user can safely ignore this menu.
 To make it visible, you must have beforehand selected the `DEBUG` topic in the
-[Advanced Topics](/advanced/topics.md) dialog.
+[Advanced Topics](../advanced/topics.md) dialog.
 
 ### Browse Book...
 
-![](/assets/book_browser.png)
+![](../assets/book_browser.png)
 
 This dialog allows the user to browse the whole hierarchical content of the current book.
 

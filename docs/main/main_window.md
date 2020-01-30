@@ -1,6 +1,6 @@
 ## Main Window
 
-![](/assets/chula_transcribed.png)
+![](../assets/chula_transcribed.png)
 
 The Audiveris main window is composed of 3 panels:
 

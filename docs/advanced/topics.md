@@ -6,7 +6,7 @@ Some advanced features are gathered by `Topics`, that the end user can explicitl
 
 This is done via the `Tools | Advanced Topics...` pulldown menu.
 
-![](/assets/advanced_topics.png)
+![](../assets/advanced_topics.png)
 
 ### Input Step
 

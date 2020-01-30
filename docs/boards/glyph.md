@@ -1,6 +1,6 @@
 ## Glyph board
 
-![](/assets/glyph_board.png)
+![](../assets/glyph_board.png)
 
 ### Vip
 (input/output)  

@@ -71,7 +71,7 @@ because the training process uses only the GLOBAL repository.
 
 Either way, the repository user interface is the same:
 
-![](/assets/global_repository.png)
+![](../assets/global_repository.png)
 
 The repository interface is organized as follows:
 * Left column:

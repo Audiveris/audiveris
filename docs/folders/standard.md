@@ -22,7 +22,7 @@ For example, the processing of some "Bach_Fugue.tif" input file would result in 
 ### User modification
 
 You can override this _default_ base folder via either:
-* The `-output <output-folder>` [CLI](/advanced/cli.md) argument.  
+* The `-output <output-folder>` [CLI](../advanced/cli.md) argument.  
   (the modification is valid for this run only).
 * The pulldown menu `Tools | Options` dialog, by modifying the value of
   `org.audiveris.omr.sheet.BookManager.baseFolder` constant.  

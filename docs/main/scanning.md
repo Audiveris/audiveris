@@ -32,4 +32,4 @@ Special settings like "Line Art", "Text", "Dithering" or "Halftone" should be di
 they often lead to unwanted image distortions.   
 Prefer a dedicated image processing software in order to carefully enhance low-quality images
 when needed.
-You can refer to the [Improve Input](/advanced/improve_input.md) section.
+You can refer to the [Improve Input](../advanced/improve_input.md) section.

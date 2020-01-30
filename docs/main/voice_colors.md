@@ -2,7 +2,7 @@
 
 By default, each score entity is displayed using a color determined according to the entity kind:
 
-![](/assets/dich_no_voice.png)
+![](../assets/dich_no_voice.png)
 
 But we can decide to focus on voices, rather than entity kinds, and thus choose to display each
 entity according to its voice, if any.
@@ -11,11 +11,11 @@ This feature is reported to ease the detection of wrong voice assignment.
 To do this, we can use the pulldown menu `View | Show score Voices`
 (or directly the related toolbar button):
 
-![](/assets/view_voices.png)
+![](../assets/view_voices.png)
 
 This results in the following display:
 
-![](/assets/dich_voices.png)
+![](../assets/dich_voices.png)
 
 Within any given part, voice numbers (and thus colors) are assigned as follows:
 * Voices starting on first staff use numbers 1 through 4,

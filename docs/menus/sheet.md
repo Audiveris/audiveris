@@ -1,6 +1,6 @@
 ## Sheet menu
 
-![](/assets/sheet_menu.png)
+![](../assets/sheet_menu.png)
 
 This menu operates on the current sheet (of the current book).
 
@@ -42,9 +42,9 @@ and possibly beam thickness.
 * The "combo" plot deals with combined length of vertical black run followed by vertical white run,
 leading to staff interline(s).
 
-![](/assets/black_plot.png)
+![](../assets/black_plot.png)
 
-![](/assets/combo_plot.png)
+![](../assets/combo_plot.png)
 
 (needs PLOTS topic)
 
@@ -52,13 +52,13 @@ leading to staff interline(s).
 
 Display plot of histogram of stem thickness.
 
-![](/assets/stem_plot.png)
+![](../assets/stem_plot.png)
 
 (needs PLOTS topic)
 
 ### Display Staves plots
 
-![](/assets/staff_plot.png)
+![](../assets/staff_plot.png)
 
 Display the projection to x-axis of black pixels contained between staff first and last lines,
 leading to barlines extraction.
@@ -104,7 +104,7 @@ Same as above except that the user can define the file name and the folder where
 
 Populate the book sample repository with samples derived from relevant inters of this sheet only.
 
-(needs SAMPLES topic, see [Samples section](/advanced/samples.md))  
+(needs SAMPLES topic, see [Samples section](../advanced/samples.md))  
 
 ### Annotate sheet Symbols
 

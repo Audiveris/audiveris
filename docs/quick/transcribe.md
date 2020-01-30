@@ -5,11 +5,11 @@ from low-level graphical data.
 
 This process can be launched directly from the toolbar icon:
 
-![](/assets/transcribe_button.png)
+![](../assets/transcribe_button.png)
 
 It can also be launched via the pulldown menu `Book | Transcribe Book`:
 
-![](/assets/transcribe.png)
+![](../assets/transcribe.png)
 
 Note this command applies to all images (sheets) in the input file (book).
 
@@ -19,7 +19,7 @@ sheet-level commands are equivalent.
 
 After some time, we get the following image of transcribed music:
 
-![](/assets/chula_transcribed.png)
+![](../assets/chula_transcribed.png)
 
 Looking carefully at this result, we might detect a couple of mistakes near the bottom of the image:
 a flat sign not recognized, and an 8th note mistaken for a quarter because of overlapping flag

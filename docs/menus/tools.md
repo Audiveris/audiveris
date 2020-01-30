@@ -1,6 +1,6 @@
 ## Tools menu
 
-![](/assets/tools_menu.png)
+![](../assets/tools_menu.png)
 
 ### Browse Global repository
 
@@ -26,7 +26,7 @@ Open a dialog to verify and edit a local (book) sample repository
 
 Open a dialog to launch, monitor and evaluate the training of the glyph classifier.
 
-See [Training](/advanced/training.md) section.
+See [Training](../advanced/training.md) section.
 
 (needs `SAMPLES` topic)
 
@@ -43,12 +43,12 @@ Most of them concern development options only.
 
 A search window allows to search for a string part in the option name or its description.
 
-![](/assets/dialog_options.png)
+![](../assets/dialog_options.png)
 
-For more details, refer to [Options](/advanced/options.md) section.
+For more details, refer to [Options](../advanced/options.md) section.
 
 ### Advanced Topics
 
 Opens a dialog with a couple of options concerning the program development only.
 
-See [Advanced Topics](/advanced/topics.md) section.
+See [Advanced Topics](../advanced/topics.md) section.

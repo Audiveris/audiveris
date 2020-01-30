@@ -22,7 +22,7 @@ This dialog is dedicated to the training of the Audiveris 5.1 basic classifier (
 It is launched via the pulldown menu `Tools | Train classifier...` or, from the global repository,
 by its `Repository | Train classifier...` menu.
 
-![](/assets/classifier_training.png)
+![](../assets/classifier_training.png)
 
 Here we can launch and monitor the training of the classifier neural network.
 
@@ -47,7 +47,7 @@ and the test set.
 `Test` button launches validation on the data set at hand.
 Note that validation is disabled if any training is going on.
 
-![](/assets/classifier_validation.png)
+![](../assets/classifier_validation.png)
 
 In picture above, without further training, we have directly run validation on a random test set.
 

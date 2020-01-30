@@ -1,6 +1,6 @@
 ## Shape board
 
-![](/assets/shape_board.png)
+![](../assets/shape_board.png)
 
 The shape board displays a panel of shape families.
 
@@ -10,7 +10,7 @@ Accidentals, Articulations, Attributes, Barlines, BeamsAndTuplets, Clefs, Dynami
 Clicking on a family button replaces the global family panel by the selected family palette,
 for example the Accidentals palette:
 
-![](/assets/accidentals_palette.png)
+![](../assets/accidentals_palette.png)
 
 In this palette you can:
 * Assign a shape, via a double-click on proper shape button, to the current glyph.
