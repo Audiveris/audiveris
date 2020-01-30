@@ -1,4 +1,4 @@
-title: Audiveris documentation
+title: Audiveris Pages
 author: Hervé Bitteur
 #email: your-email@domain.com
 
@@ -7,28 +7,14 @@ author: Hervé Bitteur
 #  line in _config.yml. It will appear in your document head meta (for
 #  Google search results) and in your feed.xml site description.
 description: > # this means to ignore newlines until "baseurl:"
-  Documentation of Audiveris OMR tool.
-  It should contain handbook versions, beginning with 5.1 release
-  
+  Content of Audiveris pages.
+  Beginning with 5.1 release, it should provide handbook,
+  documented OMR file format and link to Javadoc.
+
 # social links
 #twitter_username: your-twitter-handle
 github_username:  hbitteur
 
 show_excerpts: false # set to false to remove excerpts on the homepage
 
-theme: jekyll-theme-leap-day
-
-plugins:
-  - jekyll-relative-links
-relative_links:
-  enabled: true
-  collections: true
-include:
-  - CONTRIBUTING.md
-  - README.md
-  - LICENSE.md
-  - COPYING.md
-  - CODE_OF_CONDUCT.md
-  - CONTRIBUTING.md
-  - ISSUE_TEMPLATE.md
-  - PULL_REQUEST_TEMPLATE.md
+theme: minima
