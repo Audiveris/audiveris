@@ -1,6 +1,6 @@
 ## Pixel board
 
-![](/assets/pixel_board.png)
+![pixel board](/assets/pixel_board.png)
 
 The pixel board handles the location within the sheet image, as well as the pixel
 gray value at the (x,y) location.
