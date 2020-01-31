@@ -1,3 +1,5 @@
+---
+---
 ## Scanning of paper scores
 
 Audiveris doesn't support direct scanning because there is still no open-source solution for

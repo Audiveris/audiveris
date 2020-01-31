@@ -1,6 +1,5 @@
 ---
 ---
-
 # Audiveris Handbook
 
 Applies to Version 5.1

@@ -1,3 +1,5 @@
+---
+---
 # Quick Tour
 
 This chapter describes a very early tour of Audiveris, featuring the basic workflow that goes from

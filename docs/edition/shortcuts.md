@@ -1,3 +1,5 @@
+---
+---
 ## Shortcuts
 
 In order to make editing easier there are a couple of keyboard short-cuts that allow to assign

@@ -1,3 +1,5 @@
+---
+---
 ## Standard folders
 
 This is where, by default, Audiveris stores all score outputs, such as the `.omr` project

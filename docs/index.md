@@ -1,3 +1,5 @@
+---
+---
 # Audiveris Pages
 
 - [Summary](./SUMMARY.md)
@@ -6,8 +8,7 @@
 
 - TBD: Development version
 
-- [5.1](index_5_1.md): Stable version (md)
-- [5.1](index_5_1.html): Stable version (html)
+- [5.1](index-5.1.md): Stable version
 
 ## OMR file format
 - TBD. Content under source control

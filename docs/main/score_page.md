@@ -1,3 +1,5 @@
+---
+---
 ### Score vs Page
 
 Looking at the musical content of a given sheet image, we can observe that staves are often gathered

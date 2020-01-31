@@ -1,3 +1,5 @@
+---
+---
 # Main Features
 
 This chapter presents the main features of Audiveris application, especially the user GUI and the

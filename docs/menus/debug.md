@@ -1,3 +1,5 @@
+---
+---
 ## Debug menu
 
 ![](../assets/debug_menu.png)

@@ -1,3 +1,5 @@
+---
+---
 ## Plugins menu
 
 ![](../assets/plugins_menu.png)

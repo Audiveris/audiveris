@@ -1,3 +1,5 @@
+---
+---
 ## Training {#training}
 
 Audiveris has the ability to train the underlying Glyph classifier with representative samples.

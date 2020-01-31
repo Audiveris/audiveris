@@ -1,3 +1,5 @@
+---
+---
 ## Pixel board
 
 ![](../assets/pixel_board.png)

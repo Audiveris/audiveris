@@ -1,3 +1,5 @@
+---
+---
 # Manual Edition
 
 _As an introduction, you can watch Audiveris manual edition in action thanks to Baruch's

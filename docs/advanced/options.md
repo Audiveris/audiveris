@@ -1,3 +1,5 @@
+---
+---
 ## Options {#options}
 
 There is (or should be) no hard-coded constant in Audiveris code.

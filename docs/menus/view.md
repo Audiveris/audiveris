@@ -1,3 +1,5 @@
+---
+---
 ## View menu
 
 ![](../assets/view_menu.png)

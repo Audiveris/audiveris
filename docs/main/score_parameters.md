@@ -1,3 +1,5 @@
+---
+---
 ## **Score parameters**
 
 This dialog let you display and modify high-level processing parameters.

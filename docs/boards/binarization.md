@@ -1,3 +1,5 @@
+---
+---
 ## Binarization board
 
 ![](../assets/binarization_board.png)

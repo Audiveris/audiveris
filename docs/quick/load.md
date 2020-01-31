@@ -1,3 +1,5 @@
+---
+---
 ## Load
 
 To load an image from disk, use the pulldown menu `File | Input`:

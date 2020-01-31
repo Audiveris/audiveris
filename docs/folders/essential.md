@@ -1,3 +1,5 @@
+---
+---
 ## Essential folders
 
 This is where Audiveris stores user-specific essential parameters:

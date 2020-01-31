@@ -1,3 +1,5 @@
+---
+---
 ## Editor Principles
 
 For a good understanding of the rationale and also the current limitations of this editor,

@@ -1,3 +1,5 @@
+---
+---
 ## Launch
 
 For the sake of simplicity, let's assume you are using Windows OS and have installed Audiveris via

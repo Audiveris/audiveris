@@ -1,3 +1,5 @@
+---
+---
 # Boards
 
 This chapter gathers the descriptions of all boards.

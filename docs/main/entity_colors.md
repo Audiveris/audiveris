@@ -1,3 +1,5 @@
+---
+---
 ### Entity colors
 
 The sheet window uses different colors to display the entities and the kind of entity that was

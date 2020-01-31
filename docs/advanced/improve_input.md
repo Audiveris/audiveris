@@ -1,4 +1,6 @@
-(../## Improve Input
+---
+---
+## Improve Input
 
 Sometimes the base image is of rather bad quality.
 Although the human's eye can identify the notes correctly, the algorithms have problems to detect

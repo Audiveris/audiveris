@@ -1,3 +1,5 @@
+---
+---
 ### Sheet Display Modes
 
 |  | Binary tab | Data tab |

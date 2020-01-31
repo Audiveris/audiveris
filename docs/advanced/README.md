@@ -1,3 +1,5 @@
+---
+---
 # Advanced Features {#advanced}
 
 There are a couple of special functions that are mostly interesting only for the advanced user.

@@ -1,3 +1,5 @@
+---
+---
 ### Voice Colors
 
 By default, each score entity is displayed using a color determined according to the entity kind:

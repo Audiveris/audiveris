@@ -1,3 +1,5 @@
+---
+---
 ## Samples
 
 This chapter describes how to set up repositories of Glyph samples and how to carefully filter the

@@ -1,3 +1,5 @@
+---
+---
 ## Editing Entities
 
 Audiveris checks whether the chords for each measure fit to the detected time signature.
