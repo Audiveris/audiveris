@@ -6,8 +6,8 @@ section in Audiveris WiKi.
 
 This section on editor principles is organized as follows:
 
-1.	Which [entities](#Entities) are handled,
-2.	Which [actions](#Actions) are possible on these entities,
+1.	Which [entities](#entities) are handled,
+2.	Which [actions](#actions) are possible on these entities,
 3.	Which user [gestures](#gestures) can trigger these actions.
 
 ### Entities
