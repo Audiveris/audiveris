@@ -8,7 +8,7 @@ author: Hervé Bitteur
 #  Google search results) and in your feed.xml site description.
 description: > # this means to ignore newlines until "baseurl:"
   Audiveris documentation
-baseurl: /audiveris
+# baseurl: /audiveris
 
 # social links
 #twitter_username: your-twitter-handle

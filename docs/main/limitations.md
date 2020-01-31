@@ -18,7 +18,7 @@ We make a distinction between different kinds of OMR limitations:
   output and thus allow correct production of MusicXML.
 * **Editor**: The data model is OK, but the current editor does not provide the interactive feature
   to perform a desired action.
-  See [Editor Limitations]({{ site.baseurl }}/edition/editor_limitations.md) dedicated section.  
+  See [Editor Limitations](../edition/editor_limitations.md) dedicated section.  
   Use of an external music editor on Audiveris MusicXML output may bring a solution.
 
 
