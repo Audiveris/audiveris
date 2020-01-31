@@ -6,8 +6,8 @@
 
 - TBD: Development version
 
-- [5.1](./README.md): Stable version (md)
-- [5.1](./README.html): Stable version (html)
+- [5.1](index-5.1.md): Stable version (md)
+- [5.1](index-5.1.html): Stable version (html)
 
 ## OMR file format
 - TBD. Content under source control
