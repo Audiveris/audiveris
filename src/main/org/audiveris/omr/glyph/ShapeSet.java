@@ -107,8 +107,10 @@ public class ShapeSet
             TIME_TWO_FOUR,
             TIME_THREE_FOUR,
             TIME_FIVE_FOUR,
+            TIME_SIX_FOUR,
             TIME_THREE_EIGHT,
-            TIME_SIX_EIGHT);
+            TIME_SIX_EIGHT,
+            TIME_TWELVE_EIGHT);
 
     /** All sorts of F clefs. */
     public static final EnumSet<Shape> BassClefs = EnumSet.of(
