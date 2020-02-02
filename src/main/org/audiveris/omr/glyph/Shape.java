@@ -149,8 +149,10 @@ public enum Shape
     TIME_TWO_FOUR("Rational 2/4"),
     TIME_THREE_FOUR("Rational 3/4"),
     TIME_FIVE_FOUR("Rational 5/4"),
+    TIME_SIX_FOUR("Rational 6/4"),
     TIME_THREE_EIGHT("Rational 3/8"),
     TIME_SIX_EIGHT("Rational 6/8"),
+    TIME_TWELVE_EIGHT("Rational 12/8"),
 
     //
     // Octave shifts ---

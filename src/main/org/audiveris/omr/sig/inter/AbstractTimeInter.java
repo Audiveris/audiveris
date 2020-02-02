@@ -75,6 +75,7 @@ public abstract class AbstractTimeInter
                     new TimeRational(3, 4), // Triple simple
                     new TimeRational(4, 4), // Duple simple
                     new TimeRational(5, 4), // Asymmetrical simple
+                    new TimeRational(6, 4), // ?
                     ///new TimeRational(7, 4), // Asymmetrical simple
                     new TimeRational(3, 8), // Triple compound
                     new TimeRational(6, 8), // Duple compound
@@ -360,11 +361,17 @@ public abstract class AbstractTimeInter
         case TIME_FIVE_FOUR:
             return new TimeRational(5, 4);
 
+        case TIME_SIX_FOUR:
+            return new TimeRational(6, 4);
+
         case TIME_THREE_EIGHT:
             return new TimeRational(3, 8);
 
         case TIME_SIX_EIGHT:
             return new TimeRational(6, 8);
+
+        case TIME_TWELVE_EIGHT:
+            return new TimeRational(12, 8);
 
         default:
             return null;

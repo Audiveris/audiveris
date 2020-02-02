@@ -355,8 +355,10 @@ public class InterFactory
         case TIME_TWO_FOUR:
         case TIME_THREE_FOUR:
         case TIME_FIVE_FOUR:
+        case TIME_SIX_FOUR:
         case TIME_THREE_EIGHT:
         case TIME_SIX_EIGHT:
+        case TIME_TWELVE_EIGHT:
             return TimeWholeInter.create(glyph, shape, grade, closestStaff); // Staff is OK
 
         // Flags
@@ -837,8 +839,10 @@ public class InterFactory
         case TIME_TWO_FOUR:
         case TIME_THREE_FOUR:
         case TIME_FIVE_FOUR:
+        case TIME_SIX_FOUR:
         case TIME_THREE_EIGHT:
         case TIME_SIX_EIGHT:
+        case TIME_TWELVE_EIGHT:
             return new TimeWholeInter(null, shape, GRADE);
 
         // Noteheads
