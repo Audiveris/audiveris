@@ -634,16 +634,21 @@ public class Part
         // Related stems
         for (Inter h : heads) {
             HeadInter head = (HeadInter) h;
-            inters.addAll(head.getStems());
+
+            if (!h.isRemoved()) {
+                inters.addAll(head.getStems());
+            }
         }
 
         for (Inter inter : inters) {
-            final Rectangle box = inter.getBounds();
-            final int x = inter.getCenter().x;
-            final int y = (side == VerticalSide.TOP) ? box.y : box.y + box.height - 1;
-            final int yStaff = line.yAt(x);
-            final int dy = (side == VerticalSide.TOP) ? yStaff - y : y - yStaff;
-            maxDy = Math.max(maxDy, dy);
+            if (!inter.isRemoved()) {
+                final Rectangle box = inter.getBounds();
+                final int x = inter.getCenter().x;
+                final int y = (side == VerticalSide.TOP) ? box.y : box.y + box.height - 1;
+                final int yStaff = line.yAt(x);
+                final int dy = (side == VerticalSide.TOP) ? yStaff - y : y - yStaff;
+                maxDy = Math.max(maxDy, dy);
+            }
         }
 
         return maxDy;
@@ -1000,18 +1005,32 @@ public class Part
     // sortLyricLines //
     //----------------//
     /**
-     * Keep the lyrics sorted by vertical order in part.
+     * Keep the lyrics sorted by vertical order in part, and numbered according to
+     * related staff.
      */
     public void sortLyricLines ()
     {
         if (lyrics != null) {
             Collections.sort(lyrics, SentenceInter.byOrdinate);
 
-            // Assign sequential number to lyric line in its part
+            // Assign sequential number to lyric line above staff and below staff.
             int lyricNumber = 0;
+            Staff lastStaff = null;
+            boolean lastIsAbove = true;
 
             for (LyricLineInter line : lyrics) {
+                final Staff staff = line.getStaff();
+                final double pos = staff.getNotePosition(line.getCenter()).getPitchPosition();
+                final boolean isAbove = pos <= 0;
+
+                if ((staff != lastStaff) || (isAbove != lastIsAbove)) {
+                    lyricNumber = 0;
+                }
+
                 line.setNumber(++lyricNumber);
+
+                lastStaff = staff;
+                lastIsAbove = isAbove;
             }
         }
     }
