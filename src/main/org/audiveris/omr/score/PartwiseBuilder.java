@@ -88,8 +88,7 @@ import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextRole;
 import static org.audiveris.omr.text.TextRole.*;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.LEFT;
-import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.OmrExecutors;
 import static org.audiveris.omr.util.VerticalSide.*;
 import org.audiveris.proxymusic.AboveBelow;
@@ -2531,7 +2530,9 @@ public class PartwiseBuilder
     {
         if (syllable.getValue() != null) {
             Lyric pmLyric = factory.createLyric();
-            pmLyric.setDefaultY(yOf(syllable.getLocation(), syllable.getStaff()));
+            BigDecimal defaultY = yOf(syllable.getLocation(), syllable.getStaff());
+            pmLyric.setDefaultY(defaultY);
+            pmLyric.setPlacement(defaultY.intValue() >= 0 ? AboveBelow.ABOVE : AboveBelow.BELOW);
             pmLyric.setNumber("" + syllable.getLyricLine().getNumber());
 
             TextElementData pmText = factory.createTextElementData();
