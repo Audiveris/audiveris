@@ -152,7 +152,7 @@ public class SystemInfo
     private Sheet sheet;
 
     /** Real staves of this system (no dummy staves included). */
-    private List<Staff> staves = new ArrayList<>();
+    private final List<Staff> staves = new ArrayList<>();
 
     /** Assigned page, if any. */
     private Page page;
@@ -1179,13 +1179,17 @@ public class SystemInfo
      */
     public final void setStaves (List<Staff> staves)
     {
-        this.staves = staves;
+        this.staves.clear();
 
-        for (Staff staff : staves) {
-            staff.setSystem(this);
+        if (staves != null) {
+            this.staves.addAll(staves);
+
+            for (Staff staff : staves) {
+                staff.setSystem(this);
+            }
+
+            updateCoordinates();
         }
-
-        updateCoordinates();
     }
 
     //-----------------//
