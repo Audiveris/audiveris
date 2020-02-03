@@ -224,8 +224,8 @@ public class LyricLineInter
     {
         super.invalidateCache();
 
-        if (getMembers().size() == 1) {
-            // First item in lyric line, now we can sort lyrics within part
+        if (getMembers().size() >= 1) {
+            // Now we can sort lyrics within part
             Part part = getPart();
             part.sortLyricLines();
         }

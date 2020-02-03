@@ -721,7 +721,9 @@ public class TextBuilder
             // Purge words if any
             line.removeWords(toRemove);
 
-            textLines.add(line);
+            if (!line.getWords().isEmpty()) {
+                textLines.add(line);
+            }
         }
     }
 
