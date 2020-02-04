@@ -55,6 +55,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import org.audiveris.omr.sig.relation.ChordNameRelation;
 
 /**
  * Class {@code AbstractChordInter} represents an ensemble of notes (rests, heads)
@@ -414,6 +415,25 @@ public abstract class AbstractChordInter
         }
 
         return box;
+    }
+
+    //--------------//
+    // getChordName //
+    //--------------//
+    /**
+     * Report the chordName (such as Am7), if any, related to this chord.
+     *
+     * @return the related chord name or null
+     */
+    public ChordNameInter getChordName ()
+    {
+        if (sig != null) {
+            for (Relation rel : sig.getRelations(this, ChordNameRelation.class)) {
+                return (ChordNameInter) sig.getOppositeInter(this, rel);
+            }
+        }
+
+        return null;
     }
 
     //---------------//

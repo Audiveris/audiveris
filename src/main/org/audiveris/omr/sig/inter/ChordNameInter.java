@@ -598,11 +598,14 @@ public class ChordNameInter
                                                Degree dominant)
         {
             List<Degree> degrees = new ArrayList<>();
+
             if ((str == null) || str.isEmpty()) {
                 return degrees;
             }
+
             // Loop on occurrences of the one-degree pattern
             Matcher matcher = degPattern.matcher(str);
+
             while (matcher.find()) {
                 // Deg value
                 String degStr = getGroup(matcher, DEG_VALUE);
@@ -626,6 +629,7 @@ public class ChordNameInter
 
                 degrees.add(new Degree(deg, alter, type, ""));
             }
+
             return degrees;
         }
 

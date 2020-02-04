@@ -52,6 +52,7 @@ import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.ArticulationInter;
+import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.EndingInter;
@@ -72,8 +73,10 @@ import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
+import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
+import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordOrnamentRelation;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
@@ -208,6 +211,19 @@ import java.util.concurrent.Future;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import org.audiveris.omr.ui.symbol.TextFont;
+import org.audiveris.proxymusic.Bass;
+import org.audiveris.proxymusic.BassAlter;
+import org.audiveris.proxymusic.BassStep;
+import org.audiveris.proxymusic.Degree;
+import org.audiveris.proxymusic.DegreeAlter;
+import org.audiveris.proxymusic.DegreeType;
+import org.audiveris.proxymusic.DegreeValue;
+import org.audiveris.proxymusic.Harmony;
+import org.audiveris.proxymusic.Kind;
+import org.audiveris.proxymusic.Root;
+import org.audiveris.proxymusic.RootAlter;
+import org.audiveris.proxymusic.RootStep;
 
 /**
  * Class {@code PartwiseBuilder} builds a ProxyMusic MusicXML {@link ScorePartwise}
@@ -1031,6 +1047,114 @@ public class PartwiseBuilder
         }
     }
 
+    //------------------//
+    // processChordName //
+    //------------------//
+    private void processChordName (ChordNameInter chordName)
+    {
+        if (chordName == null) {
+            return;
+        }
+
+        try {
+            logger.debug("Visiting {}", chordName);
+
+            Point2D location = chordName.getLocation();
+            Staff staff = current.note.getStaff();
+            Harmony harmony = factory.createHarmony();
+
+            // default-y
+            harmony.setDefaultY(yOf(location, staff));
+
+            // font-size
+            harmony.setFontSize("" + chordName.getFontInfo().pointsize * TextFont.TO_POINT);
+
+            // relative-x
+            harmony.setRelativeX(
+                    toTenths(location.getX() - current.note.getCenterLeft().x));
+
+            // Placement
+            harmony.setPlacement(
+                    (location.getY() < current.note.getCenter().y)
+                    ? AboveBelow.ABOVE
+                    : AboveBelow.BELOW);
+
+            // Staff
+            insertStaffId(harmony, staff);
+
+            // Root
+            Root root = factory.createRoot();
+            RootStep rootStep = factory.createRootStep();
+            rootStep.setValue(stepOf(chordName.getRoot().step));
+            root.setRootStep(rootStep);
+
+            if (chordName.getRoot().alter != 0) {
+                RootAlter alter = factory.createRootAlter();
+                alter.setValue(new BigDecimal(chordName.getRoot().alter));
+                root.setRootAlter(alter);
+            }
+
+            harmony.getHarmonyChord().add(root);
+
+            // Kind
+            Kind kind = factory.createKind();
+            kind.setValue(kindOf(chordName.getKind().type));
+            kind.setText(chordName.getKind().text);
+
+            if (chordName.getKind().parentheses) {
+                kind.setParenthesesDegrees(YesNo.YES);
+            }
+
+            if (chordName.getKind().symbol) {
+                kind.setUseSymbols(YesNo.YES);
+            }
+
+            harmony.getHarmonyChord().add(kind);
+
+            // Bass
+            if (chordName.getBass() != null) {
+                Bass bass = factory.createBass();
+                BassStep bassStep = factory.createBassStep();
+                bassStep.setValue(stepOf(chordName.getBass().step));
+                bass.setBassStep(bassStep);
+
+                if (chordName.getBass().alter != 0) {
+                    BassAlter bassAlter = factory.createBassAlter();
+                    bassAlter.setValue(new BigDecimal(chordName.getBass().alter));
+                    bass.setBassAlter(bassAlter);
+                }
+
+                harmony.getHarmonyChord().add(bass);
+            }
+
+            // Degrees?
+            if (chordName.getDegrees() != null) {
+                for (ChordNameInter.Degree deg : chordName.getDegrees()) {
+                    Degree degree = factory.createDegree();
+
+                    DegreeValue value = factory.createDegreeValue();
+                    value.setValue(new BigInteger("" + deg.value));
+                    degree.setDegreeValue(value);
+
+                    DegreeAlter alter = factory.createDegreeAlter();
+                    alter.setValue(new BigDecimal(deg.alter));
+                    degree.setDegreeAlter(alter);
+
+                    DegreeType type = factory.createDegreeType();
+                    type.setValue(typeOf(deg.type));
+                    degree.setDegreeType(type);
+
+                    harmony.getHarmonyChord().add(degree);
+                }
+            }
+
+            // Everything is now OK
+            current.pmMeasure.getNoteOrBackupOrForward().add(harmony);
+        } catch (Exception ex) {
+            logger.warn("Error visiting " + chordName + " " + ex, ex);
+        }
+    }
+
     //-------------//
     // processClef //
     //-------------//
@@ -1093,107 +1217,6 @@ public class PartwiseBuilder
         }
     }
 
-    //    //------------------//
-    //    // processChordName //
-    //    //------------------//
-    //    private void processChordName (ChordNameInter chordName)
-    //    {
-    //        try {
-    //            logger.debug("Visiting {}", chordName);
-    //
-    //            omr.score.entity.ChordInfo info = chordName.getInfo();
-    //            OldStaff staff = current.note.getStaff();
-    //            Harmony harmony = factory.createHarmony();
-    //
-    //            // default-y
-    //            harmony.setDefaultY(yOf(chordName.getReferencePoint(), staff));
-    //
-    //            // font-size
-    //            harmony.setFontSize("" + chordName.getText().getExportedFontSize());
-    //
-    //            // relative-x
-    //            harmony.setRelativeX(
-    //                    toTenths(chordName.getReferencePoint().x - current.note.getCenterLeft().x));
-    //
-    //            // Placement
-    //            harmony.setPlacement(
-    //                    (chordName.getReferencePoint().y < current.note.getCenter().y) ? AboveBelow.ABOVE
-    //                            : AboveBelow.BELOW);
-    //
-    //            // Staff
-    //            insertStaffId(harmony, staff);
-    //
-    //            // Root
-    //            Root root = factory.createRoot();
-    //            RootStep rootStep = factory.createRootStep();
-    //            rootStep.setValue(stepOf(info.getRoot().step));
-    //            root.setRootStep(rootStep);
-    //
-    //            if (info.getRoot().alter != 0) {
-    //                RootAlter alter = factory.createRootAlter();
-    //                alter.setValue(new BigDecimal(info.getRoot().alter));
-    //                root.setRootAlter(alter);
-    //            }
-    //
-    //            harmony.getHarmonyChord().add(root);
-    //
-    //            // Kind
-    //            Kind kind = factory.createKind();
-    //            kind.setValue(kindOf(info.getKind().type));
-    //            kind.setText(info.getKind().text);
-    //
-    //            if (info.getKind().paren) {
-    //                kind.setParenthesesDegrees(YesNo.YES);
-    //            }
-    //
-    //            if (info.getKind().symbol) {
-    //                kind.setUseSymbols(YesNo.YES);
-    //            }
-    //
-    //            harmony.getHarmonyChord().add(kind);
-    //
-    //            // Bass
-    //            if (info.getBass() != null) {
-    //                Bass bass = factory.createBass();
-    //                BassStep bassStep = factory.createBassStep();
-    //                bassStep.setValue(stepOf(info.getBass().step));
-    //                bass.setBassStep(bassStep);
-    //
-    //                if (info.getBass().alter != 0) {
-    //                    BassAlter bassAlter = factory.createBassAlter();
-    //                    bassAlter.setValue(new BigDecimal(info.getBass().alter));
-    //                    bass.setBassAlter(bassAlter);
-    //                }
-    //
-    //                harmony.getHarmonyChord().add(bass);
-    //            }
-    //
-    //            // Degrees?
-    //            for (omr.score.entity.ChordInfo.Degree deg : info.getDegrees()) {
-    //                Degree degree = factory.createDegree();
-    //
-    //                DegreeValue value = factory.createDegreeValue();
-    //                value.setValue(new BigInteger("" + deg.value));
-    //                degree.setDegreeValue(value);
-    //
-    //                DegreeAlter alter = factory.createDegreeAlter();
-    //                alter.setValue(new BigDecimal(deg.alter));
-    //                degree.setDegreeAlter(alter);
-    //
-    //                DegreeType type = factory.createDegreeType();
-    //                type.setValue(typeOf(deg.type));
-    //                degree.setDegreeType(type);
-    //
-    //                harmony.getHarmonyChord().add(degree);
-    //            }
-    //
-    //            // Everything is now OK
-    //            current.pmMeasure.getNoteOrBackupOrForward().add(harmony);
-    //        } catch (Exception ex) {
-    //            logger.warn("Error visiting " + chordName, ex);
-    //        }
-    //    }
-    //
     //-----------------//
     // processDynamics //
     //-----------------//
@@ -1761,64 +1784,35 @@ public class PartwiseBuilder
             current.pmNote = factory.createNote();
 
             // For first note in chord
-            if (!current.measure.isDummy()) {
-                if (isFirstInChord) {
-                    // Chord events (direction, pedal, dynamics, articulation, ornament)
-                    for (Relation rel : sig.edgesOf(chord)) {
-                        final Inter other = sig.getOppositeInter(chord, rel);
-
-                        if (rel instanceof ChordSentenceRelation) {
-                            processDirection((SentenceInter) other);
-                        } else if (rel instanceof ChordPedalRelation) {
-                            processPedal((PedalInter) other);
-                        } else if (rel instanceof ChordWedgeRelation) {
-                            HorizontalSide side = ((ChordWedgeRelation) rel).getSide();
-                            processWedge((WedgeInter) other, side);
-                        } else if (rel instanceof ChordDynamicsRelation) {
-                            processDynamics((DynamicsInter) other);
-                        } else if (rel instanceof ChordArticulationRelation) {
-                            processArticulation((ArticulationInter) other);
-                        } else if (rel instanceof ChordOrnamentRelation) {
-                            processOrnament((OrnamentInter) other);
-                        }
-                    }
-
-                    //
-                    //                // Chord symbol, if any
-                    //                if (chord.getChordSymbol() != null) {
-                    //                    ///chord.getChordSymbol().accept(this);
-                    //                    process(chord.getChordSymbol());
-                    //                }
-                }
-
-                // Arpeggiato involves every headChord note
-                if (chord instanceof HeadChordInter) {
-                    HeadChordInter headChord = (HeadChordInter) chord;
-                    processArpeggiato(headChord.getArpeggiato());
-                }
-            }
-
-            // Chord events for first note in chord
             if (isFirstInChord) {
-                if (sig != null) {
-                    for (Relation rel : sig.edgesOf(chord)) {
-                        if (rel instanceof FermataChordRelation) {
-                            processFermata((FermataInter) sig.getOppositeInter(chord, rel), null);
-                        }
+                // Chord events (direction, pedal, dynamics, articulation, ornament)
+                for (Relation rel : sig.edgesOf(chord)) {
+                    final Inter other = sig.getOppositeInter(chord, rel);
+
+                    if (rel instanceof ChordSentenceRelation) {
+                        processDirection((SentenceInter) other);
+                    } else if (rel instanceof ChordPedalRelation) {
+                        processPedal((PedalInter) other);
+                    } else if (rel instanceof ChordWedgeRelation) {
+                        HorizontalSide side = ((ChordWedgeRelation) rel).getSide();
+                        processWedge((WedgeInter) other, side);
+                    } else if (rel instanceof ChordDynamicsRelation) {
+                        processDynamics((DynamicsInter) other);
+                    } else if (rel instanceof ChordArticulationRelation) {
+                        processArticulation((ArticulationInter) other);
+                    } else if (rel instanceof ChordOrnamentRelation) {
+                        processOrnament((OrnamentInter) other);
+                    } else if (rel instanceof ChordArpeggiatoRelation) {
+                        processArpeggiato((ArpeggiatoInter) other);
+                    } else if (rel instanceof FermataChordRelation) {
+                        processFermata((FermataInter) other, null);
+                    } else if (rel instanceof ChordNameRelation) {
+                        processChordName((ChordNameInter) other);
                     }
                 }
             } else {
                 // Chord indication for every other note
                 current.pmNote.setChord(new Empty());
-
-                //
-                //                // Arpeggiate also?
-                //                for (Notation node : chord.getNotations()) {
-                //                    if (node instanceof Arpeggiate) {
-                //                        ///node.accept(this);
-                //                        process((Arpeggiate) node);
-                //                    }
-                //                }
             }
 
             // Rest?
@@ -2387,7 +2381,7 @@ public class PartwiseBuilder
             case UnknownRole:
                 break;
 
-            default: // LyricsItem, Direction, Chord
+            default: // LyricsItem, Direction, ChordName
 
                 // Handle them through related Note
                 return;

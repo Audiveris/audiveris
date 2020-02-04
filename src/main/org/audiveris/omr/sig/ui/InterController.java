@@ -1077,8 +1077,11 @@ public class InterController
                     for (TextWord textWord : line.getWords()) {
                         logger.debug("word {}", textWord);
 
-                        WordInter word = lyrics ? new LyricItemInter(textWord)
-                                : new WordInter(textWord);
+                        final WordInter word = lyrics
+                                ? new LyricItemInter(textWord)
+                                : ((role == TextRole.ChordName)
+                                        ? ChordNameInter.createValid(textWord)
+                                        : new WordInter(textWord));
 
                         if (sentence != null) {
                             staff = sentence.getStaff();

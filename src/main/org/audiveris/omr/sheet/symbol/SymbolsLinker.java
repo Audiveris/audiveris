@@ -59,6 +59,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.List;
+import org.audiveris.omr.sig.inter.ChordNameInter;
 
 /**
  * Class {@code SymbolsLinker} defines final relations between certain symbols.
@@ -166,18 +167,25 @@ public class SymbolsLinker
                 break;
 
             case ChordName: {
-                // Map chordName with proper chord
-                MeasureStack stack = system.getStackAt(location);
+                // Map each word with proper chord, in assigned staff
+                for (Inter wInter : sentence.getMembers()) {
+                    ChordNameInter word = (ChordNameInter) wInter;
 
-                if (stack == null) {
-                    logger.info("No stack at {}", sentence);
-                } else {
-                    AbstractChordInter chordBelow = stack.getStandardChordBelow(location, bounds);
+                    ///item.mapToChord();
+                    Point2D wLoc = word.getLocation();
+                    MeasureStack stack = system.getStackAt(wLoc);
 
-                    if (chordBelow != null) {
-                        sig.addEdge(chordBelow, sentence, new ChordNameRelation());
+                    if (stack == null) {
+                        logger.info("No stack at {}", word);
                     } else {
-                        logger.info("No chord below chordName {}", sentence);
+                        AbstractChordInter chordBelow = stack
+                                .getStandardChordBelow(wLoc, word.getBounds());
+
+                        if (chordBelow != null) {
+                            sig.addEdge(chordBelow, word, new ChordNameRelation());
+                        } else {
+                            logger.info("No chord below chordName {}", word);
+                        }
                     }
                 }
             }
@@ -265,8 +273,12 @@ public class SymbolsLinker
             break;
 
             case ChordName: {
-                for (Relation rel : sig.getRelations(sentence, ChordNameRelation.class)) {
-                    sig.removeEdge(rel);
+                for (Inter wInter : sentence.getMembers()) {
+                    ChordNameInter item = (ChordNameInter) wInter;
+
+                    for (Relation rel : sig.getRelations(item, ChordNameRelation.class)) {
+                        sig.removeEdge(rel);
+                    }
                 }
             }
 
