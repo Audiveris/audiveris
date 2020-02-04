@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.lag.Lags;
@@ -585,7 +586,7 @@ public class SystemManager
 
         // Allocate systems per page
         for (SystemInfo system : systems) {
-            if (system.isIndented()) {
+            if (system.isIndented() && !constants.disableIndents.getValue()) {
                 final int systId = system.getId();
 
                 // We have a movement start
@@ -750,5 +751,8 @@ public class SystemManager
         private final Scale.Fraction minShift = new Scale.Fraction(
                 3.0,
                 "Minimum shift to detect a system indentation");
+        private final Constant.Boolean disableIndents = new Constant.Boolean(
+                false,
+                "Disable book indents");
     }
 }
