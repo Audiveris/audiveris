@@ -1,6 +1,19 @@
 ---
+layout: default
+title: Object Selection
+parent: Manual Edition
+nav_order: 3
 ---
 ## Object Selection
+{: .no_toc }
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Pan and Zoom {#pan-and-zoom}
 
@@ -28,7 +41,7 @@ you can adjust the zoom according to the sheet's width or height, respectively.
 
 ### Selection of Objects {#selection-of-objects}
 
-#### **Selection modes** {#selection-modes}
+#### Selection modes {#selection-modes}
 
 There are 3 selections modes available: **glyph**-based (the default), **inter**-based
 and **section**-based.
@@ -49,7 +62,7 @@ The links appear as short straight lines in light green color. Images next to th
 | :---: | :---: | :---: |
 
 
-#### **Multi-selection** {#multi-selection}
+#### Multi-selection {#multi-selection}
 
 A left-click in an entity area selects this entity (and deselects the entity previously selected if any).
 

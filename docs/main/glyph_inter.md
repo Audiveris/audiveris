@@ -1,4 +1,9 @@
 ---
+layout: default
+title: Glyph vs Inter
+grand_parent: Main Features
+parent: Main Entities
+nav_order: 3
 ---
 ### Glyph vs Inter
 

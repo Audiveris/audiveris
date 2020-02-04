@@ -1,8 +1,22 @@
 ---
+layout: default
+title: Tools menu
+grand_parent: References
+parent: Pulldown Menus
+nav_order: 6
 ---
 ## Tools menu
+{: .no_toc }
 
 ![](../assets/tools_menu.png)
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Browse Global repository
 

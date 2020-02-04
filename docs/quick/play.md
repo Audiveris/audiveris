@@ -1,4 +1,8 @@
 ---
+layout: default
+title: Play
+nav_order: 5
+parent: Quick Tour
 ---
 ## Play
 

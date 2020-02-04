@@ -1,4 +1,9 @@
 ---
+layout: default
+title: .omr
+grand_parent: References
+parent: Outputs
+nav_order: 3
 ---
 ## .omr files
 

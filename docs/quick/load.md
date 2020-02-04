@@ -1,4 +1,8 @@
 ---
+layout: default
+title: Load
+nav_order: 2
+parent: Quick Tour
 ---
 ## Load
 

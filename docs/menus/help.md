@@ -1,8 +1,22 @@
 ---
+layout: default
+title: Help menu
+grand_parent: References
+parent: Pulldown Menus
+nav_order: 9
 ---
 ## Help menu
+{: .no_toc }
 
 ![](../assets/help_menu.png)
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Handbook
 

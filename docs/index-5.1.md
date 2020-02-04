@@ -1,4 +1,8 @@
 ---
+layout: default
+title: Audiveris Handbook
+nav_order: 0
+has_children: true
 ---
 # Audiveris Handbook
 

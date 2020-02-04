@@ -1,4 +1,8 @@
 ---
+layout: default
+title: Manual Edition
+nav_order: 4
+has_children: true
 ---
 # Manual Edition
 

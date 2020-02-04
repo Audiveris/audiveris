@@ -1,4 +1,8 @@
 ---
+layout: default
+title: Installing binaries
+nav_order: 1
+parent: Installation
 ---
 ## Installing binaries
 

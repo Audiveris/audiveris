@@ -1,6 +1,19 @@
 ---
+layout: default
+title: Tips and Tricks
+parent: Manual Edition
+nav_order: 7
 ---
 ## Tips and Tricks
+{: .no_toc }
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Select glyphs using selection Frame
 

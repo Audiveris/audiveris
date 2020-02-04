@@ -1,4 +1,16 @@
 ---
+layout: default
+title: Building from sources
+nav_order: 2
+parent: Installation
+---
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
 ---
 ## Building from sources (Windows, Linux, MacOS)
 
@@ -71,7 +83,7 @@ Once in this "audiveris" project directory, you can:
 Please note that all these commands use **gradle wrapper** (`gradlew`) which, behind the scene,
 takes care of getting and launching the proper gradle version.
 
-#### Alternative Run
+### Alternative run
 
 The gradle-based run, as described above, makes sure that all your potential modifications are
 compiled before the application is launched.

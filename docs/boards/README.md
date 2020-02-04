@@ -1,4 +1,9 @@
 ---
+layout: default
+title: Boards
+parent: References
+nav_order: 3
+has_children: true
 ---
 # Boards
 
@@ -15,12 +20,3 @@ A board reads and/or writes to one or several event buses according to the OMR e
 See [Debug menu](../menus/debug.md) for further details on event services.
 
 Most boards can be dynamically shown or hidden via a right-click in the boards column.
-
-Here are all the defined boards:
-* [Pixel](pixel.md)
-* [Binarization](binarization.md)
-* [Section](section.md)
-* [Glyph](glyph.md)
-* [Inter](inter.md)
-* [Shape](shape.md)
-* [Basic Classifier](classifier.md)

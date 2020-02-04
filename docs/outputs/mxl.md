@@ -1,7 +1,22 @@
 ---
+layout: default
+title: .mxl
+grand_parent: References
+parent: Outputs
+nav_order: 2
 ---
 ## .mxl files
+{: .no_toc :}
 
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+### Purpose
 These are zip-compressed files of XML music files formatted according to **MusicXML** 3.0.
 
 Most, if not all, music editors are able to import / export this kind of file,
@@ -9,6 +24,7 @@ making MusicXML format a _de facto_ standard for music information exchange.
 Please refer to the detailed
 [MusicXML 3.0 specification](http://usermanuals.musicxml.com/MusicXML/MusicXML.htm).
 
+### Book level
 A **book** export provides:
 * Either one separate `.mxl` file for each movement found in the book (this is the default).
 * Or a single `.mxl` file for a global `opus` containing the separate movements.
@@ -16,6 +32,7 @@ A **book** export provides:
   To make Audiveris use opus, simply set the option `org.audiveris.omr.sheet.BookManager.useOpus`
   to true.
 
+### Sheet level
 A **sheet** export provides:
 * One separate `.mxl` file for each page found in the sheet.
 

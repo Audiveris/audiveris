@@ -1,6 +1,11 @@
 ---
+layout: default
+title: Options
+parent: Advanced Features
+nav_order: 4
 ---
 ## Options {#options}
+{: .no_toc }
 
 There is (or should be) no hard-coded constant in Audiveris code.
 Instead, algorithms are backed by "_application constants_" (more than 800 of them today).
@@ -9,6 +14,15 @@ This mechanism is a low level yet powerful way to handle nearly all application 
 This data is presented as options to the end user, and is modifiable at run time:
 * Through the CLI `-option KEY=VALUE` argument
 * Through the pulldown menu `Tools | Options`
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+### Dialog
 
 The display below combines a tree of classes on the left side, and a table on the right side,
 where details of the options from the containing classes are available for display and modification.

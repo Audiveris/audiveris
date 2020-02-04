@@ -1,11 +1,25 @@
 ---
+layout: default
+title: Section board
+grand_parent: References
+parent: Boards
+nav_order: 3
 ---
 ## Section board
+{: .no_toc :}
 
 ![](../assets/section_board.png)
 
 There are two different section boards, one for sections with horizontal runs,
 one for sections with vertical runs.
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Vip
 (input/output)  

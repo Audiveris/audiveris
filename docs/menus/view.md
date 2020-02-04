@@ -1,8 +1,22 @@
 ---
+layout: default
+title: View menu
+grand_parent: References
+parent: Pulldown Menus
+nav_order: 5
 ---
 ## View menu
+{: .no_toc }
 
 ![](../assets/view_menu.png)
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Width Fit
 

@@ -1,6 +1,11 @@
 ---
+layout: default
+title: Shortcuts
+parent: Manual Edition
+nav_order: 6
 ---
 ## Shortcuts
+{: .no_toc }
 
 In order to make editing easier there are a couple of keyboard short-cuts that allow to assign
 interpretations to selected glyphs.
@@ -9,6 +14,14 @@ They all work with 2 keyboard strokes:
 the first one selects a family (group) of shapes, the second one selects a shape within the family.
 
 Only families and shapes that are used rather often are supported (see detailed list below).
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Assign an interpretation to selected glyph
 

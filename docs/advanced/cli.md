@@ -1,6 +1,19 @@
 ---
+layout: default
+title: Command Line Interface
+parent: Advanced Features
+nav_order: 1
 ---
 ## Command Line Interface
+{: .no_toc }
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Syntax
 

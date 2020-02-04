@@ -1,10 +1,22 @@
 ---
+layout: default
+title: Issues and Workarounds
+parent: Manual Edition
+nav_order: 8
 ---
 ## Issues and Workarounds
+{: .no_toc }
 
 In some cases, the normal ways to correct the transcription don't give a satisfying result.
 In the following sections, you may find some hint on how you could solve encountered problems.
 
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 ### Recognition of Text Elements
 
 It is very difficult to automatically derive the meaning from the textual items in a musical score.

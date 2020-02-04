@@ -1,4 +1,9 @@
 ---
+layout: default
+title: Book vs Sheet
+grand_parent: Main Features
+parent: Main Entities
+nav_order: 1
 ---
 ### Book vs Sheet
 

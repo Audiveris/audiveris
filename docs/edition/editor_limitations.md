@@ -1,6 +1,11 @@
 ---
+layout: default
+title: Editor Limitations
+parent: Manual Edition
+nav_order: 2
 ---
 ## Editor Limitations
+{: .no_toc }
 
 The current editor is still young, it exhibits some limitations that should be removed in a future
 release.
@@ -8,6 +13,14 @@ Purpose of this section is to warn the user about them in the current release.
 
 To quickly summarize Audiveris current editor, we can say that it is a user interface that provides
 only the ability to add and remove Inter and Relation instances.
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Containers
 

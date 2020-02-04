@@ -1,11 +1,25 @@
 ---
+layout: default
+title: Pixel board
+grand_parent: References
+parent: Boards
+nav_order: 1
 ---
 ## Pixel board
+{: .no_toc }
 
 ![](../assets/pixel_board.png)
 
 The pixel board handles the location within the sheet image, as well as the pixel
 gray value at the (x,y) location.
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Level
 (output)  

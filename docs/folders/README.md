@@ -1,4 +1,9 @@
 ---
+layout: default
+title: Folders
+parent: References
+nav_order: 4
+has_children: true
 ---
 # Folders
 
@@ -9,11 +14,11 @@ To allow its use by different users on the same machine, Audiveris always stores
 in _user-specific_ locations.
 
 For such user-specific information, there are further distinctions between:
-1. [Standard](../folders/standard.md) information, such as the various score `data` output files,
+1. _Standard_ information, such as the various score `data` output files,
 which are the only files any user can directly work upon.
-2. [Essential](../folders/essential.md) information, such as `config` or `train` files,
+2. _Essential_ information, such as `config` or `train` files,
 which impact the application behavior and which should be modified only by an advanced user.
-3. [Cached](../folders/cached.md) (non-essential) information, such as `log`, `temp` or `gui` files,
+3. _Cached_ (non-essential) information, such as `log`, `temp` or `gui` files,
 which are not meant to be edited.
 
 These distinctions are enforced as much as possible, using the operating system features.

@@ -1,4 +1,9 @@
 ---
+layout: default
+title: Display Modes
+grand_parent: Main Features
+parent: Main Window
+nav_order: 1
 ---
 ### Sheet Display Modes
 

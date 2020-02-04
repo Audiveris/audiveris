@@ -1,4 +1,9 @@
 ---
+layout: default
+title: Main Entities
+parent: Main Features
+nav_order: 2
+has_children: true
 ---
 ## Main Entities
 
@@ -7,7 +12,7 @@ key notions that are used throughout the whole application and that the user nee
 correctly.
 
 We will thus speak of:
-* Physical containment: [Book of Sheets](book_sheet.md)
-* Logical containment: [Score of Pages](score_page.md)
-* Interpretations: [Glyph and related Inters](glyph_inter.md)
-* Relations between Inters: the [Symbol Interpretation Graph](sig.md)
+* Physical containment: Book of Sheets,
+* Logical containment: Score of Pages,
+* Interpretations: Glyph and related Inters,
+* Relations between Inters: the Symbol Interpretation Graph (SIG).

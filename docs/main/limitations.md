@@ -1,13 +1,26 @@
 ---
+layout: default
+title: Limitations
+parent: Main Features
+nav_order: 8
 ---
 ## Limitations
+{: .no_toc }
 
 This section presents the known cases that current Audiveris does not handle properly.
 These are "known limitations", which should be addressed in future releases.
 
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
 It is important that the end user be aware of these cases to avoid wasting time on them
 with the current release.
-Apart from these cases, you can fill a bug report or a request for enhancement on 
+Apart from these cases, you can fill a bug report or a request for enhancement on
 [https://github.com/Audiveris/audiveris/issues](https://github.com/Audiveris/audiveris/issues).
 
 We make a distinction between different kinds of OMR limitations:

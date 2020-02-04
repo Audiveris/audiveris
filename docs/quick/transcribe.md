@@ -1,4 +1,8 @@
 ---
+layout: default
+title: Transcribe
+nav_order: 3
+parent: Quick Tour
 ---
 ## Transcribe
 

@@ -1,6 +1,22 @@
 ---
+layout: default
+title: Essential folders
+grand_parent: References
+parent: Folders
+nav_order: 2
 ---
 ## Essential folders
+{: .no_toc :}
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+### Purpose
 
 This is where Audiveris stores user-specific essential parameters:
 

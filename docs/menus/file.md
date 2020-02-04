@@ -1,8 +1,22 @@
 ---
+layout: default
+title: File menu
+grand_parent: References
+parent: Pulldown Menus
+nav_order: 1
 ---
 ## File menu
+{: .no_toc }
 
 ![](../assets/file_menu.png)
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Recent Inputs
 

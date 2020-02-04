@@ -1,4 +1,9 @@
 ---
+layout: default
+title: .pdf
+grand_parent: References
+parent: Outputs
+nav_order: 4
 ---
 ## .pdf files
 

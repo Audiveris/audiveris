@@ -1,4 +1,8 @@
 ---
+layout: default
+title: Quick Tour
+nav_order: 2
+has_children: true
 ---
 # Quick Tour
 
@@ -13,11 +17,11 @@ but for the sake of simplicity, let's assume that we already have:
 * Perhaps a music sequencer installed (MuseScore for example).
 
 All we have to do is, in sequence:
-1. [Launch](launch.md) Audiveris,
-2. [Load](load.md) the input image,
-3. [Transcribe](transcribe.md) the image as a score,
-4. [Export](export.md) the score in MusicXML,
-5. [Play](play.md) the exported MusicXML file with MuseScore.
+1. Launch Audiveris,
+2. Load the input image,
+3. Transcribe the image as a score,
+4. Export the score in MusicXML,
+5. Play the exported MusicXML file with MuseScore.
 
 For the impatient, note that if we have defined a [plugin](../advanced/plugins.md) to a sequencer
 like MuseScore, the sub-sequence of bullets \#3, \#4 and \#5 could conveniently be replaced by just

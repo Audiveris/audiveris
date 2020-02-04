@@ -1,4 +1,8 @@
 ---
+layout: default
+title: Scanning
+parent: Main Features
+nav_order: 4
 ---
 ## Scanning of paper scores
 

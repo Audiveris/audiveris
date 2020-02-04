@@ -1,4 +1,8 @@
 ---
+layout: default
+title: Sheet Parameters
+parent: Main Features
+nav_order: 6
 ---
 ## Sheet Parameters
 

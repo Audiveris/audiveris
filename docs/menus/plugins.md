@@ -1,4 +1,9 @@
 ---
+layout: default
+title: Plugins menu
+grand_parent: References
+parent: Pulldown Menus
+nav_order: 7
 ---
 ## Plugins menu
 

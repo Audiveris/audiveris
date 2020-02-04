@@ -1,6 +1,11 @@
 ---
+layout: default
+title: Plugins
+parent: Advanced Features
+nav_order: 5
 ---
 ## Plugins {#plugins}
+{: .no_toc }
 
 Many music notation programs, if not all, can import MusicXML files as those exported by Audiveris.
 
@@ -12,6 +17,16 @@ The standard sequence is to:
 5. Make it navigate to where the MusicXML file is located.
 
 This sequence can be automated via the use of one or several plugins.
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+### Use of Plugins
 
 Once plugins are correctly configured, you can call an external program by selecting the desired one
 in the pulldown `Plugins` menu:

@@ -1,8 +1,11 @@
 ---
+layout: default
+title: Summary
+nav_exclude: true
 ---
 # Summary
 
-* [Audiveris Handbook 5.1](/README.md)
+* [Audiveris Handbook 5.1](/index-5.1.md)
   * [Overview](/overview.md)
 * [Installation](/install/README.md)
   * [Installing binaries](/install/binaries.md)

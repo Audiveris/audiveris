@@ -1,4 +1,8 @@
 ---
+layout: default
+title: Output Formats
+parent: Main Features
+nav_order: 7
 ---
 ## Output Formats
 

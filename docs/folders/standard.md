@@ -1,6 +1,22 @@
 ---
+layout: default
+title: Standard folders
+grand_parent: References
+parent: Folders
+nav_order: 1
 ---
 ## Standard folders
+{: .no_toc :}
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+### Purpose
 
 This is where, by default, Audiveris stores all score outputs, such as the `.omr` project
 files, the `.pdf` printouts, the `.mxl` MusicXML files.

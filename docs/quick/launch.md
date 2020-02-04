@@ -1,4 +1,8 @@
 ---
+layout: default
+title: Launch
+nav_order: 1
+parent: Quick Tour
 ---
 ## Launch
 

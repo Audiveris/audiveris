@@ -1,6 +1,11 @@
 ---
+layout: default
+title: Editor Principles
+parent: Manual Edition
+nav_order: 1
 ---
 ## Editor Principles
+{: .no_toc }
 
 For a good understanding of the rationale and also the current limitations of this editor,
 we recommend to read the [perpective](https://github.com/Audiveris/audiveris/wiki/Perspective)
@@ -11,6 +16,14 @@ This section on editor principles is organized as follows:
 1.	Which [entities](#entities) are handled,
 2.	Which [actions](#actions) are possible on these entities,
 3.	Which user [gestures](#gestures) can trigger these actions.
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Entities
 

@@ -1,6 +1,22 @@
 ---
+layout: default
+title: Cached folders
+grand_parent: References
+parent: Folders
+nav_order: 3
 ---
 ## Cached folders
+{: .no_toc :}
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+### Purpose
 
 Audiveris uses these locations for persistency of internal information.
 

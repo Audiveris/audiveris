@@ -1,6 +1,11 @@
 ---
+layout: default
+title: Popup menu
+parent: References
+nav_order: 2
 ---
 ## Popup menu
+{: .no_toc }
 
 ![](../assets/popup_menu.png)
 
@@ -10,6 +15,14 @@ It displays _contextual_ information and actions that depend on the sheet latest
 the current location in sheet view and the selected items if any.
 
 Some of its content also depends on user-selected [Advanced Topics](../advanced/topics.md).
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Inters
 If at least one Inter instance has been selected, this sub-menu lists the selected Inters,

@@ -1,8 +1,22 @@
 ---
+layout: default
+title: Glyph board
+grand_parent: References
+parent: Boards
+nav_order: 4
 ---
 ## Glyph board
+{: .no_toc :}
 
 ![](../assets/glyph_board.png)
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Vip
 (input/output)  

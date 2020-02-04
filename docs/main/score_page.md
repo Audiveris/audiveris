@@ -1,4 +1,9 @@
 ---
+layout: default
+title: Score vs Page
+grand_parent: Main Features
+parent: Main Entities
+nav_order: 2
 ---
 ### Score vs Page
 

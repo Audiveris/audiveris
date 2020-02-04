@@ -1,6 +1,19 @@
 ---
+layout: default
+title: Pipeline
+parent: Main Features
+nav_order: 3
 ---
 ## Pipeline
+{: .no_toc }
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Global Book Workflow
 When working on a book, Audiveris V5 OMR engine can process any sheet of the book independently of

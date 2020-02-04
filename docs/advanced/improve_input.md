@@ -1,12 +1,24 @@
 ---
+layout: default
+title: Improve Input
+parent: Advanced Features
+nav_order: 3
 ---
 ## Improve Input
+{: .no_toc }
 
 Sometimes the base image is of rather bad quality.
 Although the human's eye can identify the notes correctly, the algorithms have problems to detect
 the components of a score correctly.
 
 Here are some possible improvements using Gimp.
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Adjust Brightness and Contrast
 

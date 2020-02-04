@@ -1,7 +1,22 @@
 ---
+layout: default
+title: .zip
+grand_parent: References
+parent: Outputs
+nav_order: 5
 ---
 ## .zip files
+{: .no_toc :}
 
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+### Purpose
 These files are containers mainly used for training material.
 
 ### Book

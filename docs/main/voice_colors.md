@@ -1,4 +1,9 @@
 ---
+layout: default
+title: Voice Colors
+grand_parent: Main Features
+parent: Main Window
+nav_order: 3
 ---
 ### Voice Colors
 

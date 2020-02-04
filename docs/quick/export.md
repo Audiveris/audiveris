@@ -1,4 +1,8 @@
 ---
+layout: default
+title: Export
+nav_order: 4
+parent: Quick Tour
 ---
 ## Export
 

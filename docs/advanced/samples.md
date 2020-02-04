@@ -1,6 +1,11 @@
 ---
+layout: default
+title: Samples
+parent: Advanced Features
+nav_order: 6
 ---
 ## Samples
+{: .no_toc :}
 
 This chapter describes how to set up repositories of Glyph samples and how to carefully filter the
 global repository so that it can be used for training.
@@ -12,6 +17,13 @@ If not, select the `SAMPLES` topic in the `Tools | Advanced Topics...` menu
 Audiveris 5.1 basic classifier is a Glyph classifier, which means that it needs to be trained with
 glyph samples (a sample is basically a glyph with the related shape).
 
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 ### Initial samples
 
 There is an Audiveris 5.1 Google drive located at

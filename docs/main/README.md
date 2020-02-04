@@ -1,4 +1,8 @@
 ---
+layout: default
+title: Main Features
+nav_order: 3
+has_children: true
 ---
 # Main Features
 

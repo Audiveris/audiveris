@@ -1,6 +1,11 @@
 ---
+layout: default
+title: Training
+parent: Advanced Features
+nav_order: 7
 ---
 ## Training {#training}
+{: .no_toc }
 
 Audiveris has the ability to train the underlying Glyph classifier with representative samples.
 
@@ -18,7 +23,15 @@ This is addressed in the [Samples](samples.md) section before.
 Finally, you can launch one or several trainings of the glyph classifier, via the dedicated Trainer
 dialog.
 
-### Trainer {#trainer}
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+### Trainer Dialog {#trainer}
 
 This dialog is dedicated to the training of the Audiveris 5.1 basic classifier (a glyph classifier).
 It is launched via the pulldown menu `Tools | Train classifier...` or, from the global repository,

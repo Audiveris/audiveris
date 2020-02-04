@@ -2,12 +2,9 @@
 ---
 # Audiveris Pages
 
-- [Summary](./SUMMARY.md)
-
 ## Handbook
 
-- TBD: Development version
-
+- 5.2: Development version (TBD)
 - [5.1](index-5.1.md): Stable version
 
 ## OMR file format

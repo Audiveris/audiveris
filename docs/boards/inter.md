@@ -1,8 +1,22 @@
 ---
+layout: default
+title: Inter board
+grand_parent: References
+parent: Boards
+nav_order: 5
 ---
 ## Inter board
+{: .no_toc :}
 
 ![](../assets/inter_board.png)
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Vip
 (input/output)  

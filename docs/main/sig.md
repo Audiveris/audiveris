@@ -1,4 +1,9 @@
 ---
+layout: default
+title: SIG
+grand_parent: Main Features
+parent: Main Entities
+nav_order: 4
 ---
 ### Symbol Interpretation Graph
 

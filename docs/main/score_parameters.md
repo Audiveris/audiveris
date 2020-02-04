@@ -1,6 +1,21 @@
 ---
+layout: default
+title: Score Parameters
+parent: Main Features
+nav_order: 5
 ---
-## **Score parameters**
+## Score Parameters
+{: .no_toc }
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+### Dialog
 
 This dialog let you display and modify high-level processing parameters.
 It can be accessed through `Book | Set parameters...` pulldown menu.

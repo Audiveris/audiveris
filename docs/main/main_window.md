@@ -1,4 +1,9 @@
 ---
+layout: default
+title: Main Window
+parent: Main Features
+nav_order: 1
+has_children: true
 ---
 ## Main Window
 

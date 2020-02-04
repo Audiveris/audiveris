@@ -1,6 +1,12 @@
 ---
+layout: default
+title: Book menu
+grand_parent: References
+parent: Pulldown Menus
+nav_order: 2
 ---
 ## Book menu
+{: .no_toc }
 
 ![](../assets/book_menu.png)
 
@@ -10,6 +16,14 @@ It can be saved and reloaded at any time during a processing session.
 As opposed to [Loading an image ](../quick/load.md) which restarts from the initial image,
 loading a saved book allows to resume processing from the last step saved.
 This is especially useful for processing books with many sheets.
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Recent Books
 

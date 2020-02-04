@@ -1,6 +1,21 @@
 ---
+layout: default
+title: Editing Entities
+parent: Manual Edition
+nav_order: 4
 ---
 ## Editing Entities
+{: .no_toc }
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+### Abnormal rhythm
 
 Audiveris checks whether the chords for each measure fit to the detected time signature.
 If not, it marks the measure by filling it in rose color:

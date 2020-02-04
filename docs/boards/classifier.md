@@ -1,4 +1,9 @@
 ---
+layout: default
+title: Classifier board
+grand_parent: References
+parent: Boards
+nav_order: 7
 ---
 ## Basic Classifier board
 

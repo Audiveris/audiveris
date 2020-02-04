@@ -1,6 +1,19 @@
 ---
+layout: default
+title: Editing Relations
+parent: Manual Edition
+nav_order: 5
 ---
 ## Editing Relations
+{: .no_toc }
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 Most elements have relations to other elements. E.g. an eighth note consists of 3 elements:
 The note head, the stem and the flag. You can see the relation if you select an element:
@@ -50,7 +63,7 @@ Now the correct relation can be added as in the example below:
 
 ![](../assets/correct_relation_after_delete.png)
 
-#### Implicit Remove of a Reference
+### Implicit Remove of a Reference
 
 In the case shown above (correcting reference of accidentals), removing of the relation
 would not be necessary, because an accidental can only reference just one note head.

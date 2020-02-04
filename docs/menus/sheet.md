@@ -1,10 +1,24 @@
 ---
+layout: default
+title: Sheet menu
+grand_parent: References
+parent: Pulldown Menus
+nav_order: 3
 ---
 ## Sheet menu
+{: .no_toc }
 
 ![](../assets/sheet_menu.png)
 
 This menu operates on the current sheet (of the current book).
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Undo
 

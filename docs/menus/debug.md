@@ -1,6 +1,12 @@
 ---
+layout: default
+title: Debug menu
+grand_parent: References
+parent: Pulldown Menus
+nav_order: 8
 ---
 ## Debug menu
+{: .no_toc }
 
 ![](../assets/debug_menu.png)
 
@@ -9,6 +15,14 @@ This menu makes a few debug actions conveniently available.
 NOTA: The casual user can safely ignore this menu.
 To make it visible, you must have beforehand selected the `DEBUG` topic in the
 [Advanced Topics](../advanced/topics.md) dialog.
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ### Browse Book...
 
