@@ -146,6 +146,7 @@ public class ProcessingSwitches
     /** Enumerated names, based on defined constants. */
     public static enum Switch
     {
+        indentations(constants.indentations),
         articulations(constants.articulations),
         chordNames(constants.chordNames),
         fingerings(constants.fingerings),
@@ -251,6 +252,10 @@ public class ProcessingSwitches
     private static class Constants
             extends ConstantSet
     {
+
+        private final Constant.Boolean indentations = new Constant.Boolean(
+                true,
+                "Support for use of system indentation");
 
         private final Constant.Boolean articulations = new Constant.Boolean(
                 true,

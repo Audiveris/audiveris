@@ -651,10 +651,16 @@ public class SystemManager
      * Allocate page(s) for the sheet, as well as contained systems & parts.
      * <p>
      * Detect if an indented system starts a new movement (and thus a new score).
+     * <p>
+     * This behavior is driven by the "indentations" processing switch.
+     *
+     * @see <a href="https://github.com/Audiveris/audiveris/pull/350">PR of Vladimir Buyanov</a>
      */
     private void allocatePages ()
     {
         final SheetStub stub = sheet.getStub();
+        final ProcessingSwitches switches = stub.getProcessingSwitches();
+        final boolean useIndentation = switches.getValue(ProcessingSwitches.Switch.indentations);
         Page page = null;
 
         // Look at left indentation of (deskewed) systems
@@ -662,7 +668,7 @@ public class SystemManager
 
         // Allocate systems per page
         for (SystemInfo system : systems) {
-            if (system.isIndented()) {
+            if (system.isIndented() && useIndentation) {
                 final int systId = system.getId();
 
                 // We have a movement start
