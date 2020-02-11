@@ -56,16 +56,19 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumMap;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import javax.media.jai.JAI;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -73,19 +76,19 @@ import javax.xml.bind.annotation.XmlRootElement;
  * PixelSource} instances derived from it.
  * <p>
  * The {@code Picture} constructor takes a provided original image, whatever its format and color
- * model, and converts it if necessary to come up with a usable gray-level PixelSource: the INITIAL
+ * model, and converts it if necessary to come up with a usable gray-level PixelSource: the GRAY
  * source.
  * <p>
- * Besides the INITIAL source, this class handles a collection of sources, all of the same
+ * Besides the GRAY source, this class handles a collection of sources, all of the same
  * dimension, with the ability to retrieve them on demand or dispose them, via {@link #getSource}
  * and {@link #disposeSource} methods.
  * <p>
  * Any instance of this class is registered on the related Sheet location service, so that each time
- * a location event is received, the corresponding pixel gray value of the INITIAL sources is
+ * a location event is received, the corresponding pixel gray value of the GRAY sources is
  * published.
  * <p>
  * TODO: When an alpha channel is involved, perform the alpha multiplication if the components are
- * not yet premultiplied.
+ * not yet pre-multiplied.
  * <h1>Overview of transforms:<br>
  * <img src="../image/doc-files/transforms.png" alt="Image Transforms UML">
  * </h1>
@@ -103,8 +106,6 @@ public class Picture
 
     private static final Logger logger = LoggerFactory.getLogger(Picture.class);
 
-    public static final String INITIAL_FILE_NAME = "initial.png";
-
     // Persistent data
     //----------------
     //
@@ -116,13 +117,22 @@ public class Picture
     @XmlAttribute(name = "height")
     private final int height;
 
-    /** Map of all handled run tables. */
-    @XmlElement(name = "tables")
-    private final EnumMap<TableKey, RunTableHolder> tables = new EnumMap<>(TableKey.class);
+    /** Old map of all handled run tables. */
+    @Deprecated
+    @XmlElementWrapper(name = "tables")
+    private EnumMap<TableKey, RunTableHolder> oldTables = new EnumMap<>(TableKey.class);
+
+    /** Map of all handled images. */
+    @XmlElementWrapper(name = "images")
+    private final EnumMap<ImageKey, ImageHolder> images = new EnumMap<>(ImageKey.class);
 
     // Transient data
     //---------------
     //
+    /** Map of all handled run tables. */
+    private final ConcurrentSkipListMap<TableKey, WeakReference<RunTable>> tables
+            = new ConcurrentSkipListMap<>();
+
     /** Map of all handled sources. */
     private final ConcurrentSkipListMap<SourceKey, WeakReference<ByteProcessor>> sources
             = new ConcurrentSkipListMap<>();
@@ -130,9 +140,6 @@ public class Picture
     /** Related sheet. */
     @Navigable(false)
     private Sheet sheet;
-
-    /** The initial (gray-level) image, if any. */
-    private final ImageHolder initialHolder = new ImageHolder(INITIAL_FILE_NAME);
 
     /**
      * Build a picture instance from a binary table.
@@ -148,7 +155,7 @@ public class Picture
         width = binaryTable.getWidth();
         height = binaryTable.getHeight();
 
-        setTable(TableKey.BINARY, binaryTable, false);
+        setTable(TableKey.BINARY, binaryTable, false); // This sets also binary image
 
         logger.debug("Picture with BinaryTable {}", binaryTable);
     }
@@ -156,25 +163,30 @@ public class Picture
     /**
      * Build a picture instance from a given original image.
      *
-     * @param sheet the related sheet
-     * @param image the provided original image
+     * @param sheet        the related sheet
+     * @param image        the provided original image (perhaps color image)
+     * @param adjustFormat if true, check and adjust image format
      * @throws ImageFormatException if the image format is unsupported
      */
     public Picture (Sheet sheet,
-                    BufferedImage image)
+                    BufferedImage image,
+                    boolean adjustFormat)
             throws ImageFormatException
     {
         initTransients(sheet);
 
-        // Make sure format, colors, etc are OK for us
-        ///ImageUtil.printInfo(image, "Original image");
-        image = adjustImageFormat(image);
+        if (adjustFormat) {
+            // Make sure format, colors, etc are OK for us
+            image = adjustImageFormat(image);
+        }
+
         width = image.getWidth();
         height = image.getHeight();
 
-        // Remember the initial image
-        initialHolder.setData(image, true);
-        logger.debug("Picture with InitialImage {}", image);
+        // Remember the gray image
+        setImage(ImageKey.GRAY, image, true);
+
+        logger.debug("Picture with gray image {}", image);
     }
 
     /**
@@ -373,25 +385,30 @@ public class Picture
         return height;
     }
 
-    //----------//
-    // getImage //
-    //----------//
+    //-------------------//
+    // getImageRectangle //
+    //-------------------//
     /**
      * Report the sheet image, or a sub-image of it if rectangle area is specified.
      * <p>
-     * We use the initial image if it is still available.
-     * Otherwise we use the binary source.
+     * We use the initial gray image if it is still available.
+     * Otherwise we use the binary image.
      *
      * @param rect rectangular area desired, null for whole image
      * @return the (sub) image
      */
-    public BufferedImage getImage (Rectangle rect)
+    public BufferedImage getImageRectangle (Rectangle rect)
     {
-        BufferedImage img = getInitialImage();
+        BufferedImage img = getGrayImage();
 
         if (img == null) {
-            ByteProcessor buffer = getSource(SourceKey.BINARY);
-            img = buffer.getBufferedImage();
+            img = getImage(ImageKey.BINARY);
+
+            if (img == null) {
+                // Kept for backward compatibility
+                ByteProcessor buffer = getSource(SourceKey.BINARY);
+                img = buffer.getBufferedImage();
+            }
         }
 
         if (rect == null) {
@@ -401,42 +418,72 @@ public class Picture
         }
     }
 
-    //-----------------//
-    // getInitialImage //
-    //-----------------//
+    //----------//
+    // getImage //
+    //----------//
     /**
-     * Report the initial (BufferedImage) image.
+     * Report the desired image.
      *
-     * @return the initial image
+     * @param key key of desired image
+     * @return the image found, if any, null otherwise
      */
-    public BufferedImage getInitialImage ()
+    public BufferedImage getImage (ImageKey key)
     {
-        return initialHolder.getData(sheet.getStub());
+        ImageHolder holder = images.get(key);
+
+        if (holder == null) {
+            return null;
+        }
+
+        return holder.getData(sheet.getStub());
     }
 
-    //-------------------//
-    // hasNoInitialImage //
-    //-------------------//
+    //--------------//
+    // getGrayImage //
+    //--------------//
     /**
-     * Tell whether no initial image still exists, even on disk
+     * Report the initial gray image.
+     *
+     * @return the gray image, perhaps null
+     */
+    public BufferedImage getGrayImage ()
+    {
+        BufferedImage gray = getImage(ImageKey.GRAY);
+
+        if (gray == null) {
+            // Try to reload image from book input path
+            SheetStub stub = sheet.getStub();
+            gray = stub.getBook().loadSheetImage(stub.getNumber());
+        }
+
+        return gray;
+    }
+
+    //----------------//
+    // hasNoGrayImage //
+    //----------------//
+    /**
+     * Tell whether no initial gray image still exists, even on disk.
      *
      * @return true if no initial image still exists
      */
-    public boolean hasNoInitialImage ()
+    public boolean hasNoGrayImage ()
     {
-        return initialHolder.hasNoData();
+        final ImageHolder holder = images.get(ImageKey.GRAY);
+
+        return (holder == null || holder.hasNoData);
     }
 
-    //------------------//
-    // getInitialSource //
-    //------------------//
+    //-----------------//
+    // buildGraySource //
+    //-----------------//
     /**
-     * Report the initial source.
+     * Build the initial gray source from gray image.
      *
-     * @param img the initial image
-     * @return the initial source
+     * @param img the initial gray image
+     * @return the initial gray source
      */
-    public ByteProcessor getInitialSource (BufferedImage img)
+    private ByteProcessor buildGraySource (BufferedImage img)
     {
         if (img != null) {
             if (img.getType() != BufferedImage.TYPE_BYTE_GRAY) {
@@ -488,24 +535,23 @@ public class Picture
 
         if (src == null) {
             switch (key) {
-            case INITIAL:
-                src = getInitialSource(getInitialImage());
+            case GRAY:
+                src = buildGraySource(getGrayImage());
 
                 break;
 
             case BINARY:
+                // Built from binary image, if available
+                final BufferedImage image = getImage(ImageKey.BINARY);
 
-                // Built from binary run table, if available
-                RunTable table = getTable(TableKey.BINARY);
-
-                if (table != null) {
-                    src = table.getBuffer();
+                if (image != null) {
+                    src = new ByteProcessor(image);
                 } else {
-                    // Built via binarization of initial source if any
-                    ByteProcessor initial = getSource(SourceKey.INITIAL);
+                    // Otherwise, built via binarization of initial gray source if any
+                    final ByteProcessor gray = getSource(SourceKey.GRAY);
 
-                    if (initial != null) {
-                        src = binarized(initial);
+                    if (gray != null) {
+                        src = binarized(gray);
                     } else {
                         logger.warn("Cannot provide BINARY source");
 
@@ -557,15 +603,27 @@ public class Picture
      */
     public RunTable getTable (TableKey key)
     {
-        RunTableHolder tableHolder = tables.get(key);
+        RunTable tbl = getStrongRef(key);
 
-        if (tableHolder == null) {
-            return null;
+        if (tbl == null) {
+            switch (key) {
+            case BINARY:
+                tbl = tableOf(ImageKey.BINARY);
+                break;
+
+            case HEAD_SPOTS:
+                tbl = tableOf(ImageKey.HEAD_SPOTS);
+                break;
+            }
+
+            if (tbl != null) {
+                // Store in cache
+                tables.put(key, new WeakReference<>(tbl));
+                logger.debug("{} table built as {}", key, tbl);
+            }
         }
 
-        final RunTable table = tableHolder.getData(sheet.getStub());
-
-        return table;
+        return tbl;
     }
 
     //----------//
@@ -582,37 +640,37 @@ public class Picture
     }
 
     //----------//
-    // hasTable //
+    // hasImage //
     //----------//
     /**
-     * Report whether the desired table is known
+     * Report whether the desired image is known
      *
-     * @param key key of desired table
-     * @return true if we have a tableHolder, false otherwise
+     * @param key key of desired image
+     * @return true if we have an ImageHolder, false otherwise
      */
-    public boolean hasTable (TableKey key)
+    public boolean hasImage (ImageKey key)
     {
-        return tables.get(key) != null;
+        return images.get(key) != null;
     }
 
     //---------------//
-    // hasTableReady //
+    // hasImageReady //
     //---------------//
     /**
-     * Report whether the desired table is known and loaded.
+     * Report whether the desired image is known and loaded.
      *
-     * @param key key of desired table
-     * @return true if we have a tableHolder with loaded data
+     * @param key key of desired image
+     * @return true if we have an ImageHolder with loaded data
      */
-    public boolean hasTableReady (TableKey key)
+    public boolean hasImageReady (ImageKey key)
     {
-        RunTableHolder tableHolder = tables.get(key);
+        ImageHolder holder = images.get(key);
 
-        if (tableHolder == null) {
+        if (holder == null) {
             return false;
         }
 
-        return tableHolder.hasData();
+        return holder.hasDataReady();
     }
 
     //----------------//
@@ -649,7 +707,7 @@ public class Picture
     //---------//
     /**
      * Call-back triggered when sheet location has been modified.
-     * Based on sheet location, we forward the INITIAL pixel gray level to
+     * Based on sheet location, we forward the GRAY pixel gray level to
      * whoever is interested in it.
      *
      * @param event the (sheet) location event
@@ -657,7 +715,9 @@ public class Picture
     @Override
     public void onEvent (LocationEvent event)
     {
-        if (initialHolder.hasNoData()) {
+        final ImageHolder grayHolder = images.get(ImageKey.GRAY);
+
+        if (grayHolder == null || grayHolder.hasNoData()) {
             return;
         }
 
@@ -677,7 +737,7 @@ public class Picture
 
                 // Check that we are not pointing outside the image
                 if ((pt.x >= 0) && (pt.x < getWidth()) && (pt.y >= 0) && (pt.y < getHeight())) {
-                    ByteProcessor src = getSource(SourceKey.INITIAL);
+                    ByteProcessor src = getSource(SourceKey.GRAY);
 
                     if (src != null) {
                         level = src.get(pt.x, pt.y);
@@ -706,10 +766,29 @@ public class Picture
     }
 
     //----------//
+    // setImage //
+    //----------//
+    /**
+     * Register an image.
+     *
+     * @param key      image key
+     * @param image    image to register
+     * @param modified true if not saved on disk
+     */
+    public final void setImage (ImageKey key,
+                                BufferedImage image,
+                                boolean modified)
+    {
+        ImageHolder imageHolder = new ImageHolder(key);
+        imageHolder.setData(image, modified);
+        images.put(key, imageHolder);
+    }
+
+    //----------//
     // setTable //
     //----------//
     /**
-     * Register a table.
+     * Register a table (and its related image).
      *
      * @param key      table key
      * @param table    table to register
@@ -719,16 +798,9 @@ public class Picture
                                 RunTable table,
                                 boolean modified)
     {
-        RunTableHolder tableHolder = new RunTableHolder(key);
-        tableHolder.setData(table, modified);
-        tables.put(key, tableHolder);
-
-        switch (key) {
-        default:
-            break;
-
-        case BINARY:
-            disposeSource(SourceKey.BINARY);
+        if (table != null) {
+            tables.put(key, new WeakReference<>(table));
+            setImage(key.toImageKey(), table.getBufferedImage(), modified);
         }
     }
 
@@ -736,7 +808,9 @@ public class Picture
     // store //
     //-------//
     /**
-     * Store the picture tables
+     * Store the picture images.
+     * <p>
+     * Tables are no longer stored on disk, but their related images are.
      *
      * @param sheetFolder    target sheet folder
      * @param oldSheetFolder optional source sheet folder (or null)
@@ -744,10 +818,54 @@ public class Picture
     public void store (Path sheetFolder,
                        Path oldSheetFolder)
     {
-        // Each handled table
-        for (RunTableHolder holder : tables.values()) {
-            holder.storeData(sheetFolder, oldSheetFolder);
+        // Each handled image
+        for (Entry<ImageKey, ImageHolder> entry : images.entrySet()) {
+            final ImageKey iKey = entry.getKey();
+            final ImageHolder holder = entry.getValue();
+            boolean ok = holder.storeData(sheetFolder, oldSheetFolder);
+
+            if (ok) {
+                // Delete corresponding old table if any
+                final TableKey tKey = iKey.toTableKey();
+
+                if (tKey != null) {
+                    final Path tablePath = sheetFolder.resolve(tKey + ".xml");
+                    try {
+                        if (Files.deleteIfExists(tablePath)) {
+                            logger.info("Washed {}", tablePath);
+                        }
+                    } catch (IOException ex) {
+                        logger.warn("Error deleting {} {}", tablePath, ex);
+                    }
+                }
+            }
         }
+    }
+
+    //---------//
+    // tableOf //
+    //---------//
+    /**
+     * Build table from provided image.
+     *
+     * @param key key to image
+     * @return the table built, or null if image could not be found
+     */
+    private RunTable tableOf (ImageKey key)
+    {
+        final ImageHolder imageHolder = images.get(key);
+
+        if (imageHolder != null && !imageHolder.hasNoData()) {
+            BufferedImage image = imageHolder.getData(sheet.getStub());
+
+            if (image != null) {
+                ByteProcessor buffer = new ByteProcessor(image);
+                RunTableFactory runFactory = new RunTableFactory(VERTICAL);
+                return runFactory.createTable(buffer);
+            }
+        }
+
+        return null;
     }
 
     //----------//
@@ -877,6 +995,48 @@ public class Picture
         return null;
     }
 
+    //--------------//
+    // getStrongRef //
+    //--------------//
+    /**
+     * Report the actual (strong) reference, if any, of a weak table reference.
+     *
+     * @param key the table key
+     * @return the strong reference, if any
+     */
+    private RunTable getStrongRef (TableKey key)
+    {
+        // Check if key is referenced
+        WeakReference<RunTable> ref = tables.get(key);
+
+        if (ref != null) {
+            // Actual reference may be null or not (depending on garbage collection)
+            return ref.get();
+        }
+
+        return null;
+    }
+
+    //------------------//
+    // convertOldTables //
+    //------------------//
+    /**
+     * Migrate from tables as .xml files to images as .png files.
+     */
+    private void convertOldTables ()
+    {
+        if (oldTables != null) {
+            for (Entry<TableKey, RunTableHolder> entry : oldTables.entrySet()) {
+                final RunTableHolder holder = entry.getValue();
+                final RunTable table = holder.getData(sheet.getStub());
+                setTable(entry.getKey(), table, true); // Sets related image as well
+                sheet.getStub().setUpgraded(true);
+            }
+
+            oldTables = null;
+        }
+    }
+
     //----------------//
     // initTransients //
     //----------------//
@@ -889,6 +1049,31 @@ public class Picture
     final void initTransients (Sheet sheet)
     {
         this.sheet = sheet;
+
+        // Convert oldTables to images
+        convertOldTables();
+    }
+
+    /**
+     * The set of handled images.
+     */
+    public static enum ImageKey
+    {
+        /** The initial gray-level source. */
+        GRAY,
+        /** The binarized (black and white) source. */
+        BINARY,
+        /** Temporary image of head spots. */
+        HEAD_SPOTS;
+
+        public TableKey toTableKey ()
+        {
+            if (this == GRAY) {
+                return null;
+            }
+
+            return TableKey.valueOf(name());
+        }
     }
 
     /**
@@ -897,8 +1082,8 @@ public class Picture
     public static enum SourceKey
     {
         /** The initial gray-level source. */
-        INITIAL,
-        /** The binarized (black &amp; white) source. */
+        GRAY,
+        /** The binarized (black and white) source. */
         BINARY,
         /** The Gaussian-filtered source. */
         GAUSSIAN,
@@ -915,6 +1100,11 @@ public class Picture
     {
         BINARY,
         HEAD_SPOTS;
+
+        public ImageKey toImageKey ()
+        {
+            return ImageKey.valueOf(name());
+        }
     }
 
     //-----------//
@@ -928,9 +1118,9 @@ public class Picture
                 false,
                 "Should we print out the stop watch(es)?");
 
-        private final Constant.Boolean disposeOfInitialSource = new Constant.Boolean(
+        private final Constant.Boolean disposeOfGraySource = new Constant.Boolean(
                 true,
-                "Should we dispose of initial source once binarized?");
+                "Should we dispose of gray source once binarized?");
 
         private final Constant.Integer gaussianRadius = new Constant.Integer(
                 "pixels",

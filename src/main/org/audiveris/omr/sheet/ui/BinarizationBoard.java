@@ -138,7 +138,7 @@ public class BinarizationBoard
 
         if (rect != null) {
             FilterDescriptor desc = sheet.getStub().getBinarizationFilter().getValue();
-            ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.INITIAL);
+            ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.GRAY);
 
             if (source != null) {
                 PixelFilter filter = desc.getFilter(source);
@@ -167,7 +167,7 @@ public class BinarizationBoard
                     return;
                 }
             } else {
-                logger.info("No INITIAL source available");
+                logger.info("No GRAY source available");
             }
         }
 

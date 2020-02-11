@@ -321,18 +321,20 @@ public class Sheet
     /**
      * Create a new {@code Sheet} instance with an image.
      *
-     * @param stub  the related sheet stub
-     * @param image the already loaded image, if any
+     * @param stub        the related sheet stub
+     * @param image       the already loaded image, if any
+     * @param adjustImage true to check and adjust image
      * @throws StepException if processing failed at this step
      */
     public Sheet (SheetStub stub,
-                  BufferedImage image)
+                  BufferedImage image,
+                  boolean adjustImage)
             throws StepException
     {
         this(stub);
 
         if (image != null) {
-            setImage(image);
+            setImage(image, adjustImage);
         }
     }
 
@@ -539,22 +541,22 @@ public class Sheet
         }
     }
 
-    //-------------------//
-    // createInitialView //
-    //-------------------//
+    //----------------//
+    // createGrayView //
+    //----------------//
     /**
-     * Create and display the initial view.
+     * Create and display the gray view.
      */
-    public void createInitialView ()
+    public void createGrayView ()
     {
         locationService.subscribeStrongly(LocationEvent.class, picture);
 
         // Display sheet picture
-        PictureView pictureView = new PictureView(this, SheetTab.INITIAL_TAB);
-        stub.getAssembly().addViewTab(
-                SheetTab.INITIAL_TAB,
-                pictureView,
-                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
+        PictureView pictureView = new PictureView(this, SheetTab.GRAY_TAB);
+        stub.getAssembly().addViewTab(SheetTab.GRAY_TAB,
+                                      pictureView,
+                                      new BoardsPane(new PixelBoard(this), new BinarizationBoard(
+                                                     this)));
     }
 
     //----------------//
@@ -586,7 +588,7 @@ public class Sheet
         } else if (stub.isDone(Step.BINARY)) {
             createBinaryView(); // Display BINARY tab
         } else {
-            createInitialView(); // Display Initial tab
+            createGrayView(); // Display GRAY tab
         }
 
         if (!stub.isValid()) {
@@ -908,7 +910,7 @@ public class Sheet
             BufferedImage img = getBook().loadSheetImage(stub.getNumber());
 
             try {
-                setImage(img);
+                setImage(img, true);
             } catch (StepException ex) {
                 logger.warn("Error setting image id {}", stub.getNumber(), ex);
             }
@@ -950,17 +952,23 @@ public class Sheet
     /**
      * Assign the related image to this sheet
      *
-     * @param image the loaded image
+     * @param image       the loaded image
+     * @param adjustImage true to check and adjust image format
      * @throws StepException if processing failed at this step
      */
-    public final void setImage (BufferedImage image)
+    public final void setImage (BufferedImage image,
+                                boolean adjustImage)
             throws StepException
     {
         try {
-            picture = new Picture(this, image);
+            if (picture == null) {
+                picture = new Picture(this, image, adjustImage);
+            } else {
+                picture.setImage(Picture.ImageKey.GRAY, image, adjustImage);
+            }
 
             if (OMR.gui != null) {
-                createInitialView();
+                createGrayView();
             }
 
             done(Step.LOAD);
@@ -1246,7 +1254,7 @@ public class Sheet
                 // Make sure the folder exists for sheet internals
                 Files.createDirectories(sheetFolder);
 
-                // Save picture tables
+                // Save picture images (and remove tables if any)
                 picture.store(sheetFolder, oldSheetFolder);
             } catch (IOException ex) {
                 logger.warn("IOException on storing " + this, ex);

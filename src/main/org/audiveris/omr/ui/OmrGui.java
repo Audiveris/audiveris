@@ -92,7 +92,7 @@ public abstract class OmrGui
     public abstract void displayError (String message);
 
     /**
-     * Allow to display a modal dialog with an html content.
+     * Allow to display a modal dialog with an HTML content.
      *
      * @param htmlStr the HTML string
      */
@@ -101,34 +101,34 @@ public abstract class OmrGui
     /**
      * Allow to display a modal dialog with a string content.
      *
-     * @param message the message string
+     * @param message the message object
      * @param title   dialog title
      */
-    public abstract void displayMessage (String message,
+    public abstract void displayMessage (Object message,
                                          String title);
 
     /**
      * Allow to display a non-modal confirmation dialog.
      *
-     * @param message the confirmation message
+     * @param message the confirmation message object
      * @return the option chosen
      */
-    public abstract int displayModelessConfirm (String message);
+    public abstract int displayModelessConfirm (Object message);
 
     /**
      * Allow to display a modal dialog with a warning message.
      *
-     * @param message the warning message
+     * @param message the warning message object
      */
-    public abstract void displayWarning (String message);
+    public abstract void displayWarning (Object message);
 
     /**
      * Allow to display a modal dialog with a warning message and specific title
      *
-     * @param message the warning message
+     * @param message the warning message object
      * @param title   dialog title
      */
-    public abstract void displayWarning (String message,
+    public abstract void displayWarning (Object message,
                                          String title);
 
     /**

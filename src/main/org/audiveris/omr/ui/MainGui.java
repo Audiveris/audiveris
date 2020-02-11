@@ -169,7 +169,7 @@ public class MainGui
         int answer = JOptionPane.showConfirmDialog(
                 frame,
                 message,
-                title + " - " + appName,
+                title,
                 JOptionPane.YES_NO_OPTION);
 
         return answer == JOptionPane.YES_OPTION;
@@ -183,7 +183,7 @@ public class MainGui
                                     String title,
                                     int optionType)
     {
-        return JOptionPane.showConfirmDialog(frame, message, title + " - " + appName, optionType);
+        return JOptionPane.showConfirmDialog(frame, message, title, optionType);
     }
 
     //--------------//
@@ -195,7 +195,7 @@ public class MainGui
         JOptionPane.showMessageDialog(
                 frame,
                 message,
-                "Error - " + appName,
+                "Error",
                 JOptionPane.ERROR_MESSAGE);
     }
 
@@ -214,12 +214,12 @@ public class MainGui
     // displayMessage //
     //----------------//
     @Override
-    public void displayMessage (String message,
+    public void displayMessage (Object message,
                                 String title)
     {
         JOptionPane.showMessageDialog(frame,
                                       message,
-                                      title + " - " + appName,
+                                      title,
                                       JOptionPane.INFORMATION_MESSAGE);
     }
 
@@ -227,12 +227,12 @@ public class MainGui
     // displayModelessConfirm //
     //------------------------//
     @Override
-    public int displayModelessConfirm (String message)
+    public int displayModelessConfirm (Object message)
     {
         return ModelessOptionPane.showModelessConfirmDialog(
                 frame,
                 message,
-                "Confirm - " + appName,
+                "Confirm",
                 JOptionPane.YES_NO_OPTION);
     }
 
@@ -240,22 +240,22 @@ public class MainGui
     // displayWarning //
     //----------------//
     @Override
-    public void displayWarning (String message)
+    public void displayWarning (Object message)
     {
-        displayWarning(message, "Warning - " + appName);
+        displayWarning(message, "Warning");
     }
 
     //----------------//
     // displayWarning //
     //----------------//
     @Override
-    public void displayWarning (String message,
+    public void displayWarning (Object message,
                                 String title)
     {
         JOptionPane.showMessageDialog(
                 frame,
                 message,
-                title + " - " + appName,
+                title,
                 JOptionPane.WARNING_MESSAGE);
     }
 
@@ -772,11 +772,6 @@ public class MainGui
         public boolean canExit (EventObject eo)
         {
             for (Book book : OMR.engine.getAllBooks()) {
-                //                // Is script stored (or explicitly ignored)?
-                //                if (!ScriptActions.checkStored(book.getScript())) {
-                //                    return false;
-                //                }
-                //
                 // Check whether the book has been saved (or user has declined)
                 if (!BookActions.checkStored(book)) {
                     return false;

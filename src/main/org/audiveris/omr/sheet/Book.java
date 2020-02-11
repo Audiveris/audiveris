@@ -39,9 +39,9 @@ import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.score.ui.BookPdfOutput;
-import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 import org.audiveris.omr.sheet.Versions.CheckResult;
 import org.audiveris.omr.sheet.rhythm.Voices;
+import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sheet.ui.BookBrowser;
 import org.audiveris.omr.sheet.ui.SheetResultPainter;
@@ -77,6 +77,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -320,8 +321,11 @@ public class Book
     /** Book-level sample repository. */
     private SampleRepository repository;
 
-    /** Has book already been checked for upgrade?. */
-    private boolean checkedForUpgrade = false;
+    /** Has book already been prompted for upgrade?. */
+    private boolean promptedForUpgrade = false;
+
+    /** Set of stubs that need to be upgraded. */
+    private Set<SheetStub> stubsToUpgrade;
 
     /**
      * Create a Book with a path to an input images file.
@@ -674,26 +678,26 @@ public class Book
         radix = alias;
     }
 
-    //---------------------//
-    // isCheckedForUpgrade //
-    //---------------------//
+    //--------------------//
+    // promptedForUpgrade //
+    //--------------------//
     /**
-     * @return the checkedForUpgrade
+     * @return true if already prompted For Upgrade
      */
-    public boolean isCheckedForUpgrade ()
+    public boolean promptedForUpgrade ()
     {
-        return checkedForUpgrade;
+        return promptedForUpgrade;
     }
 
-    //----------------------//
-    // setCheckedForUpgrade //
-    //----------------------//
+    //-----------------------//
+    // setPromptedForUpgrade //
+    //-----------------------//
     /**
-     * @param checkedForUpgrade the checkedForUpgrade to set
+     * Set promptedForUpgrade to true.
      */
-    public void setCheckedForUpgrade (boolean checkedForUpgrade)
+    public void setPromptedForUpgrade ()
     {
-        this.checkedForUpgrade = checkedForUpgrade;
+        promptedForUpgrade = true;
     }
 
     //-----------------------//
@@ -1230,7 +1234,7 @@ public class Book
                     final StubsController controller = StubsController.getInstance();
                     final SheetStub stub = controller.getSelectedStub();
 
-                    if ((stub != null) && (stub.getBook() == Book.this)) {
+                    if ((stub != null) && (stub.getBook() == Book.this) && stub.hasSheet()) {
                         controller.refresh();
                     }
                 }
@@ -1279,9 +1283,15 @@ public class Book
      * @param id specified sheet id
      * @return the loaded sheet image
      */
-    public BufferedImage loadSheetImage (int id)
+    public synchronized BufferedImage loadSheetImage (int id)
     {
         try {
+            if (!Files.exists(path)) {
+                logger.warn("Book input {} not found", path);
+
+                return null;
+            }
+
             final ImageLoading.Loader loader = ImageLoading.getLoader(path);
 
             if (loader == null) {
@@ -1561,12 +1571,31 @@ public class Book
     // resetToBinary //
     //---------------//
     /**
-     * Reset all valid sheets of this book to their BINARY step.
+     * Reset all valid sheets of this book to their binary images.
      */
     public void resetToBinary ()
     {
         for (SheetStub stub : getValidStubs()) {
-            stub.resetToBinary();
+            if (stub.isDone(Step.BINARY)) {
+                stub.resetToBinary();
+            }
+        }
+
+        scores.clear();
+    }
+
+    //-------------//
+    // resetToGray //
+    //-------------//
+    /**
+     * Reset all valid sheets of this book to their gray images.
+     */
+    public void resetToGray ()
+    {
+        for (SheetStub stub : getValidStubs()) {
+            if (stub.isDone(Step.LOAD)) {
+                stub.resetToGray();
+            }
         }
 
         scores.clear();
@@ -1917,32 +1946,28 @@ public class Book
     {
         StopWatch watch = new StopWatch("upgradeStubs for " + this);
         try {
-            // Let's begin with current stub if any
-            if (OMR.gui != null) {
-                SheetStub currentStub = StubsController.getCurrentStub();
+            final List<SheetStub> upgraded = new ArrayList<>();
 
-                if ((currentStub != null) && currentStub.isUpgraded()) {
-                    logger.info("Store current " + currentStub);
-                    watch.start("Store current " + currentStub);
-                    currentStub.storeSheet();
+            // Current GUI stub, if any
+            SheetStub currentStub = (OMR.gui != null) ? StubsController.getCurrentStub() : null;
+
+            for (SheetStub stub : stubsToUpgrade) {
+                logger.debug("check " + stub);
+                watch.start("check " + stub);
+                stub.getSheet(); // Load sheet if needed, this performs the upgrade w/in sheet
+                upgraded.add(stub);
+
+                // Store (or swap=store+dispose) cleans table files
+                if (stub == currentStub) {
+                    stub.storeSheet();
+                } else {
+                    stub.swapSheet();
                 }
             }
 
-            for (SheetStub stub : getValidStubs()) {
-                if (stub.isUpgraded()) {
-                    logger.info("Store upgraded " + stub);
-                    watch.start("Store upgraded " + stub);
-                    stub.storeSheet();
-                } else {
-                    Version stubVersion = stub.getVersion();
-
-                    if (stubVersion.compareTo(Versions.LATEST_UPGRADE) < 0) {
-                        logger.info("Load & check " + stub);
-                        watch.start("Load & check " + stub);
-                        stub.getSheet(); // Load sheet, this performs the upgrade
-                        stub.swapSheet(); // Store if needed, then dispose
-                    }
-                }
+            if (!upgraded.isEmpty()) {
+                logger.info("Upgraded book {}", bookPath);
+                stubsToUpgrade.removeAll(upgraded);
             }
 
             if (OMR.gui != null) {
@@ -1952,7 +1977,7 @@ public class Book
             logger.warn("Error upgrading stubs", ex);
         }
 
-        watch.print();
+        ///watch.print();
     }
 
     //-------------------//
@@ -1960,33 +1985,101 @@ public class Book
     //-------------------//
     /**
      * Gather the sheet stubs that still need an upgrade.
+     * <p>
+     * We use book/sheet version and presence of old table files.
      *
      * @return the set of sheet stubs to upgrade
      */
-    public List<SheetStub> getStubsToUpgrade ()
+    public Set<SheetStub> getStubsToUpgrade ()
     {
-        final List<SheetStub> list = new ArrayList<>();
+        if (stubsToUpgrade == null) {
+            stubsToUpgrade = new LinkedHashSet<>();
+            stubsToUpgrade.addAll(getStubsWithOldVersion());
+            stubsToUpgrade.addAll(getStubsWithTableFiles());
+
+            if (!stubsToUpgrade.isEmpty()) {
+                logger.info("{} stub(s) to upgrade in {}", stubsToUpgrade.size(), this);
+            }
+        }
+
+        return stubsToUpgrade;
+    }
+
+    //------------------------//
+    // getStubsWithOldVersion //
+    //------------------------//
+    public Set<SheetStub> getStubsWithOldVersion ()
+    {
+        final Set<SheetStub> found = new LinkedHashSet<>();
+
+        // Check presence of old table files
         final Version bookVersion = new Version(getVersionValue());
 
         if (bookVersion.compareTo(Versions.LATEST_UPGRADE) < 0) {
-            // Check each and every valid sheet
-            //TODO: Should we check invalid sheets as well?
-            for (SheetStub stub : getValidStubs()) {
+            // Check each and every sheet, even if invalid
+            for (SheetStub stub : stubs) {
                 final String stubVersionStr = stub.getVersionValue();
 
                 if (stubVersionStr != null) {
                     // Use sheet specific version
                     if (new Version(stubVersionStr).compareTo(Versions.LATEST_UPGRADE) < 0) {
-                        list.add(stub);
+                        found.add(stub);
                     }
                 } else {
                     // No sheet specific version, therefore we use book version
-                    list.add(stub);
+                    found.add(stub);
                 }
             }
         }
 
-        return list;
+        return found;
+    }
+
+    //------------------------//
+    // getStubsWithTableFiles //
+    //------------------------//
+    /**
+     * Report the stubs that still have table files.
+     *
+     * @return the set of stubs with table files, perhaps empty but not null
+     */
+    public Set<SheetStub> getStubsWithTableFiles ()
+    {
+        final Set<SheetStub> found = new LinkedHashSet<>();
+        final Lock bookLock = getLock();
+        bookLock.lock();
+
+        try {
+            final Path bookPath = BookManager.getDefaultSavePath(this);
+
+            if (!Files.exists(bookPath)) {
+                // No book project file yet
+                return found;
+            }
+
+            final Path root = ZipFileSystem.open(bookPath);
+            for (SheetStub stub : stubs) {
+                final Path sheetFolder = root.resolve(INTERNALS_RADIX + stub.getNumber());
+
+                for (Picture.TableKey key : Picture.TableKey.values()) {
+                    final Path tablePath = sheetFolder.resolve(key + ".xml");
+                    logger.debug("Checking existence of {}", tablePath);
+
+                    if (Files.exists(tablePath)) {
+                        found.add(stub);
+                        break;
+                    }
+                }
+            }
+
+            root.getFileSystem().close();
+        } catch (Exception ex) {
+            logger.warn("Error browsing project file of {} {}", this, ex.toString(), ex);
+        } finally {
+            bookLock.unlock();
+        }
+
+        return found;
     }
 
     //---------------//
@@ -2053,7 +2146,7 @@ public class Book
             PageRef ref = score.getFirstPageRef();
 
             if (ref == null) {
-                logger.warn("Discarding invalid score data.");
+                logger.info("Discarding invalid score data.");
                 scores.clear();
 
                 break;
@@ -2285,6 +2378,8 @@ public class Book
                 }
             }
         }
+
+        stubsToUpgrade = getStubsToUpgrade();
 
         return true;
     }

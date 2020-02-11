@@ -55,7 +55,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
@@ -94,11 +93,8 @@ public abstract class AdvancedTopics
     //------//
     public static void show ()
     {
-        JOptionPane.showMessageDialog(
-                OMR.gui.getFrame(),
-                getMessage(),
-                resource.getString("AdvancedTopics.title"),
-                JOptionPane.PLAIN_MESSAGE);
+        OMR.gui.displayMessage(getMessage(),
+                               resource.getString("AdvancedTopics.title"));
     }
 
     //------------//

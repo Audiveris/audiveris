@@ -125,7 +125,8 @@ public class TargetBuilder
         buildWarpGrid(dewarper);
 
         // Dewarp the initial image
-        RenderedImage dewarpedImage = dewarper.dewarpImage(sheet.getPicture().getImage(null));
+        RenderedImage dewarpedImage = dewarper.dewarpImage(
+                sheet.getPicture().getImageRectangle(null));
 
         // Add a view on dewarped image?
         if (OMR.gui != null) {

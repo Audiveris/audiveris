@@ -45,10 +45,6 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.grid.StaffProjector;
 import org.audiveris.omr.sheet.stem.StemScaler;
-import static org.audiveris.omr.sheet.ui.StubDependent.BOOK_IDLE;
-import static org.audiveris.omr.sheet.ui.StubDependent.INITIAL_AVAILABLE;
-import static org.audiveris.omr.sheet.ui.StubDependent.STUB_AVAILABLE;
-import static org.audiveris.omr.sheet.ui.StubDependent.STUB_IDLE;
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.BoardsPane;
@@ -345,7 +341,7 @@ public class BookActions
      *
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = STUB_AVAILABLE)
+    @Action(enabledProperty = BINARY_AVAILABLE)
     public void displayBinary (ActionEvent e)
     {
         final SheetStub stub = StubsController.getCurrentStub();
@@ -372,11 +368,11 @@ public class BookActions
     // displayData //
     //-------------//
     /**
-     * Action that allows to display the view on image or binary table
+     * Action that allows to display the view on data.
      *
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = STUB_AVAILABLE)
+    @Action(enabledProperty = GRID_AVAILABLE)
     public void displayData (ActionEvent e)
     {
         final SheetStub stub = StubsController.getCurrentStub();
@@ -399,23 +395,23 @@ public class BookActions
         }
     }
 
-    //----------------//
-    // displayInitial //
-    //----------------//
+    //-------------//
+    // displayGray //
+    //-------------//
     /**
-     * Action that allows to display the view on initial image.
+     * Action that allows to display the view on initial gray image.
      *
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = INITIAL_AVAILABLE)
-    public void displayInitial (ActionEvent e)
+    @Action(enabledProperty = GRAY_AVAILABLE)
+    public void displayGray (ActionEvent e)
     {
         final SheetStub stub = StubsController.getCurrentStub();
         final SheetAssembly assembly = stub.getAssembly();
-        final SheetTab tab = SheetTab.INITIAL_TAB;
+        final SheetTab tab = SheetTab.GRAY_TAB;
 
         if (assembly.getPane(tab.label) == null) {
-            stub.getSheet().createInitialView();
+            stub.getSheet().createGrayView();
         } else {
             assembly.selectViewTab(tab);
         }
@@ -429,7 +425,7 @@ public class BookActions
      *
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = STUB_AVAILABLE)
+    @Action(enabledProperty = GRID_AVAILABLE)
     public void displayNoStaff (ActionEvent e)
     {
         final SheetStub stub = StubsController.getCurrentStub();
@@ -461,7 +457,7 @@ public class BookActions
      *
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = STUB_AVAILABLE)
+    @Action(enabledProperty = GRID_AVAILABLE)
     public void displayStaffLineGlyphs (ActionEvent e)
     {
         final SheetStub stub = StubsController.getCurrentStub();
@@ -658,9 +654,8 @@ public class BookActions
         if (stub != null) {
             final String pattern = resources.getString("setSheetInvalid.pattern");
             final String msg = format(pattern, stub.getId());
-            final int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), msg + doYouConfirm);
 
-            if (answer == JOptionPane.YES_OPTION) {
+            if (OMR.gui.displayConfirmation(msg + doYouConfirm)) {
                 stub.invalidate();
 
                 final Sheet sheet = stub.getSheet();
@@ -989,13 +984,18 @@ public class BookActions
         final Book book = StubsController.getCurrentBook();
 
         if (book != null) {
-            final String msg = format(resources.getString("resetBookTo.pattern"),
-                                      book.getRadix(),
-                                      Step.LOAD);
-            final int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), msg + doYouConfirm);
+            // Check book input path still exists
+            final Path inputPath = book.getInputPath();
 
-            if (answer == JOptionPane.YES_OPTION) {
-                book.reset();
+            if (!Files.exists(inputPath)) {
+                OMR.gui.displayWarning("Cannot find " + inputPath, "Source images not available");
+            } else {
+                final String msg = format(resources.getString("resetBookToEnd.pattern"),
+                                          book.getRadix(),
+                                          Step.LOAD);
+                if (OMR.gui.displayConfirmation(msg + doYouConfirm)) {
+                    book.reset();
+                }
             }
         }
     }
@@ -1014,63 +1014,34 @@ public class BookActions
         final Book book = StubsController.getCurrentBook();
 
         if (book != null) {
-            final String msg = format(resources.getString("resetBookTo.pattern"),
+            final String msg = format(resources.getString("resetBookToEnd.pattern"),
                                       book.getRadix(),
                                       Step.BINARY);
-            final int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), msg + doYouConfirm);
-
-            if (answer == JOptionPane.YES_OPTION) {
+            if (OMR.gui.displayConfirmation(msg + doYouConfirm)) {
                 book.resetToBinary();
             }
         }
     }
 
-    //------------//
-    // resetSheet //
-    //------------//
+    //-----------------//
+    // resetBookToGray //
+    //-----------------//
     /**
-     * Action that resets the currently selected sheet.
+     * Action that resets all valid sheets of selected book to gray.
      *
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = STUB_IDLE)
-    public void resetSheet (ActionEvent e)
+    @Action(enabledProperty = BOOK_IDLE)
+    public void resetBookToGray (ActionEvent e)
     {
-        SheetStub stub = StubsController.getCurrentStub();
+        final Book book = StubsController.getCurrentBook();
 
-        if (stub != null) {
-            final String msg = format(resources.getString("resetSheetTo.pattern"),
-                                      stub.getId(),
+        if (book != null) {
+            final String msg = format(resources.getString("resetBookToEnd.pattern"),
+                                      book.getRadix(),
                                       Step.LOAD);
-            final int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), msg + doYouConfirm);
-
-            if (answer == JOptionPane.YES_OPTION) {
-                stub.reset();
-            }
-        }
-    }
-
-    //--------------------//
-    // resetSheetToBinary //
-    //--------------------//
-    /**
-     * Action that resets the currently selected sheet to the binary step.
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(enabledProperty = STUB_IDLE)
-    public void resetSheetToBinary (ActionEvent e)
-    {
-        SheetStub stub = StubsController.getCurrentStub();
-
-        if (stub != null) {
-            final String msg = format(resources.getString("resetSheetTo.pattern"),
-                                      stub.getId(),
-                                      Step.BINARY);
-            final int answer = JOptionPane.showConfirmDialog(OMR.gui.getFrame(), msg + doYouConfirm);
-
-            if (answer == JOptionPane.YES_OPTION) {
-                stub.resetToBinary();
+            if (OMR.gui.displayConfirmation(msg + doYouConfirm)) {
+                book.resetToGray();
             }
         }
     }

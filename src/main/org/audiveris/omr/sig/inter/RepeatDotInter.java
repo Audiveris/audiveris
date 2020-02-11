@@ -248,7 +248,7 @@ public class RepeatDotInter
             @Override
             public boolean check (Inter inter)
             {
-                return (inter != this)
+                return (inter != RepeatDotInter.this)
                                && !inter.isRemoved()
                                && (inter.getShape() == Shape.REPEAT_DOT)
                                && (inter.getBounds().intersects(dotLuBox));

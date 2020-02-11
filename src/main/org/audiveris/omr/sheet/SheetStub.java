@@ -26,7 +26,6 @@ import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.image.FilterDescriptor;
 import org.audiveris.omr.image.FilterParam;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
@@ -383,7 +382,7 @@ public class SheetStub
     {
         if (binarizationFilter == null) {
             binarizationFilter = new FilterParam();
-            binarizationFilter.setParent(FilterDescriptor.defaultFilter);
+            binarizationFilter.setParent(book.getBinarizationFilter());
         }
 
         return binarizationFilter;
@@ -609,20 +608,20 @@ public class SheetStub
                 sh = this.sheet;
                 // We have to recheck sheet, which may have just been allocated
                 if (sh == null) {
-                    if (SwingUtilities.isEventDispatchThread()) {
-                        logger.warn("XXXX getSheet called on EDT XXXX");
-                    }
-
                     // Actually load the sheet
                     if (!isDone(Step.LOAD)) {
                         // LOAD not yet performed: load from book image file
                         try {
-                            this.sheet = sh = new Sheet(this, (BufferedImage) null);
+                            this.sheet = sh = new Sheet(this, (BufferedImage) null, false);
                         } catch (StepException ignored) {
                             logger.info("Could not load sheet for stub {}", this);
                         }
                     } else {
                         // LOAD already performed: load from book file
+                        if (SwingUtilities.isEventDispatchThread()) {
+                            logger.warn("XXX Loading .omr file on EDT XXXX");
+                        }
+
                         StopWatch watch = new StopWatch("Load Sheet " + this);
 
                         try {
@@ -873,7 +872,13 @@ public class SheetStub
             final Step latestStep = getLatestStep();
 
             if (force && (target.compareTo(latestStep) <= 0)) {
-                resetToBinary();
+                if (target.compareTo(Step.BINARY) > 0) {
+                    resetToBinary();
+                } else if (target == Step.BINARY) {
+                    resetToGray();
+                } else {
+                    reset();
+                }
             }
 
             neededSteps = getNeededSteps(target);
@@ -950,8 +955,72 @@ public class SheetStub
     public void reset ()
     {
         doReset();
-        logger.info("Sheet#{} reset as valid.", number);
 
+        try {
+            BufferedImage img = book.loadSheetImage(number);
+            sheet = new Sheet(this, img, true);
+            logger.info("Sheet#{} reset as valid.", number);
+            display();
+        } catch (Exception ex) {
+            logger.warn("Error reloading image for sheet#{} {}", number, ex.toString(), ex);
+        }
+    }
+
+    //---------------//
+    // resetToBinary //
+    //---------------//
+    /**
+     * Reset this stub to the binary image.
+     */
+    public void resetToBinary ()
+    {
+        try {
+            final BufferedImage gray = sheet.getPicture().getGrayImage();
+            final RunTable binaryTable = grabBinaryTable();
+
+            doReset();
+            sheet = new Sheet(this, binaryTable);
+
+            if (gray != null) {
+                sheet.setImage(gray, false);
+            }
+
+            logger.info("Sheet#{} reset to binary.", number);
+            display();
+        } catch (Throwable ex) {
+            logger.warn("Could not reset to binary {}", ex.toString(), ex);
+        }
+    }
+
+    //-------------//
+    // resetToGray //
+    //-------------//
+    /**
+     * Reset this stub to the gray image (result of LOAD step).
+     */
+    public void resetToGray ()
+    {
+        try {
+            final BufferedImage gray = sheet.getPicture().getGrayImage();
+
+            if (gray != null) {
+                doReset();
+                sheet = new Sheet(this, gray, false);
+                logger.info("Sheet#{} reset to gray.", number);
+                display();
+            } else {
+                logger.warn("No gray image available for sheet #{}", number);
+            }
+        } catch (Throwable ex) {
+            logger.warn("Could not reset to gray {}", ex.toString(), ex);
+        }
+    }
+
+    //---------//
+    // display //
+    //---------//
+    private void display ()
+    {
         if (OMR.gui != null) {
             try {
                 Runnable runnable = new Runnable()
@@ -959,7 +1028,7 @@ public class SheetStub
                     @Override
                     public void run ()
                     {
-                        StubsController.getInstance().display(SheetStub.this);
+                        StubsController.getInstance().display(SheetStub.this, false);
                     }
                 };
 
@@ -972,26 +1041,6 @@ public class SheetStub
                      InvocationTargetException ex) {
                 logger.warn("Could not reset {}", ex.toString(), ex);
             }
-        }
-    }
-
-    //---------------//
-    // resetToBinary //
-    //---------------//
-    /**
-     * Reset this stub to end of its BINARY step.
-     */
-    public void resetToBinary ()
-    {
-        try {
-            RunTable binaryTable = grabBinaryTable();
-
-            doReset();
-            sheet = new Sheet(this, binaryTable);
-            logger.info("Sheet#{} reset to BINARY.", number);
-        } catch (Throwable ex) {
-            logger.warn("Could not reset to BINARY {}", ex.toString(), ex);
-            reset();
         }
     }
 
@@ -1159,11 +1208,11 @@ public class SheetStub
 
                     try {
                         setCurrentStep(step);
-                        StepMonitoring.notifyStep(SheetStub.this, step); // Start monitoring
                         setModified(true); // At beginning of processing
                         sheet.reset(step); // Reset sheet relevant data
                         step.doit(sheet); // Standard processing on an existing sheet
                         done(step); // Full completion
+                        StepMonitoring.notifyStep(SheetStub.this, step);
                     } finally {
                         LogUtil.stopStub();
                     }

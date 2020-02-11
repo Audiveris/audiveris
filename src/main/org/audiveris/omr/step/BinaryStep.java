@@ -60,6 +60,16 @@ public class BinaryStep
     {
     }
 
+    //-----------//
+    // displayUI //
+    //-----------//
+    @Override
+    public void displayUI (Step step,
+                           Sheet sheet)
+    {
+        sheet.createBinaryView();
+    }
+
     //------//
     // doit //
     //------//
@@ -71,12 +81,8 @@ public class BinaryStep
         watch.start("Getting initial source");
 
         Picture picture = sheet.getPicture();
-        ByteProcessor initial = picture.getSource(SourceKey.INITIAL);
+        ByteProcessor initial = picture.getSource(SourceKey.GRAY);
 
-        //
-        //        boolean hasGray = hasGray(initial);
-        //        logger.info("hasGray: {}", hasGray);
-        //
         FilterDescriptor desc = sheet.getStub().getBinarizationFilter().getValue();
         logger.debug("{}", "Binarization");
 
@@ -91,8 +97,8 @@ public class BinaryStep
         RunTable wholeVertTable = vertFactory.createTable(binary);
         picture.setTable(Picture.TableKey.BINARY, wholeVertTable, true);
 
-        // To discard image
-        picture.disposeSource(SourceKey.INITIAL);
+        // To discard source
+        picture.disposeSource(SourceKey.GRAY);
 
         if (constants.printWatch.isSet()) {
             watch.print();

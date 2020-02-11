@@ -121,15 +121,11 @@ public abstract class Versions
     /** Latest upgrade version. */
     public static final Version LATEST_UPGRADE = UPGRADE_VERSIONS.get(UPGRADE_VERSIONS.size() - 1);
 
-    /** Resource injection. */
-    private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(Versions.class);
+    /** Resource injection. Lazily populated on GUI. */
+    private static ResourceMap resources;
 
-    /** Localized values of Frequency enum type. */
-    private static final LabeledEnum<Frequency>[] localeFrequencies = LabeledEnum.values(
-            Frequency.values(),
-            resources,
-            Frequency.class);
+    /** Localized values of Frequency enum type. Lazily populated on GUI. */
+    private static LabeledEnum<Frequency>[] localeFrequencies;
 
     /** How to format dates. */
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MMM-yyyy", Locale.US);
@@ -284,7 +280,7 @@ public abstract class Versions
             } else {
                 // Explicitly tell the user that check result is positive
                 AbstractPanel panel = new PositivePanel(latest);
-                resources.injectComponents(panel);
+                getResources().injectComponents(panel);
 
                 JOptionPane.showMessageDialog(
                         OMR.gui.getFrame(),
@@ -298,7 +294,7 @@ public abstract class Versions
             if ((OMR.gui != null) && manual) {
                 // Explicitly tell the user that check result is negative
                 AbstractPanel panel = new NegativePanel(latest);
-                resources.injectComponents(panel);
+                getResources().injectComponents(panel);
 
                 JOptionPane.showMessageDialog(
                         OMR.gui.getFrame(),
@@ -349,6 +345,31 @@ public abstract class Versions
         return next;
     }
 
+    //----------------------//
+    // getLocaleFrequencies //
+    //----------------------//
+    private static LabeledEnum<Frequency>[] getLocaleFrequencies ()
+    {
+        if (localeFrequencies == null) {
+            localeFrequencies = LabeledEnum.values(
+                    Frequency.values(), getResources(), Frequency.class);
+        }
+
+        return localeFrequencies;
+    }
+
+    //--------------//
+    // getResources //
+    //--------------//
+    private static ResourceMap getResources ()
+    {
+        if (resources == null) {
+            resources = Application.getInstance().getContext().getResourceMap(Versions.class);
+        }
+
+        return resources;
+    }
+
     //--------------//
     // isTimeToPoll //
     //--------------//
@@ -385,7 +406,8 @@ public abstract class Versions
 
         protected LLabel tag = new LLabel(JLabel.LEFT);
 
-        protected LComboBox<LabeledEnum<Frequency>> polling = new LComboBox<>(localeFrequencies);
+        protected LComboBox<LabeledEnum<Frequency>> polling
+                = new LComboBox<>(getLocaleFrequencies());
 
         /** The JGoodies/Form layout to be used by all subclasses. */
         protected final FormLayout layout = new FormLayout(getColumnsSpec(), getRowsSpec());
@@ -412,7 +434,7 @@ public abstract class Versions
             tag.setText(release.getTagName());
 
             Frequency f = constants.releaseCheckFrequency.getValue();
-            polling.setSelectedItem(LabeledEnum.valueOf(f, localeFrequencies));
+            polling.setSelectedItem(LabeledEnum.valueOf(f, getLocaleFrequencies()));
         }
 
         String getTitle ()
@@ -484,11 +506,11 @@ public abstract class Versions
 
         NegativePanel (GHRelease release)
         {
-            super(resources.getString("Negative.title"), release);
+            super(getResources().getString("Negative.title"), release);
             setName("PollingNegativeDialog");
 
             // Status
-            status.setText(resources.getString("Negative.msg"));
+            status.setText(getResources().getString("Negative.msg"));
         }
 
         @Override
@@ -519,11 +541,11 @@ public abstract class Versions
 
         PositivePanel (GHRelease release)
         {
-            super(resources.getString("Positive.title"), release);
+            super(getResources().getString("Positive.title"), release);
             setName("PollingPositiveDialog");
 
             // Status
-            status.setText(resources.getString("Positive.msg"));
+            status.setText(getResources().getString("Positive.msg"));
 
             defineLayout();
 
