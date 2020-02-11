@@ -23,8 +23,8 @@ package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Picture;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
-import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.selection.MouseMovement;
@@ -50,8 +50,14 @@ public abstract class StubDependent
 
     private static final Logger logger = LoggerFactory.getLogger(StubDependent.class);
 
-    /** Name of property linked to initial image availability. */
-    public static final String INITIAL_AVAILABLE = "initialAvailable";
+    /** Name of property linked to initial gray image availability. */
+    public static final String GRAY_AVAILABLE = "grayAvailable";
+
+    /** Name of property linked to binary image availability. */
+    public static final String BINARY_AVAILABLE = "binaryAvailable";
+
+    /** Name of property linked to data availability. */
+    public static final String GRID_AVAILABLE = "gridAvailable";
 
     /** Name of property linked to sheet transcription ability. */
     public static final String STUB_TRANSCRIBABLE = "stubTranscribable";
@@ -86,8 +92,14 @@ public abstract class StubDependent
     /** Name of property linked to repetitive input mode. */
     public static final String REPETITIVE_INPUT_SELECTABLE = "repetitiveInputSelectable";
 
-    /** Indicates whether the sheet initial image is available. */
-    protected boolean initialAvailable = false;
+    /** Indicates whether the sheet binary image is available. */
+    protected boolean binaryAvailable = false;
+
+    /** Indicates whether the sheet initial gray image is available. */
+    protected boolean grayAvailable = false;
+
+    /** Indicates whether the sheet grid is available. */
+    protected boolean gridAvailable = false;
 
     /** Indicates whether the current sheet stub can be transcribed. */
     protected boolean stubTranscribable = false;
@@ -317,34 +329,96 @@ public abstract class StubDependent
         }
     }
 
-    //--------------------//
-    // isInitialAvailable //
-    //--------------------//
+    //-------------------//
+    // isBinaryAvailable //
+    //-------------------//
     /**
-     * Getter for initialAvailable property
+     * Getter for binaryAvailable property
      *
      * @return the current property value
      */
-    public boolean isInitialAvailable ()
+    public boolean isBinaryAvailable ()
     {
-        return initialAvailable;
+        return binaryAvailable;
     }
 
-    //---------------------//
-    // setInitialAvailable //
-    //---------------------//
+    //--------------------//
+    // setBinaryAvailable //
+    //--------------------//
     /**
-     * Setter for initialAvailable property.
+     * Setter for binaryAvailable property.
      *
-     * @param initialAvailable the new property value
+     * @param binaryAvailable the new property value
      */
-    public void setInitialAvailable (boolean initialAvailable)
+    public void setBinaryAvailable (boolean binaryAvailable)
     {
-        boolean oldValue = this.initialAvailable;
-        this.initialAvailable = initialAvailable;
+        boolean oldValue = this.binaryAvailable;
+        this.binaryAvailable = binaryAvailable;
 
-        if (initialAvailable != oldValue) {
-            firePropertyChange(INITIAL_AVAILABLE, oldValue, this.initialAvailable);
+        if (binaryAvailable != oldValue) {
+            firePropertyChange(BINARY_AVAILABLE, oldValue, this.binaryAvailable);
+        }
+    }
+
+    //-----------------//
+    // isGrayAvailable //
+    //-----------------//
+    /**
+     * Getter for grayAvailable property
+     *
+     * @return the current property value
+     */
+    public boolean isGrayAvailable ()
+    {
+        return grayAvailable;
+    }
+
+    //------------------//
+    // setGrayAvailable //
+    //------------------//
+    /**
+     * Setter for grayAvailable property.
+     *
+     * @param grayAvailable the new property value
+     */
+    public void setGrayAvailable (boolean grayAvailable)
+    {
+        boolean oldValue = this.grayAvailable;
+        this.grayAvailable = grayAvailable;
+
+        if (grayAvailable != oldValue) {
+            firePropertyChange(GRAY_AVAILABLE, oldValue, this.grayAvailable);
+        }
+    }
+
+    //-----------------//
+    // isGridAvailable //
+    //-----------------//
+    /**
+     * Getter for gridAvailable property
+     *
+     * @return the current property value
+     */
+    public boolean isGridAvailable ()
+    {
+        return gridAvailable;
+    }
+
+    //------------------//
+    // setGridAvailable //
+    //------------------//
+    /**
+     * Setter for gridAvailable property.
+     *
+     * @param gridAvailable the new property value
+     */
+    public void setGridAvailable (boolean gridAvailable)
+    {
+        boolean oldValue = this.gridAvailable;
+        this.gridAvailable = gridAvailable;
+
+        if (gridAvailable != oldValue) {
+            firePropertyChange(GRID_AVAILABLE, oldValue, this.gridAvailable);
         }
     }
 
@@ -522,11 +596,6 @@ public abstract class StubDependent
 
             SheetStub stub = stubEvent.getData();
 
-            //            logger.info(
-            //                    "event: {} {}",
-            //                    stubEvent,
-            //                    (stub != null) ? stub.getId() : "no stub");
-            //
             // Update stubAvailable
             setStubAvailable(stub != null);
 
@@ -551,7 +620,7 @@ public abstract class StubDependent
                 final boolean idle = isBookIdle(stub.getBook());
                 setBookIdle(idle);
                 setBookTranscribable(idle && isBookTranscribable(stub.getBook()));
-                setBookUpgradable(idle && isBookUpgradable(stub.getBook()));
+                setBookUpgradable(idle && !stub.getBook().getStubsToUpgrade().isEmpty());
             } else {
                 setBookIdle(false);
                 setBookTranscribable(false);
@@ -566,22 +635,19 @@ public abstract class StubDependent
                 setBookModifiedOrUpgraded(false);
             }
 
-            // Update undoable/redoable
+            // Update sheet properties
             if ((stub != null) && stub.hasSheet()) {
-                InterController ctrl = stub.getSheet().getInterController();
+                final Sheet sheet = stub.getSheet();
+                InterController ctrl = sheet.getInterController();
                 setUndoable(ctrl.canUndo());
                 setRedoable(ctrl.canRedo());
+                updateProperties(sheet);
             } else {
                 setUndoable(false);
                 setRedoable(false);
-            }
-
-            // Update initialAvailable
-            if ((stub != null) && stub.hasSheet()) {
-                final Picture picture = stub.getSheet().getPicture();
-                setInitialAvailable(!picture.hasNoInitialImage());
-            } else {
-                setInitialAvailable(false);
+                setGrayAvailable(false);
+                setBinaryAvailable(false);
+                setGridAvailable(false);
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
@@ -620,17 +686,35 @@ public abstract class StubDependent
     }
 
     //------------------//
-    // isBookUpgradable //
+    // updateProperties //
     //------------------//
-    private boolean isBookUpgradable (Book book)
+    /**
+     * Update properties based on status of provided sheet.
+     *
+     * @param sheet the sheet at hand
+     */
+    public void updateProperties (Sheet sheet)
     {
-        // Book is assumed idle
-        for (SheetStub stub : book.getValidStubs()) {
-            if (stub.getVersion().compareTo(Versions.LATEST_UPGRADE) < 0) {
-                return true;
-            }
+        final SheetStub stub = sheet.getStub();
+
+        if (stub != StubsController.getInstance().getSelectedStub()) {
+            return;
         }
 
-        return false;
+        if (sheet.hasPicture()) {
+            final Picture picture = sheet.getPicture();
+
+            // Gray available?
+            setGrayAvailable(picture.hasImage(Picture.ImageKey.GRAY));
+
+            // Binary available?
+            setBinaryAvailable(picture.hasImage(Picture.ImageKey.BINARY));
+        } else {
+            setGrayAvailable(false);
+            setBinaryAvailable(false);
+        }
+
+        // Grid available?
+        setGridAvailable(stub.isDone(Step.GRID));
     }
 }

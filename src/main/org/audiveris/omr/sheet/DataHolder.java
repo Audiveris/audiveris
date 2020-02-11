@@ -42,7 +42,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * It handles:
  * <ul>
  * <li>The data itself, if any.</li>
- * <li>A path to disk where data can be un/marshalled from/to.</li>
+ * <li>A path to disk where data can be unmarshalled/marshalled from/to.</li>
  * </ul>
  *
  * @param <T> specific type for data handled
@@ -98,7 +98,7 @@ public abstract class DataHolder<T>
     /**
      * Return the handled data.
      *
-     * @param stub the related stub instance
+     * @param stub the related sheet stub instance (to use book lock)
      * @return the data, ready to use
      */
     public T getData (SheetStub stub)
@@ -167,15 +167,15 @@ public abstract class DataHolder<T>
         }
     }
 
-    //---------//
-    // hasData //
-    //---------//
+    //--------------//
+    // hasDataReady //
+    //--------------//
     /**
      * Tell whether data is available in memory.
      *
      * @return true if available
      */
-    public boolean hasData ()
+    public boolean hasDataReady ()
     {
         return data != null;
     }
@@ -229,14 +229,16 @@ public abstract class DataHolder<T>
      *
      * @param sheetFolder    path to sheet folder
      * @param oldSheetFolder (optional) path to previous sheet folder for retrieval
+     * @return true if OK
      */
-    public void storeData (Path sheetFolder,
-                           Path oldSheetFolder)
+    public boolean storeData (Path sheetFolder,
+                              Path oldSheetFolder)
     {
         final Path path = sheetFolder.resolve(pathString);
+        boolean ok = true;
 
         try {
-            if (!hasData()) {
+            if (!hasDataReady()) {
                 if (oldSheetFolder != null) {
                     // Copy from old book file to new
                     Path oldPath = oldSheetFolder.resolve(pathString);
@@ -255,7 +257,10 @@ public abstract class DataHolder<T>
             }
         } catch (Exception ex) {
             logger.warn("Error in storeData " + ex, ex);
+            ok = false;
         }
+
+        return ok;
     }
 
     //------//

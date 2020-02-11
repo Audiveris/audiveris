@@ -129,7 +129,7 @@ public class ExtractionMenu
         {
             try {
                 // Extract the area selected from initial image
-                save(sheet.getPicture().getImage(area));
+                save(sheet.getPicture().getImageRectangle(area));
             } catch (IOException ex) {
                 logger.warn("Error in area extraction, " + ex, ex);
             }
@@ -183,7 +183,7 @@ public class ExtractionMenu
         {
             try {
                 // Extract the whole initial image
-                save(sheet.getPicture().getImage(null));
+                save(sheet.getPicture().getImageRectangle(null));
             } catch (IOException ex) {
                 logger.warn("Error in sheet extraction, " + ex, ex);
             }

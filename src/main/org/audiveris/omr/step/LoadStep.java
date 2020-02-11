@@ -83,7 +83,7 @@ public class LoadStep
                 stub.decideOnRemoval(msg, false); // This may throw StepException
             }
 
-            sheet.setImage(image);
+            sheet.setImage(image, true);
         }
     }
 
@@ -93,7 +93,7 @@ public class LoadStep
     @Override
     public SheetTab getSheetTab ()
     {
-        return SheetTab.INITIAL_TAB;
+        return SheetTab.GRAY_TAB;
     }
 
     //-----------//

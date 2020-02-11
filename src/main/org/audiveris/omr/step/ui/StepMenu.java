@@ -23,6 +23,7 @@ package org.audiveris.omr.step.ui;
 
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.log.LogUtil;
+import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.ProcessingCancellationException;
@@ -34,6 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
@@ -142,7 +145,7 @@ public class StepMenu
     {
 
         // The related step
-        final Step step;
+        Step step;
 
         StepAction (Step step)
         {
@@ -165,10 +168,34 @@ public class StepMenu
                         Step sofar = stub.getLatestStep();
 
                         if ((sofar != null) && (sofar.compareTo(step) >= 0)) {
+                            // Make sure proper source is available for LOAD or BINARY target steps
+                            if (step == Step.LOAD) {
+                                final Path inputPath = stub.getBook().getInputPath();
+
+                                if (!Files.exists(inputPath)) {
+                                    OMR.gui.displayWarning("Input file not found: " + inputPath,
+                                                           "No source for " + step + " step");
+                                    step = null;
+                                    return null;
+                                }
+                            } else if (step == Step.BINARY) {
+                                final Picture picture = stub.getSheet().getPicture();
+
+                                if (null == picture.getSource(Picture.SourceKey.GRAY)) {
+                                    OMR.gui.displayWarning("Gray source not found.",
+                                                           "No source for " + step + " step");
+                                    step = null;
+                                    return null;
+                                }
+                            }
+
+                            // Refine messages for very first steps (LOAD and BINARY)
+                            final String mid = step.compareTo(Step.BINARY) <= 0 ? ""
+                                    : " from binary source";
                             int answer = JOptionPane.showConfirmDialog(
                                     OMR.gui.getFrame(),
                                     "About to re-perform step " + step
-                                            + " from scratch."
+                                            + mid + "."
                                             + "\nDo you confirm?",
                                     "Redo confirmation",
                                     JOptionPane.YES_NO_OPTION,
@@ -196,8 +223,8 @@ public class StepMenu
                 @Override
                 protected void finished ()
                 {
-                    // Select the assembly tab related to the target step
-                    if (stub != null) {
+                    if ((stub != null) && (step != null)) {
+                        // Select the assembly tab related to the target step
                         StepMonitoring.notifyStep(stub, step);
                     }
                 }

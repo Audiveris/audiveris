@@ -14,6 +14,7 @@ Without this configuration present, some functionality in the IDE may be limited
         <word>barlines</word>
         <word>bezier</word>
         <word>binarization</word>
+        <word>binarized</word>
         <word>boolean</word>
         <word>Bézier</word>
         <word>covariant</word>

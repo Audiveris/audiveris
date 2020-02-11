@@ -49,6 +49,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import javax.swing.AbstractAction;
@@ -517,9 +518,11 @@ public class StubsController
     /**
      * Display/redisplay the provided stub.
      *
-     * @param stub the provided stub
+     * @param stub  the provided stub
+     * @param early if true, perform the early steps on stub
      */
-    public void display (final SheetStub stub)
+    public void display (final SheetStub stub,
+                         final boolean early)
     {
         Callable<Void> task = new Callable<Void>()
         {
@@ -531,7 +534,7 @@ public class StubsController
                     LogUtil.start(stub);
 
                     // Check whether we should run early steps on the sheet
-                    checkStubStatus(stub);
+                    checkStubStatus(stub, early);
 
                     SwingUtilities.invokeAndWait(new Runnable()
                     {
@@ -546,16 +549,15 @@ public class StubsController
                                 // (to display stub related boards and error pane)
                                 stub.getAssembly().assemblySelected();
 
+                                // Stub status
+                                BookActions.getInstance().updateProperties(stub.getSheet());
+
                                 // GUI: Perform sheets upgrade?
                                 final Book book = stub.getBook();
 
-                                if (!book.isCheckedForUpgrade()) {
-                                    book.setCheckedForUpgrade(true);
-                                    final List<SheetStub> stubsToUpgrade = book.getStubsToUpgrade();
-
-                                    if (!stubsToUpgrade.isEmpty()) {
-                                        promptForUpgrades(stub, stubsToUpgrade);
-                                    }
+                                if (!book.promptedForUpgrade()
+                                            && !book.getStubsToUpgrade().isEmpty()) {
+                                    promptForUpgrades(stub, book.getStubsToUpgrade());
                                 }
                             } else {
                                 logger.debug("Too late for {}", stub);
@@ -666,7 +668,7 @@ public class StubsController
             // This is the new current stub
             callAboutStub(stub);
 
-            display(stub);
+            display(stub, true);
         }
     }
 
@@ -757,9 +759,11 @@ public class StubsController
      * <p>
      * Method is called on non-EDT task.
      *
-     * @param stub the sheet at hand
+     * @param stub  the sheet at hand
+     * @param early if true, perform early steps on stub
      */
-    private void checkStubStatus (final SheetStub stub)
+    private void checkStubStatus (final SheetStub stub,
+                                  final boolean early)
     {
         logger.debug("stateChanged/checkStubStatus on {}", stub);
 
@@ -771,11 +775,13 @@ public class StubsController
                 LogUtil.start(stub);
                 logger.debug("checkStubStatus got lock on {}", stub);
 
-                final Step earlyStep = getEarlyStep();
+                if (early) {
+                    final Step earlyStep = getEarlyStep();
 
-                if (earlyStep != null) {
-                    logger.debug("EarlyStep. reachStep {} on {}", earlyStep, stub);
-                    stub.reachStep(earlyStep, false);
+                    if (earlyStep != null) {
+                        logger.debug("EarlyStep. reachStep {} on {}", earlyStep, stub);
+                        stub.reachStep(earlyStep, false);
+                    }
                 }
 
                 final Sheet sheet;
@@ -805,22 +811,18 @@ public class StubsController
     // promptForUpgrades //
     //-------------------//
     private void promptForUpgrades (final SheetStub stub,
-                                    final List<SheetStub> stubsToUpgrade)
+                                    final Set<SheetStub> stubsToUpgrade)
     {
         final Book book = stub.getBook();
 
         // Dialog title
         final int size = stubsToUpgrade.size();
         final boolean plural = size > 1;
-        final String title = "Upgrade still needed for " + size + " sheet" + (plural ? "s" : "")
+        final String title = "Upgrade needed for " + size + " sheet" + (plural ? "s" : "")
                                      + " in " + book.getRadix() + " book";
 
         // Dialog message
-        final String status = stub.isUpgraded()
-                ? "Current sheet " + stub.getNum()
-                          + " has just been upgraded but not yet stored in this multi-sheet book.\n"
-                : "";
-        final String question = status + "Should we upgrade and store the whole book in background?";
+        final String question = "Should we upgrade and store the whole book in background?";
 
         SwingUtilities.invokeLater(new Runnable()
         {
@@ -848,9 +850,12 @@ public class StubsController
                         protected void done ()
                         {
                             logger.info("Upgrade completed for book " + book.getRadix());
+                            BookActions.getInstance().setBookUpgradable(false);
                         }
                     }.execute();
                 }
+
+                book.setPromptedForUpgrade();
             }
         });
     }

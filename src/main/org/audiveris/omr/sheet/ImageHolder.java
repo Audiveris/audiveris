@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.sheet.Picture.ImageKey;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,10 +35,10 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 
 /**
- * Class {@code ImageHolder} is a placeholder for (initial) image, backed up on disk.
+ * Class {@code ImageHolder} is a placeholder for image, backed up on disk.
  * <p>
- * It holds the reference of the initial image, at least the path to its copy on disk, and (on
- * demand) the image itself read from disk.
+ * It holds the reference of the image, at least the path to its copy on disk, and (on demand) the
+ * image itself read from disk.
  *
  * @author Hervé Bitteur
  */
@@ -53,11 +55,11 @@ public class ImageHolder
     /**
      * Creates a new {@code ImageHolder} object.
      *
-     * @param pathString (sheet-relative) path to the image file
+     * @param key image key
      */
-    public ImageHolder (String pathString)
+    public ImageHolder (ImageKey key)
     {
-        super(pathString);
+        super(key + "." + IMAGE_FORMAT);
     }
 
     /** No-arg constructor needed for JAXB. */

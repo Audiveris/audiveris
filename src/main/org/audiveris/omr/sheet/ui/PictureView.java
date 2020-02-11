@@ -157,11 +157,12 @@ public class PictureView
             if (input) {
                 final Picture picture = sheet.getPicture();
 
-                if (sheetTab == SheetTab.INITIAL_TAB) {
-                    BufferedImage initial = picture.getInitialImage();
-                    ok = initial != null;
+                if (sheetTab == SheetTab.GRAY_TAB) {
+                    BufferedImage gray = picture.getGrayImage();
+                    ok = gray != null;
                 } else {
-                    ok = picture.hasTableReady(Picture.TableKey.BINARY);
+                    BufferedImage binary = picture.getImage(Picture.ImageKey.BINARY);
+                    ok = binary != null;
                 }
             }
 
@@ -206,9 +207,9 @@ public class PictureView
             if (input) {
                 final Picture picture = sheet.getPicture();
 
-                if (sheetTab == SheetTab.INITIAL_TAB) {
-                    final BufferedImage initial = picture.getInitialImage();
-                    g.drawRenderedImage(initial, null);
+                if (sheetTab == SheetTab.GRAY_TAB) {
+                    final BufferedImage gray = picture.getGrayImage();
+                    g.drawRenderedImage(gray, null);
                 } else if (table != null) {
                     table.render(g, new Point(0, 0));
                 }

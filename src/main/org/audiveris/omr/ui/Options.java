@@ -136,8 +136,7 @@ public class Options
         public void actionPerformed (ActionEvent e)
         {
             if (OMR.gui != null) {
-                if (true == OMR.gui.displayConfirmation(
-                        "Reset all constants to their factory value?")) {
+                if (OMR.gui.displayConfirmation("Reset all constants to their factory value?")) {
                     UnitManager.getInstance().resetAllUnits();
                 }
             }

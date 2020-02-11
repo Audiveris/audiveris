@@ -820,7 +820,7 @@ public class TextWord
                 "Regular expression to detect words with embedded dashes");
 
         private final Constant.Ratio maxFontRatio = new Constant.Ratio(
-                1.5,
+                2.0,
                 "Maximum ratio between ocr and glyph font sizes");
 
         private final Constant.Ratio minFontRatio = new Constant.Ratio(

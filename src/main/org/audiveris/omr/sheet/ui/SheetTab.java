@@ -28,7 +28,7 @@ package org.audiveris.omr.sheet.ui;
  */
 public enum SheetTab
 {
-    INITIAL_TAB("Initial"),
+    GRAY_TAB("Gray"),
     BINARY_TAB("Binary"),
     DELTA_TAB("Delta"),
     DIFF_TAB("Diff"),

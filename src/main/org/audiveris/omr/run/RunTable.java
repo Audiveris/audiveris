@@ -811,7 +811,7 @@ public class RunTable
     // getBufferedImage //
     //------------------//
     /**
-     * Report a BufferedImage painted with the content of this table.
+     * Report a TYPE_BYTE_GRAY BufferedImage painted with the content of this table.
      *
      * @return the buffered image
      */

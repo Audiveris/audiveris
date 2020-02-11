@@ -50,8 +50,8 @@ import org.audiveris.omr.text.TextsStep;
  */
 public enum Step
 {
-    LOAD("Load the sheet (gray) picture", new LoadStep()),
-    BINARY("Binarize the sheet picture", new BinaryStep()),
+    LOAD("Get the sheet gray picture", new LoadStep()),
+    BINARY("Binarize the sheet gray picture", new BinaryStep()),
     SCALE("Compute sheet line thickness, interline, beam thickness", new ScaleStep()),
     GRID("Retrieve staff lines, barlines, systems & parts", new GridStep()),
     HEADERS("Retrieve Clef-Key-Time systems headers", new HeadersStep()),
