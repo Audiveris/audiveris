@@ -61,6 +61,7 @@ import java.lang.ref.WeakReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -810,6 +811,8 @@ public class Picture
     /**
      * Store the picture images.
      * <p>
+     * If we have the gray image while related switch is off, we remove this image.
+     * <p>
      * Tables are no longer stored on disk, but their related images are.
      *
      * @param sheetFolder    target sheet folder
@@ -818,24 +821,34 @@ public class Picture
     public void store (Path sheetFolder,
                        Path oldSheetFolder)
     {
+        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
+        final boolean keepGray = switches.getValue(ProcessingSwitches.Switch.keepGrayImages);
+
         // Each handled image
-        for (Entry<ImageKey, ImageHolder> entry : images.entrySet()) {
+        for (Iterator<Entry<ImageKey, ImageHolder>> it = images.entrySet().iterator(); it.hasNext();) {
+            final Entry<ImageKey, ImageHolder> entry = it.next();
             final ImageKey iKey = entry.getKey();
             final ImageHolder holder = entry.getValue();
-            boolean ok = holder.storeData(sheetFolder, oldSheetFolder);
 
-            if (ok) {
-                // Delete corresponding old table if any
-                final TableKey tKey = iKey.toTableKey();
+            if ((iKey == ImageKey.GRAY) && (!keepGray)) {
+                holder.removeData(sheetFolder);
+                it.remove();
+            } else {
+                boolean ok = holder.storeData(sheetFolder, oldSheetFolder);
 
-                if (tKey != null) {
-                    final Path tablePath = sheetFolder.resolve(tKey + ".xml");
-                    try {
-                        if (Files.deleteIfExists(tablePath)) {
-                            logger.info("Washed {}", tablePath);
+                if (ok) {
+                    // Delete corresponding old table if any
+                    final TableKey tKey = iKey.toTableKey();
+
+                    if (tKey != null) {
+                        final Path tablePath = sheetFolder.resolve(tKey + ".xml");
+                        try {
+                            if (Files.deleteIfExists(tablePath)) {
+                                logger.info("Washed {}", tablePath);
+                            }
+                        } catch (IOException ex) {
+                            logger.warn("Error deleting {} {}", tablePath, ex);
                         }
-                    } catch (IOException ex) {
-                        logger.warn("Error deleting {} {}", tablePath, ex);
                     }
                 }
             }
