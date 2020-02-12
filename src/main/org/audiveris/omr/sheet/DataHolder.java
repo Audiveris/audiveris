@@ -263,6 +263,28 @@ public abstract class DataHolder<T>
         return ok;
     }
 
+    //------------//
+    // removeData //
+    //------------//
+    /**
+     * Remove data from book project file.
+     * <p>
+     * NOTA: This method assumes the containing book is properly locked.
+     *
+     * @param sheetFolder path to sheet folder
+     */
+    public void removeData (Path sheetFolder)
+    {
+        final Path path = sheetFolder.resolve(pathString);
+
+        try {
+            Files.deleteIfExists(path);
+            logger.info("Removed {}", path);
+        } catch (Exception ex) {
+            logger.warn("Error in removeData " + ex, ex);
+        }
+    }
+
     //------//
     // load //
     //------//

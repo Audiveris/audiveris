@@ -146,6 +146,7 @@ public class ProcessingSwitches
     /** Enumerated names, based on defined constants. */
     public static enum Switch
     {
+        keepGrayImages(constants.keepGrayImages),
         indentations(constants.indentations),
         articulations(constants.articulations),
         chordNames(constants.chordNames),
@@ -253,9 +254,13 @@ public class ProcessingSwitches
             extends ConstantSet
     {
 
+        private final Constant.Boolean keepGrayImages = new Constant.Boolean(
+                false,
+                "Keep loaded gray images");
+
         private final Constant.Boolean indentations = new Constant.Boolean(
                 true,
-                "Support for use of system indentation");
+                "Use of system indentation");
 
         private final Constant.Boolean articulations = new Constant.Boolean(
                 true,
@@ -277,7 +282,9 @@ public class ProcessingSwitches
                 false,
                 "Support for plucking (p, i, m, a)");
 
-        private final Constant.Boolean lyrics = new Constant.Boolean(true, "Support for lyrics");
+        private final Constant.Boolean lyrics = new Constant.Boolean(
+                true,
+                "Support for lyrics");
 
         private final Constant.Boolean lyricsAboveStaff = new Constant.Boolean(
                 false,
