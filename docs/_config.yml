@@ -33,6 +33,9 @@ github_username:  hbitteur
 
 show_excerpts: false # set to false to remove excerpts on the homepage
 
+include: ['_pages']
+permalink: /:title/
+
 # Build settings
 #theme: minima
 #theme: just-the-docs
@@ -48,7 +51,7 @@ relative_links:
   collections: true
 
 # Set a path/url to a logo that will be displayed instead of the title
-#logo: "/assets/images/just-the-docs.png"
+logo: "_pages/assets/images/splash.png"
 
 # Enable or disable the site search
 search_enabled: true
@@ -69,6 +72,7 @@ footer_content: "Copyright &copy; Audiveris 2020. Distributed under <a href=\"ht
 
 # Color scheme currently only supports "dark" or nil (default)
 color_scheme: nil
+#color_scheme: "dark"
 
 # Exclude from processing.
 # The following items will not be processed, by default.

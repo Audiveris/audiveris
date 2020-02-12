@@ -1,14 +1,25 @@
 ---
+nav_exclude: true
 ---
 # Audiveris Pages
+{: .d-block }
 
-## Handbook
+Site under construction for 5.2 release
+{: .label .label-yellow }
 
-- 5.2: Development version (TBD)
-- [5.1](index-5.1.md): Stable version
+## User Handbook
+
+- [5.2: Development version](_pages/index-5.2.md)
+{: .d-inline-block }
+being updated
+{: .label .label-yellow }
+- [5.1: Stable version](https://bacchushlg.gitbooks.io/audiveris-5-1/content/)
 
 ## OMR file format
-- TBD. Content under source control
+- [Wiki description](https://github.com/Audiveris/audiveris/wiki/Project-Structure)
+{: .d-inline-block }
+being updated
+{: .label .label-yellow }
 
 ## Javadoc
-- TBD. Just a link (content is not meant to be under source control)
+- (TBD) _Just a link because javadoc is not meant to be under source control_
