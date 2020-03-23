@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                 S c o r e P a r a m e t e r s                                  //
+//                                  B o o k P a r a m e t e r s                                   //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -64,7 +64,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * Class {@code ScoreParameters} is a dialog that allows the user to easily manage the
+ * Class {@code BookParameters} is a dialog that allows the user to easily manage the
  * most frequent parameters.
  * <p>
  * It addresses:
@@ -105,15 +105,15 @@ import javax.swing.event.ListSelectionListener;
  *
  * @author Hervé Bitteur
  */
-public class ScoreParameters
+public class BookParameters
         implements ChangeListener
 {
 
-    private static final Logger logger = LoggerFactory.getLogger(ScoreParameters.class);
+    private static final Logger logger = LoggerFactory.getLogger(BookParameters.class);
 
     /** Resource injection. */
     private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(ScoreParameters.class);
+            .getResourceMap(BookParameters.class);
 
     /** The swing component of this panel. */
     private final JTabbedPane component = new JTabbedPane();
@@ -129,7 +129,7 @@ public class ScoreParameters
      *
      * @param stub the current sheet stub, or null
      */
-    public ScoreParameters (SheetStub stub)
+    public BookParameters (SheetStub stub)
     {
         if (stub != null) {
             this.book = stub.getBook();
