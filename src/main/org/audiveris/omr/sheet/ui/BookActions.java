@@ -32,7 +32,7 @@ import org.audiveris.omr.glyph.ui.SymbolsEditor;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.plugin.Plugin;
 import org.audiveris.omr.plugin.PluginsManager;
-import org.audiveris.omr.score.ui.ScoreParameters;
+import org.audiveris.omr.score.ui.BookParameters;
 import org.audiveris.omr.score.ui.SheetParameters;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.BookManager;
@@ -1558,7 +1558,7 @@ public class BookActions
     {
         try {
             final WrappedBoolean apply = new WrappedBoolean(false);
-            final ScoreParameters scoreParams = new ScoreParameters(stub);
+            final BookParameters scoreParams = new BookParameters(stub);
             final JOptionPane optionPane = new JOptionPane(
                     scoreParams.getComponent(),
                     JOptionPane.QUESTION_MESSAGE,
