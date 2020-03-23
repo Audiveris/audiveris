@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.2">
+  <help_text>//Uncomment the following line to change the fontsize:
+        //fontsize=14
+
+        //Welcome to UMLet!
+
+        // *Double-click on UML elements to add them to the diagram.
+        // *Edit element properties by modifying the text in this panel.
+        // *Edit the files in the 'palettes' directory to store your own element palettes.
+        // *Press Del or Backspace to remove elements from the diagram.
+        // *Hold down Ctrl key to select multiple elements.
+        // *Press c to copy the UML diagram to the system clipboard.
+        // * This text will be stored with each diagram. Feel free to use the area for notes.
+    </help_text>
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>130</x>
+      <y>20</y>
+      <w>240</w>
+      <h>210</h>
+    </coordinates>
+    <panel_attributes>Audiveris
+bg=#ffcccc
+layer=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>600</x>
+      <y>20</y>
+      <w>240</w>
+      <h>210</h>
+    </coordinates>
+    <panel_attributes>MuseScore
+bg=#aaffaa
+layer=0
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Database</type>
+    <coordinates>
+      <x>20</x>
+      <y>140</y>
+      <w>90</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>layer=90
+*Input Image*
+{input.pdf}</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>150</x>
+      <y>150</y>
+      <w>70</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>OMR
+Engine
+bg=#9999ff
+layer=50</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>100</x>
+      <y>160</y>
+      <w>70</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>50.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Database</type>
+    <coordinates>
+      <x>260</x>
+      <y>140</y>
+      <w>90</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>layer=90
+*Book*
+{book.omr}</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>210</x>
+      <y>160</y>
+      <w>70</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>50.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>250</x>
+      <y>80</y>
+      <w>110</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>Low-level UI
+bg=#9999ff
+layer=50</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>270</x>
+      <y>100</y>
+      <w>30</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>310</x>
+      <y>100</y>
+      <w>30</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;40.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Database</type>
+    <coordinates>
+      <x>440</x>
+      <y>140</y>
+      <w>90</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>layer=90
+*Score*
+{score.mxl}
+fg=red</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>340</x>
+      <y>150</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+r1=export</panel_attributes>
+    <additional_attributes>100.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Database</type>
+    <coordinates>
+      <x>700</x>
+      <y>140</y>
+      <w>90</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>layer=90
+*Score*
+{score.mscz}</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>520</x>
+      <y>160</y>
+      <w>200</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m2=import</panel_attributes>
+    <additional_attributes>180.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>690</x>
+      <y>50</y>
+      <w>110</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>
+High-level UI
+bg=#9999ff
+layer=50</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>760</x>
+      <y>100</y>
+      <w>30</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;40.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>710</x>
+      <y>100</y>
+      <w>30</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>780</x>
+      <y>160</y>
+      <w>170</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=midi, etc</panel_attributes>
+    <additional_attributes>150.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>310</x>
+      <y>270</y>
+      <w>370</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>*Typical workflow between Audiveris and MuseScore*
+style=wordwrap</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>
