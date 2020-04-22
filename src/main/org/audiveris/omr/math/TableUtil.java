@@ -24,7 +24,7 @@ package org.audiveris.omr.math;
 import ij.process.ByteProcessor;
 
 import org.audiveris.omr.image.ImageUtil;
-import org.audiveris.omr.image.Table;
+import org.audiveris.omr.util.Table;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;

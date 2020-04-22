@@ -25,12 +25,16 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.dynamic.Compounds;
 import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.math.Histogram;
 import org.audiveris.omr.run.Orientation;
 import static org.audiveris.omr.run.Orientation.*;
+import org.audiveris.omr.sheet.ProcessingSwitches;
+import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Skew;
+import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Wrapper;
@@ -58,6 +62,32 @@ import java.util.TreeMap;
  * Class {@code ClustersRetriever} performs vertical samplings of the horizontal
  * filaments in order to detect regular patterns of a preferred interline value and
  * aggregate the filaments into clusters of lines.
+ * <p>
+ * We can have 1 or 2 values for interline and the tablature option can be set (for 4 or 6 lines).
+ * <ol>
+ * <li>
+ * On a sheet which exhibits a single interline value, just one retriever is called because
+ * all the staves are assumed to be similar in height and number of lines.
+ * Staves will be searched only for standard number of lines (5), unless the option for tablatures
+ * (either 6 or 4) is set, in that case staves will be searched only for 6 (or 4) lines.
+ * <li>
+ * A sheet which exhibits 2 interline values contains 2 populations of staves.
+ * Two retrievers are called in sequence, the first one on the larger interline value, the second
+ * one on the smaller interline value.
+ * If the option for tablatures is set, the sheet is likely to contain one population of tablatures
+ * (the larger interline value) and one population of standard staves (the smaller interline value).
+ * If no tablature option is set, the 2 populations are assumed to be standard 5-line staves of 2
+ * different heights.
+ * In summary, the 2 retrievers work as follows:
+ * <ol>
+ * <li>First retriever: process the larger interline staves (and put aside the filaments for smaller
+ * interlines).
+ * If tablature option is set, look for 6 (or 4)-line clusters. If not, look for 5-line clusters.
+ * <li>Second retriever: process the smaller interline staves (on the filaments put aside by the
+ * first retriever).
+ * Regardless of tablature option being set or not, look only for 5-line staves.
+ * </ol>
+ * </ol>
  *
  * @author Hervé Bitteur
  */
@@ -140,71 +170,73 @@ public class ClustersRetriever
         }
     };
 
-    /** Related sheet */
+    /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
-    /** Related scale */
+    /** First or second pass. */
+    private final int pass;
+
+    /** Related scale. */
     private final Scale scale;
 
     /** Interline scale for these clusters. */
     private final InterlineScale interlineScale;
 
-    /** Scale-dependent constants */
+    /** Scale-dependent constants. */
     private final Parameters params;
 
-    /** Picture width to sample for combs */
+    /** Picture width to sample for combs. */
     private final int pictureWidth;
 
-    /** Long filaments to process */
+    /** Long filaments to process. */
     private final List<StaffFilament> filaments;
 
     /** Filaments discarded. */
     private final List<StaffFilament> discardedFilaments = new ArrayList<>();
 
-    /** Skew of the sheet */
+    /** Skew of the sheet. */
     private final Skew skew;
 
-    /** A map (colIndex -> vertical list of samples), sorted on colIndex */
+    /** A map (colIndex -> vertical list of samples), sorted on colIndex. */
     private final Map<Integer, List<FilamentComb>> colCombs;
 
-    /** Color used for comb display */
+    /** Color used for comb display. */
     private final Color combColor;
 
-    /**
-     * The popular size of combs detected for the specified interline
-     * (typically: 4, 5 or 6)
-     */
-    private int popSize;
+    /** Minimum size of combs. (typically: 4 or 5) */
+    private int minSize;
 
-    /** X values per column index */
+    /** Maximum size of combs. (typically: 5 or 6) */
+    private int maxSize;
+
+    /** X values per column index. */
     private int[] colX;
 
-    /** Collection of clusters */
+    /** Collection of clusters. */
     private final List<LineCluster> clusters = new ArrayList<>();
 
     /**
      * Creates a new ClustersRetriever object, for a given staff
      * interline.
      *
-     * @param sheet          the sheet to process
-     * @param filaments      the current collection of filaments
-     * @param interlineScale interline scaling info
-     * @param combColor      color to be used for combs display
+     * @param sheet     the sheet to process
+     * @param pass      pass 1 or 2
+     * @param filaments the current collection of filaments
      */
     public ClustersRetriever (Sheet sheet,
-                              List<StaffFilament> filaments,
-                              InterlineScale interlineScale,
-                              Color combColor)
+                              int pass,
+                              List<StaffFilament> filaments)
     {
         this.sheet = sheet;
+        this.pass = pass;
         this.filaments = filaments;
-        this.interlineScale = interlineScale;
-        this.combColor = combColor;
 
         skew = sheet.getSkew();
         pictureWidth = sheet.getWidth();
         scale = sheet.getScale();
+        interlineScale = pass == 1 ? scale.getInterlineScale() : scale.getSmallInterlineScale();
+        combColor = (pass == 1) ? Colors.COMB : Colors.COMB_MINOR;
         colCombs = new TreeMap<>();
 
         params = new Parameters(scale, interlineScale);
@@ -216,15 +248,29 @@ public class ClustersRetriever
     /**
      * Organize the filaments into clusters as possible.
      *
-     * @param checkConsistency true if cluster consistency must be checked
      * @return the filaments that could not be clustered
      */
-    public List<StaffFilament> buildInfo (boolean checkConsistency)
+    public List<StaffFilament> buildInfo ()
     {
+        final boolean isMultiInterline = scale.getSmallInterlineScale() != null;
+        final boolean checkConsistency;
+        minSize = maxSize = 5; // Default (standard staff size)
+
+        if (pass == 1) {
+            // Processing tablatures?
+            final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
+            if (switches.getValue(Switch.sixStringTablatures)) {
+                maxSize = 6;
+            } else if (switches.getValue(Switch.fourStringTablatures)) {
+                minSize = 4;
+            }
+            checkConsistency = isMultiInterline;
+        } else {
+            checkConsistency = false;
+        }
+
         // Retrieve all vertical combs gathering filaments
         retrieveCombs();
-
-        popSize = 5; // Imposed!
 
         // Interconnect filaments via the network of combs
         followCombsNetwork();
@@ -233,17 +279,18 @@ public class ClustersRetriever
         retrieveClusters(checkConsistency);
 
         logger.info(
-                "Retrieved line clusters: {} of size: {} with interline: {}",
+                "Retrieved line clusters: {} of size: {}-{} with interline: {}",
                 clusters.size(),
-                popSize,
+                minSize,
+                maxSize,
                 interlineScale);
 
         return discardedFilaments;
     }
-
     //-------------//
     // getClusters //
     //-------------//
+
     /**
      * Report the sequence of clusters detected by this retriever using
      * its provided interline value.
@@ -524,7 +571,7 @@ public class ClustersRetriever
     //----------------------------//
     // destroyNonStandardClusters //
     //----------------------------//
-    private void destroyNonStandardClusters ()
+    private void destroyNonStandardClusters (int popSize)
     {
         for (Iterator<LineCluster> it = clusters.iterator(); it.hasNext();) {
             LineCluster cluster = it.next();
@@ -953,8 +1000,10 @@ public class ClustersRetriever
         // Trim clusters with too many lines
         trimClusters();
 
+        int popSize = retrievePopularSize();
+
         // Discard non standard clusters
-        destroyNonStandardClusters();
+        destroyNonStandardClusters(popSize);
 
         // Merge clusters horizontally, when relevant
         mergeClusterPairs();
@@ -983,7 +1032,7 @@ public class ClustersRetriever
     //---------------//
     /**
      * Detect regular patterns of (staff) lines.
-     * Use vertical sampling on regularly-spaced abscissae
+     * Use vertical sampling on regularly-spaced x values
      */
     private void retrieveCombs ()
     {
@@ -996,7 +1045,7 @@ public class ClustersRetriever
         /** Number of vertical samples to collect */
         final int sampleCount = -1 + (int) Math.rint((double) pictureWidth / params.samplingDx);
 
-        /** Exact columns abscissae */
+        /** Exact columns x values */
         colX = new int[sampleCount + 1];
 
         /** Precise x interval */
@@ -1074,31 +1123,33 @@ public class ClustersRetriever
         return list;
     }
 
-    //    //---------------------//
-    //    // retrievePopularSize //
-    //    //---------------------//
-    //    /**
-    //     * Retrieve the most popular size (line count) among all combs.
-    //     */
-    //    private void retrievePopularSize ()
-    //    {
-    //        // Build histogram of combs lengths
-    //        Histogram<Integer> histo = new Histogram<>();
-    //
-    //        for (List<FilamentComb> list : colCombs.values()) {
-    //            for (FilamentComb comb : list) {
-    //                histo.increaseCount(comb.getCount(), comb.getCount());
-    //            }
-    //        }
-    //
-    //        // Use the most popular length
-    //        // Should be 4 for bass tab, 5 for standard notation, 6 for guitar tab
-    //        //TODO: NO: simply pickup the most popular size WITHIN 4..6 !!! avoid 2!
-    //        popSize = histo.getMaxBucket();
-    //
-    //        logger.debug("Popular line comb: {} histo:{}", popSize, histo.dataString());
-    //    }
-    //
+    //---------------------//
+    // retrievePopularSize //
+    //---------------------//
+    /**
+     * Retrieve the most popular size (line count) among all combs.
+     */
+    private int retrievePopularSize ()
+    {
+        // Build histogram of combs lengths
+        Histogram<Integer> histo = new Histogram<>();
+
+        for (List<FilamentComb> list : colCombs.values()) {
+            for (FilamentComb comb : list) {
+                histo.increaseCount(comb.getCount(), comb.getCount());
+            }
+        }
+
+        // Use the most popular length
+        // Should be 4 for bass tab, 5 for standard notation, 6 for guitar tab
+        //TODO: NO: simply pickup the most popular size WITHIN 4..6 !!! avoid 2!
+        int popSize = histo.getMaxBucket();
+
+        logger.debug("Popular line comb: {} histo:{}", popSize, histo.dataString());
+
+        return popSize;
+    }
+
     //--------------//
     // trimClusters //
     //--------------//
@@ -1108,7 +1159,7 @@ public class ClustersRetriever
 
         // Trim clusters with too many lines
         for (LineCluster cluster : clusters) {
-            cluster.trim(popSize);
+            cluster.trim(maxSize, constants.minClusterTablatureLengthRatio.getValue());
         }
     }
 
@@ -1183,6 +1234,10 @@ public class ClustersRetriever
         private final Constant.Ratio minClusterLengthRatio = new Constant.Ratio(
                 0.2,
                 "Minimum cluster true length (as ratio of median true length)");
+
+        private final Constant.Ratio minClusterTablatureLengthRatio = new Constant.Ratio(
+                0.5,
+                "Minimum tablature cluster true length (as ratio of median true length)");
 
         private final Constant.Ratio maxClusterDiffLengthRatio = new Constant.Ratio(
                 0.5,

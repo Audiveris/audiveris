@@ -606,6 +606,10 @@ public class ClefBuilder
             int maxClefOffset = 0;
 
             for (Staff staff : system.getStaves()) {
+                if (staff.isTablature()) {
+                    continue;
+                }
+
                 int measureStart = staff.getHeaderStart();
 
                 // Retrieve staff clef

@@ -142,6 +142,10 @@ public class KeyColumn
     {
         // Define each staff key-signature area
         for (Staff staff : system.getStaves()) {
+            if (staff.isTablature()) {
+                continue;
+            }
+
             int measStart = staff.getHeaderStart();
 
             Integer clefStop = staff.getClefStop(); // Not very reliable...
@@ -178,11 +182,13 @@ public class KeyColumn
         int maxKeyOffset = 0;
 
         for (Staff staff : system.getStaves()) {
-            int measureStart = staff.getHeaderStart();
-            Integer keyStop = staff.getKeyStop();
+            if (!staff.isTablature()) {
+                int measureStart = staff.getHeaderStart();
+                Integer keyStop = staff.getKeyStop();
 
-            if (keyStop != null) {
-                maxKeyOffset = Math.max(maxKeyOffset, keyStop - measureStart);
+                if (keyStop != null) {
+                    maxKeyOffset = Math.max(maxKeyOffset, keyStop - measureStart);
+                }
             }
         }
 

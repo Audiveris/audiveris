@@ -97,7 +97,9 @@ public class HeaderTimeColumn
     {
         // Allocate one time-sig builder for each staff within system
         for (Staff staff : system.getStaves()) {
-            builders.put(staff, allocateBuilder(staff));
+            if (!staff.isTablature()) {
+                builders.put(staff, allocateBuilder(staff));
+            }
         }
 
         // Process each staff on turn, to look up time-sig
@@ -114,11 +116,13 @@ public class HeaderTimeColumn
         int maxTimeOffset = 0;
 
         for (Staff staff : system.getStaves()) {
-            int measureStart = staff.getHeaderStart();
-            Integer timeStop = staff.getTimeStop();
+            if (!staff.isTablature()) {
+                int measureStart = staff.getHeaderStart();
+                Integer timeStop = staff.getTimeStop();
 
-            if (timeStop != null) {
-                maxTimeOffset = Math.max(maxTimeOffset, timeStop - measureStart);
+                if (timeStop != null) {
+                    maxTimeOffset = Math.max(maxTimeOffset, timeStop - measureStart);
+                }
             }
         }
 
@@ -141,11 +145,13 @@ public class HeaderTimeColumn
             int maxTimeOffset = 0;
 
             for (Staff staff : system.getStaves()) {
-                int measureStart = staff.getHeaderStart();
-                Integer timeStop = staff.getTimeStop();
+                if (!staff.isTablature()) {
+                    int measureStart = staff.getHeaderStart();
+                    Integer timeStop = staff.getTimeStop();
 
-                if (timeStop != null) {
-                    maxTimeOffset = Math.max(maxTimeOffset, timeStop - measureStart);
+                    if (timeStop != null) {
+                        maxTimeOffset = Math.max(maxTimeOffset, timeStop - measureStart);
+                    }
                 }
             }
 

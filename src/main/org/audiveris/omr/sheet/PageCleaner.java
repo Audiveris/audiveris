@@ -380,6 +380,10 @@ public abstract class PageCleaner
                                       Scale.Fraction yMargin)
     {
         for (Staff staff : system.getStaves()) {
+            if (staff.isTablature()) {
+                continue;
+            }
+
             int dy = InterlineScale.toPixels(staff.getSpecificInterline(), yMargin);
             int left = staff.getHeaderStart();
             int right = staff.getHeaderStop();
@@ -410,6 +414,27 @@ public abstract class PageCleaner
         int top = firstStaff.getFirstLine().yAt(dmzEnd) - dy;
         int bot = lastStaff.getLastLine().yAt(dmzEnd) + dy;
         g.fillRect(system.getBounds().x, top, dmzEnd, bot - top + 1);
+    }
+
+    //-----------------//
+    // eraseTablatures //
+    //-----------------//
+    /**
+     * Erase tablatures areas.
+     *
+     * @param system  the system to process
+     * @param yMargin the vertical margin erased above and below each tablature
+     */
+    protected void eraseTablatures (SystemInfo system,
+                                    Scale.Fraction yMargin)
+    {
+        for (Staff staff : system.getStaves()) {
+            if (staff.isTablature()) {
+                int dy = InterlineScale.toPixels(staff.getSpecificInterline(), yMargin);
+                Area core = StaffManager.getCoreArea(staff, 0, dy);
+                g.fill(core);
+            }
+        }
     }
 
     //-------------//

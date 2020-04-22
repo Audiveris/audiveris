@@ -225,11 +225,11 @@ public class VerticalsBuilder
                 logger.info("VIP checkVerticals for {} in system#{}", stick, system.getId());
             }
 
-            // Check seed is not in header
+            // Check seed is not in a tablature or a header
             Point center = stick.getCenter();
             Staff staff = system.getClosestStaff(center);
 
-            if ((staff == null) || (center.x < staff.getHeaderStop())) {
+            if ((staff == null) || staff.isTablature() || center.x < staff.getHeaderStop()) {
                 continue;
             }
 

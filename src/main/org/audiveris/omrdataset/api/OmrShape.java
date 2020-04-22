@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omrdataset.api;
 
+import java.util.EnumSet;
+
 /**
  * Class {@code OmrShape} is the OMR-Dataset definition of symbol shapes.
  * <p>
@@ -32,7 +34,7 @@ package org.audiveris.omrdataset.api;
  * (hair-pins, slurs, beams, etc) have been left out, their recognition is not based on a symbol
  * classifier.
  * The only exception is the <b>brace</b> symbol, which can vary in size, but we hope that a
- * classifier could recognize the brace center part.
+ * classifier could recognize the brace central part.
  * <p>
  * We added a few names:
  * <ul>
@@ -48,6 +50,7 @@ package org.audiveris.omrdataset.api;
  * All the barline and repeat symbols are meant to be defined for the staff height only.
  *
  * @see <a href="http://www.smufl.org/">http://www.smufl.org/</a>
+ *
  * @author Hervé Bitteur
  */
 public enum OmrShape
@@ -350,11 +353,84 @@ public enum OmrShape
     fingeringPLower("Fingering p (pulgar; right-hand thumb "),
     fingeringILower("Fingering i (indicio; right-hand index finger for guitar)"),
     fingeringMLower("Fingering m (medio; right-hand middle finger for guitar)"),
-    fingeringALower("Fingering a (anular; right-hand ring finger for guitar)");
+    fingeringALower("Fingering a (anular; right-hand ring finger for guitar)"),
+    //
+    // NOT YET HANDLED symbols (though found in MuseScore input)
+    //
+    unknown("abnormal symbol in MuseScore input"),
+    //
+    bracketedTuplet2("bracketed tuplet 2"),
+    bracketedTuplet3("bracketed tuplet 3"),
+    bracketedTuplet4("bracketed tuplet 4"),
+    bracketedTuplet5("bracketed tuplet 5"),
+    bracketedTuplet6("bracketed tuplet 6"),
+    bracketedTuplet7("bracketed tuplet 7"),
+    bracketedTuplet9("bracketed tuplet 9"),
+    bracketLine("bracket line"),
+    bracketNormal("bracket normal"),
+    bracketSquare("bracket square"),
+    brassMuteClosed("brass mute closed"),
+    brassMuteOpen("brass mute open"),
+    dynamicSforzatoPianissimo("dynamic sforzato pianissimo"),
+    fine("Fine"),
+    graceNote4("grace note 4"),
+    graceNote8("grace note 8"),
+    graceNote8_After("grace note 8 after"),
+    graceNote16("grace note 16"),
+    graceNote16_After("grace note 16 after"),
+    graceNote32("grace note 32"),
+    graceNote32_After("grace note 32 after"),
+    graceNoteSlashStemUp("grace note slash stem up"),
+    guitarFadeIn("guitar fade in"),
+    guitarFadeOut("guitar fade out"),
+    guitarVolumeSwell("guitar volume swell"),
+    luteFingeringRHFirst("lute fingering RH first"),
+    noteheadCircleX("notehead circle X"),
+    noteheadDiamondBlack("notehead diamond black"),
+    noteheadDiamondHalf("notehead diamond half"),
+    noteheadDiamondWhole("notehead diamond whole"),
+    noteheadSlashHorizontalEnds("notehead slash horizontal ends"),
+    noteheadSlashWhiteHalf("notehead slash white half"),
+    noteheadSlashWhiteWhole("notehead slash white whole"),
+    noteheadTriangleDownBlack("notehead triangle down black"),
+    noteShapeDiamondWhite("note shape diamond white"),
+    noteShapeTriangleUpBlack("note shape triangle up black"),
+    noteShapeTriangleUpWhite("note shape triangle up white"),
+    ornamentLinePrall("ornament line prall"),
+    ornamentTremblement("ornament tremblement"),
+    toCoda("to coda"),
+    timeSig11("time signature 11"),
+    timeSig13("time signature 13"),
+    timeSig14("time signature 14"),
+    timeSig4over2("4/2 time signature"),
+    timeSig5over2("5/2 time signature"),
+    timeSig6over2("6/2 time signature"),
+    timeSig9over2("9/2 time signature"),
+    timeSig1over4("1/4 time signature"),
+    timeSig7over4("7/4 time signature"),
+    timeSig8over4("8/4 time signature"),
+    timeSig9over4("9/4 time signature"),
+    timeSig14over4("14/4 time signature"),
+    timeSig4over8("4/8 time signature"),
+    timeSig8over8("8/8 time signature"),
+    timeSig11over8("11/8 time signature"),
+    timeSig13over8("13/8 time signature"),
+    tuplet2("tuplet 2"),
+    tuplet4("tuplet 4"),
+    tuplet5("tuplet 5"),
+    tuplet7("tuplet 7"),
+    tuplet9("tuplet 9"),
+    tupletBracketStart("tuplet bracket start"),
+    tupletBracketEnd("tuplet bracket end"),
+    wiggleSawtooth("wiggle sawtooth"),
+    wiggleVibratoLargeFaster("wiggle vibrato large faster"),
+    wiggleVibratoLargeSlowest("wiggle vibrato large slowest");
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Short explanation of the symbol shape. */
     public final String description;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Define a symbol shape
      *
@@ -364,4 +440,108 @@ public enum OmrShape
     {
         this.description = description;
     }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * Report whether this is a barline shape.
+     *
+     * @return true if so
+     */
+    public boolean isBarline ()
+    {
+        return BARLINE_SHAPES.contains(this);
+    }
+
+    /**
+     * Report whether the shape is to be ignored for standard processing.
+     *
+     * @return true to ignore
+     */
+    public boolean isIgnored ()
+    {
+        return IGNORED_SHAPES.contains(this);
+    }
+
+    private static final EnumSet<OmrShape> BARLINE_SHAPES = EnumSet.of(
+            barlineSingle,
+            barlineDouble,
+            barlineFinal,
+            barlineReverseFinal,
+            barlineHeavy,
+            barlineHeavyHeavy,
+            barlineDashed,
+            barlineDotted);
+
+    private static final EnumSet<OmrShape> IGNORED_SHAPES = EnumSet.of(
+            legerLine,
+            stem,
+            ///
+            bracketedTuplet2,
+            bracketedTuplet3,
+            bracketedTuplet4,
+            bracketedTuplet5,
+            bracketedTuplet6,
+            bracketedTuplet7,
+            bracketedTuplet9,
+            bracketLine,
+            bracketNormal,
+            bracketSquare,
+            brassMuteClosed,
+            brassMuteOpen,
+            dynamicSforzatoPianissimo,
+            fine,
+            graceNote4,
+            graceNote8,
+            graceNote8_After,
+            graceNote16,
+            graceNote16_After,
+            graceNote32,
+            graceNote32_After,
+            graceNoteSlashStemUp,
+            guitarFadeIn,
+            guitarFadeOut,
+            guitarVolumeSwell,
+            luteFingeringRHFirst,
+            noteheadCircleX,
+            noteheadDiamondBlack,
+            noteheadDiamondHalf,
+            noteheadDiamondWhole,
+            noteheadSlashHorizontalEnds,
+            noteheadSlashWhiteHalf,
+            noteheadSlashWhiteWhole,
+            noteheadTriangleDownBlack,
+            noteShapeDiamondWhite,
+            noteShapeTriangleUpBlack,
+            noteShapeTriangleUpWhite,
+            ornamentLinePrall,
+            ornamentTremblement,
+            toCoda,
+            timeSig11,
+            timeSig13,
+            timeSig14,
+            timeSig4over2,
+            timeSig5over2,
+            timeSig6over2,
+            timeSig9over2,
+            timeSig1over4,
+            timeSig7over4,
+            timeSig8over4,
+            timeSig9over4,
+            timeSig14over4,
+            timeSig4over8,
+            timeSig8over8,
+            timeSig11over8,
+            timeSig13over8,
+            tuplet2,
+            tuplet4,
+            tuplet5,
+            tuplet7,
+            tuplet9,
+            tupletBracketStart,
+            tupletBracketEnd,
+            wiggleSawtooth,
+            wiggleVibratoLargeFaster,
+            wiggleVibratoLargeSlowest,
+            //
+            unknown);
 }

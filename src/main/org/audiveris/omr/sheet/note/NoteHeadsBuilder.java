@@ -244,6 +244,10 @@ public class NoteHeadsBuilder
         image = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
 
         for (Staff staff : system.getStaves()) {
+            if (staff.isTablature()) {
+                continue;
+            }
+
             logger.debug("Staff #{}", staff.getId());
 
             // Determine the proper catalog, based on staff size

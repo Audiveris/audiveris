@@ -19,9 +19,7 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.image;
-
-import org.audiveris.omr.math.TableUtil;
+package org.audiveris.omr.util;
 
 import java.awt.Rectangle;
 import java.util.Arrays;
@@ -148,7 +146,22 @@ public interface Table
         @Override
         public void dump (String title)
         {
-            TableUtil.dump(title, this);
+            if (title != null) {
+                System.out.println(title);
+            }
+
+            final String yFormat = printAbscissae(4);
+
+            for (int y = 0; y < height; y++) {
+                System.out.printf(yFormat, y);
+
+                for (int x = 0; x < width; x++) {
+                    System.out.printf("%4d", getValue(x, y));
+                }
+
+                System.out.println();
+            }
+
         }
 
         @Override
@@ -197,6 +210,54 @@ public interface Table
                 throw new IllegalArgumentException(
                         "Illegal ordinate range " + roi + " height:" + height);
             }
+        }
+
+        /**
+         * Print the lines of abscissa values for the table.
+         *
+         * @param cell cell width
+         * @return the format string for printing ordinate values
+         */
+        protected String printAbscissae (
+                int cell)
+        {
+            // # of x digits
+            final int wn = Math.max(1, (int) Math.ceil(Math.log10(width)));
+
+            // # of y digits
+            final int hn = Math.max(1, (int) Math.ceil(Math.log10(height)));
+            final String margin = "%" + hn + "s ";
+            final String dFormat = "%" + cell + "d";
+            final String sFormat = "%" + cell + "s";
+
+            // Abscissae
+            for (int i = wn - 1; i >= 0; i--) {
+                int mod = (int) Math.pow(10, i);
+                System.out.printf(margin, "");
+
+                for (int x = 0; x < width; x++) {
+                    if ((x % 10) == 0) {
+                        int d = (x / mod) % 10;
+                        System.out.printf(dFormat, d);
+                    } else if (i == 0) {
+                        System.out.printf(dFormat, x % 10);
+                    } else {
+                        System.out.printf(sFormat, "");
+                    }
+                }
+
+                System.out.println();
+            }
+
+            System.out.printf(margin, "");
+
+            for (int x = 0; x < width; x++) {
+                System.out.printf(sFormat, "-");
+            }
+
+            System.out.println();
+
+            return "%" + hn + "d:";
         }
     }
 
