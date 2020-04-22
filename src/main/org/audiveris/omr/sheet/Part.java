@@ -65,6 +65,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -131,7 +133,9 @@ public class Part
     private boolean merged;
 
     /** Staves in this part. */
-    @XmlElement(name = "staff")
+    @XmlElementRefs({
+        @XmlElementRef(type = Staff.class),
+        @XmlElementRef(type = Tablature.class)})
     private final List<Staff> staves = new ArrayList<>();
 
     /** Starting barline, if any. (the others are linked to measures) */
@@ -251,7 +255,7 @@ public class Part
     /**
      * Append a staff.
      *
-     * @param staff the staff to append to this staff
+     * @param staff the staff to append to this part
      */
     public void addStaff (Staff staff)
     {
@@ -462,7 +466,7 @@ public class Part
     // getFirstStaff //
     //---------------//
     /**
-     * Report the first staff of the part.
+     * Report the first staff in the part.
      *
      * @return the first staff
      */
@@ -847,6 +851,27 @@ public class Part
     public List<Staff> getStaves ()
     {
         return staves;
+    }
+
+    //---------------//
+    // getTablatures //
+    //---------------//
+    /**
+     * Report the tablatures in this part, if any.
+     *
+     * @return list of tablatures, perhaps empty
+     */
+    public List<Staff> getTablatures ()
+    {
+        final List<Staff> tablatures = new ArrayList<>();
+
+        for (Staff staff : staves) {
+            if (staff.isTablature()) {
+                tablatures.add(staff);
+            }
+        }
+
+        return tablatures;
     }
 
     //-----------//

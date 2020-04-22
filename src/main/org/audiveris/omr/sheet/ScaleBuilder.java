@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -519,7 +520,7 @@ public class ScaleBuilder
         {
             // Combo peak(s)
             final int area = comboFunction.getArea();
-            final List<Range> comboPeaks = comboFinder.findPeaks(
+            List<Range> comboPeaks = comboFinder.findPeaks(
                     1,
                     (int) Math.rint(area * constants.minDerivativeRatio.getValue()),
                     constants.minGainRatio.getValue());
@@ -532,32 +533,28 @@ public class ScaleBuilder
             // Primary combo peak
             comboPeak = comboPeaks.get(0);
             logger.debug("comboPeak: {}", comboPeak);
+            comboPeaks = comboPeaks.subList(1, comboPeaks.size());
+
+            // Filter other peaks with respect to the primary one
+            // They cannot be too far or too close
+            for (Iterator<Range> it = comboPeaks.iterator(); it.hasNext();) {
+                final Range p = it.next();
+                final int min = Math.min(p.main, comboPeak.main);
+                final int max = Math.max(p.main, comboPeak.main);
+
+                if ((max / min) > constants.maxSecondRatio.getValue()) {
+                    logger.info("Other combo peak too different {}, discarded", p);
+                    it.remove();
+                } else if (Math.abs(p.main - comboPeak.main) < blackPeak.main) {
+                    logger.info("Merging two close combo peaks {} & {}", comboPeak, p);
+                    comboPeak = new Range(min, (p.main + comboPeak.main) / 2, max);
+                    it.remove();
+                }
+            }
 
             // Secondary combo peak?
-            if (comboPeaks.size() > 1) {
-                comboPeak2 = comboPeaks.get(1);
-
-                Range p1 = comboPeak;
-                Range p2 = comboPeak2;
-
-                // If delta between the two combo peaks is too small, we merge them
-                if (Math.abs(p1.main - p2.main) < blackPeak.main) {
-                    logger.info("Merging two close combo peaks {} & {}", comboPeak, comboPeak2);
-                    comboPeak = new Range(
-                            Math.min(p1.min, p2.min),
-                            (p1.main + p2.main) / 2,
-                            Math.max(p1.max, p2.max));
-                    comboPeak2 = null;
-                } else {
-                    // If delta between the two combo peaks is too large, we ignore the second
-                    double min = Math.min(p1.main, p2.main);
-                    double max = Math.max(p1.main, p2.main);
-
-                    if ((max / min) > constants.maxSecondRatio.getValue()) {
-                        logger.info("Second combo peak too different {}, ignored", p2);
-                        comboPeak2 = null;
-                    }
-                }
+            if (!comboPeaks.isEmpty()) {
+                comboPeak2 = comboPeaks.get(0);
             }
         }
 
@@ -579,6 +576,7 @@ public class ScaleBuilder
                     1,
                     (int) Math.rint(area * constants.minDerivativeRatio.getValue()),
                     constants.minGainRatio.getValue());
+            Collections.sort(blackPeaks, Range.byMain);
 
             if (blackPeaks.isEmpty()) {
                 sheet.getStub().invalidate();

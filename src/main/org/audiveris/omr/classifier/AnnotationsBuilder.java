@@ -83,6 +83,7 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * Class {@code AnnotationsBuilder} processes a sheet to build the symbols Annotations
@@ -146,12 +147,14 @@ public class AnnotationsBuilder
     /**
      * Process the sheet to generate the corresponding annotations.
      *
-     * @throws IOException   for any IO error
-     * @throws JAXBException for any JAXB error
+     * @throws IOException        for any IO error
+     * @throws JAXBException      for any JAXB error
+     * @throws XMLStreamException for any XML error
      */
     public void processSheet ()
             throws IOException,
-                   JAXBException
+                   JAXBException,
+                   XMLStreamException
     {
         // Global informations
         annotations.setVersion("1.0");

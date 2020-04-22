@@ -126,7 +126,9 @@ public class StackRhythm
         Map<Staff, List<AbstractChordInter>> map = new HashMap<>();
 
         for (Staff staff : stack.getSystem().getStaves()) {
-            map.put(staff, new ArrayList<AbstractChordInter>());
+            if (!staff.isTablature()) {
+                map.put(staff, new ArrayList<>());
+            }
         }
 
         // Populate map of staves with installed chords

@@ -159,7 +159,9 @@ public class ProcessingSwitches
         smallVoidHeads(constants.smallVoidHeads),
         smallWholeHeads(constants.smallWholeHeads),
         crossHeads(constants.crossHeads),
-        implicitTuplets(constants.implicitTuplets);
+        implicitTuplets(constants.implicitTuplets),
+        sixStringTablatures(constants.sixStringTablatures),
+        fourStringTablatures(constants.fourStringTablatures);
 
         /** Underlying boolean constant. */
         Constant.Boolean constant;
@@ -309,6 +311,14 @@ public class ProcessingSwitches
         private final Constant.Boolean implicitTuplets = new Constant.Boolean(
                 false,
                 "Support for implicit tuplets");
+
+        private final Constant.Boolean sixStringTablatures = new Constant.Boolean(
+                false,
+                "Support for guitar tablatures (6 lines)");
+
+        private final Constant.Boolean fourStringTablatures = new Constant.Boolean(
+                false,
+                "Support for bass tablatures (4 lines)");
     }
 
     //-----------------//

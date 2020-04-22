@@ -24,6 +24,7 @@ package org.audiveris.omr.image;
 import static org.audiveris.omr.image.ChamferDistance.VALUE_TARGET;
 import static org.audiveris.omr.image.ChamferDistance.VALUE_UNKNOWN;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.util.Table;
 
 import java.awt.Color;
 import java.awt.Rectangle;
@@ -68,12 +69,6 @@ public interface DistanceTable
         public Abstract (int normalizer)
         {
             this.normalizer = normalizer;
-        }
-
-        @Override
-        public void dump (String title)
-        {
-            getTable().dump(title);
         }
 
         @Override
@@ -216,13 +211,19 @@ public interface DistanceTable
         @Override
         public DistanceTable.Integer getCopy (Rectangle roi)
         {
-            return new Integer(table.getCopy(roi), normalizer);
+            return new DistanceTable.Integer(table.getCopy(roi), normalizer);
         }
 
         @Override
         public DistanceTable.Integer getView (Rectangle roi)
         {
-            return new Integer(table.getView(roi), normalizer);
+            return new DistanceTable.Integer(table.getView(roi), normalizer);
+        }
+
+        @Override
+        public void dump (String title)
+        {
+            table.dump(title);
         }
 
         @Override
@@ -259,13 +260,19 @@ public interface DistanceTable
         @Override
         public DistanceTable.Short getCopy (Rectangle roi)
         {
-            return new Short(table.getCopy(roi), normalizer);
+            return new DistanceTable.Short(table.getCopy(roi), normalizer);
         }
 
         @Override
         public DistanceTable.Short getView (Rectangle roi)
         {
-            return new Short(table.getView(roi), normalizer);
+            return new DistanceTable.Short(table.getView(roi), normalizer);
+        }
+
+        @Override
+        public void dump (String title)
+        {
+            table.dump(title);
         }
 
         @Override

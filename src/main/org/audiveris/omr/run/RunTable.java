@@ -25,7 +25,6 @@ import ij.process.ByteProcessor;
 
 import org.audiveris.omr.image.PixelSource;
 import static org.audiveris.omr.image.PixelSource.BACKGROUND;
-import org.audiveris.omr.image.Table;
 import org.audiveris.omr.math.PointsCollector;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.moments.ARTMoments;
@@ -36,6 +35,7 @@ import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import org.audiveris.omr.util.ByteUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Predicate;
+import org.audiveris.omr.util.Table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

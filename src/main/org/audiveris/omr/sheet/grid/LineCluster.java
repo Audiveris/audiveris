@@ -573,12 +573,14 @@ public class LineCluster
      * bottom line of the cluster.
      * We discard the line with the lower "true length".
      * <p>
-     * We could also use the presence of long segments (much longer than typical
+     * TODO: We could also use the presence of long segments (much longer than typical
      * ledger length) to differentiate staff lines from sequences of ledgers.
      *
-     * @param count the target line count
+     * @param count                   the target line count
+     * @param minTablatureLengthRatio for tablature, minimum length as ratio of other lines
      */
-    public void trim (int count)
+    public void trim (int count,
+                      double minTablatureLengthRatio)
     {
         logger.debug("Trim {}", this);
 
@@ -605,6 +607,50 @@ public class LineCluster
             // House keeping
             line.setCluster(null, 0);
             line.getCombs().clear();
+        }
+
+        if (lines.size() == 6) {
+            // We accept 6-line tablatures, but make sure lines are long enough to avoid
+            // 5-line standard staff with ledger line to be mistaken for a 6-line tablature
+            final SortedMap<Integer, Integer> trueLengths = new TreeMap<>();
+            for (Entry<Integer, StaffFilament> entry : lines.entrySet()) {
+                trueLengths.put(entry.getKey(), lineTrueLength(entry.getValue()));
+            }
+
+            // Mean true length for lines, top & bottom excepted
+            int sum = 0;
+            int nb = 0;
+
+            for (int i = lines.firstKey() + 1, iMax = lines.lastKey() - 1; i <= iMax; i++) {
+                nb++;
+                sum += trueLengths.get(i);
+            }
+
+            final int minLength = (int) Math.rint(minTablatureLengthRatio * sum / nb);
+            final int topWL = trueLengths.get(lines.firstKey());
+            final int botWL = trueLengths.get(lines.lastKey());
+            StaffFilament line = null; // A line to remove?
+
+            // Inspect line with lower true length
+            if (topWL < botWL) {
+                // Check top line
+                if (topWL < minLength) {
+                    line = lines.get(lines.firstKey());
+                    lines.remove(lines.firstKey());
+                }
+            } else {
+                // Check bottom line
+                if (botWL < minLength) {
+                    line = lines.get(lines.lastKey());
+                    lines.remove(lines.lastKey());
+                }
+            }
+
+            if (line != null) {
+                // House keeping
+                line.setCluster(null, 0);
+                line.getCombs().clear();
+            }
         }
 
         renumberLines();

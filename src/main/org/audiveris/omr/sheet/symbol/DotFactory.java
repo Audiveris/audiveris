@@ -347,7 +347,7 @@ public class DotFactory
                 }
 
                 int dotCount = repeatDots.size() + virtualDotCount;
-                int staffCount = system.getStaves().size();
+                int staffCount = system.getStaves().size() - system.getTablatures().size();
                 logger.trace("{} {} staves:{} dots:{}", stack, side, staffCount, dotCount);
 
                 // In theory, we should have dotCount == 2 * staffCount

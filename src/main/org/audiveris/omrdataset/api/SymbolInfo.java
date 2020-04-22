@@ -21,16 +21,19 @@
 // </editor-fold>
 package org.audiveris.omrdataset.api;
 
+import org.audiveris.omr.util.Jaxb;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Rectangle2D;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
@@ -41,20 +44,23 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class SymbolInfo
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolInfo.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     @XmlAttribute(name = "interline")
-    @XmlJavaTypeAdapter(value = Double3Adapter.class, type = double.class)
+    @XmlJavaTypeAdapter(value = Jaxb.Double3Adapter.class, type = double.class)
     private final double interline;
 
     @XmlAttribute(name = "id")
-    private final Integer id;
+    private Integer id;
 
     @XmlAttribute(name = "scale")
-    @XmlJavaTypeAdapter(Double3Adapter.class)
+    @XmlJavaTypeAdapter(Jaxb.Double3Adapter.class)
     private final Double scale;
 
     @XmlAttribute(name = "shape")
@@ -62,13 +68,17 @@ public class SymbolInfo
     private OmrShape omrShape;
 
     @XmlElement(name = "Bounds")
-    @XmlJavaTypeAdapter(Rectangle2DAdapter.class)
+    @XmlJavaTypeAdapter(Jaxb.Rectangle2DAdapter.class)
     private final Rectangle2D bounds;
 
     /** Inner symbols, if any. */
     @XmlElement(name = "Symbol")
     private List<SymbolInfo> innerSymbols;
 
+    /** Signals an invalid symbol. */
+    private boolean invalid;
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SymbolInfo} object.
      *
@@ -103,6 +113,7 @@ public class SymbolInfo
         bounds = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Add an inner symbol within this one.
      *
@@ -143,6 +154,16 @@ public class SymbolInfo
     }
 
     /**
+     * Assign ID value.
+     *
+     * @param id new ID value
+     */
+    public void setId (int id)
+    {
+        this.id = id;
+    }
+
+    /**
      * Report the inner symbols, if any
      *
      * @return un-mutable list of inner symbols, perhaps empty but never null
@@ -165,6 +186,24 @@ public class SymbolInfo
     }
 
     /**
+     * Report whether symbol is invalid.
+     *
+     * @return the invalid
+     */
+    public boolean isInvalid ()
+    {
+        return invalid;
+    }
+
+    /**
+     * Set symbol as invalid.
+     */
+    public void setInvalid ()
+    {
+        this.invalid = true;
+    }
+
+    /**
      * @return the omrShape, perhaps null
      */
     public OmrShape getOmrShape ()
@@ -184,7 +223,11 @@ public class SymbolInfo
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("Symbol{");
-        sb.append(omrShape);
+        sb.append("shape:").append(omrShape);
+
+        if (invalid) {
+            sb.append(" INVALID");
+        }
 
         if ((innerSymbols != null) && !innerSymbols.isEmpty()) {
             sb.append(" OUTER");
@@ -240,6 +283,10 @@ public class SymbolInfo
      */
     private OmrShape getSmallShape (OmrShape omrShape)
     {
+        if (omrShape == null) {
+            return null;
+        }
+
         switch (omrShape) {
         // Clefs (change)
         case cClefAlto:
@@ -294,10 +341,11 @@ public class SymbolInfo
      */
     private void setOmrShape (OmrShape omrShape)
     {
-        logger.info("Renamed scaled {} as {}", this, omrShape);
+        logger.debug("Renamed scaled {} as {}", this, omrShape);
         this.omrShape = omrShape;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------------//
     // OmrShapeAdapter //
     //-----------------//
@@ -329,95 +377,6 @@ public class SymbolInfo
                 logger.warn("*** Unknown shape name: {}", string);
 
                 return null;
-            }
-        }
-    }
-
-    //----------------//
-    // Double3Adapter //
-    //----------------//
-    private static class Double3Adapter
-            extends XmlAdapter<String, Double>
-    {
-
-        private static final DecimalFormat decimal3 = new DecimalFormat();
-
-        static {
-            decimal3.setGroupingUsed(false);
-            decimal3.setMaximumFractionDigits(3); // For a maximum of 3 decimals
-        }
-
-        @Override
-        public String marshal (Double d)
-                throws Exception
-        {
-            if (d == null) {
-                return null;
-            }
-
-            return decimal3.format(d);
-        }
-
-        @Override
-        public Double unmarshal (String s)
-                throws Exception
-        {
-            return Double.valueOf(s);
-        }
-    }
-
-    //--------------------//
-    // Rectangle2DAdapter //
-    //--------------------//
-    private static class Rectangle2DAdapter
-            extends XmlAdapter<Rectangle2DAdapter.Rectangle2DFacade, Rectangle2D>
-    {
-
-        @Override
-        public Rectangle2DFacade marshal (Rectangle2D rect)
-                throws Exception
-        {
-            return new Rectangle2DFacade(rect);
-        }
-
-        @Override
-        public Rectangle2D unmarshal (Rectangle2DFacade facade)
-                throws Exception
-        {
-            return facade.getRectangle2D();
-        }
-
-        @XmlJavaTypeAdapter(value = Double3Adapter.class, type = double.class)
-        private static class Rectangle2DFacade
-        {
-
-            @XmlAttribute(name = "x")
-            public double x;
-
-            @XmlAttribute(name = "y")
-            public double y;
-
-            @XmlAttribute(name = "w")
-            public double width;
-
-            @XmlAttribute(name = "h")
-            public double height;
-
-            public Rectangle2DFacade (Rectangle2D rect)
-            {
-                x = rect.getX();
-                y = rect.getY();
-                width = rect.getWidth();
-                height = rect.getHeight();
-            }
-
-            private Rectangle2DFacade ()
-            {
-            }
-
-            public Rectangle2D getRectangle2D ()
-            {
-                return new Rectangle2D.Double(x, y, width, height);
             }
         }
     }

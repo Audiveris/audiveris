@@ -51,6 +51,7 @@ import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.Tablature;
 import org.audiveris.omr.sheet.ui.RunsViewer;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.ui.Colors;
@@ -450,28 +451,19 @@ public class LinesRetriever
             slopedFilaments = purgeSlopedFilaments();
 
             // Retrieve regular patterns of filaments and pack them into clusters
-            clustersRetriever = new ClustersRetriever(
-                    sheet,
-                    filaments,
-                    scale.getInterlineScale(),
-                    Colors.COMB);
             watch.start("clustersRetriever");
-
-            Integer smallInterline = scale.getSmallInterline();
-            discardedFilaments = clustersRetriever.buildInfo(smallInterline != null);
+            clustersRetriever = new ClustersRetriever(sheet, 1, filaments);
+            discardedFilaments = clustersRetriever.buildInfo();
 
             // Check for a small interline
+            final Integer smallInterline = scale.getSmallInterline();
             if ((smallInterline != null) && !discardedFilaments.isEmpty()) {
                 secondFilaments = discardedFilaments;
                 Collections.sort(secondFilaments, Entities.byId);
                 logger.info("Searching clusters with smallInterline: {}", smallInterline);
-                smallClustersRetriever = new ClustersRetriever(
-                        sheet,
-                        secondFilaments,
-                        scale.getSmallInterlineScale(),
-                        Colors.COMB_MINOR);
                 watch.start("smallClustersRetriever");
-                discardedFilaments = smallClustersRetriever.buildInfo(false);
+                smallClustersRetriever = new ClustersRetriever(sheet, 2, secondFilaments);
+                discardedFilaments = smallClustersRetriever.buildInfo();
             }
 
             if (logger.isDebugEnabled()) {
@@ -537,14 +529,19 @@ public class LinesRetriever
                 right = Math.max(right, line.getStopPoint().getX());
             }
 
-            // Allocate Staff instance
+            // Allocate Staff (or Tablature) instance
+            final Staff staff;
             List<LineInfo> infos = new ArrayList<>(lines.size());
 
             for (StaffFilament line : lines) {
                 infos.add(line);
             }
 
-            Staff staff = new Staff(++staffId, left, right, cluster.getInterline(), infos);
+            if (infos.size() == 5) {
+                staff = new Staff(++staffId, left, right, cluster.getInterline(), infos);
+            } else {
+                staff = new Tablature(++staffId, left, right, cluster.getInterline(), infos);
+            }
             staffManager.addStaff(staff);
 
             // Flag small staff if any (smaller height than others)

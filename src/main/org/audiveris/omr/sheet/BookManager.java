@@ -511,10 +511,13 @@ public class BookManager
             return book.getBookPath().getParent();
         }
 
-        // Define folder based on global base folder + book radix
+        // Use same folder as input
+        // Or define folder based on global base folder + book radix
         // Or use global base folder directly
-        final Path bookFolder = useSeparateBookFolders() ? getBaseFolder().resolve(book.getRadix())
-                : getBaseFolder();
+        final Path bookFolder = constants.useInputBookFolder.isSet()
+                ? book.getInputPath().getParent()
+                : (useSeparateBookFolders() ? getBaseFolder().resolve(book.getRadix())
+                        : getBaseFolder());
 
         try {
             if (!Files.exists(bookFolder)) {
@@ -636,6 +639,10 @@ public class BookManager
         private final Constant.Boolean useSeparateBookFolders = new Constant.Boolean(
                 true,
                 "Should we use a separate folder for each book?");
+
+        private final Constant.Boolean useInputBookFolder = new Constant.Boolean(
+                false,
+                "Should we store book outputs next to book input?");
 
         private final Constant.String baseFolder = new Constant.String(
                 WellKnowns.DEFAULT_BASE_FOLDER.toString(),

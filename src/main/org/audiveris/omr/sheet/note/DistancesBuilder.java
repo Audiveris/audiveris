@@ -142,6 +142,10 @@ public class DistancesBuilder
         // Neutralize foreground due to staff lines / ledgers and stems
         for (SystemInfo system : sheet.getSystems()) {
             for (Staff staff : system.getStaves()) {
+                if (staff.isTablature()) {
+                    continue;
+                }
+
                 // "Erase" staff lines
                 for (LineInfo line : staff.getLines()) {
                     // Paint the line glyph

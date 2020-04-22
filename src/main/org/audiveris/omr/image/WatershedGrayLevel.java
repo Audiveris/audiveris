@@ -5,6 +5,8 @@
 //------------------------------------------------------------------------------------------------//
 package org.audiveris.omr.image;
 
+import org.audiveris.omr.util.Table;
+
 import java.util.LinkedList;
 
 /**

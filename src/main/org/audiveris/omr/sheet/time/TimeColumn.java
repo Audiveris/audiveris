@@ -133,7 +133,9 @@ public abstract class TimeColumn
     {
         // Allocate one time-sig builder for each staff within system
         for (Staff staff : system.getStaves()) {
-            builders.put(staff, allocateBuilder(staff));
+            if (!staff.isTablature()) {
+                builders.put(staff, allocateBuilder(staff));
+            }
         }
 
         // Process each staff on turn, to find candidates
@@ -290,9 +292,12 @@ public abstract class TimeColumn
 
         for (int is = 0; is < staves.size(); is++) {
             Staff staff = staves.get(is);
-            TimeBuilder builder = builders.get(staff);
-            builder.createTimeSig(bestVector[is]);
-            builder.discardOthers();
+
+            if (!staff.isTablature()) {
+                TimeBuilder builder = builders.get(staff);
+                builder.createTimeSig(bestVector[is]);
+                builder.discardOthers();
+            }
         }
 
         logger.debug("System#{} TimeSignature: {}", system.getId(), timeValue);
@@ -317,14 +322,17 @@ public abstract class TimeColumn
     protected Map<TimeValue, AbstractTimeInter[]> getValueVectors ()
     {
         // Retrieve all occurrences of time values across staves.
-        final Map<TimeValue, AbstractTimeInter[]> values
-                = new HashMap<TimeValue, AbstractTimeInter[]>();
+        final Map<TimeValue, AbstractTimeInter[]> values = new HashMap<>();
 
         // Loop on system staves
         final List<Staff> staves = system.getStaves();
 
         for (int index = 0; index < staves.size(); index++) {
             final Staff staff = staves.get(index);
+            if (staff.isTablature()) {
+                continue;
+            }
+
             final TimeBuilder builder = builders.get(staff);
             final SIGraph sig = builder.sig;
 
