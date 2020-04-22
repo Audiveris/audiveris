@@ -421,6 +421,13 @@ public class SlurLinker
         // A right orphan must stop in last measure.
         Point2D slurEnd = (side == LEFT) ? curve.getP1() : curve.getP2();
         Staff staff = system.getClosestStaff(slurEnd);
+
+        if (staff.isTablature()) {
+            logger.debug("{} orphan side in tablature", slur);
+
+            return false;
+        }
+
         Part part = staff.getPart();
         Measure sideMeasure = (side == LEFT) ? part.getFirstMeasure() : part.getLastMeasure();
         Measure endMeasure = part.getMeasureAt(slurEnd);

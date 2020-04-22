@@ -338,6 +338,9 @@ public class SymbolsFilter
             for (SystemInfo system : sheet.getSystems()) {
                 final SIGraph sig = system.getSig();
 
+                // Erase tablature areas
+                eraseTablatures(system, constants.staffVerticalMargin);
+
                 // Erase header area on each staff of the system
                 eraseStavesHeader(system, constants.staffVerticalMargin);
 

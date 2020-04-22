@@ -72,7 +72,7 @@ public class LoadStep
             final int count = image.getWidth() * image.getHeight();
             final int max = constants.maxPixelCount.getValue();
 
-            if (count > max) {
+            if ((max > 0) && (count > max)) {
                 Memory.gc();
 
                 ///logger.info("Occupied memory: {}", Memory.getValue());
@@ -106,6 +106,6 @@ public class LoadStep
         private final Constant.Integer maxPixelCount = new Constant.Integer(
                 "Pixels",
                 20_000_000,
-                "Maximum image size, specified in pixel count");
+                "Maximum image size, specified in pixel count (0 for no check)");
     }
 }

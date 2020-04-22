@@ -262,6 +262,10 @@ public class LedgersBuilder
     private void filterLedgers ()
     {
         for (Staff staff : system.getStaves()) {
+            if (staff.isTablature()) {
+                continue;
+            }
+
             final Part part = staff.getPart();
             logger.debug("Staff#{}", staff.getId());
 

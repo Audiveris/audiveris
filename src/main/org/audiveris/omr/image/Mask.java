@@ -21,6 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
+import org.audiveris.omr.math.TableUtil;
+import org.audiveris.omr.util.Table;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,7 +101,7 @@ public class Mask
      */
     public void dump (String title)
     {
-        bitmap.dump(title);
+        TableUtil.dump(title, bitmap);
     }
 
     //---------//

@@ -348,8 +348,8 @@ public class MeasuresBuilder
             logger.info("System#{} barline groups:{}", system.getId(), sb);
         }
 
-        // Check configuration for each column
-        final int staffCount = system.getStaves().size();
+        // Check configuration for each column (tablatures excluded)
+        final int staffCount = system.getStaves().size() - system.getTablatures().size();
 
         for (Column column : columns) {
             final int groupCount = column.groups.size();

@@ -21,8 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.glyph;
 
-import org.audiveris.omr.image.Table;
 import org.audiveris.omr.util.Predicate;
+import org.audiveris.omr.util.Table;
 
 import org.jgrapht.graph.SimpleGraph;
 

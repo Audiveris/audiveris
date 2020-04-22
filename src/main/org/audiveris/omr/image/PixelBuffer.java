@@ -21,11 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
+import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Table;
+
 import ij.process.ByteProcessor;
 
 import net.jcip.annotations.ThreadSafe;
-import static org.audiveris.omr.image.PixelSource.BACKGROUND;
-import org.audiveris.omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

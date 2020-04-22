@@ -54,11 +54,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import org.kohsuke.args4j.ParserProperties;
 
 /**
  * Class {@code CLI} parses and holds the parameters of the command line interface.
@@ -87,7 +89,7 @@ public class CLI
     private final Parameters params = new Parameters();
 
     /** CLI parser. */
-    private final CmdLineParser parser = new CmdLineParser(params);
+    private final CmdLineParser parser;
 
     /**
      * Creates a new CLI object.
@@ -97,6 +99,24 @@ public class CLI
     public CLI (final String toolName)
     {
         this.toolName = toolName;
+
+        final Comparator<OptionHandler> noSorter = new Comparator<>()
+        {
+            @Override
+            public int compare (OptionHandler o1,
+                                OptionHandler o2)
+            {
+                return 0;
+            }
+        };
+
+        final ParserProperties props = ParserProperties.defaults()
+                .withAtSyntax(true)
+                .withUsageWidth(100)
+                .withShowDefaults(false)
+                .withOptionSorter(noSorter);
+
+        parser = new CmdLineParser(params, props);
     }
 
     //-------------//
@@ -716,38 +736,55 @@ public class CLI
     {
         // Fields are kept in alphabetical order
 
-        /** Should symbols annotations be produced?. */
-        @Option(name = "-annotate", usage = "(advanced) Annotate book symbols")
-        boolean annotate;
+        /** Help mode. */
+        @Option(name = "-help", help = true, usage = "Display general help then stop")
+        boolean helpMode;
 
         /** Batch mode. */
         @Option(name = "-batch", usage = "Run with no graphic user interface")
         boolean batchMode;
 
-        /** Should MusicXML data be produced?. */
-        @Option(name = "-export", usage = "Export MusicXML")
-        boolean export;
+        /** The set of sheet IDs to load. */
+        @Option(name = "-sheets", usage = "Select sheet numbers and ranges (1 4-5)",
+                handler = IntArrayOptionHandler.class)
+        private ArrayList<Integer> sheets;
+
+        /** Should book be transcribed?. */
+        @Option(name = "-transcribe", usage = "Transcribe whole book")
+        boolean transcribe;
+
+        /** Specific step. */
+        @Option(name = "-step", usage = "Define a specific target step")
+        Step step;
 
         /** Force step re-processing. */
         @Option(name = "-force", usage = "Force step/transcribe re-processing")
         boolean force;
 
-        /** Help mode. */
-        @Option(name = "-help", help = true, usage = "Display general help then stop")
-        boolean helpMode;
+        /** Output directory. */
+        @Option(name = "-output", usage = "Define base output folder", metaVar = "<output-folder>")
+        Path outputFolder;
+
+        /** Should MusicXML data be produced?. */
+        @Option(name = "-export", usage = "Export MusicXML")
+        boolean export;
+
+        /** Should book be printed?. */
+        @Option(name = "-print", usage = "Print out book")
+        boolean print;
 
         /** The map of application options. */
         @Option(name = "-option", usage = "Define an application constant",
                 handler = PropertyOptionHandler.class)
         Properties options;
 
-        /** Output directory. */
-        @Option(name = "-output", usage = "Define base output folder", metaVar = "<output-folder>")
-        Path outputFolder;
+        /** Should book file be upgraded?. */
+        @Option(name = "-upgrade", usage = "Upgrade whole book file")
+        boolean upgrade;
 
-        /** Should book be printed?. */
-        @Option(name = "-print", usage = "Print out book")
-        boolean print;
+        /** Should book be saved on every successful batch step?. */
+        @Option(name = "-save", usage = "Save book on every successful batch step")
+        boolean save;
 
         /** Ability to run a class on each valid sheet. */
         @Option(name = "-run", usage = "(advanced) Run provided class on valid sheets",
@@ -758,26 +795,9 @@ public class CLI
         @Option(name = "-sample", usage = "(advanced) Sample all book symbols")
         boolean sample;
 
-        /** Should book be saved on every successful batch step?. */
-        @Option(name = "-save", usage = "Save book on every successful batch step")
-        boolean save;
-
-        /** The set of sheet IDs to load. */
-        @Option(name = "-sheets", usage = "Select specific sheets numbers and ranges (like 2-5)",
-                handler = IntArrayOptionHandler.class)
-        private ArrayList<Integer> sheets;
-
-        /** Specific step. */
-        @Option(name = "-step", usage = "Define a specific target step")
-        Step step;
-
-        /** Should book be transcribed?. */
-        @Option(name = "-transcribe", usage = "Transcribe whole book")
-        boolean transcribe;
-
-        /** Should book file be upgraded?. */
-        @Option(name = "-upgrade", usage = "Upgrade whole book file")
-        boolean upgrade;
+        /** Should symbols annotations be produced?. */
+        @Option(name = "-annotate", usage = "(advanced) Annotate book symbols")
+        boolean annotate;
 
         /** Optional "--" separator. */
         @Argument

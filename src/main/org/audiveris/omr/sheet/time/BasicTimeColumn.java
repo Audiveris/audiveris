@@ -109,9 +109,13 @@ public class BasicTimeColumn
             }
         }
 
-        List<Line> lines = new ArrayList<Line>();
+        List<Line> lines = new ArrayList<>();
 
         for (Staff staff : system.getStaves()) {
+            if (staff.isTablature()) {
+                continue;
+            }
+
             TimeBuilder builder = builders.get(staff);
 
             for (List<Inter> list : Arrays.asList(builder.wholes, builder.nums, builder.dens)) {
@@ -155,7 +159,7 @@ public class BasicTimeColumn
         });
 
         Line chosenLine = lines.get(0);
-        List<Inter> kept = new ArrayList<Inter>();
+        List<Inter> kept = new ArrayList<>();
 
         for (Item item : chosenLine.items) {
             kept.add(item.time);
@@ -163,6 +167,10 @@ public class BasicTimeColumn
 
         // Purge all entities non kept
         for (Staff staff : system.getStaves()) {
+            if (staff.isTablature()) {
+                continue;
+            }
+
             TimeBuilder builder = builders.get(staff);
 
             for (List<Inter> list : Arrays.asList(builder.wholes, builder.nums, builder.dens)) {

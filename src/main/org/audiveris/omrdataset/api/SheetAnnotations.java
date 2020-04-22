@@ -27,24 +27,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
-import java.io.BufferedOutputStream;
+import java.awt.Rectangle;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * Class {@code SheetAnnotations} represents the symbols information for a sheet.
@@ -56,12 +54,14 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "Annotations")
 public class SheetAnnotations
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SheetAnnotations.class);
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     @XmlAttribute(name = "version")
     private String version;
 
@@ -77,6 +77,10 @@ public class SheetAnnotations
     @XmlElement(name = "Symbol")
     private ArrayList<SymbolInfo> symbols = new ArrayList<>();
 
+    /** Last symbol ID (standard or none). */
+    private int lastSymbolId;
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SheetAnnotations} object.
      */
@@ -84,6 +88,7 @@ public class SheetAnnotations
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Add a symbol to the annotations
      *
@@ -147,24 +152,25 @@ public class SheetAnnotations
      * Marshall this instance to the provided XML file.
      *
      * @param path to the XML output file
-     * @throws IOException   in case of IO problem
-     * @throws JAXBException in case of marshalling problem
+     * @throws IOException        in case of IO problem
+     * @throws JAXBException      in case of marshalling problem
+     * @throws XMLStreamException for XML errors
      */
     public void marshall (Path path)
             throws IOException,
-                   JAXBException
+                   JAXBException,
+                   XMLStreamException
     {
         if (!Files.exists(path.getParent())) {
             Files.createDirectories(path.getParent());
         }
 
-        OutputStream os = new BufferedOutputStream(Files.newOutputStream(path,
-                                                                         StandardOpenOption.CREATE));
-        Marshaller m = getJaxbContext().createMarshaller();
-        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        m.marshal(this, os);
-        os.flush();
-        os.close();
+        Jaxb.marshal(this, path, getJaxbContext());
+    }
+
+    public int nextSymbolId ()
+    {
+        return ++lastSymbolId;
     }
 
     /**
@@ -213,6 +219,10 @@ public class SheetAnnotations
 
         if (sheetInfo != null) {
             sb.append(" sheet:").append(sheetInfo);
+
+            if (!sheetInfo.excludedAreas.isEmpty()) {
+                sb.append(" areas:").append(sheetInfo.excludedAreas.size());
+            }
         }
 
         sb.append(" symbols:").append(symbols.size());
@@ -230,22 +240,30 @@ public class SheetAnnotations
      *
      * @param path to the XML input file.
      * @return the unmarshalled SheetAnnotations object
-     * @throws IOException in case of IO problem
+     * @throws IOException   in case of IO problem
+     * @throws JAXBException in case of JAXB problem
      */
     public static SheetAnnotations unmarshal (Path path)
-            throws IOException
+            throws IOException,
+                   JAXBException
     {
-        logger.debug("SheetAnnotations unmarshalling {}", path);
+        return (SheetAnnotations) Jaxb.unmarshal(path, getJaxbContext());
+    }
 
-        try {
-            SheetAnnotations sheetInfo = (SheetAnnotations) Jaxb.unmarshal(path, getJaxbContext());
-            logger.debug("Unmarshalled {}", sheetInfo);
+    //--------//
+    // setIds //
+    //--------//
+    public void setIds (List<SymbolInfo> symbols)
+    {
+        for (SymbolInfo symbol : symbols) {
+            symbol.setId(nextSymbolId());
 
-            return sheetInfo;
-        } catch (JAXBException ex) {
-            logger.warn("Error unmarshalling " + path + " " + ex, ex);
+            // Inner symbols?
+            List<SymbolInfo> innerSymbols = symbol.getInnerSymbols();
+            if (!innerSymbols.isEmpty()) {
+                setIds(innerSymbols);
+            }
 
-            return null;
         }
     }
 
@@ -263,6 +281,7 @@ public class SheetAnnotations
         return jaxbContext;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // SheetInfo //
     //-----------//
@@ -276,6 +295,11 @@ public class SheetAnnotations
         @XmlJavaTypeAdapter(Jaxb.DimensionAdapter.class)
         public final Dimension dim;
 
+        @XmlElement(name = "ExcludedArea")
+        @XmlJavaTypeAdapter(Jaxb.RectangleAdapter.class)
+        public final ArrayList<Rectangle> excludedAreas = new ArrayList<>();
+
+        //~ Constructors ---------------------------------------------------------------------------
         public SheetInfo (String imageFileName,
                           Dimension dim)
         {

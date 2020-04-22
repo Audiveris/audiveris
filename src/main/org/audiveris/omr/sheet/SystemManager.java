@@ -784,9 +784,16 @@ public class SystemManager
             }
 
             int partNb = 0;
+            int tabNb = 0;
 
             for (SystemInfo system : page.getSystems()) {
                 partNb = Math.max(partNb, system.getParts().size());
+
+                int systemTabs = 0;
+                for (Part part : system.getParts()) {
+                    systemTabs += part.getTablatures().size();
+                }
+                tabNb = Math.max(tabNb, systemTabs);
             }
 
             if (partNb > 0) {
@@ -809,6 +816,15 @@ public class SystemManager
                 }
             } else {
                 sb.append(", no system found");
+            }
+
+            // Tablatures in page?
+            if (tabNb > 0) {
+                sb.append(", ").append(tabNb).append(" tablature");
+
+                if (tabNb > 1) {
+                    sb.append("s");
+                }
             }
 
             logger.info("{}", sb);
