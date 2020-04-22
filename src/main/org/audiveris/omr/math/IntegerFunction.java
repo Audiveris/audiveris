@@ -180,7 +180,9 @@ public class IntegerFunction
         XYSeries derivativeSeries = new XYSeries("Derivative", false); // No autosort
 
         for (int i = x1; i <= x2; i++) {
-            derivativeSeries.add(i, getDerivative(i));
+            if (i >= xMin && i <= xMax) {
+                derivativeSeries.add(i, getDerivative(i));
+            }
         }
 
         return derivativeSeries;
@@ -298,7 +300,9 @@ public class IntegerFunction
         XYSeries valueSeries = new XYSeries("Value", false); // No autosort
 
         for (int x = x1; x <= x2; x++) {
-            valueSeries.add(x, getValue(x));
+            if (x >= xMin && x <= xMax) {
+                valueSeries.add(x, getValue(x));
+            }
         }
 
         return valueSeries;

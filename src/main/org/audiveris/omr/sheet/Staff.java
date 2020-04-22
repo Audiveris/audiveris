@@ -87,6 +87,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -100,6 +101,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "staff")
 public class Staff
         implements AttachmentHolder
 {
@@ -139,63 +141,63 @@ public class Staff
      */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = int.class, value = Jaxb.StringIntegerAdapter.class)
-    private final int id;
+    protected final int id;
 
     /** Left extrema. (abscissa at beginning of lines) */
     @XmlAttribute
-    private int left;
+    protected int left;
 
     /** Right extrema. (abscissa at end of lines) */
     @XmlAttribute
-    private int right;
+    protected int right;
 
     /** Flag for short staff. (With a neighbor staff on left or right side) */
     @XmlAttribute(name = "short")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
-    private boolean isShort;
+    protected boolean isShort;
 
     /** Flag for small staff. (height lower than others) */
     @XmlAttribute(name = "small")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
-    private boolean isSmall;
+    protected boolean isSmall;
 
     /** Sequence of staff lines. (from top to bottom) */
     @XmlElementWrapper(name = "lines")
     @XmlElement(name = "line")
-    private final List<LineInfo> lines;
+    protected final List<LineInfo> lines;
 
     /** Staff Header information. */
     @XmlElement
-    private StaffHeader header;
+    protected StaffHeader header;
 
     /** Sequence of bar lines. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "barlines")
-    private List<BarlineInter> barlines = new ArrayList<>();
+    protected List<BarlineInter> barlines = new ArrayList<>();
 
     /** Ledgers nearby, organized by position index WRT staff. Temporary for persistency */
     @XmlElementWrapper(name = "ledgers")
     @XmlElement(name = "ledgers-entry")
-    private List<LedgersEntry> ledgersValue;
+    protected List<LedgersEntry> ledgersValue;
 
     /** Notes (heads & rests) assigned to this staff. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "notes")
-    private LinkedHashSet<AbstractNoteInter> notes;
+    protected LinkedHashSet<AbstractNoteInter> notes;
 
     // Transient data
     //---------------
     //
     /** Ledgers nearby, organized in a map. */
-    private final TreeMap<Integer, List<LedgerInter>> ledgerMap = new TreeMap<>();
+    protected final TreeMap<Integer, List<LedgerInter>> ledgerMap = new TreeMap<>();
 
     /** To flag a dummy staff. */
-    private boolean dummy;
+    protected boolean dummy;
 
     /** Side barlines, if any. */
-    private final Map<HorizontalSide, BarlineInter> sideBars = new EnumMap<>(HorizontalSide.class);
+    protected final Map<HorizontalSide, BarlineInter> sideBars = new EnumMap<>(HorizontalSide.class);
 
     /**
      * Area around the staff.
@@ -211,24 +213,24 @@ public class Staff
      * staff if any, otherwise to the limit of the page.
      * </ul>
      */
-    private Area area;
+    protected Area area;
 
     /**
      * Interline specific to this staff.
      * (since different staves in a page may exhibit different interline values)
      */
-    private int specificInterline;
+    protected int specificInterline;
 
     /** Containing system. */
     @Navigable(false)
-    private SystemInfo system;
+    protected SystemInfo system;
 
     /** Containing part. */
     @Navigable(false)
-    private Part part;
+    protected Part part;
 
     /** Potential attachments. */
-    private final AttachmentHolder attachments = new BasicAttachmentHolder();
+    protected final AttachmentHolder attachments = new BasicAttachmentHolder();
 
     /**
      * Create info about a staff, with its contained staff lines.
@@ -504,7 +506,7 @@ public class Staff
     {
         this.area = area;
 
-        ///addAttachment("staff-area-" + id, area);
+        addAttachment("staff-area-" + id, area);
     }
 
     //---------------//
@@ -1120,7 +1122,7 @@ public class Staff
     /**
      * Report the number of lines in this staff.
      *
-     * @return the number of lines (6, 4, ...)
+     * @return the number of lines (6, 5, 4, ...)
      */
     public int getLineCount ()
     {
@@ -1423,6 +1425,19 @@ public class Staff
         return isSmall;
     }
 
+    //-------------//
+    // isTablature //
+    //-------------//
+    /**
+     * Report whether the staff is a tablature (rather than a standard staff).
+     *
+     * @return true for a tablature
+     */
+    public boolean isTablature ()
+    {
+        return false; // By default
+    }
+
     //-----------------//
     // pitchPositionOf //
     //-----------------//
@@ -1710,7 +1725,7 @@ public class Staff
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{Staff");
+        StringBuilder sb = new StringBuilder("{" + getClass().getSimpleName());
 
         sb.append(" id=").append(getId());
 

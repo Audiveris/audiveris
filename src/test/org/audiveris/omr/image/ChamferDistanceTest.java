@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
+import org.audiveris.omr.util.Table;
+
 import ij.process.ByteProcessor;
 
 import org.audiveris.omr.math.TableUtil;

@@ -1162,7 +1162,7 @@ public class SystemInfo
     // getStaves //
     //-----------//
     /**
-     * Report the list of (real) staves that compose this system.
+     * Report the list of (real) staves that compose this system, tablatures included.
      *
      * @return the staves
      */
@@ -1246,6 +1246,28 @@ public class SystemInfo
     public List<Staff> getStavesOf (Point2D point)
     {
         return StaffManager.getStavesOf(point, staves);
+    }
+
+    //---------------//
+    // getTablatures //
+    //---------------//
+    /**
+     * Report the list of tablature staves.
+     *
+     * @return the tablatures list, perhaps empty but not null
+     */
+    public List<Staff> getTablatures ()
+    {
+        List<Staff> tablatures = null;
+
+        for (Staff staff : staves) {
+            if (tablatures == null) {
+                tablatures = new ArrayList<>();
+            }
+            tablatures.add(staff);
+        }
+
+        return (tablatures != null) ? tablatures : Collections.EMPTY_LIST;
     }
 
     //--------//

@@ -23,7 +23,6 @@ package org.audiveris.omr.glyph;
 
 import ij.process.ByteProcessor;
 
-import org.audiveris.omr.image.Table;
 import org.audiveris.omr.math.BasicLine;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointsCollector;
@@ -34,6 +33,7 @@ import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

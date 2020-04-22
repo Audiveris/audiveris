@@ -28,8 +28,10 @@ import static org.audiveris.omr.glyph.Shape.*;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.image.Anchored.Anchor;
 import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.math.TableUtil;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.TemplateSymbol;
+import org.audiveris.omr.util.Table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -829,7 +831,7 @@ public class ShapeDescriptor
         final DistanceTable distances = new ChamferDistance.Short().compute(fore);
 
         if (logger.isDebugEnabled()) {
-            distances.dump(shape + "  distances");
+            TableUtil.dump(shape + "  distances", distances);
         }
 
         // Trim the distance table of its surrounding rectangle

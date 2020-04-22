@@ -926,6 +926,10 @@ public class SigReducer
             modified = false;
 
             for (Staff staff : system.getStaves()) {
+                if (staff.isTablature()) {
+                    continue;
+                }
+
                 SortedMap<Integer, List<LedgerInter>> map = staff.getLedgerMap();
 
                 // Need a read-only copy to avoid concurrent modifications
@@ -1201,6 +1205,10 @@ public class SigReducer
         Collections.sort(systemNotes, Inters.byAbscissa);
 
         for (Staff staff : system.getStaves()) {
+            if (staff.isTablature()) {
+                continue;
+            }
+
             List<Inter> staffTimes = Inters.inters(staff, systemTimes);
 
             if (staffTimes.isEmpty()) {
@@ -1418,6 +1426,10 @@ public class SigReducer
         List<Inter> inters = new ArrayList<>();
 
         for (Staff staff : system.getStaves()) {
+            if (staff.isTablature()) {
+                continue;
+            }
+
             StaffHeader header = staff.getHeader();
 
             if (header.clef != null) {

@@ -602,7 +602,7 @@ public class EditorMenu
             public void actionPerformed (ActionEvent e)
             {
                 for (SystemInfo system : sheet.getSystems()) {
-                    if (system.getStaves().contains(staff)) {
+                    if (system.getStaves().contains(staff) && !staff.isTablature()) {
                         // Allocate a HeaderBuilder instance on demand, and ask for plot
                         new HeaderBuilder(system).plot(staff);
 

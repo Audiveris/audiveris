@@ -487,7 +487,8 @@ public class Sheet
             os = Files.newOutputStream(imgPath, CREATE);
             ImageIO.write(img, Annotations.SHEET_IMAGE_FORMAT, os);
         } catch (IOException |
-                 JAXBException ex) {
+                 JAXBException |
+                 XMLStreamException ex) {
             logger.warn("Error annotating {} {}", stub, ex.toString(), ex);
         } finally {
             if (os != null) {

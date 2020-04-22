@@ -224,6 +224,10 @@ public class HeaderBuilder
     private void computeHeaderStarts ()
     {
         for (Staff staff : system.getStaves()) {
+            if (staff.isTablature()) {
+                continue;
+            }
+
             BarlineInter leftBar = staff.getSideBarline(LEFT);
 
             if (leftBar == null) {
@@ -263,7 +267,9 @@ public class HeaderBuilder
     private void freezeHeaders ()
     {
         for (Staff staff : system.getStaves()) {
-            staff.getHeader().freeze();
+            if (!staff.isTablature()) {
+                staff.getHeader().freeze();
+            }
         }
     }
 
@@ -276,18 +282,20 @@ public class HeaderBuilder
     private void purgeBarlines ()
     {
         for (Staff staff : system.getStaves()) {
-            final int start = staff.getHeaderStart();
-            final int stop = staff.getHeaderStop();
+            if (!staff.isTablature()) {
+                final int start = staff.getHeaderStart();
+                final int stop = staff.getHeaderStop();
 
-            for (BarlineInter bar : new ArrayList<>(staff.getBarlines())) {
-                final Point center = bar.getCenter();
+                for (BarlineInter bar : new ArrayList<>(staff.getBarlines())) {
+                    final Point center = bar.getCenter();
 
-                if ((center.x > start) && (center.x < stop) && !bar.isStaffEnd(LEFT)) {
-                    if (bar.isVip()) {
-                        logger.info("Deleting {} in staff#{} header", bar, staff.getId());
+                    if ((center.x > start) && (center.x < stop) && !bar.isStaffEnd(LEFT)) {
+                        if (bar.isVip()) {
+                            logger.info("Deleting {} in staff#{} header", bar, staff.getId());
+                        }
+
+                        bar.remove();
                     }
-
-                    bar.remove();
                 }
             }
         }
@@ -304,15 +312,17 @@ public class HeaderBuilder
         // Push this value to all staves
         if (largestOffset > 0) {
             for (Staff staff : system.getStaves()) {
-                StaffHeader header = staff.getHeader();
-                header.stop = header.start + largestOffset;
+                if (!staff.isTablature()) {
+                    StaffHeader header = staff.getHeader();
+                    header.stop = header.start + largestOffset;
+                }
             }
         }
     }
 
-    //------------------//
-    // setSystemKeyStop //
-    //------------------//
+//------------------//
+// setSystemKeyStop //
+//------------------//
     /**
      * Refine the header end at system level based on key info.
      */
@@ -321,8 +331,10 @@ public class HeaderBuilder
         // Push this value to all staves
         if (largestOffset > 0) {
             for (Staff staff : system.getStaves()) {
-                StaffHeader header = staff.getHeader();
-                header.stop = header.start + largestOffset;
+                if (!staff.isTablature()) {
+                    StaffHeader header = staff.getHeader();
+                    header.stop = header.start + largestOffset;
+                }
             }
         }
     }
@@ -338,8 +350,10 @@ public class HeaderBuilder
         // Push this value to all staves
         if (largestOffset > 0) {
             for (Staff staff : system.getStaves()) {
-                StaffHeader header = staff.getHeader();
-                header.stop = header.start + largestOffset;
+                if (!staff.isTablature()) {
+                    StaffHeader header = staff.getHeader();
+                    header.stop = header.start + largestOffset;
+                }
             }
         }
     }

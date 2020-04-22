@@ -161,11 +161,16 @@ public abstract class Voices
                 if (part != null) {
                     if (system != firstSystem) {
                         // Check tied voices from previous system
-                        for (Voice voice : part.getFirstMeasure().getVoices()) {
-                            Integer tiedId = getTiedId(voice, systemSlurAdapter);
+                        final Measure firstMeasure = part.getFirstMeasure();
 
-                            if ((tiedId != null) && (voice.getId() != tiedId)) {
-                                part.swapVoiceId(voice.getId(), tiedId);
+                        // A part may have no measure (case of tablature, which are ignored today)
+                        if (firstMeasure != null) {
+                            for (Voice voice : firstMeasure.getVoices()) {
+                                Integer tiedId = getTiedId(voice, systemSlurAdapter);
+
+                                if ((tiedId != null) && (voice.getId() != tiedId)) {
+                                    part.swapVoiceId(voice.getId(), tiedId);
+                                }
                             }
                         }
                     }
