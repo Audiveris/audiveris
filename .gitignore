@@ -24,6 +24,7 @@ nbproject
 build/*
 dist/*
 config/run.properties
+data/args
 data/args/*
 data/benches
 data/campaign
