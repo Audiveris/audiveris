@@ -48,6 +48,7 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import org.audiveris.omr.classifier.HeadClassifier;
 
 /**
  * Class {@code Main} is the main class for OMR application.
@@ -133,6 +134,9 @@ public class Main
 
             return;
         }
+
+        // To be removed TODO TODO TODO TODO TODO TODO TODO TODO TODO
+        HeadClassifier.getInstance();
 
         // Initialize tool parameters
         initialize();

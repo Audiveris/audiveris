@@ -28,9 +28,18 @@ import org.audiveris.omr.text.TextChar;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextWord;
 
-import org.bytedeco.javacpp.*;
-import static org.bytedeco.javacpp.lept.*;
-import static org.bytedeco.javacpp.tesseract.*;
+import org.bytedeco.javacpp.BoolPointer;
+import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.IntPointer;
+import org.bytedeco.leptonica.PIX;
+import static org.bytedeco.leptonica.global.lept.pixDestroy;
+import static org.bytedeco.leptonica.global.lept.pixReadMemTiff;
+import org.bytedeco.tesseract.PageIterator;
+import org.bytedeco.tesseract.ResultIterator;
+import org.bytedeco.tesseract.TessBaseAPI;
+import static org.bytedeco.tesseract.global.tesseract.RIL_SYMBOL;
+import static org.bytedeco.tesseract.global.tesseract.RIL_TEXTLINE;
+import static org.bytedeco.tesseract.global.tesseract.RIL_WORD;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -104,6 +104,7 @@ import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import org.audiveris.omr.classifier.ui.HeadClassifierBoard;
 
 /**
  * Class {@code SymbolsEditor} defines, for a given sheet, a UI pane from which all
@@ -199,6 +200,11 @@ public class SymbolsEditor
         boards.add(new SymbolGlyphBoard(glyphsController, constants.selectGlyphBoard.isSet()));
         boards.add(new InterBoard(sheet, constants.selectInterBoard.isSet()));
         boards.add(shapeBoard = new ShapeBoard(sheet, this, constants.selectShapeBoard.isSet()));
+        boards.add(new HeadClassifierBoard(
+                        sheet,
+                        sheet.getLocationService(),
+                        constants.selectPatchClassifierBoard.isSet()));
+
         boards.add(evaluationBoard = new EvaluationBoard(
                 true,
                 sheet,
@@ -481,6 +487,10 @@ public class SymbolsEditor
         private final Constant.Boolean selectShapeBoard = new Constant.Boolean(
                 true,
                 "Should we select Shape board by default?");
+
+        private final Constant.Boolean selectPatchClassifierBoard = new Constant.Boolean(
+                true,
+                "Should we select Patch Classifier board by default?");
 
         private final Constant.Boolean selectBasicClassifierBoard = new Constant.Boolean(
                 true,

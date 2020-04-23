@@ -6,12 +6,17 @@ sourceCompatibility = '1.11'
 
 ext.programName     = 'Audiveris'
 ext.programId       = 'audiveris'
-ext.programVersion  = '5.2.1-alpha'
+ext.programVersion  = '5.3.0-beta'
 ext.companyName     = "$programName Ltd."
 ext.companyId       = "${programName}Ltd"
-ext.jcppVersion     = '1.3'
-ext.leptVersion     = '1.73'
-ext.tessVersion     = '3.04.01'
+
+ext.dl4jVersion     = '1.0.0-beta6'
+ext.nd4jVersion     = '1.0.0-beta6'
+
+ext.jcppVersion     = '1.5.2'
+
+ext.tessVersion     = '4.1.0'
+ext.leptVersion     = '1.78.0'
 
 // this code is required in order to adapt values of os.name and os.arch to the
 // conventions used by Javacpp's dependencies
@@ -26,9 +31,7 @@ println "targetOS=${project.ext.targetOS}"
 
 ext.makensisPath = null
 
-//ext.dl4jVersion = '0.8.0'
-//ext.nd4jVersion = '0.8.0'
-
+// Ability to set a different main class
 if (!hasProperty('mainClass')) {
     ext.mainClass = ext.programName
 }
@@ -62,6 +65,20 @@ run {
         }
     }
 }
+
+// Workaround for "CreateProcess error=206, The filename or extension is too long" under Windows
+// See https://github.com/viswaramamoorthy/gradle-util-plugins/
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "gradle.plugin.com.github.viswaramamoorthy:gradle-util-plugins:0.1.0-RELEASE"
+  }
+}
+apply plugin: "com.github.ManifestClasspath"
 
 repositories {
     jcenter()
@@ -119,11 +136,12 @@ dependencies {
         [group: 'gov.nist.math', name: 'jama', version: '1.0.3'],
         [group: 'org.reflections', name: 'reflections', version: '0.9.10'],
         [group: 'org.bytedeco', name: 'javacpp', version: jcppVersion],
-        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}"],
-        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}"],
+        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}"],
+        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}"],
         [group: 'com.github.jai-imageio', name: 'jai-imageio-core', version: '1.3.1'],
-//        [group: 'org.deeplearning4j', name: 'deeplearning4j-core', version: "${project.ext.dl4jVersion}"],
-//        [group: 'org.nd4j', name: 'nd4j-native', version: "${project.ext.nd4jVersion}"],
+        [group: 'org.deeplearning4j', name: 'deeplearning4j-core', version: "${project.ext.dl4jVersion}"],
+        [group: 'org.deeplearning4j', name: 'deeplearning4j-ui', version: "${project.ext.dl4jVersion}"],
+        [group: 'org.nd4j', name: 'nd4j-native', version: "${project.ext.nd4jVersion}"],
         [group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.4'],
         [group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'],
         [group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.3.0.1'],
@@ -132,9 +150,9 @@ dependencies {
     )
 
     runtime(
-//        [group: 'org.nd4j', name: 'nd4j-native', version: "${project.ext.nd4jVersion}", classifier: "${project.ext.targetOS}"],
-        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"],
-        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"]
+        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"],
+        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"],
+        [group: 'org.nd4j', name: 'nd4j-native', version: "${project.ext.nd4jVersion}", classifier: "${project.ext.targetOS}"]
     )
 
     testCompile(
@@ -146,8 +164,8 @@ dependencies {
 // Specific configurations for specific OS dependencies
 ['windows-x86', 'windows-x86_64'].each { os ->
     configurations.create("runtime-$os")
-    dependencies.add("runtime-$os", [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "$os"])
-    dependencies.add("runtime-$os", [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "$os"])
+    dependencies.add("runtime-$os", [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "$os"])
+    dependencies.add("runtime-$os", [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "$os"])
 }
 
 jar {

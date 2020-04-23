@@ -28,9 +28,9 @@ import org.audiveris.omr.text.OCR;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextWord;
 
-import org.bytedeco.javacpp.tesseract;
-import org.bytedeco.javacpp.tesseract.StringGenericVector;
-import org.bytedeco.javacpp.tesseract.TessBaseAPI;
+import org.bytedeco.tesseract.StringGenericVector;
+import org.bytedeco.tesseract.TessBaseAPI;
+import org.bytedeco.tesseract.global.tesseract;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

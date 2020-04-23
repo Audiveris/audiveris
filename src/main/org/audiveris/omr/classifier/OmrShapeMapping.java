@@ -83,6 +83,10 @@ public abstract class OmrShapeMapping
      */
     public static Shape shapeOf (OmrShape omrShape)
     {
+        if (omrShape == null) {
+            return null;
+        }
+
         return OMRSHAPE_TO_SHAPE.get(omrShape);
     }
 
