@@ -28,8 +28,9 @@ data/args
 data/args/*
 data/benches
 data/campaign
-data/print
+data/material
 data/output/*
+data/print
 data/projects
 data/scores
 data/scripts

@@ -39,10 +39,12 @@ import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.FixedWidthIcon;
+import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.util.Navigable;
-import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.Wrapper;
+import org.audiveris.omrdataset.api.HeadEvaluation;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,9 +57,14 @@ import com.jgoodies.forms.layout.FormSpecs;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,8 +73,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import org.audiveris.omrdataset.api.HeadEvaluation;
-import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code HeadClassifierBoard} is a board dedicated to the results of
@@ -94,7 +99,7 @@ public class HeadClassifierBoard
     private final EvaluationSelector selector;
 
     /** Output: sub-image. */
-    private final SubImagePanel subImagePanel = new SubImagePanel();
+    private final PatchPanel patchPanel = new PatchPanel();
 
     /**
      * Create a {@code PatchClassifierBoard} instance.
@@ -108,7 +113,7 @@ public class HeadClassifierBoard
                                 boolean selected)
     {
         super(
-                new Board.Desc("Patch Classifier", 800),
+                new Board.Desc("Head Classifier", 800),
                 locationService,
                 eventsRead,
                 selected,
@@ -167,7 +172,7 @@ public class HeadClassifierBoard
         PanelBuilder builder = new PanelBuilder(layout, getBody());
         CellConstraints cst = new CellConstraints();
 
-        builder.add(subImagePanel, cst.xy(1, 1, CellConstraints.CENTER, CellConstraints.TOP));
+        builder.add(patchPanel, cst.xy(1, 1, CellConstraints.CENTER, CellConstraints.TOP));
         builder.add(selector.getPanel(), cst.xy(3, 1));
     }
 
@@ -181,19 +186,19 @@ public class HeadClassifierBoard
         Rectangle rect = locEvent.getData();
 
         if (rect != null) {
-            Wrapper<BufferedImage> imageWrapper = new Wrapper<BufferedImage>(null);
-            StopWatch watch = new StopWatch("PatchClassifier");
-            watch.start("getOmrEvaluations");
+            Wrapper<BufferedImage> imageWrapper = new Wrapper<>(null);
+//            StopWatch watch = new StopWatch("PatchClassifier");
+//            watch.start("getOmrEvaluations");
             HeadEvaluation[] evals = HeadClassifier.getInstance().getHeadEvaluations(
                     sheet,
                     GeoUtil.centerOf(rect),
                     sheet.getInterline(),
                     imageWrapper);
-            watch.print();
-            subImagePanel.setImage(imageWrapper.value);
+//            watch.print();
+            patchPanel.setImage(imageWrapper.value);
             selector.setEvals(evals);
         } else {
-            subImagePanel.setImage(null);
+            patchPanel.setImage(null);
             selector.setEvals(null);
         }
     }
@@ -215,18 +220,23 @@ public class HeadClassifierBoard
                 "Max number of buttons in the shape selector");
     }
 
-    //---------------//
-    // SubImagePanel //
-    //---------------//
-    private static class SubImagePanel
+    //------------//
+    // PatchPanel //
+    //------------//
+    private static class PatchPanel
             extends Panel
     {
 
+        // A patch for head is rather small, it is displayed here with a scaling ratio of 2.
+        private static final AffineTransform X2 = AffineTransform.getScaleInstance(2.0, 2.0);
+
+        private static final AffineTransform SHIFT = AffineTransform.getTranslateInstance(0.5, 0.5);
+
         private BufferedImage image;
 
-        public SubImagePanel ()
+        public PatchPanel ()
         {
-            final Dimension dim = new Dimension(CONTEXT_WIDTH + 2, CONTEXT_HEIGHT + 2);
+            final Dimension dim = new Dimension(2 * CONTEXT_WIDTH + 2, 2 * CONTEXT_HEIGHT + 2);
             setPreferredSize(dim);
             setMaximumSize(dim);
             setMinimumSize(dim);
@@ -239,23 +249,33 @@ public class HeadClassifierBoard
         }
 
         @Override
-        protected void paintComponent (Graphics g)
+        protected void paintComponent (Graphics graphics)
         {
+            final Graphics2D g = (Graphics2D) graphics;
+
             super.paintComponent(g); // For background
 
+            AffineTransform savedAT = g.getTransform();
+            g.transform(X2);
+            Stroke savedStroke = UIUtil.setAbsoluteStroke(g, 1f);
+
             if (image != null) {
-                // Draw the sub-image, leaving room for bounds rectangle
-                g.drawImage(image, 1, 1, this);
+                // Draw the patch image, leaving room for bounds rectangle
+                g.drawRenderedImage(image, SHIFT);
             }
 
             g.setColor(Color.RED);
 
             // Draw the sub-image bounds
-            g.drawRect(0, 0, CONTEXT_WIDTH + 1, CONTEXT_HEIGHT + 1);
+            g.draw(new Rectangle2D.Double(0, 0, CONTEXT_WIDTH + 0.5, CONTEXT_HEIGHT + 0.5));
 
             // Draw precise center
-            g.drawLine(1, 1, CONTEXT_WIDTH + 1, CONTEXT_HEIGHT + 1);
-            g.drawLine(1, CONTEXT_HEIGHT + 1, CONTEXT_WIDTH + 1, 1);
+            g.draw(new Line2D.Double(0, 0, CONTEXT_WIDTH + 0.5, CONTEXT_HEIGHT + 0.5));
+            g.draw(new Line2D.Double(0, CONTEXT_HEIGHT + 0.5, CONTEXT_WIDTH + 0.5, 0));
+
+            // Reset environment
+            g.setStroke(savedStroke);
+            g.setTransform(savedAT);
         }
     }
 

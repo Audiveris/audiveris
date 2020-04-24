@@ -30,18 +30,16 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeChecker;
-import org.audiveris.omr.math.PoorManAlgebra.DataSet;
-import org.audiveris.omr.math.PoorManAlgebra.INDArray;
-import org.audiveris.omr.math.PoorManAlgebra.Nd4j;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.UriUtil;
 import org.audiveris.omr.util.ZipFileSystem;
 
-//import org.nd4j.linalg.api.ndarray.INDArray;
-//import org.nd4j.linalg.dataset.DataSet;
-//import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.DataSet;
+import org.nd4j.linalg.factory.Nd4j;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

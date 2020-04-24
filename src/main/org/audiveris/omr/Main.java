@@ -23,6 +23,7 @@ package org.audiveris.omr;
 
 import java.util.ArrayList;
 import org.audiveris.omr.CLI.CliTask;
+import org.audiveris.omr.classifier.HeadClassifier;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantManager;
@@ -48,7 +49,6 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import org.audiveris.omr.classifier.HeadClassifier;
 
 /**
  * Class {@code Main} is the main class for OMR application.
@@ -122,7 +122,12 @@ public class Main
         // Locale to be used in the whole application?
         checkLocale();
 
-        // Environment
+        // Load the head classifier (which uses deeplearning4j/nd4j)
+        // NOTA: this must be done BEFORE using Tesseract
+        HeadClassifier.getInstance();
+
+        // Environment (among other pieces, this calls Tesseract)
+        // NOTA: this must be done AFTER using deeplearning4j/nd4j
         showEnvironment();
 
         // Process CLI parameters
@@ -134,9 +139,6 @@ public class Main
 
             return;
         }
-
-        // To be removed TODO TODO TODO TODO TODO TODO TODO TODO TODO
-        HeadClassifier.getInstance();
 
         // Initialize tool parameters
         initialize();

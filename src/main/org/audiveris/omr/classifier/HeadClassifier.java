@@ -203,39 +203,23 @@ public class HeadClassifier
                 for (int x = 0; x < CONTEXT_WIDTH; x++) {
                     int ax = xMin + x; // Absolute x
                     int val = ((ax < 0) || (ax >= imgWidth)) ? BACKGROUND
-                            : (255 - bp.get(idx)); // Inversion!
+                            : (255 - bp.get(ax, ay)); // Inversion!
                     pixels[idx++] = val;
                 }
             }
         }
-//
-//        for (int w = 0; w < CONTEXT_WIDTH; w++) {
-//            for (int h = 0; h < CONTEXT_HEIGHT; h++) {
-//                int x = xMin + w;
-//                int y = yMin + h;
-//
-//                if ((x < 0) || (x >= bp.getWidth())) {
-//                    pixels[h][w] = BACKGROUND;
-//                } else if ((y < 0) || (y >= bp.getHeight())) {
-//                    pixels[h][w] = BACKGROUND;
-//                } else {
-//                    pixels[h][w] = bp.get(x, y);
-//                }
-//            }
-//        }
 
-        storePixels(location, pixels);
-        //
+        ///storePixels(location, pixels);
         // Output patch image if so asked for
         if (imageWrapper != null) {
             imageWrapper.value = imageOf(pixels);
         }
 
-        INDArray features = Nd4j.create(pixels)
-                .reshape(1, 1, CONTEXT_HEIGHT, CONTEXT_WIDTH);
+        INDArray features = Nd4j.create(pixels).reshape(1, 1, CONTEXT_HEIGHT, CONTEXT_WIDTH);
+        features.divi(255.0); // Normalize
 
         // Network inference
-        INDArray output = model.output(features); // TODO: verify this!
+        INDArray output = model.output(features);
 
         // Extract and sort evaluations
         List<HeadEvaluation> evalList = new ArrayList<>();
@@ -325,6 +309,7 @@ public class HeadClassifier
 
             try {
                 ///model = KerasModelImport.importKerasModelAndWeights(path.toString());
+                logger.info("HeadClassifier. About to load {}", path);
                 model = ModelSerializer.restoreMultiLayerNetwork(path.toFile(), false);
 
             } catch (Exception ex) {
@@ -361,7 +346,7 @@ public class HeadClassifier
         int idx = 0;
         for (int h = 0; h < CONTEXT_HEIGHT; h++) {
             for (int w = 0; w < CONTEXT_WIDTH; w++) {
-                patch.set(idx, (int) pixels[idx]);
+                patch.set(idx, 255 - (int) pixels[idx]); // De-inversion!
                 idx++;
             }
         }

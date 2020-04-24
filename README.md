@@ -3,6 +3,17 @@
 This repository contains source code for the latest generation of Audiveris Optical
 Music Recognition (OMR) application.
 
+<div style="background-color:#ffc800;">
+You are looking at the "**head-classifier**" branch which experiments a new kind of classifier,
+focused on note heads.
+
+To run this Audiveris branch, you first need to download the head-classifier trained model,
+a zip file that weighs about 2MB, not kept under source management but made available on this
+[external location](https://drive.google.com/open?id=1AyaI-qG1taPxTKodAfSxigGOBI11_71v).
+
+Simply download the "head-classifier.zip" file and put it (unexpanded) in Audiveris "*res*" folder.
+</div>
+
 ## Releases
 
 All releases are available on [Audiveris Releases][releases] page.
