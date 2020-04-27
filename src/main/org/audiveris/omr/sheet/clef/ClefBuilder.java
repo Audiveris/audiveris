@@ -70,6 +70,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -181,6 +182,16 @@ public class ClefBuilder
         // Define outer & inner lookup areas
         outerRect = getOuterRect();
         innerRect = getInnerRect(outerRect);
+
+        // The user may have inserted an artificial clef
+        for (Inter inter : system.getSig().inters(ClefInter.class)) {
+            if (outerRect.contains(inter.getCenter())) {
+                registerClefs(Arrays.asList((ClefInter) inter));
+                logger.info("Using {}", inter);
+
+                return;
+            }
+        }
 
         // First attempt, using both outer & inner areas
         Map<ClefKind, ClefInter> bestMap = getBestMap(true);
@@ -443,23 +454,25 @@ public class ClefBuilder
             // For inter bounds, use font-based symbol bounds rather than glyph bounds
             //TODO: we could also check histogram right after clef end, looking for a low point?
             Rectangle clefBox = inter.getSymbolBounds(staff.getSpecificInterline());
-            SymbolIcon symbol = Symbols.getSymbol(inter.getShape());
-            Point symbolCentroid = symbol.getCentroid(clefBox);
-            Point glyphCentroid = inter.getGlyph().getCentroid();
-            int dx = glyphCentroid.x - symbolCentroid.x;
-            int dy = glyphCentroid.y - symbolCentroid.y;
-            logger.debug("Centroid translation dx:{} dy:{}", dx, dy);
-            clefBox.translate(dx, 0);
-            inter.setBounds(clefBox); // Force theoretical bounds as inter bounds!
-            inter.setStaff(staff);
 
-            int gid = inter.getGlyph().getId();
-            sig.addVertex(inter);
-            logger.debug("Staff#{} {} g#{} {}", staff.getId(), inter, gid, clefBox);
+            if (inter.getGlyph() != null) {
+                SymbolIcon symbol = Symbols.getSymbol(inter.getShape());
+                Point symbolCentroid = symbol.getCentroid(clefBox);
+                Point glyphCentroid = inter.getGlyph().getCentroid();
+                int dx = glyphCentroid.x - symbolCentroid.x;
+                int dy = glyphCentroid.y - symbolCentroid.y;
+                logger.debug("Centroid translation dx:{} dy:{}", dx, dy);
+                clefBox.translate(dx, 0);
+                inter.setBounds(clefBox); // Force theoretical bounds as inter bounds!
+                sig.addVertex(inter);
+            }
+
+            inter.setStaff(staff);
 
             if (idx == 0) {
                 // Case of best clef
-                Rectangle box = inter.getGlyph().getBounds().intersection(clefBox);
+                Rectangle box = inter.getGlyph() != null
+                        ? inter.getGlyph().getBounds().intersection(clefBox) : clefBox;
                 int end = (box.x + box.width) - 1;
                 staff.setClefStop(end);
             }
@@ -487,7 +500,11 @@ public class ClefBuilder
 
             // Pickup the first one as header clef
             ClefInter bestClef = clefs.get(0);
-            bestClef.setGlyph(sheet.getGlyphIndex().registerOriginal(bestClef.getGlyph()));
+
+            if (bestClef.getGlyph() != null) {
+                bestClef.setGlyph(sheet.getGlyphIndex().registerOriginal(bestClef.getGlyph()));
+            }
+
             staff.getHeader().clef = bestClef;
 
             // Delete the other clef candidates
