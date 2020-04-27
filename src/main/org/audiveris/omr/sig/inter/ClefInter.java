@@ -146,11 +146,11 @@ public class ClefInter
 
         if (stack != null) {
             stack.addInter(this);
+        }
 
-            if (kind == null) {
-                kind = kindOf(getCenter(), shape, staff);
-                pitch = Double.valueOf(kind.pitch);
-            }
+        if (kind == null) {
+            kind = kindOf(getCenter(), shape, staff);
+            pitch = Double.valueOf(kind.pitch);
         }
     }
 
