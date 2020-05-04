@@ -224,6 +224,8 @@ import org.audiveris.proxymusic.Kind;
 import org.audiveris.proxymusic.Root;
 import org.audiveris.proxymusic.RootAlter;
 import org.audiveris.proxymusic.RootStep;
+import org.audiveris.proxymusic.Step;
+import org.audiveris.proxymusic.Unpitched;
 
 /**
  * Class {@code PartwiseBuilder} builds a ProxyMusic MusicXML {@link ScorePartwise}
@@ -368,10 +370,12 @@ public class PartwiseBuilder
             pmClef.setNumber(new BigInteger("" + (1 + clef.getStaff().getIndexInPart())));
         }
 
-        // Line (General computation that could be overridden by more specific shape test below)
-        pmClef.setLine(new BigInteger("" + (3 - (int) Math.rint(clef.getPitch() / 2.0))));
-
         Shape shape = clef.getShape();
+
+        if (shape != Shape.PERCUSSION_CLEF) {
+            // Line (General computation that could be overridden by more specific shape test below)
+            pmClef.setLine(new BigInteger("" + (3 - (int) Math.rint(clef.getPitch() / 2.0))));
+        }
 
         switch (shape) {
         case G_CLEF:
@@ -1628,9 +1632,10 @@ public class PartwiseBuilder
             }
 
             // Tempo?
-            if (isScoreFirstMeasure && !measure.isDummy()) {
+            if (isScoreFirstMeasure && isFirst.part && !measure.isDummy()) {
                 Direction direction = factory.createDirection();
                 current.pmMeasure.getNoteOrBackupOrForward().add(direction);
+                direction.setPlacement(AboveBelow.ABOVE);
 
                 DirectionType directionType = factory.createDirectionType();
                 direction.getDirectionType().add(directionType);
@@ -1828,7 +1833,7 @@ public class PartwiseBuilder
                     isMeasureRest = true;
                 }
 
-                if (!current.measure.isDummy() && !isMeasureRest) {
+                if (!current.measure.isDummy() && !isMeasureRest && !staff.isOneLineStaff()) {
                     // Set displayStep & displayOctave for rest
                     rest.setDisplayStep(stepOf(note.getStep()));
                     rest.setDisplayOctave(note.getOctave());
@@ -1858,22 +1863,32 @@ public class PartwiseBuilder
                     }
                 }
 
-                // Pitch
-                Pitch pitch = factory.createPitch();
-                pitch.setStep(stepOf(note.getStep()));
-                pitch.setOctave(note.getOctave());
+                if (staff.isOneLineStaff()) {
+                    // Unpitched
+                    Unpitched unpitched = factory.createUnpitched();
+                    // For MuseScore: F5
+                    // For Finale:    G3
+                    unpitched.setDisplayStep(Step.F);
+                    unpitched.setDisplayOctave(5);
+                    current.pmNote.setUnpitched(unpitched);
+                } else {
+                    // Pitch
+                    Pitch pitch = factory.createPitch();
+                    pitch.setStep(stepOf(note.getStep()));
+                    pitch.setOctave(note.getOctave());
 
-                // Alter?
-                HeadInter head = (HeadInter) note;
-                Key key = current.keys.get(staff.getIndexInPart());
-                Integer fifths = (key != null) ? key.getFifths().intValue() : null;
-                int alter = head.getAlteration(fifths);
+                    // Alter?
+                    HeadInter head = (HeadInter) note;
+                    Key key = current.keys.get(staff.getIndexInPart());
+                    Integer fifths = (key != null) ? key.getFifths().intValue() : null;
+                    int alter = head.getAlteration(fifths);
 
-                if (alter != 0) {
-                    pitch.setAlter(new BigDecimal(alter));
+                    if (alter != 0) {
+                        pitch.setAlter(new BigDecimal(alter));
+                    }
+
+                    current.pmNote.setPitch(pitch);
                 }
-
-                current.pmNote.setPitch(pitch);
 
                 // Cross(x)?
                 if (note.getShape() == Shape.NOTEHEAD_CROSS) {
@@ -1974,7 +1989,10 @@ public class PartwiseBuilder
             if (chord.getStem() != null) {
                 Stem pmStem = factory.createStem();
                 Point tail = chord.getTailLocation();
-                pmStem.setDefaultY(yOf(tail, staff));
+
+                if (!staff.isOneLineStaff()) {
+                    pmStem.setDefaultY(yOf(tail, staff));
+                }
 
                 if (tail.y < note.getCenter().y) {
                     pmStem.setValue(StemValue.UP);
@@ -3077,10 +3095,21 @@ public class PartwiseBuilder
                 }
             }
 
-            // Do not print artificial parts
             if (isFirst.measure) {
                 StaffDetails staffDetails = factory.createStaffDetails();
+
+                // Do not print artificial parts
                 staffDetails.setPrintObject(measure.isDummy() ? YesNo.NO : YesNo.YES);
+
+                // OneLineStaff?
+                if (measure.getPart().getStaves().size() == 1) {
+                    Staff staff = measure.getPart().getStaves().get(0);
+
+                    if (staff.isOneLineStaff()) {
+                        staffDetails.setStaffLines(BigInteger.ONE);
+                    }
+                }
+
                 getAttributes().getStaffDetails().add(staffDetails);
             }
 

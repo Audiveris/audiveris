@@ -32,6 +32,7 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.Staff.IndexedLedger;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.note.NotePosition;
 import org.audiveris.omr.sheet.rhythm.Measure;
@@ -216,6 +217,11 @@ public class DotFactory
     //---------------------//
     /**
      * Check that dot glyph is vertically distant from staff line or ledger.
+     * <p>
+     * For a tablature, check is always OK.
+     * <p>
+     * For a standard staff (5) or for a OneLineStaff (1), distance to closest line or ledger
+     * is checked.
      *
      * @param glyph the dot glyph to check
      * @param staff the closest staff
@@ -224,40 +230,52 @@ public class DotFactory
     private boolean checkDistanceToLine (Glyph glyph,
                                          Staff staff)
     {
-        final Point center = glyph.getCenter();
-        final NotePosition notePosition = staff.getNotePosition(center);
-        final double pitch = notePosition.getPitchPosition();
+        if (staff.isTablature()) {
+            return true;
+        }
 
-        if ((Math.abs(pitch) > staff.getLineCount()) && (notePosition.getLedger() == null)) {
+        final Point center = glyph.getCenter();
+        final double distance; // Specified in interline fraction
+
+        if (staff.isOneLineStaff()) {
+            final double dy = Math.abs(center.y - staff.getMidLine().yAt(center.x));
+            distance = dy / staff.getSpecificInterline();
+        } else {
+            final NotePosition notePosition = staff.getNotePosition(center);
+            final IndexedLedger ledger = notePosition.getLedger();
+            final double pitch = notePosition.getPitchPosition();
+
+            if ((Math.abs(pitch) > staff.getLineCount()) && (ledger == null)) {
+                if (glyph.isVip()) {
+                    logger.info("VIP glyph#{} dot isolated OK", glyph.getId());
+                }
+
+                return true;
+            }
+
+            // Distance to line/ledger specified in interline fraction (5-line staff)
+            double linePitch = 2 * ((ledger != null) ? (2 + ledger.index) : Math.rint(pitch / 2));
+            distance = Math.abs(pitch - linePitch) / 2;
+        }
+
+        if (distance >= constants.minDyFromLine.getValue()) {
             if (glyph.isVip()) {
-                logger.info("VIP glyph#{} dot isolated OK", glyph.getId());
+                logger.info(
+                        "VIP glyph#{} dot distance:{} OK",
+                        glyph.getId(),
+                        String.format("%.2f", distance));
             }
 
             return true;
         } else {
-            // Distance to line/ledger specified in interline fraction
-            double linePitch = 2 * Math.rint(pitch / 2);
-            double distance = Math.abs(pitch - linePitch) / 2;
-
-            if (distance >= constants.minDyFromLine.getValue()) {
-                if (glyph.isVip()) {
-                    logger.info(
-                            "VIP glyph#{} dot distance:{} OK",
-                            glyph.getId(),
-                            String.format("%.2f", distance));
-                }
-
-                return true;
-            } else {
-                if (glyph.isVip()) {
-                    logger.info(
-                            "VIP glyph#{} dot distance:{} too close",
-                            glyph.getId(),
-                            String.format("%.2f", distance));
-                }
-
-                return false;
+            if (glyph.isVip()) {
+                logger.info(
+                        "VIP glyph#{} dot distance:{} too close",
+                        glyph.getId(),
+                        String.format("%.2f", distance));
             }
+
+            return false;
         }
     }
 

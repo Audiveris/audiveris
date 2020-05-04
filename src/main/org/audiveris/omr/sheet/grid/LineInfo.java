@@ -103,4 +103,12 @@ public interface LineInfo
      * @return the corresponding y value
      */
     double yAt (double x);
+
+    /**
+     * Report the same line translated vertically.
+     *
+     * @param dy amount of vertical translation
+     * @return
+     */
+    LineInfo yTranslated (double dy);
 }

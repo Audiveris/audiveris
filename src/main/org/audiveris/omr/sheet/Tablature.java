@@ -21,9 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.sheet.note.NotePosition;
+import org.audiveris.omr.sheet.grid.LineInfo;
+
+import java.awt.geom.Point2D;
 import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omr.sheet.grid.LineInfo;
 
 /**
  * Class {@code Tablature} is a staff dedicated to a fretted string instrument like
@@ -60,5 +63,14 @@ public class Tablature
     public boolean isTablature ()
     {
         return true;
+    }
+
+    //-----------------//
+    // getNotePosition //
+    //-----------------//
+    @Override
+    public NotePosition getNotePosition (Point2D point)
+    {
+        return null; // No notion of pitch for a tablature
     }
 }

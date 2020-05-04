@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Class {@code LineCluster} is meant to aggregate instances of {@link Filament} that
@@ -407,7 +408,7 @@ public class LineCluster
             int meanTrueLength = 0;
 
             for (StaffFilament line : lines.values()) {
-                meanTrueLength += lineTrueLength(line);
+                meanTrueLength += line.getTrueLength();
             }
 
             meanTrueLength /= lines.size();
@@ -476,6 +477,14 @@ public class LineCluster
         }
 
         return false; // Should not happen
+    }
+
+    //-----------//
+    // isOneLine //
+    //-----------//
+    public boolean isOneLine ()
+    {
+        return lines.size() == 1;
     }
 
     //-------//
@@ -548,7 +557,7 @@ public class LineCluster
         StringBuilder sb = new StringBuilder("Cluster#");
         sb.append(getId());
 
-        sb.append("{interline:").append(interlineScale);
+        sb.append("{").append(interlineScale);
 
         sb.append(" size:").append(getSize());
 
@@ -576,32 +585,36 @@ public class LineCluster
      * TODO: We could also use the presence of long segments (much longer than typical
      * ledger length) to differentiate staff lines from sequences of ledgers.
      *
-     * @param count                   the target line count
+     * @param combSizes               allowed comb sizes
      * @param minTablatureLengthRatio for tablature, minimum length as ratio of other lines
+     * @return the removed cluster lines (filaments)
      */
-    public void trim (int count,
-                      double minTablatureLengthRatio)
+    public List<StaffFilament> trim (TreeSet<Integer> combSizes,
+                                     double minTablatureLengthRatio)
     {
         logger.debug("Trim {}", this);
+        final List<StaffFilament> removed = new ArrayList<>();
 
         // Pruning
-        while (lines.size() > count) {
+        final int maxCount = combSizes.last();
+
+        while (lines.size() > maxCount) {
             // Remove the top or bottom line
             final StaffFilament top = lines.get(lines.firstKey());
-            int topWL = lineTrueLength(top);
+            int topWL = top.getTrueLength();
 
             final StaffFilament bot = lines.get(lines.lastKey());
-            int botWL = lineTrueLength(bot);
+            int botWL = bot.getTrueLength();
 
             final StaffFilament line; // Which line to remove?
 
             // Pick up line with lower true length
             if (topWL < botWL) {
                 line = top;
-                lines.remove(lines.firstKey());
+                removed.add(lines.remove(lines.firstKey()));
             } else {
                 line = bot;
-                lines.remove(lines.lastKey());
+                removed.add(lines.remove(lines.lastKey()));
             }
 
             // House keeping
@@ -614,7 +627,7 @@ public class LineCluster
             // 5-line standard staff with ledger line to be mistaken for a 6-line tablature
             final SortedMap<Integer, Integer> trueLengths = new TreeMap<>();
             for (Entry<Integer, StaffFilament> entry : lines.entrySet()) {
-                trueLengths.put(entry.getKey(), lineTrueLength(entry.getValue()));
+                trueLengths.put(entry.getKey(), entry.getValue().getTrueLength());
             }
 
             // Mean true length for lines, top & bottom excepted
@@ -636,13 +649,13 @@ public class LineCluster
                 // Check top line
                 if (topWL < minLength) {
                     line = lines.get(lines.firstKey());
-                    lines.remove(lines.firstKey());
+                    removed.add(lines.remove(lines.firstKey()));
                 }
             } else {
                 // Check bottom line
                 if (botWL < minLength) {
                     line = lines.get(lines.lastKey());
-                    lines.remove(lines.lastKey());
+                    removed.add(lines.remove(lines.lastKey()));
                 }
             }
 
@@ -655,6 +668,8 @@ public class LineCluster
 
         renumberLines();
         invalidateCache();
+
+        return removed;
     }
 
     //---------//
@@ -683,44 +698,50 @@ public class LineCluster
         // Use a copy to avoid concurrent modification error
         List<FilamentComb> combs = new ArrayList<>(pivot.getCombs().values());
 
-        for (FilamentComb comb : combs) {
-            if (comb.isProcessed()) {
-                continue;
-            }
+        if (combs.isEmpty()) {
+            // Specific case of one-line clusters, without any comb
+            lines.put(0, pivot);
+            pivot.setCluster(this, 0);
+        } else {
+            for (FilamentComb comb : combs) {
+                if (comb.isProcessed()) {
+                    continue;
+                }
 
-            comb.setProcessed(true);
+                comb.setProcessed(true);
 
-            int deltaPos = pivotPos - comb.getIndex(pivot);
-            logger.debug("{} deltaPos:{}", comb, deltaPos);
+                int deltaPos = pivotPos - comb.getIndex(pivot);
+                logger.debug("{} deltaPos:{}", comb, deltaPos);
 
-            // Dispatch content of comb to proper lines
-            for (int i = 0; i < comb.getCount(); i++) {
-                StaffFilament fil = (StaffFilament) comb.getFilament(i).getAncestor();
-                LineCluster cluster = fil.getCluster();
+                // Dispatch content of comb to proper lines
+                for (int i = 0; i < comb.getCount(); i++) {
+                    StaffFilament fil = (StaffFilament) comb.getFilament(i).getAncestor();
+                    LineCluster cluster = fil.getCluster();
 
-                if (cluster == null) {
-                    int pos = i + deltaPos;
-                    StaffFilament line = lines.get(pos);
+                    if (cluster == null) {
+                        int pos = i + deltaPos;
+                        StaffFilament line = lines.get(pos);
 
-                    if (line == null) {
-                        lines.put(pos, fil);
-                    } else {
-                        line.include(fil);
+                        if (line == null) {
+                            lines.put(pos, fil);
+                        } else {
+                            line.include(fil);
+                        }
+
+                        if (fil.isVip()) {
+                            logger.info("VIP adding {} to {} at pos {}", fil, this, pos);
+                            setVip(true);
+                        }
+
+                        fil.setCluster(this, pos);
+
+                        if (fil != ancestor) {
+                            include(fil, pos); // Recursively
+                        }
+                    } else if (cluster.getAncestor() != this.getAncestor()) {
+                        // Need to merge the two clusters
+                        include(cluster, (i + deltaPos) - fil.getClusterPos());
                     }
-
-                    if (fil.isVip()) {
-                        logger.info("VIP adding {} to {} at pos {}", fil, this, pos);
-                        setVip(true);
-                    }
-
-                    fil.setCluster(this, pos);
-
-                    if (fil != ancestor) {
-                        include(fil, pos); // Recursively
-                    }
-                } else if (cluster.getAncestor() != this.getAncestor()) {
-                    // Need to merge the two clusters
-                    include(cluster, (i + deltaPos) - fil.getClusterPos());
                 }
             }
         }
@@ -777,34 +798,5 @@ public class LineCluster
     {
         contourBox = null;
         trueLength = null;
-    }
-
-    //----------------//
-    // lineTrueLength //
-    //----------------//
-    /**
-     * Report an evaluation of how this filament is filled by sections.
-     * (sections are naturally ordered by abscissa, then ordinate, then id)
-     *
-     * @return the actual length covered by sections
-     */
-    private int lineTrueLength (Filament line)
-    {
-        int xMin = line.getMembers().first().getStartCoord();
-        int xMax = -1;
-        int holes = 0;
-
-        for (Section s : line.getMembers()) {
-            final int start = s.getStartCoord();
-            final int stop = s.getStopCoord();
-
-            if ((xMax != -1) && (start > xMax)) {
-                holes += (start - xMax);
-            }
-
-            xMax = Math.max(xMax, stop);
-        }
-
-        return (xMax - xMin + 1) - holes;
     }
 }

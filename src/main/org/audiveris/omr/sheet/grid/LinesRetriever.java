@@ -44,6 +44,7 @@ import org.audiveris.omr.run.Orientation;
 import static org.audiveris.omr.run.Orientation.*;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
+import org.audiveris.omr.sheet.OneLineStaff;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
@@ -530,17 +531,22 @@ public class LinesRetriever
             }
 
             // Allocate Staff (or Tablature) instance
-            final Staff staff;
             List<LineInfo> infos = new ArrayList<>(lines.size());
-
             for (StaffFilament line : lines) {
                 infos.add(line);
             }
 
-            if (infos.size() == 5) {
+            final Staff staff;
+            switch (infos.size()) {
+            case 5:
                 staff = new Staff(++staffId, left, right, cluster.getInterline(), infos);
-            } else {
+                break;
+            case 1:
+                staff = new OneLineStaff(++staffId, left, right, cluster.getInterline(), infos);
+                break;
+            default:
                 staff = new Tablature(++staffId, left, right, cluster.getInterline(), infos);
+                break;
             }
             staffManager.addStaff(staff);
 

@@ -826,6 +826,10 @@ public class Staff
             slopes.add(line.getSlopeAt(line.getEndPoint(side).getX(), Orientation.HORIZONTAL));
         }
 
+        if (slopes.size() < 3) {
+            return slopes.get(0);
+        }
+
         Collections.sort(slopes);
 
         double sum = 0;
@@ -1152,6 +1156,10 @@ public class Staff
      */
     public double getMeanInterline ()
     {
+        if (lines.size() == 1) {
+            return 0; // Case of one-line staff
+        }
+
         Population dys = new Population();
 
         int dx = system.getSheet().getScale().getInterline(); // No need for precise sampling value
@@ -1179,6 +1187,19 @@ public class Staff
         //            String.format("Staff#%d dy:%.2f std:%.2f", id, mean, dys.getStandardDeviation()));
         //
         return mean;
+    }
+
+    //------------//
+    // getMidLine //
+    //------------//
+    /**
+     * Report the staff mid line.
+     *
+     * @return the center line. If line number is even, use lower index.
+     */
+    public LineInfo getMidLine ()
+    {
+        return lines.get((lines.size() - 1) / 2);
     }
 
     //-----------------//
@@ -1396,6 +1417,19 @@ public class Staff
     public boolean isDummy ()
     {
         return dummy;
+    }
+
+    //----------------//
+    // isOneLineStaff //
+    //----------------//
+    /**
+     * Report whether the staff is a one-line staff.
+     *
+     * @return true for a OneLineStaff
+     */
+    public boolean isOneLineStaff ()
+    {
+        return false; // By default
     }
 
     //---------//
@@ -1700,12 +1734,6 @@ public class Staff
      */
     public List<LineInfo> simplifyLines (Sheet sheet)
     {
-        if (getFirstLine() instanceof StaffLine) {
-            logger.error("Staff lines have already been simplified!");
-
-            return null;
-        }
-
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
         List<LineInfo> copies = new ArrayList<>(lines);
         lines.clear();
