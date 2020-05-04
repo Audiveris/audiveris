@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.grid;
 
 import ij.process.ByteProcessor;
 
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.math.AreaUtil;
@@ -157,6 +158,9 @@ public class StaffProjector
     /** Count of cumulated foreground pixels, indexed by abscissa. */
     private Projection projection;
 
+    /** Minimum absolute derivative to detect peak sides. */
+    private int derivativeThreshold;
+
     /** Initial brace peak, if any. */
     private StaffPeak bracePeak;
 
@@ -179,7 +183,7 @@ public class StaffProjector
         pixelFilter = picture.getSource(Picture.SourceKey.BINARY);
 
         scale = sheet.getScale();
-        params = new Parameters(scale, staff.getSpecificInterline());
+        params = new Parameters(sheet, staff.getSpecificInterline());
     }
 
     //----------------//
@@ -444,10 +448,13 @@ public class StaffProjector
             computeLineThresholds();
         }
 
-        final String title = sheet.getId() + " staff#" + getStaff().getId();
+        final String title = sheet.getId() + " staff#" + staff.getId();
         final ChartPlotter plotter = new ChartPlotter(
                 title, // Title
-                "Abscissae - staff interline:" + staff.getSpecificInterline(), // X-Axis label
+                "Abscissae - "
+                        + staff.getClass().getSimpleName()
+                        + " lines:" + staff.getLineCount()
+                        + " interline:" + staff.getSpecificInterline(), // X-Axis label
                 "Counts"); // Y-Axis label
 
         final int xMin = 0;
@@ -479,8 +486,8 @@ public class StaffProjector
             // Derivatives positive threshold
             XYSeries derSeries = new XYSeries("Der+", false); // No autosort
 
-            derSeries.add(xMin, params.minDerivative);
-            derSeries.add(xMax, params.minDerivative);
+            derSeries.add(xMin, derivativeThreshold);
+            derSeries.add(xMax, derivativeThreshold);
             plotter.add(derSeries, Colors.CHART_DERIVATIVE, false);
         }
 
@@ -488,15 +495,16 @@ public class StaffProjector
             // Derivatives negative threshold
             XYSeries derSeries = new XYSeries("Der-", false); // No autosort
 
-            derSeries.add(xMin, -params.minDerivative);
-            derSeries.add(xMax, -params.minDerivative);
+            derSeries.add(xMin, -derivativeThreshold);
+            derSeries.add(xMax, -derivativeThreshold);
             plotter.add(derSeries, Colors.CHART_DERIVATIVE, false);
         }
 
         {
-            // Theoretical staff height (assuming a 5-line staff)
+            // Theoretical staff height (adapted to staff line count)
             XYSeries heightSeries = new XYSeries("StaffHeight", false); // No autosort
-            int totalHeight = 4 * staff.getSpecificInterline();
+            int n = staff.getLineCount();
+            int totalHeight = staff.getSpecificInterline() * (n > 1 ? n - 1 : 4);
             heightSeries.add(xMin, totalHeight);
             heightSeries.add(xMax, totalHeight);
             plotter.add(heightSeries, Color.BLACK, true);
@@ -511,7 +519,7 @@ public class StaffProjector
         }
 
         {
-            // Chunk threshold (assuming a 5-line staff)
+            // Chunk threshold (adapted to staff line count)
             XYSeries chunkSeries = new XYSeries("MaxChunk", false); // No autosort
             chunkSeries.add(xMin, params.chunkThreshold);
             chunkSeries.add(xMax, params.chunkThreshold);
@@ -522,12 +530,12 @@ public class StaffProjector
             // BracePeak min threshold
             XYSeries minSeries = new XYSeries("MinBrace", false); // No autosort
             minSeries.add(xMin, params.braceThreshold);
-            minSeries.add(xMax, params.braceThreshold);
+            minSeries.add(xMax / 10, params.braceThreshold); // (limited to left part of staff)
             plotter.add(minSeries, Color.ORANGE, true);
         }
 
         {
-            // Cumulated staff lines (assuming a 5-line staff)
+            // Cumulated staff lines (adapted to staff line count)
             XYSeries linesSeries = new XYSeries("Lines", false); // No autosort
             linesSeries.add(xMin, params.linesThreshold);
             linesSeries.add(xMax, params.linesThreshold);
@@ -535,7 +543,7 @@ public class StaffProjector
         }
 
         {
-            // Threshold for no staff
+            // Threshold for no staff (adapted to staff line count)
             final int nostaff = params.blankThreshold;
             XYSeries holeSeries = new XYSeries("NoStaff", false); // No autosort
             holeSeries.add(xMin, nostaff);
@@ -706,13 +714,16 @@ public class StaffProjector
      *
      * @param rangeStart starting abscissa of range
      * @param rangeStop  stopping abscissa of range
+     * @param halfMode   true when dealing with initial peak of a OneLineStaff
      * @return the sequence of created peak instances, perhaps empty
      */
     private List<StaffPeak> browseRange (final int rangeStart,
-                                         final int rangeStop)
+                                         final int rangeStop,
+                                         final boolean halfMode)
     {
         logger.debug("Staff#{} browseRange [{}..{}]", staff.getId(), rangeStart, rangeStop);
 
+        final int minDerivative = halfMode ? derivativeThreshold / 2 : derivativeThreshold;
         final List<StaffPeak> list = new ArrayList<>();
         int start = rangeStart;
         int stop;
@@ -720,7 +731,7 @@ public class StaffProjector
         for (int x = rangeStart; x <= rangeStop; x++) {
             final int der = projection.getDerivative(x);
 
-            if (der >= params.minDerivative) {
+            if (der >= minDerivative) {
                 int maxDer = der;
 
                 for (int xx = x + 1; xx <= rangeStop; xx++) {
@@ -735,7 +746,7 @@ public class StaffProjector
                 }
 
                 start = x;
-            } else if (der <= -params.minDerivative) {
+            } else if (der <= -minDerivative) {
                 int minDer = der;
 
                 for (int xx = x + 1; xx <= xClamp(rangeStop + 1); xx++) {
@@ -756,7 +767,7 @@ public class StaffProjector
                 stop = x;
 
                 if ((start != -1) && (start < stop)) {
-                    StaffPeak peak = createPeak(start, stop - 1);
+                    StaffPeak peak = createPeak(start, stop - 1, halfMode);
 
                     if (peak != null) {
                         list.add(peak);
@@ -769,7 +780,7 @@ public class StaffProjector
 
         // A last peak?
         if (start != -1) {
-            StaffPeak peak = createPeak(start, rangeStop);
+            StaffPeak peak = createPeak(start, rangeStop, halfMode);
 
             if (peak != null) {
                 list.add(peak);
@@ -784,7 +795,7 @@ public class StaffProjector
     //---------------------------//
     /**
      * Using the current definition on staff lines (made of only long filaments so far)
-     * estimate the cumulated staff line thicknesses for the staff.
+     * estimate the cumulated staff line thicknesses for the staff projection.
      * <p>
      * NOTA: Since we may have holes in lines, and short sections have been left apart, the
      * measurement is under-estimated.
@@ -793,37 +804,50 @@ public class StaffProjector
      */
     private double computeCoreLinesThickness ()
     {
-        double linesHeight = 0;
+        double cumul = 0;
 
         for (LineInfo line : staff.getLines()) {
-            linesHeight += line.getThickness();
+            cumul += line.getThickness();
         }
 
-        logger.debug("Staff#{} linesHeight: {}", staff.getId(), linesHeight);
+        final int n = staff.getLineCount();
+        if (n > 1) {
+            cumul *= (n - 1) / (double) n;
+        }
 
-        return linesHeight;
+        logger.debug("Staff#{} linesHeight: {}", staff.getId(), cumul);
+
+        return cumul;
     }
 
     //-----------------------//
     // computeLineThresholds //
     //-----------------------//
     /**
-     * Compute thresholds that closely depend on actual line thickness in this staff.
+     * Compute thresholds that closely depend on actual line thickness and on actual
+     * number of lines in this staff.
      */
     private void computeLineThresholds ()
     {
+        final int lineCount = staff.getLines().size();
         final double linesCumul = computeCoreLinesThickness();
-        final double lineThickness = linesCumul / staff.getLines().size();
 
+        // blankThreshold is used for plots and for detecting regions without staff lines.
+        // It is meant to detect absence of lines
+        params.blankThreshold = (int) Math.rint(constants.blankThreshold.getValue() * linesCumul);
+
+        // linesThreshold is used only for plots
         params.linesThreshold = (int) Math.rint(linesCumul);
-        params.blankThreshold = (int) Math.rint(
-                constants.blankThreshold.getValue() * lineThickness);
-        params.chunkThreshold = (4 * scale.getMaxFore()) + InterlineScale.toPixels(
-                staff.getSpecificInterline(),
-                constants.chunkThreshold);
+
+        // chunkThreshold is used only for plots
+        // (it could be used to indicate presence of objects over lines)
+        params.chunkThreshold = ((lineCount - 1) * scale.getMaxFore())
+                                        + InterlineScale.toPixels(staff.getSpecificInterline(),
+                                                                  constants.chunkThreshold);
         logger.debug(
-                "Staff#{} linesThreshold:{} chunkThreshold:{}",
+                "Staff#{} thresholds blank:{} lines:{} chunk:{}",
                 staff.getId(),
+                params.blankThreshold,
                 params.linesThreshold,
                 params.chunkThreshold);
     }
@@ -834,20 +858,29 @@ public class StaffProjector
     /**
      * Compute, for each abscissa value, the foreground pixels cumulated between
      * first line and last line of staff.
+     * <p>
+     * For a OneLineStaff, we extrapolate ordinates based on a standard 5-line staff.
+     * <p>
+     * We also compute derivative threshold for this staff.
      */
     private void computeProjection ()
     {
         projection = new Projection.Short(0, sheet.getWidth() - 1);
 
+        final ArrayList<Integer> derivatives = new ArrayList<>();
         final LineInfo firstLine = staff.getFirstLine();
         final LineInfo lastLine = staff.getLastLine();
         final int dx = params.staffAbscissaMargin;
         final int xMin = xClamp(staff.getAbscissa(LEFT) - dx);
         final int xMax = xClamp(staff.getAbscissa(RIGHT) + dx);
 
+        // Correction for ordinates of a 1-line staff
+        final int dy = staff.isOneLineStaff() ? 2 * scale.getInterline() : 0;
+
+        // Populating projection data
         for (int x = xMin; x <= xMax; x++) {
-            int yMin = firstLine.yAt(x);
-            int yMax = lastLine.yAt(x);
+            int yMin = firstLine.yAt(x) - dy;
+            int yMax = lastLine.yAt(x) - 1 + dy;
             short count = 0;
 
             for (int y = yMin; y <= yMax; y++) {
@@ -857,7 +890,25 @@ public class StaffProjector
             }
 
             projection.increment(x, count);
+
+            if (x > xMin) {
+                derivatives.add(Math.abs(projection.getDerivative(x)));
+            }
         }
+
+        // Computing minDerivative from observed top values
+        Collections.sort(derivatives);
+        final int size = derivatives.size();
+        final int top = constants.topDerivativeNumber.getValue();
+        int derCumul = 0;
+
+        for (int i = 1; i <= top; i++) {
+            derCumul += derivatives.get(size - i);
+        }
+
+        final double eliteDer = (double) derCumul / top;
+        derivativeThreshold = (int) Math.rint(eliteDer * constants.minDerivativeRatio.getValue());
+        logger.debug("eliteDerivative:{} derivativeThreshold:{} ", eliteDer, derivativeThreshold);
     }
 
     //-----------------//
@@ -941,24 +992,27 @@ public class StaffProjector
      *
      * @param rawStart raw starting abscissa of peak
      * @param rawStop  raw stopping abscissa of peak
+     * @param halfMode true when dealing with initial peak of a OneLineStaff
      * @return the created peak instance or null if failed
      */
     private StaffPeak createPeak (final int rawStart,
-                                  final int rawStop)
+                                  final int rawStop,
+                                  final boolean halfMode)
     {
-        final int minValue = params.barThreshold;
-        final int totalHeight = 4 * staff.getSpecificInterline();
-        final double valueRange = totalHeight - minValue;
+        final int minValue = halfMode ? params.barThreshold / 2 : params.barThreshold;
+        final int totalHeight = staff.getSpecificInterline() * (staff.isOneLineStaff()
+                ? 4 : staff.getLineCount() - 1);
+        final double valueRange = (halfMode ? totalHeight / 2 : totalHeight) - minValue;
 
         // Compute precise start & stop abscissae
-        PeakSide newStart = refinePeakSide(rawStart, rawStop, -1);
+        PeakSide newStart = refinePeakSide(rawStart, rawStop, -1, halfMode);
 
         if (newStart == null) {
             return null;
         }
 
         final int start = newStart.abscissa;
-        PeakSide newStop = refinePeakSide(rawStart, rawStop, +1);
+        PeakSide newStop = refinePeakSide(rawStart, rawStop, +1, halfMode);
 
         if (newStop == null) {
             return null;
@@ -1062,10 +1116,19 @@ public class StaffProjector
     /**
      * Retrieve the relevant (bar line) peaks in the staff projection.
      * This populates the 'peaks' sequence.
+     * <p>
+     * In the specific case of a OneLineStaff, the starting barline may be a full-size barline
+     * (when the staff is surrounded by other staves) or just a half-size barline (when the staff
+     * is the first (?) or last in system/page).
+     * So, beside the standard barThreshold we also use a 1/2 one (barThreshold/2) and check for
+     * a new peak found before the first full-size peak.
+     * If this new peak is really a half-size peak with all its pixels on one half of staff height,
+     * then this new peak is inserted as the true first peak for the one-line staff.
+     * The corresponding derivative threshold is also halved.
      */
     private void findPeaks ()
     {
-        final int minValue = params.barThreshold;
+        final boolean oneLine = staff.isOneLineStaff();
 
         final Blank leftBlank = endingBlanks.get(LEFT);
         final int xMin = (leftBlank != null) ? leftBlank.stop : 0;
@@ -1075,18 +1138,21 @@ public class StaffProjector
 
         int start = -1;
         int stop = -1;
+        boolean halfMode = false;
 
         for (int x = xMin; x <= xMax; x++) {
-            int value = projection.getValue(x);
+            final int value = projection.getValue(x);
+            halfMode = oneLine && peaks.isEmpty();
+            final int minBar = halfMode ? params.barThreshold / 2 : params.barThreshold;
 
-            if (value >= minValue) {
+            if (value >= minBar) {
                 if (start == -1) {
                     start = x;
                 }
 
                 stop = x;
             } else if (start != -1) {
-                for (StaffPeak peak : browseRange(start, stop)) {
+                for (StaffPeak peak : browseRange(start, stop, halfMode)) {
                     peaks.add(peak);
                     peakGraph.addVertex(peak);
 
@@ -1100,7 +1166,7 @@ public class StaffProjector
 
         // Finish ongoing peak if any (case of a peak stuck to right side of image)
         if (start != -1) {
-            StaffPeak peak = createPeak(start, stop);
+            StaffPeak peak = createPeak(start, stop, halfMode);
 
             if (peak != null) {
                 peaks.add(peak);
@@ -1122,15 +1188,20 @@ public class StaffProjector
      * <p>
      * Update: the test on derivative absolute value is not sufficient to discard braces.
      *
-     * @param xStart raw abscissa that starts peak
-     * @param xStop  raw abscissa that stops peak
-     * @param dir    -1 for going left, +1 for going right
+     * @param xStart   raw abscissa that starts peak
+     * @param xStop    raw abscissa that stops peak
+     * @param dir      -1 for going left, +1 for going right
+     * @param halfMode when dealing with first peak of a OneLineStaff
      * @return the best peak side, or null if none
      */
     private PeakSide refinePeakSide (int xStart,
                                      int xStop,
-                                     int dir)
+                                     int dir,
+                                     boolean halfMode)
     {
+        final int minDerivative = halfMode ? derivativeThreshold / 2 : derivativeThreshold;
+        final int minBar = halfMode ? params.barThreshold / 2 : params.barThreshold;
+
         // Additional check range
         final int dx = params.barRefineDx;
 
@@ -1153,9 +1224,9 @@ public class StaffProjector
 
         bestDer = Math.abs(bestDer);
 
-        if ((bestDer >= params.minDerivative) && (bestX != null)) {
+        if ((bestDer >= minDerivative) && (bestX != null)) {
             int x = (dir > 0) ? (bestX - 1) : bestX;
-            double derImpact = (double) bestDer / (params.barThreshold - params.minDerivative);
+            double derImpact = (double) bestDer / (minBar - minDerivative);
 
             return new PeakSide(x, derImpact);
         } else {
@@ -1165,8 +1236,8 @@ public class StaffProjector
             if (x2 == border) {
                 final int der = projection.getValue(border);
 
-                if (der >= params.minDerivative) {
-                    double derImpact = (double) der / (params.barThreshold - params.minDerivative);
+                if (der >= minDerivative) {
+                    double derImpact = (double) der / (minBar - minDerivative);
 
                     return new PeakSide(border, derImpact);
                 }
@@ -1284,9 +1355,14 @@ public class StaffProjector
                 0.25,
                 "Abscissa margin for refining peak sides");
 
-        private final Scale.Fraction minDerivative = new Scale.Fraction(
+        private final Constant.Integer topDerivativeNumber = new Constant.Integer(
+                "count",
+                5,
+                "Top number of best derivatives");
+
+        private final Constant.Ratio minDerivativeRatio = new Constant.Ratio(
                 0.4,
-                "Minimum absolute derivative for peak side");
+                "Minimum absolute derivative as ratio of elite derivative");
 
         private final Scale.Fraction barThreshold = new Scale.Fraction(
                 2.5,
@@ -1301,12 +1377,12 @@ public class StaffProjector
                 "Maximum vertical gap length in a bar");
 
         private final Scale.Fraction chunkThreshold = new Scale.Fraction(
-                0.8,
+                0.5,
                 "Maximum cumul value to detect chunk (on top of lines)");
 
-        private final Scale.LineFraction blankThreshold = new Scale.LineFraction(
-                2.5,
-                "Maximum cumul value (in LineFraction) to detect no-line regions");
+        private final Constant.Ratio blankThreshold = new Constant.Ratio(
+                0.5,
+                "Maximum ratio of lines cumul to detect no-line regions");
 
         private final Scale.Fraction minSmallBlankWidth = new Scale.Fraction(
                 0.1,
@@ -1425,24 +1501,24 @@ public class StaffProjector
         final int maxRightExtremum;
 
         // Following thresholds depend of staff (specific?) interline scale
-        final int minDerivative;
-
         final int barThreshold;
 
         final int braceThreshold;
 
         final int gapThreshold;
 
-        // Following thresholds depend on actual line height within this staff
+        // Following thresholds depend on actual line thickness within this staff
         int linesThreshold;
 
         int blankThreshold;
 
         int chunkThreshold;
 
-        Parameters (Scale scale,
+        Parameters (Sheet sheet,
                     int staffSpecific)
         {
+            final Scale scale = sheet.getScale();
+
             {
                 // Use sheet large interline value
                 final InterlineScale large = scale.getInterlineScale();
@@ -1459,8 +1535,9 @@ public class StaffProjector
 
             {
                 // Use staff specific interline value
-                final InterlineScale specific = scale.getInterlineScale(staffSpecific);
-                minDerivative = specific.toPixels(constants.minDerivative);
+                final InterlineScale specific = (staffSpecific == 0)
+                        ? scale.getInterlineScale()
+                        : scale.getInterlineScale(staffSpecific);
                 barThreshold = specific.toPixels(constants.barThreshold);
                 braceThreshold = specific.toPixels(constants.braceThreshold);
                 gapThreshold = specific.toPixels(constants.gapThreshold);

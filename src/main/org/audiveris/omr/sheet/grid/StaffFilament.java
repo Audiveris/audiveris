@@ -21,13 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.grid;
 
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.dynamic.CurvedFilament;
 import org.audiveris.omr.math.NaturalSpline;
 import org.audiveris.omr.run.Orientation;
-import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.StaffLine;
@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -79,6 +80,21 @@ public class StaffFilament
     public StaffFilament (int interline)
     {
         super(interline, InterlineScale.toPixels(interline, constants.segmentLength));
+    }
+
+    //-------------//
+    // yTranslated //
+    //-------------//
+    @Override
+    public LineInfo yTranslated (double dy)
+    {
+        final List<Point2D> virtualPoints = new ArrayList<>(points.size());
+
+        for (Point2D p : points) {
+            virtualPoints.add(new Point2D.Double(p.getX(), p.getY() + dy));
+        }
+
+        return new StaffLine(virtualPoints, getThickness());
     }
 
     //---------//
@@ -249,7 +265,7 @@ public class StaffFilament
     @Override
     public double getThickness ()
     {
-        return getMeanThickness(HORIZONTAL);
+        return (double) getWeight() / getTrueLength();
     }
 
     //---------//
@@ -304,6 +320,8 @@ public class StaffFilament
     //-------------//
     /**
      * Build a simple StaffLine instance from this detailed StaffFilament instance.
+     * <p>
+     * We reduce the number of defining points to its minimum.
      *
      * @param glyphIndex if not null, register the original glyph in glyph index
      * @return the equivalent StaffLine instance
@@ -317,6 +335,7 @@ public class StaffFilament
         }
 
         final StaffLine staffLine = new StaffLine(points, getThickness());
+        staffLine.reducePoints(constants.maxSimplificationShift.getValue());
         staffLine.setGlyph(glyph);
 
         return staffLine;
@@ -387,6 +406,11 @@ public class StaffFilament
         private final Scale.Fraction maxHoleLength = new Scale.Fraction(
                 6.0,
                 "Maximum length for holes without intermediate points");
+
+        private final Constant.Double maxSimplificationShift = new Constant.Double(
+                "pixels",
+                0.5,
+                "Maximum acceptable vertical shift when simplifying staff line points");
     }
 
     //--------//

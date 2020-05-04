@@ -250,7 +250,7 @@ public class InterDnd
             updateGhost(location); // This may modify location slightly
 
             // Retrieve staff reference
-            LineInfo line = staff.getLines().get(2); // Middle staff line
+            LineInfo line = staff.getMidLine();
 
             if (location.x < line.getEndPoint(HorizontalSide.LEFT).getX()) {
                 staffReference = PointUtil.rounded(line.getEndPoint(HorizontalSide.LEFT));

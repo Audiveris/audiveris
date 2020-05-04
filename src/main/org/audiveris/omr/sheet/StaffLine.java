@@ -36,6 +36,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -57,9 +58,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class StaffLine
         implements LineInfo
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StaffLine.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -87,6 +90,7 @@ public class StaffLine
     /** Bounding box. */
     protected Rectangle bounds;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StaffLine} object.
      *
@@ -110,6 +114,22 @@ public class StaffLine
     private StaffLine ()
     {
         this.thickness = 0;
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // yTranslated //
+    //-------------//
+    @Override
+    public StaffLine yTranslated (double dy)
+    {
+        StaffLine virtual = new StaffLine(Collections.EMPTY_LIST, thickness);
+
+        for (Point2D p : points) {
+            virtual.points.add(new Point2D.Double(p.getX(), p.getY() + dy));
+        }
+
+        return virtual;
     }
 
     //-----------//
@@ -251,6 +271,55 @@ public class StaffLine
         }
     }
 
+    //--------------//
+    // reducePoints //
+    //--------------//
+    /**
+     * Reduce the number of intermediate defining points while respecting the provided
+     * maximum ordinate shift.
+     * <p>
+     * Strategy is as follows:
+     * <ol>
+     * <li>Inspect middle intermediate point.
+     * <li>Remove it to check if ordinate at its x location remains OK.
+     * <li>If so, choose the new middle point to check
+     * <li>If not, re-insert this point and reduce left and right sub-lists
+     * </ol>
+     *
+     * @param maxDy maximum acceptable ordinate shift
+     */
+    public void reducePoints (double maxDy)
+    {
+        reduceList(points, maxDy);
+    }
+
+    private void reduceList (List<Point2D> pts,
+                             double maxDy)
+    {
+        if (pts.size() <= 2) {
+            return;
+        }
+
+        final int mid = pts.size() / 2;
+        Point2D p = pts.get(mid);
+        pts.remove(mid);
+        spline = null;
+
+        double y = yAt(p.getX());
+
+        if (Math.abs(y - p.getY()) > maxDy) {
+            // Re-insert point
+            pts.add(mid, p);
+            spline = null;
+
+            reduceList(pts.subList(0, mid), maxDy);
+            reduceList(pts.subList(mid, pts.size()), maxDy);
+        } else {
+            reduceList(pts, maxDy);
+        }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//

@@ -135,6 +135,7 @@ public class Part
     /** Staves in this part. */
     @XmlElementRefs({
         @XmlElementRef(type = Staff.class),
+        @XmlElementRef(type = OneLineStaff.class),
         @XmlElementRef(type = Tablature.class)})
     private final List<Staff> staves = new ArrayList<>();
 
@@ -1045,7 +1046,7 @@ public class Part
 
             for (LyricLineInter line : lyrics) {
                 final Staff staff = line.getStaff();
-                final double pos = staff.getNotePosition(line.getCenter()).getPitchPosition();
+                final double pos = staff.pitchPositionOf(line.getCenter());
                 final boolean isAbove = pos <= 0;
 
                 if ((staff != lastStaff) || (isAbove != lastIsAbove)) {

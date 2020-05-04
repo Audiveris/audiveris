@@ -22,6 +22,7 @@
 package org.audiveris.omr.glyph.dynamic;
 
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.sheet.Scale;
 
@@ -200,6 +201,35 @@ public abstract class Filament
         box.add(startPoint);
         box.add(stopPoint);
         setBounds(box);
+    }
+
+    //---------------//
+    // getTrueLength //
+    //---------------//
+    /**
+     * Report an evaluation of how this filament is filled by sections.
+     * (sections are naturally ordered by abscissa, then ordinate, then id)
+     *
+     * @return the cumulated length covered by sections
+     */
+    public int getTrueLength ()
+    {
+        int cMin = getMembers().first().getStartCoord();
+        int cMax = -1;
+        int holes = 0;
+
+        for (Section s : getMembers()) {
+            final int start = s.getStartCoord();
+            final int stop = s.getStopCoord();
+
+            if ((cMax != -1) && (start > cMax)) {
+                holes += (start - cMax);
+            }
+
+            cMax = Math.max(cMax, stop);
+        }
+
+        return (cMax - cMin + 1) - holes;
     }
 
     //---------------------//

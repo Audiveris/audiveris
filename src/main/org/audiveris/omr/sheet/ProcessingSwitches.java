@@ -161,7 +161,8 @@ public class ProcessingSwitches
         crossHeads(constants.crossHeads),
         implicitTuplets(constants.implicitTuplets),
         sixStringTablatures(constants.sixStringTablatures),
-        fourStringTablatures(constants.fourStringTablatures);
+        fourStringTablatures(constants.fourStringTablatures),
+        oneLineStaves(constants.oneLineStaves);
 
         /** Underlying boolean constant. */
         Constant.Boolean constant;
@@ -319,6 +320,10 @@ public class ProcessingSwitches
         private final Constant.Boolean fourStringTablatures = new Constant.Boolean(
                 false,
                 "Support for bass tablatures (4 lines)");
+
+        private final Constant.Boolean oneLineStaves = new Constant.Boolean(
+                false,
+                "Support for percussion staves (1 line)");
     }
 
     //-----------------//

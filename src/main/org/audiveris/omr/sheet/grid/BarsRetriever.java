@@ -2090,6 +2090,7 @@ public class BarsRetriever
      */
     private void purgeCClefs ()
     {
+        NextStaff:
         for (StaffProjector projector : projectors) {
             final Staff staff = projector.getStaff();
             final List<StaffPeak> peaks = projector.getPeaks();
@@ -2143,11 +2144,11 @@ public class BarsRetriever
                                 }
 
                                 // Avoid false peaks before the end of C-Clef has been passed
-                                if ((i + 1) < peaks.size()) {
+                                if ((i + 2) < peaks.size()) {
                                     int mid2 = (p2.getStart() + p2.getStop()) / 2;
                                     int xBreak = mid2 + params.cClefTail;
 
-                                    for (StaffPeak tp : peaks.subList(i + 1, peaks.size())) {
+                                    for (StaffPeak tp : peaks.subList(i + 2, peaks.size())) {
                                         int otherMid = (tp.getStart() + tp.getStop()) / 2;
 
                                         if (otherMid < xBreak) {
@@ -2199,9 +2200,11 @@ public class BarsRetriever
                         }
                     } else {
                         measureStart = p1.getStop() + 1;
+                        ///continue NextStaff; // Process only beginning of staff
                     }
                 } else {
                     measureStart = p1.getStop() + 1;
+                    ///continue NextStaff; // Process only beginning of staff
                 }
             }
         }
