@@ -63,6 +63,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.audiveris.omr.sheet.rhythm.Measure;
 
 /**
  * Class {@code EndingsBuilder} retrieves the endings out of segments found in sheet
@@ -340,6 +341,18 @@ public class EndingsBuilder
             return null;
         }
 
+        // Check with related measure length
+        Measure measure = staff.getPart().getMeasureAt(segment.getCenter(), staff);
+
+        if (measure == null) {
+            return null;
+        }
+
+        if (length < measure.getWidth() * constants.minMeasureRatio.getValue()) {
+            logger.info("Ending too short compared with related measure");
+            return null;
+        }
+
         // Left leg (mandatory)
         Filament leftLeg = lookupLeg(seg, true, staff);
 
@@ -393,6 +406,10 @@ public class EndingsBuilder
     private static class Constants
             extends ConstantSet
     {
+
+        private final Constant.Ratio minMeasureRatio = new Constant.Ratio(
+                0.8,
+                "Minimum ending length as ratio of related measure length");
 
         private final Scale.Fraction minLengthLow = new Scale.Fraction(
                 6,
