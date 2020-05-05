@@ -749,8 +749,23 @@ public class Part
      */
     public Measure getMeasureAt (Point2D point)
     {
-        Staff staff = getStaffJustAbove(point);
+        return getMeasureAt(point, getStaffJustAbove(point));
+    }
 
+    //--------------//
+    // getMeasureAt //
+    //--------------//
+    /**
+     * Report the measure that contains a given point (assumed to be in the containing
+     * part).
+     *
+     * @param point coordinates of the given point
+     * @param staff related staff
+     * @return the containing measure
+     */
+    public Measure getMeasureAt (Point2D point,
+                                 Staff staff)
+    {
         if (staff == null) {
             return null;
         }
