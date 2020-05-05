@@ -286,6 +286,46 @@ public class PartBarline
         return false;
     }
 
+    //----------------//
+    // mergeWithBelow //
+    //----------------//
+    /**
+     * Merge this PartBarline with the provided one, just below.
+     *
+     * @param below the PartBarline below
+     */
+    public void mergeWithBelow (PartBarline below)
+    {
+        staffBarlines.addAll(below.staffBarlines);
+    }
+
+    //-------------//
+    // splitBefore //
+    //-------------//
+    /**
+     * Split this PartBarline before the provided staff
+     *
+     * @param pivotStaff the first staff of the newly created PartBarline below
+     * @return the created PartBarline below
+     */
+    public PartBarline splitBefore (Staff pivotStaff)
+    {
+        final PartBarline partBarlineBelow = new PartBarline();
+        boolean started = false;
+
+        for (StaffBarlineInter sb : staffBarlines) {
+            started |= sb.getLeftBar().getStaff() == pivotStaff;
+
+            if (started) {
+                partBarlineBelow.staffBarlines.add(sb);
+            }
+        }
+
+        staffBarlines.removeAll(partBarlineBelow.staffBarlines);
+
+        return partBarlineBelow;
+    }
+
     //----------//
     // toString //
     //----------//

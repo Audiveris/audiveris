@@ -1790,29 +1790,31 @@ public class PartwiseBuilder
 
             // For first note in chord
             if (isFirstInChord) {
-                // Chord events (direction, pedal, dynamics, articulation, ornament)
-                for (Relation rel : sig.edgesOf(chord)) {
-                    final Inter other = sig.getOppositeInter(chord, rel);
+                if (!current.measure.isDummy()) {
+                    // Chord events (direction, pedal, dynamics, articulation, ornament)
+                    for (Relation rel : sig.edgesOf(chord)) {
+                        final Inter other = sig.getOppositeInter(chord, rel);
 
-                    if (rel instanceof ChordSentenceRelation) {
-                        processDirection((SentenceInter) other);
-                    } else if (rel instanceof ChordPedalRelation) {
-                        processPedal((PedalInter) other);
-                    } else if (rel instanceof ChordWedgeRelation) {
-                        HorizontalSide side = ((ChordWedgeRelation) rel).getSide();
-                        processWedge((WedgeInter) other, side);
-                    } else if (rel instanceof ChordDynamicsRelation) {
-                        processDynamics((DynamicsInter) other);
-                    } else if (rel instanceof ChordArticulationRelation) {
-                        processArticulation((ArticulationInter) other);
-                    } else if (rel instanceof ChordOrnamentRelation) {
-                        processOrnament((OrnamentInter) other);
-                    } else if (rel instanceof ChordArpeggiatoRelation) {
-                        processArpeggiato((ArpeggiatoInter) other);
-                    } else if (rel instanceof FermataChordRelation) {
-                        processFermata((FermataInter) other, null);
-                    } else if (rel instanceof ChordNameRelation) {
-                        processChordName((ChordNameInter) other);
+                        if (rel instanceof ChordSentenceRelation) {
+                            processDirection((SentenceInter) other);
+                        } else if (rel instanceof ChordPedalRelation) {
+                            processPedal((PedalInter) other);
+                        } else if (rel instanceof ChordWedgeRelation) {
+                            HorizontalSide side = ((ChordWedgeRelation) rel).getSide();
+                            processWedge((WedgeInter) other, side);
+                        } else if (rel instanceof ChordDynamicsRelation) {
+                            processDynamics((DynamicsInter) other);
+                        } else if (rel instanceof ChordArticulationRelation) {
+                            processArticulation((ArticulationInter) other);
+                        } else if (rel instanceof ChordOrnamentRelation) {
+                            processOrnament((OrnamentInter) other);
+                        } else if (rel instanceof ChordArpeggiatoRelation) {
+                            processArpeggiato((ArpeggiatoInter) other);
+                        } else if (rel instanceof FermataChordRelation) {
+                            processFermata((FermataInter) other, null);
+                        } else if (rel instanceof ChordNameRelation) {
+                            processChordName((ChordNameInter) other);
+                        }
                     }
                 }
             } else {
@@ -1843,21 +1845,23 @@ public class PartwiseBuilder
             } else {
                 HeadChordInter headChord = (HeadChordInter) chord;
 
-                // Grace?
-                if (isFirstInChord && note.getShape().isSmall()) {
-                    Grace grace = factory.createGrace();
-                    current.pmNote.setGrace(grace);
+                if (!current.measure.isDummy()) {
+                    // Grace?
+                    if (isFirstInChord && note.getShape().isSmall()) {
+                        Grace grace = factory.createGrace();
+                        current.pmNote.setGrace(grace);
 
-                    // Slash? (check the flag)
-                    StemInter stem = headChord.getStem();
+                        // Slash? (check the flag)
+                        StemInter stem = headChord.getStem();
 
-                    if (stem != null) {
-                        for (Relation rel : sig.getRelations(stem, FlagStemRelation.class)) {
-                            if (Shape.SMALL_FLAG_SLASH == sig.getOppositeInter(stem, rel)
-                                    .getShape()) {
-                                grace.setSlash(YesNo.YES);
+                        if (stem != null) {
+                            for (Relation rel : sig.getRelations(stem, FlagStemRelation.class)) {
+                                if (Shape.SMALL_FLAG_SLASH == sig.getOppositeInter(stem, rel)
+                                        .getShape()) {
+                                    grace.setSlash(YesNo.YES);
 
-                                break;
+                                    break;
+                                }
                             }
                         }
                     }

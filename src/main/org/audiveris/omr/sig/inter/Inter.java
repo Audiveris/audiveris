@@ -296,6 +296,13 @@ public interface Inter
     Part getPart ();
 
     /**
+     * Report the containing part specifically assigned, if any.
+     *
+     * @return the containing part specifically assigned, or null
+     */
+    Part getSpecificPart ();
+
+    /**
      * Assign the related part, if any.
      *
      * @param part the part to set

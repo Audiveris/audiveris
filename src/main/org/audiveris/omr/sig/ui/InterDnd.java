@@ -157,7 +157,7 @@ public class InterDnd
         // Staff
         ghost.setStaff(staff);
 
-        updateGhost(dropPoint); // dropPoint can be modified
+        updateGhost(dropPoint); // dropPoint can be modified, as well as ghost staff
 
         sheet.getInterController().addInter(ghost);
         ///sheet.getSymbolsEditor().openEditMode(ghost);
@@ -222,9 +222,7 @@ public class InterDnd
             staff = null;
             system = null;
         } else {
-            double pp = closestStaff.pitchPositionOf(location);
-
-            if (Math.abs(pp) <= 4) {
+            if (closestStaff.contains(location)) {
                 // We are within staff height, so let's pick up this staff
                 if (staff != closestStaff) {
                     if (system != closestStaff.getSystem()) {
@@ -247,7 +245,8 @@ public class InterDnd
         tracker.setSystem(system);
 
         if (staff != null) {
-            updateGhost(location); // This may modify location slightly
+            updateGhost(location); // This may modify location slightly, as well as ghost staff
+            staff = ghost.getStaff();
 
             // Retrieve staff reference
             LineInfo line = staff.getMidLine();

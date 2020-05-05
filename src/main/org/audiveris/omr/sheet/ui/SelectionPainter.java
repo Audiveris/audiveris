@@ -166,8 +166,7 @@ public class SelectionPainter
         @Override
         protected void setColor (Inter inter)
         {
-            // Use complementary of inter color
-            g.setColor(UIUtil.complementaryColor(inter.getColor()));
+            g.setColor(UIUtil.selectionColor(inter.getColor()));
         }
 
         @Override

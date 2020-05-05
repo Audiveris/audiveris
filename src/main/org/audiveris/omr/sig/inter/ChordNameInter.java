@@ -523,6 +523,7 @@ public class ChordNameInter
             }
         }
 
+        // For JAXB
         private Alter ()
         {
         }
@@ -564,6 +565,15 @@ public class ChordNameInter
             this.alter = alter;
             this.type = type;
             this.text = text;
+        }
+
+        // Needed for JAXB
+        private Degree ()
+        {
+            value = 0;
+            alter = null;
+            type = null;
+            text = null;
         }
 
         @Override

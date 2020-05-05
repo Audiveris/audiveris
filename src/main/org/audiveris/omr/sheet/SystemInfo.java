@@ -237,11 +237,26 @@ public class SystemInfo
     /**
      * Add a (real) part to this system.
      *
-     * @param partInfo the part to add
+     * @param part the part to add
      */
-    public void addPart (Part partInfo)
+    public void addPart (Part part)
     {
-        parts.add(partInfo);
+        parts.add(part);
+    }
+
+    //---------//
+    // addPart //
+    //---------//
+    /**
+     * Add a (real) part to this system at provided index.
+     *
+     * @param index insertion index
+     * @param part  the part to add
+     */
+    public void addPart (int index,
+                         Part part)
+    {
+        parts.add(index, part);
     }
 
     //----------//
@@ -1514,6 +1529,25 @@ public class SystemInfo
                 }
             }
         }
+    }
+
+    //------------//
+    // removePart //
+    //------------//
+    /**
+     * Remove the provided part as well as its measures from system stacks
+     *
+     * @param part the part to remove
+     */
+    public void removePart (Part part)
+    {
+        for (Measure measure : part.getMeasures()) {
+            // Stack O--- Measure
+            measure.getStack().removeMeasure(measure);
+        }
+
+        // System O--- Part
+        parts.remove(part);
     }
 
     //-------------//

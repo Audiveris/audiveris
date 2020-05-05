@@ -763,6 +763,15 @@ public abstract class AbstractInter
         return part;
     }
 
+    //-----------------//
+    // getSpecificPart //
+    //-----------------//
+    @Override
+    public Part getSpecificPart ()
+    {
+        return part;
+    }
+
     //---------//
     // setPart //
     //---------//
