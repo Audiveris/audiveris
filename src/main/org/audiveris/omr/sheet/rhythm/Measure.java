@@ -33,6 +33,7 @@ import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.rhythm.Voice.Family;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
@@ -1593,6 +1594,250 @@ public class Measure
     }
 
     //----------------//
+    // mergeWithBelow //
+    //----------------//
+    /**
+     * Merge this measure with the content of the measure just below.
+     *
+     * @param below the measure below
+     */
+    public void mergeWithBelow (Measure below)
+    {
+        // Barlines
+        if (below.leftBarline != null) {
+            if (leftBarline == null) {
+                leftBarline = below.leftBarline;
+            } else {
+                leftBarline.mergeWithBelow(below.leftBarline);
+            }
+        }
+
+        if (below.midBarline != null) {
+            if (midBarline == null) {
+                midBarline = below.midBarline;
+            } else {
+                midBarline.mergeWithBelow(below.midBarline);
+            }
+        }
+
+        if (below.rightBarline != null) {
+            if (rightBarline == null) {
+                rightBarline = below.rightBarline;
+            } else {
+                rightBarline.mergeWithBelow(below.rightBarline);
+            }
+        }
+
+        // Keys
+        if (below.keys != null) {
+            if (keys == null) {
+                keys = new LinkedHashSet<>();
+            }
+
+            keys.addAll(below.keys);
+        }
+
+        mergeWithOther(below);
+    }
+
+    //-------------//
+    // splitBefore //
+    //-------------//
+    /**
+     * Split this measure before the provided staff.
+     *
+     * @param pivotStaff the provided staff
+     * @param partBelow  the new part below, to be populated with lower half of measure
+     */
+    public void splitBefore (Staff pivotStaff,
+                             Part partBelow)
+    {
+        final Measure measureBelow = new Measure(partBelow);
+        final List<Staff> stavesBelow = partBelow.getStaves();
+
+        // Barlines
+        if (leftBarline != null) {
+            measureBelow.leftBarline = leftBarline.splitBefore(pivotStaff);
+        }
+        if (midBarline != null) {
+            measureBelow.midBarline = midBarline.splitBefore(pivotStaff);
+        }
+        if (rightBarline != null) {
+            measureBelow.rightBarline = rightBarline.splitBefore(pivotStaff);
+        }
+
+        // Keys
+        if (hasKeys()) {
+            for (KeyInter key : keys) {
+                if (stavesBelow.contains(key.getMembers().iterator().next().getStaff())) {
+                    if (measureBelow.keys == null) {
+                        measureBelow.keys = new LinkedHashSet<>();
+                    }
+
+                    measureBelow.keys.add(key);
+                }
+            }
+
+            if (measureBelow.keys != null) {
+                keys.removeAll(measureBelow.keys);
+            }
+        }
+
+        // Beam groups
+        BeamGroupLoop:
+        for (BeamGroup bg : beamGroups) {
+            final Set<AbstractBeamInter> beams = bg.getBeams();
+
+            for (AbstractBeamInter beam : beams) {
+                // A beam may have no staff, with notes in upper staff and notes in lower staff
+                for (AbstractChordInter chord : beam.getChords()) {
+                    final Staff staff = chord.getBottomStaff();
+
+                    if (stavesBelow.contains(staff)) {
+                        measureBelow.beamGroups.add(bg);
+                        continue BeamGroupLoop;
+                    }
+                }
+            }
+
+            bg.setMeasure(measureBelow);
+        }
+
+        beamGroups.removeAll(measureBelow.beamGroups);
+
+        // Clefs
+        if ((clefs != null) && !clefs.isEmpty()) {
+            for (ClefInter clef : clefs) {
+                if (stavesBelow.contains(clef.getStaff())) {
+                    if (measureBelow.clefs == null) {
+                        measureBelow.clefs = new ArrayList<>();
+                    }
+
+                    measureBelow.clefs.add(clef);
+                }
+            }
+
+            Collections.sort(measureBelow.clefs, Inters.byFullCenterAbscissa); // Useful???
+        }
+
+        // Times
+        if (timeSigs != null) {
+            for (AbstractTimeInter time : timeSigs) {
+                if (stavesBelow.contains(time.getStaff())) {
+                    if (measureBelow.timeSigs == null) {
+                        measureBelow.timeSigs = new LinkedHashSet<>();
+                    }
+
+                    measureBelow.timeSigs.add(time);
+                }
+            }
+
+            if (measureBelow.timeSigs != null) {
+                timeSigs.removeAll(measureBelow.timeSigs);
+            }
+        }
+
+        // Head chords
+        if (headChords != null) {
+            for (HeadChordInter chord : headChords) {
+                if (stavesBelow.contains(chord.getBottomStaff())) {
+                    if (measureBelow.headChords == null) {
+                        measureBelow.headChords = new LinkedHashSet<>();
+                    }
+
+                    measureBelow.headChords.add(chord);
+                    chord.setMeasure(measureBelow);
+                }
+            }
+
+            if (measureBelow.headChords != null) {
+                headChords.removeAll(measureBelow.headChords);
+            }
+        }
+
+        // Rest chords
+        if (restChords != null) {
+            for (RestChordInter chord : restChords) {
+                if (stavesBelow.contains(chord.getBottomStaff())) {
+                    if (measureBelow.restChords == null) {
+                        measureBelow.restChords = new LinkedHashSet<>();
+                    }
+
+                    measureBelow.restChords.add(chord);
+                    chord.setMeasure(measureBelow);
+                }
+            }
+
+            if (measureBelow.restChords != null) {
+                restChords.removeAll(measureBelow.restChords);
+            }
+        }
+
+        // Flags
+        if (flags != null) {
+            for (FlagInter flag : flags) {
+                if (stavesBelow.contains(flag.getStaff())) {
+                    if (measureBelow.flags == null) {
+                        measureBelow.flags = new LinkedHashSet<>();
+                    }
+
+                    measureBelow.flags.add(flag);
+                }
+            }
+
+            if (measureBelow.flags != null) {
+                flags.removeAll(measureBelow.flags);
+            }
+        }
+
+        // Tuplets
+        if (tuplets == null) {
+            for (TupletInter tuplet : tuplets) {
+                if (stavesBelow.contains(tuplet.getStaff())) {
+                    if (measureBelow.tuplets == null) {
+                        measureBelow.tuplets = new LinkedHashSet<>();
+                    }
+
+                    measureBelow.tuplets.add(tuplet);
+                }
+            }
+
+            if (measureBelow.tuplets != null) {
+                tuplets.removeAll(measureBelow.tuplets);
+            }
+        }
+
+        // Augmentation dots
+        if (augDots == null) {
+            for (AugmentationDotInter aug : augDots) {
+                if (stavesBelow.contains(aug.getStaff())) {
+                    if (measureBelow.augDots == null) {
+                        measureBelow.augDots = new LinkedHashSet<>();
+                    }
+
+                    measureBelow.augDots.add(aug);
+                }
+
+                if (measureBelow.augDots != null) {
+                    augDots.removeAll(measureBelow.augDots);
+                }
+            }
+        }
+
+        // Voices
+        for (Voice voice : voices) {
+            if (stavesBelow.contains(voice.getChords().iterator().next().getBottomStaff())) {
+                measureBelow.voices.add(voice);
+            }
+
+            voices.removeAll(measureBelow.voices);
+        }
+
+        measureBelow.switchItemsPart(partBelow);
+        partBelow.addMeasure(measureBelow);
+    }
+
+    //----------------//
     // mergeWithRight //
     //----------------//
     /**
@@ -1609,24 +1854,6 @@ public class Measure
 
         setRightPartBarline(right.rightBarline);
 
-        // Beam groups
-        beamGroups.addAll(right.beamGroups);
-
-        for (BeamGroup bg : right.beamGroups) {
-            bg.setMeasure(this);
-        }
-
-        // Clefs
-        if ((right.clefs != null) && !right.clefs.isEmpty()) {
-            if (clefs == null) {
-                clefs = new ArrayList<>();
-            }
-
-            clefs.removeAll(right.clefs); // Just in cases
-            clefs.addAll(right.clefs);
-            Collections.sort(clefs, Inters.byFullCenterAbscissa);
-        }
-
         // Keys
         if (right.hasKeys()) {
             if (hasKeys()) {
@@ -1636,64 +1863,94 @@ public class Measure
             }
         }
 
+        mergeWithOther(right);
+    }
+
+    //----------------//
+    // mergeWithOther //
+    //----------------//
+    /**
+     * Merge this measure with the content of the provided other measure.
+     *
+     * @param other the other measure
+     */
+    private void mergeWithOther (Measure other)
+    {
+        // Beam groups
+        beamGroups.addAll(other.beamGroups);
+
+        for (BeamGroup bg : other.beamGroups) {
+            bg.setMeasure(this);
+        }
+
+        // Clefs
+        if ((other.clefs != null) && !other.clefs.isEmpty()) {
+            if (clefs == null) {
+                clefs = new ArrayList<>();
+            }
+
+            clefs.addAll(other.clefs);
+            Collections.sort(clefs, Inters.byFullCenterAbscissa);
+        }
+
         // Times
-        if (right.timeSigs != null) {
+        if (other.timeSigs != null) {
             if (timeSigs == null) {
                 timeSigs = new LinkedHashSet<>();
             }
 
-            timeSigs.addAll(right.timeSigs);
+            timeSigs.addAll(other.timeSigs);
         }
 
         // Head chords
-        if (!right.getHeadChords().isEmpty()) {
-            needHeadChords().addAll(right.getHeadChords());
+        if (!other.getHeadChords().isEmpty()) {
+            needHeadChords().addAll(other.getHeadChords());
 
-            for (HeadChordInter ch : right.getHeadChords()) {
+            for (HeadChordInter ch : other.getHeadChords()) {
                 ch.setMeasure(this);
             }
         }
 
         // Rest chords
-        if (!right.getRestChords().isEmpty()) {
-            needRestChords().addAll(right.getRestChords());
+        if (!other.getRestChords().isEmpty()) {
+            needRestChords().addAll(other.getRestChords());
 
-            for (RestChordInter ch : right.getRestChords()) {
+            for (RestChordInter ch : other.getRestChords()) {
                 ch.setMeasure(this);
             }
         }
 
         // Flags
-        if (!right.getFlags().isEmpty()) {
+        if (!other.getFlags().isEmpty()) {
             if (flags == null) {
                 flags = new LinkedHashSet<>();
             }
 
-            flags.addAll(right.getFlags());
+            flags.addAll(other.getFlags());
         }
 
         // Tuplets
-        if (!right.getTuplets().isEmpty()) {
+        if (!other.getTuplets().isEmpty()) {
             if (tuplets == null) {
                 tuplets = new LinkedHashSet<>();
             }
 
-            tuplets.addAll(right.getTuplets());
+            tuplets.addAll(other.getTuplets());
         }
 
         // Augmentation dots
-        if (!right.getAugmentationDots().isEmpty()) {
+        if (!other.getAugmentationDots().isEmpty()) {
             if (augDots == null) {
                 augDots = new LinkedHashSet<>();
             }
 
-            augDots.addAll(right.getAugmentationDots());
+            augDots.addAll(other.getAugmentationDots());
         }
 
         // Voices
-        voices.addAll(right.voices);
+        voices.addAll(other.voices);
 
-        for (Voice voice : right.voices) {
+        for (Voice voice : other.voices) {
             voice.setMeasure(this);
         }
     }
@@ -2098,6 +2355,89 @@ public class Measure
         }
 
         return oldOwner;
+    }
+
+    //-----------------//
+    // switchItemsPart //
+    //-----------------//
+    /**
+     * Assign the provided newPart too each item pointing to a different non-null part.
+     *
+     * @param newPart the provided newPart
+     */
+    public void switchItemsPart (Part newPart)
+    {
+        // Clefs
+        if (clefs == null) {
+            for (ClefInter item : clefs) {
+                if (item.getSpecificPart() != null && item.getSpecificPart() != newPart) {
+                    item.setPart(newPart);
+                }
+            }
+        }
+
+        // Keys
+        if (keys != null) {
+            for (KeyInter item : keys) {
+                if (item.getSpecificPart() != null && item.getSpecificPart() != newPart) {
+                    item.setPart(newPart);
+                }
+            }
+        }
+
+        // Times
+        if (timeSigs != null) {
+            for (AbstractTimeInter item : timeSigs) {
+                if (item.getSpecificPart() != null && item.getSpecificPart() != newPart) {
+                    item.setPart(newPart);
+                }
+            }
+        }
+
+        // Head chords
+        if (headChords != null) {
+            for (HeadChordInter item : headChords) {
+                if (item.getSpecificPart() != null && item.getSpecificPart() != newPart) {
+                    item.setPart(newPart);
+                }
+            }
+        }
+
+        // Rest chords
+        if (restChords != null) {
+            for (RestChordInter item : restChords) {
+                if (item.getSpecificPart() != null && item.getSpecificPart() != newPart) {
+                    item.setPart(newPart);
+                }
+            }
+        }
+
+        // Flags
+        if (flags != null) {
+            for (FlagInter item : flags) {
+                if (item.getSpecificPart() != null && item.getSpecificPart() != newPart) {
+                    item.setPart(newPart);
+                }
+            }
+        }
+
+        // Tuplets
+        if (tuplets != null) {
+            for (TupletInter item : tuplets) {
+                if (item.getSpecificPart() != null && item.getSpecificPart() != newPart) {
+                    item.setPart(newPart);
+                }
+            }
+        }
+
+        // Augmentation dots
+        if (augDots != null) {
+            for (AugmentationDotInter item : augDots) {
+                if (item.getSpecificPart() != null && item.getSpecificPart() != newPart) {
+                    item.setPart(newPart);
+                }
+            }
+        }
     }
 
     //----------//

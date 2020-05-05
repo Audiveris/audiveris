@@ -385,6 +385,84 @@ public class Part
         return dummyPart;
     }
 
+    //----------------//
+    // mergeWithBelow //
+    //----------------//
+    /**
+     * Merge this part with the part located just below in the same system.
+     * <p>
+     * This extension is performed when a missing brace is manually inserted in front of these
+     * 2 parts to merge them into a single part.
+     * <p>
+     * Not to be mistaken with the notion of "merged-grand-staff" which is a specific layout with
+     * 2 staves that physically share the common C4 step.
+     * <p>
+     * Impact on system parts, part staves, stack measures, measures extended, pointers to part
+     *
+     * @param below the part just below this one
+     */
+    public void mergeWithBelow (Part below)
+    {
+        logger.info("Merging {} with below {}", this, below);
+
+        for (int im = 0; im < measures.size(); im++) {
+            final Measure measure = measures.get(im);
+            final Measure measureBelow = below.getMeasures().get(im);
+            measureBelow.switchItemsPart(below);
+            measure.mergeWithBelow(measureBelow);
+        }
+
+        if (below.leftBarline != null) {
+            if (leftBarline == null) {
+                leftBarline = below.leftBarline;
+            } else {
+                leftBarline.mergeWithBelow(below.leftBarline);
+            }
+        }
+
+        for (Staff staff : below.getStaves()) {
+            addStaff(staff);
+        }
+
+        system.removePart(below);
+    }
+
+    //-------------//
+    // splitBefore //
+    //-------------//
+    /**
+     * Split this part in two sub-parts, just before the provided staff.
+     *
+     * @param pivotStaff the first staff of second half.
+     */
+    public void splitBefore (Staff pivotStaff)
+    {
+        logger.info("Splitting {} before {}", this, pivotStaff);
+
+        final int staffIndex = staves.indexOf(pivotStaff);
+        final Part partBelow = new Part(system);
+
+        for (Staff staff : staves.subList(staffIndex, staves.size())) {
+            partBelow.addStaff(staff);
+        }
+
+        staves.removeAll(partBelow.staves);
+
+        for (int im = 0; im < measures.size(); im++) {
+            final Measure measure = measures.get(im);
+            measure.splitBefore(pivotStaff, partBelow);
+        }
+
+        int myIndex = system.getParts().indexOf(this);
+        system.addPart(myIndex + 1, partBelow);
+
+        // Part numbering (to be refined)
+        int theId = id + 1;
+        for (Part part : system.getParts().subList(myIndex + 1, system.getParts().size())) {
+            part.setId(theId++);
+        }
+    }
+
     //-------------------//
     // getCrossSlurLinks //
     //-------------------//

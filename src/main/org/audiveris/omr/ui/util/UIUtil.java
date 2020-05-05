@@ -226,6 +226,20 @@ public abstract class UIUtil
         return new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
     }
 
+    //----------------//
+    // selectionColor //
+    //----------------//
+    /**
+     * Report a selection color for the provided color.
+     *
+     * @param color provided color
+     * @return the corresponding selection color
+     */
+    public static Color selectionColor (Color color)
+    {
+        return new Color(color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
+    }
+
     //------------------//
     // directoryChooser //
     //------------------//

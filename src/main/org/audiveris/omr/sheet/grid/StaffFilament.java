@@ -409,7 +409,7 @@ public class StaffFilament
 
         private final Constant.Double maxSimplificationShift = new Constant.Double(
                 "pixels",
-                0.5,
+                0.25,
                 "Maximum acceptable vertical shift when simplifying staff line points");
     }
 

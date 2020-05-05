@@ -388,6 +388,24 @@ public class Staff
         }
     }
 
+    //----------//
+    // contains //
+    //----------//
+    /**
+     * Report whether the provided point lies within staff limits.
+     *
+     * @param point the location to check
+     * @return true if within staff limits
+     */
+    public boolean contains (Point2D point)
+    {
+        if (point.getX() < left || point.getX() > right) {
+            return false;
+        }
+
+        return distanceTo(point) <= 0;
+    }
+
     //------------//
     // distanceTo //
     //------------//

@@ -1601,6 +1601,19 @@ public class MeasureStack
         }
     }
 
+    //---------------//
+    // removeMeasure //
+    //---------------//
+    /**
+     * Remove a measure from the stack
+     *
+     * @param measure the measure to remove
+     */
+    public void removeMeasure (Measure measure)
+    {
+        measures.remove(measure);
+    }
+
     //------------//
     // renderArea //
     //------------//

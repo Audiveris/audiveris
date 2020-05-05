@@ -72,11 +72,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class {@code StaffBarlineInter} represents a logical barline for one staff only.
  * <p>
- * A {@link PartBarline} is a logical barline for one part, that is made of one
+ * A {@link PartBarline} is a logical barline for one part, a vertical sequence composed of one
  * {@code StaffBarlineInter} for each staff in the part.
  * <p>
- * A {@code StaffBarlineInter} is an ensemble composed of a horizontal sequence of one or several
- * {@link BarlineInter} instances.
+ * A {@code StaffBarlineInter} is a horizontal sequence of one or several {@link BarlineInter}
+ * instances.
  * <p>
  * Barline-related entities such as repeat dot(s), ending(s), fermata(s), segno or coda are
  * implemented as separate inters, linked to a barline by proper relation.
