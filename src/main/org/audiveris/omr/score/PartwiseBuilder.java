@@ -2064,8 +2064,10 @@ public class PartwiseBuilder
                 }
 
                 // Lyrics?
-                for (Relation rel : sig.getRelations(chord, ChordSyllableRelation.class)) {
-                    processSyllable((LyricItemInter) sig.getOppositeInter(chord, rel));
+                if (isFirstInChord) {
+                    for (Relation rel : sig.getRelations(chord, ChordSyllableRelation.class)) {
+                        processSyllable((LyricItemInter) sig.getOppositeInter(chord, rel));
+                    }
                 }
             }
 
