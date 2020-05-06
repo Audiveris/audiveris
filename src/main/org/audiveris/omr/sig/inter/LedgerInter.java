@@ -246,6 +246,23 @@ public class LedgerInter
     }
 
     //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        super.setGlyph(glyph);
+
+        if ((median == null) && (glyph != null)) {
+            // Case of manual ledger: Compute thickness and median parameters and area
+            thickness = glyph.getMeanThickness(Orientation.HORIZONTAL);
+            median = glyph.getCenterLine();
+
+            computeArea();
+        }
+    }
+
+    //----------//
     // getIndex //
     //----------//
     /**

@@ -987,15 +987,41 @@ public class HeadInter
         return bestLink;
     }
 
-    //------------------//
-    // getNeededLedgers //
-    //------------------//
+    //--------------------//
+    // getShrinkHoriRatio //
+    //--------------------//
+    /**
+     * Report horizontal ratio to check overlap
+     *
+     * @return horizontal ratio
+     */
+    public static double getShrinkHoriRatio ()
+    {
+        return constants.shrinkHoriRatio.getValue();
+    }
+
+    //--------------------//
+    // getShrinkVertRatio //
+    //--------------------//
+    /**
+     * Report vertical ratio to check overlap
+     *
+     * @return vertical ratio
+     */
+    public static double getShrinkVertRatio ()
+    {
+        return constants.shrinkVertRatio.getValue();
+    }
+
+    //----------------------//
+    // getNeededLedgerLines //
+    //----------------------//
     /**
      * Report the ledger lines that should be added to support this head.
      *
      * @return the sequence of needed ledger lines
      */
-    public List<Line2D> getNeededLedgers ()
+    private List<Line2D> getNeededLedgerLines ()
     {
         if (staff == null) {
             return Collections.EMPTY_LIST;
@@ -1027,32 +1053,6 @@ public class HeadInter
         }
 
         return (lines != null) ? lines : Collections.EMPTY_LIST;
-    }
-
-    //--------------------//
-    // getShrinkHoriRatio //
-    //--------------------//
-    /**
-     * Report horizontal ratio to check overlap
-     *
-     * @return horizontal ratio
-     */
-    public static double getShrinkHoriRatio ()
-    {
-        return constants.shrinkHoriRatio.getValue();
-    }
-
-    //--------------------//
-    // getShrinkVertRatio //
-    //--------------------//
-    /**
-     * Report vertical ratio to check overlap
-     *
-     * @return vertical ratio
-     */
-    public static double getShrinkVertRatio ()
-    {
-        return constants.shrinkVertRatio.getValue();
     }
 
     //-----------------//
@@ -1131,9 +1131,10 @@ public class HeadInter
         final List<UITask> tasks = new ArrayList<>();
         final SIGraph theSig = (sig != null) ? sig : staff.getSystem().getSig();
 
-        for (Line2D line : getNeededLedgers()) {
+        for (Line2D line : getNeededLedgerLines()) {
             LedgerInter ledger = new LedgerInter(line, LedgerInter.DEFAULT_THICKNESS, 1);
             ledger.setManual(true);
+            ledger.setStaff(staff);
             tasks.add(new AdditionTask(theSig, ledger, ledger.getBounds(), Collections.EMPTY_SET));
         }
 
@@ -1306,7 +1307,7 @@ public class HeadInter
             // Add needed ledgers
             final HeadInter head = (HeadInter) inter;
 
-            for (Line2D line : head.getNeededLedgers()) {
+            for (Line2D line : head.getNeededLedgerLines()) {
                 g.setColor(Color.RED);
                 g.draw(line);
             }
@@ -1320,7 +1321,7 @@ public class HeadInter
             // Include needed ledgers if any
             final HeadInter head = (HeadInter) inter;
 
-            for (Line2D line : head.getNeededLedgers()) {
+            for (Line2D line : head.getNeededLedgerLines()) {
                 box.add(line.getBounds());
             }
 
