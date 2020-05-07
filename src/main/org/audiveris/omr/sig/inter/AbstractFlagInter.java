@@ -102,11 +102,11 @@ public abstract class AbstractFlagInter
     // deriveFrom //
     //------------//
     @Override
-    public void deriveFrom (ShapeSymbol symbol,
-                            Sheet sheet,
-                            MusicFont font,
-                            Point dropLocation,
-                            Alignment alignment)
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation,
+                               Alignment alignment)
     {
         // Needed to get flag  bounds
         super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
@@ -120,6 +120,8 @@ public abstract class AbstractFlagInter
                 super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
             }
         }
+
+        return true;
     }
 
     //-----------//

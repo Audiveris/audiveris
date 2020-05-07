@@ -133,6 +133,11 @@ public class InterDnd
     public void drop (Point dropPoint)
     {
         if (staff == null) {
+            // Some ghosts require being located in a staff, not even a user prompt is relevant!
+            if (ghost.imposeWithinStaffHeight()) {
+                return;
+            }
+
             final List<Staff> staves = sheet.getStaffManager().getStavesOf(dropPoint);
 
             if (staves.isEmpty()) {
@@ -157,16 +162,18 @@ public class InterDnd
         // Staff
         ghost.setStaff(staff);
 
-        updateGhost(dropPoint); // dropPoint can be modified, as well as ghost staff
-        staff = ghost.getStaff();
+        if (updateGhost(dropPoint)) {
+            // dropPoint may have been modified, as well as ghost staff
+            staff = ghost.getStaff();
 
-        if (staff != null) {
-            sheet.getInterController().addInter(ghost);
-            ///sheet.getSymbolsEditor().openEditMode(ghost);
+            if (staff != null) {
+                sheet.getInterController().addInter(ghost);
+                ///sheet.getSymbolsEditor().openEditMode(ghost);
 
-            logger.debug("Dropped {} at {}", this, dropPoint);
-        } else {
-            logger.debug("Ghost {} could not be dropped on staff", ghost);
+                logger.debug("Dropped {} at {}", this, dropPoint);
+            } else {
+                logger.debug("Ghost {} could not be dropped on staff", ghost);
+            }
         }
     }
 
@@ -243,6 +250,9 @@ public class InterDnd
                     staff = closestStaff;
                     system = staff.getSystem();
                 }
+            } else if (ghost.imposeWithinStaffHeight()) {
+                staff = null;
+                system = null;
             }
         }
 
@@ -250,19 +260,21 @@ public class InterDnd
         tracker.setSystem(system);
 
         if (staff != null) {
-            updateGhost(location); // This may modify location slightly, as well as ghost staff
-            staff = ghost.getStaff();
+            if (updateGhost(location)) {
+                // Location may have been modified slightly, as well as ghost staff
+                staff = ghost.getStaff();
 
-            if (staff != null) {
-                // Retrieve staff reference
-                LineInfo line = staff.getMidLine();
+                if (staff != null) {
+                    // Retrieve staff reference
+                    LineInfo line = staff.getMidLine();
 
-                if (location.x < line.getEndPoint(HorizontalSide.LEFT).getX()) {
-                    staffReference = PointUtil.rounded(line.getEndPoint(HorizontalSide.LEFT));
-                } else if (location.x > line.getEndPoint(HorizontalSide.RIGHT).getX()) {
-                    staffReference = PointUtil.rounded(line.getEndPoint(HorizontalSide.RIGHT));
-                } else {
-                    staffReference = new Point(location.x, line.yAt(location.x));
+                    if (location.x < line.getEndPoint(HorizontalSide.LEFT).getX()) {
+                        staffReference = PointUtil.rounded(line.getEndPoint(HorizontalSide.LEFT));
+                    } else if (location.x > line.getEndPoint(HorizontalSide.RIGHT).getX()) {
+                        staffReference = PointUtil.rounded(line.getEndPoint(HorizontalSide.RIGHT));
+                    } else {
+                        staffReference = new Point(location.x, line.yAt(location.x));
+                    }
                 }
             }
         }
@@ -350,15 +362,17 @@ public class InterDnd
      * Update ghost location and geometry according to the provided new location.
      *
      * @param location (input/output) ghost new location
+     * @return true if OK
      */
-    private void updateGhost (Point location)
+    private boolean updateGhost (Point location)
     {
         // We use the non-decorated symbol
         final int staffInterline = staff.getSpecificInterline();
         final MusicFont font = (ShapeSet.Heads.contains(ghost.getShape()))
                 ? MusicFont.getHeadFont(sheet.getScale(), staffInterline)
                 : MusicFont.getBaseFont(staffInterline);
-        ghost.deriveFrom(symbol, sheet, font, location, Alignment.AREA_CENTER);
+
+        return ghost.deriveFrom(symbol, sheet, font, location, Alignment.AREA_CENTER);
     }
 
     //-------------//

@@ -722,14 +722,19 @@ public abstract class SigPainter
             if (key.isCancel()) {
                 setColor(key);
 
-                final ShapeSymbol symbol = new KeyCancelSymbol(null, key.getFifths());
-                final Staff staff = key.getStaff();
-                final MusicFont font = getMusicFont(staff);
-                final Rectangle bounds = key.getBounds();
+                final KeyCancelSymbol cancelSymbol = (KeyCancelSymbol) key.getSymbolToDraw();
 
-                if (bounds != null) {
-                    final Point center = GeoUtil.centerOf(bounds);
-                    symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
+                if (cancelSymbol != null) {
+                    final Staff staff = key.getStaff();
+                    final MusicFont font = getMusicFont(staff);
+                    final Rectangle bounds = key.getBounds();
+
+                    if (bounds != null) {
+                        final Point center = GeoUtil.centerOf(bounds);
+                        cancelSymbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
+                    }
+                } else {
+                    logger.info("No symbol for {}", key);
                 }
             } else {
                 visit((Inter) key);

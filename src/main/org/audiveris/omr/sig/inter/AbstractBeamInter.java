@@ -497,11 +497,11 @@ public abstract class AbstractBeamInter
     // deriveFrom //
     //------------//
     @Override
-    public void deriveFrom (ShapeSymbol symbol,
-                            Sheet sheet,
-                            MusicFont font,
-                            Point dropLocation,
-                            Alignment alignment)
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation,
+                               Alignment alignment)
     {
         BeamSymbol beamSymbol = (BeamSymbol) symbol;
         Model model = beamSymbol.getModel(font, dropLocation, alignment);
@@ -539,6 +539,8 @@ public abstract class AbstractBeamInter
                 dropLocation.setLocation(PointUtil.middle(median));
             }
         }
+
+        return true;
     }
 
     //--------//

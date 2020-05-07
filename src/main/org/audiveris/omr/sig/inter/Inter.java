@@ -112,12 +112,13 @@ public interface Inter
      * @param font         properly sized font
      * @param dropLocation (input/output) current drag/drop location
      * @param alignment    relative position of provided location WRT symbol
+     * @return true if OK
      */
-    void deriveFrom (ShapeSymbol symbol,
-                     Sheet sheet,
-                     MusicFont font,
-                     Point dropLocation,
-                     Alignment alignment);
+    boolean deriveFrom (ShapeSymbol symbol,
+                        Sheet sheet,
+                        MusicFont font,
+                        Point dropLocation,
+                        Alignment alignment);
 
     /**
      * Mark this inter as frozen, that cannot be deleted even by a conflicting
@@ -381,6 +382,13 @@ public interface Inter
      * @return true if staff assigned
      */
     boolean hasStaff ();
+
+    /**
+     * De we impose the inter to be located within staff height.
+     *
+     * @return true if so
+     */
+    boolean imposeWithinStaffHeight ();
 
     /**
      * Increase the inter grade.

@@ -140,11 +140,11 @@ public class BraceInter
     // deriveFrom //
     //------------//
     @Override
-    public void deriveFrom (ShapeSymbol symbol,
-                            Sheet sheet,
-                            MusicFont font,
-                            Point dropLocation,
-                            Alignment alignment)
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation,
+                               Alignment alignment)
     {
         // Needed to get head bounds
         super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
@@ -156,6 +156,8 @@ public class BraceInter
             SystemInfo system = sheet.getSystemManager().getClosestSystem(topRight);
             staff = system.getClosestStaff(topRight);
         }
+
+        return true;
     }
 
     //-----------//

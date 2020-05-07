@@ -339,11 +339,11 @@ public abstract class AbstractInter
     // deriveFrom //
     //------------//
     @Override
-    public void deriveFrom (ShapeSymbol symbol,
-                            Sheet sheet,
-                            MusicFont font,
-                            Point dropLocation,
-                            Alignment alignment)
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation,
+                               Alignment alignment)
     {
         final Dimension dim = symbol.getDimension(font);
         final Rectangle box = new Rectangle(
@@ -352,6 +352,8 @@ public abstract class AbstractInter
                 dim.width,
                 dim.height);
         setBounds(box);
+
+        return true;
     }
 
     //--------//
@@ -902,6 +904,15 @@ public abstract class AbstractInter
     public boolean hasStaff ()
     {
         return staff != null;
+    }
+
+    //-------------------------//
+    // imposeWithinStaffHeight //
+    //-------------------------//
+    @Override
+    public boolean imposeWithinStaffHeight ()
+    {
+        return false; // By default
     }
 
     //----------//
