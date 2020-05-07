@@ -23,14 +23,10 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Staff;
 import static org.audiveris.omr.sig.inter.AlterInter.computePitch;
+import org.audiveris.omr.sig.ui.HorizontalEditor;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.sig.ui.InterEditor.Handle;
-
-import java.awt.Point;
-import java.awt.Rectangle;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -96,7 +92,7 @@ public class KeyAlterInter
     @Override
     public InterEditor getEditor ()
     {
-        return new Editor(this);
+        return new HorizontalEditor(this);
     }
 
     //---------------//
@@ -129,75 +125,5 @@ public class KeyAlterInter
         Pitches p = computePitch(glyph, shape, staff);
 
         return new KeyAlterInter(glyph, shape, grade, staff, p.pitch, p.measuredPitch);
-    }
-
-    //--------//
-    // Editor //
-    //--------//
-    /**
-     * User editor for a KeyAlter.
-     * <p>
-     * For a KeyAlter, we provide only one handle:
-     * <ul>
-     * <li>Middle handle, moving only horizontally
-     * </ul>
-     */
-    private static class Editor
-            extends InterEditor
-    {
-
-        // Original data
-        private final Rectangle originalBounds;
-
-        // Latest data
-        private final Rectangle latestBounds;
-
-        public Editor (final KeyAlterInter alter)
-        {
-            super(alter);
-
-            originalBounds = alter.getBounds();
-            latestBounds = alter.getBounds();
-
-            // Middle handle: move horizontally only
-            handles.add(selectedHandle = new Handle(alter.getCenter())
-            {
-                @Override
-                public boolean move (Point vector)
-                {
-                    final double dx = vector.getX();
-
-                    if (dx == 0) {
-                        return false;
-                    }
-
-                    // Data
-                    latestBounds.x += dx;
-
-                    // Handle
-                    for (Handle handle : handles) {
-                        PointUtil.add(handle.getHandleCenter(), dx, 0);
-                    }
-
-                    return true;
-                }
-            });
-        }
-
-        @Override
-        protected void doit ()
-        {
-            inter.setBounds(latestBounds);
-
-            super.doit(); // No more glyph
-        }
-
-        @Override
-        public void undo ()
-        {
-            inter.setBounds(originalBounds);
-
-            super.undo();
-        }
     }
 }

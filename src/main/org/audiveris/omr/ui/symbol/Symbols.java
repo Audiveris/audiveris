@@ -259,13 +259,14 @@ public abstract class Symbols
         sym.put(HALF_REST, new RestSymbol(HALF_REST, false, 238));
         sym.put(HW_REST_set, new RestSymbol(HW_REST_set, false, 238));
 
-        flatKey(KEY_FLAT_1, -1);
-        flatKey(KEY_FLAT_2, -2);
-        flatKey(KEY_FLAT_3, -3);
-        flatKey(KEY_FLAT_4, -4);
-        flatKey(KEY_FLAT_5, -5);
-        flatKey(KEY_FLAT_6, -6);
         flatKey(KEY_FLAT_7, -7);
+        flatKey(KEY_FLAT_6, -6);
+        flatKey(KEY_FLAT_5, -5);
+        flatKey(KEY_FLAT_4, -4);
+        flatKey(KEY_FLAT_3, -3);
+        flatKey(KEY_FLAT_2, -2);
+        flatKey(KEY_FLAT_1, -1);
+        sym.put(KEY_CANCEL, new KeyCancelSymbol(false));
         sharpKey(KEY_SHARP_1, 1);
         sharpKey(KEY_SHARP_2, 2);
         sharpKey(KEY_SHARP_3, 3);

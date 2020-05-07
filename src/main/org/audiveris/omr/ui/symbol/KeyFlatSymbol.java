@@ -52,6 +52,6 @@ public class KeyFlatSymbol
     @Override
     protected ShapeSymbol createIcon ()
     {
-        return new KeyFlatSymbol(key, true, shape);
+        return new KeyFlatSymbol(fifths, true, shape);
     }
 }

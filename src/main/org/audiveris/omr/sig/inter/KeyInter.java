@@ -23,6 +23,7 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sheet.rhythm.Measure;
@@ -31,6 +32,12 @@ import org.audiveris.omr.sig.SIGraph;
 import static org.audiveris.omr.sig.inter.AbstractNoteInter.Step.*;
 import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
 import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.*;
+import org.audiveris.omr.sig.ui.HorizontalEditor;
+import org.audiveris.omr.sig.ui.InterEditor;
+import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.KeyCancelSymbol;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
@@ -58,6 +65,7 @@ public class KeyInter
         implements InterEnsemble
 {
 
+    //~ Static fields/initializers -----------------------------------------------------------------
     private static final Logger logger = LoggerFactory.getLogger(KeyInter.class);
 
     /** Sharp pitches per clef kind. */
@@ -100,15 +108,17 @@ public class KeyInter
         FLAT_PITCHES_MAP.put(TENOR, new int[]{-1, -4, 0, -3, 1, -2, 2});
     }
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Numerical value for signature. */
-    @XmlAttribute
+    @XmlAttribute(name = "fifths")
     private int fifths;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new KeyInter object.
      *
      * @param grade  the interpretation quality
-     * @param fifths signature value (negative for flats, positive for sharps)
+     * @param fifths signature value (negative for flats, 0 for cancel, positive for sharps)
      */
     public KeyInter (double grade,
                      int fifths)
@@ -139,6 +149,7 @@ public class KeyInter
         super(null, null, null, null);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -182,6 +193,56 @@ public class KeyInter
         EnsembleHelper.addMember(this, member);
     }
 
+    //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public void deriveFrom (ShapeSymbol symbol,
+                            Sheet sheet,
+                            MusicFont font,
+                            Point dropLocation,
+                            Alignment alignment)
+    {
+        super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+
+        if (isCancel()) {
+            // Adapt cancel key (count/location of naturals) to current active key/clef in staff
+            // We have sheet, staff and dropLocation
+            final Measure measure = staff.getPart().getMeasureAt(dropLocation, staff);
+
+            if (measure != null) {
+                final ClefInter clef = measure.getClefBefore(getCenter(), staff);
+
+                if (clef != null) {
+                    final KeyInter key = measure.getKeyBefore(staff);
+
+                    if (key != null) {
+                        // Configure naturals based on active key sequence of (sharps/flats)
+                        fifths = key.getFifths();
+                        KeyCancelSymbol cancelSymbol = new KeyCancelSymbol(clef.getKind(), fifths);
+
+                        // First call, needed to get key bounds
+                        super.deriveFrom(cancelSymbol, sheet, font, dropLocation, alignment);
+
+                        // Modify dropLocation to snap vertically on staff lines
+                        Double y = getSnapOrdinate(clef.getKind());
+
+                        if (y != null) {
+                            dropLocation.y = (int) Math.rint(y);
+                        }
+
+                        // Second call, to update KeyInter using adjusted data
+                        super.deriveFrom(cancelSymbol, sheet, font, dropLocation, alignment);
+                        return;
+                    }
+                }
+            }
+
+            // Prevent any drop
+            staff = null;
+        }
+    }
+
     //-------------//
     // getAlterFor //
     //-------------//
@@ -215,6 +276,15 @@ public class KeyInter
         }
 
         return new Rectangle(bounds);
+    }
+
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new HorizontalEditor(this);
     }
 
     //-----------//
@@ -302,6 +372,19 @@ public class KeyInter
     {
         bounds = null;
         fifths = 0;
+    }
+
+    //----------//
+    // isCancel //
+    //----------//
+    /**
+     * Report whether this key is actually a cancellation key (made of naturals).
+     *
+     * @return true if cancel
+     */
+    public boolean isCancel ()
+    {
+        return shape == Shape.KEY_CANCEL;
     }
 
     //--------//
@@ -399,6 +482,28 @@ public class KeyInter
         return sb.toString();
     }
 
+    //-----------------//
+    // getSnapOrdinate //
+    //-----------------//
+    /**
+     * Report the theoretical ordinate of key center so that its members are correctly
+     * located on staff.
+     * <p>
+     * Required properties: staff, bounds, fifths, clefKind
+     *
+     * @param clefKind active clef kind (TREBLE, ALTO, ...)
+     * @return the proper ordinate if any, null otherwise
+     */
+    private Double getSnapOrdinate (ClefKind clefKind)
+    {
+        if (staff == null) {
+            return null;
+        }
+
+        double theoPitch = getPosition(fifths, clefKind);
+        return staff.pitchToOrdinate(bounds.getCenterX(), theoPitch);
+    }
+
     //-------------//
     // createAdded //
     //-------------//
@@ -472,6 +577,8 @@ public class KeyInter
      * 'n' is negative for flats and positive for sharps. <br>
      * Legal values for sharps are: +1, +2, +3, +4, +5, +6, +7 <br>
      * While for flats they can be: -1, -2, -3, -4, -5, -6, -7
+     * <p>
+     * For a not-yet-defined KeyCancel, n == 0 is accepted.
      *
      * @param n    the signed index (one-based) of the desired item
      * @param kind the kind (TREBLE, ALTO, BASS or TENOR) of the active clef.
@@ -481,12 +588,17 @@ public class KeyInter
     public static int getItemPitch (int n,
                                     ClefKind kind)
     {
+        // Hack for key cancel icon: use sharp 1
+        if (n == 0) {
+            n = 1;
+        }
+
         if (kind == null) {
             kind = TREBLE;
         }
 
-        Map<ClefKind, int[]> map = (n > 0) ? SHARP_PITCHES_MAP : FLAT_PITCHES_MAP;
-        int[] pitches = map.get(kind);
+        final Map<ClefKind, int[]> map = (n > 0) ? SHARP_PITCHES_MAP : FLAT_PITCHES_MAP;
+        final int[] pitches = map.get(kind);
 
         return pitches[Math.abs(n) - 1];
     }
@@ -534,34 +646,52 @@ public class KeyInter
     // getStandardPosition //
     //---------------------//
     /**
-     * Compute the standard (TREBLE) mean pitch position of the provided key
+     * Compute the standard (TREBLE) mean pitch position of the global KeyInter for the
+     * provided fifths value.
      *
-     * @param k the provided key signature
-     * @return the corresponding standard mean pitch position of the key
+     * @param fifths the provided fifths signature
+     * @return the corresponding standard mean pitch position of the global sequence of signs
      */
-    public static double getStandardPosition (int k)
+    public static double getStandardPosition (int fifths)
     {
-        if (k == 0) {
-            return 0;
+        return getPosition(fifths, TREBLE);
+    }
+
+    //-------------//
+    // getPosition //
+    //-------------//
+    /**
+     * Compute the mean pitch position of the global KeyInter for the provided fifths
+     * value in the context of provided clefKind.
+     *
+     * @param fifths   fifths signature
+     * @param clefKind clef kind context
+     * @return the corresponding mean pitch position of the global sequence of signs
+     */
+    public static double getPosition (int fifths,
+                                      ClefKind clefKind)
+    {
+        if (fifths == 0) {
+            fifths = 1;
         }
 
         double sum = 0;
 
-        if (k > 0) {
-            final int[] pitches = SHARP_PITCHES_MAP.get(TREBLE);
+        if (fifths > 0) {
+            final int[] pitches = SHARP_PITCHES_MAP.get(clefKind);
 
-            for (int i = 0; i < k; i++) {
+            for (int i = 0; i < fifths; i++) {
                 sum += pitches[i];
             }
         } else {
-            final int[] pitches = FLAT_PITCHES_MAP.get(TREBLE);
+            final int[] pitches = FLAT_PITCHES_MAP.get(clefKind);
 
-            for (int i = 0; i > k; i--) {
+            for (int i = 0; i > fifths; i--) {
                 sum -= pitches[-i];
             }
         }
 
-        return sum / k;
+        return sum / fifths;
     }
 
     //-----------//
@@ -630,26 +760,30 @@ public class KeyInter
     private static int valueOf (Shape shape)
     {
         switch (shape) {
-        case KEY_FLAT_1:
-            return -1;
 
-        case KEY_FLAT_2:
-            return -2;
-
-        case KEY_FLAT_3:
-            return -3;
-
-        case KEY_FLAT_4:
-            return -4;
-
-        case KEY_FLAT_5:
-            return -5;
+        case KEY_FLAT_7:
+            return -7;
 
         case KEY_FLAT_6:
             return -6;
 
-        case KEY_FLAT_7:
-            return -7;
+        case KEY_FLAT_5:
+            return -5;
+
+        case KEY_FLAT_4:
+            return -4;
+
+        case KEY_FLAT_3:
+            return -3;
+
+        case KEY_FLAT_2:
+            return -2;
+
+        case KEY_FLAT_1:
+            return -1;
+
+        case KEY_CANCEL:
+            return 0;
 
         case KEY_SHARP_1:
             return 1;

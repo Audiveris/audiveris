@@ -628,10 +628,7 @@ public class Measure
             }
         }
 
-        // This should not occur in a standard staff
-        String msg = "No clef found in " + staff + " before " + point;
-        logger.warn(msg);
-        throw new IllegalStateException(msg);
+        return null;
     }
 
     //----------//
@@ -916,6 +913,7 @@ public class Measure
     public ClefInter getMeasureClefBefore (Point point,
                                            Staff staff)
     {
+        Objects.requireNonNull(point, "Point is null");
         Objects.requireNonNull(staff, "Staff is null");
 
         // Look in this measure, with same staff, going backwards
