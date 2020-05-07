@@ -167,11 +167,11 @@ public class WordInter
     // deriveFrom //
     //------------//
     @Override
-    public void deriveFrom (ShapeSymbol symbol,
-                            Sheet sheet,
-                            MusicFont font,
-                            Point dropLocation,
-                            Alignment alignment)
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation,
+                               Alignment alignment)
     {
         TextSymbol textSymbol = (TextSymbol) symbol;
         Model model = textSymbol.getModel(font, dropLocation, alignment);
@@ -179,6 +179,8 @@ public class WordInter
         fontInfo = model.fontInfo;
         location = new Point2D.Double(model.baseLoc.getX(), model.baseLoc.getY());
         setBounds(null);
+
+        return true;
     }
 
     //-----------//

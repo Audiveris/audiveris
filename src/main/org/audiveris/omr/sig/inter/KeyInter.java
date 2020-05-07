@@ -51,6 +51,7 @@ import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omr.ui.symbol.Symbols;
 
 /**
  * Class {@code KeyInter} represents a key signature on a staff.
@@ -197,50 +198,36 @@ public class KeyInter
     // deriveFrom //
     //------------//
     @Override
-    public void deriveFrom (ShapeSymbol symbol,
-                            Sheet sheet,
-                            MusicFont font,
-                            Point dropLocation,
-                            Alignment alignment)
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation,
+                               Alignment alignment)
     {
         super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
 
         if (isCancel()) {
             // Adapt cancel key (count/location of naturals) to current active key/clef in staff
-            // We have sheet, staff and dropLocation
-            final Measure measure = staff.getPart().getMeasureAt(dropLocation, staff);
+            KeyCancelSymbol cancelSymbol = (KeyCancelSymbol) getSymbolToDraw();
 
-            if (measure != null) {
-                final ClefInter clef = measure.getClefBefore(getCenter(), staff);
-
-                if (clef != null) {
-                    final KeyInter key = measure.getKeyBefore(staff);
-
-                    if ((key != null) && !key.isCancel()) {
-                        // Configure naturals based on active key sequence of (sharps/flats)
-                        fifths = key.getFifths();
-                        KeyCancelSymbol cancelSymbol = new KeyCancelSymbol(clef.getKind(), fifths);
-
-                        // First call, needed to get key bounds
-                        super.deriveFrom(cancelSymbol, sheet, font, dropLocation, alignment);
-
-                        // Modify dropLocation to snap vertically on staff lines
-                        Double y = getSnapOrdinate(clef.getKind());
-
-                        if (y != null) {
-                            dropLocation.y = (int) Math.rint(y);
-                        }
-
-                        // Second call, to update KeyInter using adjusted data
-                        super.deriveFrom(cancelSymbol, sheet, font, dropLocation, alignment);
-                        return;
-                    }
-                }
+            if (cancelSymbol == null) {
+                return false;
             }
 
-            // Prevent any drop
-            staff = null;
+            // First call, needed to get key bounds
+            super.deriveFrom(cancelSymbol, sheet, font, dropLocation, alignment);
+
+            // Modify dropLocation to snap vertically on staff lines
+            Double y = getSnapOrdinate(cancelSymbol.fifths, cancelSymbol.clefKind);
+
+            if (y != null) {
+                dropLocation.y = (int) Math.rint(y);
+                // Second call, to update KeyInter using adjusted data
+                super.deriveFrom(cancelSymbol, sheet, font, dropLocation, alignment);
+            }
         }
+
+        return true;
     }
 
     //-------------//
@@ -292,14 +279,13 @@ public class KeyInter
     //-----------//
     /**
      * Report the integer value that describes the key signature, using range [-1..-7]
-     * for flats and range [+1..+7] for sharps.
-     * We accept naturals as well.
+     * for flats and range [+1..+7] for sharps, 0 for a KEY_CANCEL.
      *
      * @return the signature
      */
     public int getFifths ()
     {
-        if (fifths == 0) {
+        if ((fifths == 0) && !isCancel()) {
             if ((sig != null) && sig.containsVertex(this)) {
                 final List<Inter> alters = getMembers();
                 int count = 0;
@@ -342,17 +328,71 @@ public class KeyInter
         return fifths;
     }
 
-    //-----------//
-    // setFifths //
-    //-----------//
+    //-----------------//
+    // getSymbolToDraw //
+    //-----------------//
     /**
-     * (method currently not used) Adjust the signature integer value.
+     * Report the KeySymbol to draw.
+     * <p>
+     * For a standard key inter, that's its fifths value.
+     * But for a KEY_CANCEL, it's the fifths of the preceding key signature is staff
      *
-     * @param fifths the fifths to set
+     * @return the fifths to actually draw, or null if could not be determined
      */
-    public void setFifths (int fifths)
+    public ShapeSymbol getSymbolToDraw ()
     {
-        this.fifths = fifths;
+        if (!isCancel()) {
+            return Symbols.getSymbol(shape);
+        }
+
+        if (staff == null) {
+            logger.debug("null staff");
+            return null;
+        }
+
+        final Point pt = getCenter();
+
+        if (pt == null) {
+            logger.debug("null pt");
+            return null;
+        }
+
+        Measure measure = staff.getPart().getMeasureAt(pt, staff);
+
+        if (measure == null) {
+            logger.debug("null measure");
+            return null;
+        }
+
+        final KeyInter key = measure.getKey(staff);
+
+        if ((key != null) && (key != this)) {
+            logger.debug("measure already has {}", key);
+            return null;
+        }
+
+        final ClefInter clef = measure.getClefBefore(getCenter(), staff);
+
+        if (clef == null) {
+            logger.debug("null clef");
+            return null;
+        }
+
+        measure = measure.getPrecedingInSystem();
+
+        if (measure == null) {
+            logger.debug("no previous measure");
+            return null;
+        }
+
+        final KeyInter keyBefore = measure.getKeyBefore(staff);
+
+        if (keyBefore == null || keyBefore.isCancel()) {
+            logger.debug("keyBefore: {}", keyBefore);
+            return null;
+        }
+
+        return new KeyCancelSymbol(clef.getKind(), keyBefore.getFifths());
     }
 
     //------------//
@@ -362,6 +402,15 @@ public class KeyInter
     public List<Inter> getMembers ()
     {
         return EnsembleHelper.getMembers(this, Inters.byCenterAbscissa);
+    }
+
+    //-------------------------//
+    // imposeWithinStaffHeight //
+    //-------------------------//
+    @Override
+    public boolean imposeWithinStaffHeight ()
+    {
+        return true;
     }
 
     //-----------------//
@@ -491,10 +540,12 @@ public class KeyInter
      * <p>
      * Required properties: staff, bounds, fifths, clefKind
      *
+     * @param fifths   key signature
      * @param clefKind active clef kind (TREBLE, ALTO, ...)
      * @return the proper ordinate if any, null otherwise
      */
-    private Double getSnapOrdinate (ClefKind clefKind)
+    private Double getSnapOrdinate (int fifths,
+                                    ClefKind clefKind)
     {
         if (staff == null) {
             return null;

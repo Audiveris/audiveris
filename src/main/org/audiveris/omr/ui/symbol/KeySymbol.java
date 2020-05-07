@@ -44,7 +44,7 @@ public abstract class KeySymbol
      * The fifths value to represent, -7..-1 for flats, 1..7 for sharps.
      * For KEY_CANCEL, fifths value is the one of the canceled key.
      */
-    protected final int fifths;
+    public final int fifths;
 
     /**
      * Creates a new KeySymbol object.

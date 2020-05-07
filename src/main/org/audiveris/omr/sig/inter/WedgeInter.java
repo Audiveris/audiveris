@@ -180,17 +180,19 @@ public class WedgeInter
     // deriveFrom //
     //------------//
     @Override
-    public void deriveFrom (ShapeSymbol symbol,
-                            Sheet sheet,
-                            MusicFont font,
-                            Point dropLocation,
-                            Alignment alignment)
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation,
+                               Alignment alignment)
     {
         WedgeSymbol wedgeSymbol = (WedgeSymbol) symbol;
         Model model = wedgeSymbol.getModel(font, dropLocation, alignment);
         l1 = new Line2D.Double(model.top1, model.top2);
         l2 = new Line2D.Double(model.bot1, model.bot2);
         setBounds(null);
+
+        return true;
     }
 
     //-----------//

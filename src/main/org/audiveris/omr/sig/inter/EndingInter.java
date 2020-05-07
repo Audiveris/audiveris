@@ -343,11 +343,11 @@ public class EndingInter
     // deriveFrom //
     //------------//
     @Override
-    public void deriveFrom (ShapeSymbol symbol,
-                            Sheet sheet,
-                            MusicFont font,
-                            Point dropLocation,
-                            Alignment alignment)
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation,
+                               Alignment alignment)
     {
         final EndingSymbol endingSymbol = (EndingSymbol) symbol;
         final Model model = endingSymbol.getModel(font, dropLocation, alignment);
@@ -360,6 +360,8 @@ public class EndingInter
         }
 
         setBounds(null);
+
+        return true;
     }
 
     //-------------//

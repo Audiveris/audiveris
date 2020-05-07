@@ -318,17 +318,19 @@ public class LedgerInter
     // deriveFrom //
     //------------//
     @Override
-    public void deriveFrom (ShapeSymbol symbol,
-                            Sheet sheet,
-                            MusicFont font,
-                            Point dropLocation,
-                            Alignment alignment)
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation,
+                               Alignment alignment)
     {
         LedgerSymbol ledgerSymbol = (LedgerSymbol) symbol;
         Model model = ledgerSymbol.getModel(font, dropLocation, alignment);
         median = new Line2D.Double(model.p1, model.p2);
         thickness = DEFAULT_THICKNESS;
         computeArea();
+
+        return true;
     }
 
     //--------//

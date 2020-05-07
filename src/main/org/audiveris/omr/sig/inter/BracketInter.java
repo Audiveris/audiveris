@@ -167,17 +167,19 @@ public class BracketInter
     // deriveFrom //
     //------------//
     @Override
-    public void deriveFrom (ShapeSymbol symbol,
-                            Sheet sheet,
-                            MusicFont font,
-                            Point dropLocation,
-                            Alignment alignment)
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation,
+                               Alignment alignment)
     {
         BracketSymbol bracketSymbol = (BracketSymbol) symbol;
         Model model = bracketSymbol.getModel(font, dropLocation, alignment);
         median = new Line2D.Double(model.p1, model.p2);
         width = model.width;
         computeArea(font);
+
+        return true;
     }
 
     //-----------//

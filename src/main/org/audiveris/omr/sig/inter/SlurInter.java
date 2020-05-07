@@ -466,17 +466,19 @@ public class SlurInter
     // deriveFrom //
     //------------//
     @Override
-    public void deriveFrom (ShapeSymbol symbol,
-                            Sheet sheet,
-                            MusicFont font,
-                            Point dropLocation,
-                            Alignment alignment)
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation,
+                               Alignment alignment)
     {
         SlurSymbol slurSymbol = (SlurSymbol) symbol;
         curve = new CubicCurve2D.Double();
         curve.setCurve(slurSymbol.getModel(font, dropLocation, alignment).points, 0);
         above = CubicUtil.above(curve) > 0;
         setBounds(null);
+
+        return true;
     }
 
     //-----------//

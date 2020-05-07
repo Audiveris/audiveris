@@ -1344,8 +1344,7 @@ public class PartwiseBuilder
             }
 
             final Key key = factory.createKey();
-            final int fifths = keySignature.isCancel() ? 0 : keySignature.getFifths();
-            key.setFifths(new BigInteger("" + fifths));
+            key.setFifths(new BigInteger("" + keySignature.getFifths()));
 
             if (global) {
                 // Is this new?
