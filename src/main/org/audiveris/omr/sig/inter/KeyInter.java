@@ -216,7 +216,7 @@ public class KeyInter
                 if (clef != null) {
                     final KeyInter key = measure.getKeyBefore(staff);
 
-                    if (key != null) {
+                    if ((key != null) && !key.isCancel()) {
                         // Configure naturals based on active key sequence of (sharps/flats)
                         fifths = key.getFifths();
                         KeyCancelSymbol cancelSymbol = new KeyCancelSymbol(clef.getKind(), fifths);
