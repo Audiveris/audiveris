@@ -300,7 +300,7 @@ public class ShapeSet
     public static final ShapeSet Keys = new ShapeSet(
             KEY_SHARP_3,
             Colors.SCORE_MODIFIERS,
-            shapesOf(new ArrayList<>(FlatKeys), SharpKeys));
+            shapesOf(new ArrayList<>(FlatKeys), Arrays.asList(Shape.KEY_CANCEL), SharpKeys));
 
     public static final ShapeSet HeadsAndDot = new ShapeSet(
             NOTEHEAD_BLACK,

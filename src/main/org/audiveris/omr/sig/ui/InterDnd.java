@@ -158,11 +158,16 @@ public class InterDnd
         ghost.setStaff(staff);
 
         updateGhost(dropPoint); // dropPoint can be modified, as well as ghost staff
+        staff = ghost.getStaff();
 
-        sheet.getInterController().addInter(ghost);
-        ///sheet.getSymbolsEditor().openEditMode(ghost);
+        if (staff != null) {
+            sheet.getInterController().addInter(ghost);
+            ///sheet.getSymbolsEditor().openEditMode(ghost);
 
-        logger.debug("Dropped {} at {}", this, dropPoint);
+            logger.debug("Dropped {} at {}", this, dropPoint);
+        } else {
+            logger.debug("Ghost {} could not be dropped on staff", ghost);
+        }
     }
 
     //----------------//
@@ -248,15 +253,17 @@ public class InterDnd
             updateGhost(location); // This may modify location slightly, as well as ghost staff
             staff = ghost.getStaff();
 
-            // Retrieve staff reference
-            LineInfo line = staff.getMidLine();
+            if (staff != null) {
+                // Retrieve staff reference
+                LineInfo line = staff.getMidLine();
 
-            if (location.x < line.getEndPoint(HorizontalSide.LEFT).getX()) {
-                staffReference = PointUtil.rounded(line.getEndPoint(HorizontalSide.LEFT));
-            } else if (location.x > line.getEndPoint(HorizontalSide.RIGHT).getX()) {
-                staffReference = PointUtil.rounded(line.getEndPoint(HorizontalSide.RIGHT));
-            } else {
-                staffReference = new Point(location.x, line.yAt(location.x));
+                if (location.x < line.getEndPoint(HorizontalSide.LEFT).getX()) {
+                    staffReference = PointUtil.rounded(line.getEndPoint(HorizontalSide.LEFT));
+                } else if (location.x > line.getEndPoint(HorizontalSide.RIGHT).getX()) {
+                    staffReference = PointUtil.rounded(line.getEndPoint(HorizontalSide.RIGHT));
+                } else {
+                    staffReference = new Point(location.x, line.yAt(location.x));
+                }
             }
         }
     }

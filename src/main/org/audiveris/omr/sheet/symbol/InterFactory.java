@@ -317,13 +317,14 @@ public class InterFactory
             return ClefInter.create(glyph, shape, grade, closestStaff); // Staff is OK
 
         // Key signatures
-        case KEY_FLAT_1:
-        case KEY_FLAT_2:
-        case KEY_FLAT_3:
-        case KEY_FLAT_4:
-        case KEY_FLAT_5:
-        case KEY_FLAT_6:
         case KEY_FLAT_7:
+        case KEY_FLAT_6:
+        case KEY_FLAT_5:
+        case KEY_FLAT_4:
+        case KEY_FLAT_3:
+        case KEY_FLAT_2:
+        case KEY_FLAT_1:
+        case KEY_CANCEL:
         case KEY_SHARP_1:
         case KEY_SHARP_2:
         case KEY_SHARP_3:
@@ -801,13 +802,14 @@ public class InterFactory
             return new ClefInter(shape, GRADE);
 
         // Key signatures
-        case KEY_FLAT_1:
-        case KEY_FLAT_2:
-        case KEY_FLAT_3:
-        case KEY_FLAT_4:
-        case KEY_FLAT_5:
-        case KEY_FLAT_6:
         case KEY_FLAT_7:
+        case KEY_FLAT_6:
+        case KEY_FLAT_5:
+        case KEY_FLAT_4:
+        case KEY_FLAT_3:
+        case KEY_FLAT_2:
+        case KEY_FLAT_1:
+        case KEY_CANCEL:
         case KEY_SHARP_1:
         case KEY_SHARP_2:
         case KEY_SHARP_3:

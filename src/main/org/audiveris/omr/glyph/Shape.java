@@ -350,6 +350,7 @@ public enum Shape
     KEY_FLAT_3("Three Flats"),
     KEY_FLAT_2("Two Flats"),
     KEY_FLAT_1("One Flat"),
+    KEY_CANCEL("Key Cancel"),
     KEY_SHARP_1("One Sharp"),
     KEY_SHARP_2("Two Sharps"),
     KEY_SHARP_3("Three Sharps"),

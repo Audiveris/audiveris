@@ -40,24 +40,27 @@ public abstract class KeySymbol
         extends ShapeSymbol
 {
 
-    /** The key to represent, -7..-1 for flats, 1..7 for sharps */
-    protected final int key;
+    /**
+     * The fifths value to represent, -7..-1 for flats, 1..7 for sharps.
+     * For KEY_CANCEL, fifths value is the one of the canceled key.
+     */
+    protected final int fifths;
 
     /**
      * Creates a new KeySymbol object.
      *
-     * @param key    the key value: 1..7 for sharps
+     * @param fifths fifths value within [-7 .. +7]
      * @param isIcon true for an icon
      * @param shape  the related shape
      * @param codes  the code for item shape
      */
-    public KeySymbol (int key,
+    public KeySymbol (int fifths,
                       boolean isIcon,
                       Shape shape,
                       int... codes)
     {
         super(isIcon, shape, false, codes);
-        this.key = key;
+        this.fifths = fifths;
     }
 
     //-----------//
@@ -76,10 +79,11 @@ public abstract class KeySymbol
         Rectangle2D r2 = p.layout.getBounds();
         p.itemDx = r2.getWidth() * 1.15;
 
-        int sign = Integer.signum(key);
+        int sign = Integer.signum(fifths);
         p.itemRect = new Rectangle((int) Math.ceil(r2.getWidth()), (int) Math.ceil(r2.getHeight()));
 
-        for (int k = 1; k <= (key * sign); k++) {
+        // Compute global p.rect for KeySharps and KeyFlats
+        for (int k = 1; k <= (fifths * sign); k++) {
             int pitch = KeyInter.getItemPitch(k * sign, null);
             Rectangle2D r = new Rectangle2D.Double(
                     (k - 1) * p.itemDx,
@@ -94,8 +98,16 @@ public abstract class KeySymbol
             }
         }
 
+        if (p.rect == null) {
+            // Case of basic KeyCancel for Shape palette icon (just one item)
+            p.rect = new Rectangle2D.Double(0, 0, p.itemRect.width, p.itemRect.height);
+        }
+
+        // Define global rect as:
+        // (x,y): area center wrt staff middle-left
+        // (w,h): area dim
         p.rect.setRect(p.rect.getWidth() / 2,
-                       p.rect.getY() - KeyInter.getStandardPosition(key) * p.stepDy,
+                       p.rect.getY() - KeyInter.getStandardPosition(fifths) * p.stepDy,
                        p.rect.getWidth(),
                        p.rect.getHeight());
 
@@ -113,19 +125,44 @@ public abstract class KeySymbol
     {
         MyParams p = (MyParams) params;
         Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
-        PointUtil.add(loc, -p.rect.getWidth() / 2, -KeyInter.getStandardPosition(key) * p.stepDy);
 
-        int sign = Integer.signum(key);
+        // Set loc to (x=left side, y=staff mid line)
+        PointUtil.add(loc, -p.rect.getWidth() / 2, -KeyInter.getStandardPosition(fifths) * p.stepDy);
 
-        for (int k = 1; k <= (key * sign); k++) {
-            int pitch = KeyInter.getItemPitch(k * sign, null);
+        if (fifths == 0) {
+            int pitch = KeyInter.getItemPitch(1, null);
             MusicFont.paint(
                     g,
                     p.layout,
-                    new Point2D.Double(loc.getX() + (k - 1) * p.itemDx,
+                    new Point2D.Double(loc.getX(),
                                        loc.getY() + pitch * p.stepDy),
                     MIDDLE_LEFT);
+        } else {
+            int sign = Integer.signum(fifths);
+
+            for (int k = 1; k <= (fifths * sign); k++) {
+                int pitch = KeyInter.getItemPitch(k * sign, null);
+                MusicFont.paint(
+                        g,
+                        p.layout,
+                        new Point2D.Double(loc.getX() + (k - 1) * p.itemDx,
+                                           loc.getY() + pitch * p.stepDy),
+                        MIDDLE_LEFT);
+            }
         }
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        sb.append(" fifths:").append(fifths);
+
+        return sb.toString();
     }
 
     //----------//
@@ -139,6 +176,6 @@ public abstract class KeySymbol
 
         double itemDx; // Dx from one item to the other
 
-        Rectangle itemRect; // Item rectangle
+        Rectangle itemRect; // One item rectangle
     }
 }
