@@ -66,6 +66,9 @@ public class PageReduction
      */
     public void reduce ()
     {
+        // Start from fresh part IDs
+        page.numberParts();
+
         final List<List<Candidate>> sequences = buildSequences(page);
 
         // Connect the parts across all systems of the page

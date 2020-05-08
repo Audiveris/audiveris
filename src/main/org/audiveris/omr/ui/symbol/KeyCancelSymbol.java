@@ -25,7 +25,8 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
 
 /**
- * Class {@code KeyCancelSymbol} displays a Key Signature cancel symbol.
+ * Class {@code KeyCancelSymbol} displays a Key Signature cancel symbol, using a
+ * dynamically computed sequence of natural signs.
  *
  * @author Hervé Bitteur
  */

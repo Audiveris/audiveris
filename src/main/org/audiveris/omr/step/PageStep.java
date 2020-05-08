@@ -34,6 +34,7 @@ import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
+import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
@@ -156,6 +157,7 @@ public class PageStep
 
     static {
         forParts = new HashSet<>();
+        forParts.add(BraceInter.class);
         forParts.add(SentenceInter.class);
     }
 
@@ -246,6 +248,8 @@ public class PageStep
                         if (sentence.getRole() == TextRole.PartName) {
                             impact.onParts = true;
                         }
+                    } else {
+                        impact.onParts = true;
                     }
                 }
 
