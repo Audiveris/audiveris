@@ -257,8 +257,8 @@ public abstract class MusicXML
         //        case DYNAMICS_RFZ:
         //            return factory.createDynamicsRfz(empty);
         //
-        //        case DYNAMICS_SF:
-        //            return factory.createDynamicsSf(empty);
+        case DYNAMICS_SF:
+            return factory.createDynamicsSf(empty);
         //
         //        case DYNAMICS_SFFZ:
         //            return factory.createDynamicsSffz(empty);

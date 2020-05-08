@@ -1451,6 +1451,21 @@ public class SystemInfo
         }
     }
 
+    //-------------//
+    // numberParts //
+    //-------------//
+    /**
+     * (Re-)assign sequential numbers to parts within this system.
+     */
+    public void numberParts ()
+    {
+        int id = 1;
+
+        for (Part part : parts) {
+            part.setId(id++);
+        }
+    }
+
     //---------------//
     // registerGlyph //
     //---------------//

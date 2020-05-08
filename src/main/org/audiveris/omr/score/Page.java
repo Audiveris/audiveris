@@ -685,6 +685,19 @@ public class Page
         computeMeasureCount();
     }
 
+    //-------------//
+    // numberParts //
+    //-------------//
+    /**
+     * (Re-)assign sequential numbers to parts within each system.
+     */
+    public void numberParts ()
+    {
+        for (SystemInfo system : systems) {
+            system.numberParts();
+        }
+    }
+
     //--------------//
     // removeSystem //
     //--------------//

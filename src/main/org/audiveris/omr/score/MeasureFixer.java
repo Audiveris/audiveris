@@ -260,9 +260,8 @@ public class MeasureFixer
                 // This whole stack is empty (no notes/rests, hence no voices)
                 // We will merge with the following stack, if any
                 if (stack != system.getLastStack()) {
-                    setId(
-                            (lastId != null) ? (lastId + 1)
-                                    : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
+                    setId((lastId != null) ? (lastId + 1)
+                            : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
                 } else {
                     // This is just a cautionary stack at right end of system
                     logger.debug("cautionary");
@@ -276,9 +275,8 @@ public class MeasureFixer
             } else if (isPickup(stack)) {
                 logger.debug("pickup");
                 stack.setPickup();
-                setId(
-                        (lastId != null) ? (-lastId)
-                                : ((prevSystemLastId != null) ? (-prevSystemLastId) : 0));
+                setId((lastId != null) ? (-lastId)
+                        : ((prevSystemLastId != null) ? (-prevSystemLastId) : 0));
             } else if (isSecondRepeatHalf()) {
                 logger.debug("secondHalf");
 

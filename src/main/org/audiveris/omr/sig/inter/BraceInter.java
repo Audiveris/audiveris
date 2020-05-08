@@ -268,7 +268,7 @@ public class BraceInter
             Part myPart = staff.getPart();
 
             if (myPart.getStaves().size() < 2) {
-                logger.warn("Not enough staves in {} to split it", myPart);
+                logger.info("Not enough staves in {} to split it", myPart);
             } else {
                 myPart.splitBefore(myPart.getLastStaff());
             }

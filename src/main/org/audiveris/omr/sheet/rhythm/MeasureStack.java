@@ -1799,7 +1799,7 @@ public class MeasureStack
     /**
      * Split this stack at the provided system-level barlines.
      * <p>
-     * We create a new stack on left side of old stack which will become the right stack.
+     * We create a new stack on left side of old stack which will become the left stack.
      * We update old (right) stack on its left side.
      *
      * @param systemBarline column of PartBarline, one per system part
