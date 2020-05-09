@@ -465,34 +465,37 @@ public class TextBuilder
         }
 
         // Compute the sequence of vertical gaps
-        final int[] gaps = new int[lines.size() + 1];
-        Point prevCenter = null;
+        final double[] gaps = new double[lines.size() + 1];
+        Point2D prevBottom = null;
         int i;
 
         for (i = 0; i < lines.size(); i++) {
             TextLine line = lines.get(i);
-            Point center = line.getCenter();
+            Point2D top = line.getDeskewedExtremum(TOP, skew);
+            Point2D bottom = line.getDeskewedExtremum(BOTTOM, skew);
 
             if (i == 0) {
                 // Gap from upper system core limit
-                gaps[i] = center.y - (line1.yAt(center.x) + dy1);
+                Point2D p1 = skew.skewed(top);
+                gaps[i] = p1.getY() - (line1.yAt(p1.getX()) + dy1);
             } else {
                 // Gap from previous sentence
-                gaps[i] = center.y - prevCenter.y;
+                gaps[i] = top.getY() - prevBottom.getY();
             }
 
-            prevCenter = center;
+            prevBottom = bottom;
         }
 
         // Gap to lower system core limit
-        gaps[i] = line2.yAt(prevCenter.x) - dy2 - prevCenter.y;
+        Point2D p2 = skew.skewed(prevBottom);
+        gaps[i] = line2.yAt(p2.getX()) - dy2 - p2.getY();
 
         // Now pickup the largest gap
-        int breakDy = Integer.MIN_VALUE;
+        double breakDy = Double.MIN_VALUE;
         int breakIndex = -1;
 
         for (i = 0; i < gaps.length; i++) {
-            int dy = gaps[i];
+            double dy = gaps[i];
             if (breakDy <= dy) {
                 breakDy = dy;
                 breakIndex = i;
@@ -974,13 +977,10 @@ public class TextBuilder
                                                  List<TextLine> lines)
     {
         final LineInfo staffLine1 = staff1.getLastLine();
-        final int margin1 = staff1.getPart().getCoreMargin(BOTTOM);
-
         final LineInfo staffLine2 = staff2.getFirstLine();
-        final int margin2 = staff2.getPart().getCoreMargin(TOP);
-
-        // Filter lines
         final List<TextLine> gutterLines = new ArrayList<>();
+
+        // Pick up only the lines located below upper staff and above lower staff
         for (TextLine line : lines) {
             Point center = line.getCenter();
             double y1 = staffLine1.yAt(center.x);
@@ -996,6 +996,8 @@ public class TextBuilder
             gutterLines.add(line);
         }
 
+        final int margin1 = staff1.getPart().getCoreMargin(BOTTOM);
+        final int margin2 = staff2.getPart().getCoreMargin(TOP);
         int bi = findBreak(staffLine1, margin1, staffLine2, margin2, gutterLines);
 
         if (bi == -1) {
