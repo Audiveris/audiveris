@@ -67,7 +67,9 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -167,6 +169,12 @@ public class MeasureStack
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean abnormal;
 
+    /** Still unassigned tuplets within stack. */
+    @XmlList
+    @XmlIDREF
+    @XmlElement(name = "tuplets")
+    private final Set<TupletInter> stackTuplets = new LinkedHashSet<>();
+
     // Transient data
     //---------------
     //
@@ -176,9 +184,6 @@ public class MeasureStack
 
     /** Vertical sequence of (Part) measures, from top to bottom. */
     private final List<Measure> measures = new ArrayList<>();
-
-    /** Unassigned tuplets within stack. */
-    private final Set<TupletInter> stackTuplets = new LinkedHashSet<>();
 
     /**
      * Creates a new {@code MeasureStack} object.

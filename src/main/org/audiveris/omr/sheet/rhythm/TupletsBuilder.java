@@ -89,6 +89,10 @@ public class TupletsBuilder
         final Set<TupletInter> tuplets = stack.getTuplets();
 
         for (TupletInter tuplet : tuplets) {
+            if (tuplet.isVip()) {
+                logger.info("VIP linkStackTuplets for {}", tuplet);
+            }
+
             // Purge existing tuplet-chord relations, except manual ones if any
             final SIGraph sig = stack.getSystem().getSig();
             final Set<Relation> rels = sig.getRelations(tuplet, ChordTupletRelation.class);
@@ -205,7 +209,7 @@ public class TupletsBuilder
         // in order to determine the duration base of the tuplet
         TupletCollector collector = new TupletCollector(
                 tuplet,
-                new TreeSet<AbstractChordInter>(Inters.byFullAbscissa));
+                new TreeSet<>(Inters.byFullAbscissa));
 
         final Staff targetStaff = getTargetStaff(candidates);
 
@@ -314,6 +318,9 @@ public class TupletsBuilder
         }
     }
 
+    //-----------------//
+    // TupletCollector //
+    //-----------------//
     private static class TupletCollector
     {
 
@@ -430,7 +437,7 @@ public class TupletsBuilder
         }
 
         /**
-         * Retrieve all chords linked via a beam to the provided chord.
+         * Retrieve all chords linked via the smallest beam to the provided chord.
          * <p>
          * We have to check position of tuplet with respect to chord
          * If tuplet is closer to chord tail side (thus beam) we use siblings
@@ -452,11 +459,21 @@ public class TupletsBuilder
                 final Point head = chord.getHeadLocation();
 
                 if (center.distanceSq(tail) < center.distanceSq(head)) {
-                    for (AbstractBeamInter beam : stem.getBeams()) {
+                    // Pick up the smallest beam connected to this stem
+                    int smallestWidth = Integer.MAX_VALUE;
+                    AbstractBeamInter smallestBeam = null;
 
-                        for (StemInter s : beam.getStems()) {
-                            set.addAll(s.getChords());
+                    for (AbstractBeamInter beam : stem.getBeams()) {
+                        int width = beam.getBounds().width;
+
+                        if (width < smallestWidth) {
+                            smallestWidth = width;
+                            smallestBeam = beam;
                         }
+                    }
+
+                    for (StemInter s : smallestBeam.getStems()) {
+                        set.addAll(s.getChords());
                     }
                 }
             }
