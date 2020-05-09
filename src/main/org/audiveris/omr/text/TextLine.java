@@ -31,6 +31,7 @@ import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.text.WordScanner.OcrScanner;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
+import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -279,6 +280,41 @@ public class TextLine
         rect.height = Math.max(1, rect.height); // To allow containment test
 
         return rect;
+    }
+
+    //---------------------//
+    // getDeskewedExtremum //
+    //---------------------//
+    /**
+     * Report the highest or lowest (driven by provided vertical side) point of the line
+     * taking sheet skew into account.
+     *
+     * @param side TOP or BOTTOM
+     * @param skew global skew
+     * @return de-skewed point at line limit
+     */
+    public Point2D getDeskewedExtremum (VerticalSide side,
+                                        Skew skew)
+    {
+        final int dir = (side == VerticalSide.TOP) ? -1 : +1;
+
+        // We work word per word
+        Point2D bestDsk = null;
+
+        for (TextWord word : words) {
+            final Rectangle box = word.bounds;
+            final Point p = new Point(box.x + box.width / 2,
+                                      (dir < 0) ? box.y : box.y + box.height - 1);
+            final Point2D dsk = skew.deskewed(p);
+
+            if (bestDsk == null) {
+                bestDsk = dsk;
+            } else if ((dsk.getY() - bestDsk.getY()) * dir > 0) {
+                bestDsk = dsk;
+            }
+        }
+
+        return bestDsk;
     }
 
     //--------------//
