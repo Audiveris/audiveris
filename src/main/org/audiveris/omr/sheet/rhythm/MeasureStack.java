@@ -63,6 +63,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.xml.bind.Marshaller;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -73,6 +74,7 @@ import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.util.Trimmable;
 
 /**
  * Class {@code MeasureStack} represents a vertical stack of {@link Measure} instances,
@@ -173,7 +175,8 @@ public class MeasureStack
     @XmlList
     @XmlIDREF
     @XmlElement(name = "tuplets")
-    private final Set<TupletInter> stackTuplets = new LinkedHashSet<>();
+    @Trimmable.Collection
+    private final LinkedHashSet<TupletInter> stackTuplets = new LinkedHashSet<>();
 
     // Transient data
     //---------------
@@ -1927,5 +1930,31 @@ public class MeasureStack
         FIRST_HALF,
         SECOND_HALF,
         CAUTIONARY
+    }
+
+    //--------------//
+    // afterMarshal //
+    //--------------//
+    @SuppressWarnings("unused")
+    private void afterMarshal (Marshaller m)
+    {
+        try {
+            Trimmable.afterMarshal(this);
+        } catch (Exception ex) {
+            logger.error("Error afterMarshal", ex);
+        }
+    }
+
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    @SuppressWarnings("unused")
+    private void beforeMarshal (Marshaller m)
+    {
+        try {
+            Trimmable.beforeMarshal(this);
+        } catch (Exception ex) {
+            logger.error("Error beforeMarshal", ex);
+        }
     }
 }

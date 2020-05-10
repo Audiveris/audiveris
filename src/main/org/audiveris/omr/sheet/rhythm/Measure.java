@@ -50,6 +50,7 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Trimmable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +72,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -121,7 +123,8 @@ public class Measure
 
     /** Groups of beams in this measure. Populated by CHORDS step. */
     @XmlElementRef
-    private final Set<BeamGroup> beamGroups = new LinkedHashSet<>();
+    @Trimmable.Collection
+    private final LinkedHashSet<BeamGroup> beamGroups = new LinkedHashSet<>();
 
     /**
      * Possibly several Clefs per staff.
@@ -130,53 +133,62 @@ public class Measure
     @XmlList
     @XmlIDREF
     @XmlElement(name = "clefs")
-    private final List<ClefInter> clefs = new ArrayList<>();
+    @Trimmable.Collection
+    private final ArrayList<ClefInter> clefs = new ArrayList<>();
 
     /** Possibly one Key signature per staff, since keys may differ between staves. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "keys")
-    private final Set<KeyInter> keys = new LinkedHashSet<>();
+    @Trimmable.Collection
+    private final LinkedHashSet<KeyInter> keys = new LinkedHashSet<>();
 
     /** Possibly one Time signature per staff. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "times")
-    private final Set<AbstractTimeInter> timeSigs = new LinkedHashSet<>();
+    @Trimmable.Collection
+    private final LinkedHashSet<AbstractTimeInter> timeSigs = new LinkedHashSet<>();
 
     /** Head chords, both standard and small. Populated by CHORDS step. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "head-chords")
-    private final Set<HeadChordInter> headChords = new LinkedHashSet<>();
+    @Trimmable.Collection
+    private final LinkedHashSet<HeadChordInter> headChords = new LinkedHashSet<>();
 
     /** Rest chords. Populated by RHYTHMS step. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "rest-chords")
-    private final Set<RestChordInter> restChords = new LinkedHashSet<>();
+    @Trimmable.Collection
+    private final LinkedHashSet<RestChordInter> restChords = new LinkedHashSet<>();
 
     /** Flags. Populated by SYMBOLS step. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "flags")
-    private final Set<FlagInter> flags = new LinkedHashSet<>();
+    @Trimmable.Collection
+    private final LinkedHashSet<FlagInter> flags = new LinkedHashSet<>();
 
     /** Tuplets. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "tuplets")
-    private final Set<TupletInter> tuplets = new LinkedHashSet<>();
+    @Trimmable.Collection
+    private final LinkedHashSet<TupletInter> tuplets = new LinkedHashSet<>();
 
     /** Augmentation dots. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "augmentations-dots")
-    private Set<AugmentationDotInter> augDots = new LinkedHashSet<>();
+    @Trimmable.Collection
+    private final LinkedHashSet<AugmentationDotInter> augDots = new LinkedHashSet<>();
 
     /** Voices within this measure, sorted by voice id. Populated by RHYTHMS step. */
     @XmlElement(name = "voice")
-    private final List<Voice> voices = new ArrayList<>();
+    @Trimmable.Collection
+    private final ArrayList<Voice> voices = new ArrayList<>();
 
     // Transient data
     //---------------
@@ -2051,6 +2063,19 @@ public class Measure
         }
     }
 
+    //--------------//
+    // afterMarshal //
+    //--------------//
+    @SuppressWarnings("unused")
+    private void afterMarshal (Marshaller m)
+    {
+        try {
+            Trimmable.afterMarshal(this);
+        } catch (Exception ex) {
+            logger.error("Error afterMarshal {}", ex);
+        }
+    }
+
     //----------------//
     // afterUnmarshal //
     //----------------//
@@ -2063,6 +2088,19 @@ public class Measure
                                  Object parent)
     {
         part = (Part) parent;
+    }
+
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    @SuppressWarnings("unused")
+    private void beforeMarshal (Marshaller m)
+    {
+        try {
+            Trimmable.beforeMarshal(this);
+        } catch (Exception ex) {
+            logger.error("Error beforeMarshal {}", ex);
+        }
     }
 
     //---------------//
