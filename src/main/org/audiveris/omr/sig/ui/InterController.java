@@ -284,6 +284,9 @@ public class InterController
     //----------------//
     /**
      * Change the role of a sentence.
+     * <p>
+     * When a sentence changes its role from some text to chord name, its WordInter members may
+     * have to be converted (replaced) by ChordNameInter instances.
      *
      * @param sentence the sentence to modify
      * @param newRole  the new role for the sentence
@@ -297,6 +300,26 @@ public class InterController
             @Override
             protected void build ()
             {
+                // Special case of change to ChordName role
+                if (newRole == TextRole.ChordName) {
+                    // Add new ChordNameInter for any plain WordInter
+                    for (Inter inter : sentence.getMembers()) {
+                        if (!(inter instanceof ChordNameInter)) {
+                            WordInter word = (WordInter) inter;
+                            ChordNameInter cn = ChordNameInter.createValid(word);
+
+                            if (cn != null) {
+                                seq.add(new AdditionTask(
+                                        word.getSig(), cn, word.getBounds(), Arrays.asList(
+                                        new Link(sentence, new Containment(), false))));
+                                seq.add(new RemovalTask(word));
+                            } else {
+                                logger.info("Failed parsing ChordName text: {}", word.getValue());
+                            }
+                        }
+                    }
+                }
+
                 seq.add(new SentenceRoleTask(sentence, newRole));
             }
 

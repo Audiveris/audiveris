@@ -109,13 +109,40 @@ public class WordInter
     public WordInter (TextWord textWord,
                       Shape shape)
     {
-        super(textWord.getGlyph(),
-              textWord.getBounds(),
+        this(textWord.getGlyph(),
+             textWord.getBounds(),
+             shape,
+             textWord.getConfidence() * Grades.intrinsicRatio,
+             textWord.getValue(),
+             textWord.getFontInfo(),
+             textWord.getLocation());
+    }
+
+    /**
+     * Creates a new {@code WordInter} object, with all details.
+     *
+     * @param glyph    underlying glyph
+     * @param bounds   bounding box
+     * @param shape    specific shape (TEXT or LYRICS)
+     * @param grade    quality
+     * @param value    text content
+     * @param fontInfo font information
+     * @param location location
+     */
+    public WordInter (Glyph glyph,
+                      Rectangle bounds,
+                      Shape shape,
+                      double grade,
+                      String value,
+                      FontInfo fontInfo,
+                      Point location)
+    {
+        super(glyph, bounds,
               shape,
-              textWord.getConfidence() * Grades.intrinsicRatio);
-        value = textWord.getValue();
-        fontInfo = textWord.getFontInfo();
-        location = textWord.getLocation();
+              grade);
+        this.value = value;
+        this.fontInfo = fontInfo;
+        this.location = location;
     }
 
     /**

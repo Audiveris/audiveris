@@ -55,6 +55,7 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omr.constant.Constant;
 
 /**
  * Class {@code LyricItemInter} is a specific subclass of Text, meant for one
@@ -338,12 +339,12 @@ public class LyricItemInter
                 double otherDx = Math.abs(xChord - otherX);
 
                 if (bestDx >= otherDx) {
-                    logger.info("{} preferred to {} in chord-lyric link.", other, this);
+                    logger.debug("{} preferred to {} in chord-lyric link.", other, this);
 
                     // Find a 2nd choice for this syllable
                     link = lookupLink(staff, Arrays.asList(headChord));
                 } else {
-                    logger.info("{} preferred to {} in chord-lyric link.", this, other);
+                    logger.debug("{} preferred to {} in chord-lyric link.", this, other);
                     sig.removeEdge(rel);
 
                     // Find a 2nd choice for other syllable
@@ -508,14 +509,12 @@ public class LyricItemInter
     //----------------------//
     /**
      * Report the reference abscissa of this lyric item to be used for chord link test.
-     * <p>
-     * Left is too far on left, middle is too far on right, we use width/4 as a good heuristic
      *
      * @return the x to use to chord link test
      */
     private double getReferenceAbscissa ()
     {
-        return getLocation().getX() + (getBounds().width / 4.0);
+        return getLocation().getX() + (getBounds().width * constants.widthRatio.getValue());
     }
 
     //-----------//
@@ -629,5 +628,9 @@ public class LyricItemInter
         private final Scale.Fraction maxItemDx = new Scale.Fraction(
                 3,
                 "Maximum horizontal distance between a note and its lyric item");
+
+        private final Constant.Ratio widthRatio = new Constant.Ratio(
+                0.5,
+                "Reference abscissa as ratio of item width");
     }
 }
