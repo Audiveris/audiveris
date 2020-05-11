@@ -25,7 +25,7 @@ import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.text.TextRole;
 
 /**
- * Class {@code SentenceRoleTask} change the role of a sentence.
+ * Class {@code SentenceRoleTask} changes the role of a sentence.
  *
  * @author Hervé Bitteur
  */

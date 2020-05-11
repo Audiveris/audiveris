@@ -59,7 +59,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.List;
-import org.audiveris.omr.sig.inter.ChordNameInter;
+import org.audiveris.omr.sig.inter.WordInter;
 
 /**
  * Class {@code SymbolsLinker} defines final relations between certain symbols.
@@ -169,9 +169,7 @@ public class SymbolsLinker
             case ChordName: {
                 // Map each word with proper chord, in assigned staff
                 for (Inter wInter : sentence.getMembers()) {
-                    ChordNameInter word = (ChordNameInter) wInter;
-
-                    ///item.mapToChord();
+                    WordInter word = (WordInter) wInter;
                     Point2D wLoc = word.getLocation();
                     MeasureStack stack = system.getStackAt(wLoc);
 
@@ -193,7 +191,6 @@ public class SymbolsLinker
             break;
 
             default:
-
             // Roles other than [Lyrics, Direction, PartName, ChordName] stand by themselves
             }
         } catch (Exception ex) {
@@ -274,9 +271,7 @@ public class SymbolsLinker
 
             case ChordName: {
                 for (Inter wInter : sentence.getMembers()) {
-                    ChordNameInter item = (ChordNameInter) wInter;
-
-                    for (Relation rel : sig.getRelations(item, ChordNameRelation.class)) {
+                    for (Relation rel : sig.getRelations(wInter, ChordNameRelation.class)) {
                         sig.removeEdge(rel);
                     }
                 }

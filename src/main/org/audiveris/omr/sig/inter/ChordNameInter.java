@@ -44,6 +44,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.math.PointUtil;
 
 /**
  * Class {@code ChordNameInter} is a formatted piece of text that
@@ -210,7 +211,30 @@ public class ChordNameInter
     private final List<Degree> degrees;
 
     /**
-     * Creates a new ChordInfo object, with all parameters.
+     * Creates a new ChordNameInter object from a WordInter.
+     *
+     * @param w       the WordInter to convert from
+     * @param root    root of the chord
+     * @param kind    type of the chord
+     * @param bass    bass of the chord, or null
+     * @param degrees additions / subtractions / alterations if any
+     */
+    public ChordNameInter (WordInter w,
+                           Pitch root,
+                           Kind kind,
+                           Pitch bass,
+                           List<Degree> degrees)
+    {
+        super(w.getGlyph(), w.getBounds(), w.getShape(), w.getGrade(), w.getValue(), w.getFontInfo(),
+              PointUtil.rounded(w.getLocation()));
+        this.root = root;
+        this.kind = kind;
+        this.bass = bass;
+        this.degrees = degrees;
+    }
+
+    /**
+     * Creates a new ChordNameInter object, with all parameters.
      *
      * @param textWord the full underlying text
      * @param root     root of the chord
@@ -232,7 +256,7 @@ public class ChordNameInter
     }
 
     /**
-     * Creates a new ChordInfo object, with all parameters.
+     * Creates a new ChordNameInter object, with all parameters.
      *
      * @param textWord the full underlying text
      * @param root     root of the chord
@@ -326,16 +350,13 @@ public class ChordNameInter
         return "CHORD_NAME_\"" + value + "\"";
     }
 
-    //----------//
-    // toString //
-    //----------//
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    public String toString ()
+    protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append("{");
-
-        sb.append(" '").append(value).append("'");
+        StringBuilder sb = new StringBuilder(super.internals());
 
         sb.append(" root:").append(root);
 
@@ -350,8 +371,6 @@ public class ChordNameInter
                 sb.append(" deg:").append(degree);
             }
         }
-
-        sb.append("}");
 
         return sb.toString();
     }
@@ -381,16 +400,57 @@ public class ChordNameInter
     // createValid //
     //-------------//
     /**
-     * Convenient method to try to build a ChordNameInter instance from a
-     * provided piece of text.
+     * Try to build a ChordNameInter instance from a provided TextWord.
      *
-     * @param textWord text the precise text of the chord symbol
+     * @param textWord the provided TextWord
      * @return a populated ChordNameInter instance if successful, null otherwise
      */
     public static ChordNameInter createValid (TextWord textWord)
     {
+        final ChordStructure cs = parseChord(textWord.getValue());
+
+        if (cs != null) {
+            return new ChordNameInter(textWord, cs.root, cs.kind, cs.bass, cs.degrees);
+        }
+
+        logger.debug("No pattern match for chord text {}", textWord);
+        return null;
+    }
+
+    //-------------//
+    // createValid //
+    //-------------//
+    /**
+     * Try to build a ChordNameInter instance from a provided WordInter.
+     *
+     * @param wordInter provided word inter
+     * @return a populated ChordNameInter instance if successful, null otherwise
+     */
+    public static ChordNameInter createValid (WordInter wordInter)
+    {
+        final ChordStructure cs = parseChord(wordInter.getValue());
+
+        if (cs != null) {
+            return new ChordNameInter(wordInter, cs.root, cs.kind, cs.bass, cs.degrees);
+        }
+
+        logger.debug("No pattern match for chord text {}", wordInter);
+        return null;
+    }
+
+    //------------//
+    // parseChord //
+    //------------//
+    /**
+     * Parse the provided string to try to extract all chord name items.
+     *
+     * @param value text the precise text of the chord symbol candidate
+     * @return a populated ChordItems structure if successful, null otherwise
+     */
+    private static ChordStructure parseChord (String value)
+    {
         for (Pattern pattern : getPatterns()) {
-            Matcher matcher = pattern.matcher(textWord.getValue());
+            Matcher matcher = pattern.matcher(value);
 
             if (matcher.matches()) {
                 // Root
@@ -426,11 +486,11 @@ public class ChordNameInter
                 String parStr = getGroup(matcher, PARS);
                 degrees.addAll(Degree.createList(parStr, firstDeg));
 
-                return new ChordNameInter(textWord, root, kind, bass, degrees);
+                return new ChordStructure(root, kind, bass, degrees);
             }
         }
 
-        logger.debug("No pattern match for chord text {}", textWord);
+        logger.debug("No pattern match for chord text {}", value);
 
         return null;
     }
@@ -972,5 +1032,32 @@ public class ChordNameInter
                 return null;
             }
         }
+    }
+
+    //----------------//
+    // ChordStructure //
+    //----------------//
+    private static class ChordStructure
+    {
+
+        public final Pitch root;
+
+        public final Kind kind;
+
+        public final Pitch bass;
+
+        public final List<Degree> degrees;
+
+        public ChordStructure (Pitch root,
+                               Kind kind,
+                               Pitch bass,
+                               List<Degree> degrees)
+        {
+            this.root = root;
+            this.kind = kind;
+            this.bass = bass;
+            this.degrees = degrees;
+        }
+
     }
 }

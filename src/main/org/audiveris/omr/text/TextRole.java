@@ -159,7 +159,8 @@ public enum TextRole
         int staffDy = staff.distanceTo(boxCenter);
         boolean closeToStaff = staffDy <= scale.toPixels(constants.maxStaffDy);
         boolean farFromStaff = staffDy >= scale.toPixels(constants.minStaffDy);
-        boolean lyricCloseAboveStaff = staffDy <= scale.toPixels(constants.maxLyricsDyAbove);
+        ///boolean lyricCloseAboveStaff = staffDy <= scale.toPixels(constants.maxLyricsDyAbove);
+        //
 
         // Begins before left side of the part (and stops before staff center abscissa)?
         boolean leftOfStaves = (left.x < system.getLeft()) && (right.x <= staffMidX);
@@ -189,26 +190,6 @@ public enum TextRole
         // Some vowels? (for lyrics)
         boolean hasVowel = line.hasVowell();
 
-        logger.debug(
-                "{} firstSystem={} lastSystem={} systemPosition={}"
-                        + " partPosition={} closeToStaff={} leftOfStaves={}"
-                        + " pageCentered={} rightAligned={} shortSentence={}"
-                        + " highText={} hasVowel={} isAllChords={} lyricCloseAboveStaff={}",
-                box,
-                firstSystem,
-                lastSystem,
-                systemPosition,
-                partPosition,
-                closeToStaff,
-                leftOfStaves,
-                pageCentered,
-                rightAligned,
-                shortSentence,
-                highText,
-                hasVowel,
-                isAllChords,
-                lyricCloseAboveStaff);
-
         // Decisions ...
         switch (systemPosition) {
         case ABOVE_STAVES: // Title, Number, Creator, Direction, ChordName, Lyrics above staff
@@ -230,15 +211,7 @@ public enum TextRole
                     if (isAllChords) {
                         return ChordName;
                     } else {
-                        if (lyricsAllowed
-                                    && hasVowel
-                                    && lyricCloseAboveStaff
-                                    && (switches.getValue(Switch.lyricsAboveStaff))
-                                    && (!isMainlyItalic)) {
-                            return Lyrics;
-                        } else {
-                            return Direction;
-                        }
+                        return Direction;
                     }
                 } else if (pageCentered) { // Title, Number
 
@@ -253,7 +226,7 @@ public enum TextRole
             } else {
                 if (lyricsAllowed
                             && hasVowel
-                            && lyricCloseAboveStaff
+                            ///&& lyricCloseAboveStaff
                             && (switches.getValue(Switch.lyricsAboveStaff))
                             && (!isMainlyItalic)) {
                     return Lyrics;
@@ -353,16 +326,17 @@ public enum TextRole
                 "Maximum length for a short sentence (no lyrics)");
 
         private final Scale.Fraction maxTinyLength = new Scale.Fraction(
-                2,
+                2.5,
                 "Maximum length for a tiny sentence (no lyrics)");
 
         private final Scale.Fraction maxStaffDy = new Scale.Fraction(
                 7,
                 "Maximum distance above staff for a direction (or lyrics above staves)");
-
-        private final Scale.Fraction maxLyricsDyAbove = new Scale.Fraction(
-                4.5,
-                "Maximum distance above staff for lyrics (above staves option)");
+//
+//        private final Scale.Fraction maxLyricsDyAbove = new Scale.Fraction(
+//                4.5,
+//                "Maximum distance above staff for lyrics (above staves option)");
+//
 
         private final Scale.Fraction minStaffDy = new Scale.Fraction(
                 6,
