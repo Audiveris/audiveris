@@ -230,7 +230,7 @@ public class NoteHeadsBuilder
     // buildHeads //
     //------------//
     /**
-     * Retrieve all void heads, black heads and whole notes in the system
+     * Retrieve all void heads, black heads, (cross heads) and whole notes in the system
      * both for standard and small (cue/grace) sizes.
      */
     public void buildHeads ()
@@ -1112,6 +1112,11 @@ public class NoteHeadsBuilder
             // Then try (all variants for) the shape and keep the best dist
             double dist = desc.evaluate(x, y, anchor, distances);
 
+            // Trick to boost cross heads
+            if (shape == Shape.NOTEHEAD_CROSS) {
+                dist *= (1 - constants.crossBoost.getValue());
+            }
+
             if (useSeeds) {
                 seedsPerf.evals++;
             } else {
@@ -1592,6 +1597,10 @@ public class NoteHeadsBuilder
         private final Constant.Ratio wholeBoost = new Constant.Ratio(
                 0.38,
                 "How much do we boost whole notes (always isolated)");
+
+        private final Constant.Ratio crossBoost = new Constant.Ratio(
+                0.35,
+                "How much do we boost cross head notes (badly recognized by template matching)");
 
         private final Scale.Fraction minBeamWidth = new Scale.Fraction(
                 2.5,

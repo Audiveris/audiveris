@@ -173,7 +173,10 @@ public class EvaluationBoard
             if (event instanceof EntityListEvent) {
                 EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) event;
                 Glyph glyph = listEvent.getEntity();
-                evaluate(glyph);
+
+                if (glyph != null) {
+                    evaluate(glyph);
+                }
             }
         } catch (Exception ex) {
             logger.warn("EvaluationBoard error", ex);
