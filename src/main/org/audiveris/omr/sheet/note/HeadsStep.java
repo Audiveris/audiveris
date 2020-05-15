@@ -76,7 +76,7 @@ public class HeadsStep
         // Build proper distance table and make it available for system-level processing
         DistanceTable distances = new DistancesBuilder(sheet).buildDistances();
 
-        // Retrieve spots for (black) notes
+        // Retrieve spots for (black) heads
         Map<SystemInfo, List<Glyph>> sheetSpots = new HeadSpotsBuilder(sheet).getSpots();
 
         return new Context(distances, sheetSpots);
@@ -86,7 +86,7 @@ public class HeadsStep
     // Context //
     //---------//
     /**
-     * COntext for step processing.
+     * Context for step processing.
      */
     protected static class Context
     {

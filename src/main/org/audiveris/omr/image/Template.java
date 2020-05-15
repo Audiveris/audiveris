@@ -702,8 +702,6 @@ public class Template
     //----------//
     /**
      * Convert a matching distance to an impact value.
-     * <p>
-     * TODO: Should we boost value for whole heads here (no support from stem is expected)?
      *
      * @param distance matching distance
      * @return resulting impact

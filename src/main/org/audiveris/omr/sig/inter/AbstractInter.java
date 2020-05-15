@@ -921,9 +921,27 @@ public abstract class AbstractInter
     @Override
     public void increase (double ratio)
     {
+        grade = increaseGrade(grade, ratio);
+    }
+
+    //---------------//
+    // increaseGrade //
+    //---------------//
+    /**
+     * Increase the provided intrinsic grade by some ratio.
+     *
+     * @param grade initial value
+     * @param ratio ratio applied
+     * @return the increased grade
+     */
+    public static double increaseGrade (double grade,
+                                        double ratio)
+    {
         if (grade < Grades.intrinsicRatio) {
             grade += (ratio * (Grades.intrinsicRatio - grade));
         }
+
+        return grade;
     }
 
     //-----------------//
