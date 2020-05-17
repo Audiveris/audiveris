@@ -1599,7 +1599,7 @@ public class NoteHeadsBuilder
                 "How much do we boost whole notes (always isolated)");
 
         private final Constant.Ratio crossBoost = new Constant.Ratio(
-                0.35,
+                0.1,
                 "How much do we boost cross head notes (badly recognized by template matching)");
 
         private final Scale.Fraction minBeamWidth = new Scale.Fraction(
