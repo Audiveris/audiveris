@@ -282,7 +282,7 @@ class TrainingPanel
                 newSamples.addAll(list);
 
                 // Ensure minimum sample count is reached for this shape
-                if (togo > 0) {
+                if ((togo > 0) && (shape != Shape.CLUTTER)) {
                     Collections.shuffle(list);
 
                     do {
