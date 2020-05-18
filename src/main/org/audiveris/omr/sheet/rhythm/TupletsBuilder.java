@@ -459,7 +459,7 @@ public class TupletsBuilder
                 final Point head = chord.getHeadLocation();
 
                 if (center.distanceSq(tail) < center.distanceSq(head)) {
-                    // Pick up the smallest beam connected to this stem
+                    // Pick up the smallest beam, if any, connected to this stem
                     int smallestWidth = Integer.MAX_VALUE;
                     AbstractBeamInter smallestBeam = null;
 
@@ -472,8 +472,10 @@ public class TupletsBuilder
                         }
                     }
 
-                    for (StemInter s : smallestBeam.getStems()) {
-                        set.addAll(s.getChords());
+                    if (smallestBeam != null) {
+                        for (StemInter s : smallestBeam.getStems()) {
+                            set.addAll(s.getChords());
+                        }
                     }
                 }
             }
