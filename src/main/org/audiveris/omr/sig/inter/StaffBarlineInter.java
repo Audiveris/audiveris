@@ -865,7 +865,7 @@ public final class StaffBarlineInter
                     "Insertion of " + bars.size() + " barlines")) {
                 cancel.set(true);
 
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
         }
 
@@ -959,7 +959,7 @@ public final class StaffBarlineInter
             return closure;
         } else {
             cancel.set(true);
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
     }
 

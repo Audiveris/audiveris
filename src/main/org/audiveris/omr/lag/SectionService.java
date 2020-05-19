@@ -34,6 +34,7 @@ import org.audiveris.omr.util.EntityIndex;
  *
  * @author Hervé Bitteur
  */
+@SuppressWarnings("unchecked")
 public class SectionService
         extends EntityService<Section>
 {

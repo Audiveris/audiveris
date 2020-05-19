@@ -276,7 +276,7 @@ public class HeadStemRelation
 
         final HeadChordInter headChord = head.getChord();
         if (headChord == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         final List<UITask> tasks = new ArrayList<>();
@@ -526,7 +526,7 @@ public class HeadStemRelation
     {
         final SIGraph sig = stem.getSig();
         final HeadChordInter stemChord = new HeadChordInter(-1);
-        tasks.add(new AdditionTask(sig, stemChord, stem.getBounds(), Collections.EMPTY_SET));
+        tasks.add(new AdditionTask(sig, stemChord, stem.getBounds(), Collections.emptySet()));
         tasks.add(new LinkTask(sig, stemChord, stem, new ChordStemRelation()));
 
         return stemChord;

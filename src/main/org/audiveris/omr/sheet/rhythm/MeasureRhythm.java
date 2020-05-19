@@ -278,7 +278,7 @@ public class MeasureRhythm
         }
 
         if (found == null) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
 
         return found;
@@ -536,7 +536,7 @@ public class MeasureRhythm
         }
 
         if (found == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return found;
@@ -1294,10 +1294,11 @@ public class MeasureRhythm
          */
         private Set<ChordPair> buildBlackList ()
         {
-            final Set blacks = new LinkedHashSet<>();
-            final SIGraph sig = rookies.isEmpty() ? null : rookies.get(0).getSig();
+            final Set<ChordPair> blacks = new LinkedHashSet<>();
 
             for (AbstractChordInter ch : rookies) {
+                final SIGraph sig = ch.getSig();
+
                 for (Relation rel : sig.getRelations(ch, SeparateVoiceRelation.class)) {
                     AbstractChordInter other = (AbstractChordInter) sig.getOppositeInter(ch, rel);
                     blacks.add(new ChordPair(ch, other));
@@ -1318,10 +1319,11 @@ public class MeasureRhythm
          */
         private Set<ChordPair> buildWhiteList ()
         {
-            final Set whites = new LinkedHashSet<>();
-            final SIGraph sig = rookies.isEmpty() ? null : rookies.get(0).getSig();
+            final Set<ChordPair> whites = new LinkedHashSet<>();
 
             for (AbstractChordInter ch : rookies) {
+                final SIGraph sig = ch.getSig();
+
                 for (Relation rel : sig.getRelations(ch, SameVoiceRelation.class)) {
                     AbstractChordInter other = (AbstractChordInter) sig.getOppositeInter(ch, rel);
                     whites.add(new ChordPair(ch, other));

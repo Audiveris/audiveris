@@ -73,7 +73,7 @@ import javax.swing.text.JTextComponent;
  * By default, any board can have a related SelectionService, used for subscribe (input) and publish
  * (output). When {@link #connect} is called, the board instance is subscribed to its
  * SelectionService for a specific collection of event classes. Similarly, {@link #disconnect}
- * un-subscribes the Board instance from the same event classes.
+ * unsubscribes the Board instance from the same event classes.
  * </p>
  * <p>
  * This {@code Board} class is still an abstract class, since the onEvent() method must be
@@ -147,7 +147,10 @@ public abstract class Board
     /** The swing component of the board instance. */
     private final Panel component = new Panel();
 
-    /** The event service this board interacts with. */
+    /**
+     * The event service this board interacts with.
+     * It can serve different event classes, like a list of entities or an entity ID.
+     */
     private final SelectionService selectionService;
 
     /** The collection of event classes to be observed. */

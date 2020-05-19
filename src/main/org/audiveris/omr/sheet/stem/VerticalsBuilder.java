@@ -186,7 +186,7 @@ public class VerticalsBuilder
      *
      * @return the CheckSuite for candidates
      */
-    public CheckSuite getSuite ()
+    public CheckSuite<StickContext> getSuite ()
     {
         return suite;
     }
@@ -756,7 +756,8 @@ public class VerticalsBuilder
                 }
 
                 if (event instanceof EntityListEvent) {
-                    EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) event;
+                    @SuppressWarnings("unchecked")
+                    final EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) event;
                     final Glyph glyph = listEvent.getEntity();
 
                     if (glyph != null) {

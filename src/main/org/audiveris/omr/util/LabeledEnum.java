@@ -67,7 +67,9 @@ public class LabeledEnum<E extends Enum<E>>
         if (!(obj instanceof LabeledEnum)) {
             return false;
         }
-        LabeledEnum<E> that = (LabeledEnum<E>) obj;
+
+        @SuppressWarnings("unchecked")
+        final LabeledEnum<E> that = (LabeledEnum<E>) obj;
         return (value == that.value) && label.equals(that.label);
     }
 
@@ -115,13 +117,14 @@ public class LabeledEnum<E extends Enum<E>>
                                                                ResourceMap resources,
                                                                String prefix)
     {
-        final LabeledEnum[] labeled = new LabeledEnum[values.length];
+        @SuppressWarnings("unchecked")
+        final LabeledEnum<E>[] labeled = new LabeledEnum[values.length];
 
         for (int i = 0; i < values.length; i++) {
             final E value = values[i];
             final String key = prefix + value.name();
             final String label = resources.getString(key);
-            labeled[i] = new LabeledEnum(value, (label != null) ? label : value.name());
+            labeled[i] = new LabeledEnum<E>(value, (label != null) ? label : value.name());
         }
 
         return labeled;

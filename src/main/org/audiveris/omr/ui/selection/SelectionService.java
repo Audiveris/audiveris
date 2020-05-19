@@ -34,24 +34,33 @@ import java.util.List;
 
 /**
  * Class {@code SelectionService} is an OMR customized version of an EventService as
- * provided by the EventBus framework.
+ * provided by the EventBus framework, to handle one or several UserEvent classes.
+ * <p>
+ * Because the same service can be used to convey different sub-classes of UserEvent, we cannot
+ * parameterize the SelectionService class.
+ *
+ * @param <E> type of served data
  *
  * @author Hervé Bitteur
  */
+@SuppressWarnings("unchecked")
 public class SelectionService
         extends ThreadSafeEventService
 {
 
+    //~ Static fields/initializers -----------------------------------------------------------------
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SelectionService.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Name of this service. */
     private final String name;
 
     /** Allowed events. */
     private final Class[] eventsAllowed;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SelectionService object.
      *
@@ -64,10 +73,11 @@ public class SelectionService
         this.name = name;
         this.eventsAllowed = eventsAllowed;
 
-        // This cache is needed to be able to retrieve the last publication of any event class
+        // Cache needed to be able at any time to retrieve the last publication of any event class
         setDefaultCacheSizePerClassOrTopic(1);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // dumpSubscribers //
     //-----------------//
@@ -125,7 +135,7 @@ public class SelectionService
      * @param classe the event class we are interested in
      * @return the carried data, if any
      */
-    public Object getSelection (Class<? extends UserEvent> classe)
+    public Object getSelection (Class<?> classe)
     {
         UserEvent event = (UserEvent) getLastEvent(classe);
 
@@ -260,6 +270,7 @@ public class SelectionService
         return false;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

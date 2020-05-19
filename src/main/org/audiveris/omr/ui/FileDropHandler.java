@@ -100,6 +100,7 @@ public class FileDropHandler
         try {
             /* Fetch data */
             Object data = trsf.getTransferData(DataFlavor.javaFileListFlavor);
+            @SuppressWarnings("unchecked")
             java.util.List<File> fileList = (java.util.List<File>) data;
 
             /* Loop through the files */

@@ -205,7 +205,7 @@ public class SlotsRetriever
         }
 
         if (found == null) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
 
         return found;

@@ -91,7 +91,7 @@ public abstract class EnsembleHelper
         if (sig == null) {
             logger.debug("Ensemble#{} not in sig", ensemble.getId());
 
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         List<Inter> members = new ArrayList<>();

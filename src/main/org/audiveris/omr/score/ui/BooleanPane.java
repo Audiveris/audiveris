@@ -55,7 +55,7 @@ public class BooleanPane
      * @param model  underlying data model (cannot be null)
      */
     public BooleanPane (String title,
-                        XactDataPane parent,
+                        XactDataPane<Boolean> parent,
                         String text,
                         String tip,
                         Param<Boolean> model)

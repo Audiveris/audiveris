@@ -162,7 +162,7 @@ public abstract class Relation
      */
     public List<? extends UITask> preLink (RelationPair pair)
     {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     //---------//

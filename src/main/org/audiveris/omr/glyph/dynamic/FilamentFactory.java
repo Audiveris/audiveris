@@ -104,7 +104,7 @@ public class FilamentFactory<F extends Filament>
     private final Orientation orientation;
 
     /** Precise constructor for filaments. */
-    private Constructor<?> filamentConstructor;
+    private Constructor<F> filamentConstructor;
 
     /** Scale-dependent constants. */
     private final Parameters params;
@@ -128,7 +128,7 @@ public class FilamentFactory<F extends Filament>
     public FilamentFactory (Scale scale,
                             FilamentIndex index,
                             Orientation orientation,
-                            Class<? extends Filament> filamentClass)
+                            Class<F> filamentClass)
     {
         this.scale = scale;
         this.index = index;
@@ -710,8 +710,7 @@ public class FilamentFactory<F extends Filament>
     private F createFilament (Section section)
     {
         try {
-            final F fil = (F) filamentConstructor.newInstance(
-                    new Object[]{scale.getInterline()});
+            final F fil = (F) filamentConstructor.newInstance(scale.getInterline());
 
             if (section != null) {
                 fil.addSection(section);

@@ -702,7 +702,7 @@ public class Voice
         }
 
         if (found == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return found;
@@ -965,7 +965,7 @@ public class Voice
             return Collections.unmodifiableList(chords);
         }
 
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     //-------------//

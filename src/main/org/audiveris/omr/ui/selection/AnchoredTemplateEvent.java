@@ -30,7 +30,7 @@ import org.audiveris.omr.image.AnchoredTemplate;
  * @author Hervé Bitteur
  */
 public class AnchoredTemplateEvent
-        extends UserEvent
+        extends UserEvent<AnchoredTemplate>
 {
 
     private final AnchoredTemplate anchoredTemplate;

@@ -46,6 +46,7 @@ import java.util.List;
  *
  * @author Hervé Bitteur
  */
+@SuppressWarnings("unchecked")
 public class GlyphService
         extends EntityService<Glyph>
 {

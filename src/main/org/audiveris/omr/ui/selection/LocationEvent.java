@@ -33,7 +33,7 @@ import java.awt.Rectangle;
  * @author Hervé Bitteur
  */
 public class LocationEvent
-        extends UserEvent
+        extends UserEvent<Rectangle>
 {
 
     private static final Logger logger = LoggerFactory.getLogger(LocationEvent.class);

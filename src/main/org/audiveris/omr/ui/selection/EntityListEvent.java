@@ -39,12 +39,15 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class EntityListEvent<E extends Entity>
-        extends UserEvent
+        extends UserEvent<List<E>>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The selected entity list, which may be empty but not null. */
     private final List<E> entities;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code EntityListEvent} object.
      *
@@ -75,6 +78,7 @@ public class EntityListEvent<E extends Entity>
      * @param movement the user movement
      * @param entities the selected entities (perhaps null)
      */
+    @SafeVarargs
     public EntityListEvent (Object source,
                             SelectionHint hint,
                             MouseMovement movement,
@@ -89,6 +93,7 @@ public class EntityListEvent<E extends Entity>
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//

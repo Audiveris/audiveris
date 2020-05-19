@@ -154,7 +154,7 @@ public class TesseractOrder
     public List<TextLine> process ()
     {
         if (!OcrUtil.getOcr().isAvailable()) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         try {

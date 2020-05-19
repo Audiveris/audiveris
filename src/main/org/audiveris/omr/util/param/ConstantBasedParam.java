@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * @param <E> type for value
  * @param <C> type for value constant
  */
-public class ConstantBasedParam<E, C extends Constant>
+public class ConstantBasedParam<E, C extends Constant<E>>
         extends Param<E>
 {
 
@@ -55,7 +55,7 @@ public class ConstantBasedParam<E, C extends Constant>
     @Override
     public E getSourceValue ()
     {
-        return (E) cst.getSourceValue();
+        return cst.getSourceValue();
     }
 
     @Override
@@ -64,14 +64,14 @@ public class ConstantBasedParam<E, C extends Constant>
         if (cst.isSourceValue()) {
             return null;
         } else {
-            return (E) cst.getValue();
+            return cst.getValue();
         }
     }
 
     @Override
     public E getValue ()
     {
-        return (E) cst.getValue();
+        return cst.getValue();
     }
 
     @Override

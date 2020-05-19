@@ -304,6 +304,7 @@ public class BookParameters
      * @param e the event
      */
     @Override
+    @SuppressWarnings("unchecked")
     public void stateChanged (ChangeEvent e)
     {
         // Refresh the new current panel
@@ -625,7 +626,7 @@ public class BookParameters
         final Switch key;
 
         SwitchPane (Switch key,
-                    XactDataPane parent,
+                    XactDataPane<Boolean> parent,
                     Param<Boolean> model)
         {
             super(description(key), parent, "", null, model);

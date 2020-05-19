@@ -581,7 +581,7 @@ public class InterController
                     BarConnectorInter connector = new BarConnectorInter(shape, 1.0, median, width);
                     SIGraph sig = system.getSig();
                     seq.add(new AdditionTask(
-                            sig, connector, connector.getBounds(), Collections.EMPTY_SET));
+                            sig, connector, connector.getBounds(), Collections.emptySet()));
 
                     // Link up & down bars
                     seq.add(new LinkTask(sig, upBar, downBar, new BarConnectionRelation()));
@@ -1128,7 +1128,7 @@ public class InterController
                                             sig,
                                             word,
                                             textWord.getBounds(),
-                                            Collections.EMPTY_SET));
+                                            Collections.emptySet()));
                             seq.add(
                                     new AdditionTask(
                                             sig,

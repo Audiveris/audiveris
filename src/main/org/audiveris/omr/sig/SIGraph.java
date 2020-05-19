@@ -55,6 +55,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -98,7 +99,7 @@ public class SIGraph
      */
     public SIGraph (SystemInfo system)
     {
-        super(new DirectedMultigraph(Relation.class), true /* reuseEvents */);
+        super(new DirectedMultigraph<>(Relation.class), true /* reuseEvents */);
 
         Objects.requireNonNull(system, "A sig needs a non-null system");
         this.system = system;
@@ -120,7 +121,7 @@ public class SIGraph
      */
     private SIGraph ()
     {
-        super(new DirectedMultigraph(Relation.class), true /* reuseEvents */);
+        super(new DirectedMultigraph<>(Relation.class), true /* reuseEvents */);
     }
 
     //-----------//
@@ -845,14 +846,16 @@ public class SIGraph
         Support sup = null;
 
         try {
-            sup = supportClass.newInstance();
+            sup = supportClass.getDeclaredConstructor().newInstance();
             addEdge(source, target, sup);
 
             if (inter1.isVip() || inter2.isVip()) {
                 logger.info("VIP support {}", sup.toLongString(this));
             }
         } catch (IllegalAccessException |
-                 InstantiationException ex) {
+                 NoSuchMethodException |
+                 InstantiationException |
+                 InvocationTargetException ex) {
             logger.error("Could not instantiate {} {}", supportClass, ex.toString(), ex);
         }
 

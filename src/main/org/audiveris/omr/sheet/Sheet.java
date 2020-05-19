@@ -206,6 +206,7 @@ import javax.xml.stream.XMLStreamException;
 @XmlRootElement(name = "sheet")
 public class Sheet
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -215,13 +216,14 @@ public class Sheet
     public static final String INTERNALS_RADIX = "sheet#";
 
     /** Events that can be published on sheet location service. */
-    private static final Class<?>[] allowedEvents = new Class<?>[]{
+    private static final Class<?>[] eventsAllowed = new Class<?>[]{
         LocationEvent.class,
         PixelEvent.class};
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -271,7 +273,7 @@ public class Sheet
     /** Dictionary of sheet lags. */
     private LagManager lagManager;
 
-    //-- UI ----------------------------------------------------------------------------------------
+    //-- UI ---
     //
     /** Selections for this sheet. (SheetLocation, PixelLevel) */
     private SelectionService locationService;
@@ -294,7 +296,7 @@ public class Sheet
     /** Stroke for slurs, wedges and endings lines. */
     private Stroke lineStroke;
 
-    //-- resettable members ------------------------------------------------------------------------
+    //-- resettable members ---
     //
     /** Global filaments index. */
     private FilamentIndex filamentIndex;
@@ -302,6 +304,7 @@ public class Sheet
     /** Delta measurements. */
     private SheetDiff sheetDelta;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Sheet} object with a binary table.
      *
@@ -362,6 +365,7 @@ public class Sheet
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // addItemRenderer //
     //-----------------//
@@ -1390,7 +1394,7 @@ public class Sheet
 
         // Update UI information if so needed
         if (OMR.gui != null) {
-            locationService = new SelectionService("locationService", allowedEvents);
+            locationService = new SelectionService("locationService", eventsAllowed);
             errorsEditor = new ErrorsEditor(this);
             itemRenderers = new LinkedHashSet<>();
             addItemRenderer(staffManager);
@@ -1572,6 +1576,7 @@ public class Sheet
         return jaxbContext;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

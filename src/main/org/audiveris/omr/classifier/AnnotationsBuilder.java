@@ -181,9 +181,9 @@ public class AnnotationsBuilder
      * @param interClass the inter class
      * @return true if excluded
      */
-    private static boolean isExcluded (Class interClass)
+    private static boolean isExcluded (Class<?> interClass)
     {
-        for (Class classe : excludedInterClasses) {
+        for (Class<?> classe : excludedInterClasses) {
             if (classe.isAssignableFrom(interClass)) {
                 return true;
             }

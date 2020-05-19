@@ -53,7 +53,7 @@ public class EditionTask
         if (unlinks != null) {
             this.unlinks = new ArrayList<>(unlinks);
         } else {
-            this.unlinks = Collections.EMPTY_SET;
+            this.unlinks = Collections.emptySet();
         }
     }
 

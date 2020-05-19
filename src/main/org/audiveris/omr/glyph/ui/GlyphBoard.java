@@ -73,7 +73,7 @@ public class GlyphBoard
     public GlyphBoard (GlyphsController controller,
                        boolean selected)
     {
-        super(Board.GLYPH, (EntityService<Glyph>) controller.getGlyphService(), selected);
+        super(Board.GLYPH, controller.getGlyphService(), selected);
 
         this.controller = controller;
 

@@ -327,7 +327,7 @@ public class ShapeChecker
             }
         };
 
-        new Checker("WithinStaffHeight", Dynamics.getShapes(), FermataArcs)
+        new Checker("WithinStaffHeight", shapesOf(Dynamics.getShapes(), FermataArcs))
         {
             @Override
             public boolean check (SystemInfo system,
@@ -467,7 +467,8 @@ public class ShapeChecker
             }
         };
 
-        new Checker("StaffGap", Rests.getShapes(), Dynamics.getShapes(), Articulations.getShapes())
+        new Checker("StaffGap",
+                    shapesOf(Rests.getShapes(), Dynamics.getShapes(), Articulations.getShapes()))
         {
             @Override
             public boolean check (SystemInfo system,
@@ -725,7 +726,7 @@ public class ShapeChecker
     private abstract class Checker
     {
 
-        /** Unique name for this check */
+        /** Unique name for this check. */
         public final String name;
 
         Checker (String name,
@@ -733,21 +734,6 @@ public class ShapeChecker
         {
             this.name = name;
             addChecker(this, shapes);
-        }
-
-        @SuppressWarnings({"unchecked", "varargs"})
-        Checker (String name,
-                 Collection<Shape>... shapes)
-        {
-            this.name = name;
-
-            Collection<Shape> allShapes = new ArrayList<>();
-
-            for (Collection<Shape> col : shapes) {
-                allShapes.addAll(col);
-            }
-
-            addChecker(this, allShapes);
         }
 
         Checker (String name,
@@ -800,6 +786,34 @@ public class ShapeChecker
         {
             return name;
         }
+    }
+
+    //----------//
+    // shapesOf //
+    //----------//
+    private static List<Shape> shapesOf (Collection<Shape> col1,
+                                         Collection<Shape> col2)
+    {
+        final List<Shape> list = new ArrayList<>();
+        list.addAll(col1);
+        list.addAll(col2);
+
+        return list;
+    }
+
+    //----------//
+    // shapesOf //
+    //----------//
+    private static List<Shape> shapesOf (Collection<Shape> col1,
+                                         Collection<Shape> col2,
+                                         Collection<Shape> col3)
+    {
+        final List<Shape> list = new ArrayList<>();
+        list.addAll(col1);
+        list.addAll(col2);
+        list.addAll(col3);
+
+        return list;
     }
 
     //-----------//

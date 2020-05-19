@@ -86,7 +86,7 @@ public abstract class Constant<E>
     // Data modified at any time
     //--------------------------
     /** Current data. */
-    private AtomicReference<Tuple> tuple = new AtomicReference<>();
+    private AtomicReference<Tuple<E>> tuple = new AtomicReference<>();
 
     /**
      * Creates a constant instance, while providing a default value,
@@ -224,7 +224,7 @@ public abstract class Constant<E>
      */
     public E getValue ()
     {
-        return (E) getCachedValue();
+        return getCachedValue();
     }
 
     //----------//
@@ -316,7 +316,7 @@ public abstract class Constant<E>
      *
      * @return the (cached) current value
      */
-    protected Object getCachedValue ()
+    protected E getCachedValue ()
     {
         return getTuple().cachedValue;
     }
@@ -332,11 +332,11 @@ public abstract class Constant<E>
      * @param val The new value (as an object)
      */
     protected void setTuple (java.lang.String str,
-                             Object val)
+                             E val)
     {
         while (true) {
-            Tuple old = tuple.get();
-            Tuple temp = new Tuple(str, val);
+            Tuple<E> old = tuple.get();
+            Tuple<E> temp = new Tuple<>(str, val);
 
             if (old == null) {
                 if (tuple.compareAndSet(null, temp)) {
@@ -420,7 +420,7 @@ public abstract class Constant<E>
      *
      * @return the current tuple data
      */
-    private Tuple getTuple ()
+    private Tuple<E> getTuple ()
     {
         checkInitialized();
 
@@ -706,10 +706,10 @@ public abstract class Constant<E>
      * @param <E> underlying enum type
      */
     public static class Enum<E extends java.lang.Enum<E>>
-            extends Constant<java.lang.Enum<E>>
+            extends Constant<E>
     {
 
-        private final Class classe;
+        private final Class<E> classe;
 
         /**
          * Create an enum constant.
@@ -718,7 +718,7 @@ public abstract class Constant<E>
          * @param defaultValue default value
          * @param description  user description
          */
-        public Enum (Class classe,
+        public Enum (Class<E> classe,
                      E defaultValue,
                      java.lang.String description)
         {
@@ -735,13 +735,13 @@ public abstract class Constant<E>
         @Override
         public E getValue ()
         {
-            return (E) getCachedValue();
+            return getCachedValue();
         }
 
         @Override
         protected E decode (java.lang.String str)
         {
-            return (E) java.lang.Enum.valueOf(classe, str);
+            return java.lang.Enum.valueOf(classe, str);
         }
     }
 
@@ -857,15 +857,15 @@ public abstract class Constant<E>
     /**
      * Class used to handle the tuple [currentString + currentValue] in an atomic way.
      */
-    private static class Tuple
+    private static class Tuple<E>
     {
 
         final java.lang.String currentString;
 
-        final Object cachedValue;
+        final E cachedValue;
 
         Tuple (java.lang.String currentString,
-               Object cachedValue)
+               E cachedValue)
         {
             /** Current string Value */
             this.currentString = currentString;

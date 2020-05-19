@@ -138,7 +138,7 @@ public enum Step
      * @param classe the class to examine
      * @return true if impacted
      */
-    public boolean isImpactedBy (Class classe)
+    public boolean isImpactedBy (Class<?> classe)
     {
         return helper.isImpactedBy(classe);
     }

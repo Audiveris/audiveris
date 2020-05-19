@@ -59,7 +59,7 @@ public class ChordsStep
     private static final Logger logger = LoggerFactory.getLogger(ChordsStep.class);
 
     /** All impacting classes. */
-    private static final Set<Class> impactingClasses;
+    private static final Set<Class<?>> impactingClasses;
 
     static {
         // Inters
@@ -161,7 +161,7 @@ public class ChordsStep
     // isImpactedBy //
     //--------------//
     @Override
-    public boolean isImpactedBy (Class classe)
+    public boolean isImpactedBy (Class<?> classe)
     {
         return isImpactedBy(classe, impactingClasses);
     }

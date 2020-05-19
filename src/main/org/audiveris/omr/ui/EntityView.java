@@ -83,6 +83,7 @@ public class EntityView<E extends Entity>
     // onEvent //
     //---------//
     @Override
+    @SuppressWarnings("unchecked")
     public void onEvent (UserEvent event)
     {
         try {
@@ -118,7 +119,7 @@ public class EntityView<E extends Entity>
      *
      * @param listEvent list of entities
      */
-    protected void handleEntityListEvent (EntityListEvent<E> listEvent)
+    protected final void handleEntityListEvent (EntityListEvent<E> listEvent)
     {
         List<E> list = listEvent.getData();
 

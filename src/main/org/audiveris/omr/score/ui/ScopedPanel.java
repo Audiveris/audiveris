@@ -79,7 +79,7 @@ public class ScopedPanel
      * @param classe desired class
      * @return the pane found or null
      */
-    public XactDataPane getPane (Class classe)
+    public XactDataPane getPane (Class<?> classe)
     {
         for (XactDataPane pane : panes) {
             if (classe.isAssignableFrom(pane.getClass())) {

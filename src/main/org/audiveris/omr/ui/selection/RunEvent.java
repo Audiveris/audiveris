@@ -29,7 +29,7 @@ import org.audiveris.omr.run.Run;
  * @author Hervé Bitteur
  */
 public class RunEvent
-        extends UserEvent
+        extends UserEvent<Run>
 {
 
     /** The selected run, which may be null */

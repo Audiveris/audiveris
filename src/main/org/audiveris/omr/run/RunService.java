@@ -40,6 +40,7 @@ import java.awt.Rectangle;
  *
  * @author Hervé Bitteur
  */
+@SuppressWarnings("unchecked")
 public class RunService
         extends SelectionService
         implements EventSubscriber<LocationEvent>
@@ -48,7 +49,7 @@ public class RunService
     private static final Logger logger = LoggerFactory.getLogger(RunService.class);
 
     /** Events allowed to be published on this run service. */
-    private static final Class<?>[] eventsWritten = new Class<?>[]{RunEvent.class};
+    private static final Class<?>[] eventsAllowed = new Class<?>[]{RunEvent.class};
 
     /** Events observed on location service. */
     private static final Class<?>[] locEventsRead = new Class<?>[]{LocationEvent.class};
@@ -65,7 +66,7 @@ public class RunService
     public RunService (String name,
                        RunTable table)
     {
-        super(name + "Service", eventsWritten);
+        super(name + "Service", eventsAllowed);
         this.table = table;
     }
 

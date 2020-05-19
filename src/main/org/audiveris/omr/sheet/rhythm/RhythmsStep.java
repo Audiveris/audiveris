@@ -90,13 +90,13 @@ public class RhythmsStep
     private static final Logger logger = LoggerFactory.getLogger(RhythmsStep.class);
 
     /** Classes that impact just a measure stack. */
-    private static final Set<Class> forStack;
+    private static final Set<Class<?>> forStack;
 
     /** Classes that impact a whole page. */
-    private static final Set<Class> forPage;
+    private static final Set<Class<?>> forPage;
 
     /** All impacting classes. */
-    private static final Set<Class> impactingClasses;
+    private static final Set<Class<?>> impactingClasses;
 
     static {
         forStack = new HashSet<>();
@@ -255,7 +255,7 @@ public class RhythmsStep
     // isImpactedBy //
     //--------------//
     @Override
-    public boolean isImpactedBy (Class classe)
+    public boolean isImpactedBy (Class<?> classe)
     {
         return isImpactedBy(classe, impactingClasses);
     }

@@ -1324,7 +1324,7 @@ public class Staff
         SIGraph sig = getSystem().getSig();
 
         if (sig == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         List<StaffBarlineInter> found = null;
@@ -1340,7 +1340,7 @@ public class Staff
         }
 
         if (found == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return found;

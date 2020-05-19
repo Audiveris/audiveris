@@ -27,7 +27,7 @@ package org.audiveris.omr.ui.selection;
  * @author Hervé Bitteur
  */
 public class IdEvent
-        extends UserEvent
+        extends UserEvent<Integer>
 {
 
     /** The selected entity id, which may be null. */

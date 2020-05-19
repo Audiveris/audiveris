@@ -147,6 +147,7 @@ public class SampleContext
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public void onEvent (UserEvent event)
         {
             try {

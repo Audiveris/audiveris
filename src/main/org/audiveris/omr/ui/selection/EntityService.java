@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.ui.selection;
 
-import java.awt.Point;
-import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.util.Entity;
 import org.audiveris.omr.util.EntityIndex;
 
@@ -31,6 +29,7 @@ import org.bushe.swing.event.EventSubscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,15 +47,19 @@ import java.util.List;
  * {@link #disconnect} methods.
  *
  * @param <E> precise entity type
+ *
  * @author Hervé Bitteur
  */
+@SuppressWarnings("unchecked")
 public class EntityService<E extends Entity>
         extends SelectionService
         implements EventSubscriber<UserEvent>
 {
 
+    //~ Static fields/initializers -----------------------------------------------------------------
     private static final Logger logger = LoggerFactory.getLogger(EntityService.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying entity index, if any. */
     protected final EntityIndex<E> index;
 
@@ -66,6 +69,7 @@ public class EntityService<E extends Entity>
     /** Basket of entities selected via location (rectangle/point). */
     protected final List<E> basket = new ArrayList<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code EntityService} object with no underlying index.
      *
@@ -100,6 +104,7 @@ public class EntityService<E extends Entity>
         this.locationService = locationService;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // connect //
     //---------//
@@ -161,7 +166,6 @@ public class EntityService<E extends Entity>
      * @return the current entity or null
      * @see EntityListEvent#getEntity()
      */
-    @SuppressWarnings("unchecked")
     public E getSelectedEntity ()
     {
         return getMostRelevant(getSelectedEntityList());
@@ -175,13 +179,12 @@ public class EntityService<E extends Entity>
      *
      * @return the current list or null
      */
-    @SuppressWarnings("unchecked")
     public List<E> getSelectedEntityList ()
     {
-        final Object obj = getSelection(EntityListEvent.class);
+        final List<E> list = (List<E>) getSelection(EntityListEvent.class);
 
-        if (obj != null) {
-            return (List<E>) obj;
+        if (list != null) {
+            return list;
         } else {
             return Collections.emptyList();
         }
@@ -204,7 +207,7 @@ public class EntityService<E extends Entity>
             } else if (event instanceof IdEvent) {
                 handleIdEvent((IdEvent) event); // Id => indexed entity
             } else if (event instanceof EntityListEvent) {
-                handleEntityListEvent((EntityListEvent) event); // List => display contour of (one) entity
+                handleEntityListEvent((EntityListEvent<E>) event); // List => display contour of (one) entity
             }
         } catch (ConcurrentModificationException cme) {
             // This can happen because of processing being done on EntityIndex...

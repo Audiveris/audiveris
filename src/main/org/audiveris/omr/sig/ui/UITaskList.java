@@ -129,7 +129,7 @@ public class UITaskList
                 } else {
                     final Class interClass = inter.getClass();
 
-                    for (Class cl : classes) {
+                    for (Class<?> cl : classes) {
                         if (cl.isAssignableFrom(interClass)) {
                             found.add(inter);
                         }
@@ -163,7 +163,7 @@ public class UITaskList
                 } else {
                     final Class relationClass = relation.getClass();
 
-                    for (Class cl : classes) {
+                    for (Class<?> cl : classes) {
                         if (cl.isAssignableFrom(relationClass)) {
                             found.add(relation);
                         }

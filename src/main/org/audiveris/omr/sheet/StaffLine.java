@@ -123,7 +123,7 @@ public class StaffLine
     @Override
     public StaffLine yTranslated (double dy)
     {
-        StaffLine virtual = new StaffLine(Collections.EMPTY_LIST, thickness);
+        StaffLine virtual = new StaffLine(Collections.emptyList(), thickness);
 
         for (Point2D p : points) {
             virtual.points.add(new Point2D.Double(p.getX(), p.getY() + dy));

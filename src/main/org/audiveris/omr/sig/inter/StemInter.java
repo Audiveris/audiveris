@@ -428,7 +428,7 @@ public class StemInter
         }
 
         if (chords == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return chords;
@@ -668,7 +668,7 @@ public class StemInter
         }
 
         // TODO: solve conflicts if any (perhaps using preferred corners & relation.grade)
-        return (links == null) ? Collections.EMPTY_LIST : links;
+        return (links == null) ? Collections.emptyList() : links;
     }
 
     //---------------//

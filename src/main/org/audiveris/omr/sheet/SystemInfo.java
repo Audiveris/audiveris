@@ -740,13 +740,13 @@ public class SystemInfo
     public List<LyricLineInter> getLyricLines ()
     {
         if (sig == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         List<Inter> lyricInters = sig.inters(LyricLineInter.class);
 
         if (lyricInters.isEmpty()) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         List<LyricLineInter> lines = new ArrayList<>();
@@ -1225,7 +1225,7 @@ public class SystemInfo
         final Staff closest = getClosestStaff(point);
 
         if (closest == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         final double toTop = closest.getFirstLine().yAt(point.getX()) - point.getY();
@@ -1282,7 +1282,7 @@ public class SystemInfo
             tablatures.add(staff);
         }
 
-        return (tablatures != null) ? tablatures : Collections.EMPTY_LIST;
+        return (tablatures != null) ? tablatures : Collections.emptyList();
     }
 
     //--------//

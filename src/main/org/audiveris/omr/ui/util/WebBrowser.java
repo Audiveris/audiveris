@@ -141,6 +141,7 @@ public class WebBrowser
      *
      * @param url
      */
+    @SuppressWarnings("unchecked")
     private static void openURL (String url)
     {
         try {

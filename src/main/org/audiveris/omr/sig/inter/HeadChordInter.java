@@ -228,7 +228,7 @@ public class HeadChordInter
         }
 
         if (found == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return found;

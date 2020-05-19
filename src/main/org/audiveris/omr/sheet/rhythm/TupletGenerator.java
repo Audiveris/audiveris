@@ -147,7 +147,7 @@ public class TupletGenerator
         }
 
         if (created == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return created;

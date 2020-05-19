@@ -428,7 +428,7 @@ public abstract class AbstractInter
             return ensembles;
         }
 
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
 
     //---------//
@@ -1319,8 +1319,9 @@ public abstract class AbstractInter
      * @param classes specific support relation classes to check
      * @return the collection of obsolete support links
      */
-    protected Collection<Link> searchObsoletelinks (Collection<Link> links,
-                                                    Class<? extends Support>... classes)
+    @SafeVarargs
+    protected final Collection<Link> searchObsoletelinks (Collection<Link> links,
+                                                          Class<? extends Support>... classes)
     {
         Collection<Link> unlinks = null;
 
@@ -1342,7 +1343,7 @@ public abstract class AbstractInter
             unlinks.add(new Link(other, rel, outgoing));
         }
 
-        return (unlinks != null) ? unlinks : Collections.EMPTY_SET;
+        return (unlinks != null) ? unlinks : Collections.emptySet();
     }
 
     //-------//
