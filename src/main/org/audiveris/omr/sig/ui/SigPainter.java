@@ -390,7 +390,7 @@ public abstract class SigPainter
 
         SIGraph sig = flag.getSig();
         Set<Relation> rels = (sig != null) ? sig.getRelations(flag, FlagStemRelation.class)
-                : Collections.EMPTY_SET;
+                : Collections.emptySet();
 
         if (rels.isEmpty()) {
             // The flag exists in sig, but is not yet linked to a stem, use default painting

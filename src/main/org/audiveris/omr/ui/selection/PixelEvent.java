@@ -27,7 +27,7 @@ package org.audiveris.omr.ui.selection;
  * @author Hervé Bitteur
  */
 public class PixelEvent
-        extends UserEvent
+        extends UserEvent<Integer>
 {
 
     /** The current pixel level, which may be null. */

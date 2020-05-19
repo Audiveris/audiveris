@@ -48,6 +48,7 @@ import java.util.List;
  *
  * @author Hervé Bitteur
  */
+@SuppressWarnings("unchecked")
 public class InterService
         extends EntityService<Inter>
 {

@@ -166,7 +166,7 @@ public class TupletsBuilder
         Point center = tuplet.getCenter();
 
         if (stack == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         List<Staff> stavesAround = stack.getSystem().getStavesAround(center);

@@ -35,7 +35,6 @@ import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.PixelCount;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.selection.EntityListEvent;
-import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.util.Panel;
 
 import org.jdesktop.application.ApplicationAction;
@@ -111,7 +110,7 @@ public class SampleBoard
     {
         super(
                 Board.SAMPLE,
-                (EntityService<Sample>) controller.getGlyphService(),
+                controller.getGlyphService(),
                 true,
                 false,
                 false,

@@ -106,7 +106,7 @@ public class EntityBoard<E extends Entity>
      * @param selected      true for pre-selected, false for collapsed
      */
     public EntityBoard (Desc desc,
-                        EntityService<E> entityService,
+                        EntityService entityService,
                         boolean selected)
     {
         this(desc, entityService, selected, true, true, true, IdOption.ID_SPINNER);
@@ -123,8 +123,9 @@ public class EntityBoard<E extends Entity>
      * @param useDump       true for use of dump
      * @param idOption      option for ID
      */
+    @SuppressWarnings("unchecked")
     public EntityBoard (Desc desc,
-                        EntityService<E> entityService,
+                        EntityService entityService,
                         boolean selected,
                         boolean useCount,
                         boolean useVip,
@@ -205,6 +206,7 @@ public class EntityBoard<E extends Entity>
      * @param event of current inter list
      */
     @Override
+    @SuppressWarnings("unchecked")
     public void onEvent (UserEvent event)
     {
         logger.debug("EntityBoard event:{}", event);

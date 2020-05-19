@@ -1032,6 +1032,7 @@ public class LedgersBuilder
                 }
 
                 if (event instanceof EntityListEvent) {
+                    @SuppressWarnings("unchecked")
                     EntityListEvent<Filament> listEvent = (EntityListEvent<Filament>) event;
                     final Filament fil = listEvent.getEntity();
 

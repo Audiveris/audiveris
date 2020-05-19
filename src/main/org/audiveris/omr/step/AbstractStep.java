@@ -236,7 +236,7 @@ public abstract class AbstractStep
      * @param classe the class to check
      * @return true if step is impacted
      */
-    public boolean isImpactedBy (Class classe)
+    public boolean isImpactedBy (Class<?> classe)
     {
         return false; // By default
     }
@@ -249,10 +249,10 @@ public abstract class AbstractStep
      * @param classes the collection of classes
      * @return true if compatible class found
      */
-    protected boolean isImpactedBy (Class classe,
-                                    Collection<Class> classes)
+    protected boolean isImpactedBy (Class<?> classe,
+                                    Collection<Class<?>> classes)
     {
-        for (Class cl : classes) {
+        for (Class<?> cl : classes) {
             if (cl.isAssignableFrom(classe)) {
                 return true;
             }

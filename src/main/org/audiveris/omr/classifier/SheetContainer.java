@@ -32,7 +32,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import static java.util.Collections.EMPTY_LIST;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -510,7 +509,7 @@ public class SheetContainer
         public Descriptor (String name,
                            Integer hash)
         {
-            this(name, hash, EMPTY_LIST);
+            this(name, hash, Collections.emptyList());
         }
 
         /**

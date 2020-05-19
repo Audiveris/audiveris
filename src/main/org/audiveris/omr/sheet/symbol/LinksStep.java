@@ -66,10 +66,10 @@ public class LinksStep
     private static final Logger logger = LoggerFactory.getLogger(LinksStep.class);
 
     /** Classes that may impact texts. */
-    private static final Set<Class> forTexts;
+    private static final Set<Class<?>> forTexts;
 
     /** All impacting classes. */
-    private static final Set<Class> impactingClasses;
+    private static final Set<Class<?>> impactingClasses;
 
     static {
         forTexts = new HashSet<>();
@@ -172,7 +172,7 @@ public class LinksStep
     // isImpactedBy //
     //--------------//
     @Override
-    public boolean isImpactedBy (Class classe)
+    public boolean isImpactedBy (Class<?> classe)
     {
         return isImpactedBy(classe, impactingClasses);
     }

@@ -30,7 +30,7 @@ import org.audiveris.omr.sheet.SheetStub;
  * @author Hervé Bitteur
  */
 public class StubEvent
-        extends UserEvent
+        extends UserEvent<SheetStub>
 {
 
     /** The selected sheet stub, which may be null. */

@@ -298,7 +298,8 @@ class SampleListing
             alt = e.isAltDown();
 
             if (alt) {
-                JList<Sample> selectedList = (JList<Sample>) e.getSource();
+                @SuppressWarnings("unchecked")
+                final JList<Sample> selectedList = (JList<Sample>) e.getSource();
                 Sample sample = selectedList.getSelectedValue();
                 checkAlternative(sample); // Look for good alternative
             }
@@ -308,7 +309,8 @@ class SampleListing
         public void mouseReleased (MouseEvent e)
         {
             if (alt) {
-                JList<Sample> selectedList = (JList<Sample>) e.getSource();
+                @SuppressWarnings("unchecked")
+                final JList<Sample> selectedList = (JList<Sample>) e.getSource();
                 Sample sample = selectedList.getSelectedValue();
                 browser.publishSample(sample);
             }
@@ -319,7 +321,8 @@ class SampleListing
         @Override
         public void valueChanged (ListSelectionEvent e)
         {
-            JList<Sample> selectedList = (JList<Sample>) e.getSource();
+            @SuppressWarnings("unchecked")
+            final JList<Sample> selectedList = (JList<Sample>) e.getSource();
             Sample sample = selectedList.getSelectedValue();
 
             if (e.getValueIsAdjusting()) {

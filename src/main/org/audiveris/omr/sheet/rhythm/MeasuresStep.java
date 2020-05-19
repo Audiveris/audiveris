@@ -57,7 +57,7 @@ public class MeasuresStep
     private static final Logger logger = LoggerFactory.getLogger(MeasuresStep.class);
 
     /** All impacting classes. */
-    private static final Set<Class> impactingClasses;
+    private static final Set<Class<?>> impactingClasses;
 
     static {
         impactingClasses = new HashSet<>();
@@ -145,7 +145,7 @@ public class MeasuresStep
     // isImpactedBy //
     //--------------//
     @Override
-    public boolean isImpactedBy (Class classe)
+    public boolean isImpactedBy (Class<?> classe)
     {
         return isImpactedBy(classe, impactingClasses);
     }

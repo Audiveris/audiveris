@@ -28,13 +28,17 @@ import org.slf4j.LoggerFactory;
  * Interface {@code UserEvent} defines the common behavior of user events that are
  * stored as selections, and handled by the EventBus.
  *
+ * @param <E> type of conveyed data
+ *
  * @author Hervé Bitteur
  */
-public abstract class UserEvent
+public abstract class UserEvent<E>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(UserEvent.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The entity which created this event (cannot be null). */
     public final Object source;
 
@@ -44,6 +48,7 @@ public abstract class UserEvent
     /** Precise user mouse action (can be null). */
     public MouseMovement movement;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new UserEvent object.
      *
@@ -64,6 +69,7 @@ public abstract class UserEvent
         this.movement = movement;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//
@@ -72,7 +78,7 @@ public abstract class UserEvent
      *
      * @return the conveyed data (which may be null)
      */
-    public abstract Object getData ();
+    public abstract E getData ();
 
     //----------//
     // toString //

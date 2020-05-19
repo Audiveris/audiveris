@@ -25,6 +25,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.FileAppender;
@@ -92,8 +93,7 @@ public abstract class LogUtil
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
                 Logger.ROOT_LOGGER_NAME);
-        FileAppender fileAppender = new FileAppender();
-        PatternLayoutEncoder fileEncoder = new PatternLayoutEncoder();
+        FileAppender<ILoggingEvent> fileAppender = new FileAppender<>();
         fileAppender.setName(name);
         fileAppender.setContext(loggerContext);
         fileAppender.setAppend(false);
@@ -101,6 +101,7 @@ public abstract class LogUtil
         String now = new SimpleDateFormat("yyyyMMdd'T'HHmm").format(new Date());
         Path logFile = logFolder.resolve(name + "-" + now + ".log");
         fileAppender.setFile(logFile.toAbsolutePath().toString());
+        PatternLayoutEncoder fileEncoder = new PatternLayoutEncoder();
         fileEncoder.setContext(loggerContext);
         fileEncoder.setPattern("%date %level [%X{BOOK}%X{SHEET}] %25file:%-4line | %msg%n%ex");
         fileEncoder.start();
@@ -120,8 +121,7 @@ public abstract class LogUtil
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
                 Logger.ROOT_LOGGER_NAME);
-        FileAppender fileAppender = new FileAppender();
-        PatternLayoutEncoder fileEncoder = new PatternLayoutEncoder();
+        FileAppender<ILoggingEvent> fileAppender = new FileAppender<>();
         fileAppender.setName("FILE");
         fileAppender.setContext(loggerContext);
         fileAppender.setAppend(false);
@@ -129,6 +129,7 @@ public abstract class LogUtil
         String now = new SimpleDateFormat("yyyyMMdd'T'HHmmss").format(new Date());
         Path logPath = WellKnowns.LOG_FOLDER.resolve(now + ".log").toAbsolutePath();
         fileAppender.setFile(logPath.toString());
+        PatternLayoutEncoder fileEncoder = new PatternLayoutEncoder();
         fileEncoder.setContext(loggerContext);
         fileEncoder.setPattern(
                 "%date %-5level [%X{BOOK}%X{SHEET}] %25replace(%file){'\\.java$',''} %-4line | %msg%n%ex");
@@ -153,7 +154,7 @@ public abstract class LogUtil
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
                 Logger.ROOT_LOGGER_NAME);
-        Appender guiAppender = new LogGuiAppender();
+        Appender<ILoggingEvent> guiAppender = new LogGuiAppender();
         guiAppender.setName("GUI");
         guiAppender.setContext(loggerContext);
         guiAppender.start();
@@ -263,7 +264,7 @@ public abstract class LogUtil
                 Logger.ROOT_LOGGER_NAME);
 
         // CONSOLE
-        ConsoleAppender consoleAppender = new ConsoleAppender();
+        ConsoleAppender<ILoggingEvent> consoleAppender = new ConsoleAppender<>();
         PatternLayoutEncoder consoleEncoder = new PatternLayoutEncoder();
         consoleAppender.setName("CONSOLE");
         consoleAppender.setContext(loggerContext);

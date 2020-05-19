@@ -110,7 +110,7 @@ public class MarkerInter
         final Rectangle box = getBounds();
 
         if (getStaff() == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         final List<StaffBarlineInter> staffBars = getStaff().getStaffBarlines();
@@ -122,7 +122,7 @@ public class MarkerInter
             link = new Link(staffBar, new MarkerBarRelation(), true);
         }
 
-        return (link == null) ? Collections.EMPTY_LIST : Collections.singleton(link);
+        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
     }
 
     //---------------//

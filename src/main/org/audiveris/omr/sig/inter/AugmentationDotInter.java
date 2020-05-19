@@ -158,7 +158,7 @@ public class AugmentationDotInter
         }
 
         if (notes == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return notes;
@@ -506,7 +506,7 @@ public class AugmentationDotInter
         Link link = lookupLink(systemRests, systemHeadChords, systemDots, system);
 
         if (link == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         if (link.partner instanceof HeadInter) {
@@ -551,7 +551,7 @@ public class AugmentationDotInter
     public Collection<Link> sharedHeadLinks (Link link)
     {
         if (link == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         final Collection<Link> links = new ArrayList<>();

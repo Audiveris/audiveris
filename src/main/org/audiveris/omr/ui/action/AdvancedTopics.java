@@ -310,7 +310,7 @@ public abstract class AdvancedTopics
             final String tip = resource.getString(className + ".localeBox.toolTipText");
 
             // Define localeBox
-            localeBox = new JComboBox(locales.toArray(new Locale[locales.size()]));
+            localeBox = new JComboBox<>(locales.toArray(new Locale[locales.size()]));
             localeBox.setToolTipText(tip);
             localeBox.addActionListener(this);
 

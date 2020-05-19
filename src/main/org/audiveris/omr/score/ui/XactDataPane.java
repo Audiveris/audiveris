@@ -67,7 +67,7 @@ public abstract class XactDataPane<E>
      * @param model  underlying model (cannot be null)
      */
     public XactDataPane (String title,
-                         XactDataPane parent,
+                         XactDataPane<E> parent,
                          Param<E> model)
     {
         this.parent = parent;

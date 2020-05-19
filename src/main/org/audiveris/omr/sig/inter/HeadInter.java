@@ -885,7 +885,7 @@ public class HeadInter
             link = lookupLink(systemStems, system);
         }
 
-        return (link == null) ? Collections.EMPTY_LIST : Collections.singleton(link);
+        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
     }
 
     //---------------//
@@ -1026,7 +1026,7 @@ public class HeadInter
     private List<Line2D> getNeededLedgerLines ()
     {
         if (staff == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         final Point center = getCenter();
@@ -1054,7 +1054,7 @@ public class HeadInter
             }
         }
 
-        return (lines != null) ? lines : Collections.EMPTY_LIST;
+        return (lines != null) ? lines : Collections.emptyList();
     }
 
     //-----------------//
@@ -1137,7 +1137,7 @@ public class HeadInter
             LedgerInter ledger = new LedgerInter(line, LedgerInter.DEFAULT_THICKNESS, 1);
             ledger.setManual(true);
             ledger.setStaff(staff);
-            tasks.add(new AdditionTask(theSig, ledger, ledger.getBounds(), Collections.EMPTY_SET));
+            tasks.add(new AdditionTask(theSig, ledger, ledger.getBounds(), Collections.emptySet()));
         }
 
         return tasks;

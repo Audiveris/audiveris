@@ -188,7 +188,7 @@ public abstract class Versions
             }
         }
 
-        return (list == null) ? Collections.EMPTY_LIST : list;
+        return (list == null) ? Collections.emptyList() : list;
     }
 
     //-------------//

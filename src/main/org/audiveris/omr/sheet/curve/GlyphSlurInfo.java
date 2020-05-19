@@ -51,7 +51,7 @@ public class GlyphSlurInfo
     private GlyphSlurInfo (Glyph glyph,
                            List<Point> keyPoints)
     {
-        super(0, null, null, keyPoints, null, Collections.EMPTY_LIST, 0);
+        super(0, null, null, keyPoints, null, Collections.emptyList(), 0);
         this.glyph = glyph;
     }
 

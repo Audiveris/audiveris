@@ -381,7 +381,7 @@ public class LyricItemInter
             line = new LyricLineInter(1);
             line.setManual(true);
             line.setStaff(staff);
-            tasks.add(new AdditionTask(system.getSig(), line, getBounds(), Collections.EMPTY_SET));
+            tasks.add(new AdditionTask(system.getSig(), line, getBounds(), Collections.emptySet()));
         }
 
         // Wrap lyric item into lyric line
@@ -486,12 +486,12 @@ public class LyricItemInter
     {
         // We can map only syllables
         if (itemKind != ItemKind.Syllable) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         Link link = lookupLink(staff, null);
 
-        return (link == null) ? Collections.EMPTY_LIST : Collections.singleton(link);
+        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
     }
 
     //---------------//

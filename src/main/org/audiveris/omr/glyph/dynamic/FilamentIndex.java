@@ -170,6 +170,7 @@ public class FilamentIndex
     //-----------------//
     // FilamentService //
     //-----------------//
+    @SuppressWarnings("unchecked")
     private static class FilamentService
             extends EntityService<Filament>
     {

@@ -243,7 +243,7 @@ public class SheetParameters
         final Scale.Item key;
 
         ScaledPane (Scale.Item key,
-                    XactDataPane parent,
+                    XactDataPane<Integer> parent,
                     ScalingParam model)
         {
             super(description(key), parent, "", null, model);

@@ -460,6 +460,7 @@ public class CLI
                 // Specific class to run?
                 if (params.runClass != null) {
                     try {
+                        @SuppressWarnings("unchecked")
                         Constructor cons = params.runClass.getConstructor(
                                 new Class[]{Book.class, SortedSet.class});
                         RunClass instance = (RunClass) cons.newInstance(book, sheetIds);

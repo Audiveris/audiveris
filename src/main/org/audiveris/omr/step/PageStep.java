@@ -96,22 +96,22 @@ public class PageStep
     private static final Logger logger = LoggerFactory.getLogger(PageStep.class);
 
     /** Classes that may impact voices. */
-    private static final Set<Class> forVoices;
+    private static final Set<Class<?>> forVoices;
 
     /** Classes that may impact lyrics. */
-    private static final Set<Class> forLyrics;
+    private static final Set<Class<?>> forLyrics;
 
     /** Classes that may impact slurs. */
-    private static final Set<Class> forSlurs;
+    private static final Set<Class<?>> forSlurs;
 
     /** Classes that may impact parts. */
-    private static final Set<Class> forParts;
+    private static final Set<Class<?>> forParts;
 
     /** Classes that may impact measures. */
-    private static final Set<Class> forMeasures;
+    private static final Set<Class<?>> forMeasures;
 
     /** All impacting classes. */
-    private static final Set<Class> impactingClasses;
+    private static final Set<Class<?>> impactingClasses;
 
     static {
         forVoices = new HashSet<>();
@@ -357,7 +357,7 @@ public class PageStep
     // isImpactedBy //
     //--------------//
     @Override
-    public boolean isImpactedBy (Class classe)
+    public boolean isImpactedBy (Class<?> classe)
     {
         return isImpactedBy(classe, impactingClasses);
     }

@@ -322,7 +322,7 @@ public class BasicIndex<E extends Entity>
                          SelectionHint hint)
     {
         if (entityService != null) {
-            final EntityListEvent event = new EntityListEvent<>(
+            final EntityListEvent<E> event = new EntityListEvent<>(
                     this,
                     hint,
                     MouseMovement.PRESSING,

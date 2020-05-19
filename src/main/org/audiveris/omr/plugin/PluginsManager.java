@@ -237,7 +237,7 @@ public class PluginsManager
             logger.info("No {} file found", pluginsPath);
         }
 
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     //-------------//

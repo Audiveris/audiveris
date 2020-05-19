@@ -74,6 +74,8 @@ public class SymbolsStep
 
         // Update glyph board if needed (to see OCR'ed data)
         final SelectionService service = sheet.getGlyphIndex().getEntityService();
+
+        @SuppressWarnings("unchecked")
         final EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) service.getLastEvent(
                 EntityListEvent.class);
 

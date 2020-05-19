@@ -125,7 +125,7 @@ public class EvaluationBoard
     public EvaluationBoard (boolean isActive,
                             Sheet sheet,
                             Classifier classifier,
-                            EntityService<Glyph> glyphService,
+                            EntityService glyphService,
                             InterController interController,
                             boolean selected)
     {
@@ -157,6 +157,7 @@ public class EvaluationBoard
      * @param event the (Glyph) Selection
      */
     @Override
+    @SuppressWarnings("unchecked")
     public void onEvent (UserEvent event)
     {
         try {
@@ -437,6 +438,7 @@ public class EvaluationBoard
         {
             // Assign inter on current glyph with selected shape
             if (interController != null) {
+                @SuppressWarnings("unchecked")
                 Glyph glyph = ((EntityService<Glyph>) getSelectionService()).getSelectedEntity();
 
                 if (glyph != null) {

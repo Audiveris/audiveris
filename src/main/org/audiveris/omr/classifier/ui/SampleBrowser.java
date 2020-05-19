@@ -1250,7 +1250,7 @@ public class SampleBrowser
                     true,
                     null,
                     classifier,
-                    (EntityService<Glyph>) controller.getGlyphService(),
+                    controller.getGlyphService(),
                     null,
                     true);
         }

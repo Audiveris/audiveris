@@ -150,7 +150,7 @@ public class ArticulationInter
 
         Link link = lookupLink(systemHeadChords);
 
-        return (link == null) ? Collections.EMPTY_LIST : Collections.singleton(link);
+        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
     }
 
     //---------------//

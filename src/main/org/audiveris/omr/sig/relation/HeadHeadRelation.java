@@ -39,6 +39,10 @@ public class HeadHeadRelation
 
     private static final Constants constants = new Constants();
 
+    public HeadHeadRelation ()
+    {
+    }
+
     //----------------//
     // isSingleSource //
     //----------------//

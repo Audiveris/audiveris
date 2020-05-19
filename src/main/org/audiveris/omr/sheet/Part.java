@@ -682,7 +682,7 @@ public class Part
      */
     public List<LyricLineInter> getLyrics ()
     {
-        return (lyrics != null) ? Collections.unmodifiableList(lyrics) : Collections.EMPTY_LIST;
+        return (lyrics != null) ? Collections.unmodifiableList(lyrics) : Collections.emptyList();
     }
 
     //---------------//

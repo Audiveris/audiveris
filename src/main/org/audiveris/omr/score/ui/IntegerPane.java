@@ -49,7 +49,7 @@ public class IntegerPane
      * @param model  underlying data model (cannot be null)
      */
     public IntegerPane (String title,
-                        XactDataPane parent,
+                        XactDataPane<Integer> parent,
                         String text,
                         String tip,
                         Param<Integer> model)
