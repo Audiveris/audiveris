@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BeamStemRelation} implements the geographic link between a beam
+ * Class {@code BeamStemRelation} implements the geometric link between a beam
  * (or beam hook) and a stem.
  *
  * @author Hervé Bitteur

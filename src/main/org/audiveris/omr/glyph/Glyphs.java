@@ -247,7 +247,7 @@ public abstract class Glyphs
                 // Precise distance from glyph to other
                 double dist = glyphDistances.distanceTo(other);
 
-                if (dist <= maxGap) {
+                if ((dist <= maxGap) && !glyph.equals(other)) {
                     graph.addEdge(glyph, other, new GlyphLink.Nearby(dist));
                 }
             }
