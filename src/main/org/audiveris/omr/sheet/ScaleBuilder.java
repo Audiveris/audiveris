@@ -41,7 +41,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -576,14 +575,23 @@ public class ScaleBuilder
                     1,
                     (int) Math.rint(area * constants.minDerivativeRatio.getValue()),
                     constants.minGainRatio.getValue());
-            Collections.sort(blackPeaks, Range.byMain);
 
             if (blackPeaks.isEmpty()) {
                 sheet.getStub().invalidate();
                 throw new StepException("No significant black lines found");
             }
 
-            blackPeak = blackPeaks.get(0);
+            // If several black peaks were found, pick up the one with highest function value
+            int bestCount = 0;
+            for (Range peak : blackPeaks) {
+                final int count = blackFunction.getValue(peak.main);
+
+                if ((blackPeak == null) || (bestCount < count)) {
+                    blackPeak = peak;
+                    bestCount = count;
+                }
+            }
+
             logger.debug("blackPeak: {}", blackPeak);
         }
 
