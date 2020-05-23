@@ -317,15 +317,12 @@ public class SheetScanner
         @Override
         public void visit (LedgerInter ledger)
         {
-            super.visit(ledger); // Defaultcleaning by erasing underlying glyph
-
             // Thicken the ledgerline 1 pixel above & 1 pixel below
             final Stroke oldStroke = g.getStroke();
-            final Glyph glyph = ledger.getGlyph();
-            float thickness = (float) ledger.getGlyph().getMeanThickness(Orientation.HORIZONTAL);
+            float thickness = (float) ledger.getThickness();
             thickness += 2;
             g.setStroke(new BasicStroke(thickness, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
-            glyph.renderLine(g);
+            g.draw(ledger.getMedian());
             g.setStroke(oldStroke);
         }
 
