@@ -755,43 +755,46 @@ public class HeadInter
         final Collection<Link> links = searchLinks(staff.getSystem());
         tasks.add(new AdditionTask(theSig, this, getBounds(), links));
 
-        // If we link head to a stem, create/update the related head chord
-        boolean stemFound = false;
+        if (system.getSheet().getStub().getLatestStep()
+                .compareTo(org.audiveris.omr.step.Step.CHORDS) >= 0) {
+            // If we link head to a stem, create/update the related head chord
+            boolean stemFound = false;
 
-        for (Link link : links) {
-            if (link.relation instanceof HeadStemRelation) {
-                final StemInter stem = (StemInter) link.partner;
-                final HeadChordInter headChord;
-                final List<HeadChordInter> stemChords = stem.getChords();
+            for (Link link : links) {
+                if (link.relation instanceof HeadStemRelation) {
+                    final StemInter stem = (StemInter) link.partner;
+                    final HeadChordInter headChord;
+                    final List<HeadChordInter> stemChords = stem.getChords();
 
-                if (stemChords.isEmpty()) {
-                    // Create a chord based on stem
-                    headChord = new HeadChordInter(-1);
-                    tasks.add(
-                            new AdditionTask(
-                                    theSig, headChord, stem.getBounds(),
-                                    Arrays.asList(new Link(stem, new ChordStemRelation(), true))));
-                } else {
-                    if (stemChords.size() > 1) {
-                        logger.warn("Stem shared by several chords, picked one");
+                    if (stemChords.isEmpty()) {
+                        // Create a chord based on stem
+                        headChord = new HeadChordInter(-1);
+                        tasks.add(
+                                new AdditionTask(
+                                        theSig, headChord, stem.getBounds(),
+                                        Arrays.asList(new Link(stem, new ChordStemRelation(), true))));
+                    } else {
+                        if (stemChords.size() > 1) {
+                            logger.warn("Stem shared by several chords, picked one");
+                        }
+
+                        headChord = stemChords.get(0);
                     }
 
-                    headChord = stemChords.get(0);
+                    // Declare head part of head-chord
+                    tasks.add(new LinkTask(theSig, headChord, this, new Containment()));
+                    stemFound = true;
+
+                    break;
                 }
-
-                // Declare head part of head-chord
-                tasks.add(new LinkTask(theSig, headChord, this, new Containment()));
-                stemFound = true;
-
-                break;
             }
-        }
 
-        if (!stemFound) {
-            // Head without stem
-            HeadChordInter headChord = new HeadChordInter(-1);
-            tasks.add(new AdditionTask(theSig, headChord, getBounds(),
-                                       Arrays.asList(new Link(this, new Containment(), true))));
+            if (!stemFound) {
+                // Head without stem
+                HeadChordInter headChord = new HeadChordInter(-1);
+                tasks.add(new AdditionTask(theSig, headChord, getBounds(),
+                                           Arrays.asList(new Link(this, new Containment(), true))));
+            }
         }
 
         // Addition of needed ledgers
