@@ -738,7 +738,7 @@ public class Staff
             double bestDist = Double.MAX_VALUE;
 
             for (IndexedLedger iLedger : foundLedgers) {
-                final Point2D center = iLedger.ledger.getGlyph().getCenter();
+                final Point2D center = iLedger.ledger.getCenter();
                 final double dist = Math.abs(center.getY() - point.getY());
 
                 if (dist < bestDist) {
@@ -1240,7 +1240,7 @@ public class Staff
             bestLedger = getClosestLedger(point);
 
             if (bestLedger != null) {
-                Point2D center = bestLedger.ledger.getGlyph().getCenter();
+                Point2D center = bestLedger.ledger.getCenter();
                 int ledgerPitch = getLedgerPitchPosition(bestLedger.index);
                 double deltaPitch = (2.0 * (point.getY() - center.getY())) / specificInterline;
                 pitch = ledgerPitch + deltaPitch;
