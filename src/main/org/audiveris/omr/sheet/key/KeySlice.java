@@ -252,13 +252,11 @@ public class KeySlice
     {
         final Staff staff = roi.getStaff();
         final int[] clefPitches = KeyInter.getPitches(clef.getKind(), keyShape);
-        final int pitch = clefPitches[getId() - 1];
+        int pitch = clefPitches[getId() - 1];
+        pitch -= (keyShape == Shape.FLAT) ? AlterInter.getFlatAreaPitchOffset() : 0;
         final double yp = staff.pitchToOrdinate(rect.x, pitch);
-        final int height = typicalHeight;
-        final double ratio = (keyShape == Shape.FLAT) ? AlterInter.getFlatAreaOffset() : 0.5;
-        final double offset = height * ratio;
-        final int y = (int) Math.rint(yp - offset);
-        setRect(new Rectangle(getStart(), y, getWidth(), height));
+        final int y = (int) Math.rint(yp - typicalHeight / 2);
+        setRect(new Rectangle(getStart(), y, getWidth(), typicalHeight));
         staff.addAttachment(roi.attachmentKey(getId()), rect);
     }
 

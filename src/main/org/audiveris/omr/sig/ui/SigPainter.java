@@ -116,7 +116,6 @@ import java.util.Set;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.audiveris.omr.ui.symbol.KeyCancelSymbol;
 
 /**
  * Class {@code SigPainter} paints all the {@link Inter} instances of a SIG.
@@ -722,19 +721,19 @@ public abstract class SigPainter
             if (key.isCancel()) {
                 setColor(key);
 
-                final KeyCancelSymbol cancelSymbol = (KeyCancelSymbol) key.getSymbolToDraw();
+                ShapeSymbol symbol = key.getSymbolToDraw();
 
-                if (cancelSymbol != null) {
-                    final Staff staff = key.getStaff();
-                    final MusicFont font = getMusicFont(staff);
-                    final Rectangle bounds = key.getBounds();
+                if (symbol == null) {
+                    symbol = Symbols.getSymbol(Shape.NON_DRAGGABLE);
+                }
 
-                    if (bounds != null) {
-                        final Point center = GeoUtil.centerOf(bounds);
-                        cancelSymbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
-                    }
-                } else {
-                    logger.info("No symbol for {}", key);
+                final Staff staff = key.getStaff();
+                final MusicFont font = getMusicFont(staff);
+                final Rectangle bounds = key.getBounds();
+
+                if (bounds != null) {
+                    final Point center = GeoUtil.centerOf(bounds);
+                    symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
                 }
             } else {
                 visit((Inter) key);
