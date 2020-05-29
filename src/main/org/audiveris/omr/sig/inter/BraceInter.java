@@ -146,7 +146,7 @@ public class BraceInter
                                Point dropLocation,
                                Alignment alignment)
     {
-        // Needed to get head bounds
+        // Needed to get brace bounds
         super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
 
         // Make sure brace staff is the upper staff
@@ -408,13 +408,6 @@ public class BraceInter
             p1 = new Point2D.Double(x1, y1);
             p2 = new Point2D.Double(x2, y2);
         }
-//
-//        public Model (Line2D line)
-//        {
-//            p1 = line.getP1();
-//            p2 = line.getP2();
-//        }
-//
 
         @Override
         public void translate (double dx,
