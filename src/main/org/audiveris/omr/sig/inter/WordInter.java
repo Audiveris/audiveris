@@ -383,7 +383,7 @@ public class WordInter
      * For a word, there are 2 handles:
      * <ul>
      * <li>Middle handle, moving the word in any direction
-     * <li>TopRight handle, to increase/decrease font size
+     * <li>Right handle, to increase/decrease font size
      * </ul>
      */
     private static class Editor
