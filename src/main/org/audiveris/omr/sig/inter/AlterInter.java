@@ -68,7 +68,7 @@ public class AlterInter
     private static final Logger logger = LoggerFactory.getLogger(AlterInter.class);
 
     /** Measured pitch value. */
-    private Double measuredPitch;
+    private final Double measuredPitch;
 
     /**
      * Creates a new AlterInter object.
@@ -194,22 +194,22 @@ public class AlterInter
         return isAbnormal();
     }
 
-    //---------------//
-    // getAreaOffset //
-    //---------------//
+    //--------------------//
+    // getAreaPitchOffset //
+    //--------------------//
     /**
-     * Report for the center offset WRT area center.
+     * Report the pitch center offset WRT area center.
      * <p>
      * This is 0, except for flat and double flat shapes.
      *
-     * @return offset (as a height ratio) of pitch center WRT area center
+     * @return offset of pitch center WRT area center
      */
-    public double getAreaOffset ()
+    public double getAreaPitchOffset ()
     {
         switch (shape) {
         case FLAT:
         case DOUBLE_FLAT:
-            return getFlatAreaOffset();
+            return getFlatAreaPitchOffset();
 
         default:
             return 0;
@@ -243,14 +243,16 @@ public class AlterInter
     @Override
     public Point2D getRelationCenter ()
     {
-        Point center = getCenter();
+        final Point center = getCenter();
 
         switch (shape) {
         case FLAT:
-        case DOUBLE_FLAT:
+        case DOUBLE_FLAT: {
+            double il = (staff != null) ? staff.getSpecificInterline()
+                    : getBounds().height / constants.flatTypicalHeight.getValue();
             return new Point2D.Double(center.x,
-                                      center.y + (getFlatAreaOffset() * getBounds().height));
-
+                                      center.y + (0.5 * il * getFlatAreaPitchOffset()));
+        }
         default:
             return center;
         }
@@ -307,8 +309,7 @@ public class AlterInter
                 setPitch(null);
             } else {
                 Point ctr = GeoUtil.centerOf(bounds);
-                setPitch(staff.pitchPositionOf(
-                        new Point2D.Double(ctr.x, ctr.y + (getAreaOffset() * bounds.height))));
+                setPitch(staff.pitchPositionOf(ctr) + getAreaPitchOffset());
             }
         }
     }
@@ -454,30 +455,30 @@ public class AlterInter
         return new AlterInter(glyph, shape, impacts, staff, pitches.pitch, pitches.measuredPitch);
     }
 
-    //-------------------//
-    // getFlatAreaOffset //
-    //-------------------//
+    //------------------------//
+    // getFlatAreaPitchOffset //
+    //------------------------//
     /**
-     * Report for a flat sign the center offset WRT area center.
+     * Report for a flat sign the pitch offset from area center to pitch center.
      *
-     * @return height offset of pitch
+     * @return pitch offset WRT area center
      */
-    public static double getFlatAreaOffset ()
+    public static double getFlatAreaPitchOffset ()
     {
-        return constants.flatAreaOffset.getValue();
+        return constants.flatAreaPitchOffset.getValue();
     }
 
-    //--------------------//
-    // getFlatPitchOffset //
-    //--------------------//
+    //------------------------//
+    // getFlatMassPitchOffset //
+    //------------------------//
     /**
-     * Report for a flat sign the vertical offset of pitch ordinate WRT sign top ordinate.
+     * Report for a flat sign the pitch offset from mass center to pitch center.
      *
-     * @return height offset of pitch
+     * @return pitch offset WRT mass center
      */
-    public static double getFlatPitchOffset ()
+    public static double getFlatMassPitchOffset ()
     {
-        return constants.flatPitchOffset.getValue();
+        return constants.flatMassPitchOffset.getValue();
     }
 
     //--------------//
@@ -512,14 +513,14 @@ public class AlterInter
 
         // Pitch offset for flat-based alterations
         if ((shape == Shape.FLAT) || (shape == Shape.DOUBLE_FLAT)) {
-            // Heuristic pitch offset WRT centroid pitch
-            massPitch += getFlatPitchOffset();
+            // Heuristic pitch offset WRT pitch of mass center
+            massPitch += getFlatMassPitchOffset();
 
-            // Heuristic center WRT glyph box
+            // Heuristic pitch offset WRT pitch of area center
             Rectangle box = glyph.getBounds();
             Point center = glyph.getCenter();
-            double geoPitch = staff.pitchPositionOf(
-                    new Point2D.Double(center.x, center.y + (getFlatAreaOffset() * box.height)));
+            double geoPitch = staff.pitchPositionOf(center);
+            geoPitch += getFlatAreaPitchOffset();
 
             // Average value of both heuristics
             double mix = 0.5 * (massPitch + geoPitch);
@@ -542,18 +543,14 @@ public class AlterInter
                                            Staff staff)
     {
         final Point center = GeoUtil.centerOf(bounds);
-        final double geoPitch;
+        double geoPitch = staff.pitchPositionOf(center);
 
         // Pitch offset for flat-based alterations
         if ((omrShape == OmrShape.keyFlat)
                     || (omrShape == OmrShape.accidentalFlat)
                     || (omrShape == OmrShape.accidentalDoubleFlat)
                     || (omrShape == OmrShape.accidentalFlatSmall)) {
-            // Heuristic center WRT area box
-            geoPitch = staff.pitchPositionOf(
-                    new Point2D.Double(center.x, center.y + (getFlatAreaOffset() * bounds.height)));
-        } else {
-            geoPitch = staff.pitchPositionOf(center);
+            geoPitch += getFlatAreaPitchOffset();
         }
 
         return new Pitches((int) Math.rint(geoPitch), geoPitch);
@@ -595,13 +592,18 @@ public class AlterInter
             extends ConstantSet
     {
 
-        private final Constant.Double flatPitchOffset = new Constant.Double(
+        private final Scale.Fraction flatTypicalHeight = new Scale.Fraction(
+                2.7,
+                "Typical flat height");
+
+        private final Constant.Double flatAreaPitchOffset = new Constant.Double(
+                "pitch",
+                1.15,
+                "Pitch offset of flat WRT area center");
+
+        private final Constant.Double flatMassPitchOffset = new Constant.Double(
                 "pitch",
                 0.65,
-                "Pitch offset of flat WRT centroid-based pitch");
-
-        private final Constant.Ratio flatAreaOffset = new Constant.Ratio(
-                0.25,
-                "Center offset of flat WRT area center");
+                "Pitch offset of flat WRT mass center");
     }
 }

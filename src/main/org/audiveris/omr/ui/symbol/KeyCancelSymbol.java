@@ -22,7 +22,6 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
 
 /**
  * Class {@code KeyCancelSymbol} displays a Key Signature cancel symbol, using a
@@ -33,10 +32,6 @@ import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
 public class KeyCancelSymbol
         extends KeySymbol
 {
-
-    //~ Static fields/initializers -----------------------------------------------------------------
-    //~ Instance fields ----------------------------------------------------------------------------
-    public ClefKind clefKind;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -50,17 +45,14 @@ public class KeyCancelSymbol
     }
 
     /**
-     * Creates a KeyCancelSymbol with count and location of naturals based on the
-     * provided {@link ClefKind} and precise key fifths to cancel.
+     * Creates a KeyCancelSymbol with a count of naturals based on the precise key fifths
+     * to cancel.
      *
-     * @param clefKind the active clef kind
-     * @param fifths   the canceled key
+     * @param fifths the canceled key
      */
-    public KeyCancelSymbol (ClefKind clefKind,
-                            int fifths)
+    public KeyCancelSymbol (int fifths)
     {
         super(fifths, false, Shape.KEY_CANCEL, 110);
-        this.clefKind = clefKind;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -72,6 +64,4 @@ public class KeyCancelSymbol
     {
         return new KeyCancelSymbol(true);
     }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
 }

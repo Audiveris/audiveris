@@ -36,8 +36,10 @@ import org.audiveris.omr.sig.ui.HorizontalEditor;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.KeyCancelSymbol;
+import org.audiveris.omr.ui.symbol.KeySymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
@@ -51,7 +53,6 @@ import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omr.ui.symbol.Symbols;
 
 /**
  * Class {@code KeyInter} represents a key signature on a staff.
@@ -206,24 +207,26 @@ public class KeyInter
     {
         super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
 
-        if (isCancel()) {
-            // Adapt cancel key (count/location of naturals) to current active key/clef in staff
-            KeyCancelSymbol cancelSymbol = (KeyCancelSymbol) getSymbolToDraw();
+        // Adapt key (count/location of naturals) to current effective key in staff
+        KeySymbol keySymbol = (KeySymbol) getSymbolToDraw();
 
-            if (cancelSymbol == null) {
-                return false;
-            }
+        if (keySymbol == null) {
+            return false;
+        }
 
+        final ClefInter effectiveClef = getEffectiveClef();
+
+        if (effectiveClef != null) {
             // First call, needed to get key bounds
-            super.deriveFrom(cancelSymbol, sheet, font, dropLocation, alignment);
+            super.deriveFrom(keySymbol, sheet, font, dropLocation, alignment);
 
             // Modify dropLocation to snap vertically on staff lines
-            Double y = getSnapOrdinate(cancelSymbol.fifths, cancelSymbol.clefKind);
+            Double y = getSnapOrdinate(keySymbol.fifths, effectiveClef.getKind());
 
             if (y != null) {
                 dropLocation.y = (int) Math.rint(y);
-                // Second call, to update KeyInter using adjusted data
-                super.deriveFrom(cancelSymbol, sheet, font, dropLocation, alignment);
+                // Second call, to update KeyInter using adjusted location
+                super.deriveFrom(keySymbol, sheet, font, dropLocation, alignment);
             }
         }
 
@@ -335,7 +338,7 @@ public class KeyInter
      * Report the KeySymbol to draw.
      * <p>
      * For a standard key inter, that's its fifths value.
-     * But for a KEY_CANCEL, it's the fifths of the preceding key signature is staff
+     * But for a KEY_CANCEL, it's the fifths of the preceding key signature in staff
      *
      * @return the fifths to actually draw, or null if could not be determined
      */
@@ -371,28 +374,53 @@ public class KeyInter
             return null;
         }
 
-        final ClefInter clef = measure.getClefBefore(getCenter(), staff);
+        KeyInter keyBefore = null;
+        while (keyBefore == null || keyBefore == this) {
+            measure = measure.getPrecedingInSystem();
 
-        if (clef == null) {
-            logger.debug("null clef");
+            if (measure == null) {
+                logger.debug("no previous measure");
+                return null;
+            }
+
+            keyBefore = measure.getKeyBefore(staff);
+            logger.debug("keyBefore: {}", keyBefore);
+        }
+
+        return new KeyCancelSymbol(keyBefore.getFifths());
+    }
+
+    //------------------//
+    // getEffectiveClef //
+    //------------------//
+    /**
+     * Report the clef which is effective at this KeyInter location.
+     *
+     * @return the effective clef found, or null
+     */
+    private ClefInter getEffectiveClef ()
+    {
+
+        if (staff == null) {
+            logger.debug("null staff");
             return null;
         }
 
-        measure = measure.getPrecedingInSystem();
+        final Point pt = getCenter();
+
+        if (pt == null) {
+            logger.debug("null pt");
+            return null;
+        }
+
+        Measure measure = staff.getPart().getMeasureAt(pt, staff);
 
         if (measure == null) {
-            logger.debug("no previous measure");
+            logger.debug("null measure");
             return null;
         }
 
-        final KeyInter keyBefore = measure.getKeyBefore(staff);
-
-        if (keyBefore == null || keyBefore.isCancel()) {
-            logger.debug("keyBefore: {}", keyBefore);
-            return null;
-        }
-
-        return new KeyCancelSymbol(clef.getKind(), keyBefore.getFifths());
+        return measure.getClefBefore(getCenter(), staff);
     }
 
     //------------//
@@ -434,6 +462,15 @@ public class KeyInter
     public boolean isCancel ()
     {
         return shape == Shape.KEY_CANCEL;
+    }
+
+    //------------//
+    // isEditable //
+    //------------//
+    @Override
+    public boolean isEditable ()
+    {
+        return isManual(); // Only manual keys can be edited globally
     }
 
     //--------//
@@ -541,7 +578,7 @@ public class KeyInter
      * Required properties: staff, bounds, fifths, clefKind
      *
      * @param fifths   key signature
-     * @param clefKind active clef kind (TREBLE, ALTO, ...)
+     * @param clefKind effective clef kind (TREBLE, ALTO, ...)
      * @return the proper ordinate if any, null otherwise
      */
     private Double getSnapOrdinate (int fifths,
@@ -552,6 +589,12 @@ public class KeyInter
         }
 
         double theoPitch = getPosition(fifths, clefKind);
+
+        // For flats: center and pitch differ
+        if (shape != Shape.KEY_CANCEL && fifths < 0) {
+            theoPitch -= AlterInter.getFlatAreaPitchOffset();
+        }
+
         return staff.pitchToOrdinate(bounds.getCenterX(), theoPitch);
     }
 
@@ -593,7 +636,7 @@ public class KeyInter
     //-------------//
     /**
      * Report the alteration to apply to the provided note step, under the provided
-     * active key signature.
+     * effective key signature.
      *
      * @param step      note step
      * @param signature key signature
@@ -632,7 +675,7 @@ public class KeyInter
      * For a not-yet-defined KeyCancel, n == 0 is accepted.
      *
      * @param n    the signed index (one-based) of the desired item
-     * @param kind the kind (TREBLE, ALTO, BASS or TENOR) of the active clef.
+     * @param kind the kind (TREBLE, ALTO, BASS or TENOR) of the effective clef.
      *             If null, TREBLE is assumed.
      * @return the pitch position of the key item (sharp or flat)
      */
@@ -661,7 +704,7 @@ public class KeyInter
      * Report the sequence of pitches imposed by a given clef kind (TREBLE, ALTO, TENOR
      * or BASS) for a given key alteration shape (FLAT or SHARP).
      *
-     * @param clefKind the kind of active clef
+     * @param clefKind the kind of effective clef
      * @param shape    the desired shape for key
      * @return the sequence of pitch values
      */
