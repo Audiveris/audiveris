@@ -92,8 +92,6 @@ public class ChordListMenu
     {
         super("Chords ...");
         this.sheet = sheet;
-
-        ///addMouseListener(new MenuMouseListener());
     }
 
     //--------------------//
@@ -673,10 +671,9 @@ public class ChordListMenu
         @Override
         public void mouseEntered (MouseEvent e)
         {
-            ///logger.warn("\nChord item");
             JMenuItem item = (JMenuItem) e.getSource();
             InterAction action = (InterAction) item.getAction();
-            action.publish(SelectionHint.ENTITY_TRANSIENT);
+            action.publish(SelectionHint.ENTITY_INIT);
         }
     }
 
@@ -704,7 +701,7 @@ public class ChordListMenu
             sheet.getInterIndex().getEntityService().publish(
                     new EntityListEvent<>(
                             this,
-                            SelectionHint.ENTITY_TRANSIENT,
+                            SelectionHint.ENTITY_INIT,
                             MouseMovement.PRESSING,
                             chords));
         }
@@ -857,22 +854,3 @@ public class ChordListMenu
                 "Maximum abscissa overlap between chords bounds for a voice menu item");
     }
 }
-//
-//    //-------------------//
-//    // MenuMouseListener //
-//    //-------------------//
-//    /**
-//     * Called when menu is entered by the mouse.
-//     */
-//    private static class MenuMouseListener
-//            extends AbstractMouseListener
-//    {
-//
-//        @Override
-//        public void mouseEntered (MouseEvent e)
-//        {
-//            JMenuItem menu = (JMenuItem) e.getSource();
-//            logger.warn("Entering menu {}", menu.getText());
-//        }
-//    }
-//
