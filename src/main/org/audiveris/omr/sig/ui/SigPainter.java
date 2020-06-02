@@ -1073,8 +1073,8 @@ public abstract class SigPainter
     //-----------//
     // paintWord //
     //-----------//
-    private void paintWord (WordInter word,
-                            FontInfo lineMeanFont)
+    protected void paintWord (WordInter word,
+                              FontInfo lineMeanFont)
     {
         if (word.getValue().trim().isEmpty()) {
             return;
