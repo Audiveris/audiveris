@@ -45,6 +45,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import org.audiveris.omr.sig.inter.WordInter;
 
 /**
  * Class {@code SelectionPainter} is meant to paint just selected items.
@@ -173,6 +174,14 @@ public class SelectionPainter
         protected boolean splitMirrors ()
         {
             return true;
+        }
+
+        @Override
+        public void visit (WordInter word)
+        {
+            // Usually, words are displayed via their containing sentence
+            // But a selected word must be rendered on its own
+            paintWord(word, word.getFontInfo());
         }
     }
 }
