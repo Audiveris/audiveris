@@ -547,8 +547,6 @@ public class InterController
     /**
      * Merge the provided system with its sibling below.
      *
-     * TODO: Implement the UNDO side of this task, (if relevant)
-     *
      * @param system the system above
      */
     @UIThread

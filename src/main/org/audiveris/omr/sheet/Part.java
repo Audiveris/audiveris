@@ -400,6 +400,7 @@ public class Part
      * Impact on system parts, part staves, stack measures, measures extended, pointers to part
      *
      * @param below the part just below this one
+     * @see #splitBefore(Staff)
      */
     public void mergeWithBelow (Part below)
     {
@@ -434,6 +435,7 @@ public class Part
      * Split this part in two sub-parts, just before the provided staff.
      *
      * @param pivotStaff the first staff of second half.
+     * @see #mergeWithBelow(Part)
      */
     public void splitBefore (Staff pivotStaff)
     {
