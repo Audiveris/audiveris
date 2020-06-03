@@ -21,9 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import java.util.List;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.sheet.SystemInfo;
+
+import java.util.List;
 
 /**
  * Class {@code SystemMergeTask} implements the merge of two systems.

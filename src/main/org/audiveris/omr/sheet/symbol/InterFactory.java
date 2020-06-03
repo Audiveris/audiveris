@@ -1004,10 +1004,8 @@ public class InterFactory
 
         // Others
         default:
-
-            String msg = "No ghost instance for " + shape;
-            logger.error(msg);
-            throw new IllegalArgumentException(msg);
+            logger.warn("No ghost instance for {}", shape);
+            return null;
         }
     }
 }
