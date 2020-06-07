@@ -1965,6 +1965,7 @@ public class Measure
         //
         measureBelow.switchItemsPart(partBelow);
         partBelow.addMeasure(measureBelow);
+        measureBelow.setStack(stack);
     }
 
     //-------------//

@@ -420,7 +420,7 @@ public class MeasureRhythm
                 if (lastChord.getTimeOffset() != null) {
                     Rational end = lastChord.getEndTime();
 
-                    if (lastChord.isWholeHead() || end.compareTo(firstTime) < 0) {
+                    if (end.compareTo(firstTime) < 0) {
                         if (lastChord.isVip() || logger.isDebugEnabled()) {
                             logger.info(
                                     "VIP {} {} extinct at {} before slot#{}",

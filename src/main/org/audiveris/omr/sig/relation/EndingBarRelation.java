@@ -24,7 +24,6 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
-import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.util.HorizontalSide;
@@ -107,8 +106,7 @@ public class EndingBarRelation
     {
         if (endingSide == null) {
             final EndingInter ending = (EndingInter) e.getEdgeSource();
-            final BarlineInter barline = (BarlineInter) e.getEdgeTarget();
-            endingSide = (barline.getCenter().x < ending.getCenter().x) ? LEFT : RIGHT;
+            endingSide = (e.getEdgeTarget().getCenter().x < ending.getCenter().x) ? LEFT : RIGHT;
         }
     }
 

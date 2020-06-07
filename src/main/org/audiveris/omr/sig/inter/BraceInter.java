@@ -154,6 +154,11 @@ public class BraceInter
             Rectangle box = getBounds();
             Point topRight = new Point(box.x + box.width, box.y);
             SystemInfo system = sheet.getSystemManager().getClosestSystem(topRight);
+
+            if (system == null) {
+                return false;
+            }
+
             staff = system.getClosestStaff(topRight);
         }
 
