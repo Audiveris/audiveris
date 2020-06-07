@@ -268,24 +268,24 @@ public class ChordListMenu
 
         if (same == null) {
             if (separate == null) {
-                addItem(new RelationAdditionItem("Same Time",
+                addItem(new RelationAdditionItem("Same Time Slot",
                                                  "Make the two chords share the same time slot",
                                                  src, tgt, new SameTimeRelation()), listener);
             }
         } else {
-            addItem(new RelationRemovalItem("Cancel same Time",
+            addItem(new RelationRemovalItem("cancel Same Time Slot",
                                             "Cancel use of same time slot",
                                             sig, same), listener);
         }
 
         if (separate == null) {
             if (same == null) {
-                addItem(new RelationAdditionItem("Separate Time",
+                addItem(new RelationAdditionItem("Separate Time Slots",
                                                  "Make the two chords use separate time slots",
                                                  src, tgt, new SeparateTimeRelation()), listener);
             }
         } else {
-            addItem(new RelationRemovalItem("Cancel separate Times",
+            addItem(new RelationRemovalItem("cancel Separate Time Slots",
                                             "Cancel use of separate time slots",
                                             sig, separate), listener);
         }
@@ -337,7 +337,7 @@ public class ChordListMenu
                                                  src, tgt, new SameVoiceRelation()), listener);
             }
         } else {
-            addItem(new RelationRemovalItem("Cancel same Voice",
+            addItem(new RelationRemovalItem("cancel Same Voice",
                                             "Cancel use of same voice",
                                             sig, same), listener);
         }
@@ -349,7 +349,7 @@ public class ChordListMenu
                                                  src, tgt, new SeparateVoiceRelation()), listener);
             }
         } else {
-            addItem(new RelationRemovalItem("Cancel separate Voices",
+            addItem(new RelationRemovalItem("cancel Separate Voices",
                                             "Cancel use of separate voices",
                                             sig, separate), listener);
         }

@@ -135,7 +135,7 @@ public class BasicClassifier
     @Override
     public final String getName ()
     {
-        return "Basic Classifier";
+        return "Glyph Classifier";
     }
 
     //-------------//

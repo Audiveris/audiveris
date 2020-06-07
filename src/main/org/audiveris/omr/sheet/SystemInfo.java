@@ -257,6 +257,12 @@ public class SystemInfo
                          Part part)
     {
         parts.add(index, part);
+
+        // Update MeasureStack's
+        for (Measure measure : part.getMeasures()) {
+            // Stack O--- Measure
+            measure.getStack().addMeasure(index, measure);
+        }
     }
 
     //----------//
@@ -1556,6 +1562,7 @@ public class SystemInfo
      */
     public void removePart (Part part)
     {
+        // Update MeasureStack's
         for (Measure measure : part.getMeasures()) {
             // Stack O--- Measure
             measure.getStack().removeMeasure(measure);

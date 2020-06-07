@@ -255,6 +255,21 @@ public class MeasureStack
         }
     }
 
+    //------------//
+    // addMeasure //
+    //------------//
+    /**
+     * Append a measure in stack at provided index
+     *
+     * @param index   index where measure is to be inserted
+     * @param measure the measure to append
+     */
+    public void addMeasure (int index,
+                            Measure measure)
+    {
+        measures.add(index, measure);
+    }
+
     //-----------//
     // addRepeat //
     //-----------//
