@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.curve;
 
+import ij.process.ByteProcessor;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.math.CubicUtil;
 import org.audiveris.omr.math.LineUtil;
@@ -37,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.audiveris.omr.run.RunTableFactory;
 
 /**
  * Class {@code GlyphSlurInfo} is a degenerated {@link SlurInfo}, meant for a manual
@@ -128,15 +130,19 @@ public class GlyphSlurInfo
         KeyPointsBuilder (Glyph glyph)
         {
             this.glyph = glyph;
-            rt = glyph.getRunTable();
+
+            RunTable table = glyph.getRunTable();
+
+            if (table.getOrientation() != Orientation.VERTICAL) {
+                ByteProcessor buf = table.getBuffer();
+                table = new RunTableFactory(Orientation.VERTICAL).createTable(buf);
+            }
+
+            rt = table;
         }
 
         public List<Point> retrieveKeyPoints ()
         {
-            if (rt.getOrientation() != Orientation.VERTICAL) {
-                throw new IllegalArgumentException("Slur glyph runs must be vertical");
-            }
-
             // Retrieve the 4 points WRT glyph bounds
             final int width = glyph.getWidth();
             final List<Point> points = new ArrayList<>(4);
