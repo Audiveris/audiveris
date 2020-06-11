@@ -25,6 +25,9 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omrdataset.api.OmrShape;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Rectangle;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -40,11 +43,16 @@ import javax.xml.bind.annotation.XmlAttribute;
 public abstract class AbstractNumberInter
         extends AbstractInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(AbstractNumberInter.class);
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Integer value for the number. */
     @XmlAttribute
-    protected final int value;
+    protected Integer value;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractNumberInter object.
      *
@@ -57,7 +65,7 @@ public abstract class AbstractNumberInter
                                 double grade)
     {
         super(glyph, null, shape, grade);
-        this.value = (shape != null) ? valueOf(shape) : (-1);
+        this.value = (shape != null) ? valueOf(shape) : null;
     }
 
     /**
@@ -72,9 +80,10 @@ public abstract class AbstractNumberInter
                                 double grade)
     {
         super(null, bounds, shape, grade);
-        this.value = (shape != null) ? valueOf(shape) : (-1);
+        this.value = (shape != null) ? valueOf(shape) : null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -92,9 +101,22 @@ public abstract class AbstractNumberInter
      *
      * @return the integer value
      */
-    public int getValue ()
+    public Integer getValue ()
     {
         return value;
+    }
+
+    //----------//
+    // setValue //
+    //----------//
+    /**
+     * Set a new integer value to this symbol
+     *
+     * @param value the new value
+     */
+    public void setValue (Integer value)
+    {
+        this.value = value;
     }
 
     //-----------//

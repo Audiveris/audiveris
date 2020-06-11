@@ -508,11 +508,11 @@ public class HeadChordInter
         return inters;
     }
 
-    //-------------//
-    // shapeString //
-    //-------------//
+    //----------------//
+    // getShapeString //
+    //----------------//
     @Override
-    public String shapeString ()
+    public String getShapeString ()
     {
         return "HeadChord";
     }

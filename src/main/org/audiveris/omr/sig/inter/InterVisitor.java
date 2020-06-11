@@ -132,6 +132,8 @@ public interface InterVisitor
 
     void visit (StemInter inter);
 
+    void visit (TimeCustomInter inter);
+
     void visit (TimeNumberInter inter);
 
     void visit (TimePairInter inter);

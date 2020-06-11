@@ -25,7 +25,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.inter.HeadChordInter;
@@ -33,6 +33,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
+import org.audiveris.omr.sig.inter.TimeCustomInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.ui.Board;
@@ -123,12 +124,11 @@ public class InterBoard
     private final LCheckBox edit = new LCheckBox(resources.getString("edit.text"),
                                                  resources.getString("edit.toolTipText"));
 
-    //    /** Numerator of time signature */
-    //    private final LIntegerField timeNum;
-    //
-    //    /** Denominator of time signature */
-    //    private final LIntegerField timeDen;
-    //
+    /** Numerator/Denominator of custom time signature. */
+    private final LTextField custom = new LTextField(true,
+                                                     resources.getString("time.text"),
+                                                     resources.getString("time.toolTipText"));
+
     /** ComboBox for text role. */
     private final LComboBox<TextRole> roleCombo = new LComboBox<>(
             resources.getString("roleCombo.text"),
@@ -185,6 +185,7 @@ public class InterBoard
         voice.setVisible(false);
         verse.setVisible(false);
         aboveBelow.setVisible(false);
+        custom.setVisible(false);
     }
 
     //-----------------//
@@ -252,15 +253,8 @@ public class InterBoard
         final Inter inter = interListEvent.getEntity();
 
         // Shape text and icon
-        Shape shape = (inter != null) ? inter.getShape() : null;
-
-        if (shape != null) {
-            shapeName.setText(shape.toString());
-            shapeIcon.setIcon(shape.getDecoratedSymbol());
-        } else {
-            shapeName.setText((inter != null) ? inter.shapeString() : "");
-            shapeIcon.setIcon(null);
-        }
+        shapeName.setText((inter != null) ? inter.getShapeString() : "");
+        shapeIcon.setIcon((inter != null) ? inter.getShapeSymbol() : null);
 
         // Inter characteristics
         textField.setVisible(false);
@@ -269,6 +263,7 @@ public class InterBoard
         verse.setVisible(false);
         aboveBelow.setVisible(false);
         voice.setVisible(false);
+        custom.setVisible(false);
 
         if (inter != null) {
             Double cp = inter.getContextualGrade();
@@ -325,6 +320,15 @@ public class InterBoard
                     roleCombo.setVisible(true);
                     roleCombo.setEnabled(!(sentence instanceof LyricLineInter));
                 }
+                selfUpdatingText = false;
+            } else if (inter instanceof TimeCustomInter) {
+                selfUpdatingText = true;
+
+                TimeCustomInter timeCustom = (TimeCustomInter) inter;
+                custom.setText(timeCustom.getTimeRational().toString());
+                custom.setEnabled(true);
+                custom.setVisible(true);
+
                 selfUpdatingText = false;
             } else {
                 // edit?
@@ -410,6 +414,11 @@ public class InterBoard
         textField.setVisible(false);
         builder.add(textField.getField(), cst.xyw(3, r, 9));
 
+        // Custom time
+        custom.setVisible(false);
+        builder.add(custom.getLabel(), cst.xyw(1, r, 1));
+        builder.add(custom.getField(), cst.xyw(3, r, 1));
+
         r += 2; // --------------------------------
 
         // Voice, Verse, Above
@@ -493,7 +502,6 @@ public class InterBoard
             final Inter inter = getSelectedEntity();
 
             if (inter != null) {
-                // Word or Sentence
                 if (inter instanceof WordInter) {
                     WordInter word = (WordInter) inter;
 
@@ -513,6 +521,16 @@ public class InterBoard
                     if (newRole != sentence.getRole()) {
                         logger.debug("Sentence=\"{}\" Role={}", textField.getText().trim(), newRole);
                         sheet.getInterController().changeSentence(sentence, newRole);
+                    }
+                } else if (inter instanceof TimeCustomInter) {
+                    TimeCustomInter timeCustom = (TimeCustomInter) inter;
+
+                    // Change custom time?
+                    TimeRational newTime = TimeRational.decode(custom.getText());
+
+                    if (!newTime.equals(timeCustom.getTimeRational())) {
+                        logger.debug("Custom={}", newTime);
+                        sheet.getInterController().changeTime(timeCustom, newTime);
                     }
                 }
             }

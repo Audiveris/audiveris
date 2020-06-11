@@ -911,11 +911,11 @@ public final class StaffBarlineInter
         EnsembleHelper.removeMember(this, member);
     }
 
-    //-------------//
-    // shapeString //
-    //-------------//
+    //----------------//
+    // getShapeString //
+    //----------------//
     @Override
-    public String shapeString ()
+    public String getShapeString ()
     {
         PartBarline.Style style = getStyle();
 

@@ -35,6 +35,7 @@ import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.score.Page;
+import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -56,6 +57,7 @@ import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.inter.TimeCustomInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BarConnectionRelation;
@@ -327,6 +329,35 @@ public class InterController
             protected void publish ()
             {
                 sheet.getInterIndex().publish(sentence);
+            }
+        }.execute();
+    }
+
+    //------------//
+    // changeTime //
+    //------------//
+    /**
+     * Change the value of a custom time signature.
+     *
+     * @param custom  the custom signature to modify
+     * @param newTime the new time value
+     */
+    @UIThread
+    public void changeTime (final TimeCustomInter custom,
+                            final TimeRational newTime)
+    {
+        new CtrlTask(DO, "changeTime")
+        {
+            @Override
+            protected void build ()
+            {
+                seq.add(new TimeValueTask(custom, newTime));
+            }
+
+            @Override
+            protected void publish ()
+            {
+                sheet.getInterIndex().publish(custom);
             }
         }.execute();
     }
@@ -1465,19 +1496,27 @@ public class InterController
             if (inter instanceof InterEnsemble) {
                 // Include the ensemble and its members
                 final InterEnsemble ens = (InterEnsemble) inter;
-                ensembles.add(ens);
-                inters.addAll(ens.getMembers());
+                final List<Inter> members = ens.getMembers();
+
+                if (members.isEmpty()) {
+                    inters.add(inter);
+                } else {
+                    ensembles.add(ens);
+                    inters.addAll(members);
+                }
             } else {
                 inters.add(inter);
 
                 // Watch the containing ensemble (if not already to be removed)
                 final SIGraph sig = inter.getSig();
 
-                for (Relation rel : sig.getRelations(inter, Containment.class)) {
-                    final InterEnsemble ens = (InterEnsemble) sig.getOppositeInter(inter, rel);
+                for (Relation rel : sig.incomingEdgesOf(inter)) {
+                    if (rel instanceof Containment) {
+                        final InterEnsemble ens = (InterEnsemble) sig.getEdgeSource(rel);
 
-                    if (!ensembles.contains(ens)) {
-                        watched.add(ens);
+                        if (!ensembles.contains(ens)) {
+                            watched.add(ens);
+                        }
                     }
                 }
             }
@@ -1501,7 +1540,11 @@ public class InterController
             }
 
             // Ensembles to remove first
-            for (InterEnsemble ens : ensembles) {
+            List<InterEnsemble> sortedEnsembles = new ArrayList<>(ensembles);
+            Collections.sort(sortedEnsembles, Inters.membersFirst);
+            Collections.reverse(sortedEnsembles);
+
+            for (InterEnsemble ens : sortedEnsembles) {
                 seq.add(new RemovalTask(ens));
             }
 

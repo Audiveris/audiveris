@@ -25,8 +25,9 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sig.ui.HorizontalEditor;
+import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
@@ -48,14 +49,18 @@ public class TimeNumberInter
         extends AbstractNumberInter
 {
 
+    //~ Static fields/initializers -----------------------------------------------------------------
     private static final Logger logger = LoggerFactory.getLogger(TimeNumberInter.class);
 
     private static final Constants constants = new Constants();
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     /** Top or bottom. */
     @XmlAttribute
     protected VerticalSide side;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TimeNumberInter object.
      *
@@ -71,10 +76,6 @@ public class TimeNumberInter
     {
         super(glyph, shape, grade);
 
-        if (!ShapeSet.PartialTimes.contains(shape)) {
-            throw new IllegalArgumentException(shape + " not allowed as TimeNumberInter shape");
-        }
-
         this.side = side;
     }
 
@@ -86,6 +87,7 @@ public class TimeNumberInter
         super((Glyph) null, null, 0);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -93,6 +95,15 @@ public class TimeNumberInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new HorizontalEditor(this);
     }
 
     //---------//
@@ -153,6 +164,16 @@ public class TimeNumberInter
         return inter;
     }
 
+    //----------------//
+    // getShapeString //
+    //----------------//
+    @Override
+    public String getShapeString ()
+    {
+        return "TIME_" + getValue();
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

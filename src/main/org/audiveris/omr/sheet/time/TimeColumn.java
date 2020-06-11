@@ -243,10 +243,11 @@ public abstract class TimeColumn
         // Retrieve all time values found, organized by value and staff
         Map<TimeValue, AbstractTimeInter[]> vectors = getValueVectors();
         Map<TimeValue, Double> grades = new HashMap<TimeValue, Double>();
+
         TimeLoop:
         for (Map.Entry<TimeValue, AbstractTimeInter[]> entry : vectors.entrySet()) {
-            TimeValue time = entry.getKey();
-            AbstractTimeInter[] vector = entry.getValue();
+            final TimeValue time = entry.getKey();
+            final AbstractTimeInter[] vector = entry.getValue();
 
             // Check that this time is present in all staves and compute the time mean grade
             double mean = 0;
@@ -274,7 +275,7 @@ public abstract class TimeColumn
         double bestGrade = 0;
 
         for (Map.Entry<TimeValue, Double> entry : grades.entrySet()) {
-            double grade = entry.getValue();
+            final double grade = entry.getValue();
 
             if (grade > bestGrade) {
                 bestGrade = grade;
@@ -287,11 +288,11 @@ public abstract class TimeColumn
         }
 
         // Forward the chosen time to each staff
-        AbstractTimeInter[] bestVector = vectors.get(timeValue);
-        List<Staff> staves = system.getStaves();
+        final AbstractTimeInter[] bestVector = vectors.get(timeValue);
+        final List<Staff> staves = system.getStaves();
 
         for (int is = 0; is < staves.size(); is++) {
-            Staff staff = staves.get(is);
+            final Staff staff = staves.get(is);
 
             if (!staff.isTablature()) {
                 TimeBuilder builder = builders.get(staff);

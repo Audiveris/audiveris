@@ -30,6 +30,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voices;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
@@ -48,8 +49,6 @@ import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
-import org.audiveris.omr.sig.inter.TimePairInter;
-import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
@@ -116,6 +115,7 @@ public class PageStep
     static {
         forVoices = new HashSet<>();
         // Inters
+        forVoices.add(AbstractTimeInter.class);
         forVoices.add(AugmentationDotInter.class);
         forVoices.add(BarlineInter.class);
         forVoices.add(BeamHookInter.class);
@@ -130,8 +130,6 @@ public class PageStep
         forVoices.add(StemInter.class);
         forVoices.add(StaffBarlineInter.class);
         forVoices.add(TimeNumberInter.class);
-        forVoices.add(TimePairInter.class);
-        forVoices.add(TimeWholeInter.class);
         forVoices.add(TupletInter.class);
         // Relations
         forVoices.add(AugmentationRelation.class);

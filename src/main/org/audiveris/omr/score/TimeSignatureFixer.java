@@ -113,17 +113,6 @@ public class TimeSignatureFixer
         }
     }
 
-    //    //--------------------//
-    //    // visit MeasureStack //
-    //    //--------------------//
-    //    @Override
-    //    public boolean visit (MeasureStack measure)
-    //    {
-    //        measure.setExpectedDuration(null);
-    //
-    //        return false;
-    //    }
-    //
     //---------------//
     // checkTimeSigs //
     //---------------//

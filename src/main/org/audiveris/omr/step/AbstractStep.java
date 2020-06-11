@@ -69,6 +69,7 @@ import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.SmallFlagInter;
 import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.inter.TimeCustomInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
@@ -146,6 +147,7 @@ public abstract class AbstractStep
             SmallChordInter.class,
             SmallFlagInter.class,
             StemInter.class,
+            TimeCustomInter.class,
             TimeNumberInter.class,
             TimePairInter.class,
             TimeWholeInter.class,

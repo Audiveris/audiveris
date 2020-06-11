@@ -288,11 +288,11 @@ public class LyricLineInter
         super.remove(extensive);
     }
 
-    //-------------//
-    // shapeString //
-    //-------------//
+    //----------------//
+    // getShapeString //
+    //----------------//
     @Override
-    public String shapeString ()
+    public String getShapeString ()
     {
         return "LYRICS";
     }

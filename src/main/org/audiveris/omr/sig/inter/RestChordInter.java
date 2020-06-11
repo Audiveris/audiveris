@@ -59,11 +59,11 @@ public class RestChordInter
         visitor.visit(this);
     }
 
-    //-------------//
-    // shapeString //
-    //-------------//
+    //----------------//
+    // getShapeString //
+    //----------------//
     @Override
-    public String shapeString ()
+    public String getShapeString ()
     {
         return "RestChord";
     }

@@ -420,7 +420,7 @@ public abstract class AbstractInter
                     ensembles = new LinkedHashSet<>();
                 }
 
-                ensembles.add(sig.getOppositeInter(this, rel));
+                ensembles.add(sig.getEdgeSource(rel));
             }
         }
 
@@ -666,7 +666,7 @@ public abstract class AbstractInter
     {
         for (Relation rel : sig.incomingEdgesOf(this)) {
             if (rel instanceof Containment) {
-                return (InterEnsemble) sig.getOppositeInter(this, rel);
+                return (InterEnsemble) sig.getEdgeSource(rel);
             }
         }
 
@@ -808,6 +808,28 @@ public abstract class AbstractInter
     public Shape getShape ()
     {
         return shape;
+    }
+
+    //----------------//
+    // getShapeString //
+    //----------------//
+    @Override
+    public String getShapeString ()
+    {
+        return shape.toString();
+    }
+
+    //----------------//
+    // getShapeSymbol //
+    //----------------//
+    @Override
+    public ShapeSymbol getShapeSymbol ()
+    {
+        if (shape == null) {
+            return null;
+        }
+
+        return shape.getDecoratedSymbol();
     }
 
     //--------//
@@ -1230,7 +1252,7 @@ public abstract class AbstractInter
                     for (Relation rel : relsCopy) {
                         // A member may be contained by several ensembles (case of TimeNumberInter)
                         if (rel instanceof Containment) {
-                            InterEnsemble ens = (InterEnsemble) sig.getOppositeInter(this, rel);
+                            InterEnsemble ens = (InterEnsemble) sig.getEdgeSource(rel);
 
                             if (ens.getMembers().size() == 1) {
                                 logger.debug("{} removing a dying ensemble {}", this, ens);
@@ -1361,15 +1383,6 @@ public abstract class AbstractInter
         }
 
         this.id = id;
-    }
-
-    //-------------//
-    // shapeString //
-    //-------------//
-    @Override
-    public String shapeString ()
-    {
-        return shape.toString();
     }
 
     //-----------------//

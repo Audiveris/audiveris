@@ -23,12 +23,10 @@ package org.audiveris.omr.sheet.time;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.score.TimeRational;
-import org.audiveris.omr.score.TimeValue;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Staff;
@@ -38,7 +36,6 @@ import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
-import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
 import org.audiveris.omr.util.Navigable;
@@ -49,13 +46,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Class {@code TimeBuilder} is the abstract basis for handling a time signature (such
@@ -111,9 +104,6 @@ public abstract class TimeBuilder
 
     /** The time inter instance chosen for the staff. */
     protected AbstractTimeInter timeInter;
-
-    /** All glyphs submitted to classifier. */
-    protected final Set<Glyph> glyphCandidates = new LinkedHashSet<>();
 
     /**
      * Creates a new {@code TimeBuilder} object.
@@ -196,67 +186,17 @@ public abstract class TimeBuilder
     }
 
     /**
-     * Discard all inters that do not pertain to chosen time signature.
-     * <p>
-     * This accounts for other WholeTimeInter instances and to all TimeNumberInter instances
-     * that do not correspond to chosen num/den.
+     * Discard all inters that do not pertain to precise chosen timeInter instance.
      */
     protected void discardOthers ()
     {
-        final Map<Shape, Glyph> compatibles = new EnumMap<>(Shape.class);
-
-        if (timeInter instanceof TimeWholeInter) {
-            // It's a whole sig: COMMON_TIME or CUT_TIME or combo
-            glyphCandidates.remove(timeInter.getGlyph()); // Positive
-
-            // Check wholes
-            for (Inter inter : wholes) {
-                if (inter.getShape() != timeInter.getShape()) {
-                    inter.remove();
-                }
-            }
-
-            // Discard numbers
-            if (ShapeSet.SingleWholeTimes.contains(timeInter.getShape())) {
-                // Chosen is COMMON or CUT, so delete any pair member
-                for (VerticalSide side : VerticalSide.values()) {
-                    final List<Inter> members = (side == VerticalSide.TOP) ? nums : dens;
-
-                    for (Inter inter : members) {
-                        inter.remove();
-                    }
-                }
-            } else {
-                // Chosen is a combo 3/4, 6/8, ...
-                for (VerticalSide side : VerticalSide.values()) {
-                    final List<Inter> members = (side == VerticalSide.TOP) ? nums : dens;
-                    final int value = (side == VerticalSide.TOP) ? timeInter.getNumerator()
-                            : timeInter.getDenominator();
-
-                    for (Inter inter : members) {
-                        TimeNumberInter number = (TimeNumberInter) inter;
-
-                        if (number.getValue() == value) {
-                            compatibles.put(number.getShape(), inter.getGlyph()); // Compatible member
-                        }
-
-                        inter.remove();
-                    }
-                }
-            }
-        } else {
-            // It's a pair of numbers
+        // Chosen timeInter is either a TimePairInter (gathering two separate number inters) or
+        // a single whole inter (TimeWholeInter or TimeCustomInter)
+        if (timeInter instanceof TimePairInter) {
             final TimePairInter chosenPair = (TimePairInter) timeInter;
-            final TimeValue value = timeInter.getValue();
 
-            // Discard wholes
+            // Discard all wholes
             for (Inter inter : wholes) {
-                TimeWholeInter time = (TimeWholeInter) inter;
-
-                if (time.getValue().equals(value)) {
-                    compatibles.put(inter.getShape(), inter.getGlyph()); // Compatible whole
-                }
-
                 inter.remove();
             }
 
@@ -264,25 +204,36 @@ public abstract class TimeBuilder
             for (VerticalSide side : VerticalSide.values()) {
                 final List<Inter> members = (side == VerticalSide.TOP) ? nums : dens;
                 final TimeNumberInter chosenNumber = chosenPair.getMember(side);
-                glyphCandidates.remove(chosenNumber.getGlyph()); // Positive
 
                 for (Inter inter : members) {
                     if (inter != chosenNumber) {
                         // Remove the pair this number is part of, if any
                         for (Inter ensemble : inter.getAllEnsembles()) {
-                            ensemble.remove();
+                            if (inter instanceof TimePairInter) {
+                                ensemble.remove();
+                            }
                         }
 
-                        // Remove this member as well, if not yet done
-                        if (!inter.isRemoved()) {
-                            inter.remove();
-                        }
+                        // Remove this member as well (if not yet done)
+                        inter.remove();
                     }
                 }
             }
-        }
+        } else {
+            // Check wholes
+            for (Inter inter : wholes) {
+                if (inter != timeInter) {
+                    inter.remove();
+                }
+            }
 
-        glyphCandidates.removeAll(compatibles.values());
+            // Discard all numbers
+            for (List<Inter> members : Arrays.asList(nums, dens)) {
+                for (Inter inter : members) {
+                    inter.remove();
+                }
+            }
+        }
     }
 
     /**

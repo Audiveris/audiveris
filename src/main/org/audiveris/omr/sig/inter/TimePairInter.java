@@ -41,6 +41,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code TimePairInter} is a time signature composed of two halves (num and den).
+ * <p>
+ * It is an ensemble composed of 2 TimeNumberInter instances, one for top, one for bottom.
  *
  * @author Hervé Bitteur
  */
@@ -51,8 +53,11 @@ public class TimePairInter
         implements InterEnsemble
 {
 
+    //~ Static fields/initializers -----------------------------------------------------------------
     private static final Logger logger = LoggerFactory.getLogger(TimePairInter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * (Private) constructor.
      *
@@ -73,6 +78,7 @@ public class TimePairInter
         super((Glyph) null, null, 0);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -186,6 +192,15 @@ public class TimePairInter
         return getMember(TOP);
     }
 
+    //----------------//
+    // getShapeString //
+    //----------------//
+    @Override
+    public String getShapeString ()
+    {
+        return "TIME_SIG:" + getTimeRational();
+    }
+
     //-----------------//
     // getSymbolBounds //
     //-----------------//
@@ -263,15 +278,6 @@ public class TimePairInter
         inter.setStaff(targetStaff);
 
         return inter;
-    }
-
-    //-------------//
-    // shapeString //
-    //-------------//
-    @Override
-    public String shapeString ()
-    {
-        return "TIME_SIG_" + getTimeRational();
     }
 
     //-------------//

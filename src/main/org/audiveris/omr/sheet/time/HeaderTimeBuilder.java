@@ -580,8 +580,6 @@ public class HeaderTimeBuilder
                 glyph = system.registerGlyph(glyph, null);
             }
 
-            glyphCandidates.add(glyph);
-
             Evaluation[] evals = ShapeClassifier.getInstance().evaluate(
                     glyph,
                     staff.getSpecificInterline(),
@@ -683,8 +681,6 @@ public class HeaderTimeBuilder
             if (glyph.getId() == 0) {
                 glyph = system.registerGlyph(glyph, null);
             }
-
-            glyphCandidates.add(glyph);
 
             Evaluation[] evals = ShapeClassifier.getInstance().evaluate(
                     glyph,

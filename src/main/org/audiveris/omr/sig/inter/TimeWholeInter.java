@@ -29,6 +29,9 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.NumDenSymbol;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -46,6 +49,11 @@ public class TimeWholeInter
         extends AbstractTimeInter
 {
 
+    //~ Static fields/initializers -----------------------------------------------------------------
+    private static final Logger logger = LoggerFactory.getLogger(TimeWholeInter.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TimeWholeInter} object.
      *
@@ -72,6 +80,7 @@ public class TimeWholeInter
         super(null, null, 0);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -148,4 +157,6 @@ public class TimeWholeInter
 
         return time;
     }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
 }

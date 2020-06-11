@@ -341,11 +341,11 @@ public class ChordNameInter
         return root;
     }
 
-    //-------------//
-    // shapeString //
-    //-------------//
+    //----------------//
+    // getShapeString //
+    //----------------//
     @Override
-    public String shapeString ()
+    public String getShapeString ()
     {
         return "CHORD_NAME_\"" + value + "\"";
     }
