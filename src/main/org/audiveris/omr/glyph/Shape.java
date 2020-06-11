@@ -820,6 +820,10 @@ public enum Shape
      */
     public boolean isDraggable ()
     {
+        if (ShapeSet.PartialTimes.contains(this)) {
+            return false;
+        }
+
         return getPhysicalShape().getSymbol() != null;
     }
 

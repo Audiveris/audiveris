@@ -111,13 +111,13 @@ public class PageRhythm
     public void process ()
     {
         // Populate all stacks in page with potential time signatures (TS), and derive ranges.
-        populateTimeSignatures(); // -> ranges (TS are assigned to their containing measure)
+        if (populateTimeSignatures()) {
+            // Populate all stacks/measures in page with their FRATs
+            populateFRATs();
 
-        // Populate all stacks/measures in page with their FRATs
-        populateFRATs();
-
-        // For each range, adjust TS if needed, then process each measure, using StackRhythm 2nd pass
-        processRanges();
+            // For each range, adjust TS if needed, then process each measure, using StackRhythm 2nd pass
+            processRanges();
+        }
     }
 
     //----------------//
@@ -168,8 +168,10 @@ public class PageRhythm
     /**
      * Populate page stacks with the time signatures found and derive ranges where each
      * time signature applies.
+     *
+     * @return true if OK
      */
-    private void populateTimeSignatures ()
+    private boolean populateTimeSignatures ()
     {
         for (SystemInfo system : page.getSystems()) {
             List<Inter> systemTimes = system.getSig().inters(AbstractTimeInter.class);
@@ -205,8 +207,14 @@ public class PageRhythm
             final Range range = ranges.get(i);
 
             if (range.ts != null) {
-                range.timeRational = range.ts.getTimeRational();
-                range.duration = range.ts.getTimeRational().getValue();
+                TimeRational timeRational = range.ts.getTimeRational();
+                if (timeRational == null) {
+                    logger.info("No timeRational value for {}", range.ts);
+                    return false;
+                }
+
+                range.timeRational = timeRational;
+                range.duration = timeRational.getValue();
             } else if (i == 0 && !page.isMovementStart()) {
                 // Use time at end of last sheet/page if any
                 SheetStub stub = page.getSheet().getStub();
@@ -270,6 +278,8 @@ public class PageRhythm
         if (lastRange.timeRational != null) {
             page.setLastTimeRational(lastRange.timeRational.duplicate());
         }
+
+        return true;
     }
 
     //---------------//

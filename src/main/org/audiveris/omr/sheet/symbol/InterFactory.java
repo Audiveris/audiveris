@@ -76,6 +76,7 @@ import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallFlagInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.inter.TimeCustomInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
@@ -573,10 +574,12 @@ public class InterFactory
     private void handleTimes ()
     {
         // Retrieve all time inters (outside staff headers)
-        List<Inter> systemTimes = sig.inters(new Class[]{
-            TimeWholeInter.class, // Whole symbol like C or 6/8
+        final List<Inter> systemTimes = sig.inters(new Class[]{
+            TimeWholeInter.class, // Whole symbol like C or predefined 6/8
+            TimeCustomInter.class, // User modifiable combo 6/8
             TimeNumberInter.class}); // Partial symbol like 6 or 8
-        List<Inter> headerTimes = new ArrayList<>();
+
+        final List<Inter> headerTimes = new ArrayList<>();
         for (Inter inter : systemTimes) {
             Staff staff = inter.getStaff();
 
@@ -585,11 +588,13 @@ public class InterFactory
             }
         }
         systemTimes.removeAll(headerTimes);
+
         if (systemTimes.isEmpty()) {
             return;
         }
+
         // Dispatch these time inters into their containing stack
-        Map<MeasureStack, Set<Inter>> timeMap = new TreeMap<>(new Comparator<MeasureStack>()
+        final Map<MeasureStack, Set<Inter>> timeMap = new TreeMap<>(new Comparator<MeasureStack>()
         {
             @Override
             public int compare (MeasureStack s1,
@@ -598,25 +603,29 @@ public class InterFactory
                 return Integer.compare(s1.getIdValue(), s2.getIdValue());
             }
         });
+
         for (Inter inter : systemTimes) {
-            MeasureStack stack = system.getStackAt(inter.getCenter());
+            final MeasureStack stack = system.getStackAt(inter.getCenter());
             Set<Inter> stackSet = timeMap.get(stack);
+
             if (stackSet == null) {
                 timeMap.put(stack, stackSet = new LinkedHashSet<>());
             }
+
             stackSet.add(inter);
         }
+
         // Finally, scan each stack populated with some time sig(s)
         for (Entry<MeasureStack, Set<Inter>> entry : timeMap.entrySet()) {
-            MeasureStack stack = entry.getKey();
-            TimeColumn column = new BasicTimeColumn(stack, entry.getValue());
-            int res = column.retrieveTime();
+            final MeasureStack stack = entry.getKey();
+            final TimeColumn column = new BasicTimeColumn(stack, entry.getValue());
+            final int res = column.retrieveTime();
 
             // If the stack does have a validated time sig, discard overlapping stuff right now!
             if (res != -1) {
                 final Collection<AbstractTimeInter> times = column.getTimeInters().values();
                 final Rectangle columnBox = Inters.getBounds(times);
-                List<Inter> neighbors = sig.inters(new Predicate<Inter>()
+                final List<Inter> neighbors = sig.inters(new Predicate<Inter>()
                 {
                     @Override
                     public boolean check (Inter inter)
@@ -630,7 +639,7 @@ public class InterFactory
 
                 for (AbstractTimeInter time : times) {
                     for (Iterator<Inter> it = neighbors.iterator(); it.hasNext();) {
-                        Inter neighbor = it.next();
+                        final Inter neighbor = it.next();
 
                         try {
                             if (neighbor.overlaps(time)) {
@@ -846,6 +855,9 @@ public class InterFactory
         case TIME_SIX_EIGHT:
         case TIME_TWELVE_EIGHT:
             return new TimeWholeInter(null, shape, GRADE);
+
+        case CUSTOM_TIME:
+            return new TimeCustomInter(0, 0, GRADE);
 
         // Noteheads
         case NOTEHEAD_CROSS:

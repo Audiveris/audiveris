@@ -388,11 +388,11 @@ public class SentenceInter
         EnsembleHelper.removeMember(this, member);
     }
 
-    //-------------//
-    // shapeString //
-    //-------------//
+    //----------------//
+    // getShapeString //
+    //----------------//
     @Override
-    public String shapeString ()
+    public String getShapeString ()
     {
         return "SENTENCE";
     }

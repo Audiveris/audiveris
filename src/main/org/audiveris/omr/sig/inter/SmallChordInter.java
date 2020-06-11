@@ -60,11 +60,11 @@ public class SmallChordInter
         visitor.visit(this);
     }
 
-    //-------------//
-    // shapeString //
-    //-------------//
+    //----------------//
+    // getShapeString //
+    //----------------//
     @Override
-    public String shapeString ()
+    public String getShapeString ()
     {
         return "SmallChord";
     }

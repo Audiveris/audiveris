@@ -173,7 +173,7 @@ public abstract class Symbols
         mapShape(CAESURA, 34);
         sym.put(CLUTTER, new TextSymbol(CLUTTER, "?"));
         mapShape(COMMON_TIME, 99);
-        sym.put(CUSTOM_TIME, new CustomNumDenSymbol());
+        numDen(CUSTOM_TIME, 0, 0);
         mapShape(CUT_TIME, 67);
         mapShape(C_CLEF, 66);
         mapShape(CODA, 222);

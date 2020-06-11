@@ -26,11 +26,18 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
+import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.score.TimeValue;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sig.ui.HorizontalEditor;
+import org.audiveris.omr.sig.ui.InterEditor;
+import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
@@ -49,7 +56,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omr.math.Rational;
 
 /**
  * Class {@code AbstractTimeInter} represents a time signature, with either one (full)
@@ -61,6 +67,7 @@ import org.audiveris.omr.math.Rational;
 public abstract class AbstractTimeInter
         extends AbstractInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -102,6 +109,8 @@ public abstract class AbstractTimeInter
         }
     }
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -110,6 +119,7 @@ public abstract class AbstractTimeInter
     @XmlJavaTypeAdapter(TimeRational.Adapter.class)
     protected TimeRational timeRational;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TimeInter object.
      *
@@ -150,6 +160,7 @@ public abstract class AbstractTimeInter
         super(null, null, null, null);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // replicate //
     //-----------//
@@ -162,6 +173,36 @@ public abstract class AbstractTimeInter
      */
     public abstract AbstractTimeInter replicate (Staff targetStaff);
 
+    //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation,
+                               Alignment alignment)
+    {
+        // Needed to get bounds
+        super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+
+        if (staff != null) {
+            boolean modified = false;
+
+            final Double y = getSnapOrdinate();
+            if (y != null) {
+                dropLocation.y = (int) Math.rint(y);
+                modified = true;
+            }
+
+            if (modified) {
+                super.deriveFrom(symbol, sheet, font, dropLocation, alignment);
+            }
+        }
+
+        return true;
+    }
+
     //--------------//
     // getBeatValue //
     //--------------//
@@ -172,7 +213,7 @@ public abstract class AbstractTimeInter
      */
     public Rational getBeatValue ()
     {
-        return getBeatValue(timeRational);
+        return getBeatValue(getTimeRational());
     }
 
     //--------------//
@@ -203,11 +244,20 @@ public abstract class AbstractTimeInter
     /**
      * Report the bottom part of the time signature.
      *
-     * @return the bottom part
+     * @return the bottom part or zero
      */
     public int getDenominator ()
     {
-        return (getTimeRational() != null) ? getTimeRational().den : (-1);
+        return (getTimeRational() != null) ? getTimeRational().den : 0;
+    }
+
+    //-----------//
+    // getEditor //
+    //-----------//
+    @Override
+    public InterEditor getEditor ()
+    {
+        return new HorizontalEditor(this);
     }
 
     //--------------//
@@ -216,11 +266,11 @@ public abstract class AbstractTimeInter
     /**
      * Report the top part of the time signature.
      *
-     * @return the top part
+     * @return the top part or zero
      */
     public int getNumerator ()
     {
-        return (getTimeRational() != null) ? getTimeRational().num : (-1);
+        return (getTimeRational() != null) ? getTimeRational().num : 0;
     }
 
     //-----------------//
@@ -480,6 +530,26 @@ public abstract class AbstractTimeInter
         return null;
     }
 
+    //-----------------//
+    // getSnapOrdinate //
+    //-----------------//
+    /**
+     * Report the theoretical ordinate of number center, located on pitch 0.
+     * <p>
+     * Required properties: staff, bounds
+     *
+     * @return the proper ordinate if any, null otherwise
+     */
+    private Double getSnapOrdinate ()
+    {
+        if (staff == null) {
+            return null;
+        }
+
+        return staff.pitchToOrdinate(getCenter().x, 0);
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

@@ -532,11 +532,11 @@ public class KeyInter
         return inter;
     }
 
-    //-------------//
-    // shapeString //
-    //-------------//
+    //----------------//
+    // getShapeString //
+    //----------------//
     @Override
-    public String shapeString ()
+    public String getShapeString ()
     {
         return "KEY_SIG:" + getFifths();
     }

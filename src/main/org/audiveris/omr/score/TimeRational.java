@@ -110,10 +110,14 @@ public class TimeRational
      * <p>
      * Rational value of (2,4) is 1/2
      *
-     * @return rational value
+     * @return rational value or null
      */
     public Rational getValue ()
     {
+        if (den == 0) {
+            return null;
+        }
+
         return new Rational(num, den);
     }
 

@@ -308,6 +308,11 @@ public abstract class AbstractInterVisitor
     }
 
     @Override
+    public void visit (TimeCustomInter inter)
+    {
+    }
+
+    @Override
     public void visit (TimeNumberInter inter)
     {
         visit((Inter) inter); // Redirection by default

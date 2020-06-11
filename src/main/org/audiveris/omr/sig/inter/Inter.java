@@ -325,6 +325,20 @@ public interface Inter
     Shape getShape ();
 
     /**
+     * Report a shape-based string.
+     *
+     * @return shape.toString() by default.
+     */
+    String getShapeString ();
+
+    /**
+     * Report a shape-based symbol.
+     *
+     * @return shape.getDecoratedSymbol() by default.
+     */
+    ShapeSymbol getShapeSymbol ();
+
+    /**
      * Report the sig which hosts this interpretation.
      *
      * @return the containing sig
@@ -593,13 +607,6 @@ public interface Inter
      * @param box the bounding box
      */
     void setBounds (Rectangle box);
-
-    /**
-     * Report a shape-based string.
-     *
-     * @return shape.toString() by default. To be overridden if shape is null.
-     */
-    String shapeString ();
 
     /**
      * Check inter instance for an upgrade with respect to its persisted data.

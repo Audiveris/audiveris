@@ -62,6 +62,7 @@ import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
+import org.audiveris.omr.sig.inter.TimeCustomInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
@@ -75,6 +76,7 @@ import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.Alignment;
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.NumDenSymbol;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
@@ -645,6 +647,7 @@ public abstract class SigPainter
         final Shape shape = inter.getShape();
 
         if (shape == null) {
+            logger.warn("SigPainter.visit(Inter) no shape for {}", inter);
             return;
         }
 
@@ -699,8 +702,7 @@ public abstract class SigPainter
 
         ShapeSymbol symbol = Symbols.getSymbol(shape);
 
-        if (shape
-                    == Shape.SHARP) {
+        if (shape == Shape.SHARP) {
             symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
         } else {
             Dimension dim = symbol.getDimension(font);
@@ -828,10 +830,31 @@ public abstract class SigPainter
     // visit //
     //-------//
     @Override
+    public void visit (TimeCustomInter inter)
+    {
+        setColor(inter);
+
+        final ShapeSymbol symbol = new NumDenSymbol(
+                Shape.CUSTOM_TIME, inter.getNumerator(), inter.getDenominator());
+
+        final Staff staff = inter.getStaff();
+        final MusicFont font = getMusicFont(staff);
+        final Rectangle bounds = inter.getBounds();
+
+        if (bounds != null) {
+            final Point center = GeoUtil.centerOf(bounds);
+            symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
+        }
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
     public void visit (TimePairInter pair)
     {
         for (Inter member : pair.getMembers()) { // Needs sig, thus it can't be used for ghost.
-            visit((Inter) member);
+            visit(member);
         }
     }
 

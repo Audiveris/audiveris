@@ -55,6 +55,14 @@ public abstract class Inters
         {
             if (o1 instanceof InterEnsemble) {
                 if (o2 instanceof InterEnsemble) {
+                    if (((InterEnsemble) o1).getMembers().contains(o2)) {
+                        return 1;
+                    }
+
+                    if (((InterEnsemble) o2).getMembers().contains(o1)) {
+                        return -1;
+                    }
+
                     return 0;
                 }
 

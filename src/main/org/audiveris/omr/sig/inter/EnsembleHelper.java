@@ -97,8 +97,10 @@ public abstract class EnsembleHelper
         List<Inter> members = new ArrayList<>();
 
         if (sig.containsVertex(ensemble)) {
-            for (Relation rel : sig.getRelations(ensemble, Containment.class)) {
-                members.add(sig.getOppositeInter(ensemble, rel));
+            for (Relation rel : sig.outgoingEdgesOf(ensemble)) {
+                if (rel instanceof Containment) {
+                    members.add(sig.getEdgeTarget(rel));
+                }
             }
 
             if (!members.isEmpty()) {

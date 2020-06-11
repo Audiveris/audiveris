@@ -52,6 +52,7 @@ import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Support;
@@ -968,11 +969,21 @@ public class SymbolsEditor
         {
             List<Inter> inters = sheet.getInterIndex().getContainingEntities(location);
 
+            if (inters.isEmpty()) {
+                return null;
+            }
+
             if (inters.size() > 1) {
                 Collections.sort(inters, Inters.membersFirst);
             }
 
-            return (!inters.isEmpty()) ? inters.get(0).getEditor() : null;
+            Inter first = inters.get(0);
+
+            if (first instanceof InterEnsemble) {
+                return null;
+            }
+
+            return first.getEditor();
         }
 
         //---------------//

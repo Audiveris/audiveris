@@ -71,6 +71,7 @@ import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.SmallFlagInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.inter.TimeCustomInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
@@ -202,6 +203,7 @@ public class SigValue
         @XmlElementRef(type = SmallFlagInter.class),
         @XmlElementRef(type = StaffBarlineInter.class),
         @XmlElementRef(type = StemInter.class),
+        @XmlElementRef(type = TimeCustomInter.class),
         @XmlElementRef(type = TimeNumberInter.class),
         @XmlElementRef(type = TimePairInter.class),
         @XmlElementRef(type = TimeWholeInter.class),
