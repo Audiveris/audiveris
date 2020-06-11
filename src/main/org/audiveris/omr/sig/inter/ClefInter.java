@@ -289,8 +289,8 @@ public class ClefInter
         case C_CLEF:
 
             // Depending on precise clef position, we can have
-            // an Alto C-clef (pp=0) or a Tenor C-clef (pp=+2) [or other stuff]
-            return HeadInter.Step.values()[(72 - (int) Math.rint(this.pitch) - pitch) % 7];
+            // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2) [or other stuff]
+            return HeadInter.Step.values()[(72 + (int) Math.rint(this.pitch) - pitch) % 7];
 
         case F_CLEF:
         case F_CLEF_SMALL:
@@ -337,7 +337,7 @@ public class ClefInter
 
             // Depending on precise clef position, we can have
             // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2) [or other stuff]
-            return (28 - (int) Math.rint(this.pitch) - intPitch) / 7;
+            return (28 + (int) Math.rint(this.pitch) - intPitch) / 7;
 
         case F_CLEF:
         case F_CLEF_SMALL:
