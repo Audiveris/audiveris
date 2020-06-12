@@ -25,7 +25,7 @@ import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sig.inter.AlterInter;
+import org.audiveris.omr.sig.inter.AbstractPitchedInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
 import org.audiveris.omr.sig.inter.KeyInter;
@@ -253,7 +253,7 @@ public class KeySlice
         final Staff staff = roi.getStaff();
         final int[] clefPitches = KeyInter.getPitches(clef.getKind(), keyShape);
         int pitch = clefPitches[getId() - 1];
-        pitch -= (keyShape == Shape.FLAT) ? AlterInter.getFlatAreaPitchOffset() : 0;
+        pitch -= AbstractPitchedInter.getAreaPitchOffset(keyShape);
         final double yp = staff.pitchToOrdinate(rect.x, pitch);
         final int y = (int) Math.rint(yp - typicalHeight / 2);
         setRect(new Rectangle(getStart(), y, getWidth(), typicalHeight));

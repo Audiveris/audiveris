@@ -63,7 +63,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "key")
 public class KeyInter
-        extends AbstractInter
+        extends AbstractPitchedInter
         implements InterEnsemble
 {
 
@@ -113,7 +113,7 @@ public class KeyInter
     //~ Instance fields ----------------------------------------------------------------------------
     /** Numerical value for signature. */
     @XmlAttribute(name = "fifths")
-    private int fifths;
+    private Integer fifths;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -123,10 +123,9 @@ public class KeyInter
      * @param fifths signature value (negative for flats, 0 for cancel, positive for sharps)
      */
     public KeyInter (double grade,
-                     int fifths)
+                     Integer fifths)
     {
-        super((Glyph) null, null, null, grade);
-
+        super((Glyph) null, null, (fifths != null) ? shapeOf(fifths) : null, grade, null, null);
         this.fifths = fifths;
     }
 
@@ -148,7 +147,7 @@ public class KeyInter
      */
     private KeyInter ()
     {
-        super(null, null, null, null);
+        super(null, null, null, null, null, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -286,9 +285,9 @@ public class KeyInter
      *
      * @return the signature
      */
-    public int getFifths ()
+    public Integer getFifths ()
     {
-        if ((fifths == 0) && !isCancel()) {
+        if ((fifths == null) && !isCancel()) {
             if ((sig != null) && sig.containsVertex(this)) {
                 final List<Inter> alters = getMembers();
                 int count = 0;
@@ -448,7 +447,7 @@ public class KeyInter
     public void invalidateCache ()
     {
         bounds = null;
-        fifths = 0;
+        fifths = null;
     }
 
     //----------//
@@ -588,12 +587,7 @@ public class KeyInter
             return null;
         }
 
-        double theoPitch = getPosition(fifths, clefKind);
-
-        // For flats: center and pitch differ
-        if (shape != Shape.KEY_CANCEL && fifths < 0) {
-            theoPitch -= AlterInter.getFlatAreaPitchOffset();
-        }
+        double theoPitch = getPosition(fifths, clefKind) - getAreaPitchOffset(shape);
 
         return staff.pitchToOrdinate(bounds.getCenterX(), theoPitch);
     }
@@ -620,7 +614,7 @@ public class KeyInter
 
         grade /= alters.size();
 
-        KeyInter keyInter = new KeyInter(grade, 0);
+        KeyInter keyInter = new KeyInter(grade, (Integer) null);
         keyInter.setStaff(staff);
         sig.addVertex(keyInter);
 
@@ -849,57 +843,82 @@ public class KeyInter
     }
 
     //---------//
-    // valueOf //
+    // shapeOf //
     //---------//
+    private static Shape shapeOf (int fifths)
+    {
+        switch (fifths) {
+        case -7:
+            return Shape.KEY_FLAT_7;
+        case -6:
+            return Shape.KEY_FLAT_6;
+        case -5:
+            return Shape.KEY_FLAT_5;
+        case -4:
+            return Shape.KEY_FLAT_4;
+        case -3:
+            return Shape.KEY_FLAT_3;
+        case -2:
+            return Shape.KEY_FLAT_2;
+        case -1:
+            return Shape.KEY_FLAT_1;
+        case 0:
+            return Shape.KEY_CANCEL;
+        case 1:
+            return Shape.KEY_SHARP_1;
+        case 2:
+            return Shape.KEY_SHARP_2;
+        case 3:
+            return Shape.KEY_SHARP_3;
+        case 4:
+            return Shape.KEY_SHARP_4;
+        case 5:
+            return Shape.KEY_SHARP_5;
+        case 6:
+            return Shape.KEY_SHARP_6;
+        case 7:
+            return Shape.KEY_SHARP_7;
+        default:
+            throw new IllegalArgumentException("No key shape for fifths " + fifths);
+        }
+    }
+
+//---------//
+// valueOf //
+//---------//
     private static int valueOf (Shape shape)
     {
         switch (shape) {
-
         case KEY_FLAT_7:
             return -7;
-
         case KEY_FLAT_6:
             return -6;
-
         case KEY_FLAT_5:
             return -5;
-
         case KEY_FLAT_4:
             return -4;
-
         case KEY_FLAT_3:
             return -3;
-
         case KEY_FLAT_2:
             return -2;
-
         case KEY_FLAT_1:
             return -1;
-
         case KEY_CANCEL:
             return 0;
-
         case KEY_SHARP_1:
             return 1;
-
         case KEY_SHARP_2:
             return 2;
-
         case KEY_SHARP_3:
             return 3;
-
         case KEY_SHARP_4:
             return 4;
-
         case KEY_SHARP_5:
             return 5;
-
         case KEY_SHARP_6:
             return 6;
-
         case KEY_SHARP_7:
             return 7;
-
         default:
             throw new IllegalArgumentException("No fifth value for " + shape);
         }

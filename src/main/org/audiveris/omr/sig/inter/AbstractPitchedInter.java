@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
@@ -44,6 +46,9 @@ public abstract class AbstractPitchedInter
         extends AbstractInter
 {
 
+    //~ Static fields/initializers -----------------------------------------------------------------
+    private static final Constants constants = new Constants();
+
     /** To order from bottom to top. */
     public static final Comparator<AbstractPitchedInter> bottomUp
             = new Comparator<AbstractPitchedInter>()
@@ -62,11 +67,13 @@ public abstract class AbstractPitchedInter
         }
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The assigned pitch. */
     @XmlAttribute
     @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
     protected Double pitch;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractPitchedInter object.
      *
@@ -118,6 +125,69 @@ public abstract class AbstractPitchedInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
+    //--------------------//
+    // getAreaPitchOffset //
+    //--------------------//
+    /**
+     * Report for this inter the pitch center offset with respect to area center.
+     * <p>
+     * This is 0 by default (assuming inter is symmetric in vertical direction)
+     *
+     * @return offset of pitch center WRT area center
+     */
+    public double getAreaPitchOffset ()
+    {
+        return getAreaPitchOffset(shape);
+    }
+
+    //--------------------//
+    // getAreaPitchOffset //
+    //--------------------//
+    /**
+     * Report for the provided shape the pitch center offset with respect to area center.
+     * <p>
+     * This is 0 when shape is symmetrical in vertical direction.
+     *
+     * @param shape the provided shape
+     * @return offset of pitch center WRT area center
+     */
+    public static double getAreaPitchOffset (Shape shape)
+    {
+        switch (shape) {
+        case G_CLEF:
+            return constants.areaPitchOffset_G_CLEF.getValue();
+        case G_CLEF_SMALL:
+            return constants.areaPitchOffset_G_CLEF_SMALL.getValue();
+        case G_CLEF_8VA:
+            return constants.areaPitchOffset_G_CLEF_8VA.getValue();
+        case G_CLEF_8VB:
+            return constants.areaPitchOffset_G_CLEF_8VB.getValue();
+        case F_CLEF:
+            return constants.areaPitchOffset_F_CLEF.getValue();
+        case F_CLEF_SMALL:
+            return constants.areaPitchOffset_F_CLEF_SMALL.getValue();
+        case F_CLEF_8VA:
+            return constants.areaPitchOffset_F_CLEF_8VA.getValue();
+        case F_CLEF_8VB:
+            return constants.areaPitchOffset_F_CLEF_8VB.getValue();
+
+        case FLAT:
+        case DOUBLE_FLAT:
+        case KEY_FLAT_7:
+        case KEY_FLAT_6:
+        case KEY_FLAT_5:
+        case KEY_FLAT_4:
+        case KEY_FLAT_3:
+        case KEY_FLAT_2:
+        case KEY_FLAT_1:
+            return constants.areaPitchOffset_FLAT.getValue();
+
+        default:
+            return 0;
+        }
+    }
+
     //-----------------//
     // getIntegerPitch //
     //-----------------//
@@ -163,16 +233,14 @@ public abstract class AbstractPitchedInter
     @Override
     public void setBounds (Rectangle bounds)
     {
+        // Bounds
         super.setBounds(bounds);
 
-        if (bounds == null) {
-            pitch = null;
+        // Pitch
+        if ((bounds == null) || (staff == null)) {
+            setPitch(null);
         } else {
-            if (staff == null) {
-                setPitch(null);
-            } else {
-                setPitch(staff.pitchPositionOf(GeoUtil.centerOf(bounds)));
-            }
+            setPitch(staff.pitchPositionOf(GeoUtil.centerOf(bounds)) + getAreaPitchOffset());
         }
     }
 
@@ -184,8 +252,9 @@ public abstract class AbstractPitchedInter
     {
         super.setStaff(staff);
 
-        if ((pitch == null) && (staff != null) && (bounds != null)) {
-            setPitch(staff.pitchPositionOf(GeoUtil.centerOf(bounds)));
+        // Pitch?
+        if ((pitch == null) && (staff != null) && (bounds != null) && (shape != null)) {
+            setPitch(staff.pitchPositionOf(GeoUtil.centerOf(bounds)) + getAreaPitchOffset());
         }
     }
 
@@ -196,5 +265,59 @@ public abstract class AbstractPitchedInter
     protected String internals ()
     {
         return super.internals() + String.format(" p:%.2f", pitch);
+    }
+
+    //~ Internal Classes ---------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Double areaPitchOffset_FLAT = new Constant.Double(
+                "pitch",
+                1.2,
+                "Pitch offset WRT area center for FLAT");
+
+        private final Constant.Double areaPitchOffset_G_CLEF = new Constant.Double(
+                "pitch",
+                1.8,
+                "Pitch offset WRT area center for G_CLEF");
+
+        private final Constant.Double areaPitchOffset_G_CLEF_SMALL = new Constant.Double(
+                "pitch",
+                1.2,
+                "Pitch offset WRT area center for G_CLEF_SMALL");
+
+        private final Constant.Double areaPitchOffset_G_CLEF_8VA = new Constant.Double(
+                "pitch",
+                2.9,
+                "Pitch offset WRT area center for G_CLEF_8VA");
+
+        private final Constant.Double areaPitchOffset_G_CLEF_8VB = new Constant.Double(
+                "pitch",
+                0.5,
+                "Pitch offset WRT area center for G_CLEF_8VB");
+
+        private final Constant.Double areaPitchOffset_F_CLEF = new Constant.Double(
+                "pitch",
+                -1.3,
+                "Pitch offset WRT area center for F_CLEF");
+
+        private final Constant.Double areaPitchOffset_F_CLEF_SMALL = new Constant.Double(
+                "pitch",
+                -0.8,
+                "Pitch offset WRT area center for F_CLEF_SMALL");
+
+        private final Constant.Double areaPitchOffset_F_CLEF_8VA = new Constant.Double(
+                "pitch",
+                0,
+                "Pitch offset WRT area center for F_CLEF_8VA");
+
+        private final Constant.Double areaPitchOffset_F_CLEF_8VB = new Constant.Double(
+                "pitch",
+                -2.5,
+                "Pitch offset WRT area center for F_CLEF_8VB");
     }
 }
