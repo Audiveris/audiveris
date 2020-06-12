@@ -193,7 +193,7 @@ public abstract class AbstractNoteInter
         Measure measure = chord.getMeasure();
         ClefInter clef = measure.getClefBefore(getCenter(), getStaff());
 
-        return ClefInter.absolutePitchOf(clef, (int) Math.rint(pitch));
+        return ClefInter.absolutePitchOf(clef, getIntegerPitch());
     }
 
     //-----------//
@@ -228,7 +228,7 @@ public abstract class AbstractNoteInter
         Measure measure = chord.getMeasure();
         ClefInter clef = measure.getClefBefore(getCenter(), staff);
 
-        return ClefInter.noteStepOf(clef, (int) Math.rint(pitch));
+        return ClefInter.noteStepOf(clef, getIntegerPitch());
     }
 
     //----------//

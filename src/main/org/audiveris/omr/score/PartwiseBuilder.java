@@ -373,7 +373,19 @@ public class PartwiseBuilder
         Shape shape = clef.getShape();
 
         if (shape != Shape.PERCUSSION_CLEF) {
-            // Line (General computation that could be overridden by more specific shape test below)
+            /**
+             * MusicXML specifications for clef 'line' element.
+             * Line numbers are counted from the bottom of the staff.
+             * Standard values are:
+             * 2 for the G sign (treble clef),
+             * 4 for the F sign (bass clef),
+             * 3 for the C sign (alto clef) and
+             * 5 for TAB (on a 6-line staff).
+             *
+             * We could add:
+             * 4 for the C sign (tenor clef)
+             */
+            double p = clef.getPitch();
             pmClef.setLine(new BigInteger("" + (3 - (int) Math.rint(clef.getPitch() / 2.0))));
         }
 
