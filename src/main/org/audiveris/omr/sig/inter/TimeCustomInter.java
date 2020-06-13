@@ -114,7 +114,7 @@ public class TimeCustomInter
     public void setDenominator (int den)
     {
         this.den = den;
-        timeRational = null;
+        invalidateCache();
     }
 
     //--------------//
@@ -132,7 +132,7 @@ public class TimeCustomInter
     public void setNumerator (int num)
     {
         this.num = num;
-        timeRational = null;
+        invalidateCache();
     }
 
     //----------------//
@@ -197,8 +197,8 @@ public class TimeCustomInter
     @Override
     public void invalidateCache ()
     {
-        bounds = null;
         timeRational = null;
+        bounds = getSymbolBounds(staff.getSpecificInterline());
     }
 
     //-----------//
