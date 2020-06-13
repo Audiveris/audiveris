@@ -525,12 +525,17 @@ public class InterBoard
                 } else if (inter instanceof TimeCustomInter) {
                     TimeCustomInter timeCustom = (TimeCustomInter) inter;
 
-                    // Change custom time?
-                    TimeRational newTime = TimeRational.decode(custom.getText());
+                    try {
+                        // Change custom time?
+                        TimeRational newTime = TimeRational.decode(custom.getText());
 
-                    if (!newTime.equals(timeCustom.getTimeRational())) {
-                        logger.debug("Custom={}", newTime);
-                        sheet.getInterController().changeTime(timeCustom, newTime);
+                        if (!newTime.equals(timeCustom.getTimeRational())) {
+                            logger.debug("Custom={}", newTime);
+                            sheet.getInterController().changeTime(timeCustom, newTime);
+                        }
+                    } catch (Exception ex) {
+                        logger.warn("Illegal time combo value {}", ex.toString());
+                        custom.getField().requestFocusInWindow();
                     }
                 }
             }

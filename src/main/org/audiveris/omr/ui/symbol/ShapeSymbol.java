@@ -272,11 +272,19 @@ public class ShapeSymbol
     /**
      * Report the codes for a time number symbol.
      *
-     * @param number integer value of the symbol
+     * @param number integer value of the symbol (must be within [0..99] range)
      * @return corresponding codes in music font
      */
     public static int[] numberCodes (int number)
     {
+        if (number < 0) {
+            throw new IllegalArgumentException(number + " < 0");
+        }
+
+        if (number > 99) {
+            throw new IllegalArgumentException(number + " > 99");
+        }
+
         ShapeSymbol symbol = Symbols.getSymbol(TIME_ZERO);
         int base = symbol.codes[0];
         int[] numberCodes = (number > 9) ? new int[2] : new int[1];

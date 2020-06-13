@@ -160,7 +160,16 @@ public class TimeRational
         switch (tokens.length) {
         case 2: {
             int num = Integer.decode(tokens[0].trim());
+
+            if (num < 0 || num > 99) {
+                throw new IllegalArgumentException("numerator outside [0..99] range: " + num);
+            }
+
             int den = Integer.decode(tokens[1].trim());
+
+            if (den < 0 || den > 99) {
+                throw new IllegalArgumentException("denominator outside [0..99] range: " + den);
+            }
 
             return new TimeRational(num, den);
         }
