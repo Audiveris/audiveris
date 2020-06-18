@@ -1,10 +1,10 @@
 ---
 layout: default
-title: Tips and Tricks
-parent: Manual Edition
-nav_order: 7
+title: ~~Tips and Tricks~~
+parent: UI in Action
+nav_order: 100
 ---
-## Tips and Tricks
+## ~~Tips and Tricks~~
 {: .no_toc }
 
 ## Table of contents
@@ -74,22 +74,3 @@ during dragging - it is only a helper to find the correct position for the stem)
 ![](../assets/images/add_stems_manually.png)
 
 Then add the note heads and you are done.
-
-### Replace Beams with Flags
-
-Sometimes it is not possible to define the beams correctly, because the detected glyphs
-don't separate them correctly:
-
-![](../assets/images/missing_beams.png)
-
-When trying to select the upper beam, you don't get it selected from the partial beam below.
-Therefore the correct assignment of the beams with beam shapes is not possible.
-
-![](../assets/images/missing_beams_glyph.png)
-
-In order to bypass this problem, you can assign flags instead, which can be drag-n-dropped to
-the correct position instead:
-
-![](../assets/images/missing_beams_flags.png)
-
-The result is not strictly identical to notes with beams, but at least is leads to correct rhythm.

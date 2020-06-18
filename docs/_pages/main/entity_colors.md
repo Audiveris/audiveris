@@ -3,7 +3,7 @@ layout: default
 title: Entity Colors
 grand_parent: Main Features
 parent: Main Window
-nav_order: 2
+nav_order: 3
 ---
 ### Entity Colors
 
@@ -12,8 +12,8 @@ recognized:
 
 ![](../assets/images/entity_colors.png)
 
-In the example the _background_ of the third measure is colored in rose because the rhythm check
-has failed for this measure (the first note of the upper voice was mistaken for a quarter
+In the example the _background_ of the third measure stack is colored in rose because the rhythm
+check has failed for this measure (the first note of the upper voice was mistaken for a quarter
 instead of a half note).
 
 The following _foreground_ colors are used for interpretation items in this window:

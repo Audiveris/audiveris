@@ -3,7 +3,7 @@ layout: default
 title: Voice Colors
 grand_parent: Main Features
 parent: Main Window
-nav_order: 3
+nav_order: 4
 ---
 ### Voice Colors
 
@@ -25,6 +25,7 @@ This results in the following display:
 ![](../assets/images/dich_voices.png)
 
 Within any given part, voice numbers (and thus colors) are assigned as follows:
+![](../assets/images/voice_colors.png)
 * Voices starting on first staff use numbers 1 through 4,
 * Voices starting on second staff use numbers 5 through 8.
 
@@ -38,4 +39,6 @@ In such canonical case, the chords involved are the chord below on left and the 
 
 To indicate the _shared_ aspect of such head, we add a small diagonal red segment across the head,
 to indicate a logical split of the shared head.
-And if voices are colorized then each head _'half'_ appears with its own voice color.
+
+![](../assets/images/shared_head_voices.png)
+Here, voices are colorized, thus each head _'half'_ appears with its own voice color.

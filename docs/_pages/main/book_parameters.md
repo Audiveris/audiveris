@@ -1,10 +1,10 @@
 ---
 layout: default
-title: Score Parameters
+title: Book Parameters
 parent: Main Features
 nav_order: 5
 ---
-## Score Parameters
+## Book Parameters
 {: .no_toc }
 
 ## Table of contents
@@ -20,12 +20,12 @@ nav_order: 5
 This dialog let you display and modify high-level processing parameters.
 It can be accessed through `Book | Set parameters...` pulldown menu.
 
-![](../assets/images/book_parameters.png)
+![](../assets/images/book_parameters_menu.png)
 
 The following example displays the parameters dialog for a book (`Dichterliebe01`) which contains
 two sheets:
 
-![](../assets/images/score_parameters.png)
+![](../assets/images/book_parameters.png)
 
 ### Scopes
 

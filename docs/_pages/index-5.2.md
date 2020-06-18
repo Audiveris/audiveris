@@ -14,25 +14,31 @@ Applies to Version 5.2
 New
 {: .label .label-green }
 
-- Java
-   - Support of Java 11
 - User Interface
    - Ability to move and resize symbols
-   - Snapping notes to staff line/ledgers and stems
+   - Snapping note heads to staff line/ledgers and stems
    - Repetitive input
+   - Ability to merge/split parts via brace handling
    - Ability to merge systems
    - Ability to merge/split chords
-   - Better handling of lyrics
+   - Support for key signature cancel (key made of natural signs)
+   - Improved support for chord names
+   - Better handling of sentences, chord names, lyrics
    - Support for high DPI devices
    - Internationalization of all menus and dialogs
 - Engine
+   - Support for 1-line percussion staves
+   - Detection of 4-line and 6-line tablatures
    - New algorithm for time slots and voices
    - Support for implicit tuplets
    - Support for merged grand staff configuration
    - Support for cross heads
+   - Improved text dispatching between systems
 - Project
    - Automated checks for update on GitHub
    - Documentation handled on GitHub Pages
+- Java
+   - Support of Java 11
 
 For the end-user, the bulk of updates over previous release concerns the UI
 part and especially the ability to correct the outputs of OMR engine.
@@ -62,11 +68,14 @@ A very early tour, just to introduce a minimal usage of the software.
 4. [Main features](/main/README.md):
 Thorough description of software main features.
 
-5. [Manual edition](/edition/README.md):
-Specific chapter for manual corrections of OMR outputs.
+5. [UI tools](/ui_tools/README.md):
+Tools to correct OMR outputs (SIGNIFICANTLY ENHANCED)
 
-6. [Advanced features](/advanced/README.md):
+6. [UI in action](/edition/README.md):
+Examples of typical correction scenarios (TO BE REWORKED)
+
+7. [Advanced features](/advanced/README.md):
 Features only relevant for an advanced usage of Audiveris.
 
-7. [References](/references.md):
+8. [References](/references.md):
 Not meant to be read from A to Z, just a collection of descriptions.

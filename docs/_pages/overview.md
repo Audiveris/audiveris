@@ -29,9 +29,7 @@ Not any kind of sheet music can be handled. Audiveris engine has been designed
 to process scores written in the _Common Western Music Notation_ (CWMN)
 with the following limitations:
 * Handwritten scores aren't supported (only printed scores are),
-* Graphic notation isn't supported,
-* Only common musical symbols are supported,
-* There is yet no support for drum/percussion notation.
+* Only common musical symbols are supported.
 
 Because the accuracy of OMR engine is still far from perfection,
 Audiveris application provides a graphical user interface specifically focused

@@ -1,10 +1,10 @@
 ---
 layout: default
-title: Issues and Workarounds
-parent: Manual Edition
-nav_order: 8
+title: ~~Issues and Workarounds~~
+parent: UI in Action
+nav_order: 100
 ---
-## Issues and Workarounds
+## ~~Issues and Workarounds~~
 {: .no_toc }
 
 In some cases, the normal ways to correct the transcription don't give a satisfying result.

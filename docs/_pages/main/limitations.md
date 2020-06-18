@@ -17,6 +17,9 @@ These are "known limitations", which should be addressed in future releases.
 {:toc}
 
 ---
+TODO: fingering, recognized, but not exported to MXL
+
+TODO: plucking, recognized, but not exported to MXL
 
 It is important that the end user be aware of these cases to avoid wasting time on them
 with the current release.

@@ -1,13 +1,13 @@
 ---
 layout: default
-title: Shortcuts
-parent: Manual Edition
-nav_order: 6
+title: Shortcuts for inter addition
+parent: UI Tools
+nav_order: 4
 ---
-## Shortcuts
+## Shortcuts for inter addition
 {: .no_toc }
 
-In order to make editing easier there are a couple of keyboard short-cuts that allow to assign
+In order to make editing easier, there are a few keyboard short-cuts that allow to assign
 interpretations to selected glyphs.
 
 They all work with 2 keyboard strokes:
@@ -47,8 +47,6 @@ Example: press `h` and `b` and you get the black head into the list of shapes.
 
 ### List of supported shortcuts
 
-The following shortcuts are supported:
-
 `a` (accidentals family)
 
 * `f`(flat), `n`(natural), `s`(sharp)
@@ -75,4 +73,4 @@ The following shortcuts are supported:
 
 `p` (physicals family)
 
-* `l`(lyrics), `t`(text), `a`(arc - slur), `s`(stem)
+* `l`(lyrics), `t`(text), `a`(slur above), `b`(slur below), `s`(stem)
