@@ -71,7 +71,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -855,12 +854,14 @@ public class BookActions
         }
 
         // Select target book print path
-        final Path bookPrintPath = UIUtil.pathChooser(
+        final Path chosenPath = UIUtil.pathChooser(
                 true,
                 OMR.gui.getFrame(),
                 BookManager.getDefaultPrintPath(book),
                 new OmrFileFilter(OMR.PRINT_EXTENSION),
                 "Choose book print target");
+
+        final Path bookPrintPath = removePrintExtension(chosenPath);
 
         if ((bookPrintPath == null) || !confirmed(bookPrintPath)) {
             return null;
@@ -895,18 +896,34 @@ public class BookActions
         final String suffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
         final Path defaultSheetPath = Paths.get(bookSansExt + suffix + ext);
 
-        final Path sheetPrintPath = UIUtil.pathChooser(
+        final Path chosenPath = UIUtil.pathChooser(
                 true,
                 OMR.gui.getFrame(),
                 defaultSheetPath,
                 filter(ext),
                 "Choose sheet print target");
 
+        final Path sheetPrintPath = removePrintExtension(chosenPath);
+
         if ((sheetPrintPath == null) || !confirmed(sheetPrintPath)) {
             return null;
         }
 
         return new PrintSheetTask(stub.getSheet(), sheetPrintPath);
+    }
+
+    /**
+     * Method to remove the PRINT_EXTENSION from the end of the file path.
+     *
+     * @param path which extension should be checked
+     * @return path without PRINT_EXTENSION
+     */
+    private Path removePrintExtension(Path path) {
+        if (path.endsWith(OMR.PRINT_EXTENSION)) {
+            return Paths.get(path.toString().split(OMR.PRINT_EXTENSION)[0]);
+        } else {
+            return path;
+        }
     }
 
     //------//
