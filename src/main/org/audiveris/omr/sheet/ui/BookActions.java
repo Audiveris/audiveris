@@ -918,7 +918,7 @@ public class BookActions
      * @param path which extension should be checked
      * @return path without PRINT_EXTENSION
      */
-    private Path removePrintExtension(Path path) {
+    private static Path removePrintExtension(Path path) {
         if (path.endsWith(OMR.PRINT_EXTENSION)) {
             return Paths.get(path.toString().split(OMR.PRINT_EXTENSION)[0]);
         } else {
