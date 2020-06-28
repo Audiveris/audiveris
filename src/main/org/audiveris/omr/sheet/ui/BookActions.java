@@ -1563,12 +1563,6 @@ public class BookActions
                 path,
                 filter(OMR.BOOK_EXTENSION));
 
-        // Choose the filename of path as filename instead of the directory
-        if (Files.isDirectory(prjPath)) {
-            prjPath = new File(prjPath.toString() + "/" + path.getFileName().toString()).toPath();
-            System.out.println(prjPath.toString());
-        }
-
         return (prjPath == null) ? null : prjPath;
     }
 

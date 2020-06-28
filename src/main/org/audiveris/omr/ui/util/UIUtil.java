@@ -275,7 +275,7 @@ public abstract class UIUtil
             //                    super.updateUI();
             //                }
             //            };
-            fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
             // Pre-select the directory, and potentially the file to save to
             if (startFile != null) {
