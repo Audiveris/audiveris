@@ -71,6 +71,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -1561,6 +1562,12 @@ public class BookActions
                 OMR.gui.getFrame(),
                 path,
                 filter(OMR.BOOK_EXTENSION));
+
+        // Choose the filename of path as filename instead of the directory
+        if (Files.isDirectory(prjPath)) {
+            prjPath = new File(prjPath.toString() + "/" + path.getFileName().toString()).toPath();
+            System.out.println(prjPath.toString());
+        }
 
         return (prjPath == null) ? null : prjPath;
     }
