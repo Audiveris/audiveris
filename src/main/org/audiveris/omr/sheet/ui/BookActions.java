@@ -247,8 +247,7 @@ public class BookActions
         Book book = StubsController.getCurrentBook();
 
         if ((book != null) && checkStored(book)) {
-            // Pre-select the suitable "next" book tab
-            // TODO? should not do this (we are not on EDT). Don't use a task!
+            // Pre-select the suitable "next" book tab, if any.
             StubsController.getInstance().selectOtherBook(book);
 
             // Now close the book (+ related tab)

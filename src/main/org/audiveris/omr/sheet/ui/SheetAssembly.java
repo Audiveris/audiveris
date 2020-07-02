@@ -287,12 +287,18 @@ public class SheetAssembly
      */
     public void close ()
     {
+        final Component currentBoards = OMR.gui.getAppPane().getRightComponent();
+
         for (ViewTab tab : tabs.values()) {
             // Disconnect all keyboard bindings from PixelBoard's (this fixes Swing memory leak)
             tab.disconnectKeyboard();
 
             // Remove the related boards
             tab.deselected();
+
+            if (tab.boardsPane.getComponent() == currentBoards) {
+                OMR.gui.setBoardsPane(null);
+            }
         }
 
         // Hide the error messages (for this sheet)
