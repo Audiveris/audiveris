@@ -211,6 +211,17 @@ public class ShapeBoard
     /** To handle sequence of keys typed. */
     private final MyKeyListener keyListener = new MyKeyListener();
 
+    /** To resize this shape board when main window is resized. */
+    private final PropertyChangeListener dividerListener = new PropertyChangeListener()
+    {
+        @Override
+        public void propertyChange (
+                PropertyChangeEvent pce)
+        {
+            resizeBoard();
+        }
+    };
+
     /**
      * Create a new ShapeBoard object.
      *
@@ -231,21 +242,33 @@ public class ShapeBoard
 
         OMR.gui.getAppPane().addPropertyChangeListener(
                 JSplitPane.DIVIDER_LOCATION_PROPERTY,
-                new PropertyChangeListener()
-        {
-            @Override
-            public void propertyChange (
-                    PropertyChangeEvent pce)
-            {
-                resizeBoard();
-            }
-        });
+                dividerListener);
 
         defineLayout();
 
         // Support for user shape keys
         editor.getView().addKeyListener(keyListener);
         getComponent().addKeyListener(keyListener);
+    }
+
+    //------------//
+    // disconnect //
+    //------------//
+    /**
+     * {@inheritDoc}.
+     * <p>
+     * Also, remove the PropertyChangeListener and the KeyListener, to avoid memory leaks.
+     */
+    @Override
+    public void disconnect ()
+    {
+        super.disconnect();
+
+        OMR.gui.getAppPane().removePropertyChangeListener(
+                JSplitPane.DIVIDER_LOCATION_PROPERTY,
+                dividerListener);
+
+        sheet.getSymbolsEditor().getView().removeKeyListener(keyListener);
     }
 
     //--------------//
