@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -131,7 +130,6 @@ public class ChordSyllableRelation
 
         // Discard any competing syllable
         final SIGraph sig = chord.getSig();
-        final SystemInfo system = sig.getSystem();
 
         for (Relation rel : sig.getRelations(chord, ChordSyllableRelation.class)) {
             final LyricItemInter other = (LyricItemInter) sig.getOppositeInter(chord, rel);

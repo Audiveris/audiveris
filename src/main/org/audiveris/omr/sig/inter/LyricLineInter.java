@@ -62,9 +62,9 @@ public class LyricLineInter
      * @param meanFont the font averaged on whole text line
      * @param words    the sequence of words (LyricItemInter's actually)
      */
-    private LyricLineInter (Rectangle bounds,
-                            double grade,
-                            FontInfo meanFont)
+    public LyricLineInter (Rectangle bounds,
+                           double grade,
+                           FontInfo meanFont)
     {
         super(bounds, grade, meanFont, TextRole.Lyrics);
     }

@@ -133,7 +133,7 @@ public class InterBoard
     private final LComboBox<TextRole> roleCombo = new LComboBox<>(
             resources.getString("roleCombo.text"),
             resources.getString("roleCombo.toolTipText"),
-            TextRole.valuesSansLyrics());
+            TextRole.values());
 
     /** Input/Output : textual content. */
     private final LTextField textField = new LTextField(
@@ -295,6 +295,10 @@ public class InterBoard
                 textField.setText(sentence.getValue());
                 textField.setVisible(true);
 
+                roleCombo.setSelectedItem(sentence.getRole());
+                roleCombo.setVisible(true);
+                roleCombo.setEnabled(true);
+
                 if (inter instanceof LyricLineInter) {
                     LyricLineInter lyric = (LyricLineInter) inter;
                     verse.setVisible(true);
@@ -315,11 +319,8 @@ public class InterBoard
                         }
 
                     }
-                } else {
-                    roleCombo.setSelectedItem(sentence.getRole());
-                    roleCombo.setVisible(true);
-                    roleCombo.setEnabled(!(sentence instanceof LyricLineInter));
                 }
+
                 selfUpdatingText = false;
             } else if (inter instanceof TimeCustomInter) {
                 selfUpdatingText = true;
@@ -399,7 +400,7 @@ public class InterBoard
         r += 2; // --------------------------------
 
         // Role
-        roleCombo.getField().setMaximumRowCount(TextRole.valuesSansLyrics().length);
+        roleCombo.getField().setMaximumRowCount(TextRole.values().length);
         roleCombo.addActionListener(paramAction);
         roleCombo.setVisible(false);
         builder.add(roleCombo.getField(), cst.xyw(3, r, 4));
