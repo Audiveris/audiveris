@@ -70,9 +70,12 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class WordInter
         extends AbstractInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(WordInter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -90,6 +93,7 @@ public class WordInter
     @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
     protected Point2D location;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code WordInter} object, with TEXT shape.
      *
@@ -116,6 +120,25 @@ public class WordInter
              textWord.getValue(),
              textWord.getFontInfo(),
              textWord.getLocation());
+    }
+
+    /**
+     * Creates a new {@code WordInter} object from an original WordInter,
+     * with provided shape.
+     *
+     * @param word  the original word inter
+     * @param shape specific shape (TEXT or LYRICS)
+     */
+    public WordInter (WordInter word,
+                      Shape shape)
+    {
+        this(word.getGlyph(),
+             word.getBounds(),
+             shape,
+             1,
+             word.getValue(),
+             word.getFontInfo(),
+             PointUtil.rounded(word.getLocation()));
     }
 
     /**
@@ -170,6 +193,7 @@ public class WordInter
         this.fontInfo = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -374,6 +398,7 @@ public class WordInter
         return sb.toString();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Editor //
     //--------//

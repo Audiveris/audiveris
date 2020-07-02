@@ -22,8 +22,10 @@
 package org.audiveris.omr.sig.inter;
 
 import java.awt.Point;
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
@@ -55,7 +57,6 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omr.constant.Constant;
 
 /**
  * Class {@code LyricItemInter} is a specific subclass of Text, meant for one
@@ -69,11 +70,13 @@ import org.audiveris.omr.constant.Constant;
 public class LyricItemInter
         extends WordInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(LyricItemInter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Lyrics kind. */
     @XmlAttribute(name = "kind")
     private ItemKind itemKind;
@@ -81,6 +84,20 @@ public class LyricItemInter
     /** Characteristics of the lyrics syllable, if any. */
     @XmlAttribute(name = "syllabic")
     private SyllabicType syllabicType;
+
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new LyricItemInter object from a WordInter.
+     *
+     * @param w the WordInter to convert from
+     */
+    public LyricItemInter (WordInter w)
+    {
+        super(w.getGlyph(), w.getBounds(), Shape.LYRICS, w.getGrade(), w.getValue(), w.getFontInfo(),
+              PointUtil.rounded(w.getLocation()));
+
+        itemKind = inferItemKind();
+    }
 
     /**
      * Creates a new LyricItemInter object.
@@ -111,6 +128,7 @@ public class LyricItemInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -582,6 +600,7 @@ public class LyricItemInter
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // ItemKind //
     //----------//

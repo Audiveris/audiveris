@@ -49,7 +49,6 @@ import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
@@ -136,11 +135,13 @@ import javax.swing.KeyStroke;
  */
 public class InterController
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(InterController.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying sheet. */
     private final Sheet sheet;
 
@@ -150,6 +151,7 @@ public class InterController
     /** User pane. Lazily assigned */
     private SymbolsEditor editor;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code IntersController} object.
      *
@@ -160,6 +162,7 @@ public class InterController
         this.sheet = sheet;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addInter //
     //----------//
@@ -287,11 +290,13 @@ public class InterController
     /**
      * Change the role of a sentence.
      * <p>
-     * When a sentence changes its role from some text to chord name, its WordInter members may
-     * have to be converted (replaced) by ChordNameInter instances.
+     * When a sentence changes its role between "plain", chordName and lyrics, each of its word
+     * may have to be converted to a WordInter, ChordNameInter of LyricItemInter.
+     * <p>
+     * Plus some conversion for the sentence as well.
      *
      * @param sentence the sentence to modify
-     * @param newRole  the new role for the sentence
+     * @param newRole  the new role for the sentence, not null
      */
     @UIThread
     public void changeSentence (final SentenceInter sentence,
@@ -302,33 +307,131 @@ public class InterController
             @Override
             protected void build ()
             {
-                // Special case of change to ChordName role
-                if (newRole == TextRole.ChordName) {
-                    // Add new ChordNameInter for any plain WordInter
-                    for (Inter inter : sentence.getMembers()) {
-                        if (!(inter instanceof ChordNameInter)) {
-                            WordInter word = (WordInter) inter;
-                            ChordNameInter cn = ChordNameInter.createValid(word);
+                final Staff staff = sentence.getStaff();
+                final SystemInfo system = staff.getSystem();
+                final SIGraph sig = system.getSig();
 
-                            if (cn != null) {
-                                seq.add(new AdditionTask(
-                                        word.getSig(), cn, word.getBounds(), Arrays.asList(
-                                        new Link(sentence, new Containment(), false))));
-                                seq.add(new RemovalTask(word));
-                            } else {
-                                logger.info("Failed parsing ChordName text: {}", word.getValue());
+                switch (newRole) {
+                case Lyrics: {
+                    // Convert to LyricItem words, all within a single LyricLine sentence
+                    final WrappedBoolean cancel = new WrappedBoolean(false);
+                    final LyricLineInter line = new LyricLineInter(
+                            sentence.getBounds(), sentence.getGrade(), sentence.getMeanFont());
+                    line.setManual(true);
+                    line.setStaff(staff);
+                    seq.add(new AdditionTask(sig, line, line.getBounds(), line.searchLinks(system)));
+
+                    for (Inter inter : sentence.getMembers()) {
+                        if (!(inter instanceof LyricItemInter)) {
+                            // Add new LyricItemInter for any plain WordInter
+                            final WordInter orgWord = (WordInter) inter;
+                            final LyricItemInter item = new LyricItemInter(orgWord);
+                            item.setManual(true);
+                            item.setStaff(staff);
+                            seq.add(new AdditionTask(
+                                    sig, item, item.getBounds(),
+                                    Arrays.asList(new Link(line, new Containment(), false))));
+
+                            for (Link link : item.searchLinks(system)) {
+                                // Link from chord to syllable
+                                seq.add(new LinkTask(sig, link.partner, item, link.relation));
                             }
+
+                            if (cancel.isSet()) {
+                                seq.setCancelled(true);
+                                return;
+                            }
+
+                            // Remove the plain word
+                            seq.add(new RemovalTask(orgWord));
                         }
                     }
+
+                    if (!seq.getTasks().isEmpty()) {
+                        // Remove the now useless original sentence
+                        seq.add(new RemovalTask(sentence));
+                    }
+
+                    break;
                 }
 
-                seq.add(new SentenceRoleTask(sentence, newRole));
+                case ChordName: {
+                    // Convert to ChordName words, each within its own sentence
+                    final WrappedBoolean cancel = new WrappedBoolean(false);
+
+                    for (Inter inter : sentence.getMembers()) {
+                        if (!(inter instanceof ChordNameInter)) {
+                            // Add a new ChordNameInter for any original word
+                            WordInter orgWord = (WordInter) inter;
+                            ChordNameInter cn = new ChordNameInter(orgWord);
+                            cn.setManual(true);
+                            cn.setStaff(staff);
+                            seq.addAll(cn.preAdd(cancel));
+
+                            if (cancel.isSet()) {
+                                seq.setCancelled(true);
+                                return;
+                            }
+
+                            // Remove the original word
+                            seq.add(new RemovalTask(orgWord));
+                        }
+                    }
+
+                    if (!seq.getTasks().isEmpty()) {
+                        // Remove the now useless original sentence
+                        seq.add(new RemovalTask(sentence));
+                    }
+
+                    break;
+                }
+
+                default: {
+                    final SentenceInter finalSentence;
+                    if (sentence.getClass() != SentenceInter.class) {
+                        // Create a basic SentenceInter
+                        finalSentence = new SentenceInter(
+                                sentence.getBounds(), 1, sentence.getMeanFont(), newRole);
+                        finalSentence.setManual(true);
+                        finalSentence.setStaff(staff);
+                        seq.add(new AdditionTask(sig, finalSentence, finalSentence.getBounds(),
+                                                 finalSentence.searchLinks(system)));
+                    } else {
+                        finalSentence = sentence;
+                    }
+
+                    for (Inter inter : sentence.getMembers()) {
+                        if (inter.getClass() != WordInter.class) {
+                            // LyricItem/ChordName -> WordInter
+                            WordInter orgWord = (WordInter) inter;
+                            WordInter word = new WordInter(orgWord, Shape.TEXT);
+                            word.setManual(true);
+                            word.setStaff(staff);
+                            seq.add(new AdditionTask(
+                                    sig, word, word.getBounds(),
+                                    Arrays.asList(new Link(finalSentence, new Containment(), false))));
+
+                            // Remove the original word
+                            seq.add(new RemovalTask(orgWord));
+                        }
+                    }
+
+                    if (finalSentence == sentence) {
+                        seq.add(new SentenceRoleTask(sentence, newRole));
+                    } else {
+                        // Remove original sentence
+                        seq.add(new RemovalTask(sentence));
+                    }
+
+                    break;
+                }
+                }
             }
 
             @Override
             protected void publish ()
             {
-                sheet.getInterIndex().publish(sentence);
+                sheet.getInterIndex().publish(!sentence.isRemoved() ? sentence : null);
             }
         }.execute();
     }
@@ -690,7 +793,7 @@ public class InterController
             @Override
             protected void build ()
             {
-                populateRemovals(inters, seq);
+                new RemovalScenario().populate(inters, seq);
             }
 
             @Override
@@ -1143,10 +1246,7 @@ public class InterController
                                             word,
                                             textWord.getBounds(),
                                             Arrays.asList(
-                                                    new Link(
-                                                            sentence,
-                                                            new Containment(),
-                                                            false))));
+                                                    new Link(sentence, new Containment(), false))));
                         } else {
                             sentence = lyrics ? LyricLineInter.create(line)
                                     : ((role == TextRole.ChordName) ? ChordNameInter.create(line)
@@ -1283,49 +1383,6 @@ public class InterController
         return staff;
     }
 
-    //------------------//
-    // populateRemovals //
-    //------------------//
-    /**
-     * Prepare removal of the provided inters (with their relations)
-     *
-     * @param inters the inters to remove
-     * @param seq    the task sequence to append to
-     */
-    private void populateRemovals (Collection<? extends Inter> inters,
-                                   UITaskList seq)
-    {
-        final Removal removal = new Removal();
-
-        for (Inter inter : inters) {
-            if (inter.isRemoved()) {
-                continue;
-            }
-
-            if (inter.isVip()) {
-                logger.info("VIP removeInter {}", inter);
-            }
-
-            // Removals: this inter plus related inters to remove as well
-            WrappedBoolean cancel = seq.isOptionSet(Option.VALIDATED)
-                    ? null
-                    : new WrappedBoolean(false);
-            Set<? extends Inter> toRemove = inter.preRemove(cancel);
-
-            if ((cancel != null) && cancel.isSet()) {
-                seq.setCancelled(true);
-                return;
-            }
-
-            for (Inter item : toRemove) {
-                removal.include(item);
-            }
-        }
-
-        // Now set the removal tasks
-        removal.populateTaskList(seq);
-    }
-
     //-----------//
     // refreshUI //
     //-----------//
@@ -1372,7 +1429,7 @@ public class InterController
             }
         }
 
-        populateRemovals(competitors, seq);
+        new RemovalScenario().populate(competitors, seq);
     }
 
     //----------------------------//
@@ -1453,6 +1510,7 @@ public class InterController
         return Inters.inters(inters, new Inters.ClassPredicate(StaffBarlineInter.class));
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -1471,99 +1529,6 @@ public class InterController
         private final Constant.Ratio gutterRatio = new Constant.Ratio(
                 0.33,
                 "Vertical margin as ratio of inter-staff gutter");
-    }
-
-    //---------//
-    // Removal //
-    //---------//
-    /**
-     * Removal scenario used for dry-run before actual operations.
-     */
-    private static class Removal
-    {
-
-        /** Non-ensemble inters to be removed. */
-        LinkedHashSet<Inter> inters = new LinkedHashSet<>();
-
-        /** Ensemble inters to be removed. */
-        LinkedHashSet<InterEnsemble> ensembles = new LinkedHashSet<>();
-
-        /** Ensemble inters to be watched for potential removal. */
-        LinkedHashSet<InterEnsemble> watched = new LinkedHashSet<>();
-
-        public void include (Inter inter)
-        {
-            if (inter instanceof InterEnsemble) {
-                // Include the ensemble and its members
-                final InterEnsemble ens = (InterEnsemble) inter;
-                final List<Inter> members = ens.getMembers();
-
-                if (members.isEmpty()) {
-                    inters.add(inter);
-                } else {
-                    ensembles.add(ens);
-                    inters.addAll(members);
-                }
-            } else {
-                inters.add(inter);
-
-                // Watch the containing ensemble (if not already to be removed)
-                final SIGraph sig = inter.getSig();
-
-                for (Relation rel : sig.incomingEdgesOf(inter)) {
-                    if (rel instanceof Containment) {
-                        final InterEnsemble ens = (InterEnsemble) sig.getEdgeSource(rel);
-
-                        if (!ensembles.contains(ens)) {
-                            watched.add(ens);
-                        }
-                    }
-                }
-            }
-        }
-
-        /**
-         * Populate the operational task list
-         *
-         * @param seq the task list to populate
-         */
-        public void populateTaskList (UITaskList seq)
-        {
-            // Examine watched ensembles
-            for (InterEnsemble ens : watched) {
-                List<Inter> members = new ArrayList<>(ens.getMembers());
-                members.removeAll(inters);
-
-                if (members.isEmpty()) {
-                    ensembles.add(ens); // This now empty ensemble is to be removed as well
-                }
-            }
-
-            // Ensembles to remove first
-            List<InterEnsemble> sortedEnsembles = new ArrayList<>(ensembles);
-            Collections.sort(sortedEnsembles, Inters.membersFirst);
-            Collections.reverse(sortedEnsembles);
-
-            for (InterEnsemble ens : sortedEnsembles) {
-                seq.add(new RemovalTask(ens));
-            }
-
-            // Simple inters to remove second
-            for (Inter inter : inters) {
-                seq.add(new RemovalTask(inter));
-            }
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder("Removal{");
-            sb.append("ensembles:").append(ensembles);
-            sb.append(" inters:").append(inters);
-            sb.append("}");
-
-            return sb.toString();
-        }
     }
 
     //----------//

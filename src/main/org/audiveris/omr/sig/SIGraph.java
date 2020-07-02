@@ -564,9 +564,13 @@ public class SIGraph
                                  Inter target,
                                  Class classe)
     {
-        for (Relation rel : getAllEdges(source, target)) {
-            if (classe.isInstance(rel)) {
-                return rel;
+        final Set<Relation> edges = getAllEdges(source, target);
+
+        if (edges != null) {
+            for (Relation rel : edges) {
+                if (classe.isInstance(rel)) {
+                    return rel;
+                }
             }
         }
 
@@ -1048,13 +1052,15 @@ public class SIGraph
     public boolean noSupport (Inter one,
                               Inter two)
     {
-        Set<Relation> rels = new LinkedHashSet<>();
-        rels.addAll(getAllEdges(one, two));
-        rels.addAll(getAllEdges(two, one));
+        if (containsVertex(one) && containsVertex(two)) {
+            final Set<Relation> rels = new LinkedHashSet<>();
+            rels.addAll(getAllEdges(one, two));
+            rels.addAll(getAllEdges(two, one));
 
-        for (Relation rel : rels) {
-            if (rel instanceof Support) {
-                return false;
+            for (Relation rel : rels) {
+                if (rel instanceof Support) {
+                    return false;
+                }
             }
         }
 

@@ -51,6 +51,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <p>
  * For Lyrics role, the specific subclass {@link LyricLineInter} is used.
  *
+ * <p>
+ * <img alt="Sentence diagram" src="../../text/doc-files/Sentence_Hierarchy.png">
+ *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "sentence")
@@ -58,6 +61,7 @@ public class SentenceInter
         extends AbstractInter
         implements InterEnsemble
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SentenceInter.class);
 
@@ -76,6 +80,8 @@ public class SentenceInter
         }
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -88,6 +94,7 @@ public class SentenceInter
     @XmlAttribute
     protected TextRole role;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SentenceInter} object.
      *
@@ -117,6 +124,7 @@ public class SentenceInter
                           double grade)
     {
         this(null, grade, null, null);
+        this.role = role;
     }
 
     /**
@@ -127,6 +135,7 @@ public class SentenceInter
         super(null, null, null, null);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

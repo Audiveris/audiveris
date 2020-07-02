@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.symbol;
 
+import java.awt.Point;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
@@ -170,19 +171,19 @@ public class SymbolsLinker
                 // Map each word with proper chord, in assigned staff
                 for (Inter wInter : sentence.getMembers()) {
                     WordInter word = (WordInter) wInter;
-                    Point2D wLoc = word.getLocation();
-                    MeasureStack stack = system.getStackAt(wLoc);
+                    Point wordCenter = word.getCenter();
+                    MeasureStack stack = system.getStackAt(wordCenter);
 
                     if (stack == null) {
                         logger.info("No stack at {}", word);
                     } else {
                         AbstractChordInter chordBelow = stack
-                                .getStandardChordBelow(wLoc, word.getBounds());
+                                .getStandardChordBelow(wordCenter, word.getBounds());
 
                         if (chordBelow != null) {
                             sig.addEdge(chordBelow, word, new ChordNameRelation());
                         } else {
-                            logger.info("No chord below chordName {}", word);
+                            logger.info("No chord below {}", word);
                         }
                     }
                 }

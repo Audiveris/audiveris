@@ -22,12 +22,21 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Grades;
+import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.ChordNameInter.Degree.DegreeType;
 import static org.audiveris.omr.sig.inter.ChordNameInter.Kind.Type.*;
+import org.audiveris.omr.sig.relation.Containment;
+import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.ui.AdditionTask;
+import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.text.TextLine;
+import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.text.TextWord;
 import org.audiveris.omr.util.Jaxb;
 import static org.audiveris.omr.util.RegexUtil.*;
+import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,11 +53,11 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omr.math.PointUtil;
 
 /**
  * Class {@code ChordNameInter} is a formatted piece of text that
- * describes a chord symbol such as F#m7, A(9) or BMaj7/D#.
+ * describes a chord symbol such as F#m7, Emb5, D7#5, Am7b5, A(9) or BMaj7/D#.
+ * <p>
  * This class is organized according to the target MusicXML harmony element.
  * <p>
  * TODO: Add support for degree subtract (besides add and alter)
@@ -64,6 +73,7 @@ import org.audiveris.omr.math.PointUtil;
 public class ChordNameInter
         extends WordInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ChordNameInter.class);
 
@@ -106,6 +116,8 @@ public class ChordNameInter
     private static final String KIND = "kind";
 
     private static final String PARS = "pars";
+
+    private static final String NO_PARS = "nopars";
 
     private static final String PMAJ7 = "pmaj7";
 
@@ -179,10 +191,17 @@ public class ChordNameInter
             PARS,
             Alter.CLASS + "?" + DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")*") + "\\))";
 
-    /** Un-compiled patterns for whole chord symbol. */
+    /** Pattern for non-parenthesized degrees if any. b5 */
+    private static final String noParPat = "(" + group(
+            NO_PARS,
+            Alter.CLASS + "?" + DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")*") + ")";
+
+    /**
+     * Un-compiled patterns for whole chord symbol.
+     * TODO: add a pattern for functions
+     */
     private static final String[] raws = new String[]{
-        rootPat + kindPat + "?" + parPat + "?" + bassPat + "?" // TODO: add a pattern for functions
-    };
+        rootPat + kindPat + "?" + "(" + parPat + "|" + noParPat + ")" + "?" + bassPat + "?"};
 
     /** Compiled patterns for whole chord symbol. */
     private static List<Pattern> patterns;
@@ -194,21 +213,36 @@ public class ChordNameInter
     /** Compiled pattern for one degree. */
     private static final Pattern degPattern = Pattern.compile(degPat);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Root. */
     @XmlElement
-    private final Pitch root;
+    private Pitch root;
 
     /** Kind. */
     @XmlElement
-    private final Kind kind;
+    private Kind kind;
 
     /** Bass, if any. */
     @XmlElement
-    private final Pitch bass;
+    private Pitch bass;
 
     /** Degrees, if any. */
     @XmlElement(name = "degree")
-    private final List<Degree> degrees;
+    private List<Degree> degrees;
+
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new ChordNameInter object from a WordInter.
+     *
+     * @param w the WordInter to convert from
+     */
+    public ChordNameInter (WordInter w)
+    {
+        super(w.getGlyph(), w.getBounds(), Shape.TEXT, w.getGrade(), w.getValue(), w.getFontInfo(),
+              PointUtil.rounded(w.getLocation()));
+
+        setValue(w.getValue());
+    }
 
     /**
      * Creates a new ChordNameInter object from a WordInter.
@@ -300,6 +334,7 @@ public class ChordNameInter
         this.degrees = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -347,7 +382,32 @@ public class ChordNameInter
     @Override
     public String getShapeString ()
     {
-        return "CHORD_NAME_\"" + value + "\"";
+        return "CHORD_NAME: \"" + value + "\"";
+    }
+
+    //----------//
+    // setValue //
+    //----------//
+    /**
+     * Use the new value to parse chord name information.
+     *
+     * @param value the new text value
+     */
+    @Override
+    public void setValue (String value)
+    {
+        super.setValue(value);
+
+        final ChordStructure cs = parseChord(value);
+
+        if (cs != null) {
+            root = cs.root;
+            kind = cs.kind;
+            bass = cs.bass;
+            degrees = cs.degrees;
+        } else {
+            logger.info("Failed parsing ChordName text: {}", value);
+        }
     }
 
     //-----------//
@@ -373,6 +433,31 @@ public class ChordNameInter
         }
 
         return sb.toString();
+    }
+
+    //--------//
+    // preAdd //
+    //--------//
+    @Override
+    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    {
+        // Standard addition task for this chord name word
+        final SystemInfo system = staff.getSystem();
+        final List<UITask> tasks = new ArrayList<>();
+        tasks.add(new AdditionTask(system.getSig(), this, getBounds(), searchLinks(system)));
+
+        // Wrap this word within a sentence with chord name role
+        final SentenceInter sentence = new SentenceInter(TextRole.ChordName, -1);
+        sentence.setManual(true);
+        sentence.setStaff(staff);
+
+        tasks.add(new AdditionTask(
+                staff.getSystem().getSig(),
+                sentence,
+                getBounds(),
+                Arrays.asList(new Link(this, new Containment(), true))));
+
+        return tasks;
     }
 
     //--------//
@@ -414,27 +499,6 @@ public class ChordNameInter
         }
 
         logger.debug("No pattern match for chord text {}", textWord);
-        return null;
-    }
-
-    //-------------//
-    // createValid //
-    //-------------//
-    /**
-     * Try to build a ChordNameInter instance from a provided WordInter.
-     *
-     * @param wordInter provided word inter
-     * @return a populated ChordNameInter instance if successful, null otherwise
-     */
-    public static ChordNameInter createValid (WordInter wordInter)
-    {
-        final ChordStructure cs = parseChord(wordInter.getValue());
-
-        if (cs != null) {
-            return new ChordNameInter(wordInter, cs.root, cs.kind, cs.bass, cs.degrees);
-        }
-
-        logger.debug("No pattern match for chord text {}", wordInter);
         return null;
     }
 
@@ -482,9 +546,18 @@ public class ChordNameInter
                     degrees.remove(firstDeg);
                 }
 
-                // Degrees in parentheses
+                // Degrees within parentheses or not
                 String parStr = getGroup(matcher, PARS);
-                degrees.addAll(Degree.createList(parStr, firstDeg));
+
+                if (!parStr.isEmpty()) {
+                    degrees.addAll(Degree.createList(parStr, firstDeg));
+                } else {
+                    String noParStr = getGroup(matcher, NO_PARS);
+
+                    if (!noParStr.isEmpty()) {
+                        degrees.addAll(Degree.createList(noParStr, firstDeg));
+                    }
+                }
 
                 return new ChordStructure(root, kind, bass, degrees);
             }
@@ -537,6 +610,10 @@ public class ChordNameInter
         return token.isEmpty() ? "" : name;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------//
+    // Alter //
+    //-------//
     public static class Alter
     {
 
@@ -589,6 +666,9 @@ public class ChordNameInter
         }
     }
 
+    //--------//
+    // Degree //
+    //--------//
     public static class Degree
     {
 
@@ -711,6 +791,9 @@ public class ChordNameInter
         }
     }
 
+    //------//
+    // Kind //
+    //------//
     public static class Kind
     {
 
@@ -925,7 +1008,7 @@ public class ChordNameInter
 
             default:
                 // Nota: Thanks to regexp match, this should not happen
-                logger.warn("No kind type for {}", str);
+                logger.warn("ChordName. No kind type for {}", str);
 
                 return null;
             }
@@ -970,6 +1053,9 @@ public class ChordNameInter
         }
     }
 
+    //-------//
+    // Pitch //
+    //-------//
     @XmlAccessorType(XmlAccessType.NONE)
     public static class Pitch
     {

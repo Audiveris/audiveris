@@ -51,6 +51,8 @@ public enum TextRole
     UnknownRole,
     /** (Part of) lyrics. */
     Lyrics,
+    /** Chord name. */
+    ChordName,
     /** Title of the opus. */
     Title,
     /** Playing instruction. */
@@ -69,8 +71,6 @@ public enum TextRole
     CreatorLyricist,
     /** Copyright notice. */
     Rights,
-    /** Chord mark. */
-    ChordName,
     /** Ending number, such as "1" or "1,2". */
     EndingNumber,
     /** Ending text, when different from number. */
@@ -282,30 +282,6 @@ public enum TextRole
         return UnknownRole;
     }
 
-    //------------------//
-    // valuesSansLyrics //
-    //------------------//
-    /**
-     * Report all TextRole values except the Lyrics item.
-     *
-     * @return TextRole values without Lyrics
-     */
-    public static TextRole[] valuesSansLyrics ()
-    {
-        TextRole[] all = TextRole.values();
-        TextRole[] sans = new TextRole[all.length - 1];
-
-        int i = 0;
-
-        for (TextRole role : all) {
-            if (role != TextRole.Lyrics) {
-                sans[i++] = role;
-            }
-        }
-
-        return sans;
-    }
-
     //-----------//
     // Constants //
     //-----------//
@@ -332,11 +308,6 @@ public enum TextRole
         private final Scale.Fraction maxStaffDy = new Scale.Fraction(
                 7,
                 "Maximum distance above staff for a direction (or lyrics above staves)");
-//
-//        private final Scale.Fraction maxLyricsDyAbove = new Scale.Fraction(
-//                4.5,
-//                "Maximum distance above staff for lyrics (above staves option)");
-//
 
         private final Scale.Fraction minStaffDy = new Scale.Fraction(
                 6,
