@@ -28,6 +28,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterTask;
@@ -41,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -106,6 +108,7 @@ public class MeasuresStep
         final List<Inter> staffBarlines = seq.getInters(StaffBarlineInter.class);
 
         if (!staffBarlines.isEmpty()) {
+            Collections.sort(staffBarlines, Inters.byCenterOrdinate);
             final StaffBarlineInter oneBar = (StaffBarlineInter) staffBarlines.get(0);
             final SystemInfo system = oneBar.getStaff().getSystem();
 
