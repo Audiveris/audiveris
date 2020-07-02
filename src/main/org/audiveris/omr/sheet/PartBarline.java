@@ -68,7 +68,10 @@ public class PartBarline
     @XmlElement(name = "staff-barline")
     private List<OldStaffBarline> oldStaffBarlines;
 
-    /** Underlying {@link StaffBarlineInter} instances, one per staff in the part. */
+    /**
+     * Underlying {@link StaffBarlineInter} instances, one per staff in the part,
+     * ordered top down.
+     */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "staff-barlines")
