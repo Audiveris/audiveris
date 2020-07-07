@@ -112,7 +112,7 @@ public class InterDnd
         this.ghost = ghost;
         this.symbol = symbol;
 
-        final ScrollView scrollView = sheet.getStub().getAssembly().getSelectedView();
+        final ScrollView scrollView = sheet.getStub().getAssembly().getSelectedScrollView();
         zoomRatio = scrollView.getView().getZoom().getRatio();
 
         curveStroke = buildCurveStroke();

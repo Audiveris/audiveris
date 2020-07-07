@@ -350,7 +350,7 @@ public class BookActions
                 final SheetAssembly assembly = stub.getAssembly();
                 final SheetTab tab = SheetTab.BINARY_TAB;
 
-                if (assembly.getPane(tab.label) == null) {
+                if (assembly.getView(tab.label) == null) {
                     stub.getSheet().createBinaryView();
                 } else {
                     assembly.selectViewTab(tab);
@@ -381,7 +381,7 @@ public class BookActions
                 final SheetAssembly assembly = stub.getAssembly();
                 final SheetTab tab = SheetTab.DATA_TAB;
 
-                if (assembly.getPane(tab.label) == null) {
+                if (assembly.getView(tab.label) == null) {
                     stub.getSheet().displayDataTab();
                 } else {
                     assembly.selectViewTab(tab);
@@ -409,7 +409,7 @@ public class BookActions
         final SheetAssembly assembly = stub.getAssembly();
         final SheetTab tab = SheetTab.GRAY_TAB;
 
-        if (assembly.getPane(tab.label) == null) {
+        if (assembly.getView(tab.label) == null) {
             stub.getSheet().createGrayView();
         } else {
             assembly.selectViewTab(tab);
@@ -433,7 +433,7 @@ public class BookActions
             final SheetAssembly assembly = stub.getAssembly();
             final SheetTab tab = SheetTab.NO_STAFF_TAB;
 
-            if (assembly.getPane(tab.label) == null) {
+            if (assembly.getView(tab.label) == null) {
                 Sheet sheet = stub.getSheet(); // This may load the sheet...
                 ByteProcessor noStaff = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
                 assembly.addViewTab(
@@ -465,7 +465,7 @@ public class BookActions
             final SheetAssembly assembly = stub.getAssembly();
             final SheetTab tab = SheetTab.STAFF_LINE_TAB;
 
-            if (assembly.getPane(tab.label) == null) {
+            if (assembly.getView(tab.label) == null) {
                 Sheet sheet = stub.getSheet(); // This may load the sheet...
                 assembly.addViewTab(
                         tab,
@@ -1379,7 +1379,7 @@ public class BookActions
             return;
         }
 
-        ScrollView scrollView = assembly.getSelectedView();
+        ScrollView scrollView = assembly.getSelectedScrollView();
 
         if (scrollView == null) {
             return;
@@ -1411,7 +1411,7 @@ public class BookActions
             return;
         }
 
-        ScrollView scrollView = assembly.getSelectedView();
+        ScrollView scrollView = assembly.getSelectedScrollView();
 
         if (scrollView == null) {
             return;

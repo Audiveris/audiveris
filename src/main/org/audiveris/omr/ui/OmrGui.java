@@ -24,9 +24,7 @@ package org.audiveris.omr.ui;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.SingleFrameApplication;
 
-import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JSplitPane;
 
 /**
  * Class {@code OmrGui} defines the minimum offered by an OMR GUI.
@@ -34,8 +32,6 @@ import javax.swing.JSplitPane;
  * <li>A SingleFrameApplication as defined by Swing Application Framework</li>
  * <li>Various forms of message display to the end user</li>
  * <li>Log pane</li>
- * <li>Errors pane</li>
- * <li>Boards pane</li>
  * <li>The actual Swing frame and the Glass pane.</li>
  * </ul>
  * <p>
@@ -132,13 +128,6 @@ public abstract class OmrGui
                                          String title);
 
     /**
-     * Report the appPane split pane.
-     *
-     * @return the JSplitPane made of (mainPane | boardsPane)
-     */
-    public abstract JSplitPane getAppPane ();
-
-    /**
      * Report the concrete Swing frame.
      *
      * @return the OmrGui frame
@@ -156,27 +145,6 @@ public abstract class OmrGui
      * Notify that one or several new log records are available for display.
      */
     public abstract void notifyLog ();
-
-    /**
-     * Remove the specific component of the errors pane.
-     *
-     * @param errorsPane the precise component to remove
-     */
-    public abstract void removeErrorsPane (JComponent errorsPane);
-
-    /**
-     * Set a new boards pane to the boards holder.
-     *
-     * @param boards the boards pane to be shown
-     */
-    public abstract void setBoardsPane (JComponent boards);
-
-    /**
-     * Show the provided errors pane.
-     *
-     * @param errorsPane the errors pane to be shown
-     */
-    public abstract void setErrorsPane (JComponent errorsPane);
 
     //----------------//
     // getApplication //

@@ -45,11 +45,10 @@ import javax.swing.KeyStroke;
  * combination of the following entities.
  * <dl>
  * <dt><b>view:</b></dt>
- * <dd>the display of a {@link RubberPanel}, a component potentially
+ * <dd>The display of a {@link RubberPanel}, a component potentially
  * wired to a {@link Zoom} and a mouse adapter {@link Rubber}</dd>
  * <dt><b>zoom:</b></dt>
- * <dd>the {@link Zoom} whose ratio is to be used when the component is
- * rendered</dd>
+ * <dd>The {@link Zoom}, whose ratio is to be used when the component is rendered</dd>
  * </dl>
  *
  * @author Hervé Bitteur
@@ -57,19 +56,23 @@ import javax.swing.KeyStroke;
  */
 public class ScrollView
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ScrollView.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Current view inside the scrolled pane. */
     protected RubberPanel view;
 
     /** The concrete UI component. */
     private final JScrollPane component = new JScrollPane();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a bare view pane.
+     * <p>
      * Other related entities, such as view, pixel monitor or zoom, can be added later
      * programmatically via setXXX() methods).
      * <p>
@@ -98,6 +101,7 @@ public class ScrollView
         setView(view);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // fitHeight //
     //-----------//
@@ -311,6 +315,7 @@ public class ScrollView
         actionMap.put("ShiftRightAction", new ShiftRightAction());
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     private class DownAction
             extends AbstractAction
     {
@@ -320,13 +325,6 @@ public class ScrollView
         {
             final JScrollBar vertical = component.getVerticalScrollBar();
             vertical.setValue(vertical.getValue() + vertical.getUnitIncrement());
-        }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 
@@ -340,13 +338,6 @@ public class ScrollView
             final JScrollBar horizontal = component.getHorizontalScrollBar();
             horizontal.setValue(horizontal.getValue() - horizontal.getUnitIncrement());
         }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
     private class RightAction
@@ -358,13 +349,6 @@ public class ScrollView
         {
             final JScrollBar horizontal = component.getHorizontalScrollBar();
             horizontal.setValue(horizontal.getValue() + horizontal.getUnitIncrement());
-        }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 
@@ -378,13 +362,6 @@ public class ScrollView
             final JScrollBar vertical = component.getVerticalScrollBar();
             vertical.setValue(vertical.getValue() + 1);
         }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
     private class ShiftLeftAction
@@ -396,13 +373,6 @@ public class ScrollView
         {
             final JScrollBar horizontal = component.getHorizontalScrollBar();
             horizontal.setValue(horizontal.getValue() - 1);
-        }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 
@@ -416,13 +386,6 @@ public class ScrollView
             final JScrollBar horizontal = component.getHorizontalScrollBar();
             horizontal.setValue(horizontal.getValue() + 1);
         }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
     private class ShiftUpAction
@@ -435,13 +398,6 @@ public class ScrollView
             final JScrollBar vertical = component.getVerticalScrollBar();
             vertical.setValue(vertical.getValue() - 1);
         }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
     private class UpAction
@@ -453,13 +409,6 @@ public class ScrollView
         {
             final JScrollBar vertical = component.getVerticalScrollBar();
             vertical.setValue(vertical.getValue() - vertical.getUnitIncrement());
-        }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 

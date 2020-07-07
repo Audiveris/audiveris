@@ -1035,22 +1035,48 @@ public class SymbolsEditor
             final InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
             final ActionMap actionMap = getActionMap();
 
-            // Slight translation
+            // Slight translation of both rubber and editor handle
+            // We override default binding of any RubbelPanel to also move editor handle
             inputMap.put(KeyStroke.getKeyStroke("alt UP"), "UpTranslateAction");
-            actionMap.put("UpTranslateAction", new MyTranslateAction(0, -1));
+            actionMap.put("UpTranslateAction", new EditTranslateAction(0, -1));
 
             inputMap.put(KeyStroke.getKeyStroke("alt DOWN"), "DownTranslateAction");
-            actionMap.put("DownTranslateAction", new MyTranslateAction(0, 1));
+            actionMap.put("DownTranslateAction", new EditTranslateAction(0, 1));
 
             inputMap.put(KeyStroke.getKeyStroke("alt LEFT"), "LeftTranslateAction");
-            actionMap.put("LeftTranslateAction", new MyTranslateAction(-1, 0));
+            actionMap.put("LeftTranslateAction", new EditTranslateAction(-1, 0));
 
             inputMap.put(KeyStroke.getKeyStroke("alt RIGHT"), "RightTranslateAction");
-            actionMap.put("RightTranslateAction", new MyTranslateAction(1, 0));
+            actionMap.put("RightTranslateAction", new EditTranslateAction(1, 0));
 
             // End of edition
             inputMap.put(KeyStroke.getKeyStroke("ENTER"), "EndInterEditionAction");
             actionMap.put("EndInterEditionAction", new EndInterEditionAction());
+        }
+
+        //---------------------//
+        // EditTranslateAction //
+        //---------------------//
+        private class EditTranslateAction
+                extends TranslateAction
+        {
+
+            public EditTranslateAction (int dx,
+                                        int dy)
+            {
+                super(dx, dy);
+            }
+
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                super.actionPerformed(e);
+
+                if (interEditor != null) {
+                    interEditor.processKeyboard(new Point(dx, dy));
+                    refresh();
+                }
+            }
         }
 
         //-----------------------//
@@ -1065,31 +1091,6 @@ public class SymbolsEditor
             {
                 if (interEditor != null) {
                     interEditor.endProcess();
-                    refresh();
-                }
-            }
-        }
-
-        //-------------------//
-        // MyTranslateAction //
-        //-------------------//
-        private class MyTranslateAction
-                extends TranslateAction
-        {
-
-            public MyTranslateAction (int dx,
-                                      int dy)
-            {
-                super(dx, dy);
-            }
-
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                super.actionPerformed(e);
-
-                if (interEditor != null) {
-                    interEditor.processKeyboard(new Point(dx, dy));
                     refresh();
                 }
             }

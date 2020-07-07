@@ -49,7 +49,6 @@ import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.ui.util.Panel;
-import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.util.WrapLayout;
 import org.audiveris.omr.ui.view.RubberPanel;
 import org.audiveris.omr.ui.view.ScrollView;
@@ -61,12 +60,14 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.FlowLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -83,7 +84,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
@@ -91,7 +95,7 @@ import javax.swing.SwingUtilities;
  * Class {@code ShapeBoard} hosts a palette of shapes for insertion and assignment of
  * inter.
  * <p>
- * Shapes are gathered and presented in separate sets that are mutually exclusive.
+ * Shapes are gathered and presented in separate families that are mutually exclusive.
  * <p>
  * A special set of shapes, always visible, is dedicated to the latest shapes used to ease the
  * repetition of user actions.
@@ -107,6 +111,7 @@ import javax.swing.SwingUtilities;
 public class ShapeBoard
         extends Board
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -129,6 +134,7 @@ public class ShapeBoard
         populateReverseCharMaps();
     }
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -184,6 +190,9 @@ public class ShapeBoard
         }
     };
 
+    /** Related Symbols editor. */
+    private final SymbolsEditor symbolsEditor;
+
     /** Panel of all shape sets. */
     private final Panel setsPanel;
 
@@ -208,10 +217,10 @@ public class ShapeBoard
     /** When mouse is pressed (start) and released (stop). */
     private final MyDropAdapter dropAdapter = new MyDropAdapter();
 
-    /** To handle sequence of keys typed. */
+    /** When sequence of keys are typed. */
     private final MyKeyListener keyListener = new MyKeyListener();
 
-    /** To resize this shape board when main window is resized. */
+    /** When split container is resized, we reshape this board. */
     private final PropertyChangeListener dividerListener = new PropertyChangeListener()
     {
         @Override
@@ -222,55 +231,34 @@ public class ShapeBoard
         }
     };
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new ShapeBoard object.
      *
-     * @param sheet    the related sheet
-     * @param editor   symbols editor, needed for its view
-     * @param selected true if initially selected
+     * @param sheet         the related sheet
+     * @param symbolsEditor related symbols editor, needed for its view and evaluator
+     * @param selected      true if initially selected
      */
     public ShapeBoard (Sheet sheet,
-                       SymbolsEditor editor,
+                       SymbolsEditor symbolsEditor,
                        boolean selected)
     {
         super(Board.SHAPE, null, null, selected, false, false, false);
         this.sheet = sheet;
+        this.symbolsEditor = symbolsEditor;
 
         dropAdapter.addDropListener(dropListener);
         shapeHistory = new ShapeHistory();
         setsPanel = buildSetsPanel();
 
-        OMR.gui.getAppPane().addPropertyChangeListener(
-                JSplitPane.DIVIDER_LOCATION_PROPERTY,
-                dividerListener);
-
         defineLayout();
 
-        // Support for user shape keys
-        editor.getView().addKeyListener(keyListener);
+        // Listen to keys typed while in symbolsEditor view or in this shape board
+        symbolsEditor.getView().addKeyListener(keyListener);
         getComponent().addKeyListener(keyListener);
     }
 
-    //------------//
-    // disconnect //
-    //------------//
-    /**
-     * {@inheritDoc}.
-     * <p>
-     * Also, remove the PropertyChangeListener and the KeyListener, to avoid memory leaks.
-     */
-    @Override
-    public void disconnect ()
-    {
-        super.disconnect();
-
-        OMR.gui.getAppPane().removePropertyChangeListener(
-                JSplitPane.DIVIDER_LOCATION_PROPERTY,
-                dividerListener);
-
-        sheet.getSymbolsEditor().getView().removeKeyListener(keyListener);
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // addToHistory //
     //--------------//
@@ -317,27 +305,44 @@ public class ShapeBoard
     @Override
     public void resizeBoard ()
     {
-        Integer space = UIUtil.getSplitSpace(getComponent());
-        logger.debug("resizeBoard space:{}", space);
+        final int space = getSplitSpace();
 
-        if (space != null) {
-            // Resize all visible panels in this board
-            if (setsPanel.isVisible()) {
-                setsPanel.setSize(space, 1);
-            }
+        // Resize all visible panels in this board
+        if (setsPanel.isVisible()) {
+            setsPanel.setSize(space, 1);
+        }
 
-            if (shapeHistory.panel.isVisible()) {
-                shapeHistory.panel.setSize(space, 1);
-            }
+        if (shapeHistory.panel.isVisible()) {
+            shapeHistory.panel.setSize(space, 1);
+        }
 
-            for (Panel panel : shapesPanels.values()) {
-                if (panel.isVisible()) {
-                    panel.setSize(space, 1);
-                }
+        for (Panel panel : shapesPanels.values()) {
+            if (panel.isVisible()) {
+                panel.setSize(space, 1);
             }
         }
 
         super.resizeBoard();
+    }
+
+    //-------------------//
+    // setSplitContainer //
+    //-------------------//
+    /**
+     * {@inheritDoc}.
+     * <p>
+     * Start listening to splitPane being resized.
+     *
+     * @param sp the related split container
+     */
+    @Override
+    public void setSplitContainer (JSplitPane sp)
+    {
+        // NOTA: To avoid duplicate listeners in JSplitPane, let's remove listener before adding it
+        sp.removePropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, dividerListener);
+        sp.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, dividerListener);
+
+        super.setSplitContainer(sp);
     }
 
     //------------------//
@@ -454,7 +459,7 @@ public class ShapeBoard
     /**
      * Build the global panel of sets.
      *
-     * @return the global panel of sets
+     * @return the global panel of families
      */
     private Panel buildSetsPanel ()
     {
@@ -634,57 +639,72 @@ public class ShapeBoard
         return sb.toString().toUpperCase();
     }
 
-    //-------------//
-    // ShapeButton //
-    //-------------//
+    //---------------//
+    // getSplitSpace //
+    //---------------//
     /**
-     * A button dedicated to a shape.
+     * Report the available space for component within containing JSplitPane.
+     * <p>
+     * We take into account the JSplitPane size, the divider location and size and all
+     * the insets of ancestors until the JSplitPane included.
+     *
+     * @return the available width
      */
-    public static class ShapeButton
-            extends JButton
+    private int getSplitSpace ()
     {
+        final JComponent comp = getComponent();
 
-        /**
-         * Precise symbol, since some shapes may exhibit variants.
-         * Example: slur above and slur below.
-         * <p>
-         * This non-decorated symbol will be used at drop time to shape the created inter.
-         */
-        final ShapeSymbol symbol;
+        synchronized (comp.getTreeLock()) {
+            final JSplitPane sp = getSplitContainer();
+            int space = sp.getSize().width;
+            space -= sp.getDividerSize();
 
-        /**
-         * Create a button for a shape.
-         *
-         * @param symbol precise plain (non-decorated) symbol
-         */
-        public ShapeButton (ShapeSymbol symbol)
-        {
-            this.symbol = symbol;
-            setIcon(symbol.getDecoratedSymbol().getIcon());
-            setName(symbol.getShape().toString());
+            final int divLoc = sp.getDividerLocation();
+            space -= divLoc;
 
-            final String shortcut = reverseShapeMap.get(symbol.getShape());
-            setToolTipText(symbol.getTip() + standardized(shortcut));
+            // Remove horizontal insets
+            Container parent = comp.getParent();
 
-            setBorderPainted(true);
-        }
+            while (parent != null) {
+                Insets insets = parent.getInsets();
+                space -= insets.left;
+                space -= insets.right;
 
-        public Shape getShape ()
-        {
-            return symbol.getShape();
+                if (parent instanceof JScrollPane) {
+                    // Remove bar width if any
+                    JScrollPane scrollPane = (JScrollPane) parent;
+                    JScrollBar bar = scrollPane.getVerticalScrollBar();
+
+                    if (bar.isShowing()) {
+                        space -= bar.getWidth();
+                    }
+                }
+
+                if (parent == sp) {
+                    break;
+                }
+
+                parent = parent.getParent();
+            }
+
+            if (parent == null) {
+                // Not currently connected to splitContainer, include its insets anyway
+                Insets insets = sp.getInsets();
+                space -= insets.left;
+                space -= insets.right;
+            }
+
+            return space;
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static class Constants
             extends ConstantSet
     {
-
-        private final Constant.Boolean publishLocationWhileDragging = new Constant.Boolean(
-                false,
-                "Should we publish the current location while dragging a shape?");
 
         private final Constant.Integer maxHistoryLength = new Constant.Integer(
                 "shapes",
@@ -774,7 +794,7 @@ public class ShapeBoard
                     ScreenPoint screenPoint = e.getDropLocation();
 
                     // The (zoomed) sheet view
-                    ScrollView scrollView = sheet.getStub().getAssembly().getSelectedView();
+                    ScrollView scrollView = sheet.getStub().getAssembly().getSelectedScrollView();
 
                     if (screenPoint.isInComponent(scrollView.getComponent().getViewport())) {
                         RubberPanel view = scrollView.getView();
@@ -797,45 +817,14 @@ public class ShapeBoard
     // MyKeyListener //
     //---------------//
     /**
-     * Listener in charge of retrieving the keys typed by the user in editor view.
+     * Listener in charge of retrieving the sequence of keys typed by the user.
      */
     private class MyKeyListener
-            implements KeyListener
+            extends KeyAdapter
     {
 
-        /** First character typed. */
+        /** First character typed, if any. */
         Character c1 = null;
-
-        @Override
-        public void keyPressed (KeyEvent e)
-        {
-            if (c1 == null) {
-                // Zoom level?
-                if (e.isControlDown()) {
-                    char c = e.getKeyChar();
-
-                    if (c == '+') {
-                        sheet.getSymbolsEditor().getView().getRubber().modifyZoomRatio(1);
-                        return;
-                    }
-
-                    if (c == '-') {
-                        sheet.getSymbolsEditor().getView().getRubber().modifyZoomRatio(-1);
-                        return;
-                    }
-
-                    if (c == '0') {
-                        sheet.getSymbolsEditor().getView().getRubber().modifyZoomRatio(0);
-                        return;
-                    }
-                }
-            }
-        }
-
-        @Override
-        public void keyReleased (KeyEvent e)
-        {
-        }
 
         @Override
         public void keyTyped (KeyEvent e)
@@ -845,11 +834,18 @@ public class ShapeBoard
             if (c1 == null) {
                 // First character (family)
                 ShapeSet set = setMap.get(c);
-                closeShapeSet();
+
+                if (isSelected()) {
+                    closeShapeSet();
+                }
 
                 if (set != null) {
                     logger.debug("set:{}", set.getName());
-                    selectShapeSet(set);
+
+                    if (isSelected()) {
+                        selectShapeSet(set);
+                    }
+
                     c1 = c;
                 } else {
                     reset();
@@ -863,7 +859,7 @@ public class ShapeBoard
                     // Direct use of classifier buttons?
                     if (c >= '1' && c <= '5') {
                         int id = c - '0';
-                        sheet.getSymbolsEditor().getEvaluationBoard().selectButton(id);
+                        symbolsEditor.getEvaluationBoard().selectButton(id);
                         return;
                     }
                 }
@@ -883,7 +879,7 @@ public class ShapeBoard
                         addToHistory(shape);
                         shapeHistory.setFocus();
                     }
-                } else {
+                } else if (isSelected()) {
                     closeShapeSet();
                 }
 
@@ -953,7 +949,7 @@ public class ShapeBoard
                 final OmrGlassPane glass = (OmrGlassPane) glassPane;
 
                 // The (zoomed) sheet view
-                ScrollView scrollView = sheet.getStub().getAssembly().getSelectedView();
+                ScrollView scrollView = sheet.getStub().getAssembly().getSelectedScrollView();
                 Component component = scrollView.getComponent().getViewport();
 
                 if (screenPoint.isInComponent(component)) {
@@ -1071,8 +1067,10 @@ public class ShapeBoard
                 panel.removeAll();
                 addButtons(panel, shapes);
 
-                panel.setVisible(true);
-                resizeBoard();
+                if (isSelected()) {
+                    panel.setVisible(true);
+                    resizeBoard();
+                }
             }
         }
 
@@ -1094,6 +1092,47 @@ public class ShapeBoard
                     return;
                 }
             }
+        }
+    }
+
+    //-------------//
+    // ShapeButton //
+    //-------------//
+    /**
+     * A button dedicated to a shape.
+     */
+    public static class ShapeButton
+            extends JButton
+    {
+
+        /**
+         * Precise symbol, since some shapes may exhibit variants.
+         * Example: slur above and slur below.
+         * <p>
+         * This non-decorated symbol will be used at drop time to shape the created inter.
+         */
+        final ShapeSymbol symbol;
+
+        /**
+         * Create a button for a shape.
+         *
+         * @param symbol precise plain (non-decorated) symbol
+         */
+        public ShapeButton (ShapeSymbol symbol)
+        {
+            this.symbol = symbol;
+            setIcon(symbol.getDecoratedSymbol().getIcon());
+            setName(symbol.getShape().toString());
+
+            final String shortcut = reverseShapeMap.get(symbol.getShape());
+            setToolTipText(symbol.getTip() + standardized(shortcut));
+
+            setBorderPainted(true);
+        }
+
+        public Shape getShape ()
+        {
+            return symbol.getShape();
         }
     }
 }
