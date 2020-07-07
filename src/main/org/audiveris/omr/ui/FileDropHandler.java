@@ -38,6 +38,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 
 import javax.swing.TransferHandler;
 import javax.swing.TransferHandler.TransferSupport;
@@ -206,7 +207,7 @@ public class FileDropHandler
                 // If a specific drop target is specified, run it on book as a whole
                 // Otherwise run the early target on first stub only.
                 if (dropStep != null) {
-                    book.reachBookStep(dropStep, false, null);
+                    book.reachBookStep(dropStep, false, Collections.singleton(1));
                 }
 
                 return null;
