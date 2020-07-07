@@ -47,6 +47,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.JTextComponent;
@@ -85,6 +86,7 @@ import javax.swing.text.JTextComponent;
 public abstract class Board
         implements EventSubscriber<UserEvent>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Board.class);
 
@@ -132,6 +134,7 @@ public abstract class Board
         }
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The board instance name. */
     private final String name;
 
@@ -159,9 +162,13 @@ public abstract class Board
     /** The preferred position in BoardsPane sequence. */
     private final int position;
 
+    /** The split container that will contain the boards pane. */
+    private JSplitPane splitContainer;
+
     /** Board is selected?. */
     private boolean selected;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a board from a pre-defined descriptor (name + position).
      *
@@ -229,6 +236,7 @@ public abstract class Board
         defineLayout();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // connect //
     //---------//
@@ -353,6 +361,32 @@ public abstract class Board
     public void setParent (BoardsPane parent)
     {
         this.parent = parent;
+    }
+
+    //-------------------//
+    // getSplitContainer //
+    //-------------------//
+    /**
+     * Report the JSplitPane that will contain the boards pane.
+     *
+     * @return the related split container
+     */
+    public JSplitPane getSplitContainer ()
+    {
+        return splitContainer;
+    }
+
+    //-------------------//
+    // setSplitContainer //
+    //-------------------//
+    /**
+     * Set the JSplitPane that will contain the boards pane.
+     *
+     * @param sp the related split container
+     */
+    public void setSplitContainer (JSplitPane sp)
+    {
+        splitContainer = sp;
     }
 
     //------------//
@@ -501,6 +535,7 @@ public abstract class Board
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Desc //
     //------//

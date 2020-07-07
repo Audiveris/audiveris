@@ -70,15 +70,6 @@ public class GuiActions
     private static final ResourceMap resources = Application.getInstance().getContext()
             .getResourceMap(GuiActions.class);
 
-    /** Should the errors window be displayed. */
-    public static final String ERRORS_WINDOW_DISPLAYED = "errorsWindowDisplayed";
-
-    /** Should the log window be displayed. */
-    public static final String LOG_WINDOW_DISPLAYED = "logWindowDisplayed";
-
-    /** Should the boards window be displayed. */
-    public static final String BOARDS_WINDOW_DISPLAYED = "boardsWindowDisplayed";
-
     /** Options UI. */
     private static Options options;
 
@@ -229,24 +220,6 @@ public class GuiActions
         OmrGui.getApplication().exit();
     }
 
-    //-------------------------//
-    // isBoardsWindowDisplayed //
-    //-------------------------//
-    public boolean isBoardsWindowDisplayed ()
-    {
-        return constants.boardsWindowDisplayed.getValue();
-    }
-
-    //--------------------------//
-    // setBoardsWindowDisplayed //
-    //--------------------------//
-    public void setBoardsWindowDisplayed (boolean value)
-    {
-        boolean oldValue = constants.boardsWindowDisplayed.getValue();
-        constants.boardsWindowDisplayed.setValue(value);
-        firePropertyChange(BOARDS_WINDOW_DISPLAYED, oldValue, value);
-    }
-
     //--------------------//
     // isBrowserSupported //
     //--------------------//
@@ -258,42 +231,6 @@ public class GuiActions
     public boolean isBrowserSupported ()
     {
         return WebBrowser.getBrowser().isSupported();
-    }
-
-    //-------------------------//
-    // isErrorsWindowDisplayed //
-    //-------------------------//
-    public boolean isErrorsWindowDisplayed ()
-    {
-        return constants.errorsWindowDisplayed.getValue();
-    }
-
-    //--------------------------//
-    // setErrorsWindowDisplayed //
-    //--------------------------//
-    public void setErrorsWindowDisplayed (boolean value)
-    {
-        boolean oldValue = constants.errorsWindowDisplayed.getValue();
-        constants.errorsWindowDisplayed.setValue(value);
-        firePropertyChange(ERRORS_WINDOW_DISPLAYED, oldValue, value);
-    }
-
-    //----------------------//
-    // isLogWindowDisplayed //
-    //----------------------//
-    public boolean isLogWindowDisplayed ()
-    {
-        return constants.logWindowDisplayed.getValue();
-    }
-
-    //-----------------------//
-    // setLogWindowDisplayed //
-    //-----------------------//
-    public void setLogWindowDisplayed (boolean value)
-    {
-        boolean oldValue = constants.logWindowDisplayed.getValue();
-        constants.logWindowDisplayed.setValue(value);
-        firePropertyChange(LOG_WINDOW_DISPLAYED, oldValue, value);
     }
 
     //--------------------//
@@ -374,14 +311,6 @@ public class GuiActions
     @Action(enabledProperty = "browserSupported")
     public void showManual (ActionEvent e)
     {
-        //        Path path = WellKnowns.DOC_FOLDER.resolve(constants.manualUrl.getValue());
-        //
-        //        if (!Files.exists(path)) {
-        //            logger.warn("Cannot find file {}", path);
-        //        } else {
-        //            URI uri = path.toUri();
-        //            WebBrowser.getBrowser().launch(uri);
-        //        }
         String str = constants.manualUrl.getValue();
 
         try {
@@ -404,45 +333,6 @@ public class GuiActions
     public void showMemory (ActionEvent e)
     {
         logger.info("\n----- Occupied memory is {} bytes -----\n", Memory.getValue());
-    }
-
-    //--------------//
-    // toggleBoards //
-    //--------------//
-    /**
-     * Action that toggles the display of boards window
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(selectedProperty = BOARDS_WINDOW_DISPLAYED)
-    public void toggleBoards (ActionEvent e)
-    {
-    }
-
-    //--------------//
-    // toggleErrors //
-    //--------------//
-    /**
-     * Action that toggles the display of errors window
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(selectedProperty = ERRORS_WINDOW_DISPLAYED)
-    public void toggleErrors (ActionEvent e)
-    {
-    }
-
-    //-----------//
-    // toggleLog //
-    //-----------//
-    /**
-     * Action that toggles the display of log window
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(selectedProperty = LOG_WINDOW_DISPLAYED)
-    public void toggleLog (ActionEvent e)
-    {
     }
 
     //--------------//
@@ -543,18 +433,6 @@ public class GuiActions
         private final Constant.String manualUrl = new Constant.String( //"docs/manual/handbook.html",
                 "https://bacchushlg.gitbooks.io/audiveris-5-1/content/",
                 "URL of Audiveris manual");
-
-        private final Constant.Boolean boardsWindowDisplayed = new Constant.Boolean(
-                true,
-                "Should the boards window be displayed");
-
-        private final Constant.Boolean logWindowDisplayed = new Constant.Boolean(
-                true,
-                "Should the log window be displayed");
-
-        private final Constant.Boolean errorsWindowDisplayed = new Constant.Boolean(
-                false,
-                "Should the errors window be displayed");
     }
 
     //-------------//

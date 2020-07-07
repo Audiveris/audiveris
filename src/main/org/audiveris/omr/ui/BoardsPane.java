@@ -47,6 +47,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSplitPane;
 import javax.swing.SwingConstants;
 
 /**
@@ -61,21 +62,24 @@ import javax.swing.SwingConstants;
  */
 public class BoardsPane
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BoardsPane.class);
 
-    /** The concrete UI component */
+    //~ Instance fields ----------------------------------------------------------------------------
+    /** The concrete UI component. */
     private final Panel component;
 
-    /** Sequence of current boards, kept ordered by board preferred position */
+    /** Sequence of current boards, kept ordered by board preferred position. */
     private final List<Board> boards = new ArrayList<>();
 
     /** Unique (application-wide) name for this pane. */
     private String name;
 
-    /** Mouse listener */
-    private final MouseAdapter mouseAdapter = new MyMouseAdapter();
+    /** Containing JSplitPane. */
+    private JSplitPane splitContainer;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a BoardsPane, with initial boards.
      *
@@ -95,10 +99,12 @@ public class BoardsPane
         component = new Panel();
         component.setName("boardsPane");
         component.setBorder(null);
+
         final int inset = UIUtil.adjustedSize(6);
         component.setInsets(inset, inset, inset, inset); // TLBR
         component.setMinimumSize(new Dimension(Board.MIN_BOARD_WIDTH + 2 * inset, 1));
-        component.addMouseListener(mouseAdapter);
+
+        component.addMouseListener(new MyMouseAdapter());
 
         defineLayout();
     }
@@ -116,6 +122,7 @@ public class BoardsPane
         this(Arrays.asList(boards));
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addBoard //
     //----------//
@@ -136,6 +143,7 @@ public class BoardsPane
 
         boards.add(board);
         board.setParent(this);
+        board.setSplitContainer(splitContainer);
         Collections.sort(this.boards, Board.byPosition);
         update();
 
@@ -153,7 +161,6 @@ public class BoardsPane
      */
     public void connect ()
     {
-        ///logger.warn("Connect " + this);
         for (Board board : boards) {
             if (board.isSelected()) {
                 board.connect();
@@ -169,7 +176,6 @@ public class BoardsPane
      */
     public void disconnect ()
     {
-        ///logger.info("-BoardPane " + name + " disconnect");
         for (Board board : boards) {
             if (board.isSelected()) {
                 board.disconnect();
@@ -242,6 +248,23 @@ public class BoardsPane
     {
         for (Board board : boards) {
             board.resizeBoard();
+        }
+    }
+
+    //-------------------//
+    // setSplitContainer //
+    //-------------------//
+    /**
+     * Set the JSplitPane that will contain the boards pane.
+     *
+     * @param sp the related split container
+     */
+    public void setSplitContainer (JSplitPane sp)
+    {
+        splitContainer = sp;
+
+        for (Board board : boards) {
+            board.setSplitContainer(sp);
         }
     }
 
@@ -347,20 +370,18 @@ public class BoardsPane
         component.repaint();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------------//
     // MyMouseAdapter //
     //----------------//
     /**
-     * Sub-classed to offer mouse interaction.
+     * Sub-classed to offer mouse interaction to select or deselect boards.
      */
     private class MyMouseAdapter
             extends MouseAdapter
             implements ItemListener
     {
 
-        //------------------//
-        // itemStateChanged //
-        //------------------//
         /**
          * Triggered from popup menu.
          *
@@ -374,9 +395,6 @@ public class BoardsPane
             board.setSelected(item.getState());
         }
 
-        //--------------//
-        // mousePressed //
-        //--------------//
         /**
          * Triggered when mouse is pressed.
          *
@@ -393,8 +411,10 @@ public class BoardsPane
                 head.setHorizontalAlignment(SwingConstants.CENTER);
                 head.setEnabled(false);
                 popup.add(head);
+
                 popup.addSeparator();
 
+                // All boards available
                 for (Board board : boards) {
                     JMenuItem item = new JCheckBoxMenuItem(board.getName(), board.isSelected());
                     item.addItemListener(this);

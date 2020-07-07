@@ -94,6 +94,7 @@ public class ClosableTabbedPane
     //-----------------//
     /**
      * Signal that the tab at provided index is about to close.
+     * <p>
      * This method can be overridden to add any specific processing at this point.
      *
      * @param tabIndex index of tab in tabbed pane

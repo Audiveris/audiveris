@@ -78,9 +78,6 @@
 <!--    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleLetters"       topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>-->
     <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleAttachments"   topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>
 <!--    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleSentences"     topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>-->
-    <action domain="VIEW" section="60" class="org.audiveris.omr.ui.GuiActions"         method="toggleBoards"        topic="WINDOW_LAYOUT"   item="javax.swing.JCheckBoxMenuItem"/>
-<!--    <action domain="VIEW" section="60" class="org.audiveris.omr.ui.GuiActions"         method="toggleLog"           topic="WINDOW_LAYOUT"   item="javax.swing.JCheckBoxMenuItem"/>-->
-<!--    <action domain="VIEW" section="60" class="org.audiveris.omr.ui.GuiActions"         method="toggleErrors"        topic="WINDOW_LAYOUT"   item="javax.swing.JCheckBoxMenuItem"/>-->
 
     <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="browseGlobalSamples"  topic="SAMPLES"/>
     <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="saveGlobalSamples"    topic="SAMPLES"/>

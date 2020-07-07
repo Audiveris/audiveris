@@ -37,6 +37,7 @@ import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sheet.ui.BookActions;
+import org.audiveris.omr.sheet.ui.SheetView;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.sig.ui.SigPainter;
 import org.audiveris.omr.step.ui.StepMenu;
@@ -72,7 +73,6 @@ import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.concurrent.Callable;
 
-import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -80,7 +80,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
@@ -116,17 +115,11 @@ public class MainGui
     /** Log pane, which displays logging info. */
     private LogPane logPane;
 
-    /** Boards pane, which displays a specific set of boards per sheet. */
-    private JComponent boardsPane;
-
     /** GlassPane needed to handle drag and drop from shape palette. */
     private final OmrGlassPane glassPane = new OmrGlassPane();
 
     /** Main pane with Sheet on top and Log+Errors on bottom. */
     private JSplitPane mainPane;
-
-    /** Application pane with Main pane on left and Boards on right. */
-    private final JSplitPane appPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
     /** Step menu. */
     private StepMenu stepMenu;
@@ -259,15 +252,6 @@ public class MainGui
                 JOptionPane.WARNING_MESSAGE);
     }
 
-    //------------//
-    // getAppPane //
-    //------------//
-    @Override
-    public JSplitPane getAppPane ()
-    {
-        return appPane;
-    }
-
     //----------//
     // getFrame //
     //----------//
@@ -355,7 +339,7 @@ public class MainGui
     // propertyChange //
     //----------------//
     /**
-     * Called when notified from GuiActions.
+     * Notified on property change (such as local mainPane divider).
      *
      * @param evt the event details
      */
@@ -363,88 +347,21 @@ public class MainGui
     public void propertyChange (PropertyChangeEvent evt)
     {
         String propertyName = evt.getPropertyName();
-        Boolean display = (Boolean) evt.getNewValue();
 
-        switch (propertyName) {
-        case GuiActions.BOARDS_WINDOW_DISPLAYED:
+        if (propertyName.equals(JSplitPane.DIVIDER_LOCATION_PROPERTY)) {
+            SheetStub stub = stubsController.getSelectedStub();
 
-            // Toggle display of boards
-            appPane.setRightComponent(display ? boardsPane : null);
+            if ((stub != null) && stub.hasSheet()) {
+                SheetView view = stub.getAssembly().getCurrentView();
 
-            break;
-
-        case GuiActions.LOG_WINDOW_DISPLAYED:
-
-            // Toggle display of log
-            bottomPane.setLeftComponent(display ? logPane.getComponent() : null);
-
-            break;
-
-        case GuiActions.ERRORS_WINDOW_DISPLAYED:
-
-            // Toggle display of errors
-            if (display) {
-                JComponent comp = null;
-                SheetStub stub = stubsController.getSelectedStub();
-
-                if (stub != null) {
-                    ErrorsEditor editor = stub.getSheet().getErrorsEditor();
-
-                    if (editor != null) {
-                        comp = editor.getComponent();
+                if (view != null) {
+                    if (view.getBoardsPane() != null) {
+                        // Force resizing of boards when log windows is resized.
+                        view.getBoardsPane().resize();
                     }
                 }
-
-                bottomPane.setRightComponent(comp);
-            } else {
-                bottomPane.setRightComponent(null);
             }
-
-            break;
-
-        default:
-            break;
         }
-
-        // BottomPane = LogPane | ErrorsPane
-        // Totally remove it when it displays no log and no errors
-        mainPane.setBottomComponent(needBottomPane() ? bottomPane : null);
-    }
-
-    //------------------//
-    // removeErrorsPane //
-    //------------------//
-    @Override
-    public void removeErrorsPane (JComponent errorsPane)
-    {
-        // To avoid race conditions, check we remove the proper errors pane
-        if ((errorsPane != null) && (errorsPane == bottomPane.getRightComponent())) {
-            bottomPane.setRightComponent(null);
-        }
-    }
-
-    //---------------//
-    // setBoardsPane //
-    //---------------//
-    @Override
-    public void setBoardsPane (JComponent boards)
-    {
-        boardsPane = boards;
-
-        if ((boardsPane != null) && GuiActions.getInstance().isBoardsWindowDisplayed()) {
-            appPane.setRightComponent(boardsPane);
-        } else {
-            appPane.setRightComponent(null);
-        }
-    }
-
-    //---------------//
-    // setErrorsPane //
-    //---------------//
-    @Override
-    public void setErrorsPane (JComponent errorsPane)
-    {
-        bottomPane.setRightComponent(errorsPane);
     }
 
     //------------//
@@ -545,79 +462,59 @@ public class MainGui
     private void defineLayout ()
     {
         // +=============================================================+
-        // |toolKeyPanel . . . . . . . . . . . . . . . . . . . . . . . . |
-        // |+=================+=============================+===========+|
-        // || toolBar . . . . . . . . . .| progressBar . . .| Memory . .||
-        // |+=================+=============================+===========+|
+        // | menuBar               | voices |   progressBar     | memory |
         // +=============================================================+
-        // | appPane . . . . . . . . . . . . . . . . . . . . . . . . . . |
-        // |+=========================================+=================+|
-        // | . . . . . . . . . . . . . . . . . . . . .| boardsPane. . . ||
-        // | +========================================+ . . . . . . . . ||
-        // | | stubsController . . . . . . . . . . . .| . . . . . . . . ||
-        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // | | . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // |m| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // |a| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // |i| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // |n| . . . . . . . . . . . . . . . . . . . .| . . . . . . . . ||
-        // |P+=====================+==================+ . . . . . . . . ||
-        // |a| logPane . . . . . . | errors . . . . . | . . . . . . . . ||
-        // |n| . . . . . . . . . . |. . . . . . . . . | . . . . . . . . ||
-        // |e| . . . . . . . . . . |. . . . . . . . . | . . . . . . . . ||
-        // | +=====================+==================+=================+|
+        // | toolBar                                                     |
+        // +=============================================================+
+        // | +=========================================================+ |
+        // | | stubsPane                                               | |
+        // | | +=====================================================+ | |
+        // | | | viewsPane                                           | | |
+        // | | | +===================================+=============+ | | |
+        // | | | | scrollView                        | boardsPane  | | | |
+        // | | | |                                   |             | | | |
+        // | | | |                                   |             | | | |
+        // | | | |                                   |             | | | |
+        // | | | |                                   |             | | | |
+        // | | | |                                   |             | | | |
+        // |m| | |                                   |             | | | |
+        // |a| | |                                   |             | | | |
+        // |i| | +===================================+=============+ | | |
+        // |n| +=====================================================+ | |
+        // |P+=========================================================+ |
+        // |a| bottomPane (logPane)                                    | |
+        // |n|                                                         | |
+        // |e|                                                         | |
+        // | +=========================================================+ |
         // +=============================================================+
         //
 
-        // Log
+        // Global layout: toolbar on top, stubsPane at center, log at bottom
+        final Container content = frame.getContentPane();
+        content.setLayout(new BorderLayout());
+
+        // Top: ToolBar
+        content.add(ActionManager.getInstance().getToolBar(), BorderLayout.NORTH);
+
+        // Center: stubsPane on top and Log on bottom
+        mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, stubsController.getComponent(), null);
+        mainPane.setBorder(null);
+        mainPane.setContinuousLayout(true);
+        mainPane.setOneTouchExpandable(true);
+        mainPane.setResizeWeight(0.9d); // Give bulk space to upper part
+        mainPane.setMinimumSize(new Dimension(500, 500)); // To make sure it is always visible
+        content.add(mainPane, BorderLayout.CENTER);
+        mainPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, this);
+
+        // Bottom = Log (other things removed)
         logPane = new LogPane();
 
-        // Bottom = Log & Errors
         bottomPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         bottomPane.setBorder(null);
         bottomPane.setDividerSize(1);
         bottomPane.setResizeWeight(0.5d); // Cut in half initially
-
-        // mainPane =  stubsController / bottomPane
-        mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, stubsController.getComponent(), null);
-        mainPane.setBorder(null);
-        mainPane.setOneTouchExpandable(true);
-        mainPane.setResizeWeight(0.9d); // Give bulk space to upper part
-        mainPane.setMinimumSize(new Dimension(500, 500)); // To make sure it is always visible
-
-        // appPane = mainPane | boards
-        appPane.setName("appPane");
-        appPane.setContinuousLayout(true);
-        appPane.setBorder(null);
-        appPane.setDividerSize(2);
-        appPane.setResizeWeight(0.99d); // Give bulk space to left part
-        appPane.setLeftComponent(mainPane);
-
-        // Global layout: Use a toolbar on top and a double split pane below
-        Container content = frame.getContentPane();
-        content.setLayout(new BorderLayout());
-        content.add(ActionManager.getInstance().getToolBar(), BorderLayout.NORTH);
-        content.add(appPane, BorderLayout.CENTER);
-
-        // Display the log pane?
-        if (GuiActions.getInstance().isLogWindowDisplayed()) {
-            bottomPane.setLeftComponent(logPane.getComponent());
-        }
-
-        // Display the errors pane?
-        if (GuiActions.getInstance().isErrorsWindowDisplayed()) {
-            bottomPane.setRightComponent(null);
-        }
-
-        // BottomPane = Log & Errors
-        if (needBottomPane()) {
-            mainPane.setBottomComponent(bottomPane);
-        }
+        bottomPane.setLeftComponent(logPane.getComponent());
+        mainPane.setBottomComponent(bottomPane);
     }
 
     //-------------//
@@ -707,38 +604,6 @@ public class MainGui
         // Mac Application menu
         if (WellKnowns.MAC_OS_X) {
             MacApplication.setupMacMenus();
-        }
-    }
-
-    //----------------//
-    // needBottomPane //
-    //----------------//
-    /**
-     * Check whether we should keep the bottomPane.
-     *
-     * @return true if bottomPane is not empty
-     */
-    private boolean needBottomPane ()
-    {
-        return GuiActions.getInstance().isLogWindowDisplayed()
-                       || GuiActions.getInstance().isErrorsWindowDisplayed();
-    }
-
-    //------------------//
-    // BoardsScrollPane //
-    //------------------//
-    /**
-     * Just a scrollPane to host the pane of user boards, trying to offer
-     * enough room for the boards.
-     */
-    private static class BoardsScrollPane
-            extends JScrollPane
-    {
-
-        public void setBoards (JComponent boards)
-        {
-            setViewportView(boards);
-            revalidate();
         }
     }
 

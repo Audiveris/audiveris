@@ -94,6 +94,7 @@ import javax.swing.event.ChangeListener;
 public class StubsController
         implements ChangeListener, PropertyChangeListener
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -102,6 +103,7 @@ public class StubsController
     /** Events that can be published on sheet service. */
     private static final Class<?>[] eventsWritten = new Class<?>[]{StubEvent.class};
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The concrete tabbed pane, one tab per sheet stub. */
     private final JTabbedPane stubsPane;
 
@@ -111,6 +113,7 @@ public class StubsController
     /** The global event service which publishes the currently selected sheet stub. */
     private final SelectionService stubService = new SelectionService("stubService", eventsWritten);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the {@code StubsController} singleton.
      */
@@ -119,6 +122,7 @@ public class StubsController
         stubsMap = new HashMap<>();
 
         stubsPane = new JTabbedPane();
+        stubsPane.setBorder(null);
         stubsPane.setForeground(Colors.SHEET_NOT_LOADED);
 
         // Listener on sheet tab operations
@@ -133,6 +137,7 @@ public class StubsController
         bindKeys();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // addAssembly //
     //-------------//
@@ -325,7 +330,7 @@ public class StubsController
      *
      * @return the concrete component
      */
-    public JComponent getComponent ()
+    public JTabbedPane getComponent ()
     {
         return stubsPane;
     }
@@ -1022,15 +1027,6 @@ public class StubsController
         return LazySingleton.INSTANCE;
     }
 
-    //---------------//
-    // LazySingleton //
-    //---------------//
-    private static class LazySingleton
-    {
-
-        static final StubsController INSTANCE = new StubsController();
-    }
-
     //--------------//
     // invokeSelect //
     //--------------//
@@ -1060,6 +1056,19 @@ public class StubsController
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------------//
+    // LazySingleton //
+    //---------------//
+    private static class LazySingleton
+    {
+
+        static final StubsController INSTANCE = new StubsController();
+    }
+
+    //---------------//
+    // CtrlEndAction //
+    //---------------//
     private class CtrlEndAction
             extends AbstractAction
     {
@@ -1073,15 +1082,11 @@ public class StubsController
                 stubsPane.setSelectedIndex(count - 1);
             }
         }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
+    //----------------//
+    // CtrlHomeAction //
+    //----------------//
     private class CtrlHomeAction
             extends AbstractAction
     {
@@ -1093,15 +1098,11 @@ public class StubsController
                 stubsPane.setSelectedIndex(0);
             }
         }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
+    //----------------//
+    // PageDownAction //
+    //----------------//
     private class PageDownAction
             extends AbstractAction
     {
@@ -1115,15 +1116,11 @@ public class StubsController
                 stubsPane.setSelectedIndex(tabIndex + 1);
             }
         }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
+    //--------------//
+    // PageUpAction //
+    //--------------//
     private class PageUpAction
             extends AbstractAction
     {
@@ -1136,13 +1133,6 @@ public class StubsController
             if (tabIndex > 0) {
                 stubsPane.setSelectedIndex(tabIndex - 1);
             }
-        }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 

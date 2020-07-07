@@ -41,7 +41,6 @@ import java.awt.Frame;
 import static java.awt.Frame.ICONIFIED;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Insets;
 import java.awt.Stroke;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -61,7 +60,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
@@ -463,65 +461,6 @@ public abstract class UIUtil
         return toolBorder;
     }
 
-    //---------------//
-    // getSplitSpace //
-    //---------------//
-    /**
-     * Report the available space for a child component within first JSplitPane ancestor,
-     * taking into account the JSplitPane size, the divider location and size and all
-     * the insets of ancestors until the JSplitPane.
-     *
-     * @param comp the child component
-     * @return the available space (width for a horizontal JSplitPane, height for a vertical one).
-     *         Null, if no JSplitPane ancestor could be found.
-     */
-    public static Integer getSplitSpace (JComponent comp)
-    {
-        if (comp == null) {
-            return null;
-        }
-
-        synchronized (comp.getTreeLock()) {
-            // First find the JSplitPane ancestor and the used side of the split
-            Container ancestor = comp.getParent();
-            Component child = comp;
-
-            while (ancestor != null && !(ancestor instanceof JSplitPane)) {
-                child = ancestor;
-                ancestor = child.getParent();
-            }
-
-            if (ancestor == null) {
-                return null; // No JSplitPane container found
-            }
-
-            final JSplitPane sp = (JSplitPane) ancestor;
-            final int divLoc = sp.getDividerLocation();
-            final int divSize = sp.getDividerSize();
-            final boolean first = (sp.getLeftComponent() == child);
-
-            // Now compute available space
-            int space;
-
-            if (first) {
-                space = divLoc;
-            } else {
-                if (sp.getOrientation() == JSplitPane.HORIZONTAL_SPLIT) {
-                    space = sp.getSize().width;
-                } else {
-                    space = sp.getSize().height;
-                }
-
-                space -= (divLoc + divSize);
-            }
-
-            space -= cumulateInsets(comp, sp, sp.getOrientation());
-            logger.debug("space: {}", space);
-
-            return space;
-        }
-    }
-
     //----------//
     // htmlLink //
     //----------//
@@ -816,53 +755,6 @@ public abstract class UIUtil
     /** Not meant to be instantiated. */
     private UIUtil ()
     {
-    }
-
-    //----------------//
-    // cumulateInsets //
-    //----------------//
-    /**
-     * Cumulate the insets of all ancestors of the provided component, until the provided
-     * ancestor (included) is reached.
-     *
-     * @param comp     the provided component
-     * @param ancestor the target ancestor
-     * @param split    either HORIZONTAL_SPLIT or VERTICAL_SPLIT
-     * @return the cumulated insets on split orientation
-     */
-    private static int cumulateInsets (JComponent comp,
-                                       JComponent ancestor,
-                                       int split)
-    {
-        int sum = 0;
-
-        Container parent = comp.getParent();
-
-        while (parent != null) {
-            Insets insets = parent.getInsets();
-            logger.debug("{} {}", parent.getName(), insets);
-
-            switch (split) {
-            case JSplitPane.VERTICAL_SPLIT:
-                sum += insets.top;
-                sum += insets.bottom;
-
-                break;
-            case JSplitPane.HORIZONTAL_SPLIT:
-                sum += insets.left;
-                sum += insets.right;
-                break;
-            }
-
-            if (parent == ancestor) {
-                break;
-            }
-
-            parent = parent.getParent();
-        }
-
-        logger.debug("cumulateInsets: {}", sum);
-        return sum;
     }
 
     //-----------//

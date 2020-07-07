@@ -531,7 +531,7 @@ public class Sheet
             final SheetAssembly assembly = stub.getAssembly();
             final SheetTab tab = SheetTab.BINARY_TAB;
 
-            if (assembly.getPane(tab.label) == null) {
+            if (assembly.getView(tab.label) == null) {
                 locationService.subscribeStrongly(LocationEvent.class, picture);
 
                 // Display sheet binary

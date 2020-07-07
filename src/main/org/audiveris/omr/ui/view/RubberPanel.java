@@ -631,7 +631,7 @@ public class RubberPanel
     // bindKeys //
     //----------//
     /**
-     * Bind keys to slightly modify the rubber location.
+     * Bind keys to shift rubber location and modify zoom ratio.
      */
     protected void bindKeys ()
     {
@@ -650,6 +650,19 @@ public class RubberPanel
 
         inputMap.put(KeyStroke.getKeyStroke("alt RIGHT"), "RightTranslateAction");
         actionMap.put("RightTranslateAction", new TranslateAction(1, 0));
+
+        // Zoom modifications
+        inputMap.put(KeyStroke.getKeyStroke("ctrl ADD"), "ZoomInAction");
+        inputMap.put(KeyStroke.getKeyStroke("ctrl PLUS"), "ZoomInAction");
+        actionMap.put("ZoomInAction", new ZoomAction(1));
+
+        inputMap.put(KeyStroke.getKeyStroke("ctrl SUBTRACT"), "ZoomOutAction");
+        inputMap.put(KeyStroke.getKeyStroke("ctrl MINUS"), "ZoomOutAction");
+        actionMap.put("ZoomOutAction", new ZoomAction(-1));
+
+        inputMap.put(KeyStroke.getKeyStroke("ctrl NUMPAD0"), "ZoomResetAction");
+        inputMap.put(KeyStroke.getKeyStroke("ctrl 0"), "ZoomResetAction");
+        actionMap.put("ZoomResetAction", new ZoomAction(0));
     }
 
     //----------------//
@@ -786,7 +799,7 @@ public class RubberPanel
     // TranslateAction //
     //-----------------//
     /**
-     * Action bound to arrow keys.
+     * Translate rubber location.
      */
     protected class TranslateAction
             extends AbstractAction
@@ -810,6 +823,31 @@ public class RubberPanel
         {
             rubber.translate(dx, dy);
             setFocusLocation(rubber.getRectangle(), null, LOCATION_INIT);
+        }
+    }
+
+    //------------//
+    // ZoomAction //
+    //------------//
+    /**
+     * Modify zoom ratio.
+     */
+    protected class ZoomAction
+            extends AbstractAction
+    {
+
+        /** Zoom increment. */
+        protected final int val;
+
+        public ZoomAction (int val)
+        {
+            this.val = val;
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            rubber.modifyZoomRatio(val);
         }
     }
 
