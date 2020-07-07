@@ -312,12 +312,6 @@ public class WatershedGrayLevel
     private static class ListOfPixels
             extends LinkedList<Pixel>
     {
-
-        @Override
-        public Object clone ()
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
     //-------//

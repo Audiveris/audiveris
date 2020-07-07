@@ -153,13 +153,6 @@ public class ExtractionMenu
                 putValue(NAME, "no area selected");
             }
         }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
     //-------------//
@@ -187,13 +180,6 @@ public class ExtractionMenu
             } catch (IOException ex) {
                 logger.warn("Error in sheet extraction, " + ex, ex);
             }
-        }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 }

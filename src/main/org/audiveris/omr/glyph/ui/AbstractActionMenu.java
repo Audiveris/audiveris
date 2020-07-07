@@ -191,12 +191,5 @@ public abstract class AbstractActionMenu
          * Method to update the action according to the current context
          */
         public abstract void update ();
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 }

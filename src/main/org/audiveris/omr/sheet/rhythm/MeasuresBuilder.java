@@ -626,12 +626,6 @@ public class MeasuresBuilder
             return midString() + Inters.ids(this);
         }
 
-        @Override
-        public Object clone ()
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
-
         private Point2D computeCenter ()
         {
             final int n = size();

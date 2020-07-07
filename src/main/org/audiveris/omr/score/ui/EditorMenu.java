@@ -261,13 +261,6 @@ public class EditorMenu
             {
                 stack.printVoices("\n");
             }
-
-            @Override
-            public Object clone ()
-                    throws CloneNotSupportedException
-            {
-                return super.clone(); //To change body of generated methods, choose Tools | Templates.
-            }
         }
 
         /**
@@ -304,13 +297,6 @@ public class EditorMenu
                 sheet.getInterController().removeInters(toRemove, Option.VALIDATED);
             }
 
-            @Override
-            public Object clone ()
-                    throws CloneNotSupportedException
-            {
-                return super.clone(); //To change body of generated methods, choose Tools | Templates.
-            }
-
             private void update ()
             {
                 setEnabled(
@@ -336,13 +322,6 @@ public class EditorMenu
             public void actionPerformed (ActionEvent e)
             {
                 sheet.getInterController().reprocessStackRhythm(stack);
-            }
-
-            @Override
-            public Object clone ()
-                    throws CloneNotSupportedException
-            {
-                return super.clone(); //To change body of generated methods, choose Tools | Templates.
             }
 
             private void update ()
@@ -414,13 +393,6 @@ public class EditorMenu
                 sheet.getInterController().reprocessPageRhythm(page);
             }
 
-            @Override
-            public Object clone ()
-                    throws CloneNotSupportedException
-            {
-                return super.clone(); //To change body of generated methods, choose Tools | Templates.
-            }
-
             private void update ()
             {
                 if (page == null) {
@@ -486,13 +458,6 @@ public class EditorMenu
             {
                 logger.info(slot.toChordString());
             }
-
-            @Override
-            public Object clone ()
-                    throws CloneNotSupportedException
-            {
-                return super.clone(); //To change body of generated methods, choose Tools | Templates.
-            }
         }
 
         /**
@@ -512,13 +477,6 @@ public class EditorMenu
             public void actionPerformed (ActionEvent e)
             {
                 logger.info(slot.toVoiceString());
-            }
-
-            @Override
-            public Object clone ()
-                    throws CloneNotSupportedException
-            {
-                return super.clone(); //To change body of generated methods, choose Tools | Templates.
             }
         }
     }
@@ -576,13 +534,6 @@ public class EditorMenu
                     logger.warn("StaffProjector error " + ex, ex);
                 }
             }
-
-            @Override
-            public Object clone ()
-                    throws CloneNotSupportedException
-            {
-                return super.clone(); //To change body of generated methods, choose Tools | Templates.
-            }
         }
 
         /**
@@ -609,13 +560,6 @@ public class EditorMenu
                         return;
                     }
                 }
-            }
-
-            @Override
-            public Object clone ()
-                    throws CloneNotSupportedException
-            {
-                return super.clone(); //To change body of generated methods, choose Tools | Templates.
             }
         }
     }
@@ -722,13 +666,6 @@ public class EditorMenu
                                                         + system2.toLongString() + "?")) {
                     sheet.getInterController().mergeSystem(system);
                 }
-            }
-
-            @Override
-            public Object clone ()
-                    throws CloneNotSupportedException
-            {
-                return super.clone(); //To change body of generated methods, choose Tools | Templates.
             }
 
             private void update ()

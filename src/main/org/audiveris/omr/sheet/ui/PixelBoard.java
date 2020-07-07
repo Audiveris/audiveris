@@ -239,12 +239,5 @@ public class PixelBoard
                                     width.getValue(),
                                     height.getValue())));
         }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 }

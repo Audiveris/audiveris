@@ -398,13 +398,6 @@ public class JTreeTable
             // paths are the only thing that needs to be updated.
         }
 
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
-
         /**
          * Creates and returns an instance of ListSelectionHandler.
          *

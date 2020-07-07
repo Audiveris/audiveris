@@ -124,13 +124,6 @@ public class DotFermataRelation
         return constants.yGapMax;
     }
 
-    @Override
-    public Object clone ()
-            throws CloneNotSupportedException
-    {
-        return super.clone(); //To change body of generated methods, choose Tools | Templates.
-    }
-
     //-----------//
     // Constants //
     //-----------//

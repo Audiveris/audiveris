@@ -977,13 +977,6 @@ public class RunTable
         return weight;
     }
 
-    @Override
-    public Object clone ()
-            throws CloneNotSupportedException
-    {
-        return super.clone(); //To change body of generated methods, choose Tools | Templates.
-    }
-
     //---------//
     // marshal //
     //---------//
