@@ -110,13 +110,6 @@ public class ChordSyllableRelation
         return false;
     }
 
-    @Override
-    public Object clone ()
-            throws CloneNotSupportedException
-    {
-        return super.clone(); //To change body of generated methods, choose Tools | Templates.
-    }
-
     //---------//
     // preLink //
     //---------//

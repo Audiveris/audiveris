@@ -311,13 +311,6 @@ class SelectionPanel
             inputParams();
             displayParams();
         }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
     private class SelectAction
@@ -346,13 +339,6 @@ class SelectionPanel
                 }
             });
         }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
     private class StoreAction
@@ -375,13 +361,6 @@ class SelectionPanel
             GlyphDescriptor mixDesc = new MixGlyphDescriptor();
             mixDesc.export("train", getTrainSamples(), true);
             mixDesc.export("test", getTestSamples(), false);
-        }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 

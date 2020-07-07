@@ -405,13 +405,6 @@ class TrainingPanel
                 task.classifier.reset();
             }
         }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
     protected class StopAction
@@ -428,13 +421,6 @@ class TrainingPanel
         public void actionPerformed (ActionEvent e)
         {
             task.classifier.stop();
-        }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 
@@ -479,13 +465,6 @@ class TrainingPanel
             worker.setPriority(Thread.MIN_PRIORITY);
             worker.start();
         }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
     private class ParamAction
@@ -499,13 +478,6 @@ class TrainingPanel
         {
             inputParams();
             displayParams();
-        }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 

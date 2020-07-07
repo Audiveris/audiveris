@@ -267,12 +267,6 @@ public class PeakGraph
         return Math.abs(dx) <= params.maxAlignmentBraceDx;
     }
 
-    @Override
-    public Object clone ()
-    {
-        return super.clone(); //To change body of generated methods, choose Tools | Templates.
-    }
-
     //-------------------//
     // areRightConnected //
     //-------------------//

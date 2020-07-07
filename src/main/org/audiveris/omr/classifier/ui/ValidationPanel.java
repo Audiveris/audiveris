@@ -378,13 +378,6 @@ public class ValidationPanel
             SampleBrowser.getInstance().displayAll(falsePositives);
             SampleBrowser.getInstance().setVisible();
         }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
     //----------------//
@@ -427,13 +420,6 @@ public class ValidationPanel
                 }
             });
         }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
     //--------------------//
@@ -454,13 +440,6 @@ public class ValidationPanel
             SampleBrowser.getInstance().displayAll(weakNegatives);
             SampleBrowser.getInstance().setVisible();
         }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
     //--------------------//
@@ -480,13 +459,6 @@ public class ValidationPanel
         {
             SampleBrowser.getInstance().displayAll(weakPositives);
             SampleBrowser.getInstance().setVisible();
-        }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
         }
     }
 }

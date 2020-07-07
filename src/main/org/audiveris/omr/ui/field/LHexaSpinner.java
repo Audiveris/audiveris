@@ -114,13 +114,6 @@ public class LHexaSpinner
 
             return Long.toHexString(((Number) value).longValue());
         }
-
-        @Override
-        public Object clone ()
-                throws CloneNotSupportedException
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
     //----------------------//

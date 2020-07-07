@@ -421,11 +421,5 @@ public class ChordSplitter
 
             return Math.max(first - y, y - last);
         }
-
-        @Override
-        public Object clone ()
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 }

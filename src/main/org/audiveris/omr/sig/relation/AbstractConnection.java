@@ -201,13 +201,6 @@ public abstract class AbstractConnection
         return sb.toString();
     }
 
-    @Override
-    public Object clone ()
-            throws CloneNotSupportedException
-    {
-        return super.clone(); //To change body of generated methods, choose Tools | Templates.
-    }
-
     //-----------//
     // InImpacts //
     //-----------//

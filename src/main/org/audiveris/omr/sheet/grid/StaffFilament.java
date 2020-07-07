@@ -531,11 +531,5 @@ public class StaffFilament
         {
             super(x, y);
         }
-
-        @Override
-        public Object clone ()
-        {
-            return super.clone(); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 }

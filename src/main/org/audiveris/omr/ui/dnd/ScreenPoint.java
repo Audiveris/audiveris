@@ -93,10 +93,4 @@ public class ScreenPoint
 
         return bounds.contains(getLocalPoint(component));
     }
-
-    @Override
-    public Object clone ()
-    {
-        return super.clone(); //To change body of generated methods, choose Tools | Templates.
-    }
 }
