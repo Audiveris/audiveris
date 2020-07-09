@@ -438,6 +438,7 @@ public class PeakGraph
                 logger.info("VIP {}", connection);
             }
 
+            // Replace alignment by connection
             StaffPeak source = getEdgeSource(alignment);
             StaffPeak target = getEdgeTarget(alignment);
             removeEdge(alignment);
@@ -1217,32 +1218,33 @@ public class PeakGraph
             removeAllEdges(toRemove);
         }
     }
-
-    //-------------------//
-    // rectifyAlignments //
-    //-------------------//
-    /**
-     * Remove any alignment between the two groups of same size, and link each peak in
-     * top group with the corresponding peak in bottom group.
-     *
-     * @param topGroup    group of peaks in top staff
-     * @param bottomGroup group of peaks in bottom staff
-     */
-    private void rectifyAlignments (List<StaffPeak> topGroup,
-                                    List<StaffPeak> bottomGroup)
-    {
-        for (int i = 0; i < topGroup.size(); i++) {
-            StaffPeak top = topGroup.get(i);
-            StaffPeak bottom = bottomGroup.get(i);
-            removeAllEdges(new ArrayList<>(outgoingEdgesOf(top)));
-            removeAllEdges(new ArrayList<>(incomingEdgesOf(bottom)));
-            addEdge(top, bottom, checkAlignment(top, bottom, false, false));
-        }
-    }
-
+//
+//    //-------------------//
+//    // rectifyAlignments //
+//    //-------------------//
+//    /**
+//     * Remove any alignment between the two groups of same size, and link each peak in
+//     * top group with the corresponding peak in bottom group.
+//     *
+//     * @param topGroup    group of peaks in top staff
+//     * @param bottomGroup group of peaks in bottom staff
+//     */
+//    private void rectifyAlignments (List<StaffPeak> topGroup,
+//                                    List<StaffPeak> bottomGroup)
+//    {
+//        for (int i = 0; i < topGroup.size(); i++) {
+//            StaffPeak top = topGroup.get(i);
+//            StaffPeak bottom = bottomGroup.get(i);
+//            removeAllEdges(new ArrayList<>(outgoingEdgesOf(top)));
+//            removeAllEdges(new ArrayList<>(incomingEdgesOf(bottom)));
+//            addEdge(top, bottom, checkAlignment(top, bottom, false, false));
+//        }
+//    }
+//
     //-----------------//
     // solveAlignments //
     //-----------------//
+
     /**
      * Solve conflicting alignments that result from merged peaks.
      *
