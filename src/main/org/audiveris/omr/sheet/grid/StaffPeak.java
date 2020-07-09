@@ -129,7 +129,11 @@ public class StaffPeak
             return Staff.byId.compare(this.staff, that.staff);
         }
 
-        return Integer.compare(this.start, that.start);
+        if (this.start != that.start) {
+            return Integer.compare(this.start, that.start);
+        }
+
+        return Integer.compare(this.stop, that.stop);
     }
 
     //-----------------------//
