@@ -55,7 +55,7 @@ public abstract class OmrGui
      * @param message the message asking for confirmation
      * @return true if confirmed, false otherwise
      */
-    public abstract boolean displayConfirmation (String message);
+    public abstract boolean displayConfirmation (Object message);
 
     /**
      * Allow to display a modal confirmation dialog with a message and specific title
@@ -64,28 +64,31 @@ public abstract class OmrGui
      * @param title   dialog title
      * @return true if confirmed, false otherwise
      */
-    public abstract boolean displayConfirmation (String message,
+    public abstract boolean displayConfirmation (Object message,
                                                  String title);
 
     /**
      * Allow to display a modal confirmation dialog with a message, specific title,
      * and specific option type
      *
-     * @param message    the message asking for confirmation
-     * @param title      dialog title
-     * @param optionType YES_NO_OPTION, YES_NO_CANCEL_OPTION or OK_CANCEL_OPTION
-     * @return precise answer (YES_OPTION, NO_OPTION, CANCEL_OPTION, OK_OPTION or CLOSED_OPTION)
+     * @param message     the message asking for confirmation
+     * @param title       dialog title
+     * @param optionType  YES_NO_OPTION, YES_NO_CANCEL_OPTION or OK_CANCEL_OPTION
+     * @param messageType ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE, QUESTION_MESSAGE or
+     *                    PLAIN_MESSAGE
+     * @return true if confirmed, false otherwise
      */
-    public abstract int displayConfirmation (String message,
-                                             String title,
-                                             int optionType);
+    public abstract boolean displayConfirmation (Object message,
+                                                 String title,
+                                                 int optionType,
+                                                 int messageType);
 
     /**
      * Allow to display a modal dialog with an error message.
      *
      * @param message the error message
      */
-    public abstract void displayError (String message);
+    public abstract void displayError (Object message);
 
     /**
      * Allow to display a modal dialog with an HTML content.

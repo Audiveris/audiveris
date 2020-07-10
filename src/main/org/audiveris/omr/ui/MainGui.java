@@ -147,7 +147,7 @@ public class MainGui
     // displayConfirmation //
     //---------------------//
     @Override
-    public boolean displayConfirmation (String message)
+    public boolean displayConfirmation (Object message)
     {
         return displayConfirmation(message, "Confirm");
     }
@@ -156,34 +156,32 @@ public class MainGui
     // displayConfirmation //
     //---------------------//
     @Override
-    public boolean displayConfirmation (String message,
+    public boolean displayConfirmation (Object message,
                                         String title)
     {
-        int answer = JOptionPane.showConfirmDialog(
-                frame,
-                message,
-                title,
-                JOptionPane.YES_NO_OPTION);
-
-        return answer == JOptionPane.YES_OPTION;
+        return displayConfirmation(
+                message, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
     }
 
     //---------------------//
     // displayConfirmation //
     //---------------------//
     @Override
-    public int displayConfirmation (String message,
-                                    String title,
-                                    int optionType)
+    public boolean displayConfirmation (Object message,
+                                        String title,
+                                        int optionType,
+                                        int messageType)
     {
-        return JOptionPane.showConfirmDialog(frame, message, title, optionType);
+        int answer = JOptionPane.showConfirmDialog(frame, message, title, optionType, messageType);
+
+        return answer == JOptionPane.YES_OPTION;
     }
 
     //--------------//
     // displayError //
     //--------------//
     @Override
-    public void displayError (String message)
+    public void displayError (Object message)
     {
         JOptionPane.showMessageDialog(
                 frame,

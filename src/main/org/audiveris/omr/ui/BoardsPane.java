@@ -150,6 +150,8 @@ public class BoardsPane
         if (board.isSelected()) {
             board.connect();
         }
+
+        resize();
     }
 
     //---------//

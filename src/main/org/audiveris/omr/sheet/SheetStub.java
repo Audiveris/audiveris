@@ -34,6 +34,7 @@ import org.audiveris.omr.sheet.Picture.TableKey;
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 import org.audiveris.omr.sheet.ui.SheetAssembly;
 import org.audiveris.omr.sheet.ui.StubsController;
+import org.audiveris.omr.step.StepPause;
 import org.audiveris.omr.step.ProcessingCancellationException;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.step.StepException;
@@ -856,7 +857,7 @@ public class SheetStub
      *
      * @param target the step to check
      * @param force  if true and step already reached, stub is reset and processed until step
-     * @return true if OK
+     * @return true if OK, false if not OK (including when a step paused)
      */
     public boolean reachStep (Step target,
                               boolean force)
@@ -908,7 +909,10 @@ public class SheetStub
             logger.info("StepException detected in " + neededSteps);
         } catch (ExecutionException ex) {
             // A StepException may have been wrapped into an ExecutionException
-            if (ex.getCause() instanceof StepException) {
+            if (ex.getCause() instanceof StepPause) {
+                logger.info("Processing stopped. Cause: {}", ex.getCause().getMessage());
+                ok = false;
+            } else if (ex.getCause() instanceof StepException) {
                 logger.info("StepException cause detected in " + neededSteps);
             } else {
                 logger.warn("Error in performing {} {}", neededSteps, ex.toString(), ex);
@@ -1210,9 +1214,16 @@ public class SheetStub
                         setCurrentStep(step);
                         setModified(true); // At beginning of processing
                         sheet.reset(step); // Reset sheet relevant data
-                        step.doit(sheet); // Standard processing on an existing sheet
-                        done(step); // Full completion
-                        StepMonitoring.notifyStep(SheetStub.this, step);
+
+                        try {
+                            step.doit(sheet); // Standard processing on an existing sheet
+                            done(step); // Full completion
+                            StepMonitoring.notifyStep(SheetStub.this, step);
+                        } catch (StepPause sp) {
+                            done(step);
+                            StepMonitoring.notifyStep(SheetStub.this, step);
+                            throw sp;
+                        }
                     } finally {
                         LogUtil.stopStub();
                     }
