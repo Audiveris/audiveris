@@ -230,18 +230,6 @@ public class SheetView
         }
     }
 
-    //------------//
-    // hideBoards //
-    //------------//
-    public void hideBoards ()
-    {
-        if (boardsPane != null) {
-            boardsPane.disconnect();
-        };
-
-        splitPane.setRightComponent(null);
-    }
-
     //---------------//
     // getBoardsPane //
     //---------------//

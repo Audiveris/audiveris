@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.step;
 
+import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
@@ -33,6 +34,10 @@ import org.audiveris.omr.ui.BoardsPane;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.swing.JEditorPane;
+import static javax.swing.JOptionPane.WARNING_MESSAGE;
+import static javax.swing.JOptionPane.YES_NO_OPTION;
 
 /**
  * Class {@code ScaleStep} implements <b>SCALE</b> step, which determines the general
@@ -79,11 +84,38 @@ public class ScaleStep
     public void doit (Sheet sheet)
             throws StepException
     {
-        Scale scale = new ScaleBuilder(sheet).retrieveScale();
-
+        final Scale scale = new ScaleBuilder(sheet).retrieveScale();
         logger.info("{}", scale);
-
         sheet.setScale(scale);
+
+        // Warn user if beam scale could not be measured precisely
+        final Scale.BeamScale beamScale = sheet.getScale().getBeamScale();
+
+        if (beamScale.isExtrapolated()) {
+            String title = "Sheet" + sheet.getStub().getNum() + " - Unsufficient beam scaling data";
+            logger.info("{}: {}", title, beamScale);
+
+            if (OMR.gui != null) {
+                String message
+                        = "Raw results of SCALE step give: <b>" + beamScale + "</b>"
+                                  + "<p>There is no sufficient data to define beam thickness."
+                                  + "<br>Value of <b>" + beamScale.getMain()
+                                  + "</b> pixels is just an extrapolated guess."
+                                  + "<p>If this sheet does contain beams, you should:<ol>"
+                                  + "<li>Measure typical beam thickness value,"
+                                  + "<li>Enter a new value via Sheet menu \"Set Scaling Data\""
+                                  + " if so needed,"
+                                  + "<li>Resume processing via the Step menu."
+                                  + "</ol>"
+                                  + "<p>OK for pausing sheet transcription here?";
+                JEditorPane htmlPane = new JEditorPane("text/html", message);
+                htmlPane.setEditable(false);
+
+                if (OMR.gui.displayConfirmation(htmlPane, title, YES_NO_OPTION, WARNING_MESSAGE)) {
+                    throw new StepPause("Beam scaling to be checked");
+                }
+            }
+        }
     }
 
     //-------------//

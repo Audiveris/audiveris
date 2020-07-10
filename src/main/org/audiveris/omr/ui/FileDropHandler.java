@@ -204,8 +204,7 @@ public class FileDropHandler
                 book.createStubs(null);
                 book.createStubsTabs(null); // Tabs are now accessible
 
-                // If a specific drop target is specified, run it on book as a whole
-                // Otherwise run the early target on first stub only.
+                // Run the early target on first stub only.
                 if (dropStep != null) {
                     book.reachBookStep(dropStep, false, Collections.singleton(1));
                 }

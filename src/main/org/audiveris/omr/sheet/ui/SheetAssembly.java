@@ -239,6 +239,10 @@ public class SheetAssembly
             viewsPane.addTab(label, view.getComponent());
             viewsPane.setSelectedComponent(view.getComponent());
 
+            if (boardsPane != null) {
+                boardsPane.resize();
+            }
+
             logger.debug("addViewTab end {} boardsPane={}", label, boardsPane);
         }
     }

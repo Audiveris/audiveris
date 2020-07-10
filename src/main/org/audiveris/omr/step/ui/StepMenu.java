@@ -192,24 +192,20 @@ public class StepMenu
                             // Refine messages for very first steps (LOAD and BINARY)
                             final String mid = step.compareTo(Step.BINARY) <= 0 ? ""
                                     : " from binary source";
-                            int answer = JOptionPane.showConfirmDialog(
-                                    OMR.gui.getFrame(),
-                                    "About to re-perform step " + step
-                                            + mid + "."
+                            if (!OMR.gui.displayConfirmation(
+                                    "About to re-perform step " + step + mid + "."
                                             + "\nDo you confirm?",
                                     "Redo confirmation",
                                     JOptionPane.YES_NO_OPTION,
-                                    JOptionPane.WARNING_MESSAGE);
-
-                            if (answer != JOptionPane.YES_OPTION) {
+                                    JOptionPane.WARNING_MESSAGE)) {
                                 return null;
                             }
                         }
 
                         try {
                             LogUtil.start(stub);
-                            stub.reachStep(step, true);
-                            logger.info("End of sheet step {}", step);
+                            boolean ok = stub.reachStep(step, true);
+                            logger.info("End of sheet step {}", stub.getLatestStep());
                         } finally {
                             LogUtil.stopStub();
                         }
@@ -223,9 +219,13 @@ public class StepMenu
                 @Override
                 protected void finished ()
                 {
-                    if ((stub != null) && (step != null)) {
-                        // Select the assembly tab related to the target step
-                        StepMonitoring.notifyStep(stub, step);
+                    if (stub != null) {
+                        final Step latestStep = stub.getLatestStep();
+
+                        if (latestStep != null) {
+                            // Select the assembly tab related to the latest step
+                            StepMonitoring.notifyStep(stub, latestStep);
+                        }
                     }
                 }
             }.execute();

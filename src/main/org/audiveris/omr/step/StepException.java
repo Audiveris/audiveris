@@ -32,14 +32,6 @@ public class StepException
 {
 
     /**
-     * Construct an {@code StepException} with no detail message.
-     */
-    public StepException ()
-    {
-        super();
-    }
-
-    /**
      * Construct an {@code StepException} with detail message.
      *
      * @param message the related message
