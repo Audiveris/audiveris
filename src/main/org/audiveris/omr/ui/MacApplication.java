@@ -112,7 +112,7 @@ public class MacApplication
 
             // Actually load the book
             Book book = OMR.engine.loadInput(Paths.get(filename));
-            book.createStubs(null);
+            book.createStubs();
             book.createStubsTabs(null); // Tabs are now accessible
 
             break;
