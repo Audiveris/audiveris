@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2019. All rights reserved.
+//  Copyright © Audiveris 2021. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -32,6 +32,7 @@ import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.Sections;
 import org.audiveris.omr.math.LineUtil;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
+import org.audiveris.omr.sheet.Profiles;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -73,11 +74,13 @@ import java.util.Set;
  */
 public class EndingsBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(EndingsBuilder.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
     protected final Sheet sheet;
@@ -88,6 +91,7 @@ public class EndingsBuilder
     /** Scale-dependent parameters. */
     private final Parameters params;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new WedgesBuilder object.
      *
@@ -100,6 +104,7 @@ public class EndingsBuilder
         params = new Parameters(sheet.getScale());
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // buildEndings //
     //--------------//
@@ -348,8 +353,9 @@ public class EndingsBuilder
             return null;
         }
 
-        if (length < measure.getWidth() * constants.minMeasureRatio.getValue()) {
+        if (length < (measure.getWidth() * constants.minMeasureRatio.getValue())) {
             logger.debug("Ending {} too short compared with related {}", segment, measure);
+
             return null;
         }
 
@@ -372,9 +378,7 @@ public class EndingsBuilder
                 (length - params.minLengthLow) / (params.minLengthHigh - params.minLengthLow));
 
         if (impacts.getGrade() >= EndingInter.getMinGrade()) {
-            Line2D leftLine = new Line2D.Double(
-                    leftLeg.getStartPoint(),
-                    leftLeg.getStopPoint());
+            Line2D leftLine = new Line2D.Double(leftLeg.getStartPoint(), leftLeg.getStopPoint());
             Line2D rightLine = (rightLeg == null) ? null
                     : new Line2D.Double(rightLeg.getStartPoint(), rightLeg.getStopPoint());
             EndingInter endingInter = new EndingInter(
@@ -400,6 +404,7 @@ public class EndingsBuilder
         return null;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -495,7 +500,7 @@ public class EndingsBuilder
             legYMargin = scale.toPixels(constants.legYMargin);
             maxLegXGap = scale.toPixels(constants.maxLegXGap);
             maxLegYGap = scale.toPixels(constants.maxLegYGap);
-            maxBarShift = scale.toPixels(EndingBarRelation.getXGapMaximum(false));
+            maxBarShift = scale.toPixels(EndingBarRelation.getXGapMaximum(Profiles.STRICT));
             maxSlope = constants.maxSlope.getValue();
 
             if (logger.isDebugEnabled()) {

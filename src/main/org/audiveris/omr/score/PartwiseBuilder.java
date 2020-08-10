@@ -1792,6 +1792,9 @@ public class PartwiseBuilder
     private void processNote (AbstractNoteInter note)
     {
         try {
+            if (note.isVip()) {
+                logger.info("BINGO processNote on {}", note);
+            }
             logger.debug("Visiting {}", note);
 
             final SIGraph sig = note.getSig();
