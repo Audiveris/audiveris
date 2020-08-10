@@ -1778,7 +1778,7 @@ public class BookActions
                 // Actually open the image file
                 Book book = OMR.engine.loadInput(path);
                 LogUtil.start(book);
-                book.createStubs(null);
+                book.createStubs();
                 book.createStubsTabs(null); // Tabs are now accessible
 
                 // Focus on first valid stub in book, if any

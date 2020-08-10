@@ -201,7 +201,7 @@ public class FileDropHandler
             try {
                 book = OMR.engine.loadInput(file.toPath());
                 LogUtil.start(book);
-                book.createStubs(null);
+                book.createStubs();
                 book.createStubsTabs(null); // Tabs are now accessible
 
                 // Run the early target on first stub only.
