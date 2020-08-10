@@ -82,6 +82,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.audiveris.omr.sig.inter.HeadInter;
 
 /**
  * Class {@code BeamsBuilder} is in charge, at system level, of retrieving the possible
@@ -1680,7 +1681,7 @@ public class BeamsBuilder
                     beams.add(beam);
                 }
             }
-            new StemsBuilder(system).linkCueBeams(head, corner, stem, beams);
+            new StemsBuilder(system).linkCueBeams((HeadInter) head, corner, stem, beams);
         }
 
         /**
