@@ -310,7 +310,14 @@ public class Score
                 return offset;
             }
 
-            offset += pageRef.getDeltaMeasureId();
+            // Beware of page with no deltaMeasureId (because its transcription failed)
+            Integer delta = pageRef.getDeltaMeasureId();
+
+            if (delta != null) {
+                offset += delta;
+            } else {
+                logger.info("No deltaMeasureId for {}", pageRef);
+            }
         }
 
         return offset;

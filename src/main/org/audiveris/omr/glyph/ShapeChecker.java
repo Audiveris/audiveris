@@ -353,6 +353,18 @@ public class ShapeChecker
             }
         };
 
+        new Checker("NotWithinHeader", PERCUSSION_CLEF)
+        {
+            @Override
+            public boolean check (SystemInfo system,
+                                  Evaluation eval,
+                                  Glyph glyph)
+            {
+                // Percussion clef must be within system header
+                return Math.abs(glyph.getCenter().x) < system.getFirstStaff().getHeaderStop();
+            }
+        };
+
         //
         //        new Checker("CommonCutTime", COMMON_TIME)
         //        {

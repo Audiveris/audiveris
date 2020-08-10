@@ -552,8 +552,8 @@ public class SlursBuilder
         SlurInfo slur = (SlurInfo) seq;
         GradeImpacts impacts = computeImpacts(slur, true);
 
-        if ((impacts != null) && (impacts.getGrade() >= SlurInter.getMinGrade()) && (slur
-                .getCurve() != null)) {
+        if ((impacts != null) && (impacts.getGrade() >= SlurInter.getMinGrade())
+                    && (slur.getCurve() != null)) {
             slur.retrieveGlyph(sheet, params.maxRunDistance);
 
             if (slur.getGlyph() != null) {
@@ -616,8 +616,11 @@ public class SlursBuilder
             GradeImpacts impacts = computeImpacts(slur, false);
 
             if (impacts != null) {
-                SlurInter inter = new SlurInter(slur, impacts);
-                inters.add(inter);
+                try {
+                    inters.add(new SlurInter(slur, impacts));
+                } catch (Exception ex) {
+                    logger.warn("Could not create SlurInter from {}", slur, ex);
+                }
             }
         }
 

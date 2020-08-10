@@ -1006,15 +1006,26 @@ public class MeasureStack
      */
     public String getScoreId (Score score)
     {
+        return getScoreId(score.getMeasureIdOffset(system.getPage()));
+    }
+
+    //------------//
+    // getScoreId //
+    //------------//
+    /**
+     * Report the character string of the score-based measure id.
+     *
+     * @param pageMeasureIdOffset the measure ID offset for containing page
+     * @return the (absolute) score-based measure id string
+     */
+    public String getScoreId (int pageMeasureIdOffset)
+    {
         if (id == null) {
             return null;
         }
 
-        final Page page = system.getPage();
-        final int pageMeasureIdOffset = score.getMeasureIdOffset(page);
-
-        return ((special == Special.SECOND_HALF) ? SECOND_HALF_PREFIX : "") + (pageMeasureIdOffset
-                                                                                       + id);
+        return ((special == Special.SECOND_HALF) ? SECOND_HALF_PREFIX : "")
+                       + (pageMeasureIdOffset + id);
     }
 
     //----------//

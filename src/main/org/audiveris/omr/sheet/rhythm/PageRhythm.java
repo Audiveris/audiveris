@@ -242,6 +242,8 @@ public class PageRhythm
                     // Use last timeRational of previous page
                     range.timeRational = lastTR.duplicate();
                     range.duration = lastTR.getValue();
+                    logger.info("{} Using last timeRational of previous page: {}",
+                                page, range.timeRational);
                 } else {
                     // Fallback using last expectedDuration of previous page
                     Sheet prevSheet = prevStub.getSheet(); // Perhaps load from disk...
@@ -261,6 +263,8 @@ public class PageRhythm
 
                     if ((prevStack != null) && (prevStack.getExpectedDuration() != null)) {
                         range.duration = prevStack.getExpectedDuration();
+                        logger.info("{} Using expected duration of last stack in previous page: {}",
+                                    page, range.duration);
                     }
                 }
             }
