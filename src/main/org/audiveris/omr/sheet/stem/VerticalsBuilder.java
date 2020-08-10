@@ -236,7 +236,6 @@ public class VerticalsBuilder
             // Run the suite of checks
             double res = suite.pass(new StickContext(stick), null);
 
-            ///logger.debug("suite=> {} for {}", res, stick);
             if (res >= suite.getMinThreshold()) {
                 final Glyph glyph = glyphIndex.registerOriginal(stick.toGlyph(null));
                 glyph.addGroup(GlyphGroup.VERTICAL_SEED); // Needed
@@ -304,11 +303,24 @@ public class VerticalsBuilder
     /**
      * Report the maximum vertical gap between chunks.
      *
-     * @return the maximum acceptable vertical gap between chunks;
+     * @return the maximum acceptable vertical gap between chunks
      */
     public static Scale.Fraction getMaxYGap ()
     {
         return constants.gapHigh;
+    }
+
+    //----------------//
+    // getMaxYGapPoor //
+    //----------------//
+    /**
+     * Report the maximum vertical gap between chunks for a poor image.
+     *
+     * @return the maximum acceptable vertical gap between chunks for poor image
+     */
+    public static Scale.Fraction getMaxYGapPoor ()
+    {
+        return constants.gapHighPoor;
     }
 
     //------------//
@@ -679,6 +691,10 @@ public class VerticalsBuilder
         private final Scale.Fraction gapHigh = new Scale.Fraction(
                 0.3,
                 "Maximum vertical gap between stem segments");
+
+        private final Scale.Fraction gapHighPoor = new Scale.Fraction(
+                0.6,
+                "Maximum vertical gap between stem segments in poor mode");
 
         private final Constant.Double slopeHigh = new Constant.Double(
                 "tangent",
