@@ -426,7 +426,7 @@ public class CLI
 
                 // Make sure stubs are available
                 if (book.getStubs().isEmpty()) {
-                    book.createStubs(sheetIds);
+                    book.createStubs();
 
                     // Save book to disk (global book info)
                     if (OMR.gui == null) {

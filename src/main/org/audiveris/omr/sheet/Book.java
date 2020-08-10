@@ -483,10 +483,8 @@ public class Book
     /**
      * Create as many sheet stubs as there are images in the input image file.
      * A created stub is nearly empty, the related image will have to be loaded later.
-     *
-     * @param sheetNumbers set of sheet numbers (1-based) explicitly included, null for all
      */
-    public void createStubs (SortedSet<Integer> sheetNumbers)
+    public void createStubs ()
     {
         ImageLoading.Loader loader = ImageLoading.getLoader(path);
 
@@ -495,18 +493,8 @@ public class Book
             loader.dispose();
             logger.info("{} sheet{} in {}", imageCount, ((imageCount > 1) ? "s" : ""), path);
 
-            if (sheetNumbers == null) {
-                sheetNumbers = new TreeSet<>();
-            }
-
-            if (sheetNumbers.isEmpty()) {
-                for (int i = 1; i <= imageCount; i++) {
-                    sheetNumbers.add(i);
-                }
-            }
-
-            for (int num : sheetNumbers) {
-                stubs.add(new SheetStub(this, num));
+            for (int i = 1; i <= imageCount; i++) {
+                stubs.add(new SheetStub(this, i));
             }
         }
     }
@@ -536,10 +524,15 @@ public class Book
                     SheetStub focusStub = null;
 
                     if (focus != null) {
-                        if ((focus > 0) && (focus <= stubs.size())) {
-                            focusStub = stubs.get(focus - 1);
-                        } else {
-                            logger.warn("Illegal focus sheet id: {}", focus);
+                        for (SheetStub stub : stubs) {
+                            if (stub.getNumber() == focus) {
+                                focusStub = stub;
+                                break;
+                            }
+                        }
+
+                        if (focusStub == null) {
+                            logger.warn("Could not find sheet id: {}", focus);
                         }
                     }
 

@@ -1092,7 +1092,8 @@ public class SigReducer
     // checkStemsLengths //
     //-------------------//
     /**
-     * Perform checks on stems length from tail to closest head anchor.
+     * Perform checks on stems length from tail to closest head anchor, unless stem is
+     * also linked to a beam.
      *
      * @return the count of modifications done
      */
@@ -1109,6 +1110,10 @@ public class SigReducer
 
             if (stem.isVip()) {
                 logger.info("VIP checkStemsLengths on {}", stem);
+            }
+
+            if (!stem.getBeams().isEmpty()) {
+                continue;
             }
 
             final Rectangle stemBox = stem.getBounds();
