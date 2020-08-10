@@ -400,7 +400,7 @@ public class Voice
             return wholeRestChord;
         }
 
-        if (!chords.isEmpty()) {
+        if ((chords != null) && !chords.isEmpty()) {
             return chords.get(0);
         }
 
@@ -579,7 +579,7 @@ public class Voice
             return wholeRestChord;
         }
 
-        if (!chords.isEmpty()) {
+        if ((chords != null) && !chords.isEmpty()) {
             return chords.get(chords.size() - 1);
         }
 

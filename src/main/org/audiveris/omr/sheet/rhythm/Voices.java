@@ -337,15 +337,17 @@ public abstract class Voices
                         // SameVoiceRelation-based voice link
                         AbstractChordInter ch2 = voice.getFirstChord();
 
-                        for (Relation rel : sig.getRelations(ch2, SameVoiceRelation.class)) {
-                            Inter inter = sig.getOppositeInter(ch2, rel);
-                            AbstractChordInter ch1 = (AbstractChordInter) inter;
+                        if (ch2 != null) {
+                            for (Relation rel : sig.getRelations(ch2, SameVoiceRelation.class)) {
+                                Inter inter = sig.getOppositeInter(ch2, rel);
+                                AbstractChordInter ch1 = (AbstractChordInter) inter;
 
-                            if (ch1.getMeasure() == prevMeasure) {
-                                if (voice.getId() != ch1.getVoice().getId()) {
-                                    measure.swapVoiceId(voice, ch1.getVoice().getId());
+                                if (ch1.getMeasure() == prevMeasure) {
+                                    if (voice.getId() != ch1.getVoice().getId()) {
+                                        measure.swapVoiceId(voice, ch1.getVoice().getId());
+                                    }
+                                    break;
                                 }
-                                break;
                             }
                         }
                     }
