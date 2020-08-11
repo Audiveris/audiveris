@@ -354,7 +354,7 @@ public class ClustersRetriever
                               Double[] two,
                               Wrapper<Integer> bestDelta)
     {
-        final int deltaMax = one.length - 1;
+        final int deltaMax = Math.max(one.length, two.length) - 1;
         final int deltaMin = -deltaMax;
 
         double bestDist = Double.MAX_VALUE;
@@ -436,8 +436,8 @@ public class ClustersRetriever
                 final int xMid = (maxLeft + minRight) / 2;
                 final double slope = sheet.getSkew().getSlope();
                 dist = bestMatch(
-                        ordinatesOf(one.getPointsAt(xMid, params.maxExpandDx, slope)),
-                        ordinatesOf(two.getPointsAt(xMid, params.maxExpandDx, slope)),
+                        ordinatesOf(one.getPointsAt(xMid, params.maxExtrapolationDx, slope)),
+                        ordinatesOf(two.getPointsAt(xMid, params.maxExtrapolationDx, slope)),
                         deltaPos);
 
                 if (dist <= params.maxMergeDy) {
@@ -596,17 +596,20 @@ public class ClustersRetriever
         }
     }
 
-    //----------------------------//
-    // destroyNonStandardClusters //
-    //----------------------------//
-    private void destroyNonStandardClusters (int popSize)
+    //---------------------------//
+    // destroyNonDesiredClusters //
+    //---------------------------//
+    /**
+     * Destroy all clusters whose size is not part of the desired ones.
+     */
+    private void destroyNonDesiredClusters ()
     {
         for (Iterator<LineCluster> it = allClusters.iterator(); it.hasNext();) {
-            LineCluster cluster = it.next();
+            final LineCluster cluster = it.next();
+            final int size = cluster.getSize();
 
-            if (cluster.getSize() != popSize) {
-                logger.debug("Destroying non standard {}", cluster);
-
+            if (!combSizes.contains(size)) {
+                logger.debug("Destroying non desired size {}", cluster);
                 cluster.destroy();
                 it.remove();
             }
@@ -826,6 +829,8 @@ public class ClustersRetriever
     //-------------------//
     /**
      * Merge clusters horizontally or destroy short clusters.
+     * <p>
+     * NOTA: Only clusters with same size can be merged here.
      */
     private void mergeClusterPairs (List<LineCluster> clusters,
                                     List<StaffFilament> filaments)
@@ -844,8 +849,13 @@ public class ClustersRetriever
             Rectangle clusterBox = cluster.getBounds();
             Point2D dskCenter = skew.deskewed(cluster.getCenter());
             double yMax = dskCenter.getY() + params.maxMergeCenterDy;
+            final int clusterSize = cluster.getSize();
 
             for (LineCluster cl : clusters.subList(idx + 1, clusters.size())) {
+                if (cl.getSize() != clusterSize) {
+                    continue;
+                }
+
                 // Check dy
                 if (skew.deskewed(cl.getCenter()).getY() > yMax) {
                     break;
@@ -1032,10 +1042,8 @@ public class ClustersRetriever
         // Trim clusters with too many lines
         trimClusters();
 
-        int popSize = retrievePopularSize();
-
-        // Discard non standard clusters
-        destroyNonStandardClusters(popSize); // ????????????????????????????
+        // Discard non desired clusters
+        destroyNonDesiredClusters();
 
         // Merge clusters horizontally, when relevant
         mergeClusterPairs(allClusters, allFilaments);
@@ -1309,6 +1317,10 @@ public class ClustersRetriever
                 1,
                 "Typical delta X between two vertical samplings");
 
+        private final Scale.Fraction maxExtrapolationDx = new Scale.Fraction(
+                6,
+                "Maximum dx to extrapolate filament ordinate");
+
         private final Scale.Fraction maxExpandDx = new Scale.Fraction(
                 2,
                 "Maximum dx to aggregate a filament to a cluster");
@@ -1406,6 +1418,8 @@ public class ClustersRetriever
 
         final int maxExpandDx;
 
+        final int maxExtrapolationDx;
+
         final int maxExpandDy;
 
         final int maxMergeDx;
@@ -1431,6 +1445,7 @@ public class ClustersRetriever
         {
             samplingDx = scale.toPixels(constants.samplingDx);
             maxExpandDx = scale.toPixels(constants.maxExpandDx);
+            maxExtrapolationDx = scale.toPixels(constants.maxExtrapolationDx);
             maxMergeDx = scale.toPixels(constants.maxMergeDx);
 
             // Specific interline scaling
