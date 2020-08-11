@@ -525,6 +525,8 @@ public class StaffManager
             }
         }
 
+        neighbors.remove(current); // Safer
+
         Collections.sort(neighbors, Staff.byId);
 
         return neighbors;
