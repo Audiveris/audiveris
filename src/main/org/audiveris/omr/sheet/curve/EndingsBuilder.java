@@ -349,7 +349,7 @@ public class EndingsBuilder
         }
 
         if (length < measure.getWidth() * constants.minMeasureRatio.getValue()) {
-            logger.info("Ending {} too short compared with related measure {}", segment, measure);
+            logger.debug("Ending {} too short compared with related {}", segment, measure);
             return null;
         }
 
