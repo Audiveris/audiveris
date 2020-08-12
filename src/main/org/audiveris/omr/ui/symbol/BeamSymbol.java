@@ -124,7 +124,7 @@ public class BeamSymbol
         final BeamScale beamScale = scale.getBeamScale();
 
         if (!beamScale.isExtrapolated()) {
-            thicknessFraction = beamScale.getDistanceMean() / scale.getInterline();
+            thicknessFraction = (double) beamScale.getMain() / scale.getInterline();
         }
     }
 
