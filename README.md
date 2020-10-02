@@ -9,6 +9,8 @@ All releases are available on [Audiveris Releases][releases] page.
 
 The most recent stable version is release 5.1, published on December 13, 2018.
 
+**NOTA** (October 2, 2020): Release 5.2 is around the corner. Meanwhile, you can use and test new developments by pulling and building from "development" branch instead of "master" branch.
+
 ## Main features
 
 Derived from Audiveris [earlier generation][audiveris-eg] (4.x versions),
