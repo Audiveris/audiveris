@@ -22,5 +22,7 @@ jobs:
         java-version: 11
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-    - name: Build with Gradle
-      run: ./gradlew wrapper --gradle-version=5.6 build
+    - uses: eskatos/gradle-command-action@v1
+      with:
+          arguments: build
+          gradle-version: 5.6.4
