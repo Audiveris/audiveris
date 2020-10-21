@@ -23,4 +23,4 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
-      run: ./gradlew --gradle-version=5.6 build
+      run: ./gradlew wrapper --gradle-version=5.6 build
