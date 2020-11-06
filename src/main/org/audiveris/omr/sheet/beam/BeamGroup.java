@@ -25,6 +25,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
@@ -33,15 +34,17 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
-import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
+import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.SameVoiceRelation;
+import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
@@ -51,7 +54,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -80,11 +85,14 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class BeamGroup
         implements Vip
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BeamGroup.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -116,6 +124,7 @@ public class BeamGroup
     /** Same voice for all chords in this beam group. */
     private Voice voice;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of BeamGroup.
      *
@@ -138,6 +147,7 @@ public class BeamGroup
         this.id = 0;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // addBeam //
     //---------//
@@ -225,20 +235,73 @@ public class BeamGroup
     /**
      * Report the x-ordered collection of chords that are grouped by this beam group,
      * including the interleaved rests if any.
+     * <p>
+     * A lookup area is defined between every sequence of two stemmed chords of the beam group,
+     * and all measure rests are checked for intersection with this lookup area:
+     * <ul>
+     * <li>If the 2 chords are in the same vertical direction, the area is the parallelogram
+     * defined by their stems.
+     * <li>If in opposite directions, we focus only above or below the beams according to the
+     * direction of the right-hand chord.
+     * The area is then defined by the right-hand stem and the main beam median line.
+     * </ul>
+     * This lookup mechanism depends on the potential existence of an explicit voice relation
+     * between the rest and one of the stemmed chords of the beam group:
+     * <ul>
+     * <li>If there is a {@link SameVoiceRelation} (white list)and if the rest center is located
+     * with the beam group abscissa range, then the rest is considered as interleaved, even if
+     * lookup failed.
+     * <li>If there is a {@link SeparateVoiceRelation} (black list) then the rest is not considered
+     * as interleaved, regardless of any lookup.
+     * </ul>
      *
      * @return the (perhaps empty) collection of 'beamed' chords and interleaved rests.
      */
     public List<AbstractChordInter> getAllChords ()
     {
         final List<AbstractChordInter> allChords = new ArrayList<>();
+        final List<AbstractChordInter> headChords = getChords();
+        final Set<RestChordInter> whiteRests = getLinkedRests(headChords, SameVoiceRelation.class);
+
+        // Plain candidate rests
+        final Set<RestChordInter> candidates = new LinkedHashSet<>(measure.getRestChords());
+        candidates.removeAll(getLinkedRests(headChords, SeparateVoiceRelation.class));
+        candidates.removeAll(whiteRests);
+
         AbstractChordInter prevChord = null;
 
-        for (AbstractChordInter chord : getChords()) {
+        for (AbstractChordInter chord : headChords) {
             if (prevChord != null) {
-                AbstractNoteInter rest = measure.lookupRest(prevChord, chord);
+                // Look for at most one interleaved rest
+                List<RestChordInter> found = new ArrayList<>();
 
-                if (rest != null) {
-                    allChords.add(rest.getChord());
+                // Priority on white listed rests if any
+                final int prevChordX = prevChord.getTailLocation().x;
+                final int chordX = chord.getTailLocation().x;
+
+                for (RestChordInter white : whiteRests) {
+                    final int x = white.getTailLocation().x;
+
+                    if (x > prevChordX && x < chordX) {
+                        found.add(white);
+                    }
+                }
+
+                if (found.isEmpty()) {
+                    // Fallback using plain candidates
+                    found.addAll(lookupRests(prevChord, chord, candidates));
+                }
+
+                if (found.size() > 1) {
+                    // Choose the rest closest to group median line
+                    final Line2D median = getMainMedian();
+                    Collections.sort(found, (RestChordInter r1, RestChordInter r2) -> Double.
+                            compare(median.ptLineDistSq(r1.getCenter()),
+                                    median.ptLineDistSq(r2.getCenter())));
+                }
+
+                if (!found.isEmpty()) {
+                    allChords.add(found.get(0));
                 }
             }
 
@@ -257,7 +320,7 @@ public class BeamGroup
     /**
      * Report the beams that are part of this group.
      *
-     * @return the collection of contained beams
+     * @return the collection of contained beams, in no particular order
      */
     public Set<AbstractBeamInter> getBeams ()
     {
@@ -363,6 +426,32 @@ public class BeamGroup
         } else {
             return null;
         }
+    }
+
+    //---------------//
+    // getMainMedian //
+    //---------------//
+    /**
+     * Report the median line of the longest beam in the group.
+     *
+     * @return group main median line
+     */
+    public Line2D getMainMedian ()
+    {
+        Line2D mainMedian = null;
+        double mainWidth = Double.MIN_VALUE;
+
+        for (AbstractBeamInter beam : beams) {
+            final Line2D median = beam.getMedian();
+            final double width = median.getX2() - median.getX1();
+
+            if (mainMedian == null || mainWidth < width) {
+                mainMedian = median;
+                mainWidth = width;
+            }
+        }
+
+        return mainMedian;
     }
 
     //----------//
@@ -608,6 +697,91 @@ public class BeamGroup
         }
     }
 
+    //----------------//
+    // getLinkedRests //
+    //----------------//
+    /**
+     * Report the rest chords with a specific relation to this group.
+     *
+     * @param headChords head chords of this group
+     * @param classe     desired relation class
+     * @return white listed rest chords
+     */
+    private Set<RestChordInter> getLinkedRests (List<AbstractChordInter> headChords,
+                                                Class<? extends Relation> classe)
+    {
+        final Set<RestChordInter> found = new LinkedHashSet<>();
+        final SIGraph sig = measure.getStack().getSystem().getSig();
+
+        for (AbstractChordInter ch : headChords) {
+            for (Relation sameRel : sig.getRelations(ch, classe)) {
+                final Inter other = sig.getOppositeInter(ch, sameRel);
+
+                if (other instanceof RestChordInter) {
+                    found.add((RestChordInter) other);
+                }
+            }
+        }
+
+        return found;
+    }
+
+    //-------------//
+    // lookupRests //
+    //-------------//
+    /**
+     * Look for a rest interleaved between the provided left and right headChords.
+     *
+     * @param left       provided head chord on left side
+     * @param right      provided head chord on right side
+     * @param candidates candidate rests (already purged of blacklisted rests)
+     * @return the compatible candidates found
+     */
+    private List<RestChordInter> lookupRests (AbstractChordInter left,
+                                              AbstractChordInter right,
+                                              Set<RestChordInter> candidates)
+    {
+        final List<RestChordInter> found = new ArrayList<>();
+        final Point leftHead = left.getHeadLocation();
+        final Point leftTail = left.getTailLocation();
+        final Point rightHead = right.getHeadLocation();
+        final Point rightTail = right.getTailLocation();
+        final Line2D median = getMainMedian();
+
+        // Define proper looup area, according to chords directions
+        final Polygon polygon = new Polygon();
+
+        if (Integer.signum(leftTail.y - leftHead.y) == Integer.signum(rightTail.y - rightHead.y)) {
+            // Same direction
+            polygon.addPoint(rightHead.x, rightHead.y);
+            polygon.addPoint(rightTail.x, rightTail.y);
+            polygon.addPoint(leftTail.x, leftTail.y);
+            polygon.addPoint(leftHead.x, leftHead.y);
+        } else {
+            // Opposite directions
+            polygon.addPoint(rightHead.x, rightHead.y);
+            final Point rightMedian = PointUtil.rounded(LineUtil.intersection(
+                    median,
+                    new Line2D.Double(rightHead, rightTail)));
+            polygon.addPoint(rightMedian.x, rightMedian.y);
+            final Point leftMedian = PointUtil.rounded(LineUtil.intersection(
+                    median,
+                    new Line2D.Double(leftHead, leftTail)));
+            polygon.addPoint(leftMedian.x,
+                             leftMedian.y + rightHead.y - rightMedian.y);
+        }
+
+        for (RestChordInter restChord : candidates) {
+            final Rectangle box = restChord.getBounds();
+
+            if (polygon.intersects(box.x, box.y, box.width, box.height)) {
+                found.add(restChord);
+            }
+        }
+
+        return found;
+    }
+
     //-------//
     // split //
     //-------//
@@ -770,6 +944,7 @@ public class BeamGroup
         return ++max;
     }
 
+    //~ Inner classes ------------------------------------------------------------------------------
     //----------//
     // Splitter //
     //----------//

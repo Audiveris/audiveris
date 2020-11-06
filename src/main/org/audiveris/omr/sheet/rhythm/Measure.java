@@ -58,7 +58,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -1541,40 +1540,6 @@ public class Measure
         Set<Inter> staffChords = filterByStaff(getStandardChords(), restChord.getTopStaff());
 
         return staffChords.size() == 1;
-    }
-
-    //------------//
-    // lookupRest //
-    //------------//
-    /**
-     * Look up for a potential rest interleaved between the given stemmed chords
-     *
-     * @param left  the chord on the left of the area
-     * @param right the chord on the right of the area
-     * @return the rest found, or null otherwise
-     */
-    public RestInter lookupRest (AbstractChordInter left,
-                                 AbstractChordInter right)
-    {
-        // Define the area limited by the left and right chords with their stems
-        // and check for intersection with a rest note
-        Polygon polygon = new Polygon();
-        polygon.addPoint(left.getHeadLocation().x, left.getHeadLocation().y);
-        polygon.addPoint(left.getTailLocation().x, left.getTailLocation().y);
-        polygon.addPoint(right.getTailLocation().x, right.getTailLocation().y);
-        polygon.addPoint(right.getHeadLocation().x, right.getHeadLocation().y);
-
-        for (RestChordInter restChord : getRestChords()) {
-            for (Inter inter : restChord.getMembers()) {
-                Rectangle box = inter.getBounds();
-
-                if (polygon.intersects(box.x, box.y, box.width, box.height)) {
-                    return (RestInter) inter;
-                }
-            }
-        }
-
-        return null;
     }
 
     //----------------//
