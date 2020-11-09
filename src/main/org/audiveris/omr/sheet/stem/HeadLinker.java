@@ -35,6 +35,7 @@ import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.BeamInter;
@@ -624,17 +625,14 @@ public class HeadLinker
             StemInter stemInter = getStemInter(stem);
 
             if (stemInter == null) {
-//                GradeImpacts impacts = builder.getVerticalsBuilder().checkStem(stem);
-//                double grade = impacts.getGrade();
-//
-//                if (grade >= StemInter.getMinGrade()) {
-//                    stemInter = new StemInter(stem, impacts);
-//                    sig.addVertex(stemInter);
-//                    builder.getSystemStems().add(stemInter);
-//                }
-                stemInter = new StemInter(stem, 0.5);
-                sig.addVertex(stemInter);
-                builder.getSystemStems().add(stemInter);
+                GradeImpacts impacts = builder.getVerticalsBuilder().checkStem(stem);
+                double grade = impacts.getGrade();
+
+                if (grade >= StemInter.getMinGrade()) {
+                    stemInter = new StemInter(stem, impacts);
+                    sig.addVertex(stemInter);
+                    builder.getSystemStems().add(stemInter);
+                }
             }
 
             return stemInter;
