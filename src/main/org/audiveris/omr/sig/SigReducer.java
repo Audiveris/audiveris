@@ -24,9 +24,6 @@ package org.audiveris.omr.sig;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
-import static org.audiveris.omr.glyph.ShapeSet.Accidentals;
-import static org.audiveris.omr.glyph.ShapeSet.CoreBarlines;
-import static org.audiveris.omr.glyph.ShapeSet.Flags;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
@@ -38,6 +35,7 @@ import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.stem.StemsBuilder;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.sig.inter.AbstractFlagInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.AbstractPitchedInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
@@ -63,6 +61,7 @@ import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.StringSymbolInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TupletInter;
+import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.AbstractConnection;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
@@ -94,7 +93,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -118,9 +116,10 @@ public class SigReducer
 
     private static final Logger logger = LoggerFactory.getLogger(SigReducer.class);
 
-    /** Shapes for which overlap detection is (currently) disabled. */
-    private static final EnumSet<Shape> disabledShapes = EnumSet.copyOf(
-            Arrays.asList(Shape.LEDGER, Shape.CRESCENDO, Shape.DIMINUENDO));
+    /** Inter classes for which overlap detection is (currently) disabled. */
+    private static final Class<?>[] disabledClasses = new Class<?>[]{
+        LedgerInter.class,
+        WedgeInter.class};
 
     /** Predicate for non-disabled overlap. */
     private static final Predicate<Inter> overlapPredicate = new Predicate<Inter>()
@@ -128,27 +127,36 @@ public class SigReducer
         @Override
         public boolean check (Inter inter)
         {
-            // Take all non-disabled shapes
-            // Excluding inters within headers
-            return !disabledShapes.contains(inter.getShape());
+            final Class<?> interClass = inter.getClass();
+
+            for (Class classe : disabledClasses) {
+                if (classe.isAssignableFrom(interClass)) {
+                    return false;
+                }
+            }
+
+            return true;
         }
     };
 
-    /** Shapes that can overlap with a beam. */
-    private static final EnumSet<Shape> beamCompShapes = EnumSet.copyOf(CoreBarlines);
+    /**
+     * Inter classes that can overlap with a beam.
+     * NOTA: Barlines are no longer allowed to overlap with a beam
+     */
+    private static final Class<?>[] beamCompClasses = new Class<?>[]{
+        AbstractBeamInter.class};
 
-    /** Shapes that can overlap with a slur. */
-    private static final EnumSet<Shape> slurCompShapes = EnumSet.noneOf(Shape.class);
+    /** Inter classes that can overlap with a slur. */
+    private static final Class<?>[] slurCompClasses = new Class<?>[]{
+        AbstractFlagInter.class,
+        AlterInter.class,
+        BarlineInter.class,
+        StaffBarlineInter.class};
 
-    static {
-        slurCompShapes.addAll(Accidentals.getShapes());
-        slurCompShapes.addAll(CoreBarlines);
-        slurCompShapes.addAll(Flags.getShapes());
-    }
-
-    /** Shapes that can overlap with a stem. */
-    private static final EnumSet<Shape> stemCompShapes = EnumSet.copyOf(
-            Arrays.asList(Shape.SLUR_ABOVE, Shape.SLUR_BELOW, Shape.CRESCENDO, Shape.DIMINUENDO));
+    /** Inter classes that can overlap with a stem. */
+    private static final Class<?>[] stemCompClasses = new Class<?>[]{
+        SlurInter.class,
+        WedgeInter.class};
 
     /** The dedicated system. */
     @Navigable(false)
@@ -1334,7 +1342,7 @@ public class SigReducer
                 }
 
                 // Overlap is accepted in some cases
-                if (compatible(new Inter[]{left, right})) {
+                if (compatible(left, right)) {
                     continue;
                 }
 
@@ -1934,35 +1942,30 @@ public class SigReducer
     /**
      * Check whether the two provided Inter instance can overlap.
      *
-     * @param inters array of exactly 2 instances
+     * @param left  an inter
+     * @param right another inter
      * @return true if overlap is accepted, false otherwise
      */
-    private static boolean compatible (Inter[] inters)
+    private static boolean compatible (Inter left,
+                                       Inter right)
     {
-        for (int i = 0; i <= 1; i++) {
-            final Inter inter = inters[i];
-            final Inter other = inters[1 - i];
-            final Shape otherShape = other.getShape();
+        final Class<?> oneClass = left.getClass();
 
-            if (inter instanceof AbstractBeamInter) {
-                if (other instanceof AbstractBeamInter) {
+        if (right instanceof AbstractBeamInter) {
+            for (Class<?> classe : beamCompClasses) {
+                if (classe.isAssignableFrom(oneClass)) {
                     return true;
                 }
-
-                if (beamCompShapes.contains(otherShape)) {
+            }
+        } else if (right instanceof SlurInter) {
+            for (Class<?> classe : slurCompClasses) {
+                if (classe.isAssignableFrom(oneClass)) {
                     return true;
                 }
-            } else if (inter instanceof SlurInter) {
-                // Test StaffBarlineInter class, for which shape is always null
-                if (other instanceof StaffBarlineInter) {
-                    return true;
-                }
-
-                if (slurCompShapes.contains(otherShape)) {
-                    return true;
-                }
-            } else if (inter instanceof StemInter) {
-                if (stemCompShapes.contains(otherShape)) {
+            }
+        } else if (right instanceof StemInter) {
+            for (Class<?> classe : stemCompClasses) {
+                if (classe.isAssignableFrom(oneClass)) {
                     return true;
                 }
             }
