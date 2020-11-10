@@ -123,9 +123,10 @@ public abstract class AbstractStaffVerticalInter
             extends GradeImpacts
     {
 
-        private static final String[] NAMES = new String[]{"core", "gap", "start", "stop"};
+        private static final String[] NAMES = new String[]{
+            "core", "gap", "start", "stop", "left", "right"};
 
-        private static final double[] WEIGHTS = new double[]{1, 1, 1, 1};
+        private static final double[] WEIGHTS = new double[]{1, 1, 1, 1, 0.5, 0.5};
 
         /**
          * Create an Impacts object.
@@ -134,17 +135,24 @@ public abstract class AbstractStaffVerticalInter
          * @param gap   value of vertical gap impact
          * @param start derivative impact at start abscissa
          * @param stop  derivative impact at stop abscissa
+         * @param left  chunk impact on left of peak
+         * @param right chunk impact on right of peak
          */
         public Impacts (double core,
                         double gap,
                         double start,
-                        double stop)
+                        double stop,
+                        double left,
+                        double right)
         {
             super(NAMES, WEIGHTS);
+
             setImpact(0, core);
             setImpact(1, gap);
             setImpact(2, start);
             setImpact(3, stop);
+            setImpact(4, left);
+            setImpact(5, right);
         }
     }
 }
