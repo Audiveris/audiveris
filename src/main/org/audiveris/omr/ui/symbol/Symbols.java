@@ -280,8 +280,8 @@ public abstract class Symbols
         mapText(LYRICS, "lyric");
         sym.put(LONG_REST, new LongRestSymbol(false));
 
-        mapShape(MORDENT, 109);
-        mapShape(MORDENT_INVERTED, 77);
+        mapShape(MORDENT, 77);
+        mapShape(MORDENT_INVERTED, 109);
 
         mapShape(NATURAL, 110);
         sym.put(NON_DRAGGABLE, new NonDraggableSymbol(192));
