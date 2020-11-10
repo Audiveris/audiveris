@@ -112,8 +112,8 @@ public abstract class GradeImpacts
      * @param index  index in impact array
      * @param impact value for specific impact
      */
-    public void setImpact (int index,
-                           double impact)
+    public final void setImpact (int index,
+                                 double impact)
     {
         impacts[index] = GradeUtil.clamp(impact);
     }

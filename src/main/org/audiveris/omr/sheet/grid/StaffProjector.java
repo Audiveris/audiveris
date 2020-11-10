@@ -836,12 +836,11 @@ public class StaffProjector
         // It is meant to detect absence of lines
         params.blankThreshold = (int) Math.rint(constants.blankThreshold.getValue() * linesCumul);
 
-        // linesThreshold is used only for plots
+        // linesThreshold is used for plots and for detecting chunks
         params.linesThreshold = (int) Math.rint(linesCumul);
 
-        // chunkThreshold is used only for plots
-        // (it could be used to indicate presence of objects over lines)
-        params.chunkThreshold = ((lineCount - 1) * scale.getMaxFore())
+        // chunkThreshold is used for plots and for detecting chunks of objects over lines
+        params.chunkThreshold = ((lineCount - 1) * scale.getFore())
                                         + InterlineScale.toPixels(staff.getSpecificInterline(),
                                                                   constants.chunkThreshold);
         logger.debug(
@@ -1054,8 +1053,10 @@ public class StaffProjector
         GradeImpacts impacts = new BarlineInter.Impacts(
                 coreImpact,
                 gapImpact,
-                newStart.grade,
-                newStop.grade);
+                newStart.derGrade,
+                newStop.derGrade,
+                newStart.chunkGrade,
+                newStop.chunkGrade);
         double grade = impacts.getGrade();
 
         if (grade >= Grades.minInterGrade) {
@@ -1186,7 +1187,10 @@ public class StaffProjector
      * Absolute derivative value indicates if the peak side is really steep: this should exclude
      * most of: braces, arpeggiato, stems with heads on left or right side.
      * <p>
-     * Update: the test on derivative absolute value is not sufficient to discard braces.
+     * Update: the test on derivative absolute value is not sufficient to discard braces nor
+     * stems with attached heads within staff height.
+     * Thus, to detect attached heads, we add a test on cumulated black pixels just outside the
+     * peak (the chunks).
      *
      * @param xStart   raw abscissa that starts peak
      * @param xStop    raw abscissa that stops peak
@@ -1201,6 +1205,8 @@ public class StaffProjector
     {
         final int minDerivative = halfMode ? derivativeThreshold / 2 : derivativeThreshold;
         final int minBar = halfMode ? params.barThreshold / 2 : params.barThreshold;
+        final int minChunk = halfMode ? params.linesThreshold / 2 : params.linesThreshold;
+        final int maxChunk = halfMode ? params.chunkThreshold / 2 : params.chunkThreshold;
 
         // Additional check range
         final int dx = params.barRefineDx;
@@ -1225,10 +1231,16 @@ public class StaffProjector
         bestDer = Math.abs(bestDer);
 
         if ((bestDer >= minDerivative) && (bestX != null)) {
-            int x = (dir > 0) ? (bestX - 1) : bestX;
-            double derImpact = (double) bestDer / (minBar - minDerivative);
+            final int x = (dir > 0) ? (bestX - 1) : bestX;
+            final double derImpact = (double) bestDer / (minBar - minDerivative);
 
-            return new PeakSide(x, derImpact);
+            // Presence of chunks next to peak?
+            final double chunk = getChunk(x, dir);
+            double chunkImpact = (chunk < minChunk) ? 1.0
+                    : ((chunk > maxChunk) ? 0.0
+                            : (maxChunk - chunk) / (maxChunk - minChunk));
+
+            return new PeakSide(x, derImpact, chunkImpact);
         } else {
             // Perhaps we have reached image border?
             int border = (dir > 0) ? (sheet.getWidth() - 1) : 0;
@@ -1239,12 +1251,45 @@ public class StaffProjector
                 if (der >= minDerivative) {
                     double derImpact = (double) der / (minBar - minDerivative);
 
-                    return new PeakSide(border, derImpact);
+                    return new PeakSide(border, derImpact, 1.0); // No chunk possible!
                 }
             }
 
             return null; // Invalid
         }
+    }
+
+    //----------//
+    // getChunk //
+    //----------//
+    /**
+     * Report the average chunk cumulated pixels next to the provided abscissa.
+     *
+     * @param x0  provided abscissa (peak precise start or stop abscissa)
+     * @param dir abscissa direction to check from x0
+     * @return average chunk cumulated height on peak external side
+     */
+    private double getChunk (int x0,
+                             int dir)
+    {
+        // Beginning of range, close to peak side
+        final int x1 = x0 + dir * (1 + params.chunkOffset);
+
+        // End of range, far from peak side
+        final int x2 = x1 + dir * (params.chunkWidth - 1);
+
+        // If outside of image, there can't be any chunk
+        if (x2 < 0 || x2 > sheet.getWidth() - 1) {
+            return 0;
+        }
+
+        int chunk = 0;
+
+        for (int x = x1; dir * (x2 - x) >= 0; x += dir) {
+            chunk += projection.getValue(x);
+        }
+
+        return (double) chunk / params.chunkWidth;
     }
 
     //-------------//
@@ -1377,8 +1422,8 @@ public class StaffProjector
                 "Maximum vertical gap length in a bar");
 
         private final Scale.Fraction chunkThreshold = new Scale.Fraction(
-                0.5,
-                "Maximum cumul value to detect chunk (on top of lines)");
+                0.25,
+                "Maximum cumul value to detect chunk (on top of staff lines)");
 
         private final Constant.Ratio blankThreshold = new Constant.Ratio(
                 0.5,
@@ -1405,6 +1450,16 @@ public class StaffProjector
         private final Scale.Fraction maxRightExtremum = new Scale.Fraction(
                 0.3,
                 "Maximum length between right ending bar and actual lines right end");
+
+        private final Constant.Integer chunkOffset = new Constant.Integer(
+                "pixels",
+                1,
+                "Abscissa offset (>=0) on bar peak side, before checking for chunk");
+
+        private final Constant.Integer chunkWidth = new Constant.Integer(
+                "pixels",
+                2,
+                "Abscissa with (>=1) on bar peak side where chunk is measured");
     }
 
     //-------//
@@ -1482,6 +1537,10 @@ public class StaffProjector
     private static class Parameters
     {
 
+        final int chunkOffset;
+
+        final int chunkWidth;
+
         final int staffAbscissaMargin;
 
         final int barChunkDx;
@@ -1517,6 +1576,9 @@ public class StaffProjector
         Parameters (Sheet sheet,
                     int staffSpecific)
         {
+            chunkOffset = Math.max(0, constants.chunkOffset.getValue());
+            chunkWidth = Math.max(1, constants.chunkWidth.getValue());
+
             final Scale scale = sheet.getScale();
 
             {
@@ -1551,21 +1613,25 @@ public class StaffProjector
     /**
      * Describes the (left or right) side of a peak.
      */
-    static class PeakSide
+    private static class PeakSide
     {
 
         /** Precise side abscissa. */
         final int abscissa;
 
         /** Quality based on derivative absolute value. */
-        final double grade;
+        final double derGrade;
+
+        /** Quality based on chunk value. */
+        final double chunkGrade;
 
         PeakSide (int abscissa,
-                  double grade)
+                  double derGrade,
+                  double chunkGrade)
         {
             this.abscissa = abscissa;
-            this.grade = grade;
+            this.derGrade = derGrade;
+            this.chunkGrade = chunkGrade;
         }
-
     }
 }
