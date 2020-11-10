@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2019. All rights reserved.
+//  Copyright © Audiveris 2021. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -119,11 +119,13 @@ import java.util.Map;
  */
 public class StaffProjector
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StaffProjector.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -164,6 +166,7 @@ public class StaffProjector
     /** Initial brace peak, if any. */
     private StaffPeak bracePeak;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StaffProjector} object.
      *
@@ -186,6 +189,7 @@ public class StaffProjector
         params = new Parameters(sheet, staff.getSpecificInterline());
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // checkLinesRoot //
     //----------------//
@@ -504,7 +508,7 @@ public class StaffProjector
             // Theoretical staff height (adapted to staff line count)
             XYSeries heightSeries = new XYSeries("StaffHeight", false); // No autosort
             int n = staff.getLineCount();
-            int totalHeight = staff.getSpecificInterline() * (n > 1 ? n - 1 : 4);
+            int totalHeight = staff.getSpecificInterline() * ((n > 1) ? (n - 1) : 4);
             heightSeries.add(xMin, totalHeight);
             heightSeries.add(xMax, totalHeight);
             plotter.add(heightSeries, Color.BLACK, true);
@@ -561,7 +565,6 @@ public class StaffProjector
 
         // Display frame
         plotter.display(title, new Point(20 * staff.getId(), 20 * staff.getId()));
-
     }
 
     //---------//
@@ -723,7 +726,7 @@ public class StaffProjector
     {
         logger.debug("Staff#{} browseRange [{}..{}]", staff.getId(), rangeStart, rangeStop);
 
-        final int minDerivative = halfMode ? derivativeThreshold / 2 : derivativeThreshold;
+        final int minDerivative = halfMode ? (derivativeThreshold / 2) : derivativeThreshold;
         final List<StaffPeak> list = new ArrayList<>();
         int start = rangeStart;
         int stop;
@@ -811,8 +814,9 @@ public class StaffProjector
         }
 
         final int n = staff.getLineCount();
+
         if (n > 1) {
-            cumul *= (n - 1) / (double) n;
+            cumul *= ((n - 1) / (double) n);
         }
 
         logger.debug("Staff#{} linesHeight: {}", staff.getId(), cumul);
@@ -845,10 +849,7 @@ public class StaffProjector
                                                                   constants.chunkThreshold);
         logger.debug(
                 "Staff#{} thresholds blank:{} lines:{} chunk:{}",
-                staff.getId(),
-                params.blankThreshold,
-                params.linesThreshold,
-                params.chunkThreshold);
+                staff.getId(), params.blankThreshold, params.linesThreshold, params.chunkThreshold);
     }
 
     //-------------------//
@@ -874,7 +875,7 @@ public class StaffProjector
         final int xMax = xClamp(staff.getAbscissa(RIGHT) + dx);
 
         // Correction for ordinates of a 1-line staff
-        final int dy = staff.isOneLineStaff() ? 2 * scale.getInterline() : 0;
+        final int dy = staff.isOneLineStaff() ? (2 * scale.getInterline()) : 0;
 
         // Populating projection data
         for (int x = xMin; x <= xMax; x++) {
@@ -897,6 +898,7 @@ public class StaffProjector
 
         // Computing minDerivative from observed top values
         Collections.sort(derivatives);
+
         final int size = derivatives.size();
         final int top = constants.topDerivativeNumber.getValue();
         int derCumul = 0;
@@ -1144,7 +1146,8 @@ public class StaffProjector
         for (int x = xMin; x <= xMax; x++) {
             final int value = projection.getValue(x);
             halfMode = oneLine && peaks.isEmpty();
-            final int minBar = halfMode ? params.barThreshold / 2 : params.barThreshold;
+
+            final int minBar = halfMode ? (params.barThreshold / 2) : params.barThreshold;
 
             if (value >= minBar) {
                 if (start == -1) {
@@ -1203,10 +1206,10 @@ public class StaffProjector
                                      int dir,
                                      boolean halfMode)
     {
-        final int minDerivative = halfMode ? derivativeThreshold / 2 : derivativeThreshold;
-        final int minBar = halfMode ? params.barThreshold / 2 : params.barThreshold;
-        final int minChunk = halfMode ? params.linesThreshold / 2 : params.linesThreshold;
-        final int maxChunk = halfMode ? params.chunkThreshold / 2 : params.chunkThreshold;
+        final int minDerivative = halfMode ? (derivativeThreshold / 2) : derivativeThreshold;
+        final int minBar = halfMode ? (params.barThreshold / 2) : params.barThreshold;
+        final int minChunk = halfMode ? (params.linesThreshold / 2) : params.linesThreshold;
+        final int maxChunk = halfMode ? (params.chunkThreshold / 2) : params.chunkThreshold;
 
         // Additional check range
         final int dx = params.barRefineDx;
@@ -1238,7 +1241,7 @@ public class StaffProjector
             final int chunk = getChunk(x, dir);
             double chunkImpact = (chunk < minChunk) ? 1.0
                     : ((chunk > maxChunk) ? 0.0
-                            : (double) (maxChunk - chunk) / (maxChunk - minChunk));
+                            : ((double) (maxChunk - chunk) / (maxChunk - minChunk)));
 
             return new PeakSide(x, derImpact, chunkImpact);
         } else {
@@ -1273,19 +1276,19 @@ public class StaffProjector
                           int dir)
     {
         // Beginning of range, close to peak side
-        final int x1 = x0 + dir * (1 + params.chunkOffset);
+        final int x1 = x0 + dir;
 
         // End of range, far from peak side
-        final int x2 = x1 + dir * (params.chunkWidth - 1);
+        final int x2 = x1 + (dir * (params.chunkWidth - 1));
 
         // If outside of image, there can't be any chunk
-        if (x2 < 0 || x2 > sheet.getWidth() - 1) {
+        if ((x2 < 0) || (x2 > (sheet.getWidth() - 1))) {
             return 0;
         }
 
         int chunk = Integer.MAX_VALUE;
 
-        for (int x = x1; dir * (x2 - x) >= 0; x += dir) {
+        for (int x = x1; (dir * (x2 - x)) >= 0; x += dir) {
             chunk = Math.min(chunk, projection.getValue(x));
         }
 
@@ -1381,6 +1384,76 @@ public class StaffProjector
         return x;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------//
+    // Blank //
+    //-------//
+    /**
+     * An abscissa region where no staff lines are detected and thus indicates possible
+     * end of staff.
+     */
+    private static class Blank
+            implements Comparable<Blank>
+    {
+
+        /** First abscissa in region. */
+        private final int start;
+
+        /** Last abscissa in region. */
+        private final int stop;
+
+        Blank (int start,
+               int stop)
+        {
+            this.start = start;
+            this.stop = stop;
+        }
+
+        @Override
+        public int compareTo (Blank that)
+        {
+            // This is a total ordering of blanks (within the same staff projection)
+            return Integer.compare(this.start, that.start);
+        }
+
+        @Override
+        public boolean equals (Object obj)
+        {
+            if (this == obj) {
+                return true;
+            }
+
+            if (obj instanceof Blank) {
+                return compareTo((Blank) obj) == 0;
+            }
+
+            return false;
+        }
+
+        public int getWidth ()
+        {
+            return stop - start + 1;
+        }
+
+        @Override
+        public int hashCode ()
+        {
+            int hash = 3;
+            hash = (79 * hash) + this.start;
+
+            return hash;
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Blank(").append(start).append("-").append(stop).append(")");
+
+            return sb.toString();
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -1451,84 +1524,9 @@ public class StaffProjector
                 0.3,
                 "Maximum length between right ending bar and actual lines right end");
 
-        private final Constant.Integer chunkOffset = new Constant.Integer(
-                "pixels",
-                1,
-                "Abscissa offset (>=0) on bar peak side, before checking for chunk");
-
-        private final Constant.Integer chunkWidth = new Constant.Integer(
-                "pixels",
-                2,
+        private final Scale.Fraction chunkWidth = new Scale.Fraction(
+                0.15,
                 "Abscissa with (>=1) on bar peak side where chunk is measured");
-    }
-
-    //-------//
-    // Blank //
-    //-------//
-    /**
-     * An abscissa region where no staff lines are detected and thus indicates possible
-     * end of staff.
-     */
-    private static class Blank
-            implements Comparable<Blank>
-    {
-
-        /** First abscissa in region. */
-        private final int start;
-
-        /** Last abscissa in region. */
-        private final int stop;
-
-        Blank (int start,
-               int stop)
-        {
-            this.start = start;
-            this.stop = stop;
-        }
-
-        @Override
-        public int compareTo (Blank that)
-        {
-            // This is a total ordering of blanks (within the same staff projection)
-            return Integer.compare(this.start, that.start);
-        }
-
-        @Override
-        public boolean equals (Object obj)
-        {
-            if (this == obj) {
-                return true;
-            }
-
-            if (obj instanceof Blank) {
-                return compareTo((Blank) obj) == 0;
-            }
-
-            return false;
-        }
-
-        public int getWidth ()
-        {
-            return stop - start + 1;
-        }
-
-        @Override
-        public int hashCode ()
-        {
-            int hash = 3;
-            hash = (79 * hash) + this.start;
-
-            return hash;
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Blank(").append(start).append("-").append(stop).append(")");
-
-            return sb.toString();
-        }
     }
 
     //------------//
@@ -1536,8 +1534,6 @@ public class StaffProjector
     //------------//
     private static class Parameters
     {
-
-        final int chunkOffset;
 
         final int chunkWidth;
 
@@ -1576,9 +1572,6 @@ public class StaffProjector
         Parameters (Sheet sheet,
                     int staffSpecific)
         {
-            chunkOffset = Math.max(0, constants.chunkOffset.getValue());
-            chunkWidth = Math.max(1, constants.chunkWidth.getValue());
-
             final Scale scale = sheet.getScale();
 
             {
@@ -1593,12 +1586,12 @@ public class StaffProjector
                 maxBarWidth = large.toPixels(constants.maxBarWidth);
                 maxLeftExtremum = large.toPixels(constants.maxLeftExtremum);
                 maxRightExtremum = large.toPixels(constants.maxRightExtremum);
+                chunkWidth = large.toPixels(constants.chunkWidth);
             }
 
             {
                 // Use staff specific interline value
-                final InterlineScale specific = (staffSpecific == 0)
-                        ? scale.getInterlineScale()
+                final InterlineScale specific = (staffSpecific == 0) ? scale.getInterlineScale()
                         : scale.getInterlineScale(staffSpecific);
                 barThreshold = specific.toPixels(constants.barThreshold);
                 braceThreshold = specific.toPixels(constants.braceThreshold);
