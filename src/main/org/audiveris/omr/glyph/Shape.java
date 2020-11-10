@@ -239,8 +239,8 @@ public enum Shape
     TURN_INVERTED("Inverted Turn"),
     TURN_UP("Turn Up"),
     TURN_SLASH("Turn with a Slash"),
-    MORDENT("Mordent"),
-    MORDENT_INVERTED("Mordent with a Slash"),
+    MORDENT("Lower mordent (with bisecting vertical line)"),
+    MORDENT_INVERTED("Upper mordent (no vertical line)"),
 
     //
     // Tuplets ---
