@@ -164,18 +164,24 @@ public class StackRhythm
     {
         stack.resetRhythm();
 
-        boolean ok = true;
+        boolean stackOk = true;
 
         // Process measure by measure
         for (Measure measure : stack.getMeasures()) {
-            ok &= new MeasureRhythm(measure).process();
+            final boolean measureOk = new MeasureRhythm(measure).process();
+
+            if (!measureOk) {
+                measure.setAbnormal(true);
+            }
+
+            stackOk &= measureOk;
         }
 
         generateStackSlots(); // Gather all chords into stack slots
 
         readStackActualDuration(); // Read stack actual duration
 
-        return ok;
+        return stackOk;
     }
 
     //--------------------//
