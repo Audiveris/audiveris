@@ -200,6 +200,17 @@ public class ChordsMapper
 
             return hash;
         }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("ChordPair{");
+            sb.append("n:#").append(newChord.getId());
+            sb.append(',');
+            sb.append("o:#").append(oldChord.getId());
+            sb.append('}');
+            return sb.toString();
+        }
     }
 
     //---------//

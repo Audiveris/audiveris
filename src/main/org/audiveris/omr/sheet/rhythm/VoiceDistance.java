@@ -22,6 +22,7 @@
 package org.audiveris.omr.sheet.rhythm;
 
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
@@ -105,9 +106,11 @@ public abstract class VoiceDistance
                                 AbstractChordInter right,
                                 StringBuilder details)
         {
+            final Voice leftVoice = left.getVoice();
+            final Voice rightVoice = right.getVoice();
+
             // Different assigned voices?
-            if ((right.getVoice() != null) && (left.getVoice() != null)
-                        && (right.getVoice() != left.getVoice())) {
+            if ((rightVoice != null) && (leftVoice != null) && (rightVoice != leftVoice)) {
                 return INCOMPATIBLE;
             }
 
@@ -129,8 +132,13 @@ public abstract class VoiceDistance
             }
 
             // Penalty for a chord which originated in a different staff
-            int nis = (left.getVoice().getStartingStaff() != right.getTopStaff()) ? NEW_IN_STAFF
-                    : 0;
+            int nis = 0;
+
+            if (leftVoice != null) {
+                final Staff voiceStartingStaff = leftVoice.getStartingStaff();
+                final Staff rightStaff = right.getTopStaff();
+                nis = (voiceStartingStaff != rightStaff) ? NEW_IN_STAFF : 0;
+            }
 
             // A rest is a placeholder, hence bonus for rest (implemented by penalty on non-rest)
             int nar = 0;
