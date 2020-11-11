@@ -1123,6 +1123,10 @@ public class MeasureRhythm
                                             rectifyVoice(setCh, null, lastSync);
                                         } else {
                                             // Discard
+                                            if (blackList.contains(pair)) {
+                                                break Iteration; // It's useless to keep trying
+                                            }
+
                                             blackList.add(pair);
                                             done = false;
                                             continue Iteration;
@@ -1130,6 +1134,10 @@ public class MeasureRhythm
                                     }
                                 } else {
                                     // Discard
+                                    if (blackList.contains(pair)) {
+                                        break Iteration; // It's useless to keep trying
+                                    }
+
                                     blackList.add(pair);
                                     done = false;
                                     continue Iteration;
