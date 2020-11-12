@@ -108,6 +108,7 @@ import javax.swing.event.ListSelectionListener;
 public class BookParameters
         implements ChangeListener
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BookParameters.class);
 
@@ -115,6 +116,7 @@ public class BookParameters
     private static final ResourceMap resources = Application.getInstance().getContext()
             .getResourceMap(BookParameters.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The swing component of this panel. */
     private final JTabbedPane component = new JTabbedPane();
 
@@ -124,6 +126,7 @@ public class BookParameters
     /** The panel dedicated to setting of defaults. */
     private final ScopedPanel defaultPanel;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a ScoreParameters object.
      *
@@ -235,6 +238,7 @@ public class BookParameters
                         : ((bookPanel != null) ? bookPanel : defaultPanel));
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // commit //
     //--------//
@@ -388,6 +392,7 @@ public class BookParameters
         return null;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // FilterPane //
     //------------//
@@ -629,7 +634,7 @@ public class BookParameters
                     XactDataPane<Boolean> parent,
                     Param<Boolean> model)
         {
-            super(description(key), parent, "", null, model);
+            super(textOf(key), parent, tipOf(key), model);
             this.key = key;
         }
 
@@ -650,7 +655,7 @@ public class BookParameters
         {
             // Draw the specific/inherit box
             builder.add(selBox, cst.xyw(1, r, 1));
-            builder.add(separator, cst.xyw(3, r, 3));
+            builder.add(title, cst.xyw(3, r, 3));
             builder.add(bbox, cst.xyw(7, r, 1));
 
             return r + 2;
@@ -667,11 +672,18 @@ public class BookParameters
             return 1;
         }
 
-        private static String description (Switch key)
+        private static String textOf (Switch key)
         {
-            final String desc = resources.getString("Switch." + key + ".toolTipText");
+            // Priority given to text in resources file if any
+            final String desc = resources.getString("Switch." + key + ".text");
 
+            // Fallback using constant description text
             return (desc != null) ? desc : key.getConstant().getDescription();
+        }
+
+        private static String tipOf (Switch key)
+        {
+            return resources.getString("Switch." + key + ".toolTipText");
         }
     }
 

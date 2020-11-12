@@ -26,6 +26,9 @@ import com.jgoodies.forms.layout.CellConstraints;
 
 import org.audiveris.omr.util.param.Param;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -43,7 +46,13 @@ import javax.swing.SwingConstants;
 public abstract class XactDataPane<E>
         implements ActionListener
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /** Resource injection. */
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(XactDataPane.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Model parameter (cannot be null). */
     protected final Param<E> model;
 
@@ -53,12 +62,10 @@ public abstract class XactDataPane<E>
     /** Box for selecting specific vs inherited data. */
     protected final JCheckBox selBox;
 
-    /** Title for the pane. */
-    protected final String title;
+    /** Pane title. */
+    protected final JLabel title;
 
-    /** Separator. */
-    protected final JLabel separator;
-
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code XactDataPane} object.
      *
@@ -70,28 +77,29 @@ public abstract class XactDataPane<E>
                          XactDataPane<E> parent,
                          Param<E> model)
     {
-        this.parent = parent;
-
         if (model == null) {
             throw new IllegalArgumentException("Null model for pane '" + title + "'");
         }
 
+        this.parent = parent;
         this.model = model;
-        this.title = title;
-        separator = new JLabel(title);
-        separator.setHorizontalAlignment(SwingConstants.LEFT);
-        separator.setEnabled(false);
+        this.title = new JLabel(title);
+        this.title.setHorizontalAlignment(SwingConstants.LEFT);
+        this.title.setEnabled(false);
+
         selBox = new JCheckBox();
         selBox.addActionListener(this);
+        selBox.setToolTipText(resources.getString("selBox.toolTipText"));
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void actionPerformed (ActionEvent e)
     {
         // Pane (de)selection (programmatic or manual)
         final boolean sel = isSelected();
         setEnabled(sel);
-        separator.setEnabled(sel);
+        title.setEnabled(sel);
 
         final E value;
 
@@ -134,11 +142,9 @@ public abstract class XactDataPane<E>
     {
         // Draw the specific/inherit box + separating line
         builder.add(selBox, cst.xyw(1, r, 1));
-        ///builder.addSeparator(title, cst.xyw(3, r, 5));
-        builder.add(separator, cst.xyw(3, r, 5));
-        r += 2;
+        builder.add(title, cst.xyw(3, r, 5));
 
-        return r;
+        return r + 2;
     }
 
     /**
