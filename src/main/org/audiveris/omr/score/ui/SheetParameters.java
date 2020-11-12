@@ -267,7 +267,7 @@ public class SheetParameters
         {
             // Draw the specific/inherit box
             builder.add(selBox, cst.xyw(1, r, 1));
-            builder.add(separator, cst.xyw(3, r, 3));
+            builder.add(title, cst.xyw(3, r, 3));
             builder.add(data.getField(), cst.xyw(7, r, 1));
 
             return r + 2;

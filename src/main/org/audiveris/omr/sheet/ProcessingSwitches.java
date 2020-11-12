@@ -148,6 +148,7 @@ public class ProcessingSwitches
     {
         keepGrayImages(constants.keepGrayImages),
         indentations(constants.indentations),
+        bothSharedHeadDots(constants.bothSharedHeadDots),
         articulations(constants.articulations),
         chordNames(constants.chordNames),
         fingerings(constants.fingerings),
@@ -256,6 +257,10 @@ public class ProcessingSwitches
     private static class Constants
             extends ConstantSet
     {
+
+        private final Constant.Boolean bothSharedHeadDots = new Constant.Boolean(
+                false,
+                "Link augmentation dot to both shared heads");
 
         private final Constant.Boolean keepGrayImages = new Constant.Boolean(
                 false,
