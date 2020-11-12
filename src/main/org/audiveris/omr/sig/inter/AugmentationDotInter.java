@@ -26,6 +26,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
@@ -510,7 +511,7 @@ public class AugmentationDotInter
         }
 
         if (link.partner instanceof HeadInter) {
-            return sharedHeadLinks(link);
+            return sharedHeadLinks(link, system);
         } else {
             return Collections.singleton(link);
         }
@@ -536,19 +537,25 @@ public class AugmentationDotInter
      * See some cases in Dichterliebe01 example.
      * <ul>
      * <li>If head is located <b>on</b> staff line or ledger, use dot relative location.
-     * <li>If head is located <b>between</b> staff lines or ledgers, check chords durations:
+     * <li>If head is located <b>between</b> staff lines or ledgers:
      * <ul>
-     * <li>If durations are different, assign the dot only to the <b>longer</b>
+     * <li>If {@link ProcessingSwitches#bothSharedHeadDots} is set, assign dot to <b>both</b> heads.
+     * <li>If switch is not set, check chords durations:
+     * <ul>
+     * <li>If they are different, assign the dot <b>only</b> to the <b>longer</b>
      * (which means lower number of beams or flags).
      * <li>If they are identical, assign the dot to <b>both</b>.
      * </ul>
      * </ul>
+     * </ul>
      *
-     * @param link the provided (head) link, perhaps null
+     * @param link   the provided (head) link, perhaps null
+     * @param system the containing system
      * @return a collection of (head) links, the provided link for a non-shared head, but one or two
      *         links for shared heads
      */
-    public Collection<Link> sharedHeadLinks (Link link)
+    public Collection<Link> sharedHeadLinks (Link link,
+                                             SystemInfo system)
     {
         if (link == null) {
             return Collections.emptyList();
@@ -585,7 +592,8 @@ public class AugmentationDotInter
                 final int bf1 = h1.getChord().getBeamsOrFlagsNumber();
                 final int bf2 = h2.getChord().getBeamsOrFlagsNumber();
 
-                if (bf1 == bf2) {
+                if ((bf1 == bf2) || system.getSheet().getStub().getProcessingSwitches().getValue(
+                        ProcessingSwitches.Switch.bothSharedHeadDots)) {
                     // Link to both
                     links.add(new Link(h1, new AugmentationRelation(), true));
                     links.add(new Link(h2, new AugmentationRelation(), true));

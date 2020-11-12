@@ -27,8 +27,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import org.audiveris.omr.util.param.Param;
 
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
 
 /**
  * A data pane for just one boolean.
@@ -39,42 +37,39 @@ public class BooleanPane
         extends XactDataPane<Boolean>
 {
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Boolean box. */
     protected final JCheckBox bbox = new JCheckBox();
 
-    /** Label for the boolean. */
-    protected final JLabel label;
-
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BooleanPane} object.
      *
      * @param title  pane title string
      * @param parent parent pane if any
-     * @param text   data text
      * @param tip    data description
      * @param model  underlying data model (cannot be null)
      */
     public BooleanPane (String title,
                         XactDataPane<Boolean> parent,
-                        String text,
                         String tip,
                         Param<Boolean> model)
     {
         super(title, parent, model);
-        this.label = new JLabel(text, SwingConstants.RIGHT);
 
-        if (tip != null) {
+        if (tip != null && !tip.isBlank()) {
             bbox.setToolTipText(tip);
+            this.title.setToolTipText(tip);
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public int defineLayout (PanelBuilder builder,
                              CellConstraints cst,
                              int r)
     {
         r = super.defineLayout(builder, cst, r);
-        builder.add(label, cst.xyw(3, r, 1));
         builder.add(bbox, cst.xyw(7, r, 1));
 
         return r + 2;
@@ -84,7 +79,7 @@ public class BooleanPane
     public void setEnabled (boolean bool)
     {
         bbox.setEnabled(bool);
-        label.setEnabled(bool);
+        title.setEnabled(bool);
     }
 
     @Override

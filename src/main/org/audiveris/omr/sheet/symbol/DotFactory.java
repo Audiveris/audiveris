@@ -675,7 +675,7 @@ public class DotFactory
 
         List<Link> links = new ArrayList<>();
         Link headLink = aug.lookupHeadLink(interFactory.getSystemHeadChords(), system);
-        links.addAll(aug.sharedHeadLinks(headLink));
+        links.addAll(aug.sharedHeadLinks(headLink, system));
         links.addAll(aug.lookupRestLinks(interFactory.getSystemRests(), system));
 
         if (!links.isEmpty()) {
