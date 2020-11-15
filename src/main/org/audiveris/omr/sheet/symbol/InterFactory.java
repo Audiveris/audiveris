@@ -50,6 +50,7 @@ import org.audiveris.omr.sig.inter.BracketInter;
 import org.audiveris.omr.sig.inter.BreathMarkInter;
 import org.audiveris.omr.sig.inter.CaesuraInter;
 import org.audiveris.omr.sig.inter.ClefInter;
+import org.audiveris.omr.sig.inter.ClutterInter;
 import org.audiveris.omr.sig.inter.DeletedInterException;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.EndingInter;
@@ -727,7 +728,7 @@ public class InterFactory
 
         switch (shape) {
         case CLUTTER:
-            return null;
+            return new ClutterInter(null, GRADE);
         //
         // Ottava TODO ???
         //        case OTTAVA_ALTA:
