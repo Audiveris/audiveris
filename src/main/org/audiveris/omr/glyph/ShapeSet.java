@@ -22,6 +22,7 @@
 package org.audiveris.omr.glyph;
 
 import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import static org.audiveris.omr.glyph.Shape.*;
 import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
@@ -37,6 +38,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -58,6 +60,8 @@ import javax.swing.JMenuItem;
  */
 public class ShapeSet
 {
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ShapeSet.class);
 
@@ -381,16 +385,17 @@ public class ShapeSet
     public static final ShapeSet Physicals = new ShapeSet(
             LEDGER,
             Colors.SCORE_PHYSICALS,
-            shapesOf(LYRICS,
-                     TEXT,
-                     /// CHARACTER,
-                     /// CLUTTER,
-                     SLUR_ABOVE,
-                     SLUR_BELOW,
-                     LEDGER,
-                     STEM,
-                     ENDING,
-                     ENDING_WRL));
+            shapesOf(shapesOf(LYRICS,
+                              TEXT,
+                              /// CHARACTER,
+                              SLUR_ABOVE,
+                              SLUR_BELOW,
+                              LEDGER,
+                              STEM,
+                              ENDING,
+                              ENDING_WRL),
+                     constants.addClutterInPhysicals.isSet()
+                     ? shapesOf(CLUTTER) : Collections.emptyList()));
 
     // =========================================================================
     // Below are EnumSet instances, used programmatically.
@@ -1085,5 +1090,17 @@ public class ShapeSet
         private Sets ()
         {
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean addClutterInPhysicals = new Constant.Boolean(
+                false,
+                "(Hidden feature)");
     }
 }

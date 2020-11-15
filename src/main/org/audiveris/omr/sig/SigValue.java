@@ -40,6 +40,7 @@ import org.audiveris.omr.sig.inter.BreathMarkInter;
 import org.audiveris.omr.sig.inter.CaesuraInter;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.ClefInter;
+import org.audiveris.omr.sig.inter.ClutterInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.FermataArcInter;
@@ -173,6 +174,7 @@ public class SigValue
         @XmlElementRef(type = CaesuraInter.class),
         @XmlElementRef(type = ChordNameInter.class),
         @XmlElementRef(type = ClefInter.class),
+        @XmlElementRef(type = ClutterInter.class),
         @XmlElementRef(type = DynamicsInter.class),
         @XmlElementRef(type = EndingInter.class),
         @XmlElementRef(type = FermataDotInter.class),
