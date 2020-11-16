@@ -1235,10 +1235,10 @@ public class StaffProjector
             final double derImpact = (double) bestDer / (minBar - minDerivative);
 
             // Presence of chunks next to peak?
-            final double chunk = getChunk(x, dir);
+            final int chunk = getChunk(x, dir);
             double chunkImpact = (chunk < minChunk) ? 1.0
                     : ((chunk > maxChunk) ? 0.0
-                            : (maxChunk - chunk) / (maxChunk - minChunk));
+                            : (double) (maxChunk - chunk) / (maxChunk - minChunk));
 
             return new PeakSide(x, derImpact, chunkImpact);
         } else {
@@ -1263,14 +1263,14 @@ public class StaffProjector
     // getChunk //
     //----------//
     /**
-     * Report the average chunk cumulated pixels next to the provided abscissa.
+     * Report the minimum chunk cumulated pixels next to the provided abscissa.
      *
      * @param x0  provided abscissa (peak precise start or stop abscissa)
      * @param dir abscissa direction to check from x0
-     * @return average chunk cumulated height on peak external side
+     * @return minimum chunk cumulated height on peak external side
      */
-    private double getChunk (int x0,
-                             int dir)
+    private int getChunk (int x0,
+                          int dir)
     {
         // Beginning of range, close to peak side
         final int x1 = x0 + dir * (1 + params.chunkOffset);
@@ -1283,13 +1283,13 @@ public class StaffProjector
             return 0;
         }
 
-        int chunk = 0;
+        int chunk = Integer.MAX_VALUE;
 
         for (int x = x1; dir * (x2 - x) >= 0; x += dir) {
-            chunk += projection.getValue(x);
+            chunk = Math.min(chunk, projection.getValue(x));
         }
 
-        return (double) chunk / params.chunkWidth;
+        return chunk;
     }
 
     //-------------//
@@ -1422,7 +1422,7 @@ public class StaffProjector
                 "Maximum vertical gap length in a bar");
 
         private final Scale.Fraction chunkThreshold = new Scale.Fraction(
-                0.25,
+                0.45, //0.25,
                 "Maximum cumul value to detect chunk (on top of staff lines)");
 
         private final Constant.Ratio blankThreshold = new Constant.Ratio(
