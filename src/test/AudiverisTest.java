@@ -26,30 +26,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Test for multiple calls of Audiveris
- *
  * @author Hervé Bitteur
  */
 public class AudiverisTest
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
     private static final Logger logger = LoggerFactory.getLogger(AudiverisTest.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new AudiverisTest object.
-     */
     public AudiverisTest ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Test of main method, of class Audiveris.
-     */
     @Test
-    public void testMultipleCalls ()
+    public void testMainMethodMultipleCalls ()
     {
         System.out.println("testMultipleCalls");
 

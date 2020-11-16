@@ -56,3 +56,6 @@ Thumb.db
 .classpath
 .project
 .settings
+
+#Idea IDE
+.idea/*
