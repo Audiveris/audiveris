@@ -66,11 +66,14 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import javax.media.jai.JAI;
+import javax.swing.SwingUtilities;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omr.OMR;
+import org.audiveris.omr.sheet.ui.SheetTab;
 
 /**
  * Class {@code Picture} starts from the original BufferedImage to provide all {@link
@@ -831,6 +834,13 @@ public class Picture
             final ImageHolder holder = entry.getValue();
 
             if ((iKey == ImageKey.GRAY) && (!keepGray)) {
+                if (OMR.gui != null) {
+                    // Close view tab on GRAY, to avoid future continuous reloading.
+                    SwingUtilities.invokeLater(() -> {
+                        sheet.getStub().getAssembly().removeTab(SheetTab.GRAY_TAB);
+                    });
+                }
+
                 holder.removeData(sheetFolder);
                 it.remove();
             } else {

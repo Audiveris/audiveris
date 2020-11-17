@@ -489,6 +489,25 @@ public class SheetAssembly
     }
 
     //-----------//
+    // removeTab //
+    //-----------//
+    /**
+     * Remove the provided tab.
+     *
+     * @param tab the tab to remove
+     */
+    public void removeTab (SheetTab tab)
+    {
+        for (int i = 0, count = viewsPane.getTabCount(); i < count; i++) {
+            if (viewsPane.getTitleAt(i).equals(tab.label)) {
+                viewsPane.removeTabAt(i);
+
+                return;
+            }
+        }
+    }
+
+    //-----------//
     // renameTab //
     //-----------//
     /**
