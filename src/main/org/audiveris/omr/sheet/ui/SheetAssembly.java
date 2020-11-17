@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2019. All rights reserved.
+//  Copyright © Audiveris 2021. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -153,14 +153,7 @@ public class SheetAssembly
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        addBoard(tab, board);
-                    }
-                });
+                SwingUtilities.invokeAndWait(() -> addBoard(tab, board));
             } catch (InterruptedException |
                      InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
@@ -207,14 +200,7 @@ public class SheetAssembly
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        addViewTab(label, scrollView, boardsPane);
-                    }
-                });
+                SwingUtilities.invokeAndWait(() -> addViewTab(label, scrollView, boardsPane));
             } catch (InterruptedException |
                      InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
@@ -266,7 +252,7 @@ public class SheetAssembly
         // Display the related boards
         displayBoards();
 
-        if (stub.hasSheet() && stub.getLatestStep().compareTo(Step.HEADS) >= 0) {
+        if (stub.hasSheet() && (stub.getLatestStep().compareTo(Step.HEADS) >= 0)) {
             // Update repetitiveInput checkbox
             BookActions.getInstance().updateRepetitiveInput(stub.getSheet());
         }
@@ -546,14 +532,7 @@ public class SheetAssembly
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        reset();
-                    }
-                });
+                SwingUtilities.invokeAndWait(() -> reset());
             } catch (InterruptedException |
                      InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
