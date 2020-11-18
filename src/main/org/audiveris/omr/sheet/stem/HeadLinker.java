@@ -69,6 +69,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import org.audiveris.omr.sheet.beam.BeamGroup;
 
 /**
  * Class {@code HeadLinker} tries to establish links from a head to nearby stem
@@ -382,34 +383,6 @@ public class HeadLinker
                 // (try to) connect
                 connectHeadStem(null, stemInter);
             }
-        }
-
-        //--------------------//
-        // areGroupCompatible //
-        //--------------------//
-        /**
-         * Check whether the two beams can be consecutive beams in the same beam
-         * group, using ordinate gap.
-         *
-         * @param one current beam
-         * @param two following beam, in 'dir' direction
-         * @return true if OK
-         */
-        private boolean areGroupCompatible (AbstractBeamInter one,
-                                            AbstractBeamInter two)
-        {
-            // Vertical gap?
-            Point2D onePt = getTargetPt(one.getMedian());
-            Point2D twoPt = getTargetPt(two.getMedian());
-            final double yDistance = Math.abs(onePt.getY() - twoPt.getY());
-
-            if (yDistance > params.maxBeamDistance) {
-                logger.debug("{} & {} are too distant", one, two);
-
-                return false;
-            }
-
-            return true;
         }
 
         //--------------------//
@@ -1113,7 +1086,7 @@ public class HeadLinker
                     }
                 }
 
-                if (groupIsGood && areGroupCompatible(prevBeam, beam)) {
+                if (groupIsGood && BeamGroup.canBeNeighbors(prevBeam, beam, scale)) {
                     // Grow the current good group
                     group.add(beam);
                 } else {

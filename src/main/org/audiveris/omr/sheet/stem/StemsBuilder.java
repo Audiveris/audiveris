@@ -762,8 +762,6 @@ public class StemsBuilder
 
         final double maxSectionJitter;
 
-        final int maxBeamDistance;
-
         /**
          * Creates a new Parameters object.
          *
@@ -793,15 +791,6 @@ public class StemsBuilder
             maxSectionJitter = constants.maxSectionJitter.getValue() * stemThickness;
 
             minChunkWeight = scale.getStemThickness(); // TODO: check this
-
-            Double beamDistance = scale.getBeamMeanDistance();
-
-            if (beamDistance != null) {
-                maxBeamDistance = (int) Math.ceil(
-                        beamDistance + (2 * scale.getBeamSigmaDistance()));
-            } else {
-                maxBeamDistance = scale.toPixels(constants.maxBeamDistance);
-            }
 
             if (logger.isDebugEnabled()) {
                 new Dumping().dump(this);

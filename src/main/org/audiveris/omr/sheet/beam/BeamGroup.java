@@ -903,6 +903,106 @@ public class BeamGroup
         }
     }
 
+    //----------------//
+    // canBeNeighbors //
+    //----------------//
+    /**
+     * Check whether the two provided beams can belong to the same group, one directly
+     * above or below the other.
+     *
+     * @param one          a beam candidate
+     * @param two          another beam candidate
+     * @param minXOverlap  minimum horizontal overlap between candidates median lines
+     * @param maxYDistance maximum vertical distance between candidates median lines
+     * @param maxSlopeDiff maximum slope difference between candidates median lines
+     * @return true if they can be direct neighbors in a group
+     */
+    public static boolean canBeNeighbors (AbstractBeamInter one,
+                                          AbstractBeamInter two,
+                                          double minXOverlap,
+                                          double maxYDistance,
+                                          double maxSlopeDiff)
+    {
+        final Line2D m1 = one.getMedian();
+        final Line2D m2 = two.getMedian();
+
+        // Check min x overlap
+        final double maxLeft = Math.max(m1.getX1(), m2.getX1());
+        final double minRight = Math.min(m1.getX2(), m2.getX2());
+        final double xOverlap = minRight - maxLeft;
+
+        if (xOverlap < minXOverlap) {
+            return false;
+        }
+
+        // Measure vertical distance at middle of x overlap
+        final double x = (maxLeft + minRight) / 2;
+        final double y1 = LineUtil.yAtX(m1, x);
+        final double y2 = LineUtil.yAtX(m2, x);
+        final double dy = Math.abs(y2 - y1);
+
+        if (dy > maxYDistance) {
+            return false;
+        }
+
+        // Check slopes
+        final double slope1 = LineUtil.getSlope(m1);
+        final double slope2 = LineUtil.getSlope(m2);
+        final double slopeDiff = Math.abs(slope2 - slope1);
+
+        return slopeDiff <= maxSlopeDiff;
+    }
+
+    //----------------//
+    // canBeNeighbors //
+    //----------------//
+    /**
+     * Check whether the two provided beams can belong to the same group, one directly
+     * above or below the other.
+     *
+     * @param one   a beam candidate
+     * @param two   another beam candidate
+     * @param scale the sheet or staff scale
+     * @return true if they can be direct neighbors in a group
+     */
+    public static boolean canBeNeighbors (AbstractBeamInter one,
+                                          AbstractBeamInter two,
+                                          Scale scale)
+    {
+        return canBeNeighbors(one,
+                              two,
+                              scale.toPixelsDouble(constants.minXOverlap),
+                              scale.toPixelsDouble(constants.maxYDistance),
+                              constants.maxSlopeDiff.getValue());
+    }
+
+    //-----------------//
+    // getMaxSlopeDiff //
+    //-----------------//
+    /**
+     * Report the maximum acceptable difference in slope between beams of a group.
+     *
+     * @return max slope diff
+     */
+    public static double getMaxSlopeDiff ()
+    {
+        return constants.maxSlopeDiff.getValue();
+    }
+
+    //-----------------//
+    // getMaxYDistance //
+    //-----------------//
+    /**
+     * Report the maximum acceptable vertical distance between median lines of subsequent
+     * beams within a group.
+     *
+     * @return max vertical distance (median to median)
+     */
+    public static Scale.Fraction getMaxYDistance ()
+    {
+        return constants.maxYDistance;
+    }
+
     //-----------------//
     // checkBeamGroups //
     //-----------------//
@@ -1145,7 +1245,7 @@ public class BeamGroup
 
             // Ordinate of head side of stem
             final int yStart = (int) Math.rint(
-                    ((stemDir > 0) ? rootStem.getTop() : rootStem.getBottom()).getY());
+                    ((stemDir > 0) ? rootStem.getTop() : rootStem.getBottom()).getY() - 1);
 
             return rootStem.extractSubStem(yStart, yStop);
         }
@@ -1254,5 +1354,19 @@ public class BeamGroup
         private final Scale.Fraction maxChordDy = new Scale.Fraction(
                 0.5,
                 "Maximum vertical gap between a chord and a beam");
+
+        private final Scale.Fraction minXOverlap = new Scale.Fraction(
+                1.0,
+                "Minimum horizontal overlap between subsequent beams of a group");
+
+        private final Scale.Fraction maxYDistance = new Scale.Fraction(
+                1.5,
+                "Maximum vertical distance between subsequent beams of a group");
+
+        private final Constant.Double maxSlopeDiff = new Constant.Double(
+                "tangent",
+                0.07,
+                "Maximum slope difference between beams of a group");
+
     }
 }

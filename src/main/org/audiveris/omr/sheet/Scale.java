@@ -148,23 +148,6 @@ public class Scale
     {
     }
 
-    //---------------------//
-    // getBeamMeanDistance //
-    //---------------------//
-    /**
-     * Report the mean value for vertical distance between grouped beams.
-     *
-     * @return mean value for vertical beam gap
-     */
-    public Double getBeamMeanDistance ()
-    {
-        if (beamScale == null) {
-            return null;
-        }
-
-        return beamScale.getDistanceMean();
-    }
-
     //--------------//
     // getBeamScale //
     //--------------//
@@ -176,23 +159,6 @@ public class Scale
     public BeamScale getBeamScale ()
     {
         return beamScale;
-    }
-
-    //----------------------//
-    // getBeamSigmaDistance //
-    //----------------------//
-    /**
-     * Report the standard deviation for vertical distance between grouped beams.
-     *
-     * @return standard deviation for vertical beam gap
-     */
-    public Double getBeamSigmaDistance ()
-    {
-        if (beamScale == null) {
-            return null;
-        }
-
-        return beamScale.getDistanceSigma();
     }
 
     //------------------//
@@ -648,21 +614,6 @@ public class Scale
         return pixels / lineScale.main;
     }
 
-    //-----------------//
-    // setBeamDistance //
-    //-----------------//
-    /**
-     * Remember vertical distance between grouped beams
-     *
-     * @param meanValue         the mean value of the distance
-     * @param standardDeviation the standard deviation of the distance
-     */
-    public void setBeamDistance (double meanValue,
-                                 double standardDeviation)
-    {
-        beamScale.setDistance(meanValue, standardDeviation);
-    }
-
     //--------------//
     // setItemValue //
     //--------------//
@@ -937,16 +888,6 @@ public class Scale
         @XmlAttribute(name = "extra")
         private final Boolean extra;
 
-        /** Mean vertical distance (center to center) between beams of the same group. */
-        @XmlAttribute(name = "mean-distance")
-        @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
-        private Double distanceMean;
-
-        /** Standard deviation for vertical distance between beams of the same group. */
-        @XmlAttribute(name = "sigma-distance")
-        @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
-        private Double distanceSigma;
-
         /**
          * Creates a new {@code BeamScale} object.
          *
@@ -970,26 +911,6 @@ public class Scale
         }
 
         /**
-         * Report the average distance (center to center) between beams of the same group.
-         *
-         * @return the distanceMean
-         */
-        public Double getDistanceMean ()
-        {
-            return distanceMean;
-        }
-
-        /**
-         * Report the standard deviation of beam distance.
-         *
-         * @return the distanceSigma
-         */
-        public Double getDistanceSigma ()
-        {
-            return distanceSigma;
-        }
-
-        /**
          * Report the most frequent beam distance
          *
          * @return the most frequent beam distance
@@ -1009,19 +930,6 @@ public class Scale
             return extra != null;
         }
 
-        /**
-         * Record mean and sigma values for inter-beam distance
-         *
-         * @param distanceMean  the distanceMean to set
-         * @param distanceSigma the distanceSigma to set
-         */
-        public void setDistance (double distanceMean,
-                                 double distanceSigma)
-        {
-            this.distanceMean = distanceMean;
-            this.distanceSigma = distanceSigma;
-        }
-
         @Override
         public String toString ()
         {
@@ -1030,10 +938,6 @@ public class Scale
 
             if (extra != null) {
                 sb.append(" extra");
-            }
-
-            if (distanceMean != null) {
-                sb.append(String.format(" dist:%.1f~%.1f", distanceMean, distanceSigma));
             }
 
             sb.append(')');
