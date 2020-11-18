@@ -63,7 +63,7 @@ public class CueBeamsStep
                           Context context)
             throws StepException
     {
-        new BeamsBuilder(system, null, context.spotLag).buildCueBeams(context.spots); // -> Cue beams
+        new BeamsBuilder(system, context.spotLag).buildCueBeams(context.spots); // -> Cue beams
     }
 
     //----------//

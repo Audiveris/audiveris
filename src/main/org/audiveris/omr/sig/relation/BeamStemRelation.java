@@ -173,6 +173,10 @@ public class BeamStemRelation
         final AbstractBeamInter beam = (AbstractBeamInter) e.getEdgeSource();
         final StemInter stem = (StemInter) e.getEdgeTarget();
 
+        if (beam.isVip() && stem.isVip()) {
+            logger.info("VIP BeamStemRelation added between {} and {}", beam, stem);
+        }
+
         if (extensionPoint == null) {
             extensionPoint = computeExtensionPoint(beam, stem);
         }
