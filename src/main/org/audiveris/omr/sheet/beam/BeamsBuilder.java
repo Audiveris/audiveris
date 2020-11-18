@@ -36,7 +36,6 @@ import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
-import org.audiveris.omr.math.Population;
 import org.audiveris.omr.run.Orientation;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
@@ -51,6 +50,7 @@ import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractBeamInter.Impacts;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
+import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
@@ -63,7 +63,6 @@ import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Navigable;
-import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
 import org.audiveris.omr.util.WrappedInteger;
@@ -78,11 +77,9 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.audiveris.omr.sig.inter.HeadInter;
 
 /**
  * Class {@code BeamsBuilder} is in charge, at system level, of retrieving the possible
@@ -100,11 +97,13 @@ import org.audiveris.omr.sig.inter.HeadInter;
  */
 public class BeamsBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BeamsBuilder.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -140,25 +139,20 @@ public class BeamsBuilder
     /** Input image. */
     private ByteProcessor pixelFilter;
 
-    /** Population of observed vertical distance between grouped beams. */
-    private final Population distances;
-
     /** Lag of glyph sections. */
     private final Lag spotLag;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BeamsBuilder object.
      *
-     * @param system    the dedicated system
-     * @param distances (output) population of vertical beam distances within groups
-     * @param spotLag   (output) lag, if any, to be populated with glyph sections
+     * @param system  the dedicated system
+     * @param spotLag (output) lag, if any, to be populated with glyph sections
      */
     public BeamsBuilder (SystemInfo system,
-                         Population distances,
                          Lag spotLag)
     {
         this.system = system;
-        this.distances = distances;
         this.spotLag = spotLag;
 
         sig = system.getSig();
@@ -166,6 +160,7 @@ public class BeamsBuilder
         params = new Parameters(sheet.getScale());
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildBeams //
     //------------//
@@ -193,11 +188,6 @@ public class BeamsBuilder
         // Finally, retrieve beam hooks
         sortedBeamSpots.removeAll(assignedSpots);
         buildHooks();
-
-        // Measure vertical gap
-        if (distances.getCardinality() > 0) {
-            logger.debug("S#{} beam gaps {}", system.getId(), distances);
-        }
     }
 
     //---------------//
@@ -342,7 +332,7 @@ public class BeamsBuilder
         // Check that all lines of the glyph are rather parallel
         double lineSlopeGap = structure.compareSlopes();
 
-        if (lineSlopeGap > params.maxBeamSlopeGap) {
+        if (lineSlopeGap > BeamGroup.getMaxSlopeDiff()) {
             return "diverging beams";
         }
 
@@ -443,9 +433,6 @@ public class BeamsBuilder
             registerBeam(hook);
             rawSystemBeams.add(hook);
             assignedSpots.add(glyph);
-
-            // Measure vertical distance between hook and base beam
-            measureVerticalDistance(beam, hook);
 
             return null; // Meaning: no failure
         } else {
@@ -558,8 +545,8 @@ public class BeamsBuilder
         }
 
         double widthImpact = (width - minWidthLow) / (minWidthHigh - minWidthLow);
-        double minHeightImpact = (item.height - itemParams.minHeightLow) / (itemParams.typicalHeight
-                                                                                    - itemParams.minHeightLow);
+        double minHeightImpact = (item.height - itemParams.minHeightLow)
+                                         / (itemParams.typicalHeight - itemParams.minHeightLow);
         double maxHeightImpact = (itemParams.maxHeightHigh - item.height)
                                          / (itemParams.maxHeightHigh - itemParams.typicalHeight);
         double coreImpact = (coreRatio - params.minCoreBlackRatio) / (1 - params.minCoreBlackRatio);
@@ -761,7 +748,7 @@ public class BeamsBuilder
 
                 if (sideBeam != null) {
                     // Try to merge the 2 beams (avoid double testing, so check on one side only)
-                    if ((side == LEFT) && extendToBeam(beam, side, sideBeam)) {
+                    if ((side == LEFT) && extendToBeam(beam, sideBeam)) {
                         break;
                     }
 
@@ -804,83 +791,70 @@ public class BeamsBuilder
         // Look for a parallel beam just above or below
         final Line2D median = beam.getMedian();
         final double height = beam.getHeight();
-        final double slope = LineUtil.getSlope(median);
-
-        Area luArea = AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), 3 * height);
+        final Area luArea = AreaUtil.horizontalParallelogram(
+                median.getP1(), median.getP2(),
+                2 * sheet.getScale().toPixelsDouble(BeamGroup.getMaxYDistance()));
         beam.addAttachment("=", luArea);
 
         List<Inter> others = Inters.intersectedInters(rawSystemBeams, GeoOrder.NONE, luArea);
-
         others.remove(beam); // Safer
 
-        if (!others.isEmpty()) {
-            // Use a closer look
-            final Point2D endPt = (side == LEFT) ? median.getP1() : median.getP2();
+        if (others.isEmpty()) {
+            return false;
+        }
 
-            for (Inter ib : others) {
-                AbstractBeamInter other = (AbstractBeamInter) ib;
+        // Use a closer look
+        final Point2D endPt = (side == LEFT) ? median.getP1() : median.getP2();
 
-                if (logging) {
-                    logger.info("VIP {} found parallel {}", beam, other);
-                }
+        for (Inter ib : others) {
+            AbstractBeamInter other = (AbstractBeamInter) ib;
 
-                // Check concrete intersection (using areas rather than rectangles)
-                if (!AreaUtil.intersection(other.getArea(), luArea)) {
-                    if (logging) {
-                        logger.info("VIP too distant beams {} and {}", beam, other);
-                    }
-
-                    continue;
-                }
-
-                // Check they are really parallel?
-                final Line2D otherMedian = other.getMedian();
-                final double otherSlope = LineUtil.getSlope(otherMedian);
-
-                if (Math.abs(otherSlope - slope) > params.maxBeamSlopeGap) {
-                    if (logging) {
-                        logger.info("VIP {} not parallel with {}", beam, other);
-                    }
-
-                    continue;
-                }
-
-                // Side-effect: measure the actual vertical gap between such parallel beams
-                // (avoiding a given pair to be counted 4 times...)
-                if ((side == LEFT) && (beam.getId() < other.getId())) {
-                    measureVerticalDistance(beam, other);
-                }
-
-                // Check the other beam can really extend the current beam
-                final Point2D otherEndPt = (side == LEFT) ? otherMedian.getP1()
-                        : otherMedian.getP2();
-                double extDx = (side == LEFT) ? (endPt.getX() - otherEndPt.getX())
-                        : (otherEndPt.getX() - endPt.getX());
-
-                if (extDx < (2 * params.maxStemBeamGapX)) {
-                    if (logging) {
-                        logger.info("VIP {} no increment with {}", beam, other);
-                    }
-
-                    continue;
-                }
-
-                // Make sure the end side is fully in the same system as the current one
-                Point2D extPt = LineUtil.intersectionAtX(median, otherEndPt.getX());
-
-                if (!isSideInSystem(extPt, height)) {
-                    continue;
-                }
-
-                // Make sure this does not include another beam
-                AbstractBeamInter includedBeam = getSideBeam(beam, side, extDx);
-
-                if (includedBeam != null) {
-                    continue;
-                }
-
-                return extendToPoint(beam, side, extPt);
+            if (other.getGlyph() == beam.getGlyph()) {
+                continue;
             }
+
+            if (logging) {
+                logger.info("VIP {} found parallel candidate {}", beam, other);
+            }
+
+            if (!BeamGroup.canBeNeighbors(beam, other, sheet.getScale())) {
+                if (logging) {
+                    logger.info("VIP not neighbor beams {} and {}", beam, other);
+                }
+
+                continue;
+            }
+
+            // Check the other beam can really extend the current beam
+            final Line2D otherMedian = other.getMedian();
+            final Point2D otherEndPt = (side == LEFT) ? otherMedian.getP1()
+                    : otherMedian.getP2();
+            double extDx = (side == LEFT) ? (endPt.getX() - otherEndPt.getX())
+                    : (otherEndPt.getX() - endPt.getX());
+
+            if (extDx < (2 * params.maxStemBeamGapX)) {
+                if (logging) {
+                    logger.info("VIP {} no increment with {}", beam, other);
+                }
+
+                continue;
+            }
+
+            // Make sure the end side is fully in the same system as the current one
+            Point2D extPt = LineUtil.intersectionAtX(median, otherEndPt.getX());
+
+            if (!isSideInSystem(extPt, height)) {
+                continue;
+            }
+
+            // Make sure this does not include another beam
+            AbstractBeamInter includedBeam = getSideBeam(beam, side, extDx);
+
+            if (includedBeam != null) {
+                continue;
+            }
+
+            return extendToPoint(beam, side, extPt);
         }
 
         return false;
@@ -897,20 +871,19 @@ public class BeamsBuilder
      * we must remember this information to avoid any other extension attempt on this side.
      *
      * @param beam  the beam to extend
-     * @param side  the horizontal side
      * @param other the side beam found
      * @return true if extension was done, false otherwise
      */
     private boolean extendToBeam (AbstractBeamInter beam,
-                                  HorizontalSide side,
                                   AbstractBeamInter other)
     {
         // Check black ratio in the middle area (if its width is significant)
         final Line2D beamMedian = beam.getMedian();
         final Line2D otherMedian = other.getMedian();
 
-        double gap = (beamMedian.getX1() < otherMedian.getX1()) ? (otherMedian.getX1() - beamMedian
-                .getX2()) : (beamMedian.getX1() - otherMedian.getX2());
+        double gap = (beamMedian.getX1() < otherMedian.getX1())
+                ? (otherMedian.getX1() - beamMedian.getX2())
+                : (beamMedian.getX1() - otherMedian.getX2());
 
         if (gap >= params.minBeamsGapX) {
             Area middleArea = middleArea(beam, other);
@@ -1147,21 +1120,16 @@ public class BeamsBuilder
 
         // We look for collections of good cue black heads + stem, close enough
         // to be able to be connected by a cue beam.
-        List<Inter> smallBlacks = sig.inters(new Predicate<Inter>()
-        {
-            @Override
-            public boolean check (Inter inter)
-            {
-                if (inter.isRemoved() || (inter.getShape() != Shape.NOTEHEAD_BLACK_SMALL)) {
-                    return false;
-                }
-
-                if (inter.getContextualGrade() == null) {
-                    sig.computeContextualGrade(inter);
-                }
-
-                return inter.getContextualGrade() >= Grades.minContextualGrade;
+        List<Inter> smallBlacks = sig.inters((Inter inter) -> {
+            if (inter.isRemoved() || (inter.getShape() != Shape.NOTEHEAD_BLACK_SMALL)) {
+                return false;
             }
+
+            if (inter.getContextualGrade() == null) {
+                sig.computeContextualGrade(inter);
+            }
+
+            return inter.getContextualGrade() >= Grades.minContextualGrade;
         });
 
         if (smallBlacks.isEmpty()) {
@@ -1240,6 +1208,7 @@ public class BeamsBuilder
 
         if (!others.isEmpty()) {
             // Use a closer look, using colinearity
+            final double maxSlopeDiff = BeamGroup.getMaxSlopeDiff();
             final Line2D median = beam.getMedian();
             final Point2D endPt = (side == LEFT) ? median.getP1() : median.getP2();
             final double slope = LineUtil.getSlope(median);
@@ -1250,7 +1219,7 @@ public class BeamsBuilder
                 // Check connection point & beam slopes are OK
                 Line2D otherMedian = other.getMedian();
 
-                if ((Math.abs(LineUtil.getSlope(otherMedian) - slope) > params.maxBeamSlopeGap)
+                if ((Math.abs(LineUtil.getSlope(otherMedian) - slope) > maxSlopeDiff)
                             || (otherMedian.ptLineDist(endPt) > params.maxBeamsGapY)) {
                     it.remove();
                 }
@@ -1259,24 +1228,16 @@ public class BeamsBuilder
             // Keep just the closest one to current beam (abscissa-wise)
             if (others.size() > 1) {
                 final double endX = endPt.getX();
-                Collections.sort(others, new Comparator<Inter>()
-                         {
-                             @Override
-                             public int compare (Inter o1,
-                                                 Inter o2)
-                             {
-                                 AbstractBeamInter b1 = (AbstractBeamInter) o1;
-                                 AbstractBeamInter b2 = (AbstractBeamInter) o2;
+                Collections.sort(others, (Inter o1, Inter o2) -> {
+                             AbstractBeamInter b1 = (AbstractBeamInter) o1;
+                             AbstractBeamInter b2 = (AbstractBeamInter) o2;
 
-                                 if (side == LEFT) {
-                                     return Double.compare(
-                                             endX - b1.getMedian().getX2(),
-                                             endX - b2.getMedian().getX2());
-                                 } else {
-                                     return Double.compare(
-                                             b1.getMedian().getX1() - endX,
-                                             b2.getMedian().getX1() - endX);
-                                 }
+                             if (side == LEFT) {
+                                 return Double.compare(endX - b1.getMedian().getX2(),
+                                                       endX - b2.getMedian().getX2());
+                             } else {
+                                 return Double.compare(b1.getMedian().getX1() - endX,
+                                                       b2.getMedian().getX1() - endX);
                              }
                          });
             }
@@ -1287,36 +1248,6 @@ public class BeamsBuilder
         }
 
         return null;
-    }
-
-    //-------------------------//
-    // measureVerticalDistance //
-    //-------------------------//
-    /**
-     * Measure vertical distance (center to center) between the two provided beams.
-     * (These beams are very likely to be in a single group)
-     *
-     * @param one a beam
-     * @param two another beam
-     */
-    private void measureVerticalDistance (AbstractBeamInter one,
-                                          AbstractBeamInter two)
-    {
-        if (distances != null) {
-            Line2D m1 = one.getMedian();
-            Line2D m2 = two.getMedian();
-
-            // Determine a suitable abscissa
-            double maxLeft = Math.max(m1.getX1(), m2.getX1());
-            double minRight = Math.min(m1.getX2(), m2.getX2());
-            double x = (maxLeft + minRight) / 2;
-
-            // Measure actual vertical distance at this abscissa
-            double y1 = LineUtil.yAtX(m1, x);
-            double y2 = LineUtil.yAtX(m2, x);
-            double distance = Math.abs(y2 - y1);
-            distances.includeValue(distance);
-        }
     }
 
     //---------//
@@ -1337,8 +1268,8 @@ public class BeamsBuilder
         final Line2D twoMedian = two.getMedian();
 
         // Mean dist
-        double distImpact = (((Impacts) one.getImpacts()).getDistImpact() + ((Impacts) two
-                .getImpacts()).getDistImpact()) / 2;
+        double distImpact = (((Impacts) one.getImpacts()).getDistImpact()
+                                     + ((Impacts) two.getImpacts()).getDistImpact()) / 2;
 
         // Height
         double oneWidth = oneMedian.getX2() - oneMedian.getX1();
@@ -1390,8 +1321,8 @@ public class BeamsBuilder
         // Height
         double oneWidth = oneMedian.getX2() - oneMedian.getX1();
         double twoWidth = twoMedian.getX2() - twoMedian.getX1();
-        double height = ((one.getHeight() * oneWidth) + (two.getHeight() * twoWidth)) / (oneWidth
-                                                                                                 + twoWidth);
+        double height = ((one.getHeight() * oneWidth) + (two.getHeight() * twoWidth))
+                                / (oneWidth + twoWidth);
 
         // Median
         final Line2D median;
@@ -1586,6 +1517,7 @@ public class BeamsBuilder
         return true;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // CueAggregate //
     //--------------//
@@ -1662,25 +1594,30 @@ public class BeamsBuilder
             if (globalDir == 0) {
                 return;
             }
+
             final Corner corner;
             int headX = GeoUtil.centerOf(head.getBounds()).x;
             int stemX = GeoUtil.centerOf(stem.getBounds()).x;
+
             if (headX <= stemX) {
                 corner = (globalDir < 0) ? Corner.TOP_LEFT : Corner.BOTTOM_LEFT;
             } else {
                 corner = (globalDir < 0) ? Corner.TOP_RIGHT : Corner.BOTTOM_RIGHT;
             }
+
             // Limit to beams that cross stem vertical line
             List<Inter> beams = new ArrayList<>();
             Rectangle fatStemBox = stem.getBounds();
             fatStemBox.grow(params.cueBoxDx, 0);
             fatStemBox.y = bounds.y;
             fatStemBox.height = bounds.height;
+
             for (Inter beam : allBeams) {
                 if (fatStemBox.intersects(beam.getBounds())) {
                     beams.add(beam);
                 }
             }
+
             new StemsBuilder(system).linkCueBeams((HeadInter) head, corner, stem, beams);
         }
 
@@ -1804,7 +1741,7 @@ public class BeamsBuilder
     //----------------//
     // ItemParameters //
     //----------------//
-    /** Parameters that govern beam/hook items, sometime dependent on cue/standard. */
+    /** Parameters that govern beam/hook items, sometimes dependent on cue/standard. */
     public static class ItemParameters
     {
 
@@ -1960,11 +1897,6 @@ public class BeamsBuilder
                 0.15,
                 "Maximum delta slope between top and bottom borders of a beam");
 
-        private final Constant.Double maxBeamSlopeGap = new Constant.Double(
-                "tangent",
-                0.07,
-                "Maximum delta slope between beams of a group");
-
         private final Scale.Fraction maxDistanceToBorder = new Scale.Fraction(
                 0.15,
                 "Maximum mean distance to average beam border");
@@ -2041,8 +1973,6 @@ public class BeamsBuilder
 
         final double maxBorderSlopeGap;
 
-        final double maxBeamSlopeGap;
-
         final double maxDistanceToBorder;
 
         final double maxJitterRatio;
@@ -2083,7 +2013,6 @@ public class BeamsBuilder
             beltMarginDy = scale.toPixels(constants.beltMarginDy);
             maxBeamSlope = constants.maxBeamSlope.getValue();
             maxBorderSlopeGap = constants.maxBorderSlopeGap.getValue();
-            maxBeamSlopeGap = constants.maxBeamSlopeGap.getValue();
             maxDistanceToBorder = scale.toPixelsDouble(constants.maxDistanceToBorder);
             maxJitterRatio = constants.maxJitterRatio.getValue();
             maxBeltBlackRatio = constants.maxBeltBlackRatio.getValue();
@@ -2100,5 +2029,4 @@ public class BeamsBuilder
             }
         }
     }
-
 }

@@ -25,7 +25,6 @@ import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.lag.BasicLag;
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Lags;
-import org.audiveris.omr.math.Population;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.step.AbstractSystemStep;
@@ -33,9 +32,6 @@ import org.audiveris.omr.step.StepException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Class {@code BeamsStep} implements <b>BEAMS</b> step, which uses the spots produced
@@ -64,7 +60,7 @@ public class BeamsStep
                           Context context)
             throws StepException
     {
-        new BeamsBuilder(system, context.distancemap.get(system), context.spotLag).buildBeams();
+        new BeamsBuilder(system, context.spotLag).buildBeams();
     }
 
     //----------//
@@ -75,21 +71,6 @@ public class BeamsStep
                              Context context)
             throws StepException
     {
-        // Cumulate system results
-        Population distances = new Population();
-
-        for (Population pop : context.distancemap.values()) {
-            distances.includePopulation(pop);
-        }
-
-        if (distances.getCardinality() > 0) {
-            logger.info("BeamDistance{{}}", distances);
-
-            sheet.getScale().setBeamDistance(
-                    distances.getMeanValue(),
-                    distances.getStandardDeviation());
-        }
-
         // Dispose of BEAM_SPOT glyphs, a glyph may be split into several beams
         // (NOTA: the weak references may survive as long as a related SpotsController exists)
         for (SystemInfo system : sheet.getSystems()) {
@@ -116,14 +97,7 @@ public class BeamsStep
         // Retrieve significant spots for the whole sheet
         new SpotsBuilder(sheet).buildSheetSpots(spotLag);
 
-        // Allocate map to collect vertical distances between beams of the same group
-        Map<SystemInfo, Population> distanceMap = new TreeMap<>();
-
-        for (SystemInfo system : sheet.getSystems()) {
-            distanceMap.put(system, new Population());
-        }
-
-        return new Context(distanceMap, spotLag);
+        return new Context(spotLag);
     }
 
     //---------//
@@ -135,22 +109,16 @@ public class BeamsStep
     protected static class Context
     {
 
-        /** Beam group vertical distances, per system. */
-        public final Map<SystemInfo, Population> distancemap;
-
         /** Lag of spot sections. */
         public final Lag spotLag;
 
         /**
          * Create Context.
          *
-         * @param distanceMap
          * @param spotLag
          */
-        Context (Map<SystemInfo, Population> distanceMap,
-                 Lag spotLag)
+        Context (Lag spotLag)
         {
-            this.distancemap = distanceMap;
             this.spotLag = spotLag;
         }
     }
