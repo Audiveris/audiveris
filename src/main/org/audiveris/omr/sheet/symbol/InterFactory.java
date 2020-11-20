@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2019. All rights reserved.
+//  Copyright © Audiveris 2021. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -51,7 +51,7 @@ import org.audiveris.omr.sig.inter.BreathMarkInter;
 import org.audiveris.omr.sig.inter.CaesuraInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.ClutterInter;
-import org.audiveris.omr.sig.inter.DeletedInterException;
+import org.audiveris.omr.sig.inter.CompoundNoteInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.FermataArcInter;
@@ -60,6 +60,7 @@ import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.FingeringInter;
 import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.FretInter;
+import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
@@ -85,7 +86,6 @@ import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.util.Navigable;
-import org.audiveris.omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +94,6 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -114,9 +113,11 @@ import java.util.TreeMap;
  */
 public class InterFactory
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterFactory.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -133,6 +134,9 @@ public class InterFactory
     /** All system notes (heads and rests), ordered by abscissa. */
     private List<Inter> systemNotes;
 
+    /** All system (head of rest) chords, ordered by abscissa. */
+    private final List<Inter> systemChords;
+
     /** All system head-based chords, ordered by abscissa. */
     private final List<Inter> systemHeadChords;
 
@@ -148,6 +152,7 @@ public class InterFactory
     /** Processing switches. */
     private final ProcessingSwitches switches;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new InterFactory object.
      *
@@ -165,7 +170,10 @@ public class InterFactory
         systemHeads = sig.inters(HeadInter.class);
         Collections.sort(systemHeads, Inters.byAbscissa);
 
-        systemHeadChords = sig.inters(AbstractChordInter.class);
+        systemChords = sig.inters(AbstractChordInter.class);
+        Collections.sort(systemChords, Inters.byAbscissa);
+
+        systemHeadChords = sig.inters(HeadChordInter.class);
         Collections.sort(systemHeadChords, Inters.byAbscissa);
 
         dotFactory = new DotFactory(this, system);
@@ -173,6 +181,7 @@ public class InterFactory
         switches = system.getSheet().getStub().getProcessingSwitches();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // create //
     //--------//
@@ -395,7 +404,7 @@ public class InterFactory
         // Tuplets
         case TUPLET_THREE:
         case TUPLET_SIX:
-            return TupletInter.createValid(glyph, shape, grade, system, systemHeadChords);
+            return TupletInter.createValid(glyph, shape, grade, system, systemChords);
 
         // Accidentals
         case FLAT:
@@ -403,7 +412,8 @@ public class InterFactory
         case SHARP:
         case DOUBLE_SHARP:
         case DOUBLE_FLAT: {
-            AlterInter alter = AlterInter.create(glyph, shape, grade, closestStaff); // Staff is very questionable!
+            // Staff is very questionable!
+            AlterInter alter = AlterInter.create(glyph, shape, grade, closestStaff);
 
             sig.addVertex(alter);
             alter.setLinks(systemHeads);
@@ -418,11 +428,8 @@ public class InterFactory
         case STACCATISSIMO:
         case STRONG_ACCENT:
             return switches.getValue(Switch.articulations) ? ArticulationInter.createValidAdded(
-                    glyph,
-                    shape,
-                    grade,
-                    system,
-                    systemHeadChords) : null;
+                    glyph, shape, grade, system, systemHeadChords)
+                    : null;
 
         // Markers
         case CODA:
@@ -521,7 +528,7 @@ public class InterFactory
 
         // Others
         default:
-            logger.info("No support yet for {}", shape);
+            logger.info("No support yet for {} glyph#{}", shape, glyph.getId());
 
             return null;
         }
@@ -537,8 +544,10 @@ public class InterFactory
     {
         // All dynamics in system
         final List<Inter> dynamics = sig.inters(DynamicsInter.class);
+
         // Complex dynamics in system, sorted by decreasing length
         final List<DynamicsInter> complexes = new ArrayList<>();
+
         for (Inter inter : dynamics) {
             DynamicsInter dyn = (DynamicsInter) inter;
 
@@ -546,18 +555,12 @@ public class InterFactory
                 complexes.add(dyn);
             }
         }
-        Collections.sort(complexes, new Comparator<DynamicsInter>()
-                 {
-                     @Override
-                     public int compare (DynamicsInter d1,
-                                         DynamicsInter d2)
-                     {
-                         // Sort by decreasing length
-                         return Integer.compare(
-                                 d2.getSymbolString().length(),
-                                 d1.getSymbolString().length());
-                     }
-                 });
+
+        Collections.sort(complexes, (d1, d2) -> Integer.compare(
+                d2.getSymbolString().length(),
+                d1.getSymbolString().length()) // Sort by decreasing length
+        );
+
         for (DynamicsInter complex : complexes) {
             complex.swallowShorterDynamics(dynamics);
         }
@@ -575,12 +578,13 @@ public class InterFactory
     private void handleTimes ()
     {
         // Retrieve all time inters (outside staff headers)
-        final List<Inter> systemTimes = sig.inters(new Class[]{
-            TimeWholeInter.class, // Whole symbol like C or predefined 6/8
-            TimeCustomInter.class, // User modifiable combo 6/8
-            TimeNumberInter.class}); // Partial symbol like 6 or 8
+        final List<Inter> systemTimes = sig.inters(
+                new Class[]{TimeWholeInter.class, // Whole symbol like C or predefined 6/8
+                            TimeCustomInter.class, // User modifiable combo 6/8
+                            TimeNumberInter.class}); // Partial symbol like 6 or 8
 
         final List<Inter> headerTimes = new ArrayList<>();
+
         for (Inter inter : systemTimes) {
             Staff staff = inter.getStaff();
 
@@ -588,6 +592,7 @@ public class InterFactory
                 headerTimes.add(inter);
             }
         }
+
         systemTimes.removeAll(headerTimes);
 
         if (systemTimes.isEmpty()) {
@@ -595,25 +600,21 @@ public class InterFactory
         }
 
         // Dispatch these time inters into their containing stack
-        final Map<MeasureStack, Set<Inter>> timeMap = new TreeMap<>(new Comparator<MeasureStack>()
-        {
-            @Override
-            public int compare (MeasureStack s1,
-                                MeasureStack s2)
-            {
-                return Integer.compare(s1.getIdValue(), s2.getIdValue());
-            }
-        });
+        final Map<MeasureStack, Set<Inter>> timeMap = new TreeMap<>(
+                (s1, s2) -> Integer.compare(s1.getIdValue(), s2.getIdValue()));
 
         for (Inter inter : systemTimes) {
             final MeasureStack stack = system.getStackAt(inter.getCenter());
-            Set<Inter> stackSet = timeMap.get(stack);
 
-            if (stackSet == null) {
-                timeMap.put(stack, stackSet = new LinkedHashSet<>());
+            if (stack != null) {
+                Set<Inter> stackSet = timeMap.get(stack);
+
+                if (stackSet == null) {
+                    timeMap.put(stack, stackSet = new LinkedHashSet<>());
+                }
+
+                stackSet.add(inter);
             }
-
-            stackSet.add(inter);
         }
 
         // Finally, scan each stack populated with some time sig(s)
@@ -626,15 +627,9 @@ public class InterFactory
             if (res != -1) {
                 final Collection<AbstractTimeInter> times = column.getTimeInters().values();
                 final Rectangle columnBox = Inters.getBounds(times);
-                final List<Inter> neighbors = sig.inters(new Predicate<Inter>()
-                {
-                    @Override
-                    public boolean check (Inter inter)
-                    {
-                        return inter.getBounds().intersects(columnBox)
-                                       && !(inter instanceof InterEnsemble);
-                    }
-                });
+                final List<Inter> neighbors = sig.inters(
+                        (inter) -> inter.getBounds().intersects(columnBox)
+                                           && !(inter instanceof InterEnsemble));
 
                 neighbors.removeAll(times);
 
@@ -642,18 +637,23 @@ public class InterFactory
                     for (Iterator<Inter> it = neighbors.iterator(); it.hasNext();) {
                         final Inter neighbor = it.next();
 
-                        try {
-                            if (neighbor.overlaps(time)) {
-                                logger.debug("Deleting time overlapping {}", neighbor);
-                                neighbor.remove();
-                                it.remove();
-                            }
-                        } catch (DeletedInterException ignored) {
+                        if (neighbor.overlaps(time)) {
+                            logger.debug("Deleting time overlapping {}", neighbor);
+                            neighbor.remove();
+                            it.remove();
                         }
                     }
                 }
             }
         }
+    }
+
+    //-----------------//
+    // getSystemChords //
+    //-----------------//
+    List<Inter> getSystemChords ()
+    {
+        return systemChords;
     }
 
     //---------------------//
@@ -729,6 +729,7 @@ public class InterFactory
         switch (shape) {
         case CLUTTER:
             return new ClutterInter(null, GRADE);
+
         //
         // Ottava TODO ???
         //        case OTTAVA_ALTA:
@@ -738,6 +739,7 @@ public class InterFactory
         // Brace, bracket
         case BRACE:
             return new BraceInter(GRADE);
+
         case BRACKET:
             return new BracketInter(GRADE);
 
@@ -869,10 +871,17 @@ public class InterFactory
         case BREVE:
         case WHOLE_NOTE:
         case WHOLE_NOTE_SMALL:
-            return new HeadInter(null, null, null, shape, GRADE, null, null);
+            return new HeadInter(null, shape, GRADE, null, null);
 
         case AUGMENTATION_DOT:
             return new AugmentationDotInter(null, GRADE); // No visit
+
+        // Compound notes
+        case QUARTER_NOTE_UP:
+        case QUARTER_NOTE_DOWN:
+        case HALF_NOTE_UP:
+        case HALF_NOTE_DOWN:
+            return new CompoundNoteInter(null, null, shape, GRADE);
 
         // Flags
         case FLAG_1:
@@ -1018,6 +1027,7 @@ public class InterFactory
         // Others
         default:
             logger.warn("No ghost instance for {}", shape);
+
             return null;
         }
     }
