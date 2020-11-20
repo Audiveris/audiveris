@@ -70,7 +70,9 @@ import java.awt.GridLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EventObject;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import javax.swing.JEditorPane;
@@ -647,19 +649,22 @@ public class MainGui
         @Override
         public void willExit (EventObject eo)
         {
-            // Store latest constant values on disk
-            ConstantManager.getInstance().storeResource();
-
             // Close all books
             int count = 0;
 
             // NB: Use a COPY of instances, to avoid concurrent modification
-            for (Book book : new ArrayList<>(OMR.engine.getAllBooks())) {
+            final List<Book> allBooks = new ArrayList<>(OMR.engine.getAllBooks());
+            Collections.reverse(allBooks);
+
+            for (Book book : allBooks) {
                 book.close();
                 count++;
             }
 
             logger.debug("{} book(s) closed", count);
+
+            // Store latest constant values on disk
+            ConstantManager.getInstance().storeResource();
         }
     }
 }
