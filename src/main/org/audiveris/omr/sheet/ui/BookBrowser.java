@@ -32,6 +32,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
@@ -53,7 +54,6 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -98,9 +98,6 @@ public class BookBrowser
 
     /** The related book. */
     private final Book book;
-
-    /** Cache to avoid recomputing sets of children. */
-    private final HashMap<Object, List<Object>> nodeMap = new HashMap<>();
 
     /** The tree model. */
     private final Model model;
@@ -263,7 +260,7 @@ public class BookBrowser
         public Object getChild (Object parent,
                                 int index)
         {
-            return getRelevantChildren(parent).get(index);
+            return getRelevantChildren(parent, null).get(index);
         }
 
         //---------------//
@@ -272,7 +269,7 @@ public class BookBrowser
         @Override
         public int getChildCount (Object parent)
         {
-            return getRelevantChildren(parent).size();
+            return getRelevantChildren(parent, null).size();
         }
 
         //-----------------//
@@ -282,7 +279,7 @@ public class BookBrowser
         public int getIndexOfChild (Object parent,
                                     Object child)
         {
-            return getRelevantChildren(parent).indexOf(child);
+            return getRelevantChildren(parent, null).indexOf(child);
         }
 
         //---------//
@@ -302,8 +299,6 @@ public class BookBrowser
         {
             // Determines whether the icon shows up to the left.
             // Return true for any node with no children
-            logger.debug("isLeaf. node={} {}", node, getChildCount(node) == 0);
-
             return getChildCount(node) == 0;
         }
 
@@ -312,8 +307,6 @@ public class BookBrowser
         //------------//
         public void refreshAll ()
         {
-            nodeMap.clear();
-
             TreeModelEvent modelEvent = new TreeModelEvent(this, new Object[]{book});
 
             for (TreeModelListener listener : listeners) {
@@ -364,77 +357,98 @@ public class BookBrowser
          * relevant for display in the tree hierarchy (left pane)
          *
          * @param node the node to investigate
+         * @param sig  for a relation: the originating Inter
          * @return the list of relevant children
          */
-        private List<Object> getRelevantChildren (Object node)
+        private List<Object> getRelevantChildren (Object node,
+                                                  Inter orgInter)
         {
-            // First check the cache
-            List<Object> relevants = nodeMap.get(node);
-            if (relevants != null) {
-                return relevants;
-            }
+            final List<Object> relevants;
+
             // Not found, so let's build it
             logger.debug("Retrieving relevants of {} {}", node, node.getClass());
+
             // Case of Named Collection
             if (node instanceof NamedCollection) {
                 logger.debug("named collection: " + node);
                 NamedCollection nc = (NamedCollection) node;
                 relevants = new ArrayList<>();
-                nodeMap.put(node, relevants);
+
                 for (Object n : nc.collection) {
                     if (isRelevant(n)) {
                         relevants.add(n);
                     }
                 }
-                if (logger.isDebugEnabled()) {
-                    logger.debug("{} nb={}", node, relevants.size());
-                }
+
+                logger.debug("{} nb={}", node, relevants.size());
                 return relevants;
             }
+
             // Case of Named Data
             if (node instanceof NamedData) {
                 logger.debug("named data: " + node);
-                relevants = getRelevantChildren(((NamedData) node).data);
-                nodeMap.put(node, relevants);
+                NamedData nd = (NamedData) node;
+                relevants = getRelevantChildren(nd.data, nd.orgInter);
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("{} nb={}", node, relevants.size());
-                }
-
+                logger.debug("{} nb={}", node, relevants.size());
                 return relevants;
             }
+
             ///logger.info("standard node: " + node);
             Class<?> classe = node.getClass();
             relevants = new ArrayList<>();
-            nodeMap.put(node, relevants);
+
+            if (node instanceof Inter) {
+                // Add inter relations first if any
+                Inter inter = (Inter) node;
+                SIGraph sig = inter.getSig();
+
+                for (Relation rel : sig.edgesOf(inter)) {
+                    relevants.add(new NamedData(rel.getClass().getSimpleName(), rel, inter));
+                }
+            } else if (node instanceof Relation) {
+                // Add relation source and target first
+                Relation rel = (Relation) node;
+                SIGraph sig = orgInter.getSig();
+                Inter source = sig.getEdgeSource(rel);
+                Inter target = sig.getEdgeTarget(rel);
+
+                if (source != orgInter) {
+                    relevants.add(new NamedData("source", source));
+                } else if (!constants.hideOriginatingInter.isSet()) {
+                    relevants.add(new NamedData("(src)", source));
+                }
+
+                if (target != orgInter) {
+                    relevants.add(new NamedData("target", target));
+                } else if (!constants.hideOriginatingInter.isSet()) {
+                    relevants.add(new NamedData("(tgt)", target));
+                }
+            }
+
             // Walk up the inheritance tree
             do {
                 // Browse the declared fields of the class at hand
                 for (Field field : classe.getDeclaredFields()) {
                     // Skip field if annotated as non navigable
                     Navigable navigable = field.getAnnotation(Navigable.class);
-                    if ((navigable != null) && (navigable.value() == false)) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("skipping {}", field);
-                        }
 
+                    if ((navigable != null) && (navigable.value() == false)) {
+                        logger.debug("non-navigable {}", field);
                         continue;
                     }
-                    ///logger.info("fieldName:" + field.getName());
+
                     try {
                         // No static or inner class
                         if (!filter.isFieldRelevant(field)) {
-                            ///System.out.println(" [field not relevant]");
                             continue;
                         }
 
                         field.setAccessible(true);
-
                         Object object = field.get(node);
 
                         // No null field
                         if (object == null) {
-                            ///System.out.println(" [null]");
                             continue;
                         }
 
@@ -442,7 +456,6 @@ public class BookBrowser
 
                         // Skip primitive members
                         if (objClass.isPrimitive()) {
-                            ///System.out.println(" [primitive]");
                             continue;
                         }
 
@@ -458,11 +471,9 @@ public class BookBrowser
                         }
 
                         if (!filter.isClassRelevant(objClass)) {
-                            ///System.out.println(" [CLASS not relevant]");
                             continue;
                         }
 
-                        ///System.out.println(" ...OK");
                         relevants.add(new NamedData(field.getName(), object));
                     } catch (IllegalAccessException |
                              IllegalArgumentException |
@@ -470,12 +481,15 @@ public class BookBrowser
                         logger.warn("Error in accessing field", ex);
                     }
                 }
+
                 // Walk up the inheritance tree
                 classe = classe.getSuperclass();
             } while (filter.isClassRelevant(classe));
+
             if (logger.isDebugEnabled()) {
                 logger.debug("{} nb={}", node, relevants.size());
             }
+
             return relevants;
         }
 
@@ -484,8 +498,6 @@ public class BookBrowser
         //------------//
         private boolean isRelevant (Object node)
         {
-            //            return !isLeaf(node);
-
             // We display dummy containers only when they are not empty
             if (constants.hideEmptyDummies.isSet() && node instanceof NamedCollection) {
                 return getChildCount(node) > 0;
@@ -580,6 +592,10 @@ public class BookBrowser
         private final Constant.Boolean hideEmptyDummies = new Constant.Boolean(
                 false,
                 "Should we hide empty dummy containers");
+
+        private final Constant.Boolean hideOriginatingInter = new Constant.Boolean(
+                true,
+                "Should we hide the originating inter when expanding a relation?");
     }
 
     //-----------------//
@@ -616,11 +632,21 @@ public class BookBrowser
 
         private final Object data;
 
+        private final Inter orgInter;
+
         NamedData (String name,
-                   Object data)
+                   Object data,
+                   Inter orgInter)
         {
             this.name = name;
             this.data = data;
+            this.orgInter = orgInter;
+        }
+
+        NamedData (String name,
+                   Object data)
+        {
+            this(name, data, null);
         }
 
         @Override
@@ -629,5 +655,4 @@ public class BookBrowser
             return name + ":" + data;
         }
     }
-
 }
