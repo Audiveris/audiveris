@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionListener;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.swing.JMenu;
 import javax.swing.SwingUtilities;
@@ -116,6 +117,21 @@ public class PathHistory
                            final ActionListener itemListener)
     {
         return nameSet.feedMenu(menu, itemListener);
+    }
+
+    //----------//
+    // getFirst //
+    //----------//
+    /**
+     * Report the first path in history.
+     *
+     * @return first path, null if none
+     */
+    public Path getFirst ()
+    {
+        final String first = nameSet.first();
+
+        return (first != null) ? Paths.get(first) : null;
     }
 
     //---------//
