@@ -46,7 +46,6 @@ import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
-import org.audiveris.omr.sig.inter.DeletedInterException;
 import org.audiveris.omr.sig.inter.EnsembleHelper;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
@@ -1092,7 +1091,8 @@ public class SigReducer
     // checkStemsLengths //
     //-------------------//
     /**
-     * Perform checks on stems length from tail to closest head anchor.
+     * Perform checks on stems length from tail to closest head anchor, unless stem is
+     * also linked to a beam.
      *
      * @return the count of modifications done
      */
@@ -1109,6 +1109,10 @@ public class SigReducer
 
             if (stem.isVip()) {
                 logger.info("VIP checkStemsLengths on {}", stem);
+            }
+
+            if (!stem.getBeams().isEmpty()) {
+                continue;
             }
 
             final Rectangle stemBox = stem.getBounds();
@@ -1341,30 +1345,24 @@ public class SigReducer
                         logger.info("VIP check overlap {} vs {}", left, right);
                     }
 
-                    try {
-                        if (left.overlaps(right) && right.overlaps(left)) {
-                            // Specific case: Word vs "string" Symbol
-                            if (left instanceof WordInter && right instanceof StringSymbolInter) {
-                                if (wordMatchesSymbol(
-                                        (WordInter) left,
-                                        (StringSymbolInter) right)) {
-                                    left.decrease(0.5);
-                                }
-                            } else if (left instanceof StringSymbolInter
-                                               && right instanceof WordInter) {
-                                if (wordMatchesSymbol(
-                                        (WordInter) right,
-                                        (StringSymbolInter) left)) {
-                                    right.decrease(0.5);
-                                }
+                    if (left.overlaps(right) && right.overlaps(left)) {
+                        // Specific case: Word vs "string" Symbol
+                        if (left instanceof WordInter && right instanceof StringSymbolInter) {
+                            if (wordMatchesSymbol(
+                                    (WordInter) left,
+                                    (StringSymbolInter) right)) {
+                                left.decrease(0.5);
                             }
+                        } else if (left instanceof StringSymbolInter
+                                           && right instanceof WordInter) {
+                            if (wordMatchesSymbol(
+                                    (WordInter) right,
+                                    (StringSymbolInter) left)) {
+                                right.decrease(0.5);
+                            }
+                        }
 
-                            exclude(left, right);
-                        }
-                    } catch (DeletedInterException diex) {
-                        if (diex.inter == left) {
-                            continue NextLeft;
-                        }
+                        exclude(left, right);
                     }
                 } else if (rightBox.x > xMax) {
                     break; // Since inters list is sorted by abscissa
@@ -1372,10 +1370,10 @@ public class SigReducer
             }
         }
     }
+
     //---------//
     // exclude //
     //---------//
-
     /**
      * Insert exclusion between (the members of) the 2 sets.
      *

@@ -50,7 +50,6 @@ import org.audiveris.omr.sig.inter.BracketInter;
 import org.audiveris.omr.sig.inter.BreathMarkInter;
 import org.audiveris.omr.sig.inter.CaesuraInter;
 import org.audiveris.omr.sig.inter.ClefInter;
-import org.audiveris.omr.sig.inter.DeletedInterException;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.FermataArcInter;
@@ -641,13 +640,10 @@ public class InterFactory
                     for (Iterator<Inter> it = neighbors.iterator(); it.hasNext();) {
                         final Inter neighbor = it.next();
 
-                        try {
-                            if (neighbor.overlaps(time)) {
-                                logger.debug("Deleting time overlapping {}", neighbor);
-                                neighbor.remove();
-                                it.remove();
-                            }
-                        } catch (DeletedInterException ignored) {
+                        if (neighbor.overlaps(time)) {
+                            logger.debug("Deleting time overlapping {}", neighbor);
+                            neighbor.remove();
+                            it.remove();
                         }
                     }
                 }
