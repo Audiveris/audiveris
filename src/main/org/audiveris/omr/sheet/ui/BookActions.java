@@ -724,6 +724,31 @@ public class BookActions
         return null;
     }
 
+    //----------------//
+    // openRecentBook //
+    //----------------//
+    /**
+     * Action that let the user open the book most recently closed
+     *
+     * @param e the event that triggered this action
+     * @return the asynchronous task, or null
+     */
+    @Action
+    public LoadBookTask openRecentBook (ActionEvent e)
+    {
+        final Path path = BookManager.getInstance().getBookHistory().getFirst();
+
+        if (path != null) {
+            if (Files.exists(path)) {
+                return new LoadBookTask(path);
+            } else {
+                logger.warn(format(resources.getString("fileNotFound.pattern"), path));
+            }
+        }
+
+        return null;
+    }
+
     //---------------//
     // openImageFile //
     //---------------//
@@ -1928,6 +1953,7 @@ public class BookActions
             } catch (Throwable ex) {
                 logger.warn("Error in CloseBookTask {}", ex.toString(), ex);
             } finally {
+                BookManager.getInstance().getBookHistory().add(book.getBookPath());
                 LogUtil.stopBook();
             }
 

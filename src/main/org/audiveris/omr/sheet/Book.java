@@ -1704,8 +1704,6 @@ public class Book
 
             this.bookPath = bookPath;
 
-            BookManager.getInstance().getBookHistory().add(bookPath); // Insert in history
-
             if (diskWritten) {
                 logger.info("Book stored as {}", bookPath);
             }

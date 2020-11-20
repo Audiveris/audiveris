@@ -163,6 +163,23 @@ public class NameSet
         return finalMenu;
     }
 
+    //-------//
+    // first //
+    //-------//
+    /**
+     * Report the first name if any.
+     *
+     * @return first name or null if empty
+     */
+    public synchronized String first ()
+    {
+        if (isEmpty()) {
+            return null;
+        }
+
+        return names.get(0);
+    }
+
     //---------//
     // isEmpty //
     //---------//
