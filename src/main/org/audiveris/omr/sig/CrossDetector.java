@@ -28,7 +28,6 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.SystemManager;
-import org.audiveris.omr.sig.inter.DeletedInterException;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SentenceInter;
@@ -173,16 +172,10 @@ public class CrossDetector
 
                 if (aboveBox.intersects(belowBox)) {
                     // Have a more precise look
-                    try {
-                        if (above.overlaps(below) && below.overlaps(above)) {
-                            Inter removedInter = resolveConflict(above, below);
+                    if (above.overlaps(below) && below.overlaps(above)) {
+                        Inter removedInter = resolveConflict(above, below);
 
-                            if (removedInter == above) {
-                                continue NextLeft;
-                            }
-                        }
-                    } catch (DeletedInterException diex) {
-                        if (diex.inter == above) {
+                        if (removedInter == above) {
                             continue NextLeft;
                         }
                     }

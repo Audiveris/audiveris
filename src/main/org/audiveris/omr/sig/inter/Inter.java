@@ -513,10 +513,8 @@ public interface Inter
      *
      * @param that the other instance
      * @return true if (incompatible) overlap is detected
-     * @throws DeletedInterException when an Inter instance no longer exists in its SIG
      */
-    boolean overlaps (Inter that)
-            throws DeletedInterException;
+    boolean overlaps (Inter that);
 
     /**
      * Prepare the manual addition of this inter, for which only staff and bounds have
@@ -579,9 +577,9 @@ public interface Inter
      * <li>For an articulation: 1 headChord
      * <li>For an augmentation dot: 1 note or another dot
      * <li>For a dynamic: 1 chord (really?)
-     * <li>For a slur: 1 or 2 heads (or connection across system/page break)
+     * <li>For a slur: 1 head + a second head or a connection across system/page break
      * <li>For a tuplet: 3 or 6 chords (approximately)
-     * <li>For a fermata: 1 barline of 1 chord
+     * <li>For a fermata: 1 barline or 1 chord
      * </ul>
      * Manual inters survive but are displayed in red, to show they are not yet in normal status.
      *

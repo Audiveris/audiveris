@@ -692,7 +692,6 @@ public class HeadInter
      */
     @Override
     public boolean overlaps (Inter that)
-            throws DeletedInterException
     {
         // Specific between notes
         if (that instanceof HeadInter) {

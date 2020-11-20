@@ -32,10 +32,13 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.InterEnsemble;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
+import org.audiveris.omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,10 +48,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import org.audiveris.omr.sig.inter.DeletedInterException;
-import org.audiveris.omr.sig.inter.InterEnsemble;
-import org.audiveris.omr.sig.inter.Inters;
-import org.audiveris.omr.util.Predicate;
 
 /**
  * This abstract class provides the basis for management of a system-level column
@@ -196,13 +195,10 @@ public abstract class TimeColumn
             for (Iterator<Inter> it = neighbors.iterator(); it.hasNext();) {
                 Inter neighbor = it.next();
 
-                try {
-                    if (neighbor.overlaps(time)) {
-                        logger.debug("Deleting time overlapping {}", neighbor);
-                        neighbor.remove();
-                        it.remove();
-                    }
-                } catch (DeletedInterException ignored) {
+                if (neighbor.overlaps(time)) {
+                    logger.debug("Deleting time overlapping {}", neighbor);
+                    neighbor.remove();
+                    it.remove();
                 }
             }
         }
