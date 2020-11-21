@@ -112,6 +112,9 @@ public class SheetAssembly
     /** Closable tabbed container for all SheetView's of the sheet. */
     private final ViewsPane viewsPane = new ViewsPane();
 
+    /** Temporary information: the view being removed, if any. */
+    private SheetView viewBeingRemoved;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new {@code SheetAssembly} instance dedicated to one sheet stub.
@@ -500,7 +503,12 @@ public class SheetAssembly
     {
         for (int i = 0, count = viewsPane.getTabCount(); i < count; i++) {
             if (viewsPane.getTitleAt(i).equals(tab.label)) {
+                viewBeingRemoved = views.get(i); // To disable notifications
+
                 viewsPane.removeTabAt(i);
+                views.remove(i);
+
+                viewBeingRemoved = null; // To re-enable notifications
 
                 return;
             }
@@ -609,8 +617,12 @@ public class SheetAssembly
     // stateChanged //
     //--------------//
     /**
-     * This method is called whenever another view tab is selected
-     * in the SheetAssembly (or when a tab is removed).
+     * This method is called whenever another view tab is selected in the SheetAssembly
+     * or when a tab is removed.
+     * <ul>
+     * <li>Selection: notify previous view if any of deselection, notify current view of selection.
+     * <li>Removal: no notification to be done.
+     * </ul>
      *
      * @param e the originating change event (not used)
      */
@@ -618,7 +630,12 @@ public class SheetAssembly
     public void stateChanged (ChangeEvent e)
     {
         final SheetView view = getCurrentView();
-        logger.debug("SheetAssembly stateChanged previous:{} current:{}", previousView, view);
+        logger.debug("{} SheetAssembly stateChanged previous:{} current:{} removed:{}",
+                     stub, previousView, view, viewBeingRemoved);
+
+        if (view == viewBeingRemoved) {
+            return;
+        }
 
         if (view != previousView) {
             if (previousView != null) {

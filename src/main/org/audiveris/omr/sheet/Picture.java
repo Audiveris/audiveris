@@ -1141,10 +1141,6 @@ public class Picture
                 false,
                 "Should we print out the stop watch(es)?");
 
-        private final Constant.Boolean disposeOfGraySource = new Constant.Boolean(
-                true,
-                "Should we dispose of gray source once binarized?");
-
         private final Constant.Integer gaussianRadius = new Constant.Integer(
                 "pixels",
                 1,
