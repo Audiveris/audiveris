@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2019. All rights reserved.
+//  Copyright © Audiveris 2021. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -23,7 +23,6 @@ package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.util.param.BooleanParam;
 import org.audiveris.omr.util.param.ConstantBasedParam;
 import org.audiveris.omr.util.param.Param;
 
@@ -48,6 +47,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  */
 public class ProcessingSwitches
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -56,12 +56,72 @@ public class ProcessingSwitches
     /** Default switches values. */
     private static volatile ProcessingSwitches defaultSwitches;
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    //--------//
+    // Switch //
+    //--------//
+    /** Enumerated names, based on defined constants. */
+    public static enum Switch
+    {
+        poorInputMode(constants.poorInputMode),
+        indentations(constants.indentations),
+        bothSharedHeadDots(constants.bothSharedHeadDots),
+        keepGrayImages(constants.keepGrayImages),
+        articulations(constants.articulations),
+        chordNames(constants.chordNames),
+        fingerings(constants.fingerings),
+        frets(constants.frets),
+        pluckings(constants.pluckings),
+        lyrics(constants.lyrics),
+        lyricsAboveStaff(constants.lyricsAboveStaff),
+        smallBlackHeads(constants.smallBlackHeads),
+        smallVoidHeads(constants.smallVoidHeads),
+        smallWholeHeads(constants.smallWholeHeads),
+        crossHeads(constants.crossHeads),
+        implicitTuplets(constants.implicitTuplets),
+        sixStringTablatures(constants.sixStringTablatures),
+        fourStringTablatures(constants.fourStringTablatures),
+        oneLineStaves(constants.oneLineStaves),
+        partialWholeRests(constants.partialWholeRests),
+        multiWholeHeadChords(constants.multiWholeHeadChords);
+
+        /** Underlying boolean constant. */
+        Constant.Boolean constant;
+
+        Switch (Constant.Boolean constant)
+        {
+            this.constant = constant;
+        }
+
+        public Constant.Boolean getConstant ()
+        {
+            return constant;
+        }
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Map of switches. */
     protected final EnumMap<Switch, Param<Boolean>> map = new EnumMap<>(Switch.class);
 
-    /** Parent switches, if any. */
-    private ProcessingSwitches parent;
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Create a {@code ProcessingSwitches} object with its parent.
+     *
+     * @param parent parent switches
+     */
+    public ProcessingSwitches (ProcessingSwitches parent)
+    {
+        if (parent != null) {
+            setParent(parent);
+        }
+    }
 
+    // Meant for JAXB
+    protected ProcessingSwitches ()
+    {
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the parameter for the provided key.
      *
@@ -77,17 +137,11 @@ public class ProcessingSwitches
      * Report the current value for the provided key.
      *
      * @param key provided key
-     * @return current value, perhaps null
+     * @return current value
      */
     public Boolean getValue (Switch key)
     {
-        Param<Boolean> param = getParam(key);
-
-        if (param == null) {
-            return null;
-        }
-
-        return param.getValue();
+        return getParam(key).getValue();
     }
 
     /**
@@ -111,19 +165,18 @@ public class ProcessingSwitches
      *
      * @param parent the parent to assign
      */
-    public void setParent (ProcessingSwitches parent)
+    public final void setParent (ProcessingSwitches parent)
     {
-        this.parent = parent;
-
-        // Populate the map
+        // Complete the map and link each switch to parent switch
         for (Switch key : Switch.values()) {
             Param<Boolean> param = getParam(key);
 
             if (param == null) {
-                param = new BooleanParam();
-                param.setParent(parent.getParam(key));
+                param = new Param<>();
                 map.put(key, param);
             }
+
+            param.setParent(parent.getParam(key));
         }
     }
 
@@ -143,42 +196,10 @@ public class ProcessingSwitches
         return defaultSwitches;
     }
 
-    /** Enumerated names, based on defined constants. */
-    public static enum Switch
-    {
-        keepGrayImages(constants.keepGrayImages),
-        indentations(constants.indentations),
-        bothSharedHeadDots(constants.bothSharedHeadDots),
-        articulations(constants.articulations),
-        chordNames(constants.chordNames),
-        fingerings(constants.fingerings),
-        frets(constants.frets),
-        pluckings(constants.pluckings),
-        lyrics(constants.lyrics),
-        lyricsAboveStaff(constants.lyricsAboveStaff),
-        smallBlackHeads(constants.smallBlackHeads),
-        smallVoidHeads(constants.smallVoidHeads),
-        smallWholeHeads(constants.smallWholeHeads),
-        crossHeads(constants.crossHeads),
-        implicitTuplets(constants.implicitTuplets),
-        sixStringTablatures(constants.sixStringTablatures),
-        fourStringTablatures(constants.fourStringTablatures),
-        oneLineStaves(constants.oneLineStaves);
-
-        /** Underlying boolean constant. */
-        Constant.Boolean constant;
-
-        Switch (Constant.Boolean constant)
-        {
-            this.constant = constant;
-        }
-
-        public Constant.Boolean getConstant ()
-        {
-            return constant;
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Adapter //
+    //---------//
     /**
      * JAXB adapter for ProcessingSwitches type.
      */
@@ -201,6 +222,7 @@ public class ProcessingSwitches
                 myEntry.key = entry.getKey();
                 myEntry.value = entry.getValue().getSpecific();
 
+                // We marshal only entries for which we have a specific value
                 if (myEntry.value != null) {
                     myList.entries.add(myEntry);
                 }
@@ -215,12 +237,20 @@ public class ProcessingSwitches
         {
             ProcessingSwitches switches = new ProcessingSwitches();
 
+            // We populate entries for which we have a specific value
             for (MyEntry entry : value.entries) {
-                BooleanParam b = new BooleanParam();
+                Param<Boolean> param = new Param<>();
 
                 if (entry.value != null) {
-                    b.setSpecific(entry.value);
-                    switches.map.put(entry.key, b);
+                    param.setSpecific(entry.value);
+                    switches.map.put(entry.key, param);
+                }
+            }
+
+            // Then fill empty entries
+            for (Switch key : Switch.values()) {
+                if (switches.map.get(key) == null) {
+                    switches.map.put(key, new Param<>());
                 }
             }
 
@@ -248,6 +278,15 @@ public class ProcessingSwitches
 
             @XmlValue
             public Boolean value;
+
+            @Override
+            public String toString ()
+            {
+                return new StringBuilder("MyEntry{")
+                        .append("key:").append(key)
+                        .append(",value:").append(value)
+                        .append('}').toString();
+            }
         }
     }
 
@@ -258,9 +297,9 @@ public class ProcessingSwitches
             extends ConstantSet
     {
 
-        private final Constant.Boolean keepGrayImages = new Constant.Boolean(
+        private final Constant.Boolean poorInputMode = new Constant.Boolean(
                 false,
-                "Keep loaded gray images");
+                "Use poor input mode");
 
         private final Constant.Boolean indentations = new Constant.Boolean(
                 true,
@@ -269,6 +308,10 @@ public class ProcessingSwitches
         private final Constant.Boolean bothSharedHeadDots = new Constant.Boolean(
                 false,
                 "Link augmentation dot to both shared heads");
+
+        private final Constant.Boolean keepGrayImages = new Constant.Boolean(
+                false,
+                "Keep loaded gray images");
 
         private final Constant.Boolean articulations = new Constant.Boolean(
                 true,
@@ -329,6 +372,14 @@ public class ProcessingSwitches
         private final Constant.Boolean oneLineStaves = new Constant.Boolean(
                 false,
                 "Support for percussion staves (1 line)");
+
+        private final Constant.Boolean partialWholeRests = new Constant.Boolean(
+                false,
+                "Support for partial whole rests");
+
+        private final Constant.Boolean multiWholeHeadChords = new Constant.Boolean(
+                false,
+                "Support for multi-whole head chords");
     }
 
     //-----------------//
@@ -341,7 +392,7 @@ public class ProcessingSwitches
         DefaultSwitches ()
         {
             for (Switch key : Switch.values()) {
-                map.put(key, new ConstantBasedParam<Boolean, Constant.Boolean>(key.getConstant()));
+                map.put(key, new ConstantBasedParam<>(key.getConstant()));
             }
         }
     }

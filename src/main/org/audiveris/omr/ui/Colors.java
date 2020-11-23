@@ -101,7 +101,7 @@ public abstract class Colors
     public static final Color GRID_VERTICAL = new Color(200, 200, 255);
 
     /** Inter in abnormal state. */
-    public static final Color INTER_ABNORMAL = Color.RED;
+    public static final Color INTER_ABNORMAL = new Color(255, 50, 0);
 
     /** Music for picture view. */
     public static final Color MUSIC_ALONE = Color.BLACK;

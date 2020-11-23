@@ -120,8 +120,7 @@ public class HeadStemRelation
 
         if (extensionPoint == null) {
             Anchor anchor = (headSide == LEFT) ? Anchor.LEFT_STEM : Anchor.RIGHT_STEM;
-            int interline = head.getStaff().getSpecificInterline();
-            Point2D refPt = head.getStemReferencePoint(anchor, interline);
+            Point2D refPt = head.getStemReferencePoint(anchor);
             extensionPoint = refPt;
         }
 
@@ -236,8 +235,8 @@ public class HeadStemRelation
      */
     public boolean isInvading ()
     {
-        return (dy <= constants.maxInvadingDy.getValue()) && (dx <= constants.maxInvadingDx
-                .getValue());
+        return (dy <= constants.maxInvadingDy.getValue())
+                       && (dx <= constants.maxInvadingDx.getValue());
     }
 
     //----------------//
@@ -340,6 +339,10 @@ public class HeadStemRelation
     {
         final HeadInter head = (HeadInter) e.getEdgeSource();
         final StemInter stem = (StemInter) e.getEdgeTarget();
+
+        if (stem.isVip()) {
+            logger.info("VIP {} unlinked from {}", stem, head);
+        }
 
         if (!head.isRemoved()) {
             head.checkAbnormal();

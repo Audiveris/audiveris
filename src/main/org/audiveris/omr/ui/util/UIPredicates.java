@@ -153,8 +153,6 @@ public abstract class UIPredicates
         int onmask = BUTTON1_DOWN_MASK | SHIFT_DOWN_MASK;
         int offmask = BUTTON2_DOWN_MASK | BUTTON3_DOWN_MASK;
 
-        //        int onmask = SHIFT_DOWN_MASK;
-        //        int offmask = BUTTON2_DOWN_MASK; // middle button = wheel
         return (e.getModifiersEx() & (onmask | offmask)) == onmask;
     }
 }

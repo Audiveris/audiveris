@@ -41,7 +41,6 @@ import static java.lang.Boolean.TRUE;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -67,22 +66,24 @@ import java.util.TreeSet;
  * <p>
  * Selection and aggregation are done with vertical sections only.
  * <p>
- * At the end, isolated stickers can be integrated into the seed, provided they are slim (1 pixel)
- * and not connected to any external section. Stickers can be vertical or horizontal sections,
- * provided their thickness is limited (1 pixel)
+ * At the end, isolated 'stickers' can be integrated into the seed, provided they are slim
+ * (1 pixel thick) and not already connected to any external section.
+ * Stickers can be vertical or horizontal sections, provided their thickness is limited (1 pixel)
  * <p>
- * A similar approach applies for ledgers, except all sections are horizontal. Hence, we don't have
- * opposite stickers for ledgers.
+ * A similar approach applies for ledgers, except that all sections are horizontal.
+ * Hence, we don't have opposite stickers for ledgers.
  *
  * @author Hervé Bitteur
  */
 public class StickFactory
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StickFactory.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Sticks orientation. */
     private final Orientation orientation;
 
@@ -110,6 +111,7 @@ public class StickFactory
     /** Scale-dependent constants. */
     private final Parameters params;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StickFactory} object.
      *
@@ -139,6 +141,7 @@ public class StickFactory
         params = new Parameters(maxStickThickness, minCoreSectionLength, minSideRatio);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * At system level, retrieve all candidate sticks (stem seeds / ledgers).
      *
@@ -317,7 +320,7 @@ public class StickFactory
 
         for (LinkedSection core : cores) {
             if (core.isVip()) {
-                logger.info("VIP buildSticks on core {}");
+                logger.info("VIP buildSticks on core {}", core);
             }
 
             if (isProcessed(core)) {
@@ -331,8 +334,8 @@ public class StickFactory
             fils.add(fil);
             index.register(fil);
 
-            // Grow this filament as much as possible
-            growFilament(fil);
+            // Thicken this filament as much as possible
+            thickenFilament(fil);
 
             // Finally, aggregate isolated stickers (from main and from external sections if any)
             addStickers(fil);
@@ -345,7 +348,7 @@ public class StickFactory
     // getCoreSections //
     //-----------------//
     /**
-     * Filter all sections to come out with core sections, suitable to grow sticks from.
+     * Filter all sections to come up with core sections, suitable to grow sticks from.
      *
      * @return the core sections, sorted by decreasing length
      */
@@ -355,8 +358,8 @@ public class StickFactory
 
         // Discard too thick or too short sections
         for (LinkedSection ls : allSections) {
-            if ((ls.getRunCount() <= params.maxStickThickness) && (ls.getLength(
-                    orientation) >= params.minCoreSectionLength)) {
+            if ((ls.getRunCount() <= params.maxStickThickness)
+                        && (ls.getLength(orientation) >= params.minCoreSectionLength)) {
                 if ((predicate == null) || predicate.check(ls)) {
                     candidates.add(ls);
                 }
@@ -364,16 +367,9 @@ public class StickFactory
         }
 
         // Sort candidates by decreasing length
-        Collections.sort(candidates, new Comparator<Section>()
-                 {
-                     @Override
-                     public int compare (Section ls1,
-                                         Section ls2)
-                     {
-                         return Integer.compare(ls2.getLength(orientation), ls1.getLength(
-                                                orientation));
-                     }
-                 });
+        Collections.sort(candidates, (Section ls1, Section ls2)
+                         -> Integer.compare(ls2.getLength(orientation),
+                                            ls1.getLength(orientation)));
 
         return candidates;
     }
@@ -458,16 +454,16 @@ public class StickFactory
         return sideSections;
     }
 
-    //--------------//
-    // growFilament //
-    //--------------//
+    //-----------------//
+    // thickenFilament //
+    //-----------------//
     /**
-     * Incrementally grow the provided filament, initially composed of just one section,
+     * Incrementally thicken the provided filament, initially composed of just one section,
      * with suitable sections on both sides.
      *
-     * @param fil the filament to grow
+     * @param fil the filament to thicken
      */
-    private void growFilament (Filament fil)
+    private void thickenFilament (Filament fil)
     {
         boolean grown;
 
@@ -570,6 +566,7 @@ public class StickFactory
                 fil.getMeanThickness(orientation)) < params.maxStickThickness));
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

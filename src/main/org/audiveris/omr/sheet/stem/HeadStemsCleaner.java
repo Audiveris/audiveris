@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2019. All rights reserved.
+//  Copyright © Audiveris 2021. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -101,23 +101,50 @@ public class HeadStemsCleaner
 
         // Get down to a maximum of 2 stems
         while (rels.size() > 2) {
-            if (!discardLargeGap()) {
-                discardWeakerStem();
+            // Discard the relation with smallest contribution
+            HeadStemRelation discarded = discardWorstContribution(rels);
+
+            if (discarded != null) {
+                sig.removeEdge(discarded);
+                rels.remove(discarded);
             }
         }
 
         // Do we still have a conflict to solve?
         if (rels.size() == 2) {
-            // If not canonical, try to discard one of the stem link
+            // If not canonical, try to discard one of the stem links
             if (!isCanonicalShare()) {
-                if (!discardLargeGap()) {
-                    ///discardWeakerStem(); // Weaker stem may not be the good criteria!!!
-                    if (head.isVip()) {
-                        logger.info("VIP {} could not decide on stems {}", head, stems);
-                    }
+                // Discard the relation with smallest contribution
+                HeadStemRelation discarded = discardWorstContribution(rels);
+
+                if (discarded != null) {
+                    sig.removeEdge(discarded);
+                    rels.remove(discarded);
                 }
             }
         }
+    }
+
+    //--------------------------//
+    // discardWorstContribution //
+    //--------------------------//
+    private HeadStemRelation discardWorstContribution (List<HeadStemRelation> relations)
+    {
+        double worstContrib = Double.MAX_VALUE;
+        HeadStemRelation worstRel = null;
+
+        for (HeadStemRelation rel : relations) {
+            final StemInter stem = (StemInter) sig.getEdgeTarget(rel);
+            final double ratio = rel.getTargetRatio();
+            final double contrib = stem.getGrade() * (ratio - 1);
+
+            if (worstContrib > contrib) {
+                worstContrib = contrib;
+                worstRel = rel;
+            }
+        }
+
+        return worstRel;
     }
 
     //-----------------//
@@ -126,14 +153,15 @@ public class HeadStemsCleaner
     /**
      * Discard the stem link with largest significant y gap, if any.
      *
-     * @return true if such stem link was found
+     * @param relations the set of head-stem relations to purge
+     * @return the link to stem with largest significant y gap,or null
      */
-    private boolean discardLargeGap ()
+    private HeadStemRelation discardLargeGap (List<HeadStemRelation> relations)
     {
         double worstGap = 0;
         HeadStemRelation worstRel = null;
 
-        for (HeadStemRelation rel : rels) {
+        for (HeadStemRelation rel : relations) {
             double yGap = rel.getDy();
 
             if (worstGap < yGap) {
@@ -147,12 +175,9 @@ public class HeadStemsCleaner
                 logger.info("VIP {} discarding gap {}", head, sig.getEdgeTarget(worstRel));
             }
 
-            rels.remove(worstRel);
-            sig.removeEdge(worstRel);
-
-            return true;
+            return worstRel;
         } else {
-            return false;
+            return null;
         }
     }
 
@@ -161,8 +186,10 @@ public class HeadStemsCleaner
     //-------------------//
     /**
      * Discard the link to the stem with lower intrinsic grade.
+     *
+     * @return the link to discard
      */
-    private void discardWeakerStem ()
+    private HeadStemRelation discardWeakerStem ()
     {
         double worstGrade = Double.MAX_VALUE;
         HeadStemRelation worstRel = null;
@@ -184,9 +211,6 @@ public class HeadStemsCleaner
                 logger.info("VIP {} discarding weaker {}", head, sig.getEdgeTarget(worstRel));
             }
 
-            rels.remove(worstRel);
-            sig.removeEdge(worstRel);
-
             // If this false relation is really invading, use exclusion
             if (worstRel.isInvading()) {
                 if (worstStem.isVip() || head.isVip()) {
@@ -196,6 +220,8 @@ public class HeadStemsCleaner
                 sig.insertExclusion(head, worstStem, Exclusion.Cause.OVERLAP);
             }
         }
+
+        return worstRel;
     }
 
     //------------------//
@@ -226,11 +252,54 @@ public class HeadStemsCleaner
             }
         }
 
-        if (leftStem == null || rightStem == null) {
+        if ((leftStem == null) || (rightStem == null)) {
             return false;
         }
 
         return HeadStemRelation.isCanonicalShare(leftStem, head, rightStem);
+    }
+
+    //------------//
+    // preferBeam //
+    //------------//
+    /**
+     * Give preference to a stem linked to a beam, if any.
+     *
+     * @return stem link to be discarded if such was found
+     */
+    private HeadStemRelation preferBeam ()
+    {
+        final List<HeadStemRelation> toBeam = new ArrayList<>();
+        final List<HeadStemRelation> notToBeam = new ArrayList<>();
+
+        for (HeadStemRelation rel : rels) {
+            StemInter stem = (StemInter) sig.getEdgeTarget(rel);
+
+            if (stem.getBeams().isEmpty()) {
+                notToBeam.add(rel);
+            } else {
+                toBeam.add(rel);
+            }
+        }
+
+        if (toBeam.isEmpty() || notToBeam.isEmpty()) {
+            return null;
+        }
+
+        // Remove one relation out of 'notToBeam' collection
+        HeadStemRelation discarded;
+
+        if (notToBeam.size() > 1) {
+            discarded = discardLargeGap(notToBeam);
+
+            if (discarded == null) {
+                discarded = discardWeakerStem();
+            }
+        } else {
+            discarded = notToBeam.get(0);
+        }
+
+        return discarded;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -242,7 +311,7 @@ public class HeadStemsCleaner
     {
 
         private final Scale.Fraction yGapTiny = new Scale.Fraction(
-                0.1,
+                0.2, // 0.1,
                 "Maximum vertical tiny gap between stem & head");
     }
 }

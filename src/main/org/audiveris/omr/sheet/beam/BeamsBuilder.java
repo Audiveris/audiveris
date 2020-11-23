@@ -80,6 +80,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.audiveris.omr.sig.inter.HeadInter;
 
 /**
  * Class {@code BeamsBuilder} is in charge, at system level, of retrieving the possible
@@ -1706,8 +1707,10 @@ public class BeamsBuilder
 
                 return;
             }
+
             // Retrieve candidate glyphs from spots
             List<Glyph> glyphs = getCueGlyphs();
+
             // Retrieve beams from candidate glyphs
             List<Inter> beams = new ArrayList<>();
             for (Glyph glyph : glyphs) {
@@ -1727,6 +1730,7 @@ public class BeamsBuilder
                     beams.addAll(glyphBeams);
                 }
             }
+
             // Link stems & beams as possible
             if (!beams.isEmpty()) {
                 for (int i = 0; i < heads.size(); i++) {
