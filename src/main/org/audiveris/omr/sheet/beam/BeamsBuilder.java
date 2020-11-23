@@ -63,7 +63,6 @@ import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Navigable;
-import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
 import org.audiveris.omr.util.WrappedInteger;
@@ -82,6 +81,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.audiveris.omr.sig.inter.HeadInter;
 
 /**
  * Class {@code BeamsBuilder} is in charge, at system level, of retrieving the possible
@@ -1146,21 +1146,16 @@ public class BeamsBuilder
 
         // We look for collections of good cue black heads + stem, close enough
         // to be able to be connected by a cue beam.
-        List<Inter> smallBlacks = sig.inters(new Predicate<Inter>()
-        {
-            @Override
-            public boolean check (Inter inter)
-            {
-                if (inter.isRemoved() || (inter.getShape() != Shape.NOTEHEAD_BLACK_SMALL)) {
-                    return false;
-                }
-
-                if (inter.getContextualGrade() == null) {
-                    sig.computeContextualGrade(inter);
-                }
-
-                return inter.getContextualGrade() >= Grades.minContextualGrade;
+        List<Inter> smallBlacks = sig.inters((Inter inter) -> {
+            if (inter.isRemoved() || (inter.getShape() != Shape.NOTEHEAD_BLACK_SMALL)) {
+                return false;
             }
+
+            if (inter.getContextualGrade() == null) {
+                sig.computeContextualGrade(inter);
+            }
+
+            return inter.getContextualGrade() >= Grades.minContextualGrade;
         });
 
         if (smallBlacks.isEmpty()) {
@@ -1661,14 +1656,17 @@ public class BeamsBuilder
             if (globalDir == 0) {
                 return;
             }
+
             final Corner corner;
             int headX = GeoUtil.centerOf(head.getBounds()).x;
             int stemX = GeoUtil.centerOf(stem.getBounds()).x;
+
             if (headX <= stemX) {
                 corner = (globalDir < 0) ? Corner.TOP_LEFT : Corner.BOTTOM_LEFT;
             } else {
                 corner = (globalDir < 0) ? Corner.TOP_RIGHT : Corner.BOTTOM_RIGHT;
             }
+
             // Limit to beams that cross stem vertical line
             List<Inter> beams = new ArrayList<>();
             Rectangle fatStemBox = stem.getBounds();
@@ -1680,7 +1678,8 @@ public class BeamsBuilder
                     beams.add(beam);
                 }
             }
-            new StemsBuilder(system).linkCueBeams(head, corner, stem, beams);
+
+            new StemsBuilder(system).linkCueBeams((HeadInter) head, corner, stem, beams);
         }
 
         /**
@@ -1768,8 +1767,10 @@ public class BeamsBuilder
 
                 return;
             }
+
             // Retrieve candidate glyphs from spots
             List<Glyph> glyphs = getCueGlyphs();
+
             // Retrieve beams from candidate glyphs
             List<Inter> beams = new ArrayList<>();
             for (Glyph glyph : glyphs) {
@@ -1789,6 +1790,7 @@ public class BeamsBuilder
                     beams.addAll(glyphBeams);
                 }
             }
+
             // Link stems & beams as possible
             if (!beams.isEmpty()) {
                 for (int i = 0; i < heads.size(); i++) {

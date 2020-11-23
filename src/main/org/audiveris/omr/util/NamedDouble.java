@@ -103,7 +103,7 @@ public class NamedDouble
      *
      * @return current value
      */
-    public Double getValue ()
+    public double getValue ()
     {
         return value;
     }
@@ -116,5 +116,11 @@ public class NamedDouble
     public void setValue (double value)
     {
         this.value = value;
+    }
+
+    @Override
+    public String toString ()
+    {
+        return name + "/" + value;
     }
 }

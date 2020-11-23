@@ -648,9 +648,11 @@ public abstract class Glyphs
     {
         Set<Glyph> set = new LinkedHashSet<>();
 
-        for (Glyph glyph : collection) {
-            if (area.intersects(glyph.getBounds())) {
-                set.add(glyph);
+        if (collection != null) {
+            for (Glyph glyph : collection) {
+                if (area.intersects(glyph.getBounds())) {
+                    set.add(glyph);
+                }
             }
         }
 

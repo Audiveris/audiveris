@@ -48,6 +48,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  */
 public class ProcessingSwitches
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -56,12 +57,14 @@ public class ProcessingSwitches
     /** Default switches values. */
     private static volatile ProcessingSwitches defaultSwitches;
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Map of switches. */
     protected final EnumMap<Switch, Param<Boolean>> map = new EnumMap<>(Switch.class);
 
     /** Parent switches, if any. */
     private ProcessingSwitches parent;
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the parameter for the provided key.
      *
@@ -143,11 +146,16 @@ public class ProcessingSwitches
         return defaultSwitches;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------//
+    // Switch //
+    //--------//
     /** Enumerated names, based on defined constants. */
     public static enum Switch
     {
-        keepGrayImages(constants.keepGrayImages),
+        poorInputMode(constants.poorInputMode),
         indentations(constants.indentations),
+        keepGrayImages(constants.keepGrayImages),
         articulations(constants.articulations),
         chordNames(constants.chordNames),
         fingerings(constants.fingerings),
@@ -178,6 +186,9 @@ public class ProcessingSwitches
         }
     }
 
+    //---------//
+    // Adapter //
+    //---------//
     /**
      * JAXB adapter for ProcessingSwitches type.
      */
@@ -257,13 +268,17 @@ public class ProcessingSwitches
             extends ConstantSet
     {
 
-        private final Constant.Boolean keepGrayImages = new Constant.Boolean(
+        private final Constant.Boolean poorInputMode = new Constant.Boolean(
                 false,
-                "Keep loaded gray images");
+                "Use poor input mode");
 
         private final Constant.Boolean indentations = new Constant.Boolean(
                 true,
                 "Use of system indentation");
+
+        private final Constant.Boolean keepGrayImages = new Constant.Boolean(
+                false,
+                "Keep loaded gray images");
 
         private final Constant.Boolean articulations = new Constant.Boolean(
                 true,

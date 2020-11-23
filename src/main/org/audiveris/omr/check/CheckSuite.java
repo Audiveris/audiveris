@@ -296,7 +296,6 @@ public class CheckSuite<C>
             check.pass(checkable, result);
 
             if (impacts != null) {
-                ///impacts.setValue(index, result.value);
                 impacts.setImpact(index, result.grade);
             }
 
