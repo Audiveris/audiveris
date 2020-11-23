@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2019. All rights reserved.
+//  Copyright © Audiveris 2021. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -31,6 +31,7 @@ import java.awt.Color;
  */
 public abstract class Colors
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Global alpha opacity (0..255). */
     private static final int alpha = 180;
@@ -102,6 +103,9 @@ public abstract class Colors
 
     /** Inter in abnormal state. */
     public static final Color INTER_ABNORMAL = new Color(255, 50, 150);
+
+    /** Inter with a weak contextual grade. */
+    public static final Color INTER_WEAK = Color.ORANGE;
 
     /** Music for picture view. */
     public static final Color MUSIC_ALONE = Color.BLACK;
@@ -182,6 +186,7 @@ public abstract class Colors
     /** Warping points. */
     public static final Color WARP_POINT = Color.RED;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Not meant to be instantiated.
      */
