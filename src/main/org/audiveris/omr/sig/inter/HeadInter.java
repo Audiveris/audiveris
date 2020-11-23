@@ -632,12 +632,10 @@ public class HeadInter
     /**
      * Report the reference point for a stem connection.
      *
-     * @param anchor    desired side for stem (typically TOP_RIGHT_STEM or BOTTOM_LEFT_STEM)
-     * @param interline relevant interline value
+     * @param anchor desired side for stem (typically TOP_RIGHT_STEM or BOTTOM_LEFT_STEM)
      * @return the reference point
      */
-    public Point2D getStemReferencePoint (Anchor anchor,
-                                          int interline)
+    public Point2D getStemReferencePoint (Anchor anchor)
     {
         ShapeDescriptor desc = getDescriptor();
         Rectangle templateBox = desc.getBounds(this.getBounds());
@@ -688,52 +686,45 @@ public class HeadInter
      *
      * @param that another inter (perhaps a note)
      * @return true if overlap is detected
-     * @throws DeletedInterException when an Inter instance no longer exists in its SIG
      */
     @Override
     public boolean overlaps (Inter that)
     {
         // Specific between notes
         if (that instanceof HeadInter) {
-            if (this.isVip() && ((HeadInter) that).isVip()) {
+            if (this.isVip() && that.isVip()) {
                 logger.info("HeadInter checking overlaps between {} and {}", this, that);
             }
 
             HeadInter thatHead = (HeadInter) that;
 
-            // Check vertical distance
+            // Check pitch distance
             if (this.getStaff() == that.getStaff()) {
-                if (Math.abs(thatHead.getIntegerPitch() - getIntegerPitch()) > 1) {
+                if (Math.abs(this.getIntegerPitch() - thatHead.getIntegerPitch()) > 1) {
                     return false;
                 }
-//            } else {
-//                // We have two note heads from different staves and with overlapping bounds
-//                if (this.getStaff().getSystem() != that.getStaff().getSystem()) {
-//                    fixDuplicateWith(thatHead); // Throws DeletedInterException when fixed
-//
-//                    return true;
-//                }
             }
 
             // Check horizontal distance
             Rectangle thisBounds = this.getBounds();
             Rectangle thatBounds = thatHead.getBounds();
             Rectangle common = thisBounds.intersection(thatBounds);
+            int minWidth = Math.min(thisBounds.width, thatBounds.width);
+            double widthRatio = (double) common.width / minWidth;
 
-            if (common.width <= 0) {
+            if (widthRatio <= constants.maxOverlapDxRatio.getValue()) {
                 return false;
             }
 
+            // Check area
             int thisArea = thisBounds.width * thisBounds.height;
             int thatArea = thatBounds.width * thatBounds.height;
             int minArea = Math.min(thisArea, thatArea);
             int commonArea = common.width * common.height;
             double areaRatio = (double) commonArea / minArea;
-            boolean res = (common.width
-                                   > (constants.maxOverlapDxRatio.getValue() * thisBounds.width))
-                                  && (areaRatio > constants.maxOverlapAreaRatio.getValue());
+            boolean areaRes = areaRatio > constants.maxOverlapAreaRatio.getValue();
 
-            return res;
+            return areaRes;
         }
 
         // Basic test
@@ -941,7 +932,6 @@ public class HeadInter
         }
 
         final Scale scale = system.getSheet().getScale();
-        final int interline = scale.getInterline();
         final int maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum(manual));
         final int maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum(manual));
         final int maxYGap = scale.toPixels(HeadStemRelation.getYGapMaximum(manual));
@@ -950,7 +940,7 @@ public class HeadInter
         double bestGrade = 0;
 
         for (Corner corner : Corner.values) {
-            Point refPt = PointUtil.rounded(getStemReferencePoint(corner.stemAnchor(), interline));
+            Point refPt = PointUtil.rounded(getStemReferencePoint(corner.stemAnchor()));
             int xMin = refPt.x - ((corner.hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
             int yMin = refPt.y - ((corner.vSide == TOP) ? maxYGap : 0);
             Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
@@ -1182,6 +1172,20 @@ public class HeadInter
             super(NAMES, WEIGHTS);
             setImpact(0, dist);
         }
+    }
+
+    //----------------------//
+    // getMaxOverlapDxRatio //
+    //----------------------//
+    /**
+     * Report the maximum abscissa overlap (in ratio of head width) before two heads are
+     * considered as overlapping.
+     *
+     * @return maximum acceptable abscissa ratio
+     */
+    public static double getMaxOverlapDxRatio ()
+    {
+        return constants.maxOverlapDxRatio.getValue();
     }
 
     //-----------//

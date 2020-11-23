@@ -197,75 +197,6 @@ public abstract class AbstractBeamInter
         return isAbnormal();
     }
 
-    //-----------//
-    // checkLink //
-    //-----------//
-    /**
-     * Check if a Beam-Stem link is possible between this beam and the provided stem.
-     *
-     * @param stem       the provided stem
-     * @param headToBeam vertical direction (from head) to beam
-     * @param scale      scaling information
-     * @return the link if OK, otherwise null
-     */
-    public Link checkLink (StemInter stem,
-                           VerticalSide headToBeam,
-                           Scale scale)
-    {
-        if (isVip() && stem.isVip()) {
-            logger.info("VIP checkLink {} & {}", this, stem);
-        }
-
-        // Relation beam -> stem (if not yet present)
-        BeamStemRelation bRel;
-        final int yDir = (headToBeam == TOP) ? (-1) : 1;
-        final Line2D beamBorder = getBorder(headToBeam.opposite());
-        bRel = new BeamStemRelation();
-
-        // Precise cross point
-        Point2D start = stem.getTop();
-        Point2D stop = stem.getBottom();
-        Point2D crossPt = LineUtil.intersection(stem.getMedian(), beamBorder);
-
-        // Extension point
-        bRel.setExtensionPoint(
-                new Point2D.Double(crossPt.getX(), crossPt.getY() + (yDir * (getHeight() - 1))));
-
-        // Abscissa -> beamPortion
-        // toLeft & toRight are >0 if within beam, <0 otherwise
-        double toLeft = crossPt.getX() - beamBorder.getX1();
-        double toRight = beamBorder.getX2() - crossPt.getX();
-        final double xGap;
-
-        final int maxBeamInDx = scale.toPixels(BeamStemRelation.getXInGapMaximum(manual));
-
-        if (this instanceof BeamInter && (Math.min(toLeft, toRight) > maxBeamInDx)) {
-            // It's a beam center connection
-            bRel.setBeamPortion(BeamPortion.CENTER);
-            xGap = 0;
-        } else if (toLeft < toRight) {
-            bRel.setBeamPortion(BeamPortion.LEFT);
-            xGap = Math.max(0, -toLeft);
-        } else {
-            bRel.setBeamPortion(BeamPortion.RIGHT);
-            xGap = Math.max(0, -toRight);
-        }
-
-        // Ordinate
-        final double yGap = (yDir > 0) ? Math.max(0, crossPt.getY() - stop.getY())
-                : Math.max(0, start.getY() - crossPt.getY());
-
-        bRel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
-
-        if (bRel.getGrade() >= bRel.getMinGrade()) {
-            logger.debug("{} {} {}", this, stem, bRel);
-
-            return new Link(stem, bRel, true);
-        } else {
-            return null;
-        }
-    }
-
     //----------//
     // contains //
     //----------//
@@ -405,6 +336,27 @@ public abstract class AbstractBeamInter
         this.group = group;
     }
 
+    //----------//
+    // getHeads //
+    //----------//
+    /**
+     * Report all heads connected to this beam via some stem.
+     * <p>
+     * This does not include embedded rests if any.
+     *
+     * @return the set of connected heads
+     */
+    public Set<HeadInter> getHeads ()
+    {
+        final Set<HeadInter> beamHeads = new LinkedHashSet<>();
+
+        for (StemInter stem : getStems()) {
+            beamHeads.addAll(stem.getHeads());
+        }
+
+        return beamHeads;
+    }
+
     //-----------//
     // getHeight //
     //-----------//
@@ -541,6 +493,26 @@ public abstract class AbstractBeamInter
         }
 
         return true;
+    }
+
+    //-------------------//
+    // hasCommonStemWith //
+    //-------------------//
+    /**
+     * Report whether this beam shares at least one stem with the provided other beam.
+     * <p>
+     * This allows the building of beam groups.
+     *
+     * @param that the other beam
+     * @return true if so
+     */
+    public boolean hasCommonStemWith (AbstractBeamInter that)
+    {
+        final Set<StemInter> thisStems = this.getStems();
+        final Set<StemInter> thatStems = that.getStems();
+        thatStems.retainAll(thisStems);
+
+        return !thatStems.isEmpty();
     }
 
     //--------//
@@ -739,16 +711,13 @@ public abstract class AbstractBeamInter
     //-------------//
     /**
      * Look up for potential Beam-Stem links around this Beam instance.
-     * <p>
-     * This method used to check for stems only on beam left and right sides.
-     * Now, it check also for stems within the whole beam width.
      *
      * @param systemStems all stems in system, sorted by abscissa
      * @param system      containing system
      * @return the potential links
      */
-    private Collection<Link> lookupLinks (List<Inter> systemStems,
-                                          SystemInfo system)
+    public Collection<Link> lookupLinks (List<Inter> systemStems,
+                                         SystemInfo system)
     {
         if (systemStems.isEmpty()) {
             return Collections.emptySet();
@@ -767,7 +736,7 @@ public abstract class AbstractBeamInter
             StemInter stem = (StemInter) inter;
             Point2D stemMiddle = PointUtil.middle(stem.getMedian());
             VerticalSide vSide = (median.relativeCCW(stemMiddle) > 0) ? TOP : BOTTOM;
-            Link link = checkLink(stem, vSide, scale);
+            Link link = BeamStemRelation.checkLink(this, stem, vSide, scale);
 
             if (link != null) {
                 links.add(link);
@@ -836,7 +805,7 @@ public abstract class AbstractBeamInter
             StemInter stem = (StemInter) inter;
 
             for (VerticalSide vSide : VerticalSide.values()) {
-                Link link = checkLink(stem, vSide, scale);
+                Link link = BeamStemRelation.checkLink(this, stem, vSide, scale);
 
                 if (link != null) {
                     BeamStemRelation rel = (BeamStemRelation) link.relation;

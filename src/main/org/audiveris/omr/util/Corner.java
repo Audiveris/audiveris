@@ -88,7 +88,8 @@ public class Corner
     public Anchor stemAnchor ()
     {
         if (this == TOP_LEFT) {
-            return Anchor.TOP_LEFT_STEM;
+            ///return Anchor.TOP_LEFT_STEM;
+            return Anchor.BOTTOM_LEFT_STEM;
         }
 
         if (this == TOP_RIGHT) {
@@ -100,7 +101,8 @@ public class Corner
         }
 
         if (this == BOTTOM_RIGHT) {
-            return Anchor.BOTTOM_RIGHT_STEM;
+            ///return Anchor.BOTTOM_RIGHT_STEM;
+            return Anchor.TOP_RIGHT_STEM;
         }
 
         return null;

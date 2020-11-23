@@ -68,7 +68,7 @@ public abstract class Check<C>
     /** Higher bound for value range. */
     private NamedDouble high;
 
-    /** Covariant: higher is better, contravariant: lower is better. */
+    /** Covariant: higher is better, contra-variant: lower is better. */
     private final boolean covariant;
 
     /**
@@ -279,8 +279,8 @@ public abstract class Check<C>
         StringBuilder sb = new StringBuilder(128);
         sb.append("{Check ").append(name);
         sb.append(" Covariant:").append(covariant);
-        sb.append(" Low:").append(low);
-        sb.append(" High:").append(high);
+        sb.append(" Low:").append(low.getValue());
+        sb.append(" High:").append(high.getValue());
         sb.append("}");
 
         return sb.toString();

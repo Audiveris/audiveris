@@ -525,6 +525,21 @@ public abstract class LineUtil
                             x, 1_000).y;
     }
 
+    //----------//
+    // toString //
+    //----------//
+    public static String toString (Line2D line)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Line{")
+                .append(PointUtil.toString(line.getP1()))
+                .append("-")
+                .append(PointUtil.toString(line.getP2()))
+                .append("}");
+
+        return sb.toString();
+    }
+
     //-----------//
     // translate //
     //-----------//

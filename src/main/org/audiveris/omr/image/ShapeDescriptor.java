@@ -329,13 +329,13 @@ public class ShapeDescriptor
         final int top = sym.y + dy;
         final int bottom = (sym.y + sym.height) - dy - 1;
 
-        template.addAnchor(Anchor.TOP_LEFT_STEM, left, center.y);
+        ///template.addAnchor(Anchor.TOP_LEFT_STEM, left, center.y);
         template.addAnchor(Anchor.LEFT_STEM, left, center.y);
         template.addAnchor(Anchor.BOTTOM_LEFT_STEM, left, bottom);
 
         template.addAnchor(Anchor.TOP_RIGHT_STEM, right, top);
         template.addAnchor(Anchor.RIGHT_STEM, right, center.y);
-        template.addAnchor(Anchor.BOTTOM_RIGHT_STEM, right, center.y);
+        ///template.addAnchor(Anchor.BOTTOM_RIGHT_STEM, right, center.y);
     }
 
     //----------//
@@ -918,7 +918,7 @@ public class ShapeDescriptor
                 "(Ratio) abscissa of stem anchor WRT symbol width");
 
         private final Constant.Ratio stemDy = new Constant.Ratio(
-                0.25,
+                0.375, ///0.25,
                 "(Ratio) ordinate of stem anchor WRT symbol height");
     }
 }

@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.stem;
 
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.StepException;
@@ -57,8 +58,22 @@ public class StemsStep
     {
         // -> Stems links to heads & beams
         new StemsBuilder(system).linkStems();
+    }
 
-        // Compute all contextual grades (for better UI)
-        system.getSig().contextualize();
+    //----------//
+    // doEpilog //
+    //----------//
+    @Override
+    protected void doEpilog (Sheet sheet,
+                             Void context)
+            throws StepException
+    {
+        // Further beams processing
+        for (SystemInfo system : sheet.getSystems()) {
+            new StemsBuilder(system).finalizeStems();
+
+            // Compute all contextual grades (for better UI)
+            system.getSig().contextualize();
+        }
     }
 }

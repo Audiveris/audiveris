@@ -373,7 +373,7 @@ public class CurvedFilament
                             section.getId(),
                             orientation,
                             getId());
-                    removeSection(section, true);
+                    removeSection(section);
                     progressed = true;
                 }
             }

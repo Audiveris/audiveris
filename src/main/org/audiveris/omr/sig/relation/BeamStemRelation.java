@@ -51,6 +51,7 @@ import java.awt.geom.Point2D;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omr.util.VerticalSide;
 
 /**
  * Class {@code BeamStemRelation} implements the geometric link between a beam
@@ -182,23 +183,8 @@ public class BeamStemRelation
         }
 
         if (beamPortion == null) {
-            if (beam instanceof BeamHookInter) {
-                beamPortion = (beam.getCenter().x < stem.getCenter().x) ? RIGHT : LEFT;
-            } else {
-                int xStem = stem.getCenter().x;
-                Scale scale = stem.getSig().getSystem().getSheet().getScale();
-                int maxDx = scale.toPixels(getXInGapMaximum(false));
-                double left = beam.getMedian().getX1();
-                double right = beam.getMedian().getX2();
-
-                if (xStem < (left + maxDx)) {
-                    beamPortion = LEFT;
-                } else if (xStem > (right - maxDx)) {
-                    beamPortion = RIGHT;
-                } else {
-                    beamPortion = CENTER;
-                }
-            }
+            Scale scale = beam.getSig().getSystem().getSheet().getScale();
+            beamPortion = computeBeamPortion(beam, stem.getCenter().x, scale);
         }
 
         for (HeadChordInter chord : stem.getChords()) {
@@ -216,6 +202,101 @@ public class BeamStemRelation
         }
 
         beam.checkAbnormal();
+    }
+
+    //--------------------//
+    // computeBeamPortion //
+    //--------------------//
+    /**
+     * Determine beam portion where stem is linked.
+     *
+     * @param beam  provided beam
+     * @param xStem abscissa of stem connection
+     * @param scale scaling information
+     * @return the beam portion
+     */
+    public static BeamPortion computeBeamPortion (AbstractBeamInter beam,
+                                                  double xStem,
+                                                  Scale scale)
+    {
+        if (beam instanceof BeamHookInter) {
+            return (beam.getCenter().x < xStem) ? RIGHT : LEFT;
+        } else {
+            int maxDx = scale.toPixels(getXInGapMaximum(false));
+            double left = beam.getMedian().getX1();
+            double right = beam.getMedian().getX2();
+
+            if (xStem < (left + maxDx)) {
+                return LEFT;
+            } else if (xStem > (right - maxDx)) {
+                return RIGHT;
+            } else {
+                return CENTER;
+            }
+        }
+    }
+
+    //-----------//
+    // checkLink //
+    //-----------//
+    /**
+     * Check if a Beam-Stem link is possible between provided beam and stem.
+     *
+     * @param beam       the provided beam
+     * @param stem       the provided stem
+     * @param headToBeam vertical direction (from head) to beam
+     * @param scale      scaling information
+     * @return the link if OK, otherwise null
+     */
+    public static Link checkLink (AbstractBeamInter beam,
+                                  StemInter stem,
+                                  VerticalSide headToBeam,
+                                  Scale scale)
+    {
+        if (beam.isVip() && stem.isVip()) {
+            logger.info("VIP checkLink {} & {}", beam, stem);
+        }
+
+        // Relation beam -> stem
+        BeamStemRelation bRel;
+        final int yDir = (headToBeam == TOP) ? (-1) : 1;
+        final Line2D beamBorder = beam.getBorder(headToBeam.opposite());
+        bRel = new BeamStemRelation();
+
+        // Precise cross point
+        final Point2D start = stem.getTop();
+        final Point2D stop = stem.getBottom();
+        final Point2D crossPt = LineUtil.intersection(stem.getMedian(), beamBorder);
+        final double xStem = crossPt.getX();
+
+        // Extension point
+        bRel.setExtensionPoint(
+                new Point2D.Double(xStem, crossPt.getY() + (yDir * (beam.getHeight() - 1))));
+
+        // Beam portion
+        final BeamPortion portion = BeamStemRelation.computeBeamPortion(beam, xStem, scale);
+        bRel.setBeamPortion(portion);
+
+        // Abscissa
+        final double xGap = (portion == BeamPortion.CENTER) ? 0
+                : ((portion == BeamPortion.LEFT)
+                        ? Math.max(0, beamBorder.getX1() - xStem)
+                        : Math.max(0, xStem - beamBorder.getX2()));
+
+        // Ordinate
+        final double yGap = (yDir > 0) ? Math.max(0, crossPt.getY() - stop.getY())
+                : Math.max(0, start.getY() - crossPt.getY());
+
+        bRel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap),
+                        beam.isManual() || stem.isManual());
+
+        if (bRel.getGrade() >= bRel.getMinGrade()) {
+            logger.debug("{} {} {}", beam, stem, bRel);
+
+            return new Link(stem, bRel, true);
+        } else {
+            return null;
+        }
     }
 
     //----------------//
@@ -375,7 +456,7 @@ public class BeamStemRelation
                 "Maximum manual horizontal overlap between stem & beam");
 
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
-                0.15, ///0.1;
+                0.15,
                 "Maximum horizontal gap between stem & beam");
 
         private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
