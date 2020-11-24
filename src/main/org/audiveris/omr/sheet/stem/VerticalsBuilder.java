@@ -135,6 +135,21 @@ public class VerticalsBuilder
         return constants.minSideRatio;
     }
 
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        final StringBuilder sb = new StringBuilder("VerticalsBuilder");
+        sb.append('@').append(Integer.toHexString(hashCode())).append('{');
+        sb.append(system);
+        sb.append(" poor:").append(poor);
+        sb.append('}');
+
+        return sb.toString();
+    }
+
     //----------------//
     // checkVerticals //
     //----------------//
