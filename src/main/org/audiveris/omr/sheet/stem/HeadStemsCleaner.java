@@ -101,15 +101,6 @@ public class HeadStemsCleaner
 
         // Get down to a maximum of 2 stems
         while (rels.size() > 2) {
-//            HeadStemRelation discarded = preferBeam();
-//
-//            if (discarded == null) {
-//                discarded = discardLargeGap(rels);
-//            }
-//
-//            if (discarded == null) {
-//                discarded = discardWeakerStem();
-//            }
             // Discard the relation with smallest contribution
             HeadStemRelation discarded = discardWorstContribution(rels);
 
@@ -130,21 +121,6 @@ public class HeadStemsCleaner
                     sig.removeEdge(discarded);
                     rels.remove(discarded);
                 }
-//                HeadStemRelation discarded = preferBeam();
-//
-//                if (discarded == null) {
-//                    discarded = discardLargeGap(rels);
-//                }
-//
-//                if (discarded != null) {
-//                    sig.removeEdge(discarded);
-//                    rels.remove(discarded);
-//                } else {
-//                    ///discardWeakerStem(); // Weaker stem may not be the good criteria!!!
-//                    if (head.isVip()) {
-//                        logger.info("VIP {} could not decide on stems {}", head, stems);
-//                    }
-//                }
             }
         }
     }
