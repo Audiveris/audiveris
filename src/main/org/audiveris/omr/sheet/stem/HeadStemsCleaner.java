@@ -101,17 +101,6 @@ public class HeadStemsCleaner
 
         // Get down to a maximum of 2 stems
         while (rels.size() > 2) {
-//            if (!discardLargeGap()) {
-//                discardWeakerStem();
-//            HeadStemRelation discarded = preferBeam();
-//
-//            if (discarded == null) {
-//                discarded = discardLargeGap(rels);
-//            }
-//
-//            if (discarded == null) {
-//                discarded = discardWeakerStem();
-//            }
             // Discard the relation with smallest contribution
             HeadStemRelation discarded = discardWorstContribution(rels);
 
@@ -123,18 +112,6 @@ public class HeadStemsCleaner
 
         // Do we still have a conflict to solve?
         if (rels.size() == 2) {
-//<<<<<<< HEAD
-//            // If not canonical, try to discard one of the stem link
-//            if (!isCanonicalShare()) {
-//                if (!discardLargeGap()) {
-//                    ///discardWeakerStem(); // Weaker stem may not be the good criteria!!!
-//                    if (head.isVip()) {
-//                        logger.info("VIP {} could not decide on stems {}", head, stems);
-//                    }
-//                }
-//            }
-//        }
-//=======
             // If not canonical, try to discard one of the stem links
             if (!isCanonicalShare()) {
                 // Discard the relation with smallest contribution
@@ -144,21 +121,6 @@ public class HeadStemsCleaner
                     sig.removeEdge(discarded);
                     rels.remove(discarded);
                 }
-//                HeadStemRelation discarded = preferBeam();
-//
-//                if (discarded == null) {
-//                    discarded = discardLargeGap(rels);
-//                }
-//
-//                if (discarded != null) {
-//                    sig.removeEdge(discarded);
-//                    rels.remove(discarded);
-//                } else {
-//                    ///discardWeakerStem(); // Weaker stem may not be the good criteria!!!
-//                    if (head.isVip()) {
-//                        logger.info("VIP {} could not decide on stems {}", head, stems);
-//                    }
-//                }
             }
         }
     }

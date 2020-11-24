@@ -354,11 +354,6 @@ public class StemsBuilder
         return stemConstructor;
     }
 
-//<<<<<<< HEAD
-//        // List of non-conflicting stems ensembles
-//        List<List<Inter>> partners = sig.getPartitions(null, allStems);
-//        HeadStemsCleaner checker = null;
-//=======
     /**
      * @return the systemBeams
      */
@@ -375,11 +370,6 @@ public class StemsBuilder
         return systemSeeds;
     }
 
-//<<<<<<< HEAD
-//            if (checker == null) {
-//                checker = new HeadStemsCleaner(head);
-//            }
-//=======
     /**
      * @return the systemStems
      */
@@ -602,8 +592,8 @@ public class StemsBuilder
             luAreaHeight = Math.max(
                     (int) Math.rint(maxStemLength * params.maxStemLengthRatio),
                     params.maxHeadBeamDistance) - headSymbolDim.height;
-            logger.info("{} Observed max stem length {}, lookup height {}",
-                        system, maxStemLength, luAreaHeight);
+            logger.debug("{} Observed max stem length {}, lookup height {}",
+                         system, maxStemLength, luAreaHeight);
         }
 
         public void process ()
@@ -1034,7 +1024,7 @@ public class StemsBuilder
             if (count > 0) {
                 Collections.sort(values);
                 medianValue = values.get(count / 2);
-                logger.info("{} Median abscissa gap between beam stems: {}", system, medianValue);
+                logger.debug("{} Median abscissa gap between beam stems: {}", system, medianValue);
             }
 
             return medianValue;
@@ -1213,7 +1203,7 @@ public class StemsBuilder
                 "How much do we boost beam side stems (and their heads)");
 
         private final Constant.Boolean useBeamUmbrella = new Constant.Boolean(
-                true,
+                false,
                 "Should we use beam umbrella to link heads?");
 
         private final Scale.Fraction minBeamUmbrellaWidth = new Scale.Fraction(
