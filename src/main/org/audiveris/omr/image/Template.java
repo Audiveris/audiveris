@@ -770,7 +770,7 @@ public class Template
                 "Weight assigned to template exterior background pixels");
 
         private final Constant.Ratio holeWeight = new Constant.Ratio(
-                1.0,
+                5.0, // Was 1.0, now modified for cross heads
                 "Weight assigned to template interior background pixels");
 
         private final Scale.Fraction dilation = new Scale.Fraction(

@@ -116,6 +116,7 @@ public abstract class AbstractInter
     //----------------
     //
     /** The assigned shape. */
+    @Navigable(false)
     @XmlAttribute(name = "shape")
     protected Shape shape;
 
@@ -1108,7 +1109,6 @@ public abstract class AbstractInter
     //----------//
     @Override
     public boolean overlaps (Inter that)
-            throws DeletedInterException
     {
         if (this.isImplicit() || that.isImplicit()) {
             return false;

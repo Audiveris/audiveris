@@ -30,24 +30,21 @@ import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
-import org.audiveris.omr.run.Orientation;
-import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.Run;
+import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
-import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.StemInter;
-import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.util.Corner;
-import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import static org.audiveris.omr.util.VerticalSide.*;
 import org.audiveris.omr.util.Wrapper;
@@ -69,24 +66,27 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
-import org.audiveris.omr.sheet.beam.BeamGroup;
 
 /**
  * Class {@code HeadLinker} tries to establish links from a head to nearby stem
  * interpretations, processing the four corners around head.
  * <p>
  * We have to handle the case where stem pixels between a head and a compatible beam are reduced
- * to almost nothing because of poor image quality.
- * In this case, we may have no concrete stem inter candidate available, and thus have to
- * directly inspect the rather vertical segment area between head reference point and beam,
- * looking for a few pixels there.
+ * to almost nothing because of poor image quality:
+ * <ul>
+ * <li>In this case, we may have no concrete stem inter candidate available, and thus have to
+ * directly inspect the rather vertical segment area between head reference point and potential
+ * beam, looking for a few pixels there.
+ * <li>While we can significantly relax the criteria on presence of black pixels, we can stay
+ * strict on stem straightness and verticality.
+ * </ul>
  *
  * @author Hervé Bitteur
  */
 public class HeadLinker
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Logger logger = LoggerFactory.getLogger(HeadLinker.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -139,6 +139,27 @@ public class HeadLinker
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+//    //------------//
+//    // linkToBeam //
+//    //------------//
+//    /**
+//     * Try to connect this head to the provided beam, via the most suitable stem if any.
+//     *
+//     * @param beam        provided beam
+//     * @param beamPortion location on beam
+//     * @param beamSide    head location with respect to beam (TOP or BOTTOM)
+//     * @return the created BeamStemRelation if successful, null otherwise
+//     */
+//    public BeamStemRelation linkToBeam (BeamInter beam,
+//                                        BeamPortion beamPortion,
+//                                        VerticalSide beamSide)
+//    {
+//        Corner corner = (beamSide == VerticalSide.TOP) ? Corner.BOTTOM_LEFT : Corner.TOP_RIGHT;
+//        neighborSeeds = getNeighboringSeeds();
+//
+//        return new CornerLinker(corner).linkBeam(beam, beamPortion);
+//    }
+//
     //---------------//
     // linkCueCorner //
     //---------------//
@@ -261,6 +282,9 @@ public class HeadLinker
         /** The stems seeds found in the corner. */
         private List<Glyph> seeds;
 
+        /** The theoretical line from head. */
+        private Line2D theoLine;
+
         /** The most probable stem target line. */
         private Line2D targetLine;
 
@@ -297,6 +321,12 @@ public class HeadLinker
 
             area = getLuArea(null);
 
+            final Rectangle systemBox = system.getBounds();
+            final int sysY = (yDir > 0) ? (systemBox.y + systemBox.height) : systemBox.y;
+            final Point2D sysPt = getTargetPt(new Line2D.Double(0, sysY, 100, sysY));
+            theoLine = new Line2D.Double(refPt, sysPt);
+            head.addAttachment("t" + corner.getId(), theoLine);
+
             // Look for beams and beam hooks in the corner
             List<Inter> beamCandidates = Inters.intersectedInters(neighborBeams,
                                                                   GeoOrder.BY_ABSCISSA, area);
@@ -305,12 +335,9 @@ public class HeadLinker
             List<List<AbstractBeamInter>> beamGroups = lookupBeamGroups(beamCandidates);
 
             // Compute target end of stem using either system limit
-            // or beam group limit if such beam group intersects corner area.
+            // or beam group limit if such beam group intersects the theoretical Line.
             targetPt = computeTargetPoint(beamGroups);
-
-            Line2D line = new Line2D.Double(refPt, targetPt);
-            head.addAttachment("t" + corner.getId(), line);
-
+            theoLine.setLine(refPt, targetPt);
             yRange = getYRange(targetPt.getY());
 
             // Define the best target line (and collect suitable seeds)
@@ -326,14 +353,14 @@ public class HeadLinker
 
             if (!chunks.isEmpty()) {
                 items.addAll(chunks);
-                sortByDistance(items);
+                sortByVerticalDistance(items);
             }
 
             double refY = refPt.getY(); // Reference ordinate
 
             if (fatHeadSection.value != null) {
                 // Shift the reference ordinate accordingly
-                Rectangle runBox = getRunBox(fatHeadSection.value, corner.hSide);
+                Rectangle runBox = getRunBox(fatHeadSection.value);
                 int contrib = getContrib(runBox);
 
                 if (contrib > 0) {
@@ -349,10 +376,93 @@ public class HeadLinker
                 linkBeamsAndStems(beamGroups, stems);
             }
         }
-
+//
+//        //----------//
+//        // linkBeam //
+//        //----------//
+//        /**
+//         * Try to link provided head corner and beam, through a stem if available.
+//         *
+//         * @param beam        provided beam
+//         * @param beamPortion targeted portion of beam
+//         * @ created beam-stem relation, null if failed
+//         */
+//        public BeamStemRelation linkBeam (BeamInter beam,
+//                                          BeamPortion beamPortion)
+//        {
+//            if (beam.isVip()) {
+//                logger.info("VIP linkBeam {} {} {} {}", head, corner, beam, beamPortion);
+//            }
+//
+//            area = getLuArea(beam.getMedian());
+//
+//            // Compute target end of stem using beam limit
+//            Line2D limit = getLimit(beam);
+//            targetPt = getTargetPt(limit);
+//            Point2D beamPt = (beamPortion == BeamPortion.LEFT) ? limit.getP1() : limit.getP2();
+//
+//            Line2D line = new Line2D.Double(refPt, targetPt);
+//            head.addAttachment("b" + corner, line);
+//            logger.info("{}", LineUtil.toString(line));
+//
+//            yRange = getYRange(targetPt.getY());
+//
+//            // Define the best target line (and collect suitable seeds)
+//            targetLine = getTargetLine();
+//
+//            // Look for additional chunks built out of sections found.
+//            // Assign special role to a fat section part of head (if any)
+//            Wrapper<Section> fatHeadSection = new Wrapper<>(null);
+//            List<Glyph> chunks = lookupChunks(fatHeadSection);
+//
+//            // Aggregate seeds and chunks up to the limit
+//            List<Glyph> items = new ArrayList<>(seeds);
+//
+//            if (!chunks.isEmpty()) {
+//                items.addAll(chunks);
+//                sortByVerticalDistance(items);
+//            }
+////
+////            double refY = refPt.getY(); // Reference ordinate
+////
+////            if (fatHeadSection.value != null) {
+////                // Shift the reference ordinate accordingly
+////                Rectangle runBox = getRunBox(fatHeadSection.value, corner.hSide);
+////                int contrib = getContrib(runBox);
+////
+////                if (contrib > 0) {
+////                    refY += (yDir * contrib);
+////                }
+////            }
+////
+//            final Point2D top = (yDir > 0) ? refPt : targetPt;
+//            final Point2D bottom = (yDir > 0) ? targetPt : refPt;
+//            StemInter stem = new StemInter(null, 1);
+//            stem.setMedian(top, bottom);
+//            sig.addVertex(stem);
+//
+//            BeamStemRelation bsRel = connectBeamStem(beam, stem, true);
+//            logger.info("{}", bsRel);
+//
+//            if (bsRel != null) {
+//                // Link stem to head as well
+//                connectHeadStem(null, stem);
+//            } else {
+//                stem.remove();
+//            }
+//
+//            return bsRel;
+////
+////            // Beam - Stem connection(s)?
+////            if (!beamGroups.isEmpty() && !stems.isEmpty()) {
+////                linkBeamsAndStems(beamGroups, stems);
+////            }
+//        }
+//
         //---------//
         // linkCue //
         //---------//
+
         /**
          * Specific link for cue (head & beam).
          */
@@ -373,7 +483,13 @@ public class HeadLinker
          */
         public void reuse ()
         {
-            area = getLuArea(null);
+            // Reuse proper lookup area
+            Path2D lu = (Path2D) head.getAttachments().get(getAreaId());
+            if (lu != null) {
+                area = new Area(lu);
+            } else {
+                area = getLuArea(null);
+            }
 
             // Look for stems inters that intersect the lookup area
             List<Inter> stems = Inters.intersectedInters(neighborStems, GeoOrder.BY_ABSCISSA, area);
@@ -386,33 +502,77 @@ public class HeadLinker
         }
 
         //--------------------//
+        // areGroupCompatible //
+        //--------------------//
+        /**
+         * Check whether the two beams can be consecutive beams in the same beam
+         * group, using ordinate gap.
+         *
+         * @param one current beam
+         * @param two following beam, in 'dir' direction
+         * @return true if OK
+         */
+        private boolean areGroupCompatible (AbstractBeamInter one,
+                                            AbstractBeamInter two)
+        {
+            // Vertical gap?
+            Point2D onePt = getTargetPt(one.getMedian());
+            Point2D twoPt = getTargetPt(two.getMedian());
+            final double yDistance = Math.abs(onePt.getY() - twoPt.getY());
+
+            if (yDistance > params.maxBeamDistance) {
+                logger.debug("{} & {} are too distant", one, two);
+
+                return false;
+            }
+
+            return true;
+        }
+
+        //--------------------//
         // computeTargetPoint //
         //--------------------//
         /**
          * Determine the target end point of stem.
-         * This is based on system limit, unless a beam group intersects corner area, in which case
-         * the beam group limit is used and the corner area truncated accordingly.
+         * <p>
+         * This is based on system limit, unless a beam group intersects corner line, in which case
+         * the beam group farthest limit is used and the corner area truncated accordingly.
          *
          * @param beamGroups the relevant beam groups, ordered by distance from head
          * @return the target stem end point
          */
         private Point2D computeTargetPoint (List<List<AbstractBeamInter>> beamGroups)
         {
-            Rectangle systemBox = system.getBounds();
-            int sysY = (yDir > 0) ? (systemBox.y + systemBox.height) : systemBox.y;
-
             if (!beamGroups.isEmpty()) {
                 List<AbstractBeamInter> beamGroup = beamGroups.get(0);
                 targetBeam = beamGroup.get(beamGroup.size() - 1);
+
+                // Find the first group which really intersects the theoretical line
+                for (List<AbstractBeamInter> group : beamGroups) {
+                    for (AbstractBeamInter beam : group) {
+                        final Line2D median = beam.getMedian();
+
+                        if (median.intersectsLine(theoLine)) {
+                            // Select group farthest beam
+                            targetBeam = group.get(group.size() - 1);
+                            final Line2D border = targetBeam.getBorder(corner.vSide);
+
+                            // Redefine lookup area
+                            final double margin = targetBeam.getHeight(); // Should be enough
+                            final Line2D limit = new Line2D.Double(
+                                    border.getX1(),
+                                    border.getY1() + yDir * margin,
+                                    border.getX2(),
+                                    border.getY2() + yDir * margin);
+                            area = getLuArea(limit);
+
+                            return getTargetPt(border);
+                        }
+                    }
+                }
             }
-            return getTargetPt(new Line2D.Double(0, sysY, 100, sysY));
-//            }
-//
-//            // Stop at end of first beam group
-//            Line2D limit = (yDir > 0) ? targetBeam.getBorder(BOTTOM) : targetBeam.getBorder(TOP);
-//            area = getLuArea(limit);
-//
-//            return getTargetPt(limit);
+
+            return theoLine.getP2();
         }
 
         //-----------------//
@@ -433,55 +593,14 @@ public class HeadLinker
             }
 
             // Relation beam -> stem (if not yet present)
-            BeamStemRelation bRel;
-            bRel = (BeamStemRelation) sig.getRelation(beam, stem, BeamStemRelation.class);
+            BeamStemRelation bRel = (BeamStemRelation) sig.getRelation(beam, stem,
+                                                                       BeamStemRelation.class);
 
             if (bRel == null) {
-                final Line2D beamLimit = getLimit(beam);
-                bRel = new BeamStemRelation();
+                final Link link = BeamStemRelation.checkLink(beam, stem, corner.vSide, scale);
 
-                // Precise cross point
-                Point2D start = stem.getTop();
-                Point2D stop = stem.getBottom();
-                Point2D crossPt = crossing(stem, beam);
-
-                // Extension point
-                bRel.setExtensionPoint(
-                        new Point2D.Double(
-                                crossPt.getX(),
-                                crossPt.getY() + (yDir * (beam.getHeight() - 1))));
-
-                // Abscissa -> beamPortion
-                // toLeft & toRight are >0 if within beam, <0 otherwise
-                double toLeft = crossPt.getX() - beamLimit.getX1();
-                double toRight = beamLimit.getX2() - crossPt.getX();
-                final double xGap;
-
-                if (beam instanceof BeamInter && (Math.min(
-                        toLeft,
-                        toRight) > params.maxBeamInDx)) {
-                    // It's a beam center connection
-                    bRel.setBeamPortion(BeamPortion.CENTER);
-                    xGap = 0;
-                } else if (toLeft < toRight) {
-                    bRel.setBeamPortion(BeamPortion.LEFT);
-                    xGap = Math.max(0, -toLeft);
-                } else {
-                    bRel.setBeamPortion(BeamPortion.RIGHT);
-                    xGap = Math.max(0, -toRight);
-                }
-
-                // Ordinate
-                final double yGap = (yDir > 0) ? Math.max(0, crossPt.getY() - stop.getY())
-                        : Math.max(0, start.getY() - crossPt.getY());
-
-                bRel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
-
-                if (bRel.getGrade() >= bRel.getMinGrade()) {
-                    sig.addEdge(beam, stem, bRel);
-                    logger.debug("{} {} {}", head, corner, bRel);
-                } else {
-                    bRel = null;
+                if (link != null) {
+                    link.applyTo(beam);
                 }
             }
 
@@ -495,28 +614,27 @@ public class HeadLinker
          * (Try to) connect head and stem.
          *
          * @param headSection the head section found, if any
-         * @param stemInter   the stem interpretation to connect
+         * @param stem        the stem interpretation to connect
          * @return the head-stem relation or null
          */
         private HeadStemRelation connectHeadStem (Section headSection,
-                                                  StemInter stemInter)
+                                                  StemInter stem)
         {
             // New relation head -> stem (if not yet present)
-            HeadStemRelation hRel = (HeadStemRelation) sig.getRelation(
-                    head,
-                    stemInter,
-                    HeadStemRelation.class);
+            HeadStemRelation hRel = (HeadStemRelation) sig.getRelation(head, stem,
+                                                                       HeadStemRelation.class);
 
             if (hRel == null) {
                 hRel = new HeadStemRelation();
                 hRel.setHeadSide(corner.hSide);
 
-                if (head.isVip() && stemInter.isVip()) {
-                    logger.info("VIP connectHeadStem? {} & {}", head, stemInter);
+                if (head.isVip() && stem.isVip()) {
+                    logger.info("VIP connectHeadStem? {} & {}", head, stem);
                 }
 
-                final Glyph stemGlyph = stemInter.getGlyph();
-                final Rectangle stemBox = stemGlyph.getBounds();
+                final Line2D stemLine = stem.getMedian();
+                final Point2D start = stemLine.getP1();
+                final Point2D stop = stemLine.getP2();
                 final double xGap;
                 final double yGap;
                 final double xAnchor;
@@ -524,16 +642,15 @@ public class HeadLinker
                 if (headSection != null) {
                     // xGap computed on head section
                     // yGap measured between head section and stem glyph
-                    Rectangle runBox = getRunBox(headSection, corner.hSide);
+                    final Rectangle runBox = getRunBox(headSection);
                     xGap = xDir * (runBox.x - refPt.getX());
                     xAnchor = runBox.x;
-
-                    int overlap = GeoUtil.yOverlap(runBox, stemBox);
+                    final double overlap = (yDir > 0)
+                            ? runBox.y + runBox.height - start.getY()
+                            : stop.getY() - runBox.y;
                     yGap = Math.abs(Math.min(overlap, 0));
                 } else {
                     // Use stem line to compute both xGap and yGap
-                    Point2D start = stemGlyph.getStartPoint(VERTICAL);
-                    Point2D stop = stemGlyph.getStopPoint(VERTICAL);
                     xAnchor = LineUtil.xAtY(start, stop, refPt.getY());
                     xGap = xDir * (xAnchor - refPt.getX());
 
@@ -554,19 +671,15 @@ public class HeadLinker
                                     xAnchor,
                                     (yDir > 0) ? headBox.y
                                             : ((headBox.y + headBox.height) - 1)));
-                    sig.addEdge(head, stemInter, hRel);
+                    sig.addEdge(head, stem, hRel);
 
-                    if (stemInter.isVip()) {
-                        logger.info("VIP linked {} {} {} to {}", head, corner, hRel, stemInter);
+                    if (stem.isVip()) {
+                        logger.info("VIP linked {} {} {} to {}", head, corner, hRel, stem);
                     }
                 } else {
-                    if (stemInter.isVip()) {
-                        logger.info(
-                                "VIP failed link {} to {} {} {}",
-                                stemInter,
-                                head,
-                                corner,
-                                hRel.getDetails());
+                    if (stem.isVip()) {
+                        logger.info("VIP failed link {} to {} {} {}",
+                                    stem, head, corner, hRel.getDetails());
                     }
 
                     hRel = null;
@@ -587,22 +700,22 @@ public class HeadLinker
          */
         private StemInter createStemInter (List<Glyph> items)
         {
-            Glyph stem = (items.size() == 1) ? items.get(0) : GlyphFactory.buildGlyph(items);
-            stem = system.getSheet().getGlyphIndex().registerOriginal(stem);
+            Glyph stemGlyph = (items.size() == 1) ? items.get(0) : GlyphFactory.buildGlyph(items);
+            stemGlyph = system.getSheet().getGlyphIndex().registerOriginal(stemGlyph);
 
-            if (stem.isVip()) {
-                logger.info("VIP createStemInter? {}", stem);
+            if (stemGlyph.isVip()) {
+                logger.info("VIP createStemInter? {}", stemGlyph);
             }
 
             // Stem interpretation (if not yet present for this glyph)
-            StemInter stemInter = getStemInter(stem);
+            StemInter stemInter = getStemInter(stemGlyph);
 
             if (stemInter == null) {
-                GradeImpacts impacts = builder.getVerticalsBuilder().checkStem(stem);
+                GradeImpacts impacts = builder.getVerticalsBuilder().checkStem(stemGlyph);
                 double grade = impacts.getGrade();
 
                 if (grade >= StemInter.getMinGrade()) {
-                    stemInter = new StemInter(stem, impacts);
+                    stemInter = new StemInter(stemGlyph, impacts);
                     sig.addVertex(stemInter);
                     builder.getSystemStems().add(stemInter);
                 }
@@ -624,11 +737,7 @@ public class HeadLinker
         private Point2D crossing (StemInter stem,
                                   AbstractBeamInter beam)
         {
-            Point2D start = stem.getTop();
-            Point2D stop = stem.getBottom();
-            Line2D beamLimit = getLimit(beam);
-
-            return LineUtil.intersection(start, stop, beamLimit.getP1(), beamLimit.getP2());
+            return LineUtil.intersection(stem.getMedian(), getLimit(beam));
         }
 
         //------------//
@@ -716,12 +825,21 @@ public class HeadLinker
             lu.closePath();
 
             // Attachment
-            StringBuilder sb = new StringBuilder();
-            sb.append((corner.vSide == TOP) ? "T" : "B");
-            sb.append((corner.hSide == LEFT) ? "L" : "R");
-            head.addAttachment(sb.toString(), lu);
+            head.addAttachment(getAreaId(), lu);
 
             return new Area(lu);
+        }
+
+        //-----------//
+        // getAreaId //
+        //-----------//
+        private String getAreaId ()
+        {
+            final StringBuilder sb = new StringBuilder();
+            sb.append((corner.vSide == TOP) ? "T" : "B");
+            sb.append((corner.hSide == LEFT) ? "L" : "R");
+
+            return sb.toString();
         }
 
         //-------------//
@@ -750,7 +868,7 @@ public class HeadLinker
          */
         private Point2D getReferencePoint ()
         {
-            return head.getStemReferencePoint(corner.stemAnchor(), scale.getInterline());
+            return head.getStemReferencePoint(corner.stemAnchor());
         }
 
         //-----------//
@@ -758,14 +876,12 @@ public class HeadLinker
         //-----------//
         /**
          * Report the run box of the first or last run of the provided section
-         * according to the desired side.
+         * according to current xDir sign.
          *
          * @param section the section for which the side run is retrieved
-         * @param side    the desired side
          * @return the run bounding box
          */
-        private Rectangle getRunBox (Section section,
-                                     HorizontalSide side)
+        private Rectangle getRunBox (Section section)
         {
             final Run run = (xDir < 0) ? section.getFirstRun() : section.getLastRun();
             final int pos = (xDir < 0) ? section.getFirstPos() : section.getLastPos();
@@ -803,6 +919,7 @@ public class HeadLinker
         //---------------//
         /**
          * Build the best possible target line.
+         * <p>
          * First, we use (head) refPt and (distant) targetPt to define a theoretical line.
          * Then, we look for suitable seeds if any to refine the line.
          * The non-suitable seeds are removed from the collection.
@@ -860,7 +977,7 @@ public class HeadLinker
 
                 // Finally, define line based on seed(s) kept if any
                 if (!seeds.isEmpty()) {
-                    sortByDistance(seeds);
+                    sortByVerticalDistance(seeds);
 
                     final Glyph s1 = seeds.get(0);
                     final Glyph s2 = seeds.get(seeds.size() - 1);
@@ -871,6 +988,7 @@ public class HeadLinker
                 }
             }
 
+            // No seeds left, fall back on theory
             return theory;
         }
 
@@ -1009,26 +1127,24 @@ public class HeadLinker
                     // Try to connect first beam & stem
                     BeamStemRelation rel = connectBeamStem(firstBeam, stem);
 
-                    if (rel != null) {
-                        // Extend stem connection till end of current beam group, if relevant
-                        if (firstBeam.isGood() && (group.size() > 1)) {
-                            for (AbstractBeamInter next : group.subList(1, group.size())) {
-                                if (sig.getRelation(
-                                        next,
-                                        stem,
-                                        BeamStemRelation.class) == null) {
-                                    BeamStemRelation r = new BeamStemRelation();
-                                    r.setBeamPortion(rel.getBeamPortion());
+                    // Extend stem connection till end of current beam group, if relevant
+                    if ((rel != null) && firstBeam.isGood() && (group.size() > 1)) {
+                        for (AbstractBeamInter next : group.subList(1, group.size())) {
+                            if (sig.getRelation(next, stem, BeamStemRelation.class) == null) {
+                                BeamStemRelation r = new BeamStemRelation();
+                                Point2D crossPt = crossing(stem, next);
+                                r.setExtensionPoint(
+                                        new Point2D.Double(
+                                                crossPt.getX(),
+                                                crossPt.getY() + (yDir * (next.getHeight() - 1))));
 
-                                    Point2D crossPt = crossing(stem, next);
-                                    r.setExtensionPoint(
-                                            new Point2D.Double(
-                                                    crossPt.getX(),
-                                                    crossPt.getY() + (yDir * (next.getHeight()
-                                                                                      - 1))));
-                                    r.setGrade(rel.getGrade());
-                                    sig.addEdge(next, stem, r);
-                                }
+                                // Portion depends on x location of stem WRT beam
+                                r.setBeamPortion(
+                                        BeamStemRelation
+                                                .computeBeamPortion(next, crossPt.getX(), scale));
+
+                                r.setGrade(rel.getGrade());
+                                sig.addEdge(next, stem, r);
                             }
                         }
                     }
@@ -1086,7 +1202,7 @@ public class HeadLinker
                     }
                 }
 
-                if (groupIsGood && BeamGroup.canBeNeighbors(prevBeam, beam, scale)) {
+                if (groupIsGood && areGroupCompatible(prevBeam, beam)) {
                     // Grow the current good group
                     group.add(beam);
                 } else {
@@ -1109,7 +1225,7 @@ public class HeadLinker
          * Retrieve chunks of stems out of additional compatible sections (not part
          * of stem seeds) found in the corner.
          *
-         * @param fatHeadSection (output) specific section, part of head rather than stem
+         * @param fatHeadSection (output) specific fat section, part of head rather than stem
          * @return the collection of chunks found
          */
         private List<Glyph> lookupChunks (Wrapper<Section> fatHeadSection)
@@ -1134,8 +1250,7 @@ public class HeadLinker
                 } else if (chunk.getWeight() < params.minChunkWeight) {
                     it.remove();
                 } else {
-                    int meanWidth = (int) Math.rint(
-                            chunk.getMeanThickness(Orientation.VERTICAL));
+                    int meanWidth = (int) Math.rint(chunk.getMeanThickness(VERTICAL));
 
                     if (meanWidth > params.maxStemThickness) {
                         wides.add(chunk);
@@ -1144,16 +1259,13 @@ public class HeadLinker
                 }
             }
 
-            // For too wide chunks we just keep the biggest section
+            // For too wide chunks we keep the sections closest to target line
             if (!wides.isEmpty()) {
                 for (SectionCompound wide : wides) {
-                    List<Section> members = new ArrayList<>(wide.getMembers());
-                    Collections.sort(members, Section.reverseWeightComparator);
-
-                    SectionCompound compound = CompoundFactory.buildCompound(
-                            Arrays.asList(members.get(0)),
-                            builder.getStemConstructor());
-                    chunks.add(compound);
+                    SectionCompound slim = trimWideChunk(wide);
+                    if (slim != null) {
+                        chunks.add(slim);
+                    }
                 }
             }
 
@@ -1165,6 +1277,30 @@ public class HeadLinker
             }
 
             return glyphs;
+        }
+
+        //---------------//
+        // trimWideChunk //
+        //---------------//
+        private SectionCompound trimWideChunk (SectionCompound wide)
+        {
+            final List<Section> members = new ArrayList<>(wide.getMembers());
+
+            // Sort by decreasing distance to theoretical line
+            Collections.sort(members, (Section s1, Section s2) -> Double.compare(
+                    theoLine.ptLineDistSq(s2.getCentroid2D()),
+                    theoLine.ptLineDistSq(s1.getCentroid2D())));
+
+            for (Section section : members) {
+                wide.removeSection(section);
+                final int newWidth = (int) Math.rint(wide.getMeanThickness(VERTICAL));
+
+                if (newWidth <= params.maxStemThickness) {
+                    return wide;
+                }
+            }
+
+            return null;
         }
 
         //----------------//
@@ -1221,8 +1357,13 @@ public class HeadLinker
                         // Even if too thick, use part of its length as stem portion
                         // (if it does not overlap stem seeds)
                         if (section.isVertical() && (sectBox.width > params.maxStemThickness)) {
+                            // Make sure this fat section intersects theoLine
+                            if (!theoLine.intersects(sectBox)) {
+                                continue;
+                            }
+
                             // Consider the touching run
-                            Rectangle runBox = getRunBox(section, corner.hSide);
+                            Rectangle runBox = getRunBox(section);
 
                             for (Glyph seed : seeds) {
                                 if (GeoUtil.yOverlap(runBox, seed.getBounds()) > 0) {
@@ -1234,8 +1375,7 @@ public class HeadLinker
                             if (GeoUtil.xEmbraces(hLine, runBox.x)) {
                                 // Use head section that brings best contribution
                                 if (fatHeadSection.value != null) {
-                                    Rectangle otherBox = getRunBox(fatHeadSection.value,
-                                                                   corner.hSide);
+                                    Rectangle otherBox = getRunBox(fatHeadSection.value);
 
                                     if (getContrib(runBox) > getContrib(otherBox)) {
                                         fatHeadSection.value = section;
@@ -1248,17 +1388,16 @@ public class HeadLinker
                             continue;
                         }
 
-                        // A headSection must provide significant contribution
+                        // A headSection must provide significant vertical contribution
                         // otherwise it belongs to the head, not to the stem.
                         int sectContrib = getContrib(sectBox);
 
                         if (sectContrib < params.minHeadSectionContribution) {
                             logger.debug("Discarding tiny headSection {}", section);
+                            headSections.add(section);
 
                             continue;
                         }
-
-                        headSections.add(section);
                     }
 
                     // Contraint section width <= stem width
@@ -1283,51 +1422,52 @@ public class HeadLinker
                 }
             }
 
-            // Handle overlap between standard sections and fatHeadSection if any,
-            // by keeping the most contributive one
-            if (fatHeadSection.value != null) {
-                final Rectangle runBox = getRunBox(fatHeadSection.value, corner.hSide);
-                final int runContrib = getContrib(runBox);
-
-                for (Iterator<Section> it = sections.iterator(); it.hasNext();) {
-                    final Section section = it.next();
-                    final Rectangle sctBox = section.getBounds();
-
-                    if (GeoUtil.yOverlap(runBox, sctBox) > 0) {
-                        if (getContrib(sctBox) <= runContrib) {
-                            it.remove();
-                        } else {
-                            logger.debug("Cancelling fatHeadSection {}", fatHeadSection);
-                            fatHeadSection.value = null;
-
-                            break;
-                        }
-                    }
-                }
-            }
-
-            // Handle the case of several head sections that might result in a too thick glyph
-            headSections.retainAll(sections);
-
-            if (headSections.size() > 1) {
-                // Keep only the most contributive section
-                Section bestSection = null;
-                int bestContrib = Integer.MIN_VALUE;
-
-                for (Section section : headSections) {
-                    int contrib = getContrib(section.getBounds());
-
-                    if (contrib > bestContrib) {
-                        bestContrib = contrib;
-                        bestSection = section;
-                    }
-                }
-
-                sections.removeAll(headSections);
-                headSections.clear();
-                headSections.add(bestSection);
-                sections.addAll(headSections);
-            }
+//            // Handle overlap between standard sections and fatHeadSection if any,
+//            // by keeping the most contributive one
+//            if (fatHeadSection.value != null) {
+//                final Rectangle runBox = getRunBox(fatHeadSection.value, corner.hSide);
+//                final int runContrib = getContrib(runBox);
+//
+//                for (Iterator<Section> it = sections.iterator(); it.hasNext();) {
+//                    final Section section = it.next();
+//                    final Rectangle sctBox = section.getBounds();
+//
+//                    if (GeoUtil.yOverlap(runBox, sctBox) > 0) {
+//                        if (getContrib(sctBox) <= runContrib) {
+//                            it.remove();
+//                        } else {
+//                            logger.debug("Cancelling fatHeadSection {}", fatHeadSection);
+//                            fatHeadSection.value = null;
+//
+//                            break;
+//                        }
+//                    }
+//                }
+//            }
+//
+//            // Handle the case of several head sections that might result in a too thick glyph
+//            headSections.retainAll(sections);
+//
+//            if (headSections.size() > 1) {
+//                // Keep only the most contributive section
+//                Section bestSection = null;
+//                int bestContrib = Integer.MIN_VALUE;
+//
+//                for (Section section : headSections) {
+//                    int contrib = getContrib(section.getBounds());
+//
+//                    if (contrib > bestContrib) {
+//                        bestContrib = contrib;
+//                        bestSection = section;
+//                    }
+//                }
+//
+//                sections.removeAll(headSections);
+//                headSections.clear();
+//                headSections.add(bestSection);
+//                sections.addAll(headSections);
+//            }
+            sections.removeAll(headSections);
 
             return sections;
         }
@@ -1346,13 +1486,13 @@ public class HeadLinker
                      });
         }
 
-        //----------------//
-        // sortByDistance //
-        //----------------//
+        //------------------------//
+        // sortByVerticalDistance //
+        //------------------------//
         /**
          * Sort stem items by their increasing vertical distance from head.
          */
-        private void sortByDistance (List<Glyph> glyphs)
+        private void sortByVerticalDistance (List<Glyph> glyphs)
         {
             Collections.sort(glyphs, (yDir > 0) ? Glyphs.byOrdinate : Glyphs.byReverseBottom);
         }

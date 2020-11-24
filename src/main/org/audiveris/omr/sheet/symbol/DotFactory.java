@@ -41,7 +41,6 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
-import org.audiveris.omr.sig.inter.DeletedInterException;
 import org.audiveris.omr.sig.inter.FermataArcInter;
 import org.audiveris.omr.sig.inter.FermataDotInter;
 import org.audiveris.omr.sig.inter.HeadInter;
@@ -383,11 +382,8 @@ public class DotFactory
                                 continue;
                             }
 
-                            try {
-                                if (dotBox.intersects(inter.getBounds()) && dot.overlaps(inter)) {
-                                    toDelete.add(inter);
-                                }
-                            } catch (DeletedInterException ignored) {
+                            if (dotBox.intersects(inter.getBounds()) && dot.overlaps(inter)) {
+                                toDelete.add(inter);
                             }
                         }
                     }

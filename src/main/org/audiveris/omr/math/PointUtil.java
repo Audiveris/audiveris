@@ -319,7 +319,7 @@ public abstract class PointUtil
     /**
      * A toString() that can cope with null instance.
      *
-     * @param p point instance
+     * @param p Point2D instance
      * @return string value
      */
     public static String toString (Point2D p)
@@ -328,10 +328,24 @@ public abstract class PointUtil
             return "nullPoint";
         }
 
-        StringBuilder sb = new StringBuilder("[");
-        sb.append(p.getX()).append(",").append(p.getY()).append("]");
-
-        return sb.toString();
+        return String.format("[%.1f,%.1f]", p.getX(), p.getY());
     }
 
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * A toString() that can cope with null instance.
+     *
+     * @param p Point instance
+     * @return string value
+     */
+    public static String toString (Point p)
+    {
+        if (p == null) {
+            return "nullPoint";
+        }
+
+        return String.format("[%d,%df]", p.x, p.y);
+    }
 }

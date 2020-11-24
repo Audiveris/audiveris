@@ -298,7 +298,7 @@ public class BlackHeadSizer
 
         private final Scale.AreaFraction minStackWeight = new Scale.AreaFraction(
                 2.0,
-                "Maximum weight for vertical stack of black head spots");
+                "Minimum weight for vertical stack of black head spots");
 
         private final Scale.AreaFraction maxStackWeight = new Scale.AreaFraction(
                 4.0,

@@ -170,7 +170,7 @@ public class BookManager
         if (book != null) {
             addBook(book);
 
-            getBookHistory().add(bookPath); // Insert in book history
+            getBookHistory().remove(bookPath);
         }
 
         return book;
@@ -217,6 +217,8 @@ public class BookManager
     public synchronized boolean removeBook (Book book)
     {
         logger.debug("removeBook {}", book);
+
+        getBookHistory().add(book.getBookPath()); // Insert in history
 
         return books.remove(book);
     }

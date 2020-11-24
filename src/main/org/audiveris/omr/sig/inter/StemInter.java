@@ -28,6 +28,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
+import org.audiveris.omr.math.LineUtil;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
@@ -47,13 +48,12 @@ import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
-import static org.audiveris.omr.sig.relation.StemPortion.STEM_BOTTOM;
-import static org.audiveris.omr.sig.relation.StemPortion.STEM_TOP;
+import static org.audiveris.omr.sig.relation.StemPortion.*;
 import org.audiveris.omr.sig.ui.InterEditor;
-import static org.audiveris.omr.util.HorizontalSide.LEFT;
-import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omr.util.VerticalSide;
+import static org.audiveris.omr.util.VerticalSide.*;
 import org.audiveris.omr.util.Jaxb;
-import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.Version;
 
 import org.slf4j.Logger;
@@ -66,7 +66,6 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -615,12 +614,76 @@ public class StemInter
     /**
      * {@inheritDoc}
      * <p>
-     * Specifically, look for heads nearby that need a stem relation.
+     * Specifically, look for heads and beams nearby that need a stem relation.
      *
-     * @return collection of head links, perhaps empty
+     * @return collection of links, perhaps empty
      */
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
+    {
+        List<Link> allLinks = new ArrayList<>();
+        allLinks.addAll(lookupHeadLinks(system));
+        allLinks.addAll(lookupBeamLinks(system));
+
+        return allLinks;
+    }
+
+    //-----------------//
+    // lookupBeamLinks //
+    //-----------------//
+    /**
+     * Look for links to beams nearby that need a stem relation.
+     *
+     * @return collection of links, perhaps empty
+     */
+    private Collection<Link> lookupBeamLinks (SystemInfo system)
+    {
+        Collection<Link> links = new LinkedHashSet<>();
+
+        // Look for beams around the stem
+        final Scale scale = system.getSheet().getScale();
+        final int maxBeamOutDx = scale.toPixels(BeamStemRelation.getXOutGapMaximum(manual));
+        final int maxYGap = scale.toPixels(BeamStemRelation.getYGapMaximum(manual));
+        final Rectangle luBox = getBounds();
+        luBox.grow(maxBeamOutDx, maxYGap);
+
+        final Set<Inter> beams = new LinkedHashSet<>(system.getSig().inters(
+                (Inter inter) -> !inter.isRemoved()
+                                         && inter instanceof AbstractBeamInter
+                                         && inter.getBounds().intersects(luBox)));
+
+        // Include also the beams already connected to the stem
+        if (sig != null) {
+            beams.addAll(getBeams());
+        }
+
+        // Now, keep only beams that would still link to this stem
+        final Line2D stemMedian = getMedian();
+        final double yStem = getCenter().y;
+
+        for (Inter inter : beams) {
+            final AbstractBeamInter beam = (AbstractBeamInter) inter;
+            final Point2D crossPt = LineUtil.intersection(stemMedian, beam.getMedian());
+            final VerticalSide vSide = (crossPt.getY() < yStem) ? TOP : BOTTOM;
+            final Link link = BeamStemRelation.checkLink(beam, this, vSide, scale);
+
+            if (link != null) {
+                links.add(link);
+            }
+        }
+
+        return links;
+    }
+
+    //-----------------//
+    // lookupHeadLinks //
+    //-----------------//
+    /**
+     * Look for links to heads nearby that need a stem relation.
+     *
+     * @return collection of links, perhaps empty
+     */
+    private Collection<Link> lookupHeadLinks (SystemInfo system)
     {
         Collection<Link> links = null;
 
@@ -631,17 +694,11 @@ public class StemInter
         final Rectangle luBox = getBounds();
         luBox.grow(maxHeadOutDx, maxYGap);
 
-        Set<Inter> heads = new HashSet<>(system.getSig().inters(new Predicate<Inter>()
-        {
-            @Override
-            public boolean check (Inter inter)
-            {
-                return !inter.isRemoved()
-                               && ShapeSet.StemHeads.contains(inter.getShape())
-                               && inter.getBounds().intersects(luBox)
-                               && ((HeadInter) inter).getStems().isEmpty();
-            }
-        }));
+        final Set<Inter> heads = new LinkedHashSet<>(system.getSig().inters(
+                (Inter inter) -> !inter.isRemoved()
+                                         && ShapeSet.StemHeads.contains(inter.getShape())
+                                         && inter.getBounds().intersects(luBox)
+                                         && ((HeadInter) inter).getStems().isEmpty()));
 
         // Include also the heads already connected to the stem
         if (sig != null) {
@@ -678,7 +735,7 @@ public class StemInter
     public Collection<Link> searchUnlinks (SystemInfo system,
                                            Collection<Link> links)
     {
-        return searchObsoletelinks(links, HeadStemRelation.class);
+        return searchObsoletelinks(links, HeadStemRelation.class, BeamStemRelation.class);
     }
 
     //-----------------//

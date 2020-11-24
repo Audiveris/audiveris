@@ -22,8 +22,8 @@
 package org.audiveris.omr.sheet.stem;
 
 import ij.process.ByteProcessor;
-import java.awt.Point;
 
+import org.audiveris.omr.OMR;
 import org.audiveris.omr.check.Check;
 import org.audiveris.omr.check.CheckBoard;
 import org.audiveris.omr.check.CheckSuite;
@@ -34,6 +34,8 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.NearLine;
+import org.audiveris.omr.glyph.dynamic.Filament;
+import org.audiveris.omr.glyph.dynamic.FilamentBoard;
 import org.audiveris.omr.glyph.dynamic.StickFactory;
 import org.audiveris.omr.glyph.dynamic.StraightFilament;
 import org.audiveris.omr.lag.Section;
@@ -41,15 +43,18 @@ import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.run.Orientation;
 import static org.audiveris.omr.run.Orientation.*;
 import org.audiveris.omr.sheet.Picture;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.SystemManager;
+import org.audiveris.omr.sheet.ui.SheetAssembly;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.ui.selection.EntityListEvent;
+import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
@@ -57,6 +62,7 @@ import org.audiveris.omr.ui.selection.UserEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -67,13 +73,14 @@ import java.util.List;
 /**
  * Class {@code VerticalsBuilder} is in charge of retrieving major vertical seeds of a
  * dedicated system.
- * The purpose is to use these major vertical sticks as seeds for stems or vertical edges of
- * endings.
+ * <p>
+ * The purpose is to use these major vertical sticks as seeds for stems.
  *
  * @author Hervé Bitteur
  */
 public class VerticalsBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -82,17 +89,11 @@ public class VerticalsBuilder
     /** Events this entity is interested in */
     private static final Class<?>[] eventClasses = new Class<?>[]{EntityListEvent.class};
 
-    /** Global seed grade is too low. */
-    private static final Failure TOO_LIMITED = new Failure("Stem-TooLimited");
-
     /** Length of seed is too short. */
     private static final Failure TOO_SHORT = new Failure("Stem-TooShort");
 
     /** Clean portion of seed is too short. */
     private static final Failure TOO_HIGH_ADJACENCY = new Failure("Stem-TooHighAdjacency");
-
-    /** Seed is located in header at beginning of staff. */
-    private static final Failure IN_HEADER = new Failure("Stem-InHeader");
 
     /** Core of seed contains too many white pixels. */
     private static final Failure TOO_HOLLOW = new Failure("Stem-TooHollow");
@@ -103,6 +104,7 @@ public class VerticalsBuilder
     /** Seed is not straight enough. */
     private static final Failure NON_STRAIGHT = new Failure("Stem-NonStraight");
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The system to process. */
     private final SystemInfo system;
 
@@ -115,9 +117,13 @@ public class VerticalsBuilder
     /** Input image. (with staves removed) */
     private final ByteProcessor pixelFilter;
 
-    /** Suite of checks for a vertical seed. */
-    private final SeedCheckSuite suite = new SeedCheckSuite();
+    /** Specific input mode, if any. */
+    private final boolean poor;
 
+    /** Suite of checks for a vertical seed. */
+    private final SeedCheckSuite suite;
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new VerticalsBuilder object.
      *
@@ -127,12 +133,17 @@ public class VerticalsBuilder
     {
         this.system = system;
 
+        final ProcessingSwitches switches = system.getSheet().getStub().getProcessingSwitches();
+        poor = switches.getValue(ProcessingSwitches.Switch.poorInputMode);
+        suite = new SeedCheckSuite();
+
         sheet = system.getSheet();
         scale = sheet.getScale();
 
         pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // addCheckBoard //
     //---------------//
@@ -157,6 +168,18 @@ public class VerticalsBuilder
     public void buildVerticals ()
             throws StepException
     {
+        // Display
+        if (OMR.gui != null) {
+            sheet.getSymbolsEditor().refresh();
+
+            final SheetAssembly assembly = sheet.getStub().getAssembly();
+
+            // Filament board
+            EntityService<Filament> fService = sheet.getFilamentIndex().getEntityService();
+            assembly.addBoard(SheetTab.DATA_TAB,
+                              new FilamentBoard(fService, false));
+        }
+
         // Retrieve candidates
         List<StraightFilament> candidates = retrieveCandidates();
 
@@ -189,20 +212,6 @@ public class VerticalsBuilder
     public CheckSuite<StickContext> getSuite ()
     {
         return suite;
-    }
-
-    //---------------------//
-    // segmentGlyphOnStems //
-    //---------------------//
-    /**
-     * Decompose the provided glyph into stems + leaves
-     *
-     * @param glyph the glyph to decompose
-     */
-    @Deprecated
-    public void segmentGlyphOnStems (Glyph glyph)
-    {
-        logger.warn("Not implemented. Deprecated");
     }
 
     //----------------//
@@ -291,7 +300,9 @@ public class VerticalsBuilder
                 sheet.getFilamentIndex(),
                 null,
                 scale.getMaxStem(),
-                scale.toPixels(constants.minCoreSectionLength),
+                scale.toPixels(poor
+                        ? constants.minCoreSectionLength_poor
+                        : constants.minCoreSectionLength),
                 constants.minSideRatio.getValue());
 
         return factory.retrieveSticks(vSections, hSections);
@@ -310,19 +321,20 @@ public class VerticalsBuilder
         return constants.gapHigh;
     }
 
-    //----------------//
-    // getMaxYGapPoor //
-    //----------------//
+    //-----------------//
+    // getMaxYGap_poor //
+    //-----------------//
     /**
      * Report the maximum vertical gap between chunks for a poor image.
      *
      * @return the maximum acceptable vertical gap between chunks for poor image
      */
-    public static Scale.Fraction getMaxYGapPoor ()
+    public static Scale.Fraction getMaxYGap_poor ()
     {
-        return constants.gapHighPoor;
+        return constants.gapHigh_poor;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // BlackCheck //
     //------------//
@@ -338,8 +350,8 @@ public class VerticalsBuilder
             super(
                     "Black",
                     "Check that black part of stick is long enough",
-                    constants.blackLow,
-                    constants.blackHigh,
+                    poor ? constants.blackLow_poor : constants.blackLow,
+                    poor ? constants.blackHigh_poor : constants.blackHigh,
                     true,
                     TOO_SHORT);
         }
@@ -358,6 +370,7 @@ public class VerticalsBuilder
     /**
      * Check the length of stem portions with no item stuck either on left, right or
      * both sides.
+     * <p>
      * As a side-effect, additional data is stored in context: white, black and gap fields.
      */
     private class CleanCheck
@@ -366,13 +379,12 @@ public class VerticalsBuilder
 
         protected CleanCheck ()
         {
-            super(
-                    "Clean",
-                    "Check total clean length",
-                    constants.cleanLow,
-                    constants.cleanHigh,
-                    true,
-                    TOO_HIGH_ADJACENCY);
+            super("Clean",
+                  "Check total clean length",
+                  constants.cleanLow,
+                  constants.cleanHigh,
+                  true,
+                  TOO_HIGH_ADJACENCY);
         }
 
         @Override
@@ -382,7 +394,7 @@ public class VerticalsBuilder
             final int dx = scale.toPixels(constants.beltMarginDx);
             final Point2D start = stick.getStartPoint(VERTICAL);
             final Point2D stop = stick.getStopPoint(VERTICAL);
-            final double halfWidth = (sheet.getScale().getMaxStem() - 1) / 2.0;
+            final double halfWidth = (scale.getMaxStem() - 1) / 2.0;
 
             {
                 // Sanity check
@@ -523,13 +535,12 @@ public class VerticalsBuilder
 
         protected GapCheck ()
         {
-            super(
-                    "Gap",
-                    "Check size of largest hole in stick",
-                    Scale.Fraction.ZERO,
-                    constants.gapHigh,
-                    false,
-                    TOO_HOLLOW);
+            super("Gap",
+                  "Check size of largest hole in stick",
+                  Scale.Fraction.ZERO,
+                  poor ? constants.gapHigh_poor : constants.gapHigh,
+                  false,
+                  TOO_HOLLOW);
         }
 
         // Retrieve the length data
@@ -555,10 +566,9 @@ public class VerticalsBuilder
          */
         SeedCheckSuite ()
         {
-            super(
-                    "Seed",
-                    constants.minCheckResult.getValue(),
-                    constants.goodCheckResult.getValue());
+            super("Seed",
+                  constants.minCheckResult.getValue(),
+                  constants.goodCheckResult.getValue());
 
             add(1, new SlopeCheck());
             add(1, new StraightCheck());
@@ -591,13 +601,12 @@ public class VerticalsBuilder
 
         protected SlopeCheck ()
         {
-            super(
-                    "Slope",
-                    "Check that stick is vertical, according to global slope",
-                    Constant.Double.ZERO,
-                    constants.slopeHigh,
-                    false,
-                    NON_VERTICAL);
+            super("Slope",
+                  "Check that stick is vertical, according to global slope",
+                  Constant.Double.ZERO,
+                  constants.slopeHigh,
+                  false,
+                  NON_VERTICAL);
         }
 
         // Retrieve the difference between stick slope and global slope
@@ -627,13 +636,12 @@ public class VerticalsBuilder
 
         protected StraightCheck ()
         {
-            super(
-                    "Straight",
-                    "Check that stick is straight",
-                    Scale.Fraction.ZERO,
-                    constants.straightHigh,
-                    false,
-                    NON_STRAIGHT);
+            super("Straight",
+                  "Check that stick is straight",
+                  Scale.Fraction.ZERO,
+                  constants.straightHigh,
+                  false,
+                  NON_STRAIGHT);
         }
 
         @Override
@@ -660,6 +668,10 @@ public class VerticalsBuilder
                 1.5,
                 "Minimum length for core sections");
 
+        private final Scale.Fraction minCoreSectionLength_poor = new Scale.Fraction(
+                0.75,
+                "(poor) Minimum length for core sections");
+
         private final Scale.Fraction beltMarginDx = new Scale.Fraction(
                 0.15,
                 "Horizontal belt margin checked around stem");
@@ -676,9 +688,17 @@ public class VerticalsBuilder
                 2.5,
                 "High minimum length for a stem");
 
+        private final Scale.Fraction blackHigh_poor = new Scale.Fraction(
+                1.25,
+                "(poor) High minimum length for a stem");
+
         private final Scale.Fraction blackLow = new Scale.Fraction(
                 1.25,
                 "Low minimum length for a stem");
+
+        private final Scale.Fraction blackLow_poor = new Scale.Fraction(
+                0.625,
+                "(poor) Low minimum length for a stem");
 
         private final Scale.Fraction cleanHigh = new Scale.Fraction(
                 2.0,
@@ -692,9 +712,9 @@ public class VerticalsBuilder
                 0.3,
                 "Maximum vertical gap between stem segments");
 
-        private final Scale.Fraction gapHighPoor = new Scale.Fraction(
+        private final Scale.Fraction gapHigh_poor = new Scale.Fraction(
                 0.6,
-                "Maximum vertical gap between stem segments in poor mode");
+                "(poor) Maximum vertical gap between stem segments");
 
         private final Constant.Double slopeHigh = new Constant.Double(
                 "tangent",
@@ -778,9 +798,9 @@ public class VerticalsBuilder
 
                     if (glyph != null) {
                         // Make sure this is a rather vertical stick
-                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck
-                                .getValue()) {
-                            // Apply the check suite
+                        if (Math.abs(glyph.getInvertedSlope())
+                                    <= constants.maxCoTangentForCheck.getValue()) {
+                            // Apply the check suite on each containing system
                             SystemManager systemManager = sheet.getSystemManager();
 
                             for (SystemInfo system : systemManager.getSystemsOf(glyph)) {

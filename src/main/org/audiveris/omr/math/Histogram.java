@@ -44,41 +44,17 @@ public class Histogram<K extends Number>
 {
 
     /** To sort peaks by decreasing value. */
-    public final Comparator<PeakEntry<K>> reversePeakComparator = new Comparator<PeakEntry<K>>()
-    {
-        @Override
-        public int compare (PeakEntry<K> e1,
-                            PeakEntry<K> e2)
-        {
-            // Put largest value first!
-            return Double.compare(e2.getValue(), e1.getValue());
-        }
-    };
+    public final Comparator<PeakEntry<K>> reversePeakComparator = (PeakEntry<K> e1, PeakEntry<K> e2)
+            -> Double.compare(e2.getValue(), e1.getValue());
 
     /** To sort double peaks by decreasing value. */
     public final Comparator<PeakEntry<Double>> reverseDoublePeakComparator
-            = new Comparator<PeakEntry<Double>>()
-    {
-        @Override
-        public int compare (PeakEntry<Double> e1,
-                            PeakEntry<Double> e2)
-        {
-            // Put largest value first!
-            return Double.compare(e2.getValue(), e1.getValue());
-        }
-    };
+            = (PeakEntry<Double> e1, PeakEntry<Double> e2)
+            -> Double.compare(e2.getValue(), e1.getValue());
 
     /** To sort double peaks by decreasing value. */
-    public final Comparator<MaxEntry<K>> reverseMaxComparator = new Comparator<MaxEntry<K>>()
-    {
-        @Override
-        public int compare (MaxEntry<K> e1,
-                            MaxEntry<K> e2)
-        {
-            // Put largest value first!
-            return Double.compare(e2.getValue(), e1.getValue());
-        }
-    };
+    public final Comparator<MaxEntry<K>> reverseMaxComparator = (MaxEntry<K> e1, MaxEntry<K> e2)
+            -> Double.compare(e2.getValue(), e1.getValue());
 
     /**
      * Underlying map. :
@@ -402,74 +378,6 @@ public class Histogram<K extends Number>
         return peak;
     }
 
-    //    //----------//
-    //    // getPeaks //
-    //    //----------//
-    //    /**
-    //     * Report the sequence of bucket peaks whose count is equal to or greater
-    //     * than the specified minCount value
-    //     *
-    //     * @param minCount the desired minimum count value
-    //     * @param absolute if true, absolute counts values are reported in peaks,
-    //     *                 otherwise relative counts to total histogram are used
-    //     * @param sorted   if true, the reported sequence is sorted by decreasing
-    //     *                 count value, otherwise it is reported as naturally found along K data.
-    //     * @return the (perhaps empty but not null) sequence of peaks of buckets
-    //     */
-    //    public List<PeakEntry<K>> getPeaks (int minCount,
-    //                                        boolean absolute,
-    //                                        boolean sorted)
-    //    {
-    //        final List<PeakEntry<K>> peaks = new ArrayList<>();
-    //        K start = null;
-    //        K stop = null;
-    //        K best = null;
-    //        Integer bestCount = null;
-    //        boolean isAbove = false;
-    //
-    //        for (Entry<K, Integer> entry : map.entrySet()) {
-    //            if (entry.getValue() >= minCount) {
-    //                if ((bestCount == null) || (bestCount < entry.getValue())) {
-    //                    best = entry.getKey();
-    //                    bestCount = entry.getValue();
-    //                }
-    //
-    //                if (isAbove) { // Above -> Above
-    //                    stop = entry.getKey();
-    //                } else { // Below -> Above
-    //                    stop = start = entry.getKey();
-    //                    isAbove = true;
-    //                }
-    //            } else {
-    //                if (isAbove) { // Above -> Below
-    //                    peaks.add(
-    //                            new PeakEntry<K>(
-    //                                    new Peak<K>(start, best, stop),
-    //                                    absolute ? bestCount : ((double) bestCount / totalCount)));
-    //                    stop = start = best = null;
-    //                    bestCount = null;
-    //                    isAbove = false;
-    //                } else { // Below -> Below
-    //                }
-    //            }
-    //        }
-    //
-    //        // Last range
-    //        if (isAbove) {
-    //            peaks.add(
-    //                    new PeakEntry<K>(
-    //                            new Peak<K>(start, best, stop),
-    //                            absolute ? bestCount : ((double) bestCount / totalCount)));
-    //        }
-    //
-    //        // Sort by decreasing count values?
-    //        if (sorted) {
-    //            Collections.sort(peaks, reversePeakComparator);
-    //        }
-    //
-    //        return peaks;
-    //    }
-    //
     //----------------//
     // getQuorumValue //
     //----------------//

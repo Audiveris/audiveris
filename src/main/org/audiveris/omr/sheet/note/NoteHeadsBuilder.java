@@ -268,14 +268,21 @@ public class NoteHeadsBuilder
             watch.start("Staff #" + staff.getId() + " range");
             ch.addAll(processStaff(staff, false));
 
-            // Finally, detect notes overlaps for current staff
+            // Detect duplicates for current staff
             Collections.sort(ch, Inters.byFullAbscissa);
             watch.start("Staff #" + staff.getId() + " duplicates");
-
             int duplicates = purgeDuplicates(ch);
 
             if (duplicates > 0) {
                 logger.debug("Staff#{} {} duplicates", staff.getId(), duplicates);
+            }
+
+            // Solve overlaps
+            watch.start("Staff #" + staff.getId() + " overlaps");
+            int overlaps = purgeOverlaps(ch);
+
+            if (overlaps > 0) {
+                logger.debug("Staff#{} {} overlaps", staff.getId(), overlaps);
             }
 
             for (Inter inter : ch) {
@@ -365,25 +372,24 @@ public class NoteHeadsBuilder
      */
     private int[] computeXOffsets ()
     {
-        //        // Use a window as wide as maxStem value, ensure odd value
-        //        int length = sheet.getScale().getMaxStem();
-        //
-        //        if ((length % 2) == 0) {
-        //            length++;
-        //        }
-        //
-        //        int[] offsets = new int[length];
-        //
-        //        for (int i = 0; i < length; i++) {
-        //            if ((i % 2) == 0) {
-        //                offsets[i] = -(i / 2);
-        //            } else {
-        //                offsets[i] = ((i + 1) / 2);
-        //            }
-        //        }
-        //
-        //        return offsets;
-        return NO_OFFSETS;
+        // Use a window as wide as maxStem value, ensure odd value
+        int length = sheet.getScale().getMaxStem();
+
+        if ((length % 2) == 0) {
+            length++;
+        }
+
+        int[] offsets = new int[length];
+
+        for (int i = 0; i < length; i++) {
+            if ((i % 2) == 0) {
+                offsets[i] = -(i / 2);
+            } else {
+                offsets[i] = ((i + 1) / 2);
+            }
+        }
+
+        return offsets;
     }
 
     //-------------//
@@ -834,6 +840,60 @@ public class NoteHeadsBuilder
     }
 
     //---------------//
+    // purgeOverlaps //
+    //---------------//
+    private int purgeOverlaps (List<Inter> inters)
+    {
+        List<Inter> removed = new ArrayList<>();
+
+        LeftLoop:
+        for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
+            HeadInter left = (HeadInter) inters.get(i);
+
+            if (left.isRemoved()) {
+                continue;
+            }
+
+            Rectangle leftBox = left.getBounds();
+            int xMax = (leftBox.x + leftBox.width) - 1;
+
+            for (Inter right : inters.subList(i + 1, inters.size())) {
+                if (right.isRemoved()) {
+                    continue;
+                }
+
+                Rectangle rightBox = right.getBounds();
+
+                if (leftBox.intersects(rightBox)) {
+                    if (left.overlaps(right)) {
+                        if (left.getGrade() < right.getGrade()) {
+                            if (left.isVip()) {
+                                logger.info("VIP purging {} overlapping {}", left, right);
+                            }
+
+                            left.remove();
+                            removed.add(left);
+                        } else if (left.getGrade() > right.getGrade()) {
+                            if (right.isVip()) {
+                                logger.info("VIP purging {} overlapping {}", right, left);
+                            }
+
+                            right.remove();
+                            removed.add(right);
+                        }
+                    }
+                } else if (rightBox.x > xMax) {
+                    break;
+                }
+            }
+        }
+
+        inters.removeAll(removed);
+
+        return removed.size();
+    }
+
+    //---------------//
     // LedgerAdapter //
     //---------------//
     /**
@@ -931,6 +991,8 @@ public class NoteHeadsBuilder
 
         private List<HeadInter> inters = new ArrayList<>();
 
+        private final boolean isOpen;
+
         /** Offsets tried around a given ordinate. */
         private final int[] yOffsets;
 
@@ -956,8 +1018,8 @@ public class NoteHeadsBuilder
             this.useSeeds = useSeeds;
 
             // Open line?
-            boolean isOpen = ((pitch % 2) != 0) && ((line2 == null) || (Math.abs(pitch) == 5));
-            yOffsets = computeYOffsets(isOpen);
+            isOpen = ((pitch % 2) != 0) && ((line2 == null) || (Math.abs(pitch) == 5));
+            yOffsets = computeYOffsets();
 
             final Staff staff = line.getStaff();
             interline = staff.getSpecificInterline();
@@ -1026,13 +1088,15 @@ public class NoteHeadsBuilder
         //-----------------//
         // computeYOffsets //
         //-----------------//
-        private int[] computeYOffsets (boolean isOpen)
+        private int[] computeYOffsets ()
         {
             if (isOpen) {
-                int[] offsets = new int[params.maxOpenDy];
+                int[] offsets = new int[1 + params.maxOpenDy];
 
                 for (int i = 0; i < offsets.length; i++) {
-                    // 0, +1, -1, +2,+ 3, +4, ... (according to dir sign)
+                    // According to 'dir' sign:
+                    // 0, +1, -1, +2, +3, +4, +5 ... (for dir == +1)
+                    // 0, -1, +1, -2, -3, -4, -5 ... (for dir == -1)
                     switch (i) {
                     case 0:
                         offsets[0] = 0;
@@ -1056,18 +1120,17 @@ public class NoteHeadsBuilder
 
                 return offsets;
             } else {
-                //                int[] offsets = new int[params.maxClosedDy];
-                //
-                //                for (int i = 0; i < offsets.length; i++) {
-                //                    if ((i % 2) == 0) {
-                //                        offsets[i] = -(i / 2);
-                //                    } else {
-                //                        offsets[i] = ((i + 1) / 2);
-                //                    }
-                //                }
-                //
-                //                return offsets;
-                return NO_OFFSETS;
+                int[] offsets = new int[1 + params.maxClosedDy];
+
+                for (int i = 0; i < offsets.length; i++) {
+                    if ((i % 2) == 0) {
+                        offsets[i] = -(i / 2);
+                    } else {
+                        offsets[i] = ((i + 1) / 2);
+                    }
+                }
+
+                return offsets;
             }
         }
 
@@ -1582,8 +1645,12 @@ public class NoteHeadsBuilder
                 0.375,
                 "Maximum dx between similar template instances");
 
+        private final Scale.Fraction maxClosedDy = new Scale.Fraction(
+                0.0,
+                "Extension allowed in y for closed lines");
+
         private final Scale.Fraction maxOpenDy = new Scale.Fraction(
-                0.25,
+                0.2,
                 "Extension allowed in y for open lines");
 
         private final Constant.Ratio gradeMargin = new Constant.Ratio(
@@ -1685,6 +1752,8 @@ public class NoteHeadsBuilder
 
         final int maxTemplateDx;
 
+        final int maxClosedDy;
+
         final int maxOpenDy;
 
         final int minBeamWidth;
@@ -1705,6 +1774,7 @@ public class NoteHeadsBuilder
             reallyBadDistance = Template.reallyBadDistance();
 
             maxTemplateDx = scale.toPixels(constants.maxTemplateDx);
+            maxClosedDy = Math.max(1, scale.toPixels(constants.maxClosedDy));
             maxOpenDy = Math.max(1, scale.toPixels(constants.maxOpenDy));
             minBeamWidth = scale.toPixels(constants.minBeamWidth);
 

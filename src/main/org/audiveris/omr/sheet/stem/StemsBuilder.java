@@ -30,13 +30,18 @@ import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.dynamic.CompoundFactory;
 import org.audiveris.omr.glyph.dynamic.StraightFilament;
 import org.audiveris.omr.math.AreaUtil;
+import org.audiveris.omr.math.GeoOrder;
+import org.audiveris.omr.math.GeoPath;
+import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.Fraction;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.SystemManager;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
+import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -54,20 +59,25 @@ import org.audiveris.omr.util.Corner;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -159,6 +169,12 @@ public class StemsBuilder
     /** Constructor for stem compound. */
     private final CompoundFactory.CompoundConstructor stemConstructor;
 
+    /** System(s) immediately above our system. */
+    private final List<SystemInfo> systemsAbove;
+
+    /** System(s) immediately below our system. */
+    private final List<SystemInfo> systemsBelow;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StemsBuilder object.
@@ -180,6 +196,10 @@ public class StemsBuilder
         noStemAreas = retrieveNoStemAreas();
 
         stemConstructor = new StraightFilament.Constructor(scale.getInterline());
+
+        final SystemManager mgr = sheet.getSystemManager();
+        systemsAbove = mgr.verticalNeighbors(system, VerticalSide.TOP);
+        systemsBelow = mgr.verticalNeighbors(system, VerticalSide.BOTTOM);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -251,7 +271,7 @@ public class StemsBuilder
 
         verticalsBuilder = new VerticalsBuilder(system);
 
-        StopWatch watch = new StopWatch("StemsBuilder S#" + system.getId());
+        StopWatch watch = new StopWatch("StemsBuilder.link S#" + system.getId());
         watch.start("collections");
         // The abscissa-sorted stem seeds for this system
         systemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED);
@@ -285,28 +305,29 @@ public class StemsBuilder
         watch.start("stem exclusions");
         performMutualExclusions();
 
-        // Check stems horizontal gap on each beam
-        watch.start("checkBeamStems");
-
-        for (Inter beam : sig.inters(BeamInter.class)) {
-            checkBeamStems(beam);
-            boostBeamSides(beam);
-        }
-
-        // Check carefully multiple stem links on same head
-        watch.start("checkHeadStems");
-
-        for (Inter head : systemHeads) {
-            checkHeadStems((HeadInter) head);
-        }
-
-        // Discard heads with no stem link
-        watch.start("checkNeededStems");
-        checkNeededStems(systemHeads);
-
         if (constants.printWatch.isSet()) {
             watch.print();
         }
+    }
+
+    //---------------//
+    // finalizeStems //
+    //---------------//
+    /**
+     * Once all systems have been processed, finalize processing.
+     *
+     */
+    public void finalizeStems ()
+    {
+        if (params == null) {
+            params = new Parameters(system, scale);
+        }
+
+        // The abscissa-sorted stem seeds for this system
+        systemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED);
+        purgeNoStemSeeds(systemSeeds);
+
+        new Finalizer().process();
     }
 
     /**
@@ -333,6 +354,11 @@ public class StemsBuilder
         return stemConstructor;
     }
 
+//<<<<<<< HEAD
+//        // List of non-conflicting stems ensembles
+//        List<List<Inter>> partners = sig.getPartitions(null, allStems);
+//        HeadStemsCleaner checker = null;
+//=======
     /**
      * @return the systemBeams
      */
@@ -349,6 +375,11 @@ public class StemsBuilder
         return systemSeeds;
     }
 
+//<<<<<<< HEAD
+//            if (checker == null) {
+//                checker = new HeadStemsCleaner(head);
+//            }
+//=======
     /**
      * @return the systemStems
      */
@@ -365,128 +396,6 @@ public class StemsBuilder
         return verticalsBuilder;
     }
 
-    //----------------//
-    // boostBeamSides //
-    //----------------//
-    private void boostBeamSides (Inter beam)
-    {
-        if (!beam.isGood()) {
-            return;
-        }
-
-        List<BeamStemRelation> rels = new ArrayList<>();
-
-        for (Relation rel : sig.edgesOf(beam)) {
-            if (rel instanceof BeamStemRelation) {
-                rels.add((BeamStemRelation) rel);
-            }
-        }
-
-        for (BeamStemRelation rel : rels) {
-            if (rel.getBeamPortion() != BeamPortion.CENTER) {
-                StemInter stem = (StemInter) sig.getEdgeTarget(rel);
-                stem.increase(constants.sideStemBoost.getValue());
-            }
-        }
-    }
-
-    //----------------//
-    // checkBeamStems //
-    //----------------//
-    /**
-     * Check whether the beam does not have a stem relation too close to another.
-     * Too close stems are mutually exclusive.
-     *
-     * @param beam the beam to check
-     */
-    private void checkBeamStems (Inter beam)
-    {
-        if (beam.isVip()) {
-            logger.info("VIP checkBeamStems? {}", beam);
-        }
-
-        List<BeamStemRelation> rels = new ArrayList<>();
-
-        for (Relation rel : sig.edgesOf(beam)) {
-            if (rel instanceof BeamStemRelation) {
-                rels.add((BeamStemRelation) rel);
-            }
-        }
-
-        // Sort by abscissae
-        Collections.sort(rels, new Comparator<BeamStemRelation>()
-                 {
-                     @Override
-                     public int compare (BeamStemRelation o1,
-                                         BeamStemRelation o2)
-                     {
-                         return Double.compare(o1.getExtensionPoint().getX(), o2.getExtensionPoint()
-                                               .getX());
-                     }
-                 });
-
-        final int size = rels.size();
-
-        for (int i = 0; i < size; i++) {
-            BeamStemRelation rel = rels.get(i);
-            StemInter stem = (StemInter) sig.getEdgeTarget(rel);
-
-            for (BeamStemRelation r : rels.subList(i + 1, size)) {
-                double dx = r.getExtensionPoint().getX() - rel.getExtensionPoint().getX();
-
-                if (dx < params.minBeamStemsGap) {
-                    StemInter s = (StemInter) sig.getEdgeTarget(r);
-                    sig.insertExclusion(stem, s, Cause.INCOMPATIBLE);
-                } else {
-                    break;
-                }
-            }
-        }
-    }
-
-    //----------------//
-    // checkHeadStems //
-    //----------------//
-    /**
-     * A head can have links to two stems (non mutually exclusive) only when these stems
-     * are compatible (head is on stem ends with one stem on bottom left and one stem on
-     * top right).
-     * <p>
-     * Otherwise, we must clean up the configuration.
-     * If there is a link with zero yGap, it has priority over non-zero yGap that are generally due
-     * to stem extension. So cut the non-zero links.
-     * If there are two zero yGaps, if they are opposed on normal sides, it's OK.
-     * If not, cut the link to the one not on normal side.
-     * If there are two non-zero yGaps, cut the one with larger yGap.
-     *
-     * @param head the note head to check
-     */
-    private void checkHeadStems (HeadInter head)
-    {
-        // Retrieve all stems connected to this head
-        List<Inter> allStems = new ArrayList<>();
-
-        for (Relation rel : sig.getRelations(head, HeadStemRelation.class)) {
-            allStems.add(sig.getEdgeTarget(rel));
-        }
-
-        // List of non-conflicting stems ensembles
-        List<List<Inter>> partners = sig.getPartitions(null, allStems);
-        HeadStemsCleaner checker = null;
-
-        for (List<Inter> ensemble : partners) {
-            if (ensemble.size() <= 1) {
-                continue;
-            }
-
-            if (checker == null) {
-                checker = new HeadStemsCleaner(head);
-            }
-
-            checker.check(ensemble);
-        }
-    }
-
     //------------------//
     // checkNeededStems //
     //------------------//
@@ -500,7 +409,7 @@ public class StemsBuilder
         for (Inter head : systemHeads) {
             if (ShapeSet.StemHeads.contains(head.getShape())) {
                 if (!sig.hasRelation(head, HeadStemRelation.class)) {
-                    head.remove();
+                    head.setAbnormal(true);
                 }
             }
         }
@@ -603,6 +512,7 @@ public class StemsBuilder
 
         for (Inter barline : sig.inters(BarlineInter.class)) {
             Set<Relation> connections = sig.getRelations(barline, BarConnectionRelation.class);
+
             for (Relation connection : connections) {
                 BarlineInter source = (BarlineInter) sig.getEdgeSource(connection);
 
@@ -626,16 +536,8 @@ public class StemsBuilder
         }
 
         // Sort by abscissa
-        Collections.sort(areas, new Comparator<Area>()
-                 {
-                     @Override
-                     public int compare (Area a1,
-                                         Area a2)
-                     {
-                         return Double.compare(a1.getBounds2D().getMinX(),
-                                               a2.getBounds2D().getMinX());
-                     }
-                 });
+        Collections.sort(areas, (Area a1, Area a2) -> Double.compare(a1.getBounds2D().getMinX(),
+                                                                     a2.getBounds2D().getMinX()));
 
         return areas;
     }
@@ -651,9 +553,595 @@ public class StemsBuilder
     public static Fraction getMinStemExtension ()
     {
         return constants.minStemExtension;
+
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Finalizer //
+    //-----------//
+    /**
+     * This class is to be run after a pass of {@link #linkStems} on all systems,
+     * and is meant to improve results on poor-quality images.
+     * <p>
+     * In first version, we focus on every good standard beam and make sure it has connected heads
+     * on both left and right sides.
+     */
+    private class Finalizer
+    {
+
+        private final StopWatch watch = new StopWatch("StemsBuilder.finalizer S#" + system.getId());
+
+        /** Longest length of relevant beam stem as observed in our system. */
+        int maxStemLength = Integer.MIN_VALUE;
+
+        /** Collection of standard beams in current system. */
+        final List<AbstractBeamInter> beams;
+
+        /** Typical abscissa gap among stem/heads along a beam. */
+        final Integer typicalBeamGap;
+
+        /** Height of lookup area for heads around beam. */
+        final int luAreaHeight;
+
+        /** The abscissa-sorted head interpretations for this system. */
+        final List<Inter> systemHeads = sig.inters(ShapeSet.getStemTemplateNotes(system.getSheet()));
+
+        /** Black heads for this system. */
+        final List<Inter> systemBlackHeads = sig.inters(Shape.NOTEHEAD_BLACK);
+
+        public Finalizer ()
+        {
+            watch.start("<init>");
+            Collections.sort(systemHeads, Inters.byAbscissa);
+            Collections.sort(systemBlackHeads, Inters.byAbscissa);
+
+            beams = getStandardBeams();
+            typicalBeamGap = computeBeamGap();
+
+            luAreaHeight = Math.max(
+                    (int) Math.rint(maxStemLength * params.maxStemLengthRatio),
+                    params.maxHeadBeamDistance) - headSymbolDim.height;
+            logger.info("{} Observed max stem length {}, lookup height {}",
+                        system, maxStemLength, luAreaHeight);
+        }
+
+        public void process ()
+        {
+            // The abscissa-sorted head interpretations for this system
+            Collections.sort(systemHeads, Inters.byAbscissa);
+
+            // Check stems horizontal gap on each beam
+            watch.start("umbrellas");
+
+            for (AbstractBeamInter beam : beams) {
+                boostBeamSides(beam); // Boost beam side stems
+
+                if (constants.useBeamUmbrella.isSet()) {
+                    // TODO: We should skip poor standard beams?
+                    if (beam.getBounds().width >= params.minBeamUmbrellaWidth) {
+                        checkBeamUmbrella((BeamInter) beam);
+                    }
+                }
+            }
+
+            // Check carefully multiple stem links on same head
+            watch.start("checkHeadStems");
+
+            for (Inter head : systemHeads) {
+                checkHeadStems((HeadInter) head);
+            }
+
+            // Flag heads with no stem link as abnormal
+            watch.start("checkNeededStems");
+            checkNeededStems(systemHeads);
+
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
+
+        //----------------//
+        // boostBeamSides //
+        //----------------//
+        /**
+         * Here, we boost the stems, if any, found on each horizontal side of the provided
+         * (good) beam.
+         *
+         * @param beam provided beam
+         */
+        private void boostBeamSides (Inter beam)
+        {
+            if (!beam.isGood()) {
+                return;
+            }
+
+            List<BeamStemRelation> rels = new ArrayList<>();
+
+            for (Relation rel : sig.edgesOf(beam)) {
+                if (rel instanceof BeamStemRelation) {
+                    rels.add((BeamStemRelation) rel);
+                }
+            }
+
+            for (BeamStemRelation rel : rels) {
+                if (rel.getBeamPortion() != BeamPortion.CENTER) {
+                    // Boost stem
+                    StemInter stem = (StemInter) sig.getEdgeTarget(rel);
+                    stem.increase(constants.sideStemBoost.getValue());
+
+                    // Boost stem heads as well
+                    for (HeadInter head : stem.getHeads()) {
+                        head.increase(constants.sideStemBoost.getValue());
+                    }
+                }
+            }
+        }
+
+        //-------------------//
+        // checkBeamUmbrella //
+        //-------------------//
+        /**
+         * Consider each beam as an umbrella to "protect" its dependent stems and heads.
+         * <p>
+         * If the beam already has linked notes, this generally can tell whether we should look
+         * above or below the beam for other potential notes.
+         * We can expect that notes abscissae should be rather regularly located along the beam,
+         * if not or if a beam side lacks note, we should look for heads.
+         * <p>
+         * Head lookup area can be defined by beam abscissa range, extended to the right above beam,
+         * to the left below beam.
+         * Vertical distance from head to beam should be less than say 1.5 times observed distance.
+         * <p>
+         * For beams located between systems, discard the system with no stem relation and remove
+         * the corresponding inter.
+         *
+         * @param beam the beam to process
+         */
+        private void checkBeamUmbrella (BeamInter beam)
+        {
+            if (beam.isVip()) {
+                logger.info("VIP checkBeamUmbrella on {}", beam);
+            }
+
+            final Set<StemInter> stemSet = beam.getStems();
+
+            if (stemSet.isEmpty()) {
+                // Beam located between systems?
+                for (BeamInter b : crossSystemBeams(beam)) {
+                    if (!b.getStems().isEmpty()) {
+                        if (beam.isVip()) {
+                            logger.info("VIP {} discarding cross system {}", system, beam);
+                        }
+
+                        beam.remove();
+                        return;
+                    }
+                }
+            }
+
+            final List<StemInter> stems = new ArrayList<>(stemSet);
+            Collections.sort(stems, Inters.byCenterAbscissa);
+
+            // Consider areas above and/or below, according to linked stems
+            if (stems.isEmpty()) {
+                logger.info("{} with no stem", beam);
+                final Map<VerticalSide, List<Inter>> blacksMap = new EnumMap<>(VerticalSide.class);
+
+                for (VerticalSide side : VerticalSide.values()) {
+                    final Area area = buildBeamArea(beam, side);
+                    blacksMap.put(side, retrieveHeads(beam, area));
+                }
+
+                // Use side of closest black as the only side
+                VerticalSide side = chooseSide(beam, blacksMap);
+
+                if (side != null) {
+                    logger.info("Chosen {}: {}", side, Inters.ids(blacksMap.get(side)));
+                }
+            } else {
+                final Map<VerticalSide, Area> areas = getLuAreas(beam, stems);
+
+                for (VerticalSide side : VerticalSide.values()) {
+                    final Area area = areas.get(side);
+
+                    if (area != null) {
+                        final List<Inter> blacks = retrieveHeads(beam, area);
+
+                        if (!blacks.isEmpty()) {
+                            logger.info("{} {}: {}", beam, side, Inters.ids(blacks));
+                        }
+                    }
+                }
+            }
+//
+//            for (BeamPortion portion : BeamPortion.values()) {
+//                if (portion == BeamPortion.CENTER) {
+//                    // No missing stems in central portion?
+//                    continue;
+//                }
+//
+//                if (beam.getStemOn(portion) == null) {
+//                    logger.info("\n{} missing {} {}", system, portion, beam);
+//                    Wrapper<VerticalSide> sideWrapper = new Wrapper<>(null);
+//                    Area area = getLuArea(beam, stems, sideWrapper);
+//
+//                    if (area == null) {
+//                        logger.info("Null lookup area for {}", beam);
+//                    } else {
+//                        List<Inter> blacks = retrieveHeads(beam, area, portion, sideWrapper.value);
+//                    }
+//                }
+//            }
+        }
+
+        /**
+         * Pickup the beam side, based on closest head candidate.
+         *
+         * @param beam      beam being processed
+         * @param blacksMap heads found above and below
+         * @return the chosen vertical side, or null if none
+         */
+        private VerticalSide chooseSide (BeamInter beam,
+                                         Map<VerticalSide, List<Inter>> blacksMap)
+        {
+            final Line2D median = beam.getMedian();
+            double bestDist = Double.MAX_VALUE;
+            VerticalSide bestSide = null;
+
+            for (Entry<VerticalSide, List<Inter>> entry : blacksMap.entrySet()) {
+                final VerticalSide side = entry.getKey();
+                final List<Inter> heads = entry.getValue();
+                for (Inter ih : heads) {
+                    double dist = median.ptLineDistSq(ih.getCenter());
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        bestSide = side;
+                    }
+                }
+            }
+
+            return bestSide;
+        }
+
+        /**
+         * Define the map (TOP, BOTTOM) of beam lookup areas for stems/heads.
+         * <p>
+         * If all stems are on the same vertical side of the beam, just this side area is returned.
+         * If there are no stems, or if there are stems on both sides, both side areas are returned.
+         *
+         * @param beam  the beam to process
+         * @param stems the sorted sequence of stems already connected to the beam
+         * @return the lookup areas
+         */
+        private Map<VerticalSide, Area> getLuAreas (BeamInter beam,
+                                                    List<StemInter> stems)
+        {
+            final Map<VerticalSide, Area> areas = new EnumMap<>(VerticalSide.class);
+            final Line2D median = beam.getMedian();
+
+            for (StemInter stem : stems) {
+                Point stemCenter = stem.getCenter();
+                Point2D p = LineUtil.intersectionAtX(median, stemCenter.x);
+                VerticalSide side = stemCenter.y < p.getY() ? VerticalSide.TOP : VerticalSide.BOTTOM;
+
+                if (areas.get(side) == null) {
+                    areas.put(side, buildBeamArea(beam, side));
+                }
+            }
+
+            if (areas.isEmpty()) {
+                for (VerticalSide side : VerticalSide.values()) {
+                    areas.put(side, buildBeamArea(beam, side));
+                }
+            }
+
+            return areas;
+        }
+
+        //---------------//
+        // buildBeamArea //
+        //---------------//
+        /**
+         * Build the lookup area for the provided beam, on desired vertical side.
+         *
+         * @param beam the provided beam
+         * @param side desired beam side
+         * @return the lookup area
+         */
+        private Area buildBeamArea (BeamInter beam,
+                                    VerticalSide side)
+        {
+            // Direction from beam to area
+            final int yDir = (side == VerticalSide.TOP) ? -1 : +1;
+
+            // Beam border
+            final Line2D border = beam.getBorder(side);
+
+            final double x1 = (side == VerticalSide.TOP) ? border.getX1() : border.getX2();
+            final double y1 = LineUtil.yAtX(border, x1) + yDir * headSymbolDim.height;
+
+            double x2 = (side == VerticalSide.TOP) ? border.getX2() : border.getX1();
+            x2 -= yDir * headSymbolDim.width;
+            final double y2 = LineUtil.yAtX(border, x2) + yDir * headSymbolDim.height;
+
+            GeoPath path = new GeoPath();
+
+            path.moveTo(x1, y1);
+            path.lineTo(x2, y2);
+            path.lineTo(x2, y2 + yDir * luAreaHeight);
+            path.lineTo(x1, y1 + yDir * luAreaHeight);
+            path.closePath();
+
+            beam.addAttachment((side == VerticalSide.TOP) ? "Top" : "Bottom", path);
+            return new Area(path);
+        }
+
+        //------------------//
+        // crossSystemBeams //
+        //------------------//
+        private List<BeamInter> crossSystemBeams (BeamInter beam)
+        {
+            final List<BeamInter> found = new ArrayList<>();
+            final Point center = beam.getCenter();
+            final Glyph glyph = beam.getGlyph();
+
+            if (glyph == null) {
+                return found;
+            }
+
+            if (!systemsAbove.isEmpty()) {
+                if (center.y < system.getFirstStaff().getFirstLine().yAt(center.x)) {
+                    for (SystemInfo syst : systemsAbove) {
+                        for (Inter b : syst.getSig().inters(BeamInter.class)) {
+                            if (b.getGlyph() == glyph) {
+                                found.add((BeamInter) b);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!systemsBelow.isEmpty()) {
+                if (center.y > system.getLastStaff().getLastLine().yAt(center.x)) {
+                    for (SystemInfo syst : systemsBelow) {
+                        for (Inter b : syst.getSig().inters(BeamInter.class)) {
+                            if (b.getGlyph() == glyph) {
+                                found.add((BeamInter) b);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return found;
+        }
+
+        //----------------//
+        // checkHeadStems //
+        //----------------//
+        /**
+         * A head can have links to two stems (non mutually exclusive) only when these stems
+         * are compatible (head is on stem ends with one stem on bottom left and one stem on
+         * top right).
+         * <p>
+         * Otherwise, we must clean up the configuration:
+         * <ol>
+         * <li>If there is a link with zero yGap, it has priority over non-zero yGap that are
+         * generally due to stem extension. So cut the non-zero links.
+         * <li>If there are two zero yGaps, if they are opposed on normal sides, it's OK.
+         * <li>If not, cut the link to the one not on normal side.
+         * <li>If there are two non-zero yGaps, cut the one with larger yGap.
+         * </ol>
+         *
+         * @param head the note head to check
+         */
+        private void checkHeadStems (HeadInter head)
+        {
+            // Retrieve all stems connected to this head
+            List<Inter> allStems = new ArrayList<>();
+
+            for (Relation rel : sig.getRelations(head, HeadStemRelation.class)) {
+                allStems.add(sig.getEdgeTarget(rel));
+            }
+
+            // List of non-conflicting stems ensembles
+            List<List<Inter>> partners = sig.getPartitions(null, allStems);
+            HeadStemsCleaner checker = null;
+
+            for (List<Inter> ensemble : partners) {
+                if (ensemble.size() <= 1) {
+                    continue;
+                }
+
+                if (checker == null) {
+                    checker = new HeadStemsCleaner(head);
+                }
+
+                checker.check(ensemble);
+            }
+        }
+
+        //----------------//
+        // computeBeamGap //
+        //----------------//
+        /**
+         * Try to compute the typical abscissa gap between notes (head/stem) on same beam.
+         * <p>
+         * It also checks whether a beam does not have a stem relation too close to another.
+         * If so, these too close stems are flagged as mutually exclusive.
+         *
+         * @param beams system population of beams
+         * @return the typical abscissa gap, or null is not reliable enough
+         */
+        private Integer computeBeamGap ()
+        {
+            final List<Integer> values = new ArrayList<>();
+            Integer medianValue = null;
+            int count = 0; // Number of measure gaps
+
+            for (Iterator<AbstractBeamInter> it = beams.iterator(); it.hasNext();) {
+                final AbstractBeamInter beam = it.next();
+                final boolean beamIsGood = beam.isGood();
+                final List<BeamStemRelation> rels = new ArrayList<>();
+
+                for (Relation rel : sig.edgesOf(beam)) {
+                    if (rel instanceof BeamStemRelation) {
+                        rels.add((BeamStemRelation) rel);
+                    }
+                }
+
+                // Sort on abscissa
+                final int size = rels.size();
+                Collections.sort(rels, (BeamStemRelation o1, BeamStemRelation o2) -> Double.compare(
+                        o1.getExtensionPoint().getX(), o2.getExtensionPoint().getX()));
+
+                for (int i = 0; i < size; i++) {
+                    BeamStemRelation rel = rels.get(i);
+                    StemInter stem = (StemInter) sig.getEdgeTarget(rel);
+
+                    for (BeamStemRelation r : rels.subList(i + 1, size)) {
+                        final int dx = (int) Math.rint(
+                                r.getExtensionPoint().getX() - rel.getExtensionPoint().getX());
+
+                        if (dx < params.minBeamStemsGap) {
+                            // If stems are too close to one another, they are mutually exclusive.
+                            StemInter s = (StemInter) sig.getEdgeTarget(r);
+                            sig.insertExclusion(stem, s, Cause.INCOMPATIBLE);
+                        } else {
+                            if (beamIsGood) {
+                                count++;
+                                values.add(dx);
+                            }
+
+                            break;
+                        }
+                    }
+
+                    if (beamIsGood) {
+                        // Update max stem length, using only good beams
+                        maxStemLength = Math.max(maxStemLength, stem.getMedian().getBounds().height);
+                    }
+                }
+
+                if (!beamIsGood || beam instanceof BeamHookInter) {
+                    it.remove();
+                }
+            }
+
+            if (count > 0) {
+                Collections.sort(values);
+                medianValue = values.get(count / 2);
+                logger.info("{} Median abscissa gap between beam stems: {}", system, medianValue);
+            }
+
+            return medianValue;
+        }
+
+        /**
+         * Retrieve all the standard (non-small) beams in system.
+         *
+         * @return the collection of relevant beams
+         */
+        private List<AbstractBeamInter> getStandardBeams ()
+        {
+            final List<AbstractBeamInter> found = new ArrayList<>();
+
+            for (Inter beam : sig.inters(AbstractBeamInter.class)) {
+                if (beam instanceof BeamInter || beam instanceof BeamHookInter) {
+                    found.add((AbstractBeamInter) beam);
+                }
+            }
+
+            return found;
+        }
+
+        /**
+         * Look for candidate heads in provided beam-related lookup area.
+         * <p>
+         * We handle the case where a head is connected to another beam in the same beam group,
+         * by considering it as kind of connected to the beam and thus not a head candidate.
+         *
+         * @param beam the beam being processed
+         * @param area the lookup area for heads
+         * @return the candidate heads in provided area
+         */
+        private List<Inter> retrieveHeads (BeamInter beam,
+                                           Area area)
+        {
+            // Stems linked to the beam
+            final Set<StemInter> beamStems = beam.getStems();
+
+            // And heads on these stems
+            final Set<HeadInter> beamHeads = beam.getHeads();
+
+            final List<Inter> blacks = Inters.intersectedInters(
+                    systemBlackHeads, GeoOrder.BY_ABSCISSA, area);
+
+            BlackLoop:
+            for (Iterator<Inter> it = blacks.iterator(); it.hasNext();) {
+                HeadInter black = (HeadInter) it.next();
+
+                // Head quality: (Perhaps this is too demanding???)
+                if (!black.isGood()) {
+                    it.remove();
+                    continue;
+                }
+
+                final Rectangle blackBounds = black.getBounds();
+
+                for (HeadInter head : beamHeads) {
+                    // Overlap with existing beam head?
+                    if (head.overlaps(black)) {
+                        it.remove();
+                        continue BlackLoop;
+                    }
+
+                    // In the shadow of existing beam head?
+                    final Rectangle common = blackBounds.intersection(head.getBounds());
+                    if (common.width > blackBounds.width * HeadInter.getMaxOverlapDxRatio()) {
+                        it.remove();
+                        continue BlackLoop;
+                    }
+                }
+
+                Set<StemInter> blackToBeam = black.getStems();
+                blackToBeam.retainAll(beamStems);
+
+                if (!blackToBeam.isEmpty()) {
+                    it.remove(); // This head is already connected to the beam
+                } else {
+                    // Make sure head is not connected to another beam (of a separate group)
+                    Set<StemInter> blackToElse = black.getStems();
+
+                    for (StemInter stem : blackToElse) {
+                        for (AbstractBeamInter b : stem.getBeams()) {
+                            if (beam.hasCommonStemWith(b)) {
+                                it.remove();
+                                continue BlackLoop;
+                            }
+                        }
+                    }
+                }
+            }
+
+//            logger.info("{} blacks {}", system, Inters.ids(blacks));
+//
+//            for (Inter black : blacks) {
+//                if (black.isVip()) {
+//                    logger.info("BINGO {}", black);
+//                }
+//
+//                BeamStemRelation bsRel = new HeadLinker((HeadInter) black, StemsBuilder.this)
+//                        .linkToBeam(beam, beamPortion, vSide);
+//            }
+//
+            return blacks;
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -681,6 +1169,14 @@ public class StemsBuilder
         private final Constant.Ratio maxBarOverlap = new Constant.Ratio(
                 0.25,
                 "Maximum stem overlap ratio on a connected barline");
+
+        private final Scale.Fraction maxHeadBeamDistance = new Scale.Fraction(
+                5.0,
+                "Maximum vertical distance between head and beam");
+
+        private final Constant.Ratio maxStemLengthRatio = new Constant.Ratio(
+                1.5,
+                "Ratio applied on observed maximum vertical distance between head and beam");
 
         private final Scale.Fraction minHeadSectionContribution = new Scale.Fraction(
                 0.2,
@@ -714,12 +1210,20 @@ public class StemsBuilder
 
         private final Constant.Ratio sideStemBoost = new Constant.Ratio(
                 0.5,
-                "How much do we boost beam side stems");
+                "How much do we boost beam side stems (and their heads)");
+
+        private final Constant.Boolean useBeamUmbrella = new Constant.Boolean(
+                true,
+                "Should we use beam umbrella to link heads?");
+
+        private final Scale.Fraction minBeamUmbrellaWidth = new Scale.Fraction(
+                2.0,
+                "Minimum beam width to use umbrella");
     }
 
-    //------------//
-    // Parameters //
-    //------------//
+//------------//
+// Parameters //
+//------------//
     /**
      * Class {@code Parameters} gathers all pre-scaled constants.
      */
@@ -756,11 +1260,19 @@ public class StemsBuilder
 
         final int minHeadBeamDistance;
 
+        final int maxHeadBeamDistance;
+
         final int minBeamStemsGap;
 
         final double maxSeedJitter;
 
         final double maxSectionJitter;
+
+        final int maxBeamDistance;
+
+        final double maxStemLengthRatio;
+
+        final int minBeamUmbrellaWidth;
 
         /**
          * Creates a new Parameters object.
@@ -779,11 +1291,15 @@ public class StemsBuilder
             vicinityMargin = scale.toPixels(constants.vicinityMargin);
             maxStemHeadGapY = scale.toPixels(HeadStemRelation.getYGapMaximum(false));
             maxYGap = scale.toPixels(VerticalsBuilder.getMaxYGap());
-            maxYGapPoor = scale.toPixels(VerticalsBuilder.getMaxYGapPoor());
+            maxYGapPoor = scale.toPixels(VerticalsBuilder.getMaxYGap_poor());
             minHeadSectionContribution = scale.toPixels(constants.minHeadSectionContribution);
             minStemExtension = scale.toPixels(getMinStemExtension());
             minHeadBeamDistance = scale.toPixels(constants.minHeadBeamDistance);
+            maxHeadBeamDistance = scale.toPixels(constants.maxHeadBeamDistance);
             minBeamStemsGap = scale.toPixels(constants.minBeamStemsGap);
+            maxStemLengthRatio = constants.maxStemLengthRatio.getValue();
+            minBeamUmbrellaWidth = scale.toPixels(constants.minBeamUmbrellaWidth);
+            maxBeamDistance = scale.toPixels(constants.maxBeamDistance);
 
             final int stemThickness = scale.getMaxStem();
             maxStemThickness = stemThickness;

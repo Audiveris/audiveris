@@ -27,6 +27,7 @@ import org.audiveris.omr.glyph.AbstractWeightedEntity;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.lag.Section;
+import org.audiveris.omr.lag.Sections;
 import org.audiveris.omr.math.Barycenter;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointUtil;
@@ -35,7 +36,6 @@ import static org.audiveris.omr.run.Orientation.*;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.util.ByteUtil;
-import org.audiveris.omr.util.Entities;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -132,7 +132,7 @@ public class SectionCompound
     {
         StringBuilder sb = new StringBuilder();
         sb.append(this);
-        sb.append(String.format("   sections=%s%n", Entities.ids(members)));
+        sb.append(String.format("   %s%n", Sections.toString("sections=", members)));
 
         if (partOf != null) {
             sb.append(String.format("   partOf=%s%n", partOf));
@@ -383,11 +383,9 @@ public class SectionCompound
      * Remove a section from the compound members
      *
      * @param section the section to remove
-     * @param linked  should we update the link from section to compound?
      * @return true if the section was actually found and removed
      */
-    public boolean removeSection (Section section,
-                                  boolean linked)
+    public boolean removeSection (Section section)
     {
         boolean bool = members.remove(section);
         invalidateCache();

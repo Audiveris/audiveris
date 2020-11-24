@@ -802,15 +802,10 @@ public class BeamGroup
     public static void includeBeam (AbstractBeamInter beam,
                                     Measure measure)
     {
-        final Set<StemInter> beamStems = beam.getStems();
-
         // Look for a compatible group (via a common stem)
         for (BeamGroup group : measure.getBeamGroups()) {
             for (AbstractBeamInter b : group.getBeams()) {
-                Set<StemInter> s = b.getStems();
-                s.retainAll(beamStems);
-
-                if (!s.isEmpty()) {
+                if (beam.hasCommonStemWith(b)) {
                     assignGroup(group, beam);
 
                     return; // Found a hosting group
@@ -878,9 +873,9 @@ public class BeamGroup
         }
     }
 
-    //----------------//
-    // determineGroup //
-    //----------------//
+    //-------------//
+    // assignGroup //
+    //-------------//
     /**
      * Recursively determine BeamGroup for the provided beam, as well as all other beams
      * connected within the same group.
