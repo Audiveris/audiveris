@@ -153,12 +153,15 @@ public class MeasureRhythm
             slots.clear();
             narrowSlotsRetriever = new SlotsRetriever(measure, false); // Wide is false
             List<MeasureSlot> narrowSlots = narrowSlotsRetriever.buildSlots();
+            ///dumpSlots("narrowSlots", narrowSlots);
 
             SlotsRetriever wideSlotsRetriever = new SlotsRetriever(measure, true); // Wide is true
             List<MeasureSlot> wideSlots = wideSlotsRetriever.buildSlots();
+            ///dumpSlots("wideSlots", wideSlots);
 
             // Merge narrow into wide compounds
             slots.addAll(buildCompoundSlots(narrowSlots, wideSlots));
+            ///dumpSlots("compoundSlots", slots);
 
             if (slots.isEmpty()) {
                 return ok;
@@ -231,10 +234,12 @@ public class MeasureRhythm
                 MeasureSlot narrow = narrowSlots.get(i);
 
                 if (!intersection(wideChords, narrow.getChords())) {
-                    compounds.add(
-                            new CompoundSlot(++slotCount, measure, narrowSlots.subList(iStart, i)));
-                    iStart = i;
-                    continue WideSlots;
+                    if (i > iStart) {
+                        compounds.add(new CompoundSlot(++slotCount, measure,
+                                                       narrowSlots.subList(iStart, i)));
+                        iStart = i;
+                        continue WideSlots;
+                    }
                 }
             }
 
@@ -597,6 +602,28 @@ public class MeasureRhythm
                 bgLast = group.get(group.size() - 1).getBeamGroup();
             }
         }
+    }
+
+    //-----------//
+    // dumpSlots //
+    //-----------//
+    /**
+     * Dump a list of slots.
+     *
+     * @param title title to be printed
+     * @param slots the slot list to dump
+     */
+    private void dumpSlots (String title,
+                            List<? extends MeasureSlot> slots)
+    {
+        final StringBuilder sb = new StringBuilder(measure.toString());
+        sb.append(' ').append(title);
+
+        for (MeasureSlot slot : slots) {
+            sb.append("\n   ").append(slot);
+        }
+
+        logger.info("{}", sb);
     }
 
     //------------//

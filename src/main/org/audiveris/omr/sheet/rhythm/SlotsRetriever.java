@@ -235,14 +235,8 @@ public class SlotsRetriever
         }
 
         // No adjacency if explicitly separated
-        final AbstractChordInter src = (ch1.getId() < ch2.getId()) ? ch1 : ch2;
-        final AbstractChordInter tgt = (ch1.getId() < ch2.getId()) ? ch2 : ch1;
-        final SIGraph sig = src.getSig();
-
-        for (Relation rel : sig.getAllEdges(src, tgt)) {
-            if (rel instanceof SeparateTimeRelation) {
-                return false;
-            }
+        if (areExplicitlySeparate(ch1, ch2)) {
+            return false;
         }
 
         final Rectangle box1 = ch1.getBoundsWithDots();
@@ -317,6 +311,36 @@ public class SlotsRetriever
 
         // Check abscissa shift between heads
         return Math.abs(ch1.getHeadLocation().x - ch2.getHeadLocation().x) <= params.maxSlotDxLow;
+    }
+
+    //-----------------------//
+    // areExplicitlySeparate //
+    //-----------------------//
+    /**
+     * Check whether the two provided chords have been declared as using separate slots.
+     *
+     * @param ch1 one chord
+     * @param ch2 another chord
+     * @return true if explicitly separate
+     */
+    private boolean areExplicitlySeparate (AbstractChordInter ch1,
+                                           AbstractChordInter ch2)
+    {
+        if (ch1.isVip() && ch2.isVip()) {
+            logger.info("VIP areExplicitlySeparate? {} {}", ch1, ch2);
+        }
+
+        final AbstractChordInter src = (ch1.getId() < ch2.getId()) ? ch1 : ch2;
+        final AbstractChordInter tgt = (ch1.getId() < ch2.getId()) ? ch2 : ch1;
+        final SIGraph sig = src.getSig();
+
+        for (Relation rel : sig.getAllEdges(src, tgt)) {
+            if (rel instanceof SeparateTimeRelation) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //-------------------------//
@@ -643,7 +667,7 @@ public class SlotsRetriever
                     // Boxes do not overlap vertically
                     final double dx = Math.abs(x1 - x2);
 
-                    if (dx <= maxSlotDx) {
+                    if ((dx <= maxSlotDx) && !areExplicitlySeparate(ch1, ch2)) {
                         setRel(ch1, ch2, CLOSE);
                         setRel(ch2, ch1, CLOSE);
                     } else if (x1 < x2) {
