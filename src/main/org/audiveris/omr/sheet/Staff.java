@@ -294,9 +294,11 @@ public class Staff
      */
     public void addBarline (BarlineInter barline)
     {
-        barlines.add(barline);
-        Collections.sort(barlines, Inters.byCenterAbscissa);
-        retrieveSideBars();
+        if (!barlines.contains(barline)) {
+            barlines.add(barline);
+            Collections.sort(barlines, Inters.byCenterAbscissa);
+            retrieveSideBars();
+        }
     }
 
     //-----------//
