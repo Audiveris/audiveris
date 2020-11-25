@@ -1403,8 +1403,9 @@ public class SystemInfo
         // parts
         parts.addAll(systemBelow.parts);
 
-        for (Part part : systemBelow.parts) {
-            part.setSystem(this);
+        for (Part partBelow : systemBelow.parts) {
+            partBelow.setSystem(this);
+            partBelow.setId(1 + parts.indexOf(partBelow));
         }
 
         // partGroups
@@ -1418,6 +1419,9 @@ public class SystemInfo
         }
 
         // staves
+        for (Staff staff : systemBelow.staves) {
+            staff.setSystem(this);
+        }
         staves.addAll(systemBelow.staves);
 
         // sections
