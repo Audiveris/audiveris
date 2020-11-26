@@ -218,7 +218,11 @@ public class BookManager
     {
         logger.debug("removeBook {}", book);
 
-        getBookHistory().add(book.getBookPath()); // Insert in history
+        final Path bookPath = book.getBookPath();
+
+        if (bookPath != null) {
+            getBookHistory().add(bookPath); // Insert in history
+        }
 
         return books.remove(book);
     }
