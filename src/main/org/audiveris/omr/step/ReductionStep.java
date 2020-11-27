@@ -21,8 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.step;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SigReducer;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.StemInter;
 
 /**
  * Class {@code ReductionStep} implements <b>REDUCTION</b> step, which tries to reduce
@@ -33,6 +37,8 @@ import org.audiveris.omr.sig.SigReducer;
 public class ReductionStep
         extends AbstractSystemStep<Void>
 {
+
+    private static final Constants constants = new Constants();
 
     /**
      * Creates a new ReductionStep object.
@@ -50,5 +56,25 @@ public class ReductionStep
             throws StepException
     {
         new SigReducer(system, true).reduceFoundations();
+
+        if (constants.refineStemHeadEnd.isSet()) {
+            // Refine precise stem end, based on leading head
+            for (Inter s : system.getSig().inters(StemInter.class)) {
+                final StemInter stem = (StemInter) s;
+                stem.refineHeadEnd();
+            }
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean refineStemHeadEnd = new Constant.Boolean(
+                false,
+                "Should we refine every stem end on head side?");
     }
 }
