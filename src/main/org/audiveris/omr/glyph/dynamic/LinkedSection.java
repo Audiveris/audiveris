@@ -247,6 +247,12 @@ public class LinkedSection
     }
 
     @Override
+    public String getFullId ()
+    {
+        return section.getFullId();
+    }
+
+    @Override
     public int getId ()
     {
         return section.getId();

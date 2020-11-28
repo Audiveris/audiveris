@@ -178,6 +178,35 @@ public class Entities
     // ids //
     //-----//
     /**
+     * Build a string with just the IDs of the entity collection, introduced by a label.
+     *
+     * @param label    a string to introduce the list of IDs
+     * @param entities the collection of Entity instances
+     * @return the string built
+     */
+    public static String ids (String label,
+                              Collection<? extends Entity> entities)
+    {
+        if (entities == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(label).append("[");
+
+        for (Entity entity : entities) {
+            sb.append("#").append(entity.getFullId());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
+    //-----//
+    // ids //
+    //-----//
+    /**
      * Build a string with just the IDs of the entity collection.
      *
      * @param entities the collection of Entity instances
@@ -185,20 +214,7 @@ public class Entities
      */
     public static String ids (Collection<? extends Entity> entities)
     {
-        if (entities == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-
-        for (Entity entity : entities) {
-            sb.append("#").append(entity.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
+        return ids("", entities);
     }
 
     //-------------//

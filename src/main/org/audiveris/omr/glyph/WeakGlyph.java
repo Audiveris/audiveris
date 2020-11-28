@@ -137,6 +137,12 @@ public class WeakGlyph
     }
 
     @Override
+    public String getFullId ()
+    {
+        return "" + getId();
+    }
+
+    @Override
     public int getId ()
     {
         final Glyph glyph = get();

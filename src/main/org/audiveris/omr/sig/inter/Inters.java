@@ -25,6 +25,7 @@ import org.audiveris.omr.math.GeoOrder;
 import static org.audiveris.omr.math.GeoOrder.BY_ABSCISSA;
 import static org.audiveris.omr.math.GeoOrder.BY_ORDINATE;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.Predicate;
 
 import java.awt.Point;
@@ -474,25 +475,28 @@ public abstract class Inters
     /**
      * Report a string of inter IDs.
      *
+     * @param label  a string to introduce the list of IDs
+     * @param inters collection of inters
+     * @return string of IDs
+     */
+    public static String ids (String label,
+                              Collection<? extends Inter> inters)
+    {
+        return Entities.ids(label, inters);
+    }
+
+    //-----//
+    // ids //
+    //-----//
+    /**
+     * Report a string of inter IDs.
+     *
      * @param inters collection of inters
      * @return string of IDs
      */
     public static String ids (Collection<? extends Inter> inters)
     {
-        if (inters == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-
-        for (Inter inter : inters) {
-            sb.append("#").append(inter.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
+        return Entities.ids(inters);
     }
 
     //--------//

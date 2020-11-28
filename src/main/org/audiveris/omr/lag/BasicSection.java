@@ -475,6 +475,15 @@ public class BasicSection
         return runs.get(0);
     }
 
+    //-----------//
+    // getFullId //
+    //-----------//
+    @Override
+    public String getFullId ()
+    {
+        return (isVertical() ? "V" : "H") + getId();
+    }
+
     //--------//
     // getLag //
     //--------//

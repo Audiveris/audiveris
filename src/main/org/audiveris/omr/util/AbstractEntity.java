@@ -68,6 +68,15 @@ public abstract class AbstractEntity
         return this.toString(); // By default
     }
 
+    //-----------//
+    // getFullId //
+    //-----------//
+    @Override
+    public String getFullId ()
+    {
+        return "" + getId();
+    }
+
     //-------//
     // getId //
     //-------//
