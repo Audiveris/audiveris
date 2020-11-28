@@ -132,7 +132,7 @@ public class SectionCompound
     {
         StringBuilder sb = new StringBuilder();
         sb.append(this);
-        sb.append(String.format("   %s%n", Sections.toString("sections=", members)));
+        sb.append(String.format("   %s%n", Sections.ids(members)));
 
         if (partOf != null) {
             sb.append(String.format("   partOf=%s%n", partOf));

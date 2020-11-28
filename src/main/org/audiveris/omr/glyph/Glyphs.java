@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.glyph;
 
+import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.Table;
 
@@ -34,7 +35,6 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -470,47 +470,16 @@ public abstract class Glyphs
     // ids //
     //-----//
     /**
-     * Build a string with just the IDs of the glyph collection,
-     * introduced by the provided label.
+     * Report a string of glyph IDs.
      *
-     * @param label  the string that introduces the list of IDs
-     * @param glyphs the collection of glyph instances
-     * @return the string built
+     * @param label  a string to introduce the list of IDs
+     * @param glyphs collection of glyphs
+     * @return string of IDs
      */
     public static String ids (String label,
                               Collection<? extends Glyph> glyphs)
     {
-        if (glyphs == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(label).append("[");
-
-        for (Glyph glyph : glyphs) {
-            sb.append("#").append(glyph.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
-    //-----//
-    // ids //
-    //-----//
-    /**
-     * Build a string with just the IDs of the glyph array, introduced
-     * by the provided label.
-     *
-     * @param label  the string that introduces the list of IDs
-     * @param glyphs the array of glyph instances
-     * @return the string built
-     */
-    public static String ids (String label,
-                              Glyph... glyphs)
-    {
-        return ids(label, Arrays.asList(glyphs));
+        return Entities.ids(label, glyphs);
     }
 
     //-----//
@@ -525,22 +494,7 @@ public abstract class Glyphs
      */
     public static String ids (Collection<? extends Glyph> glyphs)
     {
-        return ids("glyphs", glyphs);
-    }
-
-    //-----//
-    // ids //
-    //-----//
-    /**
-     * Build a string with just the IDs of the glyph array, introduced
-     * by the label "glyphs".
-     *
-     * @param glyphs the array of glyph instances
-     * @return the string built
-     */
-    public static String ids (Glyph... glyphs)
-    {
-        return ids("glyphs", glyphs);
+        return Entities.ids("glyphs", glyphs);
     }
 
     //-----------//
