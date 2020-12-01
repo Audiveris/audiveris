@@ -21,14 +21,15 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
-import java.util.zip.ZipOutputStream;
 
 /**
  * Class {@code ZipFileSystem} gathers utility methods to read from and write to a zip
@@ -74,13 +75,21 @@ public abstract class ZipFileSystem
 
         // Make sure the containing folder exists
         Files.createDirectories(path.getParent());
+//
+//        // Make it a zip file
+//        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path.toFile()));
+//        zos.close();
+//
+//        // Finally open the file system just created
+//        return open(path);
 
-        // Make it a zip file
-        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path.toFile()));
-        zos.close();
+        final Map<String, String> env = new HashMap<>();
+        env.put("create", "true");
 
-        // Finally open the file system just created
-        return open(path);
+        final URI uri = URI.create("jar:" + path.toUri());
+        final FileSystem fs = FileSystems.newFileSystem(uri, env, null);
+
+        return fs.getPath(fs.getSeparator());
     }
 
     //------//
@@ -101,8 +110,14 @@ public abstract class ZipFileSystem
     {
         Objects.requireNonNull(path, "ZipFileSystem.open: path is null");
 
-        FileSystem fileSystem = FileSystems.newFileSystem(path, (ClassLoader) null);
+//        FileSystem fileSystem = FileSystems.newFileSystem(path, (ClassLoader) null);
+//
+//        return fileSystem.getPath(fileSystem.getSeparator());
+        final Map<String, String> env = new HashMap<>(); // Empty map
 
-        return fileSystem.getPath(fileSystem.getSeparator());
+        final URI uri = URI.create("jar:" + path.toUri());
+        final FileSystem fs = FileSystems.newFileSystem(uri, env, null);
+
+        return fs.getPath(fs.getSeparator());
     }
 }
