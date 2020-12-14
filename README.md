@@ -4,7 +4,7 @@ This repository contains source code for the latest generation of Audiveris Opti
 Music Recognition (OMR) application.
 
 ```diff
-! You are looking at the "<head-classifier" branch which experiments a new kind of classifier,
+! You are looking at the "head-classifier" branch which experiments a new kind of classifier,
 ! focused on note heads.
 !
 ! To run this Audiveris branch, you first need to download the head-classifier trained model,
