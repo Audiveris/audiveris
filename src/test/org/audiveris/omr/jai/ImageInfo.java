@@ -37,12 +37,6 @@ import javax.media.jai.*;
  */
 public class ImageInfo
 {
-    //~ Constructors -------------------------------------------------------------------------------
-
-    private ImageInfo ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
     public static void main (String[] args)
     {

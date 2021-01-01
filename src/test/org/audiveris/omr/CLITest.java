@@ -34,27 +34,14 @@ import org.kohsuke.args4j.CmdLineException;
 import java.util.Arrays;
 
 /**
- *
  * @author Hervé Bitteur
  */
 public class CLITest
 {
-    //~ Instance fields ----------------------------------------------------------------------------
-
     private final CLI instance = new CLI("AudiverisTest");
 
-    //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new {@code CLITest} object.
-     */
-    public CLITest ()
-    {
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
     @Test
-    public void testOption ()
-            throws Exception
+    public void testOption () throws Exception
     {
         System.out.println("\n+++ testOption");
 
@@ -82,8 +69,7 @@ public class CLITest
     }
 
     @Test
-    public void testRun ()
-            throws Exception
+    public void testRun () throws Exception
     {
         System.out.println("\n+++ testRun");
 
@@ -94,8 +80,7 @@ public class CLITest
     }
 
     @Test
-    public void testRunError ()
-            throws Exception
+    public void testRunError () throws Exception
     {
         System.out.println("\n+++ testRunError");
 
@@ -113,11 +98,9 @@ public class CLITest
     }
 
     @Test
-    public void testSheets ()
-            throws Exception
+    public void testSheets () throws Exception
     {
         System.out.println("\n+++ testSheets");
-
         String[] args = new String[]{"-sheets", "3", "4", "6", "11 14"};
         CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
@@ -125,11 +108,9 @@ public class CLITest
     }
 
     @Test
-    public void testSheetsRange ()
-            throws Exception
+    public void testSheetsRange () throws Exception
     {
         System.out.println("\n+++ testSheetsRange");
-
         String[] args = new String[]{"-sheets", "1", "3-6", "10"};
         CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
@@ -137,11 +118,9 @@ public class CLITest
     }
 
     @Test
-    public void testSheetsRange2 ()
-            throws Exception
+    public void testSheetsRange2 () throws Exception
     {
         System.out.println("\n+++ testSheetsRange2");
-
         String[] args = new String[]{"-sheets", "1", "4 - 6", "20"};
         CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
@@ -149,19 +128,17 @@ public class CLITest
     }
 
     @Test
-    public void testSome ()
-            throws Exception
+    public void testSome () throws Exception
     {
         System.out.println("\n+++ testSome");
-
         String[] args = new String[]{
             "-help", "-batch", "-sheets", "5 2", " 3", "-step", "PAGE",
             "myScript.xml", "my Input.pdf"
         };
         CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
-        assertEquals(true, params.batchMode);
-        assertEquals(true, params.helpMode);
+        assertTrue(params.batchMode);
+        assertTrue(params.helpMode);
         assertEquals(Arrays.asList(2, 3, 5).toString(), params.getSheetIds().toString());
         assertEquals(Step.PAGE, params.step);
         assertEquals(2, params.arguments.size());
@@ -170,11 +147,9 @@ public class CLITest
     }
 
     @Test
-    public void testStep ()
-            throws Exception
+    public void testStep () throws Exception
     {
         System.out.println("\n+++ testStep");
-
         String[] args = new String[]{"-step", "PAGE"};
         CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
@@ -182,16 +157,12 @@ public class CLITest
     }
 
     @Test
-    public void testStepEmpty ()
-            throws Exception
+    public void testStepEmpty () throws Exception
     {
         System.out.println("\n+++ testStepEmpty");
-
         String[] args = new String[]{"-step"};
-
         try {
             instance.parseParameters(args);
-
             fail();
         } catch (CmdLineException ex) {
             System.out.println(ex.getMessage());
@@ -201,11 +172,9 @@ public class CLITest
     }
 
     @Test
-    public void testVoid ()
-            throws Exception
+    public void testVoid () throws Exception
     {
         System.out.println("\n+++ testVoid");
-
         String[] args = new String[0];
         CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);

@@ -33,19 +33,7 @@ import org.junit.Test;
  */
 public class ChamferDistanceTest
 {
-    //~ Constructors -------------------------------------------------------------------------------
-
-    /**
-     * Creates a new ChamferDistanceTest object.
-     */
-    public ChamferDistanceTest ()
-    {
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Test of compute method, of class ChamferDistance.
-     */
+    /// Test of compute method.
     @Test
     public void testCompute ()
     {
@@ -105,7 +93,6 @@ public class ChamferDistanceTest
                 img.set(x, y, (c == 'X') ? 0 : 255);
             }
         }
-
         return img;
     }
 }

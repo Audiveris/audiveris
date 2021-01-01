@@ -41,14 +41,6 @@ public class MedianGrayFilterTest
 
     final int height = 4;
 
-    //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new MedianGrayFilterTest object.
-     */
-    public MedianGrayFilterTest ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
     //    @Test
     public void testProcess_black_1 ()

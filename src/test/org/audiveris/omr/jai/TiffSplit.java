@@ -18,17 +18,10 @@ import javax.imageio.stream.ImageOutputStream;
 
 /**
  * Class {@code TiffSplit}
- *
  * @author Hervé Bitteur
  */
 public class TiffSplit
 {
-    //~ Constructors -------------------------------------------------------------------------------
-
-    private TiffSplit ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
     public static void main (String... args)
             throws Exception

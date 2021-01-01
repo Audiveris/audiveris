@@ -28,24 +28,10 @@ import org.audiveris.omr.math.TableUtil;
 import org.junit.Test;
 
 /**
- *
  * @author Hervé Bitteur
  */
 public class WatershedGrayLevelTest
 {
-    //~ Constructors -------------------------------------------------------------------------------
-
-    /**
-     * Creates a new WatershedGrayLevelTest object.
-     */
-    public WatershedGrayLevelTest ()
-    {
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Test of process method, of class WatershedGrayLevel.
-     */
     @Test
     public void testProcess ()
     {
