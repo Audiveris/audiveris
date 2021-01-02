@@ -33,18 +33,14 @@ import static org.junit.Assert.assertTrue;
  */
 public class AudiverisTest
 {
-    private static final Logger logger = LoggerFactory.getLogger(AudiverisTest.class);
-
-    @Ignore
     @Test
     public void testMainMethodMultipleCalls ()
     {
         String[] args1 = new String[]{
-            "-batch", "-step", "LOAD", "-input", "data/examples/chula.png"
+            "-batch", "-step", "LOAD", "-option","input=data/examples/chula.png"
         };
         String[] args2 = new String[]{
-            "-batch", "-step", "LOAD", "-input", "data/examples/batuque.png",
-            "data/examples/allegretto.png"
+            "-batch", "-step", "LOAD", "-option","input=data/examples/batuque.png"
         };
         Audiveris.main(args1);
         Audiveris.main(args2);
