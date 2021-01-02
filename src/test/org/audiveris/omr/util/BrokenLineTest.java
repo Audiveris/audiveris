@@ -51,15 +51,6 @@ public class BrokenLineTest
 
     private BrokenLine instance;
 
-    //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new BrokenLineTest object.
-     */
-    public BrokenLineTest ()
-    {
-        ///System.out.println("BrokenLineTest");
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of addPoint method, of class BrokenLine.

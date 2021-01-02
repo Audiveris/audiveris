@@ -15,27 +15,12 @@ import org.junit.Test;
 import java.awt.Dimension;
 
 /**
- *
  * @author Hervé Bitteur
  */
 public class GlyphFactoryTest
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
     private static final Dimension dim = new Dimension(15, 10);
 
-    //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new {@code GlyphFactoryTest} object.
-     */
-    public GlyphFactoryTest ()
-    {
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Test of createGlyphs method, of class GlyphFactory.
-     */
     @Test
     public void testCreateGlyphs ()
     {
@@ -45,9 +30,6 @@ public class GlyphFactoryTest
         GlyphFactory.buildGlyphs(runTable, null);
     }
 
-    //--------------------------//
-    // createHorizontalInstance //
-    //--------------------------//
     /**
      * <pre>
      * +===============+   +===============+   +===============+

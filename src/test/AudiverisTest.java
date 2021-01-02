@@ -20,10 +20,13 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Hervé Bitteur
@@ -32,29 +35,19 @@ public class AudiverisTest
 {
     private static final Logger logger = LoggerFactory.getLogger(AudiverisTest.class);
 
-    public AudiverisTest ()
-    {
-    }
-
+    @Ignore
     @Test
     public void testMainMethodMultipleCalls ()
     {
-        System.out.println("testMultipleCalls");
-
         String[] args1 = new String[]{
-            "-batch", "-step", "EXPORT", "-input", "data/examples/chula.png"
+            "-batch", "-step", "LOAD", "-input", "data/examples/chula.png"
         };
         String[] args2 = new String[]{
-            "-batch", "-step", "EXPORT", "-input", "data/examples/batuque.png",
+            "-batch", "-step", "LOAD", "-input", "data/examples/batuque.png",
             "data/examples/allegretto.png"
         };
-
-        //        System.out.println("firstCall to Audiveris.main()");
-        //        logger.info("firstCall to Audiveris.main()");
-        //        Audiveris.main(args1);
-        //        System.out.println("secondCall to Audiveris.main()");
-        //        logger.info("secondCall to Audiveris.main()");
-        //        Audiveris.main(args2);
-        //        System.out.println("finished");
+        Audiveris.main(args1);
+        Audiveris.main(args2);
+        assertTrue(true);
     }
 }
