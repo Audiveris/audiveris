@@ -20,3 +20,13 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: tar_archive
+        path: build/distributions/Audiveris.tar
+        
+    - uses: actions/upload-artifact@v2
+      with:
+        name: zip_archive
+        path: build/distributions/Audiveris.zip
