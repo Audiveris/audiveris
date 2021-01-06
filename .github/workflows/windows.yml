@@ -13,7 +13,7 @@ jobs:
       matrix:
         # test against different JDK versions
         java: [ 8 ]
-    name: Java ${{ matrix.java }} sample
+    name: Java ${{ matrix.java }}
 
     steps:
     - uses: actions/checkout@v2
@@ -21,6 +21,10 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: ${{ matrix.java }}
+
+    - name: Get tessaract data
+      run:  |
+        curl -L https://github.com/tesseract-ocr/tessdata/blob/3.04.00/eng.traineddata -o C:\Program Files (x86)\tesseract-ocr\tessdata\eng.traineddata
 
     - name: Build with Gradle
       run: ./gradlew installers
