@@ -24,7 +24,7 @@ jobs:
 
     - name: Get tessaract data
       run:  |
-        curl -L https://github.com/tesseract-ocr/tessdata/blob/3.04.00/eng.traineddata -o C:\Program Files (x86)\tesseract-ocr\tessdata\eng.traineddata
+        curl -L https://github.com/tesseract-ocr/tessdata/blob/3.04.00/eng.traineddata -o "C:\Program Files (x86)\tesseract-ocr\tessdata\eng.traineddata"
 
     - name: Build with Gradle
       run: ./gradlew installers
