@@ -13,7 +13,7 @@ jobs:
       matrix:
         # test against different JDK versions
         java: [7 , 8 ]
-    name: Java ${{ matrix.java }} sample
+    name: Java ${{ matrix.java }}
 
     steps:
     - uses: actions/checkout@v2
