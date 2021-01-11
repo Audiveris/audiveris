@@ -22,10 +22,10 @@ jobs:
       with:
         java-version: ${{ matrix.java }}
 
-    - name: Get tessaract data
+    - name: Get tesseract data
       run:  |
-        mkdir "%programfiles%\tesseract-ocr\tessdata"
-        curl -L https://github.com/tesseract-ocr/tessdata/blob/3.04.00/eng.traineddata -o "%programfiles%\tesseract-ocr\tessdata\eng.traineddata"
+        mkdir "C:\Program Files (x86)\tesseract-ocr\tessdata"
+        curl -L https://github.com/tesseract-ocr/tessdata/blob/3.04.00/eng.traineddata -o "C:\Program Files (x86)\tesseract-ocr\tessdata\eng.traineddata"
 
     - name: Build with Gradle
       run: ./gradlew installers
