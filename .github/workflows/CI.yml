@@ -29,15 +29,12 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
       
-    - name: Debug - Look for artiacts
-      run: ls -lR
-
     - uses: actions/upload-artifact@v2
       with:
         name: tar_archive
-        path: build/distributions/Audiveris_jdk${{ matrix.java }}.tar
+        path: build/distributions/Audiveris.tar
         
     - uses: actions/upload-artifact@v2
       with:
         name: zip_archive
-        path: build/distributions/Audiveris_jdk${{ matrix.java }}.zip
+        path: build/distributions/Audiveris.zip
