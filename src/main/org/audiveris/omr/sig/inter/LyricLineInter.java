@@ -60,7 +60,6 @@ public class LyricLineInter
      * @param bounds   the bounding box
      * @param grade    the interpretation quality
      * @param meanFont the font averaged on whole text line
-     * @param words    the sequence of words (LyricItemInter's actually)
      */
     public LyricLineInter (Rectangle bounds,
                            double grade,
