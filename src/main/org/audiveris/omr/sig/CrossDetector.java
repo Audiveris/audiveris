@@ -223,7 +223,7 @@ public class CrossDetector
      *
      * @param above  an inter (in system above)
      * @param below  an inter (in system below)
-     * @param return the discarded inter
+     * @return the discarded inter
      */
     private Inter resolveConflict (Inter above,
                                    Inter below)

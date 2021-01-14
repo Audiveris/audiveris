@@ -49,7 +49,7 @@ class TaskHistory
     /**
      * Register an action sequence.
      *
-     * @param tasks one (or several related) task(s)
+     * @param seq one (or several related) task(s)
      * @return the action sequence
      */
     public synchronized UITaskList add (UITaskList seq)

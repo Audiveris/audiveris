@@ -242,7 +242,6 @@ public class GlyphFactory
     /**
      * Retrieve all glyphs from the provided table of runs.
      *
-     * @param runTable the table of runs
      * @return the list of created glyphs
      */
     private List<Glyph> process ()

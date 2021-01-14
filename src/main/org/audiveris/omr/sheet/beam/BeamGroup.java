@@ -886,7 +886,6 @@ public class BeamGroup
      * connected within the same group.
      *
      * @param beam    the beam seed
-     * @param measure the containing measure
      */
     private static void assignGroup (BeamGroup group,
                                      AbstractBeamInter beam)

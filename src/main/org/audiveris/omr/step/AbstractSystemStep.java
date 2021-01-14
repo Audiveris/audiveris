@@ -161,7 +161,6 @@ public abstract class AbstractSystemStep<C>
     /**
      * Launch the system processing (perhaps in parallel, one task per system)
      *
-     * @param systems the systems to process
      * @param sheet   the containing sheet
      */
     private void doitPerSystem (final Sheet sheet,

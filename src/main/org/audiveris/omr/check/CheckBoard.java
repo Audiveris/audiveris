@@ -38,8 +38,6 @@ import org.slf4j.LoggerFactory;
  * information.
  *
  * @param <C> The {@link Checkable} type to be checked (can be an entity context)
- * @param <E> The entity available on selection
- *
  * @author Hervé Bitteur
  */
 public class CheckBoard<C>
