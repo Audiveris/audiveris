@@ -403,12 +403,10 @@ public abstract class AbstractClassifier<M extends Object>
 
         final Path meansEntry = root.resolve(MEANS_ENTRY_NAME);
 
-        if (meansEntry != null) {
-            InputStream is = Files.newInputStream(meansEntry); // READ by default
-            try (DataInputStream dis = new DataInputStream(new BufferedInputStream(is))) {
-                means = Nd4j.read(dis);
-                logger.info("means:{}", means);
-            }
+        InputStream is = Files.newInputStream(meansEntry); // READ by default
+        try (DataInputStream dis = new DataInputStream(new BufferedInputStream(is))) {
+            means = Nd4j.read(dis);
+            logger.info("means:{}", means);
         }
 
         final Path stdsEntry = root.resolve(STDS_ENTRY_NAME);
