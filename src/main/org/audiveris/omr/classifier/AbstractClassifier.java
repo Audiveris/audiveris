@@ -398,13 +398,13 @@ public abstract class AbstractClassifier<M extends Object>
     protected Norms loadNorms (Path root)
             throws Exception
     {
-        INDArray means = null;
+        INDArray means;
         INDArray stds = null;
 
         final Path meansEntry = root.resolve(MEANS_ENTRY_NAME);
 
-        InputStream is = Files.newInputStream(meansEntry); // READ by default
-        try (DataInputStream dis = new DataInputStream(new BufferedInputStream(is))) {
+        InputStream isMeans = Files.newInputStream(meansEntry); // READ by default
+        try (DataInputStream dis = new DataInputStream(new BufferedInputStream(isMeans))) {
             means = Nd4j.read(dis);
             logger.info("means:{}", means);
         }
