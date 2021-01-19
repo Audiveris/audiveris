@@ -828,7 +828,7 @@ public class SlotsRetriever
                             AbstractChordInter c2 = stdChords.get(i2);
 
                             if (getRel(c1, c2) == null) {
-                                setRel(c1, ch2, EQUAL);
+                                setRel(c1, c2, EQUAL);
                             }
 
                             if (getRel(c2, c1) == null) {
