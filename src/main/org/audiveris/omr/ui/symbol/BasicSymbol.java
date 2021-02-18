@@ -58,6 +58,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BasicSymbol
         implements SymbolIcon
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     protected static final Logger logger = LoggerFactory.getLogger(BasicSymbol.class);
 
@@ -93,6 +94,7 @@ public class BasicSymbol
     /** A transformation for really small icon display. */
     protected static final AffineTransform tiny = AffineTransform.getScaleInstance(0.5, 0.5);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Sequence of point codes. */
     public final int[] codes;
 
@@ -111,6 +113,7 @@ public class BasicSymbol
     /** Image dimension corresponding to standard interline. */
     private Dimension dimension;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicSymbol object.
      *
@@ -143,6 +146,7 @@ public class BasicSymbol
         this.codes = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildImage //
     //------------//
@@ -163,8 +167,9 @@ public class BasicSymbol
         Params p = getParams(font);
 
         // Allocate image of proper size
-        SymbolImage img = new SymbolImage((int) Math.rint(p.rect.getWidth()),
-                                          (int) Math.rint(p.rect.getHeight()),
+        Rectangle intRect = p.rect.getBounds();
+        SymbolImage img = new SymbolImage(intRect.width,
+                                          intRect.height,
                                           PointUtil.rounded(p.offset));
 
         // Paint the image
@@ -177,7 +182,8 @@ public class BasicSymbol
         g.setColor(OmrFont.defaultImageColor);
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 
-        paint(g, p, ORIGIN, TOP_LEFT);
+        final Point2D center = new Point2D.Double(intRect.width / 2.0, intRect.height / 2.0);
+        paint(g, p, center, AREA_CENTER);
 
         return img;
     }
@@ -294,7 +300,7 @@ public class BasicSymbol
     @Override
     public void paintSymbol (Graphics2D g,
                              MusicFont font,
-                             Point location,
+                             Point2D location,
                              Alignment alignment)
     {
         paint(g, getParams(font), location, alignment);
@@ -562,6 +568,7 @@ public class BasicSymbol
         return values;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//

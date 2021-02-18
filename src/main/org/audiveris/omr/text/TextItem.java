@@ -23,8 +23,8 @@ package org.audiveris.omr.text;
 
 import org.audiveris.omr.math.GeoUtil;
 
-import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.List;
 
@@ -123,13 +123,13 @@ public abstract class TextItem
      *
      * @return center of item bounds
      */
-    public Point getCenter ()
+    public Point2D getCenter2D ()
     {
         if (getBounds() == null) {
             return null;
         }
 
-        return GeoUtil.centerOf(bounds);
+        return GeoUtil.center2D(bounds);
     }
 
     //----------//

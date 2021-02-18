@@ -122,7 +122,7 @@ public class KeyInter
      * @param grade  the interpretation quality
      * @param fifths signature value (negative for flats, 0 for cancel, positive for sharps)
      */
-    public KeyInter (double grade,
+    public KeyInter (Double grade,
                      Integer fifths)
     {
         super((Glyph) null, null, (fifths != null) ? shapeOf(fifths) : null, grade, null, null);
@@ -135,7 +135,7 @@ public class KeyInter
      * @param grade the interpretation quality
      * @param shape the key shape
      */
-    public KeyInter (double grade,
+    public KeyInter (Double grade,
                      Shape shape)
     {
         this(grade, (shape != null) ? valueOf(shape) : 0);
@@ -147,7 +147,7 @@ public class KeyInter
      */
     private KeyInter ()
     {
-        super(null, null, null, null, null, null);
+        super(null, null, null, (Double) null, null, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -448,6 +448,8 @@ public class KeyInter
     {
         bounds = null;
         fifths = null;
+
+        setGrade(EnsembleHelper.computeMeanContextualGrade(this));
     }
 
     //----------//
@@ -525,7 +527,7 @@ public class KeyInter
      */
     public KeyInter replicate (Staff targetStaff)
     {
-        KeyInter inter = new KeyInter(0, getFifths());
+        KeyInter inter = new KeyInter(null, getFifths());
         inter.setStaff(targetStaff);
 
         return inter;
@@ -606,15 +608,7 @@ public class KeyInter
                                         List<KeyAlterInter> alters)
     {
         SIGraph sig = staff.getSystem().getSig();
-        double grade = 0;
-
-        for (KeyAlterInter alter : alters) {
-            grade += sig.computeContextualGrade(alter);
-        }
-
-        grade /= alters.size();
-
-        KeyInter keyInter = new KeyInter(grade, (Integer) null);
+        KeyInter keyInter = new KeyInter(null, (Integer) null);
         keyInter.setStaff(staff);
         sig.addVertex(keyInter);
 

@@ -193,7 +193,18 @@ public class SectionCompound
     {
         checkBounds();
 
-        return GeoUtil.centerOf(bounds);
+        return GeoUtil.center(bounds);
+    }
+
+    //-------------//
+    // getCenter2D //
+    //-------------//
+    @Override
+    public Point2D getCenter2D ()
+    {
+        checkBounds();
+
+        return GeoUtil.center2D(bounds);
     }
 
     //-------------//

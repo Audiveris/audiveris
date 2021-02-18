@@ -49,7 +49,7 @@ public class FretInter
      */
     public FretInter (Glyph glyph,
                       Shape shape,
-                      double grade)
+                      Double grade)
     {
         super(glyph, null, shape, grade);
         this.value = valueOf(shape);

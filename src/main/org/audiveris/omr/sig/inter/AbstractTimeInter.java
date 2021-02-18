@@ -129,7 +129,7 @@ public abstract class AbstractTimeInter
      */
     public AbstractTimeInter (Glyph glyph,
                               Shape shape,
-                              double grade)
+                              Double grade)
     {
         super(glyph, null, shape, grade);
         timeRational = rationalOf(shape);
@@ -146,7 +146,7 @@ public abstract class AbstractTimeInter
     public AbstractTimeInter (Glyph glyph,
                               Rectangle bounds,
                               TimeRational timeRational,
-                              double grade)
+                              Double grade)
     {
         super(glyph, bounds, null, grade);
         this.timeRational = timeRational;
@@ -157,7 +157,7 @@ public abstract class AbstractTimeInter
      */
     private AbstractTimeInter ()
     {
-        super(null, null, null, null);
+        super(null, null, null, (Double) null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

@@ -140,8 +140,8 @@ public class BasicSection
     // contains //
     //----------//
     @Override
-    public boolean contains (int x,
-                             int y)
+    public boolean contains (double x,
+                             double y)
     {
         return getPolygon().contains(x, y);
     }
@@ -854,8 +854,8 @@ public class BasicSection
 
         for (Run run : runs) {
             final int start = run.getStart();
-            final Rectangle r1 = (orientation == HORIZONTAL) ? new Rectangle(start, pos, run
-                                                                             .getLength(), 1)
+            final Rectangle r1 = (orientation == HORIZONTAL)
+                    ? new Rectangle(start, pos, run.getLength(), 1)
                     : new Rectangle(pos, start, 1, run.getLength());
 
             if (thatFatBox.intersects(r1)) {
@@ -865,8 +865,8 @@ public class BasicSection
                 for (Run thatRun : that.getRuns()) {
                     final int thatStart = thatRun.getStart();
                     final int thatLength = thatRun.getLength();
-                    final Rectangle r2 = (that.getOrientation() == HORIZONTAL) ? new Rectangle(
-                            thatStart, thatPos, thatLength, 1)
+                    final Rectangle r2 = (that.getOrientation() == HORIZONTAL)
+                            ? new Rectangle(thatStart, thatPos, thatLength, 1)
                             : new Rectangle(thatPos, thatStart, 1, thatLength);
 
                     if (GeoUtil.touch(r1, r2)) {

@@ -29,7 +29,6 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.image.Anchored.Anchor;
-import org.audiveris.omr.image.ShapeDescriptor;
 import org.audiveris.omr.image.Template;
 import org.audiveris.omr.image.TemplateFactory;
 import org.audiveris.omr.math.GeoOrder;
@@ -43,8 +42,10 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.Staff.IndexedLedger;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.note.HeadSeedScale;
 import org.audiveris.omr.sheet.note.NotePosition;
 import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sheet.stem.HeadLinker;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
@@ -63,11 +64,10 @@ import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.ByteUtil;
-import org.audiveris.omr.util.Corner;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
-import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.WrappedBoolean;
 
@@ -94,10 +94,8 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code HeadInter} represents a note head, that is any head shape including
@@ -112,11 +110,14 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class HeadInter
         extends AbstractNoteInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(HeadInter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -126,76 +127,58 @@ public class HeadInter
     @XmlAttribute(name = "mirror")
     protected AbstractInter oldMirror;
 
-    /** Absolute location of head template pivot. */
-    @XmlElement
-    @XmlJavaTypeAdapter(Jaxb.PointAdapter.class)
-    private final Point pivot;
-
-    /** Relative pivot position WRT head. */
-    @XmlAttribute
-    private final Anchor anchor;
-
     // Transient data
     //---------------
     //
-    /** Shape template descriptor. */
-    private ShapeDescriptor descriptor;
+    /** Shape template. */
+    private Template template;
 
+    /** Head-Stem linker. */
+    private HeadLinker linker;
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadInter} object.
      *
-     * @param pivot   the template pivot
-     * @param anchor  relative pivot configuration
      * @param bounds  the object bounds
      * @param shape   the underlying shape
      * @param impacts the grade details
      * @param staff   the related staff
      * @param pitch   the note pitch
      */
-    public HeadInter (Point pivot,
-                      Anchor anchor,
-                      Rectangle bounds,
+    public HeadInter (Rectangle bounds,
                       Shape shape,
                       GradeImpacts impacts,
                       Staff staff,
                       Double pitch)
     {
         super(null, bounds, shape, impacts, staff, pitch);
-        this.pivot = pivot;
-        this.anchor = anchor;
     }
 
     /**
      * Creates a new {@code HeadInter} object.
      *
-     * @param pivot  the template pivot
-     * @param anchor relative pivot configuration
      * @param bounds the object bounds
      * @param shape  the underlying shape
      * @param grade  quality grade
      * @param staff  the related staff
      * @param pitch  the note pitch
      */
-    public HeadInter (Point pivot,
-                      Anchor anchor,
-                      Rectangle bounds,
+    public HeadInter (Rectangle bounds,
                       Shape shape,
-                      double grade,
+                      Double grade,
                       Staff staff,
                       Double pitch)
     {
         super(null, bounds, shape, grade, staff, pitch);
-        this.pivot = pivot;
-        this.anchor = anchor;
     }
 
     /** No-arg constructor needed by JAXB. */
     private HeadInter ()
     {
-        this.pivot = null;
-        this.anchor = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -242,7 +225,7 @@ public class HeadInter
             return false;
         }
 
-        Line2D midLine = getMidLine();
+        final Line2D midLine = getMidLine();
 
         if (midLine != null) {
             // This head is "shared" with another head, and we use the point location with respect
@@ -316,12 +299,12 @@ public class HeadInter
      */
     public HeadInter duplicateAs (Shape shape)
     {
-        HeadInter clone = new HeadInter(pivot, anchor, bounds, shape, impacts, staff, pitch);
+        HeadInter clone = new HeadInter(bounds, shape, impacts, staff, pitch);
 
         clone.setGlyph(this.glyph);
 
         if (impacts == null) {
-            clone.setGrade(grade);
+            clone.setGrade(getGrade());
         }
 
         return clone;
@@ -498,22 +481,22 @@ public class HeadInter
         return coreBounds;
     }
 
-    //---------------//
-    // getDescriptor //
-    //---------------//
+    //-------------//
+    // getTemplate //
+    //-------------//
     /**
-     * Report the descriptor used to generate this head shape with proper size.
+     * Report the template used to generate this head shape with proper size.
      *
-     * @return related template descriptor
+     * @return related template template
      */
-    public ShapeDescriptor getDescriptor ()
+    public Template getTemplate ()
     {
-        if (descriptor == null) {
+        if (template == null) {
             final int pointSize = staff.getHeadPointSize();
-            descriptor = TemplateFactory.getInstance().getCatalog(pointSize).getDescriptor(shape);
+            template = TemplateFactory.getInstance().getCatalog(pointSize).getTemplate(shape);
         }
 
-        return descriptor;
+        return template;
     }
 
     //-----------//
@@ -574,7 +557,7 @@ public class HeadInter
     @Override
     public Point2D getRelationCenter ()
     {
-        final Point center = getCenter();
+        final Point2D center = getCenter2D();
 
         if (getMirror() == null) {
             return center;
@@ -637,13 +620,61 @@ public class HeadInter
      */
     public Point2D getStemReferencePoint (Anchor anchor)
     {
-        ShapeDescriptor desc = getDescriptor();
-        Rectangle templateBox = desc.getBounds(this.getBounds());
-        Point ref = templateBox.getLocation();
-        Point offset = desc.getOffset(anchor);
-        ref.translate(offset.x, offset.y);
+        getTemplate(); // Make sure we have the template
+        Rectangle headBox = getBounds();
+        Rectangle templateBox = template.getBounds(headBox);
+        Point2D offset = template.getOffset(anchor);
+        Point2D ref = PointUtil.addition(templateBox.getLocation(), offset);
+
+        if (sig == null) {
+            return ref;
+        }
+
+        // Correction based on HeadSeedScale data if available
+        final Scale scale = sig.getSystem().getSheet().getScale();
+        final HeadSeedScale hs = scale.getHeadSeedScale();
+
+        if (hs != null) {
+            // NOTA: We use the same abscissa correction for BOTH horizontal sides
+            final Double dl = hs.getDx(shape, LEFT);
+            final Double dr = hs.getDx(shape, RIGHT);
+            Double dx = null;
+
+            if (dl != null) {
+                if (dr != null) {
+                    dx = (dl + dr) / 2;
+                } else {
+                    dx = dl;
+                }
+            } else if (dr != null) {
+                dx = dr;
+            }
+
+            if (dx != null) {
+                final HorizontalSide hSide = (anchor == Anchor.BOTTOM_LEFT_STEM) ? LEFT : RIGHT;
+                final double x = (hSide == LEFT) ? headBox.x - dx : headBox.x + headBox.width + dx;
+
+                return new Point2D.Double(x, ref.getY());
+            }
+        }
 
         return ref;
+    }
+
+    //-----------------------//
+    // getStemReferencePoint //
+    //-----------------------//
+    /**
+     * Report the reference point for a stem connection.
+     *
+     * @param hSide horizontal side for stem (LEFT or RIGHT)
+     * @return the reference point
+     */
+    public Point2D getStemReferencePoint (HorizontalSide hSide)
+    {
+        return getStemReferencePoint((hSide == LEFT)
+                ? Anchor.BOTTOM_LEFT_STEM
+                : Anchor.TOP_RIGHT_STEM);
     }
 
     //----------//
@@ -666,6 +697,32 @@ public class HeadInter
         return set;
     }
 
+    //-----------//
+    // getLinker //
+    //-----------//
+    /**
+     * Report the dedicated head-stem linker.
+     *
+     * @return the linker
+     */
+    public HeadLinker getLinker ()
+    {
+        return linker;
+    }
+
+    //-----------//
+    // setLinker //
+    //-----------//
+    /**
+     * Set the dedicated head-stem linker.
+     *
+     * @param linker the head-stem linker
+     */
+    public void setLinker (HeadLinker linker)
+    {
+        this.linker = linker;
+    }
+
     //------------//
     // getTracker //
     //------------//
@@ -679,18 +736,17 @@ public class HeadInter
     // overlaps //
     //----------//
     /**
-     * Precise overlap implementation between notes, based on their pitch value.
+     * {@inheritDoc}
      * <p>
-     * TODO: A clean overlap check might use true distance tables around each of the heads.
-     * For the time being, we simply play with the width and area of intersection rectangle.
+     * Specifically between two note heads, overlap is checked based on pitch values,
+     * horizontal distance and area intersection.
      *
-     * @param that another inter (perhaps a note)
+     * @param that another inter (perhaps a note head)
      * @return true if overlap is detected
      */
     @Override
     public boolean overlaps (Inter that)
     {
-        // Specific between notes
         if (that instanceof HeadInter) {
             if (this.isVip() && that.isVip()) {
                 logger.info("HeadInter checking overlaps between {} and {}", this, that);
@@ -698,11 +754,12 @@ public class HeadInter
 
             HeadInter thatHead = (HeadInter) that;
 
-            // Check pitch distance
-            if (this.getStaff() == that.getStaff()) {
-                if (Math.abs(this.getIntegerPitch() - thatHead.getIntegerPitch()) > 1) {
-                    return false;
-                }
+            // Check integer pitch distance
+            final Integer dPitch = (this.getStaff() == that.getStaff())
+                    ? Math.abs(this.getIntegerPitch() - thatHead.getIntegerPitch()) : null;
+
+            if ((dPitch != null) && (dPitch > 1)) {
+                return false;
             }
 
             // Check horizontal distance
@@ -714,9 +771,13 @@ public class HeadInter
 
             if (widthRatio <= constants.maxOverlapDxRatio.getValue()) {
                 return false;
+            } else if (widthRatio >= constants.minOverlapDxRatio.getValue()) {
+                if ((dPitch != null) && (dPitch <= 1)) {
+                    return true;
+                }
             }
 
-            // Check area
+            // Check area intersection
             int thisArea = thisBounds.width * thisBounds.height;
             int thatArea = thatBounds.width * thatBounds.height;
             int minArea = Math.min(thisArea, thatArea);
@@ -758,7 +819,7 @@ public class HeadInter
 
                     if (stemChords.isEmpty()) {
                         // Create a chord based on stem
-                        headChord = new HeadChordInter(-1);
+                        headChord = new HeadChordInter(null);
                         tasks.add(
                                 new AdditionTask(
                                         theSig, headChord, stem.getBounds(),
@@ -781,7 +842,7 @@ public class HeadInter
 
             if (!stemFound) {
                 // Head without stem
-                HeadChordInter headChord = new HeadChordInter(-1);
+                HeadChordInter headChord = new HeadChordInter(null);
                 tasks.add(new AdditionTask(theSig, headChord, getBounds(),
                                            Arrays.asList(new Link(this, new Containment(), true))));
             }
@@ -811,22 +872,21 @@ public class HeadInter
     // retrieveGlyph //
     //---------------//
     /**
-     * Use descriptor to build an underlying glyph.
+     * Use template to build an underlying glyph.
      *
      * @param image the image to read pixels from
      * @return the underlying glyph or null if failed
      */
     public Glyph retrieveGlyph (ByteProcessor image)
     {
-        getDescriptor();
+        getTemplate();
 
         final Sheet sheet = staff.getSystem().getSheet();
-        final Template tpl = descriptor.getTemplate();
         final Rectangle interBox = getBounds();
-        final Rectangle descBox = descriptor.getBounds(interBox);
+        final Rectangle tplBox = template.getBounds(interBox);
 
-        // Foreground points (coordinates WRT descBox)
-        final List<Point> fores = tpl.getForegroundPixels(descBox, image);
+        // Foreground points (coordinates WRT tplBox)
+        final List<Point> fores = template.getForegroundPixels(tplBox, image);
 
         if (fores.isEmpty()) {
             logger.info("No foreground pixels for {}", this);
@@ -848,7 +908,7 @@ public class HeadInter
 
         // Glyph
         glyph = sheet.getGlyphIndex().registerOriginal(
-                new Glyph(descBox.x + foreBox.x, descBox.y + foreBox.y, runTable));
+                new Glyph(tplBox.x + foreBox.x, tplBox.y + foreBox.y, runTable));
 
         // Use glyph bounds as inter bounds
         bounds = glyph.getBounds();
@@ -872,10 +932,11 @@ public class HeadInter
         Link link = null;
 
         if (ShapeSet.StemHeads.contains(shape)) {
-            List<Inter> systemStems = system.getSig().inters(StemInter.class);
+            final List<Inter> systemStems = system.getSig().inters(StemInter.class);
             Collections.sort(systemStems, Inters.byAbscissa);
 
-            link = lookupLink(systemStems, system);
+            final int profile = Math.max(getProfile(), system.getProfile());
+            link = lookupLink(systemStems, system, profile);
         }
 
         return (link == null) ? Collections.emptyList() : Collections.singleton(link);
@@ -922,63 +983,81 @@ public class HeadInter
      *
      * @param candidateStems abscissa-ordered collection of candidate stems
      * @param system         containing system
+     * @param profile        desired profile level
      * @return the link found or null
      */
     public Link lookupLink (List<Inter> candidateStems,
-                            SystemInfo system)
+                            SystemInfo system,
+                            int profile)
     {
         if (candidateStems.isEmpty()) {
             return null;
         }
 
         final Scale scale = system.getSheet().getScale();
-        final int maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum(manual));
-        final int maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum(manual));
-        final int maxYGap = scale.toPixels(HeadStemRelation.getYGapMaximum(manual));
+        final int maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum(profile));
+        final int maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum(profile));
+        final int maxYGap = scale.toPixels(HeadStemRelation.getYGapMaximum(profile));
 
         Link bestLink = null;
         double bestGrade = 0;
 
-        for (Corner corner : Corner.values) {
-            Point refPt = PointUtil.rounded(getStemReferencePoint(corner.stemAnchor()));
-            int xMin = refPt.x - ((corner.hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
-            int yMin = refPt.y - ((corner.vSide == TOP) ? maxYGap : 0);
-            Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
-            List<Inter> stems = Inters
-                    .intersectedInters(candidateStems, GeoOrder.BY_ABSCISSA, luBox);
-            int xDir = (corner.hSide == RIGHT) ? 1 : (-1);
+        for (HorizontalSide hSide : HorizontalSide.values()) {
+            for (VerticalSide vSide : VerticalSide.values()) {
+                Point refPt = PointUtil.rounded(getStemReferencePoint(stemAnchor(hSide)));
+                int xMin = refPt.x - ((hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
+                int yMin = refPt.y - ((vSide == TOP) ? maxYGap : 0);
+                Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
+                List<Inter> stems = Inters
+                        .intersectedInters(candidateStems, GeoOrder.BY_ABSCISSA, luBox);
+                int xDir = hSide.direction();
 
-            for (Inter inter : stems) {
-                StemInter stem = (StemInter) inter;
-                final Point2D start = stem.getTop();
-                final Point2D stop = stem.getBottom();
+                for (Inter inter : stems) {
+                    StemInter stem = (StemInter) inter;
+                    final Point2D start = stem.getTop();
+                    final Point2D stop = stem.getBottom();
 
-                double crossX = LineUtil.xAtY(start, stop, refPt.getY());
-                final double xGap = xDir * (crossX - refPt.getX());
-                final double yGap;
+                    double crossX = LineUtil.xAtY(start, stop, refPt.getY());
+                    final double xGap = xDir * (crossX - refPt.getX());
+                    final double yGap;
 
-                if (refPt.getY() < start.getY()) {
-                    yGap = start.getY() - refPt.getY();
-                } else if (refPt.getY() > stop.getY()) {
-                    yGap = refPt.getY() - stop.getY();
-                } else {
-                    yGap = 0;
-                }
+                    if (refPt.getY() < start.getY()) {
+                        yGap = start.getY() - refPt.getY();
+                    } else if (refPt.getY() > stop.getY()) {
+                        yGap = refPt.getY() - stop.getY();
+                    } else {
+                        yGap = 0;
+                    }
 
-                HeadStemRelation rel = new HeadStemRelation();
-                rel.setInOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
+                    HeadStemRelation rel = new HeadStemRelation();
+                    rel.setInOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
 
-                if (rel.getGrade() >= rel.getMinGrade()) {
-                    if ((bestLink == null) || (rel.getGrade() > bestGrade)) {
-                        rel.setExtensionPoint(refPt); // Approximately
-                        bestLink = new Link(stem, rel, true);
-                        bestGrade = rel.getGrade();
+                    if (rel.getGrade() >= rel.getMinGrade()) {
+                        if ((bestLink == null) || (rel.getGrade() > bestGrade)) {
+                            rel.setExtensionPoint(refPt); // Approximately
+                            bestLink = new Link(stem, rel, true);
+                            bestGrade = rel.getGrade();
+                        }
                     }
                 }
             }
         }
 
         return bestLink;
+    }
+
+    //----------------------//
+    // getMaxOverlapDxRatio //
+    //----------------------//
+    /**
+     * Report the maximum abscissa overlap (in ratio of head width) before two heads are
+     * considered as overlapping.
+     *
+     * @return maximum acceptable abscissa ratio
+     */
+    public static double getMaxOverlapDxRatio ()
+    {
+        return constants.maxOverlapDxRatio.getValue();
     }
 
     //--------------------//
@@ -1126,7 +1205,7 @@ public class HeadInter
         final SIGraph theSig = (sig != null) ? sig : staff.getSystem().getSig();
 
         for (Line2D line : getNeededLedgerLines()) {
-            LedgerInter ledger = new LedgerInter(line, LedgerInter.DEFAULT_THICKNESS, 1);
+            LedgerInter ledger = new LedgerInter(line, LedgerInter.DEFAULT_THICKNESS, 1.0);
             ledger.setManual(true);
             ledger.setStaff(staff);
             tasks.add(new AdditionTask(theSig, ledger, ledger.getBounds(), Collections.emptySet()));
@@ -1156,6 +1235,29 @@ public class HeadInter
                 newHeight);
     }
 
+    //------------//
+    // stemAnchor //
+    //------------//
+    /**
+     * Report the corresponding stem anchor for the desired head side.
+     *
+     * @param hSide horizontal head side
+     * @return stem-based anchor
+     */
+    public static Anchor stemAnchor (HorizontalSide hSide)
+    {
+        if (hSide == LEFT) {
+            return Anchor.BOTTOM_LEFT_STEM;
+        }
+
+        if (hSide == RIGHT) {
+            return Anchor.TOP_RIGHT_STEM;
+        }
+
+        return null;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
@@ -1172,20 +1274,6 @@ public class HeadInter
             super(NAMES, WEIGHTS);
             setImpact(0, dist);
         }
-    }
-
-    //----------------------//
-    // getMaxOverlapDxRatio //
-    //----------------------//
-    /**
-     * Report the maximum abscissa overlap (in ratio of head width) before two heads are
-     * considered as overlapping.
-     *
-     * @return maximum acceptable abscissa ratio
-     */
-    public static double getMaxOverlapDxRatio ()
-    {
-        return constants.maxOverlapDxRatio.getValue();
     }
 
     //-----------//
@@ -1205,7 +1293,11 @@ public class HeadInter
 
         private final Constant.Ratio maxOverlapDxRatio = new Constant.Ratio(
                 0.2,
-                "Maximum acceptable abscissa overlap ratio between notes");
+                "Maximum abscissa overlap ratio between notes to reject abscissa overlap");
+
+        private final Constant.Ratio minOverlapDxRatio = new Constant.Ratio(
+                0.8,
+                "Minimum abscissa overlap ratio between notes to detect pitch overlap");
 
         private final Constant.Ratio maxOverlapAreaRatio = new Constant.Ratio(
                 0.25,

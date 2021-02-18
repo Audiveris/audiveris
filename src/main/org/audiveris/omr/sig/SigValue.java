@@ -31,6 +31,7 @@ import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.BraceInter;
@@ -165,6 +166,7 @@ public class SigValue
         @XmlElementRef(type = ArticulationInter.class),
         @XmlElementRef(type = BarConnectorInter.class),
         @XmlElementRef(type = BarlineInter.class),
+        @XmlElementRef(type = BeamGroupInter.class),
         @XmlElementRef(type = BeamHookInter.class),
         @XmlElementRef(type = BeamInter.class),
         @XmlElementRef(type = BraceInter.class),

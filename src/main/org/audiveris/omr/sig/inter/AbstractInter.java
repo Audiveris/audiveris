@@ -109,9 +109,12 @@ public abstract class AbstractInter
         extends AbstractEntity
         implements Inter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractInter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -132,8 +135,8 @@ public abstract class AbstractInter
 
     /** The quality of this interpretation. */
     @XmlAttribute
-    @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double3Adapter.class)
-    protected double grade;
+    @XmlJavaTypeAdapter(Jaxb.Double3Adapter.class)
+    private Double grade;
 
     /** Is it abnormal?. */
     @XmlAttribute(name = "abnormal")
@@ -190,6 +193,7 @@ public abstract class AbstractInter
     /** Core bounds meant for overlap check. */
     protected Rectangle coreBounds;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractInter object, with detailed impacts information.
      *
@@ -218,7 +222,7 @@ public abstract class AbstractInter
     public AbstractInter (Glyph glyph,
                           Rectangle bounds,
                           Shape shape,
-                          double grade)
+                          Double grade)
     {
         this.glyph = glyph;
         this.bounds = bounds;
@@ -240,6 +244,7 @@ public abstract class AbstractInter
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -518,11 +523,28 @@ public abstract class AbstractInter
     public Point getCenter ()
     {
         if (getBounds() != null) {
-            return GeoUtil.centerOf(bounds);
+            return GeoUtil.center(bounds);
         }
 
         if (glyph != null) {
             return new Point(glyph.getCenter());
+        }
+
+        return null;
+    }
+
+    //-------------//
+    // getCenter2D //
+    //-------------//
+    @Override
+    public Point2D getCenter2D ()
+    {
+        if (getBounds() != null) {
+            return GeoUtil.center2D(bounds);
+        }
+
+        if (glyph != null) {
+            return glyph.getCenter2D();
         }
 
         return null;
@@ -566,6 +588,10 @@ public abstract class AbstractInter
     {
         if (abnormal) {
             return Colors.INTER_ABNORMAL;
+        }
+
+        if (!isFrozen() && (ctxGrade != null) && (ctxGrade < Grades.minContextualGrade)) {
+            return Colors.INTER_WEAK;
         }
 
         if (shape != null) {
@@ -696,7 +722,7 @@ public abstract class AbstractInter
     // getGrade //
     //----------//
     @Override
-    public double getGrade ()
+    public Double getGrade ()
     {
         return grade;
     }
@@ -705,7 +731,7 @@ public abstract class AbstractInter
     // setGrade //
     //----------//
     @Override
-    public void setGrade (double grade)
+    public void setGrade (Double grade)
     {
         this.grade = grade;
     }
@@ -766,6 +792,15 @@ public abstract class AbstractInter
         return part;
     }
 
+    //------------//
+    // getProfile //
+    //------------//
+    @Override
+    public int getProfile ()
+    {
+        return isManual() ? 1 : 0;
+    }
+
     //-----------------//
     // getSpecificPart //
     //-----------------//
@@ -790,13 +825,14 @@ public abstract class AbstractInter
     @Override
     public Point2D getRelationCenter ()
     {
-        if (getBounds() != null) {
-            return new Point2D.Double(bounds.x + (bounds.width / 2.0),
-                                      bounds.y + (bounds.height / 2.0));
+        final Point2D center = getCenter2D();
+
+        if (center != null) {
+            return center;
         }
 
         if (glyph != null) {
-            return new Point(glyph.getCenter());
+            return glyph.getCenter2D();
         }
 
         return null;
@@ -1449,8 +1485,9 @@ public abstract class AbstractInter
 
         sb.append(String.format("(%.3f", grade));
 
-        if (ctxGrade != null) {
-            sb.append(String.format("/%.3f", ctxGrade));
+        Double cg = getContextualGrade();
+        if (cg != null) {
+            sb.append(String.format("/%.3f", cg));
         }
 
         sb.append(")");
@@ -1527,6 +1564,7 @@ public abstract class AbstractInter
         return Grades.minInterGrade;
     }
 
+    //~ Inner classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//

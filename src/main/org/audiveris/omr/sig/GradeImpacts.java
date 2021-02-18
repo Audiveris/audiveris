@@ -23,6 +23,9 @@ package org.audiveris.omr.sig;
 
 import org.audiveris.omr.glyph.Grades;
 
+import java.text.NumberFormat;
+import java.util.Locale;
+
 /**
  * Abstract class {@code GradeImpacts} defines data that impact a resulting grade value.
  * <p>
@@ -37,7 +40,21 @@ import org.audiveris.omr.glyph.Grades;
  */
 public abstract class GradeImpacts
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final NumberFormat nf1 = NumberFormat.getNumberInstance(Locale.US);
+
+    static {
+        nf1.setMaximumFractionDigits(1); // For a maximum of 1 decimal
+    }
+
+    private static final NumberFormat nf2 = NumberFormat.getNumberInstance(Locale.US);
+
+    static {
+        nf2.setMaximumFractionDigits(2); // For a maximum of 2 decimals
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Array of actual contributions. */
     protected final double[] impacts;
 
@@ -50,6 +67,7 @@ public abstract class GradeImpacts
     /** Resulting grade. */
     protected double grade = -1;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicImpacts object.
      *
@@ -69,6 +87,7 @@ public abstract class GradeImpacts
         impacts = new double[names.length];
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report a string about impacts details
      *
@@ -173,7 +192,9 @@ public abstract class GradeImpacts
                 sb.append(" ");
             }
 
-            sb.append(String.format("%s:%.2f", getName(i), getImpact(i)));
+            sb.append(nf1.format(getWeight(i))).append('/')
+                    .append(getName(i)).append(':')
+                    .append(nf2.format(getImpact(i)));
         }
 
         return sb.toString();

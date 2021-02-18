@@ -64,7 +64,7 @@ public class BarConnectorInter
      * @param width  segment width
      */
     public BarConnectorInter (Shape shape,
-                              double grade,
+                              Double grade,
                               Line2D median,
                               double width)
     {
@@ -93,6 +93,6 @@ public class BarConnectorInter
     @Override
     public boolean isGood ()
     {
-        return grade >= Grades.goodBarConnectorGrade;
+        return getGrade() >= Grades.goodBarConnectorGrade;
     }
 }

@@ -73,7 +73,7 @@ public abstract class AbstractStaffVerticalInter
      */
     public AbstractStaffVerticalInter (Glyph glyph,
                                        Shape shape,
-                                       double grade,
+                                       Double grade,
                                        Line2D median,
                                        Double width)
     {

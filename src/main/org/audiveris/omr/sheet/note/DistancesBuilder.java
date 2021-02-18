@@ -64,17 +64,20 @@ import java.util.SortedMap;
  */
 public class DistancesBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(DistancesBuilder.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
     /** Table of distances to fore. */
     private DistanceTable table;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code DistancesBuilder} object.
      *
@@ -85,6 +88,7 @@ public class DistancesBuilder
         this.sheet = sheet;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // buildDistances //
     //----------------//
@@ -112,9 +116,7 @@ public class DistancesBuilder
             TemplateBoard templateBoard = new TemplateBoard(sheet, table, templateService);
             sheet.getStub().getAssembly().addViewTab(
                     SheetTab.TEMPLATE_TAB,
-                    new ScrollImageView(
-                            sheet,
-                            new TemplateView(sheet, img, table, templateService)),
+                    new ScrollImageView(sheet, new TemplateView(sheet, img, table, templateService)),
                     new BoardsPane(new DistanceBoard(sheet, table), templateBoard));
             templateBoard.stateChanged(null); // To feed template service
         }
@@ -148,11 +150,14 @@ public class DistancesBuilder
 
                 // "Erase" staff lines
                 for (LineInfo line : staff.getLines()) {
-                    // Paint the line glyph
+                    // Paint the line glyph.
+                    // Note this does not erase staff line pixels at crossing objects
                     Glyph glyph = line.getGlyph();
                     paintGlyph(glyph);
 
-                    // Also paint this line even at crossings with vertical objects
+                    // Also paint the whole line, even at crossing objects.
+                    // If we don't do that, void heads grades are slightly underestimated,
+                    // and black heads slightly overestimated.
                     double halfLine = 0.5 * glyph.getMeanThickness(Orientation.HORIZONTAL);
                     Point2D leftPt = line.getEndPoint(LEFT);
                     Point2D rightPt = line.getEndPoint(RIGHT);
@@ -189,6 +194,7 @@ public class DistancesBuilder
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

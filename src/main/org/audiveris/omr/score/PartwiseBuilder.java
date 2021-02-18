@@ -37,7 +37,6 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
@@ -52,6 +51,7 @@ import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.ArticulationInter;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
@@ -90,10 +90,12 @@ import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextRole;
 import static org.audiveris.omr.text.TextRole.*;
+import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.OmrExecutors;
 import static org.audiveris.omr.util.VerticalSide.*;
+
 import org.audiveris.proxymusic.AboveBelow;
 import org.audiveris.proxymusic.Accidental;
 import org.audiveris.proxymusic.Arpeggiate;
@@ -103,12 +105,19 @@ import org.audiveris.proxymusic.Backup;
 import org.audiveris.proxymusic.BackwardForward;
 import org.audiveris.proxymusic.BarStyleColor;
 import org.audiveris.proxymusic.Barline;
+import org.audiveris.proxymusic.Bass;
+import org.audiveris.proxymusic.BassAlter;
+import org.audiveris.proxymusic.BassStep;
 import org.audiveris.proxymusic.Beam;
 import org.audiveris.proxymusic.BeamValue;
 import org.audiveris.proxymusic.Clef;
 import org.audiveris.proxymusic.ClefSign;
 import org.audiveris.proxymusic.Credit;
 import org.audiveris.proxymusic.Defaults;
+import org.audiveris.proxymusic.Degree;
+import org.audiveris.proxymusic.DegreeAlter;
+import org.audiveris.proxymusic.DegreeType;
+import org.audiveris.proxymusic.DegreeValue;
 import org.audiveris.proxymusic.Direction;
 import org.audiveris.proxymusic.DirectionType;
 import org.audiveris.proxymusic.Dynamics;
@@ -122,8 +131,10 @@ import org.audiveris.proxymusic.FontWeight;
 import org.audiveris.proxymusic.FormattedText;
 import org.audiveris.proxymusic.Forward;
 import org.audiveris.proxymusic.Grace;
+import org.audiveris.proxymusic.Harmony;
 import org.audiveris.proxymusic.Identification;
 import org.audiveris.proxymusic.Key;
+import org.audiveris.proxymusic.Kind;
 import org.audiveris.proxymusic.LeftCenterRight;
 import org.audiveris.proxymusic.Lyric;
 import org.audiveris.proxymusic.LyricFont;
@@ -149,6 +160,9 @@ import org.audiveris.proxymusic.Print;
 import org.audiveris.proxymusic.Repeat;
 import org.audiveris.proxymusic.Rest;
 import org.audiveris.proxymusic.RightLeftMiddle;
+import org.audiveris.proxymusic.Root;
+import org.audiveris.proxymusic.RootAlter;
+import org.audiveris.proxymusic.RootStep;
 import org.audiveris.proxymusic.Scaling;
 import org.audiveris.proxymusic.ScoreInstrument;
 import org.audiveris.proxymusic.ScorePart;
@@ -163,6 +177,7 @@ import org.audiveris.proxymusic.StartStopContinue;
 import org.audiveris.proxymusic.StartStopDiscontinue;
 import org.audiveris.proxymusic.Stem;
 import org.audiveris.proxymusic.StemValue;
+import org.audiveris.proxymusic.Step;
 import org.audiveris.proxymusic.Supports;
 import org.audiveris.proxymusic.SystemLayout;
 import org.audiveris.proxymusic.SystemMargins;
@@ -174,6 +189,7 @@ import org.audiveris.proxymusic.TimeModification;
 import org.audiveris.proxymusic.TimeSymbol;
 import org.audiveris.proxymusic.Tuplet;
 import org.audiveris.proxymusic.TypedText;
+import org.audiveris.proxymusic.Unpitched;
 import org.audiveris.proxymusic.UprightInverted;
 import org.audiveris.proxymusic.Wedge;
 import org.audiveris.proxymusic.WedgeType;
@@ -211,21 +227,6 @@ import java.util.concurrent.Future;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import org.audiveris.omr.ui.symbol.TextFont;
-import org.audiveris.proxymusic.Bass;
-import org.audiveris.proxymusic.BassAlter;
-import org.audiveris.proxymusic.BassStep;
-import org.audiveris.proxymusic.Degree;
-import org.audiveris.proxymusic.DegreeAlter;
-import org.audiveris.proxymusic.DegreeType;
-import org.audiveris.proxymusic.DegreeValue;
-import org.audiveris.proxymusic.Harmony;
-import org.audiveris.proxymusic.Kind;
-import org.audiveris.proxymusic.Root;
-import org.audiveris.proxymusic.RootAlter;
-import org.audiveris.proxymusic.RootStep;
-import org.audiveris.proxymusic.Step;
-import org.audiveris.proxymusic.Unpitched;
 
 /**
  * Class {@code PartwiseBuilder} builds a ProxyMusic MusicXML {@link ScorePartwise}
@@ -1732,7 +1733,7 @@ public class PartwiseBuilder
                                 SmallChordInter small = headChord.getGraceChord();
 
                                 if (small != null) {
-                                    BeamGroup group = small.getBeamGroup();
+                                    BeamGroupInter group = small.getBeamGroup();
 
                                     if (group != null) {
                                         for (AbstractChordInter ch : group.getChords()) {
@@ -2230,7 +2231,7 @@ public class PartwiseBuilder
     // processScore //
     //--------------//
     /**
-     * Allocate/populate everything that relates to the score instance and its children.
+     * Allocate/populateMeasure everything that relates to the score instance and its children.
      */
     private void processScore ()
     {
@@ -2521,7 +2522,7 @@ public class PartwiseBuilder
      * Process the sheet stub at hand, by appending part material for each part
      *
      * @param stub    the stub to process
-     * @param partMap the map of parts to populate
+     * @param partMap the map of parts to populateMeasure
      */
     private void processStub (SheetStub stub,
                               Map<LogicalPart, ScorePartwise.Part> partMap)

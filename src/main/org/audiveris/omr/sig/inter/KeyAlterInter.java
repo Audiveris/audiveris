@@ -52,7 +52,7 @@ public class KeyAlterInter
      */
     public KeyAlterInter (Glyph glyph,
                           Shape shape,
-                          double grade,
+                          Double grade,
                           Staff staff,
                           double pitch,
                           double measuredPitch)
@@ -65,7 +65,7 @@ public class KeyAlterInter
      */
     private KeyAlterInter ()
     {
-        super((Glyph) null, null, 0, null, null, null);
+        super((Glyph) null, null, 0.0, null, null, null);
     }
 
     //--------//

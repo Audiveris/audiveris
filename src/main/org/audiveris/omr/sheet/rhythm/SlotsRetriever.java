@@ -27,13 +27,13 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.Fraction;
-import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Slot.MeasureSlot;
 import static org.audiveris.omr.sheet.rhythm.SlotsRetriever.Rel.*;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -337,7 +337,7 @@ public class SlotsRetriever
         // Explicit time join
         inspectTimeJoins();
 
-        // BeamGroup-based relationships
+        // BeamGroupInter-based relationships
         inspectBeams();
 
         // Mirror-based relationships
@@ -421,7 +421,7 @@ public class SlotsRetriever
     {
         // List BeamGroups
         if (logger.isDebugEnabled()) {
-            for (BeamGroup group : measure.getBeamGroups()) {
+            for (BeamGroupInter group : measure.getBeamGroups()) {
                 logger.info("  {}", group);
             }
         }
@@ -564,15 +564,17 @@ public class SlotsRetriever
      * Derive some inter-chord relationships from BeamGroup instances, excepting the
      * cue beams of course.
      * <p>
-     * Within a single BeamGroup, there are strict relationships between the chords.
+     * Within a single BeamGroupInter, there are strict relationships between the chords.
      */
     private void inspectBeams ()
     {
         GroupLoop:
-        for (BeamGroup group : measure.getBeamGroups()) {
+        for (BeamGroupInter group : measure.getBeamGroups()) {
             Set<AbstractChordInter> chordSet = new LinkedHashSet<>();
 
-            for (AbstractBeamInter beam : group.getBeams()) {
+            for (Inter bInter : group.getMembers()) {
+                final AbstractBeamInter beam = (AbstractBeamInter) bInter;
+
                 if (beam instanceof SmallBeamInter) {
                     continue GroupLoop; // Exclude cue beam group
                 }

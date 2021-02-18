@@ -27,7 +27,6 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.ChordsMapper.ChordPair;
 import org.audiveris.omr.sheet.rhythm.ChordsMapper.Mapping;
 import org.audiveris.omr.sheet.rhythm.Slot.CompoundSlot;
@@ -35,6 +34,7 @@ import org.audiveris.omr.sheet.rhythm.Slot.MeasureSlot;
 import org.audiveris.omr.sheet.rhythm.SlotsRetriever.Rel;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
@@ -572,13 +572,13 @@ public class MeasureRhythm
 
             TupletInter prevTuplet = null;
             List<AbstractChordInter> prevGroup = null;
-            BeamGroup bgLast = null;
+            BeamGroupInter bgLast = null;
 
             for (TupletInter tuplet : tuplets) {
                 List<AbstractChordInter> group = tuplet.getChords();
 
                 if (bgLast != null) {
-                    BeamGroup bgFirst = group.get(0).getBeamGroup();
+                    BeamGroupInter bgFirst = group.get(0).getBeamGroup();
 
                     if (bgFirst == bgLast) {
                         logger.debug("Merge {} with {}", prevTuplet, tuplet);

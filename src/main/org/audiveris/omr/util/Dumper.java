@@ -21,8 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
+import java.awt.geom.Line2D;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.Dumping.Relevance;
 
@@ -242,6 +244,8 @@ public class Dumper
             sb.append(Arrays.toString((float[]) value));
         } else if (value instanceof double[]) {
             sb.append(Arrays.toString((double[]) value));
+        } else if (value instanceof Line2D) {
+            sb.append(LineUtil.toString((Line2D) value));
         } else if (value.getClass().isArray()) {
             printArrayValue((Object[]) value);
         } else {

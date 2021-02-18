@@ -63,7 +63,7 @@ public class BraceInter
      * @param grade evaluation value
      */
     public BraceInter (Glyph glyph,
-                       double grade)
+                       Double grade)
     {
         super(glyph, null, Shape.BRACE, grade);
     }
@@ -73,7 +73,7 @@ public class BraceInter
      *
      * @param grade evaluation value
      */
-    public BraceInter (double grade)
+    public BraceInter (Double grade)
     {
         this(null, grade);
     }
@@ -83,7 +83,7 @@ public class BraceInter
      */
     private BraceInter ()
     {
-        super(null, null, null, null);
+        super(null, null, null, (Double) null);
     }
 
     //--------//

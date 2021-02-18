@@ -29,8 +29,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
-
+import java.awt.geom.Point2D;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -52,7 +51,7 @@ public class CaesuraInter
      * @param grade the interpretation quality
      */
     public CaesuraInter (Glyph glyph,
-                         double grade)
+                         Double grade)
     {
         super(glyph, (glyph != null) ? glyph.getBounds() : null, Shape.CAESURA, grade);
     }
@@ -89,7 +88,7 @@ public class CaesuraInter
                                        SystemInfo system)
     {
         // Look for staff below
-        final Point center = glyph.getCenter();
+        final Point2D center = glyph.getCenter2D();
         final Staff staff = system.getStaffAtOrBelow(center);
 
         if (staff == null) {

@@ -61,9 +61,12 @@ import java.util.concurrent.atomic.AtomicReference;
 @ThreadSafe
 public abstract class Constant<E>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Constant.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Data assigned at construction time
     //-----------------------------------
     /** Unit (if relevant) used by the quantity measured. */
@@ -88,6 +91,7 @@ public abstract class Constant<E>
     /** Current data. */
     private AtomicReference<Tuple<E>> tuple = new AtomicReference<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a constant instance, while providing a default value,
      * in case the external property is not yet defined.
@@ -294,7 +298,7 @@ public abstract class Constant<E>
     @Override
     public java.lang.String toString ()
     {
-        return (name != null) ? name : "*no name*";
+        return (name != null) ? name : "NO_NAME";
     }
 
     //--------//
@@ -454,6 +458,7 @@ public abstract class Constant<E>
         return "???";
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Angle //
     //-------//
@@ -520,8 +525,7 @@ public abstract class Constant<E>
     // Color //
     //-------//
     /**
-     * A subclass of Constant, meant to store a {@link java.awt.Color}
-     * value.
+     * A subclass of Constant, meant to store a {@link java.awt.Color} value.
      * They have a disk repository which is separate from the other constants.
      */
     public static class Color
@@ -788,8 +792,11 @@ public abstract class Constant<E>
 
         public static final Ratio ZERO = new Ratio(0, "zero");
 
+        public static final Ratio ONE = new Ratio(1, "one");
+
         static {
             ZERO.setUnitAndName(Constant.class.getName(), "ratioZero");
+            ONE.setUnitAndName(Constant.class.getName(), "ratioOne");
         }
 
         /**
@@ -860,17 +867,16 @@ public abstract class Constant<E>
     private static class Tuple<E>
     {
 
+        /** Current string Value. */
         final java.lang.String currentString;
 
+        /** Current cached Value (optimized). */
         final E cachedValue;
 
         Tuple (java.lang.String currentString,
                E cachedValue)
         {
-            /** Current string Value */
             this.currentString = currentString;
-
-            /** Current cached Value (optimized) */
             this.cachedValue = cachedValue;
         }
 
@@ -880,5 +886,4 @@ public abstract class Constant<E>
             return currentString;
         }
     }
-
 }

@@ -192,7 +192,7 @@ public abstract class LineUtil
     //--------------//
     /**
      * Return the intersection point between infinite line A defined by points
-     * p1 &amp; p2 and the infinite line B defined by points p3 &amp; p4.
+     * p1 and p2 and the infinite line B defined by points p3 and p4.
      *
      * @param p1 first point of line A
      * @param p2 second point of line A
@@ -221,7 +221,7 @@ public abstract class LineUtil
     //--------------//
     /**
      * Return the intersection point between infinite line A defined by points (x1,y1)
-     * &amp; (x2,y2) and the infinite line B defined by points (x3,y3) &amp; (x4,y4).
+     * and (x2,y2) and the infinite line B defined by points (x3,y3) and (x4,y4).
      *
      * @param x1 x of first point of line A
      * @param y1 y of first point of line A
@@ -258,7 +258,7 @@ public abstract class LineUtil
     //-----------------//
     /**
      * Return the intersection point between infinite line A defined by points
-     * p1 &amp; p2 and the infinite vertical line at provided abscissa.
+     * p1 and p2 and the infinite vertical line at provided abscissa.
      *
      * @param p1 first point of line A
      * @param p2 second point of line A
@@ -319,7 +319,7 @@ public abstract class LineUtil
     //-----------------//
     /**
      * Return the intersection point between infinite line A defined by
-     * points p1 &amp; p2 and infinite horizontal line at provided ordinate.
+     * points p1 and p2 and infinite horizontal line at provided ordinate.
      *
      * @param p1 first point of line A
      * @param p2 second point of line A
@@ -424,7 +424,7 @@ public abstract class LineUtil
     //------//
     /**
      * Return the abscissa of intersection between infinite line A defined by
-     * points p1 &amp; p2 and infinite horizontal line at provided ordinate.
+     * points p1 and p2 and infinite horizontal line at provided ordinate.
      *
      * @param p1 first point of line A
      * @param p2 second point of line A
@@ -508,7 +508,7 @@ public abstract class LineUtil
     //------//
     /**
      * Return the ordinate of intersection between infinite line A defined by points
-     * p1 &amp; p2 and the infinite vertical line at provided abscissa.
+     * p1 and p2 and the infinite vertical line at provided abscissa.
      *
      * @param p1 first point of line A
      * @param p2 second point of line A

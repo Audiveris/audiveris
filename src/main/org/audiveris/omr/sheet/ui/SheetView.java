@@ -23,10 +23,9 @@ package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.sheet.ui.SheetAssembly.ScrollValues;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.BoardsPane;
-import org.audiveris.omr.ui.selection.LocationEvent;
-import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.view.RubberPanel;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.ui.util.UIUtil;
@@ -38,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 
 import javax.swing.JComponent;
@@ -154,9 +152,6 @@ public class SheetView
         if (assembly.getModelSize() != null) {
             rubberPanel.setModelSize(assembly.getModelSize());
         }
-
-        // Force scroll bar computations
-        assembly.getZoom().fireStateChanged();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -296,24 +291,24 @@ public class SheetView
             displayBoards();
         }
 
-        // Force update of LocationEvent
-        if (stub.hasSheet()) {
-            SelectionService locationService = stub.getSheet().getLocationService();
-            LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
-                    LocationEvent.class);
-            Rectangle location = (locationEvent != null) ? locationEvent.getData() : null;
-
-            if (location != null) {
-                locationService.publish(
-                        new LocationEvent(this, locationEvent.hint, null, location));
-            }
-        }
-
         // Apply the same scroll bar positions
-        if (assembly.getScrollValues() != null) {
-            JScrollPane scrollPane = scrollView.getComponent();
-            assembly.getScrollValues().applyTo(scrollPane);
+        final ScrollValues scrollValues = assembly.getScrollValues();
+        if (scrollValues != null) {
+            scrollValues.applyTo(scrollView.getComponent());
         }
+//
+//        // Force update of LocationEvent
+//        if (stub.hasSheet()) {
+//            SelectionService locationService = stub.getSheet().getLocationService();
+//            LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
+//                    LocationEvent.class);
+//            Rectangle location = (locationEvent != null) ? locationEvent.getData() : null;
+//
+//            if (location != null) {
+//                locationService.publish(
+//                        new LocationEvent(this, locationEvent.hint, null, location));
+//            }
+//        }
     }
 
     //----------//

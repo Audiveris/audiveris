@@ -84,7 +84,6 @@ import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.util.Navigable;
-import org.audiveris.omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +100,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Predicate;
 
 /**
  * Class {@code InterFactory} generates the inter instances corresponding to
@@ -628,7 +628,7 @@ public class InterFactory
                 final List<Inter> neighbors = sig.inters(new Predicate<Inter>()
                 {
                     @Override
-                    public boolean check (Inter inter)
+                    public boolean test (Inter inter)
                     {
                         return inter.getBounds().intersects(columnBox)
                                        && !(inter instanceof InterEnsemble);
@@ -865,7 +865,7 @@ public class InterFactory
         case BREVE:
         case WHOLE_NOTE:
         case WHOLE_NOTE_SMALL:
-            return new HeadInter(null, null, null, shape, GRADE, null, null);
+            return new HeadInter(null, shape, GRADE, null, null);
 
         case AUGMENTATION_DOT:
             return new AugmentationDotInter(null, GRADE); // No visit

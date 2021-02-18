@@ -29,7 +29,6 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.image.ImageUtil;
-import org.audiveris.omr.image.ShapeDescriptor;
 import org.audiveris.omr.image.Template;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.RunTable;
@@ -298,16 +297,15 @@ public class SheetScanner
         @Override
         public void visit (HeadInter inter)
         {
-            final ShapeDescriptor desc = inter.getDescriptor();
-            final Template tpl = desc.getTemplate();
-            final Rectangle box = desc.getBounds(inter.getBounds());
+            final Template template = inter.getTemplate();
+            final Rectangle tplBox = template.getBounds(inter.getBounds());
 
             // Use underlying glyph (enlarged)
-            final List<Point> fores = tpl.getForegroundPixels(box, buffer, true);
+            final List<Point> fores = template.getForegroundPixels(tplBox, buffer, true);
 
             // Erase foreground pixels
             for (final Point p : fores) {
-                g.fillRect(box.x + p.x, box.y + p.y, 1, 1);
+                g.fillRect(tplBox.x + p.x, tplBox.y + p.y, 1, 1);
             }
         }
 

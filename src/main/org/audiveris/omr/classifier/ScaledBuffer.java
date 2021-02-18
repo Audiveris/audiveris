@@ -51,6 +51,8 @@ public class ScaledBuffer
     /**
      * Compute the scaled buffer for the provided glyph, using related staff interline
      * value.
+     * <p>
+     * TODO: improve precision of this method, using Point2D instead of Point
      *
      * @param glyph     the source glyph
      * @param interline the related staff interline
@@ -66,8 +68,9 @@ public class ScaledBuffer
         // Build scaled buffer, filled by (scaled) glyph
         final int scaledWidth = (int) Math.ceil(runTable.getWidth() * scale);
         final int scaledHeight = (int) Math.ceil(runTable.getHeight() * scale);
-        final ByteProcessor scaledBuffer = (ByteProcessor) glyphBuffer.resize(scaledWidth,
-                                                                              scaledHeight, true); // True => use averaging when down-scaling
+        final ByteProcessor scaledBuffer = (ByteProcessor) glyphBuffer.resize(
+                scaledWidth,
+                scaledHeight, true); // True => use averaging when down-scaling
 
         // Copy scaledBuffer into a WIDTH*HEIGHT target buffer centered on glyph centroid
         final Point centroid = glyph.getCentroid();

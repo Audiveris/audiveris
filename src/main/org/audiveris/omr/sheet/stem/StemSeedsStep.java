@@ -41,9 +41,11 @@ import org.slf4j.LoggerFactory;
 public class StemSeedsStep
         extends AbstractSystemStep<Void>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StemSeedsStep.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StemSeedsStep object.
      */
@@ -51,6 +53,7 @@ public class StemSeedsStep
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
@@ -59,9 +62,8 @@ public class StemSeedsStep
                            Sheet sheet)
     {
         if (AdvancedTopics.Topic.DEBUG.isSet()) {
-            // Add stem checkboard (we need a system of this sheet, any one)
-            SystemInfo aSystem = sheet.getSystems().get(0);
-            new VerticalsBuilder(aSystem).addCheckBoard();
+            // Add stem checkboard
+            new StemChecker(sheet).addCheckBoard();
         }
     }
 

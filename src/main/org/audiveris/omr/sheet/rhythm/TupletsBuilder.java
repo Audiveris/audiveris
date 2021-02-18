@@ -159,7 +159,7 @@ public class TupletsBuilder
      * and below.
      *
      * @param tuplet the inter of interest
-     * @return the list of neighbors, sorted by euclidian distance to tuplet sign
+     * @return the list of neighbors, sorted by euclidean distance to tuplet sign
      */
     private List<AbstractChordInter> getChordsAround (TupletInter tuplet)
     {
@@ -197,7 +197,7 @@ public class TupletsBuilder
      * Report the proper collection of chords that are embraced by the tuplet.
      *
      * @param tuplet     underlying tuplet sign
-     * @param candidates the chords candidates, ordered by euclidian distance to sign
+     * @param candidates the chords candidates, ordered by euclidean distance to sign
      * @return the set of embraced chords, ordered from left to right, or null if retrieval failed
      */
     public static SortedSet<AbstractChordInter> getEmbracedChords (TupletInter tuplet,
@@ -207,10 +207,8 @@ public class TupletsBuilder
 
         // We consider each candidate in turn, with its duration
         // in order to determine the duration base of the tuplet
-        TupletCollector collector = new TupletCollector(
-                tuplet,
-                new TreeSet<>(Inters.byFullAbscissa));
-
+        final TupletCollector collector = new TupletCollector(tuplet,
+                                                              new TreeSet<>(Inters.byFullAbscissa));
         final Staff targetStaff = getTargetStaff(candidates);
 
         for (AbstractChordInter chord : candidates) {
@@ -397,7 +395,7 @@ public class TupletsBuilder
             return total;
         }
 
-        /** Include a chord into the collection */
+        /** Include the provided chord into the collection */
         public void include (AbstractChordInter chord)
         {
             if (!chords.contains(chord)) {

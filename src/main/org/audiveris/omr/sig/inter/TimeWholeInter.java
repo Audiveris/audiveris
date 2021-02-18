@@ -63,7 +63,7 @@ public class TimeWholeInter
      */
     public TimeWholeInter (Glyph glyph,
                            Shape shape,
-                           double grade)
+                           Double grade)
     {
         super(glyph, shape, grade);
 
@@ -77,7 +77,7 @@ public class TimeWholeInter
      */
     private TimeWholeInter ()
     {
-        super(null, null, 0);
+        super(null, null, 0.0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -129,7 +129,7 @@ public class TimeWholeInter
     @Override
     public TimeWholeInter replicate (Staff targetStaff)
     {
-        TimeWholeInter inter = new TimeWholeInter(null, shape, 0);
+        TimeWholeInter inter = new TimeWholeInter(null, shape, getGrade());
         inter.setStaff(targetStaff);
 
         return inter;
@@ -149,7 +149,7 @@ public class TimeWholeInter
      */
     public static TimeWholeInter create (Glyph glyph,
                                          Shape shape,
-                                         double grade,
+                                         Double grade,
                                          Staff staff)
     {
         TimeWholeInter time = new TimeWholeInter(glyph, shape, grade);

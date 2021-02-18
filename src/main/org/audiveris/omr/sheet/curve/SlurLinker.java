@@ -25,7 +25,6 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import static org.audiveris.omr.math.CubicUtil.*;
 import org.audiveris.omr.math.GeoPath;
-import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import static org.audiveris.omr.math.LineUtil.bisector;
 import static org.audiveris.omr.math.LineUtil.intersection;
@@ -270,8 +269,8 @@ public class SlurLinker
         final Map<HorizontalSide, SlurHeadLink> linkPair = new EnumMap<>(HorizontalSide.class);
 
         // Slur target locations on each side
-        final Point leftTarget = getTargetPoint(slur, LEFT);
-        final Point rightTarget = getTargetPoint(slur, RIGHT);
+        final Point2D leftTarget = getTargetPoint(slur, LEFT);
+        final Point2D rightTarget = getTargetPoint(slur, RIGHT);
 
         // Chords candidates on each side
         Map<Inter, SlurHeadLink> lefts = lookup(slur, LEFT, areas.get(LEFT), chords.get(LEFT));
@@ -284,8 +283,7 @@ public class SlurLinker
         commons.retainAll(rights.keySet());
 
         for (Inter common : commons) {
-            Rectangle chordBox = common.getBounds();
-            Point chordCenter = GeoUtil.centerOf(chordBox); // TODO: choose a better ref point?
+            Point2D chordCenter = common.getCenter2D(); // TODO: choose a better ref point?
 
             if (chordCenter.distance(leftTarget) > chordCenter.distance(rightTarget)) {
                 lefts.remove(common);
@@ -460,15 +458,15 @@ public class SlurLinker
      * @param side the desired slur side
      * @return the target connection point, slightly away from slur end
      */
-    private Point getTargetPoint (SlurInter slur,
-                                  HorizontalSide side)
+    private Point2D getTargetPoint (SlurInter slur,
+                                    HorizontalSide side)
     {
         final CubicCurve2D curve = slur.getCurve();
         final Point2D end = (side == LEFT) ? curve.getP1() : curve.getP2();
         final Point2D vector = (side == LEFT) ? getEndVector1(curve) : getEndVector2(curve);
         final double ext = params.targetExtension;
 
-        return rounded(PointUtil.addition(end, PointUtil.times(vector, ext)));
+        return PointUtil.addition(end, PointUtil.times(vector, ext));
     }
 
     /**
@@ -533,8 +531,8 @@ public class SlurLinker
     {
         final Map<Inter, SlurHeadLink> found = new HashMap<>();
         final CubicCurve2D curve = slur.getCurve();
-        final Point end = rounded((side == LEFT) ? curve.getP1() : curve.getP2());
-        final Point target = getTargetPoint(slur, side);
+        final Point2D end = (side == LEFT) ? curve.getP1() : curve.getP2();
+        final Point2D target = getTargetPoint(slur, side);
         final Point2D bisUnit = getBisUnit(slur);
 
         // Look for intersected chords
@@ -571,8 +569,8 @@ public class SlurLinker
      */
     private HeadInter selectBestHead (SlurInter slur,
                                       AbstractChordInter chord,
-                                      Point end,
-                                      Point target,
+                                      Point2D end,
+                                      Point2D target,
                                       Point2D bisUnit,
                                       Area area)
     {

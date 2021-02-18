@@ -44,10 +44,11 @@ import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.stem.StemsBuilder;
+import org.audiveris.omr.sheet.stem.StemsRetriever;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractBeamInter.Impacts;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.HeadInter;
@@ -58,7 +59,6 @@ import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.ByteUtil;
-import org.audiveris.omr.util.Corner;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -80,7 +80,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.audiveris.omr.sig.inter.HeadInter;
 
 /**
  * Class {@code BeamsBuilder} is in charge, at system level, of retrieving the possible
@@ -166,7 +165,7 @@ public class BeamsBuilder
     // buildBeams //
     //------------//
     /**
-     * Find possible interpretations of beams among system spots.
+     * Find all possible interpretations of beams among system spots.
      */
     public void buildBeams ()
     {
@@ -189,6 +188,9 @@ public class BeamsBuilder
         // Finally, retrieve beam hooks
         sortedBeamSpots.removeAll(assignedSpots);
         buildHooks();
+
+        // Group system beams into beam groups
+        BeamGroupInter.populateSystem(system);
     }
 
     //---------------//
@@ -333,7 +335,7 @@ public class BeamsBuilder
         // Check that all lines of the glyph are rather parallel
         double lineSlopeGap = structure.compareSlopes();
 
-        if (lineSlopeGap > BeamGroup.getMaxSlopeDiff()) {
+        if (lineSlopeGap > BeamGroupInter.getMaxSlopeDiff()) {
             return "diverging beams";
         }
 
@@ -794,7 +796,7 @@ public class BeamsBuilder
         final double height = beam.getHeight();
         final Area luArea = AreaUtil.horizontalParallelogram(
                 median.getP1(), median.getP2(),
-                2 * sheet.getScale().toPixelsDouble(BeamGroup.getMaxYDistance()));
+                2 * sheet.getScale().toPixelsDouble(BeamGroupInter.getMaxYDistance()));
         beam.addAttachment("=", luArea);
 
         List<Inter> others = Inters.intersectedInters(rawSystemBeams, GeoOrder.NONE, luArea);
@@ -818,7 +820,7 @@ public class BeamsBuilder
                 logger.info("VIP {} found parallel candidate {}", beam, other);
             }
 
-            if (!BeamGroup.canBeNeighbors(beam, other, sheet.getScale())) {
+            if (!BeamGroupInter.canBeNeighbors(beam, other, sheet.getScale())) {
                 if (logging) {
                     logger.info("VIP not neighbor beams {} and {}", beam, other);
                 }
@@ -1209,7 +1211,7 @@ public class BeamsBuilder
 
         if (!others.isEmpty()) {
             // Use a closer look, using colinearity
-            final double maxSlopeDiff = BeamGroup.getMaxSlopeDiff();
+            final double maxSlopeDiff = BeamGroupInter.getMaxSlopeDiff();
             final Line2D median = beam.getMedian();
             final Point2D endPt = (side == LEFT) ? median.getP1() : median.getP2();
             final double slope = LineUtil.getSlope(median);
@@ -1360,7 +1362,7 @@ public class BeamsBuilder
         }
 
         // More precise look, checking that item center lies within beam area
-        Point itemCenter = GeoUtil.centerOf(itemCore.getBounds());
+        Point2D itemCenter = GeoUtil.center2D(itemCore.getBounds());
 
         for (Inter inter : beams) {
             AbstractBeamInter beam = (AbstractBeamInter) inter;
@@ -1596,15 +1598,10 @@ public class BeamsBuilder
                 return;
             }
 
-            final Corner corner;
-            int headX = GeoUtil.centerOf(head.getBounds()).x;
-            int stemX = GeoUtil.centerOf(stem.getBounds()).x;
+            double headX = GeoUtil.center2D(head.getBounds()).getX();
+            double stemX = GeoUtil.center2D(stem.getBounds()).getX();
 
-            if (headX <= stemX) {
-                corner = (globalDir < 0) ? Corner.TOP_LEFT : Corner.BOTTOM_LEFT;
-            } else {
-                corner = (globalDir < 0) ? Corner.TOP_RIGHT : Corner.BOTTOM_RIGHT;
-            }
+            final HorizontalSide hSide = (headX <= stemX) ? LEFT : RIGHT;
 
             // Limit to beams that cross stem vertical line
             List<Inter> beams = new ArrayList<>();
@@ -1619,7 +1616,8 @@ public class BeamsBuilder
                 }
             }
 
-            new StemsBuilder(system).linkCueBeams((HeadInter) head, corner, stem, beams);
+            new StemsRetriever(system).linkCueBeams(
+                    (HeadInter) head, hSide, VerticalSide.of(globalDir), stem, beams);
         }
 
         /**
@@ -1667,13 +1665,13 @@ public class BeamsBuilder
 
             for (int i = 0; i < heads.size(); i++) {
                 final Inter head = heads.get(i);
-                final int headY = GeoUtil.centerOf(head.getBounds()).y;
+                final double headY = GeoUtil.center2D(head.getBounds()).getY();
                 final Inter stem = stems.get(i);
                 final Rectangle stemBox = stem.getBounds();
 
                 // Consider relative position is reliable only if head center
                 // is found in upper quarter or lower quarter of stem height
-                final int quarter = (int) Math.rint(stemBox.height / 4.0);
+                final double quarter = stemBox.height / 4.0;
 
                 if (headY >= ((stemBox.y + stemBox.height) - quarter)) {
                     if (dir == null) {

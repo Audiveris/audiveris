@@ -45,11 +45,11 @@ public abstract class Grades
     /** Minimum grade for a symbol glyph. */
     public static final double symbolMinGrade = constants.symbolMinGrade.getValue();
 
-    /** Minimum grade for a key signature item, phase #2 (staff slice-based). */
-    public static final double keyAlterMinGrade2 = constants.keyAlterMinGrade2.getValue();
-
     /** Minimum grade for a key signature item, phase #1 (component-based). */
     public static final double keyAlterMinGrade1 = constants.keyAlterMinGrade1.getValue();
+
+    /** Minimum grade for a key signature item, phase #2 (staff slice-based). */
+    public static final double keyAlterMinGrade2 = constants.keyAlterMinGrade2.getValue();
 
     /** Minimum grade for a key signature. */
     public static final double keySigMinGrade = constants.keySigMinGrade.getValue();
@@ -59,26 +59,32 @@ public abstract class Grades
     /** Minimum grade for a clef glyph. */
     public static final double clefMinGrade = constants.clefMinGrade.getValue();
 
-    /** The minimum grade to consider a BarConnector as good. */
+    /** Grade for a good beam. */
+    public static final double goodBeamGrade = constants.goodBeamGrade.getValue();
+
+    /** Grade for a good BarConnector. */
     public static final double goodBarConnectorGrade = constants.goodBarConnectorGrade.getValue();
 
-    /** The minimum grade to consider a relation as good. */
+    /** Grade for a rather good head. */
+    public static final double ratherGoodHeadGrade = constants.ratherGoodHeadGrade.getValue();
+
+    /** Grade for a good relation. */
     public static final double goodRelationGrade = constants.goodRelationGrade.getValue();
 
     /** The minimum contextual grade for an interpretation. */
     public static final double minContextualGrade = constants.minContextualGrade.getValue();
 
+    // Minimum global values
+    //----------------------
     /** Ratio applied on intrinsic value, to leave room for contextual. */
     public static final double intrinsicRatio = constants.intrinsicRatio.getValue();
 
-    /** The minimum grade to consider an interpretation as good. */
-    public static final double goodInterGrade = intrinsicRatio * constants.goodInterGrade
-            .getValue();
-
-    // Minimum global values
-    //----------------------
     /** The minimum grade to consider an interpretation as acceptable. */
     public static final double minInterGrade = intrinsicRatio * constants.minInterGrade.getValue();
+
+    /** Grade for a good interpretation. */
+    public static final double goodInterGrade = intrinsicRatio * constants.goodInterGrade
+            .getValue();
 
     private Grades ()
     {
@@ -118,6 +124,14 @@ public abstract class Grades
                 0.5,
                 "Default good relation grade");
 
+        private final Constant.Ratio goodBeamGrade = new Constant.Ratio(
+                0.35,
+                "Minimum grade for being a good beam");
+
+        private final Constant.Ratio ratherGoodHeadGrade = new Constant.Ratio(
+                0.3,
+                "Rather good interpretation grade for a head");
+
         private final Evaluation.Grade symbolMinGrade = new Evaluation.Grade(
                 0.15,
                 "Minimum grade for a symbol");
@@ -127,11 +141,11 @@ public abstract class Grades
                 "Default minimum interpretation grade");
 
         private final Evaluation.Grade keyAlterMinGrade1 = new Evaluation.Grade(
-                0.10,
+                0.1,
                 "Minimum grade for a key item symbol, phase 1 (component)");
 
         private final Evaluation.Grade timeMinGrade = new Evaluation.Grade(
-                0.10,
+                0.1,
                 "Minimum grade for a time sig");
 
         private final Evaluation.Grade clefMinGrade = new Evaluation.Grade(

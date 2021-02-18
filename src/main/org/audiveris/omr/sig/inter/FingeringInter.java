@@ -50,7 +50,7 @@ public class FingeringInter
      */
     public FingeringInter (Glyph glyph,
                            Shape shape,
-                           double grade)
+                           Double grade)
     {
         super(glyph, null, shape, grade);
         this.value = (shape != null) ? valueOf(shape) : (-1);

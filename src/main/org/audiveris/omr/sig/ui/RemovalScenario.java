@@ -120,6 +120,7 @@ public class RemovalScenario
             // Include the ensemble and its members
             final InterEnsemble ens = (InterEnsemble) inter;
             final List<Inter> members = ens.getMembers();
+
             if (members.isEmpty()) {
                 inters.add(inter);
             } else {
@@ -130,9 +131,11 @@ public class RemovalScenario
             inters.add(inter);
             // Watch the containing ensemble (if not already to be removed)
             final SIGraph sig = inter.getSig();
+
             for (Relation rel : sig.incomingEdgesOf(inter)) {
                 if (rel instanceof Containment) {
                     final InterEnsemble ens = (InterEnsemble) sig.getEdgeSource(rel);
+
                     if (!ensembles.contains(ens)) {
                         watched.add(ens);
                     }
@@ -155,17 +158,21 @@ public class RemovalScenario
         for (InterEnsemble ens : watched) {
             List<Inter> members = new ArrayList<>(ens.getMembers());
             members.removeAll(inters);
+
             if (members.isEmpty()) {
                 ensembles.add(ens); // This now empty ensemble is to be removed as well
             }
         }
+
         // Ensembles to remove first
         List<InterEnsemble> sortedEnsembles = new ArrayList<>(ensembles);
         Collections.sort(sortedEnsembles, Inters.membersFirst);
         Collections.reverse(sortedEnsembles);
+
         for (InterEnsemble ens : sortedEnsembles) {
             seq.add(new RemovalTask(ens));
         }
+
         // Simple inters to remove second
         for (Inter inter : inters) {
             seq.add(new RemovalTask(inter));

@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 
 /**
  * Class {@code TextRole} describes the role of a piece of text (typically a sentence).
@@ -126,7 +127,7 @@ public enum TextRole
             return null;
         }
 
-        final Point boxCenter = GeoUtil.centerOf(box);
+        final Point2D boxCenter = GeoUtil.center2D(box);
 
         // Is line made entirely of potential chord symbols?
         boolean isAllChords = line.isAllChordNames();

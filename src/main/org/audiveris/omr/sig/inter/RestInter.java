@@ -35,7 +35,6 @@ import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.util.HorizontalSide;
-import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
@@ -43,9 +42,11 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -74,7 +75,7 @@ public class RestInter
      */
     public RestInter (Glyph glyph,
                       Shape shape,
-                      double grade,
+                      Double grade,
                       Staff staff,
                       Double pitch)
     {
@@ -121,7 +122,7 @@ public class RestInter
         final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
 
         // Wrap this rest within a rest chord
-        final RestChordInter restChord = new RestChordInter(-1);
+        final RestChordInter restChord = new RestChordInter(null);
         restChord.setManual(true);
         restChord.setStaff(staff);
 
@@ -186,7 +187,7 @@ public class RestInter
                     new Predicate<Inter>()
             {
                 @Override
-                public boolean check (Inter inter)
+                public boolean test (Inter inter)
                 {
                     if (inter.getStaff() != staff) {
                         return false;
@@ -253,13 +254,13 @@ public class RestInter
 
         // Check horizontal position WRT head-chords
         final int minDx = system.getSheet().getScale().toPixels(constants.minInterChordDx);
-        final Point restCenter = GeoUtil.centerOf(glyphBox);
+        final Point2D restCenter = GeoUtil.center2D(glyphBox);
         final Rectangle fatBox = new Rectangle(glyphBox);
         fatBox.grow(minDx, 0);
 
         for (Inter chord : measureChords) {
             if (fatBox.intersects(chord.getBounds())) {
-                int dx = chord.getCenter().x - restCenter.x;
+                double dx = chord.getCenter2D().getX() - restCenter.getX();
 
                 if (Math.abs(dx) < minDx) {
                     if (glyph.isVip() || logger.isDebugEnabled()) {

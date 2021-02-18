@@ -38,7 +38,7 @@ public class RestChordInter
      *
      * @param grade the intrinsic grade
      */
-    public RestChordInter (double grade)
+    public RestChordInter (Double grade)
     {
         super(grade);
     }

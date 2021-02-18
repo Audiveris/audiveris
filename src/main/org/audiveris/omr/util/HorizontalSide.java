@@ -41,4 +41,25 @@ public enum HorizontalSide
     {
         return (this == LEFT) ? RIGHT : LEFT;
     }
+
+    /**
+     * Report the abscissa direction when going on this side.
+     *
+     * @return xDir
+     */
+    public int direction ()
+    {
+        return (this == LEFT) ? -1 : 1;
+    }
+
+    /**
+     * Report the HorizontalSide for the provided abscissa direction
+     *
+     * @param xDir abscissa direction
+     * @return side for xDir
+     */
+    public static HorizontalSide of (int xDir)
+    {
+        return (xDir == -1) ? LEFT : (xDir == +1) ? RIGHT : null;
+    }
 }

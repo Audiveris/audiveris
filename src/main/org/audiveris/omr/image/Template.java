@@ -26,32 +26,23 @@ import ij.process.ByteProcessor;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.TableUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
-import org.audiveris.omr.ui.symbol.Alignment;
-import org.audiveris.omr.ui.symbol.OmrFont;
-import org.audiveris.omr.ui.symbol.TemplateSymbol;
-import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.ByteUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.font.TextLayout;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -70,12 +61,15 @@ import java.util.Map.Entry;
  * <dd>These regions will be neutralized in the distance table, hence the templates don't have to
  * cope with them.</dd>
  * </dl>
+ * <p>
+ * <img alt="Template diagram" src="doc-files/Template.png">
  *
  * @author Hervé Bitteur
  */
 public class Template
         implements Anchored
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -84,173 +78,59 @@ public class Template
     /** Ratio applied to small symbols (cue / grace). */
     public static final double smallRatio = constants.smallRatio.getValue();
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Template shape. */
     private final Shape shape;
 
     /** Scaling factor. */
     private final int pointSize;
 
-    /** Underlying symbol. */
-    private final TemplateSymbol symbol;
-
     /** Collection of key points defined for this template. */
     private final List<PixelDistance> keyPoints;
 
-    /** Template width. (perhaps larger than the symbol width) */
+    /** Template width. (perhaps larger than symbol width) */
     private final int width;
 
-    /** Template height. (perhaps larger than the symbol height) */
+    /** Template height. (perhaps larger than symbol height) */
     private final int height;
 
-    /** Symbols bounds within template. (perhaps smaller than template bounds) */
-    private final Rectangle symbolBounds;
+    /** Symbol slim bounds relative to template. (perhaps a bit smaller than symbol bounds) */
+    private final Rectangle slimBounds;
 
     /**
      * Offsets to defined anchors.
      * An offset is defined as the translation from template upper left corner
      * to the precise anchor location in the symbol.
      */
-    private final Map<Anchor, Point> offsets = new EnumMap<>(Anchor.class);
+    private final Map<Anchor, Point2D> offsets = new EnumMap<>(Anchor.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Template object with a provided set of points.
      *
-     * @param shape        the template specified shape
-     * @param pointSize    scaling factor
-     * @param symbol       underlying symbol
-     * @param width        template width
-     * @param height       template height
-     * @param keyPoints    the set of defining points
-     * @param symbolBounds symbol bounds
+     * @param shape      the template specified shape
+     * @param pointSize  scaling factor
+     * @param width      template width
+     * @param height     template height
+     * @param keyPoints  the set of defining points
+     * @param slimBounds symbol slim bounds WRT template bounds
      */
     public Template (Shape shape,
                      int pointSize,
-                     TemplateSymbol symbol,
                      int width,
                      int height,
                      List<PixelDistance> keyPoints,
-                     Rectangle symbolBounds)
+                     Rectangle slimBounds)
     {
         this.shape = shape;
         this.pointSize = pointSize;
-        this.symbol = symbol;
         this.keyPoints = new ArrayList<>(keyPoints);
         this.width = width;
         this.height = height;
-        this.symbolBounds = symbolBounds;
+        this.slimBounds = slimBounds;
     }
 
-    //-----------//
-    // addAnchor //
-    //-----------//
-    @Override
-    public final void addAnchor (Anchor anchor,
-                                 int dx,
-                                 int dy)
-    {
-        offsets.put(anchor, new Point(dx, dy));
-    }
-
-    //---------------------//
-    // buildDecoratedImage //
-    //---------------------//
-    /**
-     * For easy visual checking, build a magnified template image with decorations.
-     *
-     * @param src source image
-     * @return decorated magnified image
-     */
-    public BufferedImage buildDecoratedImage (BufferedImage src)
-    {
-        final int r = 50; // Magnifying ratio (rather arbitrary)
-
-        TextFont textFont = new TextFont("SansSerif", Font.PLAIN, (int) Math.rint(r / 3.0));
-        BufferedImage img = new BufferedImage(width * r, height * r, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = img.createGraphics();
-
-        // Fill background
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, width * r, height * r);
-
-        // Draw template symbol
-        AffineTransform at = AffineTransform.getScaleInstance(r, r);
-        g.drawImage(src, at, null);
-
-        // Draw distances
-        for (PixelDistance pix : keyPoints) {
-            int d = (int) Math.rint(pix.d);
-
-            if (d != 0) {
-                g.drawRect(pix.x * r, pix.y * r, r, r);
-
-                String str = Integer.toString(d);
-                TextLayout layout = textFont.layout(str);
-                Point location = new Point((pix.x * r) + (r / 2), (pix.y * r) + (r / 2));
-                OmrFont.paint(g, layout, location, Alignment.AREA_CENTER);
-            }
-        }
-
-        // Anchor locations
-        g.setColor(Color.GREEN);
-
-        for (Entry<Anchor, Point> entry : offsets.entrySet()) {
-            final Point pt = entry.getValue();
-            g.drawRoundRect(pt.x * r, pt.y * r, r, r, r / 2, r / 2);
-
-            final Anchor anchor = entry.getKey();
-            final String str = anchor.abbreviation().toLowerCase(Locale.US);
-            final TextLayout layout = textFont.layout(str);
-
-            if ((anchor == Anchor.LEFT_STEM) || (anchor == Anchor.RIGHT_STEM)) {
-                Point location = new Point((pt.x * r) + (r / 2), (pt.y * r) + 2);
-                OmrFont.paint(g, layout, location, Alignment.TOP_CENTER);
-            } else {
-                Point location = new Point((pt.x * r) + (r / 2), (pt.y * r) + (r - 1));
-                OmrFont.paint(g, layout, location, Alignment.BASELINE_CENTER);
-            }
-        }
-
-        g.dispose();
-
-        // Put everything within a frame with x and y values
-        BufferedImage frm = new BufferedImage(
-                (width + 2) * r,
-                (height + 2) * r,
-                BufferedImage.TYPE_INT_RGB);
-        g = frm.createGraphics();
-
-        // Fill frame background
-        g.setColor(Color.GRAY);
-        g.fillRect(0, 0, frm.getWidth(), frm.getHeight());
-
-        g.drawImage(img, null, r, r);
-
-        // Draw coordinate values
-        g.setColor(Color.BLACK);
-
-        for (int x = 0; x < width; x++) {
-            String str = Integer.toString(x);
-            TextLayout layout = textFont.layout(str);
-            Point north = new Point(((x + 1) * r) + (r / 2), (r / 2));
-            OmrFont.paint(g, layout, north, Alignment.AREA_CENTER);
-
-            Point south = new Point(((x + 1) * r) + (r / 2), frm.getHeight() - (r / 2));
-            OmrFont.paint(g, layout, south, Alignment.AREA_CENTER);
-        }
-
-        for (int y = 0; y < height; y++) {
-            String str = Integer.toString(y);
-            TextLayout layout = textFont.layout(str);
-            Point west = new Point((r / 2), ((y + 1) * r) + (r / 2));
-            OmrFont.paint(g, layout, west, Alignment.AREA_CENTER);
-
-            Point east = new Point(frm.getWidth() - (r / 2), ((y + 1) * r) + (r / 2));
-            OmrFont.paint(g, layout, east, Alignment.AREA_CENTER);
-        }
-
-        return frm;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // dump //
     //------//
@@ -268,7 +148,7 @@ public class Template
         }
 
         for (PixelDistance pix : keyPoints) {
-            vals[pix.x][pix.y] = (int) Math.rint(pix.d);
+            vals[pix.x][pix.y] = (int) Math.round(pix.d);
         }
 
         final String yFormat = TableUtil.printAbscissae(width, height, 3);
@@ -289,7 +169,7 @@ public class Template
             System.out.println();
         }
 
-        for (Entry<Anchor, Point> entry : offsets.entrySet()) {
+        for (Entry<Anchor, Point2D> entry : offsets.entrySet()) {
             System.out.println(entry.getKey() + " => " + entry.getValue());
         }
     }
@@ -300,11 +180,11 @@ public class Template
     /**
      * Evaluate this template at location (x,y) in provided distances table.
      *
-     * @param x         location abscissa
-     * @param y         location ordinate
-     * @param anchor    the anchor kind to use for (x,y), null for upper left
-     * @param distances the distance table to search
-     * @return the weighted average distance computed on all key positions
+     * @param x         pivot location abscissa
+     * @param y         pivot location ordinate
+     * @param anchor    pivot offset if any, WRT template upper left
+     * @param distances the distance table to use
+     * @return the weighted average distance computed on all template key positions
      */
     public double evaluate (int x,
                             int y,
@@ -336,8 +216,8 @@ public class Template
                     // pix.d < 0 for expected hole, expected negative distance to nearest foreground
                     // pix.d == 0 for expected foreground, 0 distance
                     // pix.d > 0 for expected background, expected distance to nearest foreground
-                    double weight = (pix.d == 0) ? foreWeight
-                            : ((pix.d > 0) ? backWeight : holeWeight);
+                    double weight = (pix.d == 0) ? foreWeight : ((pix.d > 0) ? backWeight
+                            : holeWeight);
                     double expected = (pix.d == 0) ? 0 : 1;
                     double actual = (actualDist == 0) ? 0 : 1;
                     double dist = Math.abs(actual - expected);
@@ -359,13 +239,14 @@ public class Template
     // evaluateHole //
     //--------------//
     /**
-     * Evaluate hole of this template at location (x,y) in provided distances table.
+     * Evaluate only the <b>hole</b> part of template, by measuring ratio of actual white
+     * over expected white in template hole.
      *
-     * @param x         location abscissa
-     * @param y         location ordinate
-     * @param anchor    the anchor kind to use for (x,y), null for upper left
-     * @param distances the distance table to search
-     * @return the ratio of actual white pixels over expected ones
+     * @param x         pivot location abscissa
+     * @param y         pivot location ordinate
+     * @param anchor    pivot offset if any, WRT template upper left
+     * @param distances the distance table to use
+     * @return ratio of actual white pixels over expected hole pixels
      */
     public double evaluateHole (int x,
                                 int y,
@@ -414,22 +295,19 @@ public class Template
     // getBounds //
     //-----------//
     /**
-     * Report the bounds of descriptor knowing the symbol box.
+     * Report the template bounds knowing the symbol box.
      *
-     * @param symBox the symbol box
-     * @return the descriptor box
+     * @param sBox the slim symbol box
+     * @return the template box
      */
-    public Rectangle getBounds (Rectangle symBox)
+    public Rectangle getBounds (Rectangle sBox)
     {
-        Point center = GeoUtil.centerOf(symBox);
-
-        return getBoundsAt(center.x, center.y, Anchor.CENTER);
+        return new Rectangle(sBox.x - slimBounds.x, sBox.y - slimBounds.y, width, height);
     }
 
     //-------------//
     // getBoundsAt //
     //-------------//
-    @Override
     public Rectangle getBoundsAt (int x,
                                   int y,
                                   Anchor anchor)
@@ -439,17 +317,30 @@ public class Template
         return new Rectangle(x - offset.x, y - offset.y, width, height);
     }
 
+    //-------------//
+    // getBoundsAt //
+    //-------------//
+    @Override
+    public Rectangle2D getBoundsAt (double x,
+                                    double y,
+                                    Anchor anchor)
+    {
+        final Point2D offset = getOffset(anchor);
+
+        return new Rectangle2D.Double(x - offset.getX(), y - offset.getY(), width, height);
+    }
+
     //---------------------//
     // getForegroundPixels //
     //---------------------//
     /**
      * Collect the image foreground pixels located under the template foreground areas.
      *
-     * @param box   absolute positioning of template box in global image
-     * @param image global image to be read
+     * @param tplBox absolute positioning of template box in global image
+     * @param image  global image to be read
      * @return the collection of foreground pixels, relative to template box.
      */
-    public List<Point> getForegroundPixels (Rectangle box,
+    public List<Point> getForegroundPixels (Rectangle tplBox,
                                             ByteProcessor image)
     {
         final int imgWidth = image.getWidth();
@@ -461,8 +352,8 @@ public class Template
                 continue;
             }
 
-            int nx = box.x + pix.x;
-            int ny = box.y + pix.y;
+            int nx = tplBox.x + pix.x;
+            int ny = tplBox.y + pix.y;
 
             if ((nx >= 0) && (nx < imgWidth) && (ny >= 0) && (ny < imgHeight)) {
                 // Check if we have some image foreground there
@@ -484,16 +375,16 @@ public class Template
      * Collect the image foreground pixels located under the template foreground areas,
      * with some additional margin.
      *
-     * @param box     absolute positioning of template box in global image
+     * @param tplBox  absolute positioning of template box in global image
      * @param image   global image to be read
      * @param dilated true for applying dilation before processing
      * @return the collection of foreground pixels, relative to template box.
      */
-    public List<Point> getForegroundPixels (Rectangle box,
+    public List<Point> getForegroundPixels (Rectangle tplBox,
                                             ByteProcessor image,
                                             boolean dilated)
     {
-        final List<Point> fores = getForegroundPixels(box, image);
+        final List<Point> fores = getForegroundPixels(tplBox, image);
 
         if (!dilated) {
             return fores;
@@ -502,7 +393,7 @@ public class Template
         int dilation = InterlineScale.toPixels(pointSize / 4, constants.dilation);
 
         // Populate an enlarged buffer with these foreground pixels
-        final Rectangle bufBox = new Rectangle(box);
+        final Rectangle bufBox = new Rectangle(tplBox);
         bufBox.grow(dilation, dilation);
 
         final ByteProcessor buf = new ByteProcessor(bufBox.width, bufBox.height);
@@ -544,6 +435,8 @@ public class Template
     // getKeyPoints //
     //--------------//
     /**
+     * Report the collection of defined keyPoints.
+     *
      * @return the keyPoints
      */
     public List<PixelDistance> getKeyPoints ()
@@ -557,13 +450,47 @@ public class Template
     @Override
     public Point getOffset (Anchor anchor)
     {
-        Point offset = offsets.get(anchor);
+        final Point2D offset = offsets.get(anchor);
 
-        if (offset == null) {
-            logger.error("No offset defined for anchor {} in template {}", anchor, shape);
+        // We have to round abscissa in symmetrical manner around slim rectangle
+        switch (anchor) {
+        case MIDDLE_LEFT:
+        case LEFT_STEM:
+        case BOTTOM_LEFT_STEM:
+            return new Point((int) Math.round(offset.getX() - 0.5 - 0.001),
+                             (int) Math.round(offset.getY() - 0.5));
+        case MIDDLE_RIGHT:
+        case RIGHT_STEM:
+        case TOP_RIGHT_STEM:
+            return new Point((int) Math.round(offset.getX() - 0.5 + 0.001),
+                             (int) Math.round(offset.getY() - 0.5));
+        default:
+        case CENTER:
+            return new Point((int) Math.round(offset.getX() - 0.5),
+                             (int) Math.round(offset.getY() - 0.5));
         }
+    }
 
-        return offset;
+    //-------------//
+    // getOffset2D //
+    //-------------//
+    /**
+     * Report the precise template offset as a Point2D for the provided anchor.
+     *
+     * @param anchor provided anchor
+     * @return precise offset, relative to template upper left corner.
+     */
+    public Point2D getOffset2D (Anchor anchor)
+    {
+        return offsets.get(anchor);
+    }
+
+    //------------//
+    // getOffsets //
+    //------------//
+    public Map<Anchor, Point2D> getOffsets ()
+    {
+        return Collections.unmodifiableMap(offsets);
     }
 
     //--------------//
@@ -592,50 +519,34 @@ public class Template
         return shape;
     }
 
-    //-----------//
-    // getSymbol //
-    //-----------//
-    /**
-     * @return the symbol
-     */
-    public TemplateSymbol getSymbol ()
+    //---------------//
+    // getSlimBounds //
+    //---------------//
+    public Rectangle getSlimBounds ()
     {
-        return symbol;
+        return new Rectangle(slimBounds);
     }
 
     //-----------------//
-    // getSymbolBounds //
+    // getSlimBoundsAt //
     //-----------------//
     /**
-     * Report the symbol bounds <b>within</b> the template.
-     *
-     * @return the symbolBounds
-     */
-    public Rectangle getSymbolBounds ()
-    {
-        return symbolBounds;
-    }
-
-    //-------------------//
-    // getSymbolBoundsAt //
-    //-------------------//
-    /**
-     * Report the symbol bounds when positioning anchor at location (x,y).
+     * Report the symbol slim bounds when positioning anchor at location (x,y).
      *
      * @param x      abscissa for anchor
      * @param y      ordinate for anchor
      * @param anchor chosen anchor
-     * @return the corresponding symbol bounds
+     * @return the corresponding slim symbol bounds
      */
-    public Rectangle getSymbolBoundsAt (int x,
-                                        int y,
-                                        Anchor anchor)
+    public Rectangle getSlimBoundsAt (int x,
+                                      int y,
+                                      Anchor anchor)
     {
-        Rectangle tplBox = getBoundsAt(x, y, anchor);
-        Rectangle symBox = new Rectangle(symbolBounds);
-        symBox.translate(tplBox.x, tplBox.y);
+        final Rectangle tplBox = getBoundsAt(x, y, anchor);
+        final Rectangle slimBox = getSlimBounds();
+        slimBox.translate(tplBox.x, tplBox.y);
 
-        return symBox;
+        return slimBox;
     }
 
     //----------//
@@ -647,51 +558,61 @@ public class Template
         return width;
     }
 
+    //-----------//
+    // putOffset //
+    //-----------//
+    @Override
+    public final void putOffset (Anchor anchor,
+                                 double dx,
+                                 double dy)
+    {
+        offsets.put(anchor, new Point2D.Double(dx, dy));
+    }
+
     //----------//
     // toString //
     //----------//
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{Template");
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append('{');
 
-        sb.append(" ").append(shape);
+        sb.append(shape);
 
         sb.append(" w:").append(width).append(",h:").append(height);
-
-        if ((symbolBounds.width != width) || (symbolBounds.height != height)) {
-            sb.append(" sym:").append(symbolBounds);
-        }
-
-        for (Entry<Anchor, Point> entry : offsets.entrySet()) {
-            sb.append(" ").append(entry.getKey()).append(":(").append(entry.getValue().x).append(
-                    ",").append(entry.getValue().y).append(")");
-        }
-
         sb.append(" keyPoints:").append(keyPoints.size());
 
-        sb.append("}");
+        if ((slimBounds.width != width) || (slimBounds.height != height)) {
+            sb.append("\n slim:").append(slimBounds);
+        }
 
-        return sb.toString();
+        for (Entry<Anchor, Point2D> entry : offsets.entrySet()) {
+            final Point2D offset = entry.getValue();
+            sb.append("\n ").append(entry.getKey()).append(PointUtil.toString(offset));
+        }
+
+        return sb.append("}").toString();
     }
 
     //-----------//
     // upperLeft //
     //-----------//
+    /**
+     * Report template upper-left location, knowing anchor location.
+     *
+     * @param x      pivot abscissa in image
+     * @param y      pivot ordinate in image
+     * @param anchor chosen anchor
+     * @return template upper-left corner in image
+     */
     private Point upperLeft (int x,
                              int y,
                              Anchor anchor)
     {
-        // Offsets to apply to location?
+        // Offset to apply to location?
         if (anchor != null) {
-            Point offset = getOffset(anchor);
-
-            if (offset != null) {
-                x -= offset.x;
-                y -= offset.y;
-            } else {
-                logger.error("No {} anchor defined for {} template", anchor, shape);
-            }
+            final Point offset = getOffset(anchor);
+            return new Point(x - offset.x, y - offset.y);
         }
 
         return new Point(x, y);
@@ -750,6 +671,7 @@ public class Template
         return constants.reallyBadDistance.getValue();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -770,7 +692,7 @@ public class Template
                 "Weight assigned to template exterior background pixels");
 
         private final Constant.Ratio holeWeight = new Constant.Ratio(
-                5.0, // Was 1.0, now modified for cross heads
+                4.0, // Was 1.0, now modified for cross heads
                 "Weight assigned to template interior background pixels");
 
         private final Scale.Fraction dilation = new Scale.Fraction(

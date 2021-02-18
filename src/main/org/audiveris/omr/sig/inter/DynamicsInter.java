@@ -160,7 +160,7 @@ public class DynamicsInter
      */
     public DynamicsInter (Glyph glyph,
                           Shape shape,
-                          double grade)
+                          Double grade)
     {
         super(glyph, null, shape, grade);
     }
@@ -258,7 +258,7 @@ public class DynamicsInter
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
     {
-        Link link = lookupLink(system);
+        final Link link = lookupLink(system);
 
         return (link == null) ? Collections.emptyList() : Collections.singleton(link);
     }
@@ -335,10 +335,6 @@ public class DynamicsInter
             logger.info("VIP lookupLink for {}", this);
         }
 
-        final Scale scale = system.getSheet().getScale();
-        final int maxDy = scale.toPixels(constants.maxDy);
-        final int maxXGap = scale.toPixels(constants.maxXGap);
-
         // Look for a suitable chord related to this dynamics element
         final Point center = getCenter();
         final MeasureStack stack = system.getStackAt(center);
@@ -347,6 +343,9 @@ public class DynamicsInter
             return null;
         }
 
+        final Scale scale = system.getSheet().getScale();
+        final int maxDy = scale.toPixels(constants.maxDy);
+        final int maxXGap = scale.toPixels(constants.maxXGap);
         final Rectangle widenedBounds = getBounds();
         widenedBounds.grow(maxXGap, 0);
 
@@ -380,7 +379,7 @@ public class DynamicsInter
             if (dyChord > maxDy) {
                 // Check vertical distance between element and staff
                 final Staff chordStaff = lookAbove ? chord.getBottomStaff() : chord.getTopStaff();
-                final int dyStaff = chordStaff.gapTo(widenedBounds);
+                final double dyStaff = chordStaff.gapTo(widenedBounds);
 
                 if (dyStaff > maxDy) {
                     if (isVip()) {

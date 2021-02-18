@@ -90,6 +90,7 @@ import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
+import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -294,7 +295,7 @@ public class SymbolsEditor
      * @param point the provided point
      * @return the related measure, or null
      */
-    public Measure getStrictMeasureAt (Point point)
+    public Measure getStrictMeasureAt (Point2D point)
     {
         // Containing staves: 0 (totally out), 1 (on a staff) or 2 (between staves)
         final List<Staff> staves = sheet.getStaffManager().getStavesOf(point);
@@ -314,11 +315,11 @@ public class SymbolsEditor
 
         if (part != null) {
             // Make sure point is vertically within part staves
-            if (point.y < part.getFirstStaff().getFirstLine().yAt(point.x)) {
+            if (point.getY() < part.getFirstStaff().getFirstLine().yAt(point.getX())) {
                 return null;
             }
 
-            if (point.y > part.getLastStaff().getLastLine().yAt(point.x)) {
+            if (point.getY() > part.getLastStaff().getLastLine().yAt(point.getX())) {
                 return null;
             }
 
@@ -340,7 +341,7 @@ public class SymbolsEditor
      * @param point the provided point
      * @return the related slot, or null
      */
-    public Slot getStrictSlotAt (Point point)
+    public Slot getStrictSlotAt (Point2D point)
     {
         final Measure measure = getStrictMeasureAt(point);
 

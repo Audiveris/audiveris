@@ -51,7 +51,7 @@ public class FlagInter
      */
     public FlagInter (Glyph glyph,
                       Shape shape,
-                      double grade)
+                      Double grade)
     {
         super(glyph, shape, grade);
     }

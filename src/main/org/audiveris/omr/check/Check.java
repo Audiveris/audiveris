@@ -47,9 +47,11 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class Check<C>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Check.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Specifies the Failure to be assigned to the Checkable object,
      * when the result of this individual check is not acceptable.
@@ -71,6 +73,7 @@ public abstract class Check<C>
     /** Covariant: higher is better, contra-variant: lower is better. */
     private final boolean covariant;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Check object.
      *
@@ -118,6 +121,7 @@ public abstract class Check<C>
         this(name, description, new NamedDouble(low), new NamedDouble(high), covariant, redResult);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getDescription //
     //----------------//
@@ -311,6 +315,7 @@ public abstract class Check<C>
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Grade //
     //-------//

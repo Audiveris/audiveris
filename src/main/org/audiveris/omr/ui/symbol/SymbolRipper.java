@@ -197,8 +197,8 @@ public class SymbolRipper
                                 .getAvailableFontFamilyNames()));
 
         // Initial values
-        ///fontName.getSpinner().setValue("MusicalSymbols");
-        fontName.getSpinner().setValue("Symbola");
+        fontName.getSpinner().setValue("MusicalSymbols");
+        ///fontName.getSpinner().setValue("Symbola");
         fontBase.setValue(0); //0);
         fontSize.setValue(200);
         pointCode.setModel(new SpinnerNumberModel(0x1_d100, 0, 0x1_d1ff, 1));

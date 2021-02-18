@@ -451,24 +451,24 @@ public class Staff
      * @return 0 if the rectangle intersects the staff, otherwise the vertical
      *         distance from staff to closest edge of the rectangle
      */
-    public int gapTo (Rectangle rect)
+    public double gapTo (Rectangle2D rect)
     {
-        Point center = GeoUtil.centerOf(rect);
-        int staffTop = getFirstLine().yAt(center.x);
-        int staffBot = getLastLine().yAt(center.x);
-        int glyphTop = rect.y;
-        int glyphBot = (glyphTop + rect.height) - 1;
+        Point2D center = GeoUtil.center2D(rect);
+        double staffTop = getFirstLine().yAt(center.getX());
+        double staffBot = getLastLine().yAt(center.getX());
+        double glyphTop = rect.getY();
+        double glyphBot = glyphTop + rect.getHeight();
 
         // Check overlap
-        int top = Math.max(glyphTop, staffTop);
-        int bot = Math.min(glyphBot, staffBot);
+        double top = Math.max(glyphTop, staffTop);
+        double bot = Math.min(glyphBot, staffBot);
 
         if (top <= bot) {
             return 0;
         }
 
         // No overlap, compute distance
-        int dist = Integer.MAX_VALUE;
+        double dist = Double.MAX_VALUE;
         dist = Math.min(dist, Math.abs(staffTop - glyphTop));
         dist = Math.min(dist, Math.abs(staffTop - glyphBot));
         dist = Math.min(dist, Math.abs(staffBot - glyphTop));

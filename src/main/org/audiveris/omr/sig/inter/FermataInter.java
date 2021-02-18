@@ -28,7 +28,6 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
 import org.audiveris.omr.sig.relation.Link;
@@ -39,6 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -90,7 +90,7 @@ public class FermataInter
      * @param grade the interpretation quality
      */
     public FermataInter (Shape shape,
-                         double grade)
+                         Double grade)
     {
         super(null, null, shape, grade);
     }
@@ -209,6 +209,8 @@ public class FermataInter
     public void invalidateCache ()
     {
         bounds = null;
+
+        setGrade(EnsembleHelper.computeMeanContextualGrade(this));
     }
 
     //-----------------//
@@ -217,11 +219,12 @@ public class FermataInter
     /**
      * (Try to) connect this fermata with a suitable StaffBarline.
      *
+     * @param profile desired profile level
      * @return true if successful
      */
-    public boolean linkWithBarline ()
+    public boolean linkWithBarline (int profile)
     {
-        Link link = lookupBarlineLink(sig.getSystem());
+        Link link = lookupBarlineLink(sig.getSystem(), profile);
 
         if (link != null) {
             link.applyTo(this);
@@ -238,11 +241,12 @@ public class FermataInter
     /**
      * (Try to) connect this fermata with suitable chord.
      *
+     * @param profile desired profile level
      * @return true if successful
      */
-    public boolean linkWithChord ()
+    public boolean linkWithChord (int profile)
     {
-        Link link = lookupChordLink(sig.getSystem());
+        Link link = lookupChordLink(sig.getSystem(), profile);
 
         if (link != null) {
             link.applyTo(this);
@@ -273,10 +277,12 @@ public class FermataInter
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
     {
-        Link link = lookupBarlineLink(system);
+        final int profile = Math.max(getProfile(), system.getProfile());
+
+        Link link = lookupBarlineLink(system, profile);
 
         if (link == null) {
-            link = lookupChordLink(system);
+            link = lookupChordLink(system, profile);
         }
 
         return (link == null) ? Collections.emptyList() : Collections.singleton(link);
@@ -298,10 +304,12 @@ public class FermataInter
     /**
      * Look for a suitable link with a staff barline.
      *
-     * @param system containing system
+     * @param system  containing system
+     * @param profile desired profile level
      * @return suitable link or null
      */
-    private Link lookupBarlineLink (SystemInfo system)
+    private Link lookupBarlineLink (SystemInfo system,
+                                    int profile)
     {
         final Point center = getCenter();
 
@@ -324,7 +332,8 @@ public class FermataInter
 
         // Check vertical distance to bar/staff
         final Scale scale = system.getSheet().getScale();
-        final int maxDy = scale.toPixels(constants.maxFermataDy);
+        final int maxDy = scale.toPixels(
+                (Scale.Fraction) constants.getConstant(constants.maxFermataDy, profile));
         final int dyStaff = staff.distanceTo(center);
 
         if (dyStaff > maxDy) {
@@ -342,10 +351,12 @@ public class FermataInter
     /**
      * Look for a suitable link with a standard chord (head or rest).
      *
-     * @param system containing system
+     * @param system  containing system
+     * @param profile desired profile level
      * @return suitable link or null
      */
-    private Link lookupChordLink (SystemInfo system)
+    private Link lookupChordLink (SystemInfo system,
+                                  int profile)
     {
         getBounds();
         final Point center = getCenter();
@@ -382,7 +393,8 @@ public class FermataInter
 
         // Check vertical distance between fermata and chord
         final Scale scale = system.getSheet().getScale();
-        final int maxDy = scale.toPixels(constants.maxFermataDy);
+        final int maxDy = scale.toPixels(
+                (Scale.Fraction) constants.getConstant(constants.maxFermataDy, profile));
 
         if (dyChord > maxDy) {
             // Check vertical distance between fermata and staff
@@ -416,7 +428,7 @@ public class FermataInter
                                             SystemInfo system)
     {
         // Look for proper staff
-        final Point center = arc.getGlyph().getCenter();
+        final Point2D center = arc.getGlyph().getCenter2D();
         final Shape arcShape = arc.getShape();
         final Staff staff = (arcShape == Shape.FERMATA_ARC) ? system.getStaffAtOrBelow(center)
                 : system.getStaffAtOrAbove(center);
@@ -425,15 +437,10 @@ public class FermataInter
             return null;
         }
 
-        final SIGraph sig = arc.getSig();
-        sig.computeContextualGrade(arc);
-        sig.computeContextualGrade(dot);
-
-        final double grade = 0.5 * (arc.getContextualGrade() + dot.getContextualGrade());
         final Shape shape = (arcShape == Shape.FERMATA_ARC) ? Shape.FERMATA : Shape.FERMATA_BELOW;
-        final FermataInter fermata = new FermataInter(shape, grade);
+        final FermataInter fermata = new FermataInter(shape, null);
         fermata.setStaff(staff);
-        sig.addVertex(fermata);
+        staff.getSystem().getSig().addVertex(fermata);
         fermata.addMember(arc);
         fermata.addMember(dot);
 

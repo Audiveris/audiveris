@@ -30,13 +30,13 @@ import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.DurationFactor;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
@@ -55,7 +55,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import org.audiveris.omr.sig.relation.ChordNameRelation;
 
 /**
  * Class {@code AbstractChordInter} represents an ensemble of notes (rests, heads)
@@ -114,7 +113,7 @@ public abstract class AbstractChordInter
      *
      * @param grade the interpretation quality
      */
-    public AbstractChordInter (double grade)
+    public AbstractChordInter (Double grade)
     {
         super((Glyph) null, null, null, grade);
     }
@@ -200,15 +199,18 @@ public abstract class AbstractChordInter
         }
     }
 
-    //-------------//
-    // assignVoice //
-    //-------------//
+    //-----------------//
+    // justAssignVoice //
+    //-----------------//
     /**
-     * Just assign a voice to this chord.
+     * Just assign a voice to this chord, with no propagation.
+     * Method meant for afterReload only.
+     *
+     * @see #setVoice(Voice)
      *
      * @param voice the voice to assign
      */
-    public void assignVoice (Voice voice)
+    public void justAssignVoice (Voice voice)
     {
         this.voice = voice;
     }
@@ -280,7 +282,7 @@ public abstract class AbstractChordInter
      *
      * @return the related group of beams
      */
-    public BeamGroup getBeamGroup ()
+    public BeamGroupInter getBeamGroup ()
     {
         if (!getBeams().isEmpty()) {
             return getBeams().get(0).getGroup();
@@ -967,10 +969,12 @@ public abstract class AbstractChordInter
     // setVoice //
     //----------//
     /**
-     * Assign a voice to this chord, and recursively propagate to the following chords
+     * Set a voice to this chord, and recursively propagate to the following chords
      * related by beam or tie.
      *
-     * @param voice the voice to assign
+     * @see #justAssignVoice(Voice)
+     *
+     * @param voice the voice to set
      */
     public void setVoice (Voice voice)
     {
@@ -983,7 +987,7 @@ public abstract class AbstractChordInter
             }
 
             // Extend to other grouped chords if any
-            BeamGroup group = getBeamGroup();
+            BeamGroupInter group = getBeamGroup();
 
             if (group != null) {
                 group.setVoice(voice);
@@ -1016,21 +1020,9 @@ public abstract class AbstractChordInter
         tailLocation = null;
 
         // Compute global grade based on contained notes (TODO: +stem as well?)
-        if ((sig != null) && sig.containsVertex(this)) {
-            final List<Inter> notes = getMembers();
+        setGrade(EnsembleHelper.computeMeanContextualGrade(this));
 
-            if (!notes.isEmpty()) {
-                double gr = 0;
-
-                for (Inter inter : notes) {
-                    gr += sig.computeContextualGrade(inter);
-                }
-
-                gr /= notes.size();
-                setGrade(gr);
-            }
-        }
-
+        // Include chord in stack
         if ((sig != null) && !isRemoved() && (measure == null)) {
             Point center = getCenter();
 
@@ -1177,7 +1169,7 @@ public abstract class AbstractChordInter
     public void pushTimeViaGroup ()
     {
         // Propagate via beam group if any
-        BeamGroup group = getBeamGroup();
+        BeamGroupInter group = getBeamGroup();
 
         if (group != null) {
             group.computeTimeOffsets();

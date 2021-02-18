@@ -63,7 +63,7 @@ public class LyricLineInter
      * @param words    the sequence of words (LyricItemInter's actually)
      */
     public LyricLineInter (Rectangle bounds,
-                           double grade,
+                           Double grade,
                            FontInfo meanFont)
     {
         super(bounds, grade, meanFont, TextRole.Lyrics);
@@ -74,7 +74,7 @@ public class LyricLineInter
      *
      * @param grade the interpretation quality
      */
-    public LyricLineInter (double grade)
+    public LyricLineInter (Double grade)
     {
         this(null, grade, null);
     }

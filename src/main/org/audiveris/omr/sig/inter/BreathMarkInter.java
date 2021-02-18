@@ -29,7 +29,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
+import java.awt.geom.Point2D;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -52,7 +52,7 @@ public class BreathMarkInter
      * @param grade the interpretation quality
      */
     public BreathMarkInter (Glyph glyph,
-                            double grade)
+                            Double grade)
     {
         super(glyph, (glyph != null) ? glyph.getBounds() : null, Shape.BREATH_MARK, grade);
     }
@@ -85,11 +85,11 @@ public class BreathMarkInter
      * @return the created breathMark or null
      */
     public static BreathMarkInter create (Glyph glyph,
-                                          double grade,
+                                          Double grade,
                                           SystemInfo system)
     {
         // Look for staff below
-        final Point center = glyph.getCenter();
+        final Point2D center = glyph.getCenter2D();
         final Staff staff = system.getStaffAtOrBelow(center);
 
         if (staff == null) {

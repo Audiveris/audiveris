@@ -27,11 +27,11 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
@@ -246,8 +246,8 @@ public class ChordListMenu
         }
 
         // The two candidates cannot belong to the same beam group
-        BeamGroup bg1 = src.getBeamGroup();
-        BeamGroup bg2 = tgt.getBeamGroup();
+        BeamGroupInter bg1 = src.getBeamGroup();
+        BeamGroupInter bg2 = tgt.getBeamGroup();
 
         if ((bg1 != null) && (bg1 == bg2)) {
             logger.debug("Chords belong to the same beam group: {}", chords);

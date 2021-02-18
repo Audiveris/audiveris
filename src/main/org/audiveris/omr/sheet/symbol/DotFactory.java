@@ -61,8 +61,8 @@ import org.audiveris.omrdataset.api.OmrShape;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -194,7 +194,7 @@ public class DotFactory
 
         for (int i = 0; i < repeatDots.size(); i++) {
             final RepeatDotInter dot = (RepeatDotInter) repeatDots.get(i);
-            final Rectangle dotLuBox = dot.getDotLuBox(system);
+            final Rectangle dotLuBox = dot.getDotLuBox(system, system.getProfile());
             final int xBreak = dotLuBox.x + dotLuBox.width;
 
             for (Inter inter : repeatDots.subList(i + 1, repeatDots.size())) {
@@ -233,11 +233,11 @@ public class DotFactory
             return true;
         }
 
-        final Point center = glyph.getCenter();
+        final Point2D center = glyph.getCenter2D();
         final double distance; // Specified in interline fraction
 
         if (staff.isOneLineStaff()) {
-            final double dy = Math.abs(center.y - staff.getMidLine().yAt(center.x));
+            final double dy = Math.abs(center.getY() - staff.getMidLine().yAt(center.getX()));
             distance = dy / staff.getSpecificInterline();
         } else {
             final NotePosition notePosition = staff.getNotePosition(center);
@@ -473,9 +473,9 @@ public class DotFactory
     {
         // Sanity check on pitch
         final Rectangle dotBounds = dot.getBounds();
-        final Point dotPt = GeoUtil.centerOf(dotBounds);
+        final Point2D dotPt = GeoUtil.center2D(dotBounds);
 
-        if (!RepeatDotInter.checkPitch(system, dotPt, false)) {
+        if (!RepeatDotInter.checkPitch(system, dotPt, system.getProfile())) {
             return;
         }
 
@@ -484,10 +484,11 @@ public class DotFactory
         final double pitch = (pp > 0) ? 1 : (-1);
         final Glyph glyph = dot.getGlyph();
         final Staff staff = system.getClosestStaff(dotPt); // Staff is OK
-        final RepeatDotInter repeat = new RepeatDotInter(glyph, 0, staff, pitch);
+        final RepeatDotInter repeat = new RepeatDotInter(glyph, 0.0, staff, pitch);
 
         // Check barline nearby
-        final Link barLink = repeat.lookupBarLink(system, interFactory.getSystemBars());
+        final Link barLink = repeat.lookupBarLink(system, interFactory.getSystemBars(),
+                                                  system.getProfile());
 
         if (barLink == null) {
             return;
@@ -574,10 +575,11 @@ public class DotFactory
             logger.info("VIP lateDotAugmentationCheck for {}", dot);
         }
 
-        double grade = Grades.intrinsicRatio * dot.getGrade();
-        Glyph glyph = dot.getGlyph();
-        AugmentationDotInter second = new AugmentationDotInter(glyph, grade);
-        Link bestDotLink = Link.bestOf(second.lookupDotLinks(systemFirsts, system));
+        final double grade = Grades.intrinsicRatio * dot.getGrade();
+        final Glyph glyph = dot.getGlyph();
+        final AugmentationDotInter second = new AugmentationDotInter(glyph, grade);
+        final Link bestDotLink = Link.bestOf(
+                second.lookupDotLinks(systemFirsts, system, system.getProfile()));
 
         if (bestDotLink != null) {
             sig.addVertex(second);
@@ -594,6 +596,8 @@ public class DotFactory
      */
     private void lateFermataChecks ()
     {
+        final int profile = system.getProfile();
+
         // Collection of fermata arc candidates in the system
         List<Inter> arcs = sig.inters(FermataArcInter.class);
 
@@ -621,15 +625,14 @@ public class DotFactory
                 }
 
                 if (halfBox.intersects(dotBox)) {
-                    final Point dotCenter = GeoUtil.centerOf(dotBox);
-                    double xGap = Math.abs(dotCenter.x - (halfBox.x + (halfBox.width / 2)));
-                    double yTarget = (arc.getShape() == Shape.FERMATA_ARC_BELOW) ? (halfBox.y
-                                                                                            + (halfBox.height
-                                                                                               * 0.25))
+                    final Point2D dotCenter = GeoUtil.center2D(dotBox);
+                    double xGap = Math.abs(dotCenter.getX() - (halfBox.x + (halfBox.width / 2)));
+                    double yTarget = (arc.getShape() == Shape.FERMATA_ARC_BELOW)
+                            ? (halfBox.y + (halfBox.height * 0.25))
                             : (halfBox.y + (halfBox.height * 0.75));
-                    double yGap = Math.abs(dotCenter.y - yTarget);
+                    double yGap = Math.abs(dotCenter.getY() - yTarget);
                     DotFermataRelation rel = new DotFermataRelation();
-                    rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
+                    rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
 
                     if (rel.getGrade() >= rel.getMinGrade()) {
                         if (dotInter == null) {
@@ -665,14 +668,16 @@ public class DotFactory
             logger.info("VIP lateNoteAugmentationCheck for {}", dot);
         }
 
-        double grade = Grades.intrinsicRatio * dot.getGrade();
-        Glyph glyph = dot.getGlyph();
-        AugmentationDotInter aug = new AugmentationDotInter(glyph, grade);
+        final double grade = Grades.intrinsicRatio * dot.getGrade();
+        final Glyph glyph = dot.getGlyph();
+        final AugmentationDotInter aug = new AugmentationDotInter(glyph, grade);
 
-        List<Link> links = new ArrayList<>();
-        Link headLink = aug.lookupHeadLink(interFactory.getSystemHeadChords(), system);
+        final List<Link> links = new ArrayList<>();
+        final int profile = system.getProfile();
+        final Link headLink = aug.lookupHeadLink(
+                interFactory.getSystemHeadChords(), system, profile);
         links.addAll(aug.sharedHeadLinks(headLink, system));
-        links.addAll(aug.lookupRestLinks(interFactory.getSystemRests(), system));
+        links.addAll(aug.lookupRestLinks(interFactory.getSystemRests(), system, profile));
 
         if (!links.isEmpty()) {
             sig.addVertex(aug);

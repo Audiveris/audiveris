@@ -73,7 +73,7 @@ public class TimeCustomInter
      */
     public TimeCustomInter (int num,
                             int den,
-                            double grade)
+                            Double grade)
     {
         super(null, Shape.CUSTOM_TIME, grade);
 
@@ -86,7 +86,7 @@ public class TimeCustomInter
      */
     private TimeCustomInter ()
     {
-        super(null, Shape.CUSTOM_TIME, 0);
+        super(null, Shape.CUSTOM_TIME, 0.0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -207,7 +207,7 @@ public class TimeCustomInter
     @Override
     public AbstractTimeInter replicate (Staff targetStaff)
     {
-        final TimeCustomInter inter = new TimeCustomInter(num, den, 0);
+        final TimeCustomInter inter = new TimeCustomInter(num, den, getGrade());
         inter.setStaff(targetStaff);
 
         return inter;

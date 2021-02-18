@@ -56,7 +56,7 @@ public abstract class EnsembleHelper
     //-----------//
     /**
      * Set the containment relationship between an (ensemble) instance and a (member)
-     * instance.
+     * instance, if not already set.
      * <p>
      * Both instances must already exist in SIG.
      * <p>
@@ -69,8 +69,12 @@ public abstract class EnsembleHelper
     public static void addMember (InterEnsemble ensemble,
                                   Inter member)
     {
-        SIGraph sig = ensemble.getSig();
-        sig.addEdge(ensemble, member, new Containment());
+        final SIGraph sig = ensemble.getSig();
+
+        // Set membership if not already in place
+        if (sig.getRelation(ensemble, member, Containment.class) == null) {
+            sig.addEdge(ensemble, member, new Containment());
+        }
     }
 
     //------------//
@@ -80,13 +84,13 @@ public abstract class EnsembleHelper
      * Report the sorted list of current member instances for a provided ensemble.
      *
      * @param ensemble   the containing inter
-     * @param comparator the comparator to sort the list of members
+     * @param comparator optional comparator to sort the list of members, can be null
      * @return the members list, perhaps empty but not null
      */
     public static List<Inter> getMembers (InterEnsemble ensemble,
                                           Comparator<Inter> comparator)
     {
-        SIGraph sig = ensemble.getSig();
+        final SIGraph sig = ensemble.getSig();
 
         if (sig == null) {
             logger.debug("Ensemble#{} not in sig", ensemble.getId());
@@ -94,7 +98,7 @@ public abstract class EnsembleHelper
             return Collections.emptyList();
         }
 
-        List<Inter> members = new ArrayList<>();
+        final List<Inter> members = new ArrayList<>();
 
         if (sig.containsVertex(ensemble)) {
             for (Relation rel : sig.outgoingEdgesOf(ensemble)) {
@@ -103,7 +107,7 @@ public abstract class EnsembleHelper
                 }
             }
 
-            if (!members.isEmpty()) {
+            if (!members.isEmpty() && (comparator != null)) {
                 Collections.sort(members, comparator);
             }
         }
@@ -149,7 +153,27 @@ public abstract class EnsembleHelper
     public static void removeMember (InterEnsemble ensemble,
                                      Inter member)
     {
-        SIGraph sig = ensemble.getSig();
+        final SIGraph sig = ensemble.getSig();
         sig.removeEdge(ensemble, member);
+    }
+
+    //----------------------------//
+    // computeMeanContextualGrade //
+    //----------------------------//
+    /**
+     * Compute contextual grade of each ensemble member, then report the mean value.
+     *
+     * @param ensemble the containing inter
+     * @return mean contextual grade, or null if no value could be computed
+     */
+    public static Double computeMeanContextualGrade (InterEnsemble ensemble)
+    {
+        final SIGraph sig = ensemble.getSig();
+
+        if ((sig != null) && sig.containsVertex(ensemble)) {
+            return Inters.computeMeanContextualGrade(ensemble.getMembers());
+        }
+
+        return null;
     }
 }

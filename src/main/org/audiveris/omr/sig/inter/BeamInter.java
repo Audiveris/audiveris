@@ -59,7 +59,7 @@ public class BeamInter
      *
      * @param grade quality grade
      */
-    public BeamInter (double grade)
+    public BeamInter (Double grade)
     {
         super(Shape.BEAM, grade);
     }

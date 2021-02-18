@@ -46,7 +46,7 @@ public class SmallFlagInter
      */
     public SmallFlagInter (Glyph glyph,
                            Shape shape,
-                           double grade)
+                           Double grade)
     {
         super(glyph, shape, grade);
     }

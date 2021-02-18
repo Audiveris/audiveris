@@ -28,9 +28,9 @@ import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.HorizontalSide;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.util.Comparator;
 
 /**
@@ -90,7 +90,7 @@ public class SlurHeadLink
      * @param head     head to be connected
      * @return proper SlurHeadRelation instance, ready to be inserted in SIG
      */
-    public static SlurHeadLink create (Point slurEnd,
+    public static SlurHeadLink create (Point2D slurEnd,
                                        HorizontalSide slurSide,
                                        AbstractChordInter chord,
                                        HeadInter head)

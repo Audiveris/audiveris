@@ -57,7 +57,7 @@ public class MarkerInter
      */
     public MarkerInter (Glyph glyph,
                         Shape shape,
-                        double grade)
+                        Double grade)
     {
         super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
     }

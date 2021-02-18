@@ -33,7 +33,6 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.util.IntUtil;
 import org.audiveris.omr.util.Navigable;
-import org.audiveris.omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +42,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Predicate;
 
 /**
  * Class {@code LagManager} keeps a catalog of Lag instances for a given sheet.
@@ -161,7 +161,7 @@ public class LagManager
         RunTable shortVertTable = sourceTable.copy().purge(new Predicate<Run>()
         {
             @Override
-            public final boolean check (Run run)
+            public final boolean test (Run run)
             {
                 return run.getLength() >= minVerticalRunLength;
             }

@@ -81,9 +81,9 @@ public class EndingBarRelation
     //----------------//
     // getXGapMaximum //
     //----------------//
-    public static Scale.Fraction getXGapMaximum (boolean manual)
+    public static Scale.Fraction getXGapMaximum (int profile)
     {
-        return manual ? constants.xGapMaxManual : constants.xGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.xGapMax, profile);
     }
 
     //-------//
@@ -120,27 +120,27 @@ public class EndingBarRelation
     // getXInGapMax //
     //--------------//
     @Override
-    public Scale.Fraction getXInGapMax (boolean manual)
+    public Scale.Fraction getXInGapMax (int profile)
     {
-        return manual ? constants.xGapMaxManual : constants.xGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.xGapMax, profile);
     }
 
     //---------------//
     // getXOutGapMax //
     //---------------//
     @Override
-    public Scale.Fraction getXOutGapMax (boolean manual)
+    public Scale.Fraction getXOutGapMax (int profile)
     {
-        return manual ? constants.xGapMaxManual : constants.xGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.xGapMax, profile);
     }
 
     //------------//
     // getYGapMax //
     //------------//
     @Override
-    public Scale.Fraction getYGapMax (boolean manual)
+    public Scale.Fraction getYGapMax (int profile)
     {
-        return manual ? constants.yGapMaxManual : constants.yGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
     }
 
     //----------------//
@@ -227,17 +227,19 @@ public class EndingBarRelation
                 2.0,
                 "Maximum horizontal gap between ending and barline");
 
-        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(
+        @SuppressWarnings("unused")
+        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(
                 3.0,
-                "Maximum manual horizontal gap between ending and barline");
+                "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 10.0,
                 "Maximum vertical gap between bottom of ending leg and top of barline");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+        @SuppressWarnings("unused")
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(
                 15.0,
-                "Maximum manual vertical gap between bottom of ending leg and top of barline");
+                "Idem for profile 1");
 
         private final Constant.Ratio xWeight = new Constant.Ratio(
                 1,
