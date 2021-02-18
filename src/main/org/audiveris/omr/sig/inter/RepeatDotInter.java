@@ -21,8 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
@@ -35,13 +35,13 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
-import org.audiveris.omr.util.Predicate;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omr.math.PointUtil;
 
 /**
  * Class {@code RepeatDotInter} represents a repeat dot, near a bar line.
@@ -62,7 +62,7 @@ public class RepeatDotInter
      * @param pitch dot pitch
      */
     public RepeatDotInter (Glyph glyph,
-                           double grade,
+                           Double grade,
                            Staff staff,
                            Double pitch)
     {
@@ -100,7 +100,7 @@ public class RepeatDotInter
         }
 
         final double pitchDif = Math.abs(Math.abs(pitch) - 1);
-        final double maxDif = RepeatDotBarRelation.getYGapMaximum(manual).getValue();
+        final double maxDif = RepeatDotBarRelation.getYGapMaximum(getProfile()).getValue();
 
         return pitchDif <= (2 * maxDif);
     }
@@ -113,18 +113,18 @@ public class RepeatDotInter
      * (close to +1 or -1).
      *
      *
-     * @param system containing system
-     * @param center dot center
-     * @param manual true for a manual candidate
+     * @param system  containing system
+     * @param center  dot center
+     * @param profile desired profile level
      * @return true if OK
      */
     public static boolean checkPitch (SystemInfo system,
-                                      Point center,
-                                      boolean manual)
+                                      Point2D center,
+                                      int profile)
     {
         final double pp = system.estimatedPitch(center);
         final double pitchDif = Math.abs(Math.abs(pp) - 1);
-        final double maxDif = RepeatDotBarRelation.getYGapMaximum(manual).getValue();
+        final double maxDif = RepeatDotBarRelation.getYGapMaximum(profile).getValue();
 
         return pitchDif <= (2 * maxDif);
     }
@@ -135,14 +135,19 @@ public class RepeatDotInter
     /**
      * Report the lookup box to retrieve the sibling dot of this repeat dot.
      *
-     * @param system containing system
+     * @param system  containing system
+     * @param profile desired profile level (currently ineffective)
      * @return the lookup dot box
      */
-    public Rectangle getDotLuBox (SystemInfo system)
+    public Rectangle getDotLuBox (SystemInfo system,
+                                  int profile)
     {
         final Scale scale = system.getSheet().getScale();
         final int dotPitch = getIntegerPitch();
         final Rectangle dotLuBox = getBounds();
+
+        // TODO: Perhaps we could grow dotLuBox based on profile level?
+        //
         dotLuBox.y -= (scale.getInterline() * dotPitch);
 
         return dotLuBox;
@@ -172,22 +177,24 @@ public class RepeatDotInter
      *
      * @param system     containing system
      * @param systemBars barlines in the system
+     * @param profile    desired profile level
      * @return link to the related barline or null
      */
     public Link lookupBarLink (SystemInfo system,
-                               List<Inter> systemBars)
+                               List<Inter> systemBars,
+                               int profile)
     {
         // Check vertical pitch position within the staff: close to +1 or -1
         final Rectangle dotBounds = getBounds();
-        final Point dotPt = GeoUtil.centerOf(dotBounds);
+        final Point2D dotPt = GeoUtil.center2D(dotBounds);
 
         staff = system.getClosestStaff(dotPt); // Staff is OK
 
         // Look for barline
         final Scale scale = system.getSheet().getScale();
-        final int maxDx = scale.toPixels(RepeatDotBarRelation.getXOutGapMaximum(false));
-        final int maxDy = scale.toPixels(RepeatDotBarRelation.getYGapMaximum(false));
-        final Rectangle barLuBox = new Rectangle(dotPt);
+        final int maxDx = scale.toPixels(RepeatDotBarRelation.getXOutGapMaximum(profile));
+        final int maxDy = scale.toPixels(RepeatDotBarRelation.getYGapMaximum(profile));
+        final Rectangle barLuBox = new Rectangle(PointUtil.rounded(dotPt));
         barLuBox.grow(maxDx, maxDy);
 
         final List<Inter> bars = Inters
@@ -204,17 +211,19 @@ public class RepeatDotInter
         for (Inter barInter : bars) {
             BarlineInter bar = (BarlineInter) barInter;
             Rectangle box = bar.getBounds();
-            Point barCenter = bar.getCenter();
+            Point2D barCenter = bar.getCenter2D();
 
             // Select proper bar reference point (left or right side and proper vertical side)
-            double barY = barCenter.y + ((box.height / 8d) * Integer.signum(dotPt.y - barCenter.y));
-            double barX = LineUtil.xAtY(bar.getMedian(), barY) + ((bar.getWidth() / 2) * Integer
-                    .signum(dotPt.x - barCenter.x));
+            int yDir = (dotPt.getY() > barCenter.getY()) ? 1 : -1;
+            double barY = barCenter.getY() + ((box.height / 8.0) * yDir);
+            double yGap = Math.abs(barY - dotPt.getY());
 
-            double xGap = Math.abs(barX - dotPt.x);
-            double yGap = Math.abs(barY - dotPt.y);
+            int xDir = (dotPt.getX() > barCenter.getX()) ? 1 : -1;
+            double barX = LineUtil.xAtY(bar.getMedian(), barY) + ((bar.getWidth() / 2.0) * xDir);
+            double xGap = Math.abs(barX - dotPt.getX());
+
             RepeatDotBarRelation rel = new RepeatDotBarRelation();
-            rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
+            rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
 
             if (rel.getGrade() >= rel.getMinGrade()) {
                 if ((bestRel == null) || (bestXGap > xGap)) {
@@ -237,23 +246,22 @@ public class RepeatDotInter
     /**
      * Look for a sibling repeat dot.
      *
-     * @param system containing system
+     * @param system  containing system
+     * @param profile desired profile level
      * @return link to the sibling repeat dot or null
      */
-    public Link lookupDotLink (SystemInfo system)
+    public Link lookupDotLink (SystemInfo system,
+                               int profile)
     {
-        final Rectangle dotLuBox = getDotLuBox(system);
-        final List<Inter> dots = system.getSig().inters(new Predicate<Inter>()
-        {
-            @Override
-            public boolean check (Inter inter)
-            {
-                return (inter != RepeatDotInter.this)
-                               && !inter.isRemoved()
-                               && (inter.getShape() == Shape.REPEAT_DOT)
-                               && (inter.getBounds().intersects(dotLuBox));
-            }
-        });
+        final Rectangle dotLuBox = getDotLuBox(system, profile);
+        final List<Inter> dots = system.getSig().inters((Inter inter) -> (inter
+                                                                                  != RepeatDotInter.this)
+                                                                         && !inter
+                        .isRemoved()
+                                                                                 && (inter
+                        .getShape() == Shape.REPEAT_DOT)
+                                                                                 && (inter
+                        .getBounds().intersects(dotLuBox)));
 
         if (!dots.isEmpty()) {
             return new Link(dots.get(0), new RepeatDotPairRelation(), true);
@@ -268,10 +276,11 @@ public class RepeatDotInter
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
     {
+        final int profile = Math.max(getProfile(), system.getProfile());
         final List<Link> links = new ArrayList<>();
 
         // Sanity check on pitch
-        if (!checkPitch(system, getCenter(), manual)) {
+        if (!checkPitch(system, getCenter(), profile)) {
             setAbnormal(true);
 
             return links;
@@ -281,12 +290,12 @@ public class RepeatDotInter
         final List<Inter> systemBars = system.getSig().inters(BarlineInter.class);
         Collections.sort(systemBars, Inters.byAbscissa);
 
-        final Link barLink = lookupBarLink(system, systemBars);
+        final Link barLink = lookupBarLink(system, systemBars, profile);
         if (barLink != null) {
             links.add(barLink);
         }
 
-        final Link dotLink = lookupDotLink(system);
+        final Link dotLink = lookupDotLink(system, profile);
         if (dotLink != null) {
             links.add(dotLink);
         }

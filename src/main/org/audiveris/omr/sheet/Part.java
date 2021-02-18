@@ -42,7 +42,6 @@ import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.VerticalSide;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
-import org.audiveris.omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -713,7 +713,7 @@ public class Part
         // Staff heads
         final Staff staff = (side == VerticalSide.TOP) ? getFirstStaff() : getLastStaff();
         List<Inter> heads = sig.inters(HeadInter.class);
-        heads = Inters.inters(staff, heads);
+        heads = Inters.inters(heads, staff);
         inters.addAll(heads);
 
         // Related stems
@@ -869,7 +869,7 @@ public class Part
 
         if (slurs != null) {
             for (SlurInter slur : slurs) {
-                if (predicate.check(slur)) {
+                if (predicate.test(slur)) {
                     selectedSlurs.add(slur);
                 }
             }

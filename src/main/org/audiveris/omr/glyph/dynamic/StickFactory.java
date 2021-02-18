@@ -30,7 +30,6 @@ import org.audiveris.omr.run.Run;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.StopWatch;
 
 import org.slf4j.Logger;
@@ -49,6 +48,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 
 /**
  * Class {@code StickFactory} builds a set of straight filaments (stem seeds / ledgers).
@@ -360,7 +360,7 @@ public class StickFactory
         for (LinkedSection ls : allSections) {
             if ((ls.getRunCount() <= params.maxStickThickness)
                         && (ls.getLength(orientation) >= params.minCoreSectionLength)) {
-                if ((predicate == null) || predicate.check(ls)) {
+                if ((predicate == null) || predicate.test(ls)) {
                     candidates.add(ls);
                 }
             }
@@ -395,13 +395,14 @@ public class StickFactory
      */
     private Map<Integer, List<Section>> getOppositeStickers (List<Section> externalStickers)
     {
-        Map<Integer, List<Section>> map = new TreeMap<>();
+        final Map<Integer, List<Section>> map = new TreeMap<>();
         Collections.sort(externalStickers, Section.byCoordinate);
 
+        final int iMax = externalStickers.size() - 1;
         int iStart = -1;
         int coordStart = -1;
 
-        for (int i = 0, iBreak = externalStickers.size(); i < iBreak; i++) {
+        for (int i = 0; i <= iMax; i++) {
             final Section section = externalStickers.get(i);
             final int coord = section.getStartCoord();
 
@@ -415,6 +416,11 @@ public class StickFactory
                 iStart = i;
                 coordStart = coord;
             }
+        }
+
+        // Pending coord?
+        if (iStart != -1) {
+            map.put(coordStart, externalStickers.subList(iStart, iMax + 1));
         }
 
         return map;
@@ -509,7 +515,7 @@ public class StickFactory
                             final int thickness = neighbor.getRunCount();
 
                             if (((thickness + filMeanThickness) > params.maxStickThickness)
-                                        || ((predicate != null) && !predicate.check(neighbor))) {
+                                        || ((predicate != null) && !predicate.test(neighbor))) {
                                 it.remove();
                             } else {
                                 int length = neighbor.getLength(orientation);

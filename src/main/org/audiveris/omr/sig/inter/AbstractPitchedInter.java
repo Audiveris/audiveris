@@ -109,7 +109,7 @@ public abstract class AbstractPitchedInter
     public AbstractPitchedInter (Glyph glyph,
                                  Rectangle bounds,
                                  Shape shape,
-                                 double grade,
+                                 Double grade,
                                  Staff staff,
                                  Double pitch)
     {
@@ -240,7 +240,7 @@ public abstract class AbstractPitchedInter
         if ((bounds == null) || (staff == null)) {
             setPitch(null);
         } else {
-            setPitch(staff.pitchPositionOf(GeoUtil.centerOf(bounds)) + getAreaPitchOffset());
+            setPitch(staff.pitchPositionOf(GeoUtil.center2D(bounds)) + getAreaPitchOffset());
         }
     }
 
@@ -254,7 +254,7 @@ public abstract class AbstractPitchedInter
 
         // Pitch?
         if ((pitch == null) && (staff != null) && (bounds != null) && (shape != null)) {
-            setPitch(staff.pitchPositionOf(GeoUtil.centerOf(bounds)) + getAreaPitchOffset());
+            setPitch(staff.pitchPositionOf(GeoUtil.center2D(bounds)) + getAreaPitchOffset());
         }
     }
 
@@ -264,7 +264,7 @@ public abstract class AbstractPitchedInter
     @Override
     protected String internals ()
     {
-        return super.internals() + String.format(" p:%.2f", pitch);
+        return super.internals() + String.format(" p:%.1f", pitch);
     }
 
     //~ Internal Classes ---------------------------------------------------------------------------

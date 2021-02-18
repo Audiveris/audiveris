@@ -42,9 +42,11 @@ import org.slf4j.LoggerFactory;
 public class BeamsStep
         extends AbstractSystemStep<BeamsStep.Context>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BeamsStep.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BeamsStep object.
      */
@@ -52,6 +54,7 @@ public class BeamsStep
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -66,13 +69,18 @@ public class BeamsStep
     //----------//
     // doEpilog //
     //----------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Dispose of BEAM_SPOT glyphs, a glyph may be split into several beams.
+     * <p>
+     * (NOTA: the weak references to glyphs may survive as long as a related SpotsController exists)
+     */
     @Override
     protected void doEpilog (Sheet sheet,
                              Context context)
             throws StepException
     {
-        // Dispose of BEAM_SPOT glyphs, a glyph may be split into several beams
-        // (NOTA: the weak references may survive as long as a related SpotsController exists)
         for (SystemInfo system : sheet.getSystems()) {
             system.removeGroupedGlyphs(GlyphGroup.BEAM_SPOT);
         }
@@ -100,6 +108,7 @@ public class BeamsStep
         return new Context(spotLag);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Context //
     //---------//

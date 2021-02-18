@@ -23,12 +23,12 @@ package org.audiveris.omr.glyph.ui;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
-import org.audiveris.omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
+import java.util.function.Predicate;
 
 import javax.swing.AbstractSpinnerModel;
 
@@ -104,7 +104,7 @@ public class SpinnerGlyphModel
             for (Iterator<Glyph> it = nest.iterator(); it.hasNext();) {
                 Glyph glyph = it.next();
 
-                if ((glyph != null) && ((predicate == null) || predicate.check(glyph))) {
+                if ((glyph != null) && ((predicate == null) || predicate.test(glyph))) {
                     return glyph.getId();
                 }
             }
@@ -121,7 +121,7 @@ public class SpinnerGlyphModel
                     if (glyph.getId() == currentId) {
                         found = true;
                     }
-                } else if ((predicate == null) || predicate.check(glyph)) {
+                } else if ((predicate == null) || predicate.test(glyph)) {
                     return glyph.getId();
                 }
             }
@@ -159,7 +159,7 @@ public class SpinnerGlyphModel
             }
 
             // Should we remember this as (suitable) previous glyph ?
-            if ((predicate == null) || predicate.check(glyph)) {
+            if ((predicate == null) || predicate.test(glyph)) {
                 prevGlyph = glyph;
             }
         }
@@ -209,7 +209,7 @@ public class SpinnerGlyphModel
 
             if (glyph != null) {
                 if (predicate != null) {
-                    ok = predicate.check(glyph);
+                    ok = predicate.test(glyph);
                 } else {
                     ok = true;
                 }

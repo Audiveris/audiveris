@@ -26,7 +26,6 @@ import ij.process.ByteProcessor;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
-import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
@@ -63,10 +62,10 @@ import java.awt.BasicStroke;
 import static java.awt.BasicStroke.*;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.Area;
+import java.awt.geom.Point2D;
 import java.util.List;
 
 /**
@@ -235,7 +234,7 @@ public abstract class PageCleaner
     {
         ShapeSymbol symbol = Symbols.getSymbol(head.getShape());
         Glyph glyph = head.getGlyph();
-        Point center = (glyph != null) ? glyph.getCenter() : GeoUtil.centerOf(head.getBounds());
+        Point2D center = (glyph != null) ? glyph.getCenter2D() : head.getCenter2D();
         MusicFont font = head.getStaff().isSmall() ? smallHeadMusicFont : headMusicFont;
         symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
     }
@@ -254,7 +253,7 @@ public abstract class PageCleaner
 
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
         Glyph glyph = inter.getGlyph();
-        Point center = (glyph != null) ? glyph.getCenter() : GeoUtil.centerOf(inter.getBounds());
+        Point2D center = (glyph != null) ? glyph.getCenter2D() : inter.getCenter2D();
         boolean isSmall = (inter.getStaff() != null) && inter.getStaff().isSmall();
         MusicFont font = isSmall ? smallMusicFont : musicFont;
         symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);

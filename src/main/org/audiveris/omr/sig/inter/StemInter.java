@@ -50,6 +50,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
 import static org.audiveris.omr.sig.relation.StemPortion.*;
 import org.audiveris.omr.sig.ui.InterEditor;
+import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
@@ -83,6 +84,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class StemInter
         extends AbstractVerticalInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -94,6 +96,8 @@ public class StemInter
     /** Anchor vertical margin, relative to head height. */
     private static final double ANCHOR_MARGIN_RATIO = constants.anchorMarginRatio.getValue();
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -109,6 +113,7 @@ public class StemInter
     @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
     private Point2D oldBottom;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StemInter object.
      *
@@ -128,7 +133,7 @@ public class StemInter
      * @param grade the assigned grade
      */
     public StemInter (Glyph glyph,
-                      double grade)
+                      Double grade)
     {
         super(glyph, Shape.STEM, grade);
     }
@@ -138,9 +143,10 @@ public class StemInter
      */
     private StemInter ()
     {
-        super(null, null, null);
+        super(null, null, 0.0);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -442,6 +448,38 @@ public class StemInter
         return new Editor(this);
     }
 
+    //---------------//
+    // getFreeLength //
+    //---------------//
+    /**
+     * Report the length of stem tail portion when not linked to a beam.
+     *
+     * @return length of tail portion without heads, null if a beam is involved
+     */
+    public Integer getFreeLength ()
+    {
+        if (sig.hasRelation(this, BeamStemRelation.class)) {
+            return null;
+        }
+
+        final List<HeadInter> heads = new ArrayList<>(getHeads());
+
+        if (heads.isEmpty()) {
+            return null;
+        }
+
+        Collections.sort(heads, Inters.byCenterOrdinate); // Top down
+        final int vDir = computeDirection(); // Head to tail
+        final HeadInter lastHead = (vDir < 0) ? heads.get(0) : heads.get(heads.size() - 1);
+        final Relation rel = sig.getRelation(lastHead, this, HeadStemRelation.class);
+        final HeadStemRelation hsRel = (HeadStemRelation) rel;
+        final HorizontalSide headSide = hsRel.getHeadSide();
+        final Point2D refPt = lastHead.getStemReferencePoint(headSide);
+        final Point2D stemEnd = (vDir < 0) ? median.getP1() : median.getP2();
+
+        return (int) Math.rint(Math.abs(stemEnd.getY() - refPt.getY()));
+    }
+
     //----------//
     // getHeads //
     //----------//
@@ -608,6 +646,91 @@ public class StemInter
         super.remove(extensive);
     }
 
+    //---------------//
+    // refineHeadEnd //
+    //---------------//
+    /**
+     * Using the last head on stem, refine the precise location of stem head end.
+     */
+    public void refineHeadEnd ()
+    {
+        final List<HeadInter> heads = new ArrayList<>(getHeads());
+
+        if (heads.isEmpty()) {
+            return;
+        }
+
+        Collections.sort(heads, Inters.byCenterOrdinate);
+        final int dir = computeDirection(); // From head to tail
+        final HeadInter head = (dir > 0) ? heads.get(0) : heads.get(heads.size() - 1);
+        final HeadStemRelation rel = (HeadStemRelation) sig.getRelation(head, this,
+                                                                        HeadStemRelation.class);
+        final HorizontalSide hSide = rel.getHeadSide();
+        final double yRef = head.getStemReferencePoint(hSide).getY();
+
+        final Line2D longLine = getReliableLine();
+        final Point2D crossPt = LineUtil.intersectionAtY(longLine, yRef);
+
+        if (dir > 0) {
+            setMedian(crossPt, getMedian().getP2());
+        } else {
+            setMedian(getMedian().getP1(), crossPt);
+        }
+    }
+
+    //---------------//
+    // refineTailEnd //
+    //---------------//
+    /**
+     * Using the last beam if any on stem, refine the precise location of stem tail end.
+     */
+    public void refineTailEnd ()
+    {
+        final List<AbstractBeamInter> beams = new ArrayList<>(getBeams());
+
+        if (beams.isEmpty()) {
+            return;
+        }
+
+        // Sort beams top down
+        final int x = getCenter().x;
+        Collections.sort(beams, (AbstractBeamInter b1, AbstractBeamInter b2)
+                         -> Double.compare(LineUtil.yAtX(b1.getMedian(), x),
+                                           LineUtil.yAtX(b2.getMedian(), x)));
+
+        final int dir = computeDirection(); // From head to tail
+        final AbstractBeamInter beam = (dir < 0) ? beams.get(0) : beams.get(beams.size() - 1);
+        final Line2D border = beam.getBorder(VerticalSide.of(dir));
+
+        final Line2D longLine = getReliableLine();
+        final Point2D crossPt = LineUtil.intersection(border, longLine);
+
+        if (dir < 0) {
+            setMedian(crossPt, getMedian().getP2());
+        } else {
+            setMedian(getMedian().getP1(), crossPt);
+        }
+    }
+
+    //-----------------//
+    // getReliableLine //
+    //-----------------//
+    private Line2D getReliableLine ()
+    {
+        // Extrapolate stem line or use a "vertical" through its center abscissa?
+        final Sheet sheet = getSig().getSystem().getSheet();
+        final Scale scale = sheet.getScale();
+
+        if (getBounds().height >= scale.toPixels(constants.minLengthForSlope)) {
+            return getMedian();
+        } else {
+            final Point center = getCenter();
+            final double slope = sheet.getSkew().getSlope();
+            return new Line2D.Double(center, new Point2D.Double(center.x - slope * 1000,
+                                                                center.y + 1000));
+        }
+    }
+
     //-------------//
     // searchLinks //
     //-------------//
@@ -621,9 +744,10 @@ public class StemInter
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
     {
+        final int profile = Math.max(getProfile(), system.getProfile());
         List<Link> allLinks = new ArrayList<>();
-        allLinks.addAll(lookupHeadLinks(system));
-        allLinks.addAll(lookupBeamLinks(system));
+        allLinks.addAll(lookupHeadLinks(system, profile));
+        allLinks.addAll(lookupBeamLinks(system, profile));
 
         return allLinks;
     }
@@ -636,14 +760,15 @@ public class StemInter
      *
      * @return collection of links, perhaps empty
      */
-    private Collection<Link> lookupBeamLinks (SystemInfo system)
+    private Collection<Link> lookupBeamLinks (SystemInfo system,
+                                              int profile)
     {
         Collection<Link> links = new LinkedHashSet<>();
 
         // Look for beams around the stem
         final Scale scale = system.getSheet().getScale();
-        final int maxBeamOutDx = scale.toPixels(BeamStemRelation.getXOutGapMaximum(manual));
-        final int maxYGap = scale.toPixels(BeamStemRelation.getYGapMaximum(manual));
+        final int maxBeamOutDx = scale.toPixels(BeamStemRelation.getXOutGapMaximum(profile));
+        final int maxYGap = scale.toPixels(BeamStemRelation.getYGapMaximum(profile));
         final Rectangle luBox = getBounds();
         luBox.grow(maxBeamOutDx, maxYGap);
 
@@ -665,7 +790,7 @@ public class StemInter
             final AbstractBeamInter beam = (AbstractBeamInter) inter;
             final Point2D crossPt = LineUtil.intersection(stemMedian, beam.getMedian());
             final VerticalSide vSide = (crossPt.getY() < yStem) ? TOP : BOTTOM;
-            final Link link = BeamStemRelation.checkLink(beam, this, vSide, scale);
+            final Link link = BeamStemRelation.checkLink(beam, this, vSide, scale, profile);
 
             if (link != null) {
                 links.add(link);
@@ -683,14 +808,15 @@ public class StemInter
      *
      * @return collection of links, perhaps empty
      */
-    private Collection<Link> lookupHeadLinks (SystemInfo system)
+    private Collection<Link> lookupHeadLinks (SystemInfo system,
+                                              int profile)
     {
         Collection<Link> links = null;
 
         // Search for non-linked heads in a lookup area around the stem
         final Scale scale = system.getSheet().getScale();
-        final int maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum(manual));
-        final int maxYGap = scale.toPixels(HeadStemRelation.getYGapMaximum(manual));
+        final int maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum(profile));
+        final int maxYGap = scale.toPixels(HeadStemRelation.getYGapMaximum(profile));
         final Rectangle luBox = getBounds();
         luBox.grow(maxHeadOutDx, maxYGap);
 
@@ -711,7 +837,7 @@ public class StemInter
 
         for (Inter inter : heads) {
             HeadInter head = (HeadInter) inter;
-            Link link = head.lookupLink(thisStem, system);
+            Link link = head.lookupLink(thisStem, system, profile);
 
             if ((link != null) && (link.partner == this)) {
                 if (links == null) {
@@ -773,6 +899,23 @@ public class StemInter
         return upgraded;
     }
 
+    //---------------//
+    // minTailLength //
+    //---------------//
+    public static Scale.Fraction minTailLength ()
+    {
+        return constants.minTailLength;
+    }
+
+    //----------------//
+    // bestTailLength //
+    //----------------//
+    public static Scale.Fraction bestTailLength ()
+    {
+        return constants.bestTailLength;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -788,6 +931,18 @@ public class StemInter
         private final Constant.Ratio anchorMarginRatio = new Constant.Ratio(
                 0.67,
                 "Anchor vertical margin, relative to head height");
+
+        private final Scale.Fraction minLengthForSlope = new Scale.Fraction(
+                1.0,
+                "Minimum stem length for a reliable slope");
+
+        private final Scale.Fraction minTailLength = new Scale.Fraction(
+                1.75,
+                "Minimum stem tail length (after last head)");
+
+        private final Scale.Fraction bestTailLength = new Scale.Fraction(
+                2.5,
+                "Optimal stem tail length (after last head)");
     }
 
     //--------//

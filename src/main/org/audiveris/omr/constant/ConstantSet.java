@@ -45,9 +45,13 @@ import java.util.TreeMap;
 @ThreadSafe
 public abstract class ConstantSet
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ConstantSet.class);
 
+    public static final String PROFILE_SUFFIX = "_p";
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Name of the containing unit/class */
     private final String unit;
 
@@ -61,6 +65,7 @@ public abstract class ConstantSet
      */
     private volatile SortedMap<String, Constant> map;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * A new ConstantSet instance is created, and registered at the
      * UnitManager singleton, but its map of internal constants will
@@ -77,6 +82,7 @@ public abstract class ConstantSet
         UnitManager.getInstance().addSet(this);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // dumpOf //
     //--------//
@@ -128,6 +134,60 @@ public abstract class ConstantSet
     public Constant getConstant (String name)
     {
         return getMap().get(name);
+    }
+
+    //-------------//
+    // getConstant //
+    //-------------//
+    /**
+     * Report a constant knowing its name in the constant set and a profile level.
+     * <p>
+     * The constant set is searched for name as radix plus a suffix based on profile level.
+     * If not found, search is made with lower profile levels until level 0 (no suffix).
+     *
+     * @param name    the desired name
+     * @param profile the desired profile level
+     *
+     * @return the proper constant, or null if not found
+     */
+    private Constant getConstant (String name,
+                                  int profile)
+    {
+        if (profile <= 0) {
+            return getMap().get(name);
+        }
+
+        for (int p = profile; p >= 0; p--) {
+            final Constant cst = getMap().get(name + suffix(p));
+
+            if (cst != null) {
+                return cst;
+            }
+        }
+
+        return null;
+    }
+
+    //-------------//
+    // getConstant //
+    //-------------//
+    /**
+     * Report a constant knowing its root in the constant set and a profile level.
+     * <p>
+     * This is safer than to directly call {@link #getConstant(java.lang.String, int)} which may
+     * suffer of typos in provided name.
+     *
+     * @param root    the root constant
+     * @param profile the desired profile level
+     *
+     * @return the proper constant, or null if not found
+     */
+    public Constant getConstant (Constant root,
+                                 int profile)
+    {
+        getMap(); // To make sure map is initialized, as well as every constant name
+
+        return getConstant(root.getName(), profile);
     }
 
     //-------------//
@@ -230,31 +290,29 @@ public abstract class ConstantSet
     // initMap //
     //---------//
     /**
-     * Now that the enclosed constants of this set have been
-     * constructed, let's assign them their unit and name parameters.
+     * Now that the enclosed constants of this set have been constructed,
+     * let's assign them their unit and name parameters.
      */
     private void initMap ()
     {
         SortedMap<String, Constant> tempMap = new TreeMap<>();
-
-        // Retrieve values of all fields
         Class<?> cl = getClass();
 
         try {
+            // Retrieve values of all fields
             for (Field field : cl.getDeclaredFields()) {
                 field.setAccessible(true);
 
                 String name = field.getName();
-
-                // Make sure that we have only Constants in this ConstantSet
                 Object obj = field.get(this);
 
-                // Not yet allocated, no big deal, we'll get back to it later
                 if (obj == null) {
+                    // Not yet allocated, no big deal, we'll get back to it later
                     ///logger.warn("ConstantSet not fully allocated yet");
                     return;
                 }
 
+                // Make sure that we have only Constants in this ConstantSet
                 if (obj instanceof Constant) {
                     Constant constant = (Constant) obj;
                     constant.setUnitAndName(unit, name);
@@ -270,5 +328,23 @@ public abstract class ConstantSet
         } catch (Throwable ex) {
             logger.warn("Error initializing map of ConstantSet " + this, ex);
         }
+    }
+
+    //--------//
+    // suffix //
+    //--------//
+    /**
+     * Define name suffix based on desired profile value.
+     *
+     * @param profile desired profile value
+     * @return the name suffix
+     */
+    private static String suffix (int profile)
+    {
+        if (profile <= 0) {
+            return "";
+        }
+
+        return PROFILE_SUFFIX + profile;
     }
 }

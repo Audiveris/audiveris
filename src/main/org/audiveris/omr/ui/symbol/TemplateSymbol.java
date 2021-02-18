@@ -28,7 +28,6 @@ import static org.audiveris.omr.ui.symbol.Alignment.*;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -43,18 +42,21 @@ import java.awt.geom.Rectangle2D;
 public class TemplateSymbol
         extends BasicSymbol
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Affine Transform for small symbol shapes. */
     private static final AffineTransform smallAt = AffineTransform.getScaleInstance(
             Template.smallRatio,
             Template.smallRatio);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Template shape. */
     protected final Shape shape;
 
     /** Indicate a smaller symbol. */
     protected final boolean isSmall;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TemplateSymbol object.
      *
@@ -69,18 +71,19 @@ public class TemplateSymbol
         isSmall = shape.isSmall();
     }
 
-    //-----------------//
-    // getSymbolBounds //
-    //-----------------//
+    //~ Methods ------------------------------------------------------------------------------------
+    //--------------//
+    // getFatBounds //
+    //--------------//
     /**
-     * Report the strict bounds of the symbol (within a perhaps larger template).
+     * Report the fat bounds of symbol (within a perhaps larger template).
      *
      * @param font provided font
-     * @return relative symbol bounds within template
+     * @return relative fat symbol bounds within template
      */
-    public Rectangle getSymbolBounds (MusicFont font)
+    public Rectangle getFatBounds (MusicFont font)
     {
-        return getParams(font).symbolRect.getBounds();
+        return getParams(font).rawRect.getBounds();
     }
 
     //-----------//
@@ -90,38 +93,27 @@ public class TemplateSymbol
     protected MyParams getParams (MusicFont font)
     {
         final MyParams p = new MyParams();
-        final int interline = font.getStaffInterline();
+        p.layout = font.layout(getString(), isSmall ? smallAt : null);
 
-        final TextLayout fullLayout = layout(font);
-        final Rectangle2D fullRect2d = fullLayout.getBounds();
-        final Rectangle fullRect = fullRect2d.getBounds();
+        // Symbol rectangle
+        final Rectangle2D rawSym = p.layout.getBounds();
+        final Rectangle fatSym = rawSym.getBounds();
 
-        if (isSmall) {
-            p.layout = font.layout(getString(), smallAt);
-        } else {
-            p.layout = fullLayout;
-        }
-
-        final Rectangle2D r2d = p.layout.getBounds();
-        final Rectangle r = r2d.getBounds();
-        final int symWidth = r.width;
-        final int symHeight = r.height;
-
-        // Choose carefully the template rectangle, with origin at (0,0), around the symbol
-        // For full size symbol, add some margin on each direction of the symbol
-        int dx = 2;
-        int dy = 2;
+        // Template rectangle with origin at (0,0) and some room around the symbol
+        final int dx = 6;
+        final int dy = 5;
         p.rect = new Rectangle2D.Double(
                 0,
                 0,
-                isSmall ? fullRect.width : (symWidth + dx),
-                isSmall ? interline : (symHeight + dy));
+                isSmall ? fatSym.width + dx : (rawSym.getWidth() + dx),
+                isSmall ? font.getStaffInterline() + dy : (rawSym.getHeight() + dy));
 
-        // Bounds of symbol within template rectangle
-        p.symbolRect = new Rectangle2D.Double((p.rect.getWidth() - symWidth) / 2,
-                                              (p.rect.getHeight() - symHeight) / 2,
-                                              symWidth,
-                                              symHeight);
+        // Symbol bounds relative to template rectangle
+        p.rawRect = new Rectangle2D.Double(
+                (p.rect.getWidth() - rawSym.getWidth()) / 2,
+                (p.rect.getHeight() - rawSym.getHeight()) / 2,
+                rawSym.getWidth(),
+                rawSym.getHeight());
 
         return p;
     }
@@ -148,6 +140,7 @@ public class TemplateSymbol
         MusicFont.paint(g, p.layout, loc, AREA_CENTER);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
@@ -155,6 +148,6 @@ public class TemplateSymbol
             extends Params
     {
 
-        Rectangle2D symbolRect; // Bounds for symbol inside template image
+        Rectangle2D rawRect; // Precise font-based bounds of symbol inside template image
     }
 }

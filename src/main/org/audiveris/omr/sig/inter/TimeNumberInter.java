@@ -71,7 +71,7 @@ public class TimeNumberInter
      */
     public TimeNumberInter (Glyph glyph,
                             Shape shape,
-                            double grade,
+                            Double grade,
                             VerticalSide side)
     {
         super(glyph, shape, grade);
@@ -84,7 +84,7 @@ public class TimeNumberInter
      */
     private TimeNumberInter ()
     {
-        super((Glyph) null, null, 0);
+        super((Glyph) null, null, 0.0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

@@ -82,6 +82,11 @@ public abstract class AbstractInterVisitor
     }
 
     @Override
+    public void visit (BeamGroupInter inter)
+    {
+    }
+
+    @Override
     public void visit (BeamHookInter inter)
     {
         visit((AbstractBeamInter) inter); // Redirection by default

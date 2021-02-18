@@ -121,8 +121,8 @@ public class LinkedSection
     }
 
     @Override
-    public boolean contains (int x,
-                             int y)
+    public boolean contains (double x,
+                             double y)
     {
         return section.contains(x, y);
     }

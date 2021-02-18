@@ -33,7 +33,6 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Support;
-import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
@@ -44,6 +43,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Class {@code CrossDetector} browses the horizontal gutters between systems for inters
@@ -104,7 +104,7 @@ public class CrossDetector
         Predicate<Inter> predicate = new Predicate<Inter>()
         {
             @Override
-            public boolean check (Inter inter)
+            public boolean test (Inter inter)
             {
                 if (inter.isImplicit() || (inter instanceof SentenceInter)) {
                     return false;

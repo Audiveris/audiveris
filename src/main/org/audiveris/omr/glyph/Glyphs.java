@@ -22,7 +22,6 @@
 package org.audiveris.omr.glyph;
 
 import org.audiveris.omr.util.Entities;
-import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.Table;
 
 import org.jgrapht.graph.SimpleGraph;
@@ -42,6 +41,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Class {@code Glyphs} gathers static methods operating on a collection of glyphs.
@@ -434,7 +434,7 @@ public abstract class Glyphs
                                  Predicate<Glyph> predicate)
     {
         for (Glyph glyph : glyphs) {
-            if (predicate.check(glyph)) {
+            if (predicate.test(glyph)) {
                 return glyph;
             }
         }
@@ -631,7 +631,7 @@ public abstract class Glyphs
         Set<Glyph> set = new LinkedHashSet<>();
 
         for (Glyph glyph : collection) {
-            if ((predicate == null) || predicate.check(glyph)) {
+            if ((predicate == null) || predicate.test(glyph)) {
                 set.add(glyph);
             }
         }
@@ -658,7 +658,7 @@ public abstract class Glyphs
         for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
             Glyph glyph = it.next();
 
-            if (predicate.check(glyph)) {
+            if (predicate.test(glyph)) {
                 it.remove();
             }
         }

@@ -117,7 +117,7 @@ dependencies {
         [group: 'org.jfree', name: 'jfreechart', version: '1.0.19'],
         [group: 'com.itextpdf', name: 'itextpdf', version: '5.5.9'],
         [group: 'gov.nist.math', name: 'jama', version: '1.0.3'],
-        [group: 'org.reflections', name: 'reflections', version: '0.9.10'],
+        [group: 'org.reflections', name: 'reflections', version: '0.9.12'],
         [group: 'org.bytedeco', name: 'javacpp', version: jcppVersion],
         [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}"],
         [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}"],
@@ -314,4 +314,9 @@ javadoc {
 // Ability to include private tasks (such as save)
 fileTree("$projectDir/private").include('*.gradle').each { file ->
      apply from: file
+}
+
+// Tell gradle to log standard output and error streams when running tests
+test {
+    testLogging.showStandardStreams = true
 }

@@ -24,6 +24,8 @@ package org.audiveris.omr.math;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code GeoUtil} gathers simple utilities related to geometry.
@@ -39,15 +41,30 @@ public abstract class GeoUtil
     }
 
     //----------//
-    // centerOf //
+    // center2D //
     //----------//
     /**
-     * Report the center of the provided rectangle
+     * Report the center Point2D of the provided rectangle
      *
      * @param rect the provided rectangle
      * @return the geometric rectangle center
      */
-    public static Point centerOf (Rectangle rect)
+    public static Point2D center2D (Rectangle2D rect)
+    {
+        return new Point2D.Double(rect.getX() + (rect.getWidth() / 2.0),
+                                  rect.getY() + (rect.getHeight() / 2.0));
+    }
+
+    //--------//
+    // center //
+    //--------//
+    /**
+     * Report the center Point of the provided rectangle
+     *
+     * @param rect the provided rectangle
+     * @return the geometric rectangle center
+     */
+    public static Point center (Rectangle rect)
     {
         return new Point(rect.x + (rect.width / 2), rect.y + (rect.height / 2));
     }

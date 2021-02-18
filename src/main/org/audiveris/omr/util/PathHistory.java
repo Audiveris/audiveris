@@ -43,9 +43,11 @@ import javax.swing.SwingUtilities;
  */
 public class PathHistory
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PathHistory.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying list of names. */
     private final NameSet nameSet;
 
@@ -55,6 +57,7 @@ public class PathHistory
     /** Related UI menu, if any. Null when no UI is used */
     private HistoryMenu menu;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code PathHistory} object.
      *
@@ -72,6 +75,7 @@ public class PathHistory
         this.folderConstant = folderConstant;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // add //
     //-----//
@@ -92,7 +96,8 @@ public class PathHistory
 
         if (OMR.gui != null) {
             // Enable input history menu
-            SwingUtilities.invokeLater(new Runnable()
+            SwingUtilities.invokeLater(
+                    new Runnable()
             {
                 @Override
                 public void run ()

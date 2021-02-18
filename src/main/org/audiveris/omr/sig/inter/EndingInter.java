@@ -131,7 +131,7 @@ public class EndingInter
      * @param grade        interpretation quality
      */
     public EndingInter (boolean withRightLeg,
-                        double grade)
+                        Double grade)
     {
         super(null, null, withRightLeg ? Shape.ENDING_WRL : Shape.ENDING, grade);
     }
@@ -370,6 +370,7 @@ public class EndingInter
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
     {
+        final int profile = Math.max(getProfile(), system.getProfile());
         final List<Link> links = new ArrayList<>();
         final Scale scale = system.getSheet().getScale();
 
@@ -383,7 +384,7 @@ public class EndingInter
         List<Inter> systemBars = system.getSig().inters(StaffBarlineInter.class);
 
         // Left bar (or header)
-        StaffBarlineInter leftBar = lookupBar(LEFT, staff, systemBars);
+        StaffBarlineInter leftBar = lookupBar(LEFT, staff, systemBars, profile);
         final EndingBarRelation leftRel = new EndingBarRelation(LEFT, 0.5);
 
         if (leftBar == null) {
@@ -405,22 +406,22 @@ public class EndingInter
 
             if (partLine != null) {
                 leftBar = partLine.getStaffBarline(staff.getPart(), staff);
-                leftRel.setOutGaps(0, 0, false);
+                leftRel.setOutGaps(0, 0, profile);
             }
         } else {
             double leftDist = scale.pixelsToFrac(Math.abs(leftBar.getCenter().x - line.getX1()));
-            leftRel.setOutGaps(leftDist, 0, false);
+            leftRel.setOutGaps(leftDist, 0, profile);
         }
 
         links.add(new Link(leftBar, leftRel, true));
 
         // Right bar
-        StaffBarlineInter rightBar = lookupBar(RIGHT, staff, systemBars);
+        StaffBarlineInter rightBar = lookupBar(RIGHT, staff, systemBars, profile);
 
         if (rightBar != null) {
             double rightDist = scale.pixelsToFrac(Math.abs(rightBar.getCenter().x - line.getX2()));
             final EndingBarRelation rightRel = new EndingBarRelation(RIGHT, rightDist);
-            rightRel.setOutGaps(rightDist, 0, false);
+            rightRel.setOutGaps(rightDist, 0, profile);
 
             links.add(new Link(rightBar, rightRel, true));
         }
@@ -470,17 +471,19 @@ public class EndingInter
      *
      * @param staff      related staff
      * @param systemBars the collection of StaffBarlines in the containing system
+     * @param profile    desired profile level
      * @return the selected bar line, or null if none
      */
     private StaffBarlineInter lookupBar (HorizontalSide side,
                                          Staff staff,
-                                         List<Inter> systemBars)
+                                         List<Inter> systemBars,
+                                         int profile)
     {
         final SystemInfo system = staff.getSystem();
         final Scale scale = system.getSheet().getScale();
         final Point end = PointUtil.rounded(
                 (side == HorizontalSide.LEFT) ? line.getP1() : line.getP2());
-        final int maxBarShift = scale.toPixels(EndingBarRelation.getXGapMaximum(manual));
+        final int maxBarShift = scale.toPixels(EndingBarRelation.getXGapMaximum(profile));
         Rectangle box = new Rectangle(end);
         box.grow(maxBarShift, 0);
         box.height = staff.getLastLine().yAt(end.x) - end.y;

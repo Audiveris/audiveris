@@ -63,7 +63,6 @@ import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Navigable;
-import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.TOP;
@@ -86,6 +85,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Class {@code LinesRetriever} retrieves the staff lines of a sheet.
@@ -194,7 +194,7 @@ public class LinesRetriever
         RunTable longHoriTable = horiTable.purge(new Predicate<Run>()
         {
             @Override
-            public final boolean check (Run run)
+            public final boolean test (Run run)
             {
                 return run.getLength() < params.minRunLength;
             }
@@ -1119,11 +1119,8 @@ public class LinesRetriever
 
                 if (!toAdd.isEmpty()) {
                     if (logger.isDebugEnabled()) {
-                        logger.info(
-                                "Staff#{} line#{} {}",
-                                staff.getId(),
-                                lineId,
-                                Sections.toString(toAdd));
+                        logger.info("Staff#{} line#{} {}",
+                                    staff.getId(), lineId, Sections.ids(toAdd));
                     }
 
                     // Include sticker sections, while perserving line ending points

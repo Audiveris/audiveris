@@ -26,6 +26,7 @@ import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.util.Entity;
 
 import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.util.EnumSet;
 
 /**
@@ -55,11 +56,18 @@ public interface WeightedEntity
     double getAspect (Orientation orientation);
 
     /**
-     * Report the symbol area center.
+     * Report the symbol area center point.
      *
      * @return the area center point
      */
     Point getCenter ();
+
+    /**
+     * Report the symbol area center point2D.
+     *
+     * @return the area center point
+     */
+    Point2D getCenter2D ();
 
     /**
      * Report the glyph absolute centroid (mass center).

@@ -46,6 +46,7 @@ import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -191,6 +192,39 @@ public class StaffManager
     public Staff getClosestStaff (Point2D point)
     {
         return getClosestStaff(point, staves);
+    }
+
+    //------------------//
+    // getCoreStaffPath //
+    //------------------//
+    /**
+     * Report the path defined by staff horizontal limits on left and right side and
+     * vertical limits on first and last staff lines (augmented with verticalAreaMargin).
+     *
+     * @param staff the staff to process
+     * @return the staff path
+     */
+    public Path2D getCoreStaffPath (Staff staff)
+    {
+        final int verticalMargin = sheet.getScale().toPixels(constants.verticalAreaMargin);
+
+        // North
+        final GeoPath northPath = new GeoPath();
+        northPath.append(staff.getFirstLine().getSpline(), true);
+        final PathIterator northIterator = northPath.getPathIterator(
+                AffineTransform.getTranslateInstance(0, -verticalMargin));
+
+        // South
+        final GeoPath southPath = new GeoPath();
+        southPath.append(staff.getLastLine().getSpline(), true);
+        final PathIterator southIterator = southPath.getPathIterator(
+                AffineTransform.getTranslateInstance(0, +verticalMargin));
+
+        final GeoPath path = new GeoPath();
+        path.append(northIterator, false);
+        path.append(new ReversePathIterator(southIterator), true);
+
+        return path;
     }
 
     //---------------//

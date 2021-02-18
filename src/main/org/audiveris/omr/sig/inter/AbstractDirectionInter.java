@@ -48,7 +48,7 @@ public abstract class AbstractDirectionInter
     public AbstractDirectionInter (Glyph glyph,
                                    Rectangle box,
                                    Shape shape,
-                                   double grade)
+                                   Double grade)
     {
         super(glyph, box, shape, grade);
     }

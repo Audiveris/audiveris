@@ -104,7 +104,7 @@ public class SentenceInter
      * @param role     text role for the line
      */
     public SentenceInter (Rectangle bounds,
-                          double grade,
+                          Double grade,
                           FontInfo meanFont,
                           TextRole role)
     {
@@ -121,7 +121,7 @@ public class SentenceInter
      * @param grade the interpretation quality
      */
     public SentenceInter (TextRole role,
-                          double grade)
+                          Double grade)
     {
         this(null, grade, null, null);
         this.role = role;
@@ -132,7 +132,7 @@ public class SentenceInter
      */
     protected SentenceInter ()
     {
-        super(null, null, null, null);
+        super(null, null, null, (Double) null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -382,6 +382,8 @@ public class SentenceInter
                 meanFont = new FontInfo(firstWord.getFontInfo(), firstWord.getFontInfo().pointsize);
             }
         }
+
+        // TODO: should we update sentence grade?
     }
 
     //--------------//

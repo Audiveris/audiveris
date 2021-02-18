@@ -65,7 +65,7 @@ public class AbstractVerticalConnectorInter
      * @param width  segment width
      */
     public AbstractVerticalConnectorInter (Shape shape,
-                                           double grade,
+                                           Double grade,
                                            Line2D median,
                                            double width)
     {
@@ -77,7 +77,7 @@ public class AbstractVerticalConnectorInter
      */
     protected AbstractVerticalConnectorInter ()
     {
-        super(null, null, null, null, null);
+        super(null, null, (Double) null, null, null);
     }
 
     //-----------------//

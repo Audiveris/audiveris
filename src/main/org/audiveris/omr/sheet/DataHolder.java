@@ -74,6 +74,9 @@ public abstract class DataHolder<T>
     /** To avoid multiple load attempts. */
     protected boolean hasNoData = false;
 
+    /** To discard data. (Removed from disk at store time) */
+    protected boolean discarded = false;
+
     /**
      * Creates a new {@code DataHolder} object.
      *
@@ -90,6 +93,20 @@ public abstract class DataHolder<T>
     protected DataHolder ()
     {
         this.pathString = null;
+    }
+
+    //---------//
+    // discard //
+    //---------//
+    /**
+     * This data will be purged from disk when sheet is stored.
+     */
+    public void discard ()
+    {
+        discarded = true;
+        hasNoData = true;
+
+        // data is left untouched, to not disturb any view opened on this data
     }
 
     //---------//
@@ -193,6 +210,19 @@ public abstract class DataHolder<T>
         return hasNoData;
     }
 
+    //-------------//
+    // isDiscarded //
+    //-------------//
+    /**
+     * Report whether disk data should be removed.
+     *
+     * @return true if discarded
+     */
+    public boolean isDiscarded ()
+    {
+        return discarded;
+    }
+
     //------------//
     // isModified //
     //------------//
@@ -242,8 +272,11 @@ public abstract class DataHolder<T>
                 if (oldSheetFolder != null) {
                     // Copy from old book file to new
                     Path oldPath = oldSheetFolder.resolve(pathString);
-                    Files.copy(oldPath, path);
-                    logger.info("Copied {}", path);
+
+                    if (Files.exists(oldPath) && !Files.exists(path)) {
+                        Files.copy(oldPath, path);
+                        logger.info("Copied {}", path);
+                    }
                 }
             } else if (modified) {
                 Files.deleteIfExists(path);
@@ -278,8 +311,9 @@ public abstract class DataHolder<T>
         final Path path = sheetFolder.resolve(pathString);
 
         try {
-            Files.deleteIfExists(path);
-            logger.info("Removed {}", path);
+            if (Files.deleteIfExists(path)) {
+                logger.info("Removed {}", path);
+            }
         } catch (Exception ex) {
             logger.warn("Error in removeData " + ex, ex);
         }

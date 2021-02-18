@@ -346,7 +346,7 @@ public class PartBarline
 
             Rectangle box = new Rectangle(first.getCenter());
             box.add(last.getCenter());
-            sb.append(' ').append(PointUtil.toString(GeoUtil.centerOf(box)));
+            sb.append(' ').append(PointUtil.toString(GeoUtil.center2D(box)));
         }
 
         sb.append('}');

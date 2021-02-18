@@ -90,7 +90,7 @@ public abstract class AbstractNoteInter
     public AbstractNoteInter (Glyph glyph,
                               Rectangle bounds,
                               Shape shape,
-                              double grade,
+                              Double grade,
                               Staff staff,
                               Double pitch)
     {

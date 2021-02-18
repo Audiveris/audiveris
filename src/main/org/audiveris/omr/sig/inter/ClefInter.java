@@ -30,7 +30,7 @@ import org.audiveris.omrdataset.api.OmrShape;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
+import java.awt.geom.Point2D;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -62,7 +62,7 @@ public class ClefInter
     private static final ClefInter defaultClef = new ClefInter(
             null,
             Shape.G_CLEF,
-            1,
+            1.0,
             null,
             +2.0,
             ClefKind.TREBLE);
@@ -78,7 +78,7 @@ public class ClefInter
      * @param grade the interpretation quality
      */
     public ClefInter (Shape shape,
-                      double grade)
+                      Double grade)
     {
         this(null, shape, grade, null, null, null);
     }
@@ -95,7 +95,7 @@ public class ClefInter
      */
     private ClefInter (Glyph glyph,
                        Shape shape,
-                       double grade,
+                       Double grade,
                        Staff staff,
                        Double pitch,
                        ClefKind kind)
@@ -109,7 +109,7 @@ public class ClefInter
      */
     private ClefInter ()
     {
-        super(null, null, null, null, null, null);
+        super(null, null, null, (Double) null, null, null);
     }
 
     //-----------------//
@@ -206,7 +206,7 @@ public class ClefInter
      */
     public ClefInter replicate (Staff targetStaff)
     {
-        return new ClefInter(null, shape, 0, targetStaff, pitch, kind);
+        return new ClefInter(null, shape, getGrade(), targetStaff, pitch, kind);
     }
 
     //-----------//
@@ -373,7 +373,7 @@ public class ClefInter
      */
     public static ClefInter create (Glyph glyph,
                                     Shape shape,
-                                    double grade,
+                                    Double grade,
                                     Staff staff)
     {
         switch (shape) {
@@ -387,7 +387,7 @@ public class ClefInter
 
             // Depending on precise clef position, we can have
             // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2)
-            Point center = glyph.getCenter();
+            Point2D center = glyph.getCenter2D();
             double pp = Math.rint(staff.pitchPositionOf(center));
             ClefKind kind = (pp >= -1) ? ClefKind.ALTO : ClefKind.TENOR;
 
@@ -418,7 +418,7 @@ public class ClefInter
      * @param staff  the containing shape
      * @return the precise clef kind
      */
-    public static ClefKind kindOf (Point center,
+    public static ClefKind kindOf (Point2D center,
                                    Shape shape,
                                    Staff staff)
     {

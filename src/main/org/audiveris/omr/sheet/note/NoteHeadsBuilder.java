@@ -28,23 +28,24 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.Glyphs;
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.image.Anchored.Anchor;
 import static org.audiveris.omr.image.Anchored.Anchor.*;
 import org.audiveris.omr.image.DistanceTable;
 import org.audiveris.omr.image.PixelDistance;
-import org.audiveris.omr.image.ShapeDescriptor;
 import org.audiveris.omr.image.Template;
 import org.audiveris.omr.image.TemplateFactory;
 import org.audiveris.omr.image.TemplateFactory.Catalog;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoPath;
-import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.NaturalSpline;
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.ReversePathIterator;
 import org.audiveris.omr.run.Orientation;
+import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
@@ -54,24 +55,24 @@ import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractInter;
+import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.AbstractVerticalInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.InterPairPredicate;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
-import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.util.Dumping;
+import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Navigable;
-import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
@@ -85,8 +86,6 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.audiveris.omr.sheet.Part;
-import org.audiveris.omr.sig.inter.AbstractNoteInter;
 
 /**
  * Class {@code NoteHeadsBuilder} retrieves the void note heads, the black note heads,
@@ -110,10 +109,13 @@ import org.audiveris.omr.sig.inter.AbstractNoteInter;
  */
 public class NoteHeadsBuilder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(NoteHeadsBuilder.class);
+
+    private static final double EPSILON = 1E-5;
 
     /** Shapes of note head competitors. */
     private static final Set<Shape> COMPETING_SHAPES = EnumSet.copyOf(
@@ -130,6 +132,7 @@ public class NoteHeadsBuilder
     /** Specific value for no offsets. */
     private static final int[] NO_OFFSETS = new int[]{0};
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -185,25 +188,32 @@ public class NoteHeadsBuilder
     /** All void note templates for this sheet. */
     private final EnumSet<Shape> sheetVoidTemplateNotes;
 
+    /** Collector for seed-based heads. */
+    private final HeadSeedTally tally;
+
     // Debug
     private final Perf seedsPerf = new Perf();
 
     private final Perf rangePerf = new Perf();
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code NoteHeadsBuilder} object.
      *
      * @param system      the system to process
      * @param distances   the distance table
      * @param systemSpots spots detected for this system
+     * @param tally       (output) data on seed-head distance
      */
     public NoteHeadsBuilder (SystemInfo system,
                              DistanceTable distances,
-                             List<Glyph> systemSpots)
+                             List<Glyph> systemSpots,
+                             HeadSeedTally tally)
     {
         this.system = system;
         this.distances = distances;
         this.systemSpots = systemSpots;
+        this.tally = tally;
 
         sig = system.getSig();
         sheet = system.getSheet();
@@ -226,6 +236,7 @@ public class NoteHeadsBuilder
         minTemplateWidth = computeMinTemplateWidth();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildHeads //
     //------------//
@@ -254,7 +265,7 @@ public class NoteHeadsBuilder
             final int pointSize = staff.getHeadPointSize();
             catalog = TemplateFactory.getInstance().getCatalog(pointSize);
 
-            List<Inter> ch = new ArrayList<>(); // Created Heads for this staff
+            final List<HeadInter> ch = new ArrayList<>(); // Created Heads, for this staff
 
             // First, process all seed-based heads for the staff
             watch.start("Staff #" + staff.getId() + " seed");
@@ -268,22 +279,25 @@ public class NoteHeadsBuilder
             watch.start("Staff #" + staff.getId() + " range");
             ch.addAll(processStaff(staff, false));
 
-            // Detect duplicates for current staff
+            // Remove duplicates for current staff
             Collections.sort(ch, Inters.byFullAbscissa);
             watch.start("Staff #" + staff.getId() + " duplicates");
-            int duplicates = purgeDuplicates(ch);
+            final int duplicates = purge(ch, "duplicate", (h1, h2) -> h1.isSameAs(h2));
 
             if (duplicates > 0) {
                 logger.debug("Staff#{} {} duplicates", staff.getId(), duplicates);
             }
 
-            // Solve overlaps
+            // Solve overlaps for current staff
             watch.start("Staff #" + staff.getId() + " overlaps");
-            int overlaps = purgeOverlaps(ch);
+            final int overlaps = purge(ch, "overlap", (h1, h2) -> h1.overlaps(h2));
 
             if (overlaps > 0) {
                 logger.debug("Staff#{} {} overlaps", staff.getId(), overlaps);
             }
+
+            // Purge tally of discarded heads
+            tally.purgeRemovedHeads();
 
             for (Inter inter : ch) {
                 // Boost head shapes that don't expect stem
@@ -294,6 +308,13 @@ public class NoteHeadsBuilder
                 // Keep created heads in staff
                 staff.addNote((AbstractNoteInter) inter);
             }
+        }
+
+        // Purge small beams defeated by good heads
+        watch.start("Purging beams");
+        final int purged = purgeSmallBeams();
+        if (purged > 0) {
+            logger.info("S#{} {} beams purged", system.getId(), purged);
         }
 
         if (constants.printWatch.isSet()) {
@@ -307,23 +328,23 @@ public class NoteHeadsBuilder
     //------------------//
     // aggregateMatches //
     //------------------//
-    private List<HeadInter> aggregateMatches (List<HeadInter> inters)
+    private List<HeadInter> aggregateMatches (List<HeadInter> heads)
     {
         // Sort by decreasing grade
-        Collections.sort(inters, Inters.byReverseGrade);
+        Collections.sort(heads, Inters.byReverseGrade);
 
         // Gather matches per close locations
         // Avoid duplicate locations
-        List<Aggregate> aggregates = new ArrayList<>();
+        final List<Aggregate> aggregates = new ArrayList<>();
 
-        for (HeadInter inter : inters) {
-            Point loc = GeoUtil.centerOf(inter.getBounds());
+        for (HeadInter head : heads) {
+            final Point2D loc = head.getCenter2D();
 
             // Check among already filtered locations for similar location
             Aggregate aggregate = null;
 
             for (Aggregate ag : aggregates) {
-                int dx = loc.x - ag.point.x;
+                double dx = loc.getX() - ag.point.getX();
 
                 if (Math.abs(dx) <= params.maxTemplateDx) {
                     aggregate = ag;
@@ -337,7 +358,7 @@ public class NoteHeadsBuilder
                 aggregates.add(aggregate);
             }
 
-            aggregate.add(inter);
+            aggregate.add(head);
         }
 
         List<HeadInter> filtered = new ArrayList<>();
@@ -396,14 +417,14 @@ public class NoteHeadsBuilder
     // createInter //
     //-------------//
     /**
-     * Create the interpretation that corresponds to the match found.
+     * Try to create the interpretation that corresponds to the match found.
      *
      * @param loc    (valued) location of the match
      * @param anchor position of location WRT shape
      * @param shape  the shape tested
      * @param staff  the related staff
      * @param pitch  the note pitch
-     * @return the inter created, if any
+     * @return the head inter created, if any
      */
     private HeadInter createInter (PixelDistance loc,
                                    Anchor anchor,
@@ -420,30 +441,28 @@ public class NoteHeadsBuilder
             return null;
         }
 
-        final ShapeDescriptor desc = catalog.getDescriptor(shape);
-        final Rectangle box = desc.getSymbolBoundsAt(loc.x, loc.y, anchor);
-        final Point pivot = new Point(loc.x, loc.y);
+        final Template template = catalog.getTemplate(shape);
+        final Rectangle box = template.getSlimBoundsAt(loc.x, loc.y, anchor);
 
-        return new HeadInter(pivot, anchor, box, shape, impacts, staff, pitch);
+        return new HeadInter(box, shape, impacts, staff, pitch);
     }
 
     //---------------------//
     // filterSeedConflicts //
     //---------------------//
     /**
-     * Check the provided collection of x-based inter instances with
-     * conflicting seed-based inter instances.
+     * Check the provided collection of x-based heads with conflicting seed-based heads.
      *
-     * @param inters      x-based instances
+     * @param heads       x-based instances
      * @param competitors all competitors, including seed-based inter instances
      * @return the filtered x-based instances
      */
-    private List<HeadInter> filterSeedConflicts (List<HeadInter> inters,
+    private List<HeadInter> filterSeedConflicts (List<HeadInter> heads,
                                                  List<Inter> competitors)
     {
-        List<HeadInter> filtered = new ArrayList<>();
+        final List<HeadInter> filtered = new ArrayList<>();
 
-        for (HeadInter inter : inters) {
+        for (HeadInter inter : heads) {
             if (!overlapSeed(inter, competitors)) {
                 filtered.add(inter);
             }
@@ -554,17 +573,10 @@ public class NoteHeadsBuilder
     //-------------------//
     private List<Area> getSystemBarAreas ()
     {
-        List<Area> areas = new ArrayList<>();
-        List<Inter> inters = sig.inters(new Predicate<Inter>()
-        {
-            @Override
-            public boolean check (Inter inter)
-            {
-                return inter.isFrozen() && (inter instanceof BarlineInter
-                                                    || inter instanceof BarConnectorInter);
-            }
-        });
-
+        final List<Area> areas = new ArrayList<>();
+        final List<Inter> inters = sig.inters(inter
+                -> inter.isFrozen() && (inter instanceof BarlineInter
+                                                || inter instanceof BarConnectorInter));
         Collections.sort(inters, Inters.byOrdinate);
 
         for (Inter inter : inters) {
@@ -580,41 +592,36 @@ public class NoteHeadsBuilder
     //----------------------//
     /**
      * Retrieve the collection of (really good) other interpretations that might compete
-     * with heads and note candidates.
+     * with head candidates.
      *
      * @return the really good competitors
      */
     private List<Inter> getSystemCompetitors ()
     {
-        List<Inter> comps = sig.inters(new Predicate<Inter>()
-        {
-            @Override
-            public boolean check (Inter inter)
-            {
-                final Shape shape = inter.getShape();
+        final List<Inter> comps = sig.inters(inter -> {
+            final Shape shape = inter.getShape();
 
-                if (!inter.isGood() || !COMPETING_SHAPES.contains(shape)) {
+            if (!inter.isGood() || !COMPETING_SHAPES.contains(shape)) {
+                return false;
+            }
+
+            if (inter instanceof AbstractVerticalInter) {
+                // We may have a stem mistaken for a thin barline or a thin connector
+                // So, check bar/connector width vs max stem width
+                AbstractVerticalInter vertical = (AbstractVerticalInter) inter;
+                int width = (int) Math.floor(vertical.getWidth());
+
+                if (width <= scale.getMaxStem()) {
                     return false;
                 }
-
-                if (inter instanceof AbstractVerticalInter) {
-                    // We may have a stem mistaken for a thin barline or a thin connector
-                    // So, check bar/connector width vs max stem width
-                    AbstractVerticalInter vertical = (AbstractVerticalInter) inter;
-                    int width = (int) Math.floor(vertical.getWidth());
-
-                    if (width <= scale.getMaxStem()) {
-                        return false;
-                    }
-                } else if ((shape == Shape.BEAM) || (shape == Shape.BEAM_HOOK)) {
-                    // Check beam width
-                    if (inter.getBounds().width < params.minBeamWidth) {
-                        return false;
-                    }
+            } else if ((shape == Shape.BEAM) || (shape == Shape.BEAM_HOOK)) {
+                // Check beam width
+                if (inter.getBounds().width < params.minBeamWidth) {
+                    return false;
                 }
-
-                return true;
             }
+
+            return true;
         });
 
         Collections.sort(comps, Inters.byOrdinate);
@@ -667,15 +674,15 @@ public class NoteHeadsBuilder
      * We check overlap with seed-based note and return true only when
      * the overlapping seed-based inter has a rather similar or better grade.
      *
-     * @param inter       the x-based inter to check
-     * @param competitors abscissa-sorted slice of competitors, including seed-based inter instances
+     * @param head        the x-based head to check
+     * @param competitors abscissa-sorted slice of competitors, including seed-based heads
      * @return true if real conflict found
      */
-    private boolean overlapSeed (Inter inter,
+    private boolean overlapSeed (Inter head,
                                  List<Inter> competitors)
     {
-        final Rectangle box = inter.getBounds();
-        final double loweredGrade = inter.getGrade() * (1 - constants.gradeMargin.getValue());
+        final Rectangle box = head.getBounds();
+        final double loweredGrade = head.getGrade() * (1 - constants.gradeMargin.getValue());
         final double xMax = box.getMaxX();
 
         for (Inter comp : competitors) {
@@ -710,10 +717,10 @@ public class NoteHeadsBuilder
      * @param useSeeds should we stick to stem seeds or not?
      * @return the list of created notes
      */
-    private List<Inter> processStaff (Staff staff,
-                                      boolean useSeeds)
+    private List<HeadInter> processStaff (Staff staff,
+                                          boolean useSeeds)
     {
-        final List<Inter> ch = new ArrayList<>(); // Created heads
+        final List<HeadInter> ch = new ArrayList<>(); // Created heads
 
         // Use all staff lines
         int pitch = -5; // Current pitch
@@ -783,50 +790,67 @@ public class NoteHeadsBuilder
         return ch;
     }
 
-    //-----------------//
-    // purgeDuplicates //
-    //-----------------//
-    private int purgeDuplicates (List<Inter> inters)
+    //-------//
+    // purge //
+    //-------//
+    /**
+     * Purge a list of inters using a predicate on Inter pairs.
+     *
+     * @param heads the heads to purge, ordered by abscissa
+     * @param op    predicate name (for VIP logging only)
+     * @param ipp   the Inter pair predicate to apply
+     * @return the count of inters purged
+     */
+    private int purge (List<HeadInter> heads,
+                       String op,
+                       InterPairPredicate ipp)
     {
-        List<Inter> removed = new ArrayList<>();
+        final List<Inter> removed = new ArrayList<>();
 
         LeftLoop:
-        for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
-            Inter left = inters.get(i);
+        for (int i = 0, iBreak = heads.size() - 1; i < iBreak; i++) {
+            final HeadInter left = heads.get(i);
 
             if (left.isRemoved()) {
                 continue;
             }
 
-            Rectangle leftBox = left.getBounds();
-            int xMax = (leftBox.x + leftBox.width) - 1;
+            final Rectangle leftBox = left.getBounds();
+            final int xMax = (leftBox.x + leftBox.width) - 1;
 
-            for (Inter right : inters.subList(i + 1, inters.size())) {
+            for (HeadInter right : heads.subList(i + 1, heads.size())) {
                 if (right.isRemoved()) {
                     continue;
                 }
 
-                Rectangle rightBox = right.getBounds();
+                final Rectangle rightBox = right.getBounds();
 
                 if (leftBox.intersects(rightBox)) {
-                    if (left.isSameAs(right)) {
-                        if (left.getGrade() < right.getGrade()) {
-                            if (left.isVip()) {
-                                logger.info("VIP purging {} at {}", left, left.getBounds());
-                            }
+                    if (ipp.test(left, right)) {
+                        final HeadInter purged;
+                        final double diff = Math.abs(left.getGrade() - right.getGrade());
 
-                            left.remove();
-                            removed.add(left);
-
-                            continue LeftLoop;
+                        if (diff < EPSILON) {
+                            // We try to preserve seed data as much as possible
+                            purged = purgedEquals(left, right);
                         } else {
-                            if (right.isVip()) {
-                                logger.info("VIP purging {} at {}", right, right.getBounds());
-                            }
-
-                            right.remove();
-                            removed.add(right);
+                            // We keep the best one
+                            purged = (left.getGrade() < right.getGrade()) ? left : right;
                         }
+
+                        final Inter kept = (purged == left) ? right : left;
+
+                        if (purged.isVip()) {
+                            logger.info("VIP purged {} {} {}", purged, op, kept);
+                        }
+
+                        purged.remove();
+                        removed.add(purged);
+
+                        if (purged == left) {
+                            continue LeftLoop;
+                        }
+
                     }
                 } else if (rightBox.x > xMax) {
                     break;
@@ -834,65 +858,109 @@ public class NoteHeadsBuilder
             }
         }
 
-        inters.removeAll(removed);
+        heads.removeAll(removed);
 
         return removed.size();
     }
 
-    //---------------//
-    // purgeOverlaps //
-    //---------------//
-    private int purgeOverlaps (List<Inter> inters)
+    //--------------//
+    // purgedEquals //
+    //--------------//
+    /**
+     * Select which head to remove among the two provided heads (with equal grade).
+     *
+     * @param h1 head to check
+     * @param h2 head to check
+     * @return the head to discard
+     */
+    private HeadInter purgedEquals (HeadInter h1,
+                                    HeadInter h2)
     {
-        List<Inter> removed = new ArrayList<>();
+        final Double left1 = tally.getDx(h1, LEFT);
+        final Double right1 = tally.getDx(h1, RIGHT);
 
-        LeftLoop:
-        for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
-            HeadInter left = (HeadInter) inters.get(i);
+        if (left1 == null && right1 == null) {
+            return h1;
+        }
 
-            if (left.isRemoved()) {
-                continue;
+        final Double left2 = tally.getDx(h2, LEFT);
+        final Double right2 = tally.getDx(h2, RIGHT);
+
+        if (left2 == null && right2 == null) {
+            return h2;
+        }
+
+        if (h1.getShape() != h2.getShape()) {
+            return h2;
+        }
+
+        if (!h1.getBounds().equals(h2.getBounds())) {
+            return h2;
+        }
+
+        // Here both are valuable for seed information
+        // If shape and bounds are identical, replicate seed data into the head to be kept
+        if (h1.isGood() && h2.isGood()) {
+            if ((left1 == null) && (left2 != null)) {
+                tally.putDx(h1, LEFT, left2);
             }
 
-            Rectangle leftBox = left.getBounds();
-            int xMax = (leftBox.x + leftBox.width) - 1;
+            if (right1 == null && right2 != null) {
+                tally.putDx(h1, RIGHT, right2);
+            }
+        }
 
-            for (Inter right : inters.subList(i + 1, inters.size())) {
-                if (right.isRemoved()) {
-                    continue;
-                }
+        return h2;
+    }
 
-                Rectangle rightBox = right.getBounds();
+    //-----------------//
+    // purgeSmallBeams //
+    //-----------------//
+    /**
+     * During the BEAMS step, some heads may have been mistaken for small beams to be now
+     * purged.
+     * <p>
+     * Note that the areas of non-small beams were protected against creation of heads.
+     *
+     * @return the number of beams purged
+     */
+    private int purgeSmallBeams ()
+    {
+        final List<Inter> heads = sig.inters(HeadInter.class);
+        Collections.sort(heads, Inters.byOrdinate);
 
-                if (leftBox.intersects(rightBox)) {
-                    if (left.overlaps(right)) {
-                        if (left.getGrade() < right.getGrade()) {
-                            if (left.isVip()) {
-                                logger.info("VIP purging {} overlapping {}", left, right);
-                            }
+        final List<Inter> smallBeams = sig.inters(inter
+                -> ShapeSet.Beams.contains(inter.getShape())
+                           && inter.getBounds().width < params.minBeamWidth);
+        int purged = 0;
 
-                            left.remove();
-                            removed.add(left);
-                        } else if (left.getGrade() > right.getGrade()) {
-                            if (right.isVip()) {
-                                logger.info("VIP purging {} overlapping {}", right, left);
-                            }
+        for (Iterator<Inter> it = smallBeams.iterator(); it.hasNext();) {
+            final Inter iBeam = it.next();
+            final Area beamArea = iBeam.getArea();
+            final double beamGrade = iBeam.getGrade();
+            final Rectangle beamBox = iBeam.getBounds();
+            final int beamBottom = beamBox.y + beamBox.height - 1;
 
-                            right.remove();
-                            removed.add(right);
-                        }
+            for (Inter iHead : heads) {
+                final Rectangle headBox = iHead.getBounds();
+
+                if (beamArea.intersects(headBox)) {
+                    if (iHead.getGrade() > beamGrade) {
+                        iBeam.remove();
+                        it.remove();
+                        purged++;
+                        break;
                     }
-                } else if (rightBox.x > xMax) {
+                } else if (headBox.y > beamBottom) {
                     break;
                 }
             }
         }
 
-        inters.removeAll(removed);
-
-        return removed.size();
+        return purged;
     }
 
+    //~ Inner classes ------------------------------------------------------------------------------
     //---------------//
     // LedgerAdapter //
     //---------------//
@@ -989,7 +1057,7 @@ public class NoteHeadsBuilder
 
         private final List<LedgerAdapter> ledgers;
 
-        private List<HeadInter> inters = new ArrayList<>();
+        private List<HeadInter> heads = new ArrayList<>();
 
         private final boolean isOpen;
 
@@ -1027,10 +1095,9 @@ public class NoteHeadsBuilder
 
             {
                 // Horizontal slice to detect stem seeds
-                final double maxGap = scale.toPixelsDouble(HeadStemRelation.getYGapMaximum(false));
                 final double ratio = constants.pitchMargin.getValue();
-                final double above = ((interline * (dir - ratio)) / 2) - maxGap;
-                final double below = ((interline * (dir + ratio)) / 2) + maxGap;
+                final double above = ((interline * (dir - ratio)) / 2);
+                final double below = ((interline * (dir + ratio)) / 2);
                 seedsArea = line.getArea(above, below);
             }
 
@@ -1088,6 +1155,11 @@ public class NoteHeadsBuilder
         //-----------------//
         // computeYOffsets //
         //-----------------//
+        /**
+         * Report the ordinate offsets to try around the starting ordinate.
+         *
+         * @return ordinate offsets
+         */
         private int[] computeYOffsets ()
         {
             if (isOpen) {
@@ -1137,21 +1209,25 @@ public class NoteHeadsBuilder
         //------//
         // eval //
         //------//
+        /**
+         * Evaluate shape template when applied at provided anchor location.
+         *
+         * @param shape  shape to evaluate
+         * @param x      pivot abscissa
+         * @param y      pivot ordinate
+         * @param anchor find of pivot WRT template
+         * @return measured distance
+         */
         private PixelDistance eval (Shape shape,
                                     int x,
                                     int y,
                                     Anchor anchor)
         {
-            final ShapeDescriptor desc = catalog.getDescriptor(shape);
-
-            if (desc == null) {
-                return null;
-            }
-
-            final Rectangle symBox = desc.getSymbolBoundsAt(x, y, anchor);
+            final Template template = catalog.getTemplate(shape);
+            final Rectangle slimBox = template.getSlimBoundsAt(x, y, anchor);
 
             // Skip if frozen barline/connector is too close
-            if (barInvolved(symBox)) {
+            if (barInvolved(slimBox)) {
                 if (useSeeds) {
                     seedsPerf.bars++;
                 } else {
@@ -1162,7 +1238,7 @@ public class NoteHeadsBuilder
             }
 
             // Skip if location already used by really good object (beam, etc)
-            if (overlap(symBox, competitors)) {
+            if (overlap(slimBox, competitors)) {
                 if (useSeeds) {
                     seedsPerf.overlaps++;
                 } else {
@@ -1173,7 +1249,7 @@ public class NoteHeadsBuilder
             }
 
             // Then try (all variants for) the shape and keep the best dist
-            double dist = desc.evaluate(x, y, anchor, distances);
+            double dist = template.evaluate(x, y, anchor, distances);
 
             // Trick to boost cross heads
             if (shape == Shape.NOTEHEAD_CROSS) {
@@ -1205,8 +1281,8 @@ public class NoteHeadsBuilder
                                        int y,
                                        Anchor anchor)
         {
-            final ShapeDescriptor desc = catalog.getDescriptor(Shape.NOTEHEAD_VOID);
-            final double holeWhiteRatio = desc.evaluateHole(x, y, anchor, distances);
+            final Template template = catalog.getTemplate(Shape.NOTEHEAD_VOID);
+            final double holeWhiteRatio = template.evaluateHole(x, y, anchor, distances);
 
             if (holeWhiteRatio >= constants.minHoleWhiteRatio.getValue()) {
                 return Shape.NOTEHEAD_VOID;
@@ -1290,8 +1366,7 @@ public class NoteHeadsBuilder
                     //TODO: refine using width of template?
                     if (Math.abs(pitch) > 5) {
                         for (LedgerAdapter ledger : ledgers) {
-                            if ((x >= ledger.getLeftAbscissa()) && (x <= ledger
-                                    .getRightAbscissa())) {
+                            if ((x >= ledger.getLeftAbscissa()) && (x <= ledger.getRightAbscissa())) {
                                 return (int) Math.rint(
                                         (line.yAt((double) x) + ledger.yAt((double) x)) / 2);
                             }
@@ -1329,7 +1404,7 @@ public class NoteHeadsBuilder
          * that we don't have stem seeds of proper length for them, and range browsing is then the
          * only way to reach note heads with such poor stems.
          *
-         * @return the inters created
+         * @return the head inters created
          */
         private List<HeadInter> lookupRange ()
         {
@@ -1337,10 +1412,12 @@ public class NoteHeadsBuilder
             final int scanLeft = Math.max(line.getLeftAbscissa(), line.getStaff().getHeaderStop());
             final int scanRight = line.getRightAbscissa() - minTemplateWidth;
             if (scanRight < scanLeft) {
-                return inters;
+                return heads;
             }
+
             // Use the note spots to limit the abscissae to be checked for blacks
             boolean[] blackRelevants = getRelevantBlackAbscissae(scanLeft, scanRight);
+
             // Scan from left to right
             for (int x0 = scanLeft; x0 <= scanRight; x0++) {
                 final int y0 = getTheoreticalOrdinate(x0);
@@ -1381,24 +1458,22 @@ public class NoteHeadsBuilder
                             }
                         }
 
-                        HeadInter inter = createInter(
-                                bestLoc,
-                                MIDDLE_LEFT,
-                                shape,
-                                line.getStaff(),
-                                pitch);
+                        final HeadInter head = createInter(
+                                bestLoc, MIDDLE_LEFT, shape, line.getStaff(), pitch);
 
-                        if (inter != null) {
-                            inters.add(inter);
+                        if (head != null) {
+                            heads.add(head);
                         }
                     }
                 }
             }
             // Aggregate matching inters
-            inters = aggregateMatches(inters);
+            heads = aggregateMatches(heads);
+
             // Check conflict with seed-based instances
-            inters = filterSeedConflicts(inters, competitors);
-            for (Iterator<HeadInter> it = inters.iterator(); it.hasNext();) {
+            heads = filterSeedConflicts(heads, competitors);
+
+            for (Iterator<HeadInter> it = heads.iterator(); it.hasNext();) {
                 HeadInter inter = it.next();
                 Glyph glyph = inter.retrieveGlyph(image);
 
@@ -1408,12 +1483,23 @@ public class NoteHeadsBuilder
                     it.remove();
                 }
             }
-            return inters;
+
+            return heads;
         }
 
         //-------------//
         // lookupSeeds //
         //-------------//
+        /**
+         * Try both horizontal sides of every stem seed encountered in line with all
+         * possible stem-based shapes, and keep the best match per shape and side.
+         * <p>
+         * For each best match of sufficient grade, we also record the actual abscissa distance
+         * between seed line and head bounds.
+         * This information will be later consolidated at sheet level, per head shape and side.
+         *
+         * @return the stem-based head inters created
+         */
         private List<HeadInter> lookupSeeds ()
         {
             // Intersected seeds in the area
@@ -1424,13 +1510,13 @@ public class NoteHeadsBuilder
 
             for (Glyph seed : seeds) {
                 if (seed.isVip()) {
-                    logger.info("lookupSeeds for seed#{}", seed.getId());
+                    logger.info("VIP lookupSeeds for seed#{}", seed.getId());
                 }
 
                 // Compute precise stem link point.
-                // x value is imposed by seed alignment, y value by line(s)
-                int x0 = GeoUtil.centerOf(seed.getBounds()).x; // Rough x value
-                int yLine = line.yAt(x0); // Rather good line y value
+                // x value is driven by seed alignment, y value by line(s)
+                int x0 = (int) Math.rint(seed.getCenter2D().getX()); // Rough x value
+                double yLine = line.yAt(x0); // Rather good line y value
                 final Point2D top = seed.getStartPoint(Orientation.VERTICAL);
                 final Point2D bot = seed.getStopPoint(Orientation.VERTICAL);
                 x0 = (int) Math.rint(LineUtil.xAtY(top, bot, yLine)); // Precise x value
@@ -1468,37 +1554,51 @@ public class NoteHeadsBuilder
                             }
                         }
 
-                        if (bestLoc != null) {
-                            // Special case: NOTEHEAD_VOID mistaken for NOTEHEAD_BLACK
-                            if (shape == Shape.NOTEHEAD_BLACK) {
-                                Shape newShape = evalBlackAsVoid(bestLoc.x, bestLoc.y, anchor);
+                        if (bestLoc == null) {
+                            continue;
+                        }
 
-                                if (newShape != null) {
-                                    shape = newShape;
-                                }
-                            }
+                        // Special case: NOTEHEAD_VOID mistaken for NOTEHEAD_BLACK
+                        if (shape == Shape.NOTEHEAD_BLACK) {
+                            final Shape newShape = evalBlackAsVoid(bestLoc.x, bestLoc.y, anchor);
 
-                            HeadInter inter = createInter(
-                                    bestLoc,
-                                    anchor,
-                                    shape,
-                                    line.getStaff(),
-                                    pitch);
-
-                            if (inter != null) {
-                                Glyph glyph = inter.retrieveGlyph(image);
-
-                                if (glyph != null) {
-                                    sig.addVertex(inter);
-                                    inters.add(inter);
-                                }
+                            if (newShape != null) {
+                                shape = newShape;
                             }
                         }
+
+                        final HeadInter head = createInter(bestLoc, anchor, shape, line.getStaff(),
+                                                           pitch);
+                        if (head == null) {
+                            continue;
+                        }
+
+                        final Glyph glyph = head.retrieveGlyph(image);
+
+                        if (glyph == null) {
+                            continue;
+                        }
+
+                        sig.addVertex(head);
+                        heads.add(head);
+
+                        if (head.getGrade() < Grades.goodInterGrade) {
+                            continue;
+                        }
+
+                        // Collect actual dx between head and seed
+                        // Dx is positive if outside head box and negative if inside
+                        final HorizontalSide hSide = (anchor == LEFT_STEM) ? LEFT : RIGHT;
+                        final Rectangle box = head.getBounds();
+                        final double dx = (hSide == LEFT)
+                                ? box.x - x0 + 0.5
+                                : x0 + 0.5 - (box.x + box.width - 1);
+                        tally.putDx(head, hSide, dx);
                     }
                 }
             }
 
-            return inters;
+            return heads;
         }
     }
 
@@ -1695,17 +1795,17 @@ public class NoteHeadsBuilder
     private static class Aggregate
     {
 
-        Point point;
+        Point2D point;
 
         List<HeadInter> matches = new ArrayList<>();
 
-        public void add (HeadInter inter)
+        public void add (HeadInter head)
         {
             if (point == null) {
-                point = GeoUtil.centerOf(inter.getBounds());
+                point = head.getCenter2D();
             }
 
-            matches.add(inter);
+            matches.add(head);
         }
 
         public HeadInter getMainInter ()
@@ -1720,7 +1820,7 @@ public class NoteHeadsBuilder
             sb.append("{");
 
             if (point != null) {
-                sb.append(" point:(").append(point.x).append(",").append(point.y).append(")");
+                sb.append(" point:").append(PointUtil.toString(point));
             }
 
             sb.append(" ").append(matches.size()).append(" matches: ");
@@ -1800,13 +1900,8 @@ public class NoteHeadsBuilder
         @Override
         public String toString ()
         {
-            return String.format(
-                    "%7d bars, %7d overlaps, %7d evals, %7d abandons",
-                    bars,
-                    overlaps,
-                    evals,
-                    abandons);
+            return String.format("%7d bars, %7d overlaps, %7d evals, %7d abandons",
+                                 bars, overlaps, evals, abandons);
         }
     }
-
 }

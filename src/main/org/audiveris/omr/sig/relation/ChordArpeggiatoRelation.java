@@ -113,9 +113,9 @@ public class ChordArpeggiatoRelation
     //----------------//
     // getXGapMaximum //
     //----------------//
-    public static Scale.Fraction getXGapMaximum (boolean manual)
+    public static Scale.Fraction getXGapMaximum (int profile)
     {
-        return manual ? constants.xGapMaxManual : constants.xGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.xGapMax, profile);
     }
 
     //-----------//
@@ -133,8 +133,9 @@ public class ChordArpeggiatoRelation
                 1.5,
                 "Maximum horizontal gap between arpeggiato & chord");
 
-        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(
+        @SuppressWarnings("unused")
+        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(
                 2.5,
-                "Maximum manual horizontal gap between arpeggiato & chord");
+                "Idem for profile 1");
     }
 }

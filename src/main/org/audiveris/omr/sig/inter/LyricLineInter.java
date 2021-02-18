@@ -62,7 +62,7 @@ public class LyricLineInter
      * @param meanFont the font averaged on whole text line
      */
     public LyricLineInter (Rectangle bounds,
-                           double grade,
+                           Double grade,
                            FontInfo meanFont)
     {
         super(bounds, grade, meanFont, TextRole.Lyrics);
@@ -73,7 +73,7 @@ public class LyricLineInter
      *
      * @param grade the interpretation quality
      */
-    public LyricLineInter (double grade)
+    public LyricLineInter (Double grade)
     {
         this(null, grade, null);
     }

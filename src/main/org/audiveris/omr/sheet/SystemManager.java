@@ -445,17 +445,17 @@ public class SystemManager
      * side of the current one.
      *
      * @param current current system
-     * @param side    desired horizontal side
+     * @param hSide   desired horizontal side
      * @return the neighboring system or null
      */
     public SystemInfo horizontalNeighbor (SystemInfo current,
-                                          HorizontalSide side)
+                                          HorizontalSide hSide)
     {
         final int idx = systems.indexOf(current);
-        final int dir = (side == LEFT) ? (-1) : 1;
-        final int iBreak = (side == LEFT) ? (-1) : systems.size();
+        final int dir = (hSide == LEFT) ? (-1) : 1;
+        final int iBreak = (hSide == LEFT) ? (-1) : systems.size();
 
-        // Pickup the one immediately on left (or right)
+        // Pickup the one immediately on desired horizontal side
         for (int i = idx + dir; (dir * (iBreak - i)) > 0; i += dir) {
             SystemInfo s = systems.get(i);
 
@@ -597,19 +597,19 @@ public class SystemManager
      * side of the provided one.
      *
      * @param current current system
-     * @param side    desired vertical side
+     * @param vSide   desired vertical side
      * @return the neighboring systems if any, otherwise an empty list
      */
     public List<SystemInfo> verticalNeighbors (SystemInfo current,
-                                               VerticalSide side)
+                                               VerticalSide vSide)
     {
         final List<SystemInfo> neighbors = new ArrayList<>();
         final int idx = systems.indexOf(current);
-        final int dir = (side == TOP) ? (-1) : 1;
-        final int iBreak = (side == TOP) ? (-1) : systems.size();
+        final int dir = (vSide == TOP) ? (-1) : 1;
+        final int iBreak = (vSide == TOP) ? (-1) : systems.size();
         SystemInfo other = null;
 
-        // Pickup the one immediately above (or below)
+        // Pickup the one immediately on desired vertical side
         for (int i = idx + dir; (dir * (iBreak - i)) > 0; i += dir) {
             SystemInfo s = systems.get(i);
 

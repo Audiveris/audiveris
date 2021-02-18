@@ -85,7 +85,7 @@ public class AlterInter
      */
     public AlterInter (Glyph glyph,
                        Shape shape,
-                       double grade,
+                       Double grade,
                        Staff staff,
                        Double pitch,
                        Double measuredPitch)
@@ -120,7 +120,7 @@ public class AlterInter
      */
     private AlterInter ()
     {
-        super(null, null, null, null, null, null);
+        super(null, null, null, (Double) null, null, null);
         this.measuredPitch = null;
     }
 
@@ -225,15 +225,15 @@ public class AlterInter
     @Override
     public Point2D getRelationCenter ()
     {
-        final Point center = getCenter();
+        final Point2D center = getCenter2D();
 
         switch (shape) {
         case FLAT:
         case DOUBLE_FLAT: {
             double il = (staff != null) ? staff.getSpecificInterline()
                     : getBounds().height / constants.flatTypicalHeight.getValue();
-            return new Point2D.Double(center.x,
-                                      center.y + (0.5 * il * getAreaPitchOffset(Shape.FLAT)));
+            return new Point2D.Double(center.getX(),
+                                      center.getY() + (0.5 * il * getAreaPitchOffset(Shape.FLAT)));
         }
         default:
             return center;
@@ -259,10 +259,11 @@ public class AlterInter
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
     {
-        List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
+        final List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
         Collections.sort(systemHeads, Inters.byAbscissa);
+        final int profile = Math.max(getProfile(), system.getProfile());
 
-        return lookupLinks(systemHeads);
+        return lookupLinks(systemHeads, profile);
     }
 
     //---------------//
@@ -285,7 +286,8 @@ public class AlterInter
      */
     public void setLinks (List<Inter> systemHeads)
     {
-        Collection<Link> links = lookupLinks(systemHeads);
+        final int profile = Math.max(getProfile(), getSig().getSystem().getProfile());
+        final Collection<Link> links = lookupLinks(systemHeads, profile);
 
         for (Link link : links) {
             link.applyTo(this);
@@ -300,9 +302,11 @@ public class AlterInter
      * mirror head if any)
      *
      * @param systemHeads ordered collection of heads in system
+     * @param profile     desired profile level
      * @return the collection of links found, perhaps null
      */
-    private Collection<Link> lookupLinks (List<Inter> systemHeads)
+    private Collection<Link> lookupLinks (List<Inter> systemHeads,
+                                          int profile)
     {
         if (systemHeads.isEmpty()) {
             return Collections.emptySet();
@@ -315,8 +319,8 @@ public class AlterInter
         // Look for notes nearby on the right side of accidental
         final SystemInfo system = systemHeads.get(0).getSig().getSystem();
         final Scale scale = system.getSheet().getScale();
-        final int xGapMax = scale.toPixels(AlterHeadRelation.getXOutGapMaximum(manual));
-        final int yGapMax = scale.toPixels(AlterHeadRelation.getYGapMaximum(manual));
+        final int xGapMax = scale.toPixels(AlterHeadRelation.getXOutGapMaximum(profile));
+        final int yGapMax = scale.toPixels(AlterHeadRelation.getYGapMaximum(profile));
 
         // Accid ref point is on accid right side and precise y depends on accid shape
         Rectangle accidBox = getBounds();
@@ -345,7 +349,7 @@ public class AlterInter
                 double xGap = notePt.x - accidPt.x;
                 double yGap = Math.abs(notePt.y - accidPt.y);
                 AlterHeadRelation rel = new AlterHeadRelation();
-                rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
+                rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
                     if ((bestRel == null) || (bestYGap > yGap)) {
@@ -386,7 +390,7 @@ public class AlterInter
      */
     public static AlterInter create (Glyph glyph,
                                      Shape shape,
-                                     double grade,
+                                     Double grade,
                                      Staff staff)
     {
         Pitches pitches = computePitch(glyph, shape, staff);
@@ -453,7 +457,7 @@ public class AlterInter
 
             // Heuristic pitch offset WRT pitch of area center
             Rectangle box = glyph.getBounds();
-            Point center = glyph.getCenter();
+            Point2D center = glyph.getCenter2D();
             double geoPitch = staff.pitchPositionOf(center);
             geoPitch += getAreaPitchOffset(Shape.FLAT);
 
@@ -477,7 +481,7 @@ public class AlterInter
                                            OmrShape omrShape,
                                            Staff staff)
     {
-        final Point center = GeoUtil.centerOf(bounds);
+        final Point2D center = GeoUtil.center2D(bounds);
         double geoPitch = staff.pitchPositionOf(center);
 
         // Pitch offset for flat-based alterations

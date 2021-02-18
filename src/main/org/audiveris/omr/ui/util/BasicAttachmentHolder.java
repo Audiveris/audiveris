@@ -21,14 +21,19 @@
 // </editor-fold>
 package org.audiveris.omr.ui.util;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.ViewParameters;
+import org.audiveris.omr.ui.symbol.OmrFont;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,10 +49,16 @@ import java.util.Map;
 public class BasicAttachmentHolder
         implements AttachmentHolder
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Map for attachments */
+    private static final Constants constants = new Constants();
+
+    //~ Instance fields ----------------------------------------------------------------------------
+    /** Map for attachments. */
     protected Map<String, java.awt.Shape> attachments = new HashMap<>();
 
+    //~ Constructors -------------------------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // addAttachment //
     //---------------//
@@ -101,22 +112,63 @@ public class BasicAttachmentHolder
             return;
         }
 
-        Color oldColor = g.getColor();
+        final Color oldColor = g.getColor();
         g.setColor(Colors.ATTACHMENT);
 
-        Font oldFont = g.getFont();
-        g.setFont(oldFont.deriveFont(4f));
+        final double zoom = g.getTransform().getScaleX();
+        Font oldFont = null;
+        Font font = null;
 
-        for (Map.Entry<String, Shape> entry : attachments.entrySet()) {
-            Shape shape = entry.getValue();
-            g.draw(shape);
-
-            String key = entry.getKey();
-            Rectangle rect = shape.getBounds();
-            g.drawString(key, rect.x + (rect.width / 2), rect.y + (rect.height / 2));
+        if (constants.keyPainting.isSet() && (zoom >= constants.minZoomForKey.getValue())) {
+            oldFont = g.getFont();
+            final double std = constants.keyFontRatio.getValue() * UIUtil.GLOBAL_FONT_RATIO;
+            final double z = Math.max(std, zoom);
+            final AffineTransform at = AffineTransform.getScaleInstance(std / z, std / z);
+            font = oldFont.deriveFont(at);
+            g.setFont(font);
         }
 
-        g.setFont(oldFont);
+        for (Map.Entry<String, Shape> entry : attachments.entrySet()) {
+            // Draw shape
+            final Shape shape = entry.getValue();
+            g.draw(shape);
+
+            if (font != null) {
+                // Draw key
+                final String key = entry.getKey();
+                final Rectangle2D k = new TextLayout(key, font, OmrFont.frc).getBounds();
+                final Rectangle2D s = shape.getBounds2D();
+                g.drawString(key,
+                             (int) Math.rint(s.getX() + (s.getWidth() / 2) - k.getWidth() / 2),
+                             (int) Math.rint(s.getY() + (s.getHeight() / 2) + k.getHeight() / 2));
+            }
+        }
+
+        if (oldFont != null) {
+            g.setFont(oldFont);
+        }
+
         g.setColor(oldColor);
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean keyPainting = new Constant.Boolean(
+                true,
+                "Should the attachment key be painted?");
+
+        private final Constant.Ratio minZoomForKey = new Constant.Ratio(
+                2.0,
+                "Minimum zoom value to display the attachment key");
+
+        private final Constant.Ratio keyFontRatio = new Constant.Ratio(
+                1.0,
+                "Ratio of standard font size for the attachment key");
     }
 }

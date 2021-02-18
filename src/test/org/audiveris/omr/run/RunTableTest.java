@@ -26,12 +26,12 @@ import ij.process.ByteProcessor;
 import org.audiveris.omr.image.GlobalFilter;
 import static org.audiveris.omr.run.Orientation.*;
 import org.audiveris.omr.run.RunTable.RunSequence;
-import org.audiveris.omr.util.Predicate;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
 import java.awt.Dimension;
 import java.awt.Point;
+import java.util.function.Predicate;
 
 /**
  *
@@ -331,7 +331,7 @@ public class RunTableTest
         Predicate<Run> predicate1 = new Predicate<Run>()
         {
             @Override
-            public boolean check (Run run)
+            public boolean test (Run run)
             {
                 return run.getLength() <= 2;
             }
@@ -345,7 +345,7 @@ public class RunTableTest
         Predicate<Run> predicate2 = new Predicate<Run>()
         {
             @Override
-            public boolean check (Run run)
+            public boolean test (Run run)
             {
                 return run.getLength() > 2;
             }
@@ -368,7 +368,7 @@ public class RunTableTest
         Predicate<Run> predicate1 = new Predicate<Run>()
         {
             @Override
-            public boolean check (Run run)
+            public boolean test (Run run)
             {
                 return run.getLength() == 2;
             }
@@ -389,7 +389,7 @@ public class RunTableTest
         Predicate<Run> predicate2 = new Predicate<Run>()
         {
             @Override
-            public boolean check (Run run)
+            public boolean test (Run run)
             {
                 return run.getLength() == 1;
             }

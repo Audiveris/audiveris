@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
+import org.audiveris.omr.util.HorizontalSide;
+
 /**
  * Enum {@code BeamPortion} defines which portion of a beam is used in a relation with
  * a stem.
@@ -32,4 +34,22 @@ public enum BeamPortion
     LEFT,
     CENTER,
     RIGHT;
+
+    /**
+     * Report the HorizontalSide of this portion.
+     *
+     * @return LEFT or RIGHT, null for CENTER
+     */
+    public HorizontalSide side ()
+    {
+        switch (this) {
+        case LEFT:
+            return HorizontalSide.LEFT;
+        case RIGHT:
+            return HorizontalSide.RIGHT;
+        default:
+        case CENTER:
+            return null;
+        }
+    }
 }

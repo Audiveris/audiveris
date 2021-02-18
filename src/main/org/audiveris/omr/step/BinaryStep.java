@@ -32,6 +32,7 @@ import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Picture.SourceKey;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.util.StopWatch;
@@ -97,8 +98,16 @@ public class BinaryStep
         RunTable wholeVertTable = vertFactory.createTable(binary);
         picture.setTable(Picture.TableKey.BINARY, wholeVertTable, true);
 
-        // To discard source
+        // Dispose of GRAY source
         picture.disposeSource(SourceKey.GRAY);
+
+        // Discard GRAY image from disk?
+        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
+        final boolean keepGray = switches.getValue(ProcessingSwitches.Switch.keepGrayImages);
+
+        if (!keepGray) {
+            sheet.getPicture().discardImage(Picture.ImageKey.GRAY);
+        }
 
         if (constants.printWatch.isSet()) {
             watch.print();

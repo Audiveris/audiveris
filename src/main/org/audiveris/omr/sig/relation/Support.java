@@ -45,9 +45,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class Support
         extends Relation
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Quality of the geometric junction. */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double3Adapter.class)
@@ -56,6 +58,7 @@ public abstract class Support
     /** Details about grade (for debugging). */
     protected GradeImpacts impacts;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicSupport object, with a grade set to 1.
      */
@@ -72,6 +75,72 @@ public abstract class Support
     public Support (double grade)
     {
         this.grade = grade;
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //----------//
+    // setGrade //
+    //----------//
+    /**
+     * Set the support grade value.
+     *
+     * @param grade the grade to set
+     */
+    public void setGrade (double grade)
+    {
+        this.grade = grade;
+    }
+
+    //----------//
+    // getGrade //
+    //----------//
+    /**
+     * Report the support grade.
+     *
+     * @return the grade
+     */
+    public double getGrade ()
+    {
+        return grade;
+    }
+
+    //------------//
+    // setImpacts //
+    //------------//
+    /**
+     * Assign details about the relation grade
+     *
+     * @param impacts the grade impacts
+     */
+    public void setImpacts (GradeImpacts impacts)
+    {
+        this.impacts = impacts;
+    }
+
+    //------------//
+    // getImpacts //
+    //------------//
+    /**
+     * Report details about the final relation grade
+     *
+     * @return the grade details
+     */
+    public GradeImpacts getImpacts ()
+    {
+        return impacts;
+    }
+
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    /**
+     * Report the minimum grade for this relation.
+     *
+     * @return minimum grade
+     */
+    public double getMinGrade ()
+    {
+        return constants.minGrade.getValue();
     }
 
     //----------------//
@@ -98,71 +167,6 @@ public abstract class Support
     public final double getTargetRatio ()
     {
         return 1.0 + (getTargetCoeff() * grade);
-    }
-
-    //----------//
-    // getGrade //
-    //----------//
-    /**
-     * Report the support grade.
-     *
-     * @return the grade
-     */
-    public double getGrade ()
-    {
-        return grade;
-    }
-
-    //----------//
-    // setGrade //
-    //----------//
-    /**
-     * Set the support grade value.
-     *
-     * @param grade the grade to set
-     */
-    public void setGrade (double grade)
-    {
-        this.grade = grade;
-    }
-
-    //------------//
-    // getImpacts //
-    //------------//
-    /**
-     * Report details about the final relation grade
-     *
-     * @return the grade details
-     */
-    public GradeImpacts getImpacts ()
-    {
-        return impacts;
-    }
-
-    //------------//
-    // setImpacts //
-    //------------//
-    /**
-     * Assign details about the relation grade
-     *
-     * @param impacts the grade impacts
-     */
-    public void setImpacts (GradeImpacts impacts)
-    {
-        this.impacts = impacts;
-    }
-
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    /**
-     * Report the minimum grade for this relation.
-     *
-     * @return minimum grade
-     */
-    public double getMinGrade ()
-    {
-        return constants.minGrade.getValue();
     }
 
     //----------//
@@ -196,6 +200,7 @@ public abstract class Support
         return 0;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

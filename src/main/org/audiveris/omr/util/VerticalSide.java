@@ -41,4 +41,25 @@ public enum VerticalSide
     {
         return (this == TOP) ? BOTTOM : TOP;
     }
+
+    /**
+     * Report the ordinate direction when going on this side.
+     *
+     * @return yDir
+     */
+    public int direction ()
+    {
+        return (this == TOP) ? -1 : 1;
+    }
+
+    /**
+     * Report the VerticalSide for the provided ordinate direction
+     *
+     * @param yDir ordinate direction
+     * @return side for yDir
+     */
+    public static VerticalSide of (int yDir)
+    {
+        return (yDir == -1) ? TOP : (yDir == +1) ? BOTTOM : null;
+    }
 }

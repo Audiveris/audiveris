@@ -54,11 +54,10 @@ public class DistanceMatching
     // matchAll //
     //----------//
     /**
-     * Run the provided template on the whole image to evaluate all
-     * possible matches.
+     * Run the provided template on the whole image to evaluate all possible matches.
      *
      * @param template    the template to be used
-     * @param maxDistance the maximum acceptable distance for keep a location
+     * @param maxDistance the maximum acceptable distance for keeping a location
      * @return an (unsorted) list of locations with acceptable distance
      */
     public List<PixelDistance> matchAll (Template template,

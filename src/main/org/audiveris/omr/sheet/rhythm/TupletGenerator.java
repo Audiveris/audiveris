@@ -26,12 +26,12 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Rational;
 import static org.audiveris.omr.math.Rational.ONE_OVER_FOUR;
 import static org.audiveris.omr.math.Rational.THREE_OVER_TWO;
-import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
@@ -172,7 +172,7 @@ public class TupletGenerator
 
         // Extend to beam group?
         for (AbstractChordInter chord : group) {
-            BeamGroup bg = chord.getBeamGroup();
+            BeamGroupInter bg = chord.getBeamGroup();
 
             if (bg != null) {
                 for (AbstractChordInter c : bg.getAllChords()) {
@@ -357,10 +357,10 @@ public class TupletGenerator
     private AbstractChordInter checkGroups (List<List<AbstractChordInter>> groups)
     {
         for (List<AbstractChordInter> group : groups) {
-            BeamGroup beamGroup = null;
+            BeamGroupInter beamGroup = null;
 
             for (AbstractChordInter ch : group) {
-                BeamGroup bg = ch.getBeamGroup();
+                BeamGroupInter bg = ch.getBeamGroup();
 
                 if (bg != null) {
                     if (beamGroup == null) {
@@ -424,7 +424,7 @@ public class TupletGenerator
 
         // Tuplet bounds
         Rectangle box = Entities.getBounds(group);
-        Point center = GeoUtil.centerOf(box);
+        Point center = GeoUtil.center(box);
         int margin = dim.height / 10; // Small vertical margin between chord tail and tuplet
         Rectangle tupletBox = new Rectangle(
                 center.x - (dim.width / 2),

@@ -23,12 +23,11 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.image.Anchored.Anchor;
+import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.sheet.Scale;
-import org.audiveris.omr.sheet.beam.BeamGroup;
-import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -41,6 +40,8 @@ import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UnlinkTask;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omr.util.VerticalSide;
+import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
 
@@ -141,14 +142,14 @@ public class HeadStemRelation
                     ch.setStem(stem);
                 }
 
-                // Propagate to beam if any
-                Measure measure = ch.getMeasure();
-
-                for (AbstractBeamInter beam : stem.getBeams()) {
-                    if (beam.getGroup() == null) {
-                        BeamGroup.includeBeam(beam, measure);
-                    }
-                }
+//                // Propagate to beam if any
+//                Measure measure = ch.getMeasure();
+//
+//                for (AbstractBeamInter beam : stem.getBeams()) {
+//                    if (beam.getGroup() == null) {
+//                        BeamGroupInter.includeBeam(beam, measure);
+//                    }
+//                }
             }
         }
 
@@ -159,25 +160,25 @@ public class HeadStemRelation
     //------------------//
     // getXInGapMaximum //
     //------------------//
-    public static Scale.Fraction getXInGapMaximum (boolean manual)
+    public static Scale.Fraction getXInGapMaximum (int profile)
     {
-        return manual ? constants.xInGapMaxManual : constants.xInGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.xInGapMax, profile);
     }
 
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
-    public static Scale.Fraction getXOutGapMaximum (boolean manual)
+    public static Scale.Fraction getXOutGapMaximum (int profile)
     {
-        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.xOutGapMax, profile);
     }
 
     //----------------//
     // getYGapMaximum //
     //----------------//
-    public static Scale.Fraction getYGapMaximum (boolean manual)
+    public static Scale.Fraction getYGapMaximum (int profile)
     {
-        return manual ? constants.yGapMaxManual : constants.yGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
     }
 
     /**
@@ -255,6 +256,74 @@ public class HeadStemRelation
     public boolean isSingleTarget ()
     {
         return true;
+    }
+
+    //---------------//
+    // checkRelation //
+    //---------------//
+    /**
+     * Check if a Head-Stem relation is possible between provided head and stem.
+     *
+     * @param head       the provided head
+     * @param stemLine   stem median line (top down)
+     * @param stump      head stump, if any
+     * @param headToTail vertical direction from head to tail
+     * @param scale      scaling information
+     * @param profile    desired profile level
+     * @return the relation if OK, otherwise null
+     */
+    public static HeadStemRelation checkRelation (HeadInter head,
+                                                  Line2D stemLine,
+                                                  Glyph stump,
+                                                  VerticalSide headToTail,
+                                                  Scale scale,
+                                                  int profile)
+    {
+        if (head.isVip()) {
+            logger.info("VIP checkRelation {} & {}", head, LineUtil.toString(stemLine));
+        }
+
+        // Relation head -> stem
+        final int yDir = (headToTail == TOP) ? -1 : 1;
+        final int xDir = -stemLine.relativeCCW(head.getCenter());
+        final HorizontalSide hSide = (xDir < 0) ? LEFT : RIGHT;
+        final Point2D refPt = head.getStemReferencePoint(hSide);
+        final HeadStemRelation hRel = new HeadStemRelation();
+        hRel.setHeadSide(hSide);
+
+        final double xStem = LineUtil.xAtY(stemLine, refPt.getY());
+        final double xGap = xDir * (xStem - refPt.getX());
+
+        final double yGap;
+        if (stump != null) {
+            final Rectangle stumpBox = stump.getBounds();
+            final double overlap = (yDir > 0)
+                    ? stumpBox.y + stumpBox.height - stemLine.getY1()
+                    : stemLine.getY2() - stumpBox.y;
+            yGap = Math.abs(Math.min(overlap, 0));
+        } else {
+            if (refPt.getY() < stemLine.getY1()) {
+                yGap = stemLine.getY1() - refPt.getY();
+            } else if (refPt.getY() > stemLine.getY2()) {
+                yGap = refPt.getY() - stemLine.getY2();
+            } else {
+                yGap = 0;
+            }
+        }
+
+        hRel.setInOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
+
+        if (hRel.getGrade() >= hRel.getMinGrade()) {
+            // Beware: extension must be the maximum y extension in head y range
+            final Rectangle headBox = head.getBounds();
+            hRel.setExtensionPoint(new Point2D.Double(
+                    xStem,
+                    (yDir > 0) ? headBox.y : ((headBox.y + headBox.height) - 1)));
+
+            return hRel;
+        }
+
+        return null;
     }
 
     //---------//
@@ -386,27 +455,27 @@ public class HeadStemRelation
     // getXInGapMax //
     //--------------//
     @Override
-    protected Scale.Fraction getXInGapMax (boolean manual)
+    protected Scale.Fraction getXInGapMax (int profile)
     {
-        return getXInGapMaximum(manual);
+        return getXInGapMaximum(profile);
     }
 
     //---------------//
     // getXOutGapMax //
     //---------------//
     @Override
-    protected Scale.Fraction getXOutGapMax (boolean manual)
+    protected Scale.Fraction getXOutGapMax (int profile)
     {
-        return getXOutGapMaximum(manual);
+        return getXOutGapMaximum(profile);
     }
 
     //------------//
     // getYGapMax //
     //------------//
     @Override
-    protected Scale.Fraction getYGapMax (boolean manual)
+    protected Scale.Fraction getYGapMax (int profile)
     {
-        return getYGapMaximum(manual);
+        return getYGapMaximum(profile);
     }
 
     @Override
@@ -511,7 +580,7 @@ public class HeadStemRelation
     // buildStemChord //
     //----------------//
     /**
-     * Create a HeadChord on the fly based on provided stem.
+     * Create a HeadChord on-the-fly based on provided stem.
      *
      * @param seq  action sequence to populate
      * @param stem the provided stem
@@ -521,7 +590,7 @@ public class HeadStemRelation
                                            StemInter stem)
     {
         final SIGraph sig = stem.getSig();
-        final HeadChordInter stemChord = new HeadChordInter(-1);
+        final HeadChordInter stemChord = new HeadChordInter(null);
         tasks.add(new AdditionTask(sig, stemChord, stem.getBounds(), Collections.emptySet()));
         tasks.add(new LinkTask(sig, stemChord, stem, new ChordStemRelation()));
 
@@ -536,39 +605,42 @@ public class HeadStemRelation
     {
 
         private final Constant.Ratio headSupportCoeff = new Constant.Ratio(
-                1,
+                4,
                 "Value for (source) head coeff in support formula");
 
         private final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
-                1,
+                10,
                 "Value for (target) stem coeff in support formula");
 
         private final Scale.Fraction xInGapMax = new Scale.Fraction(
-                0.3,
+                0.25,
                 "Maximum horizontal overlap between stem & head");
 
-        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(
-                0.45,
-                "Maximum manual horizontal overlap between stem & head");
+        @SuppressWarnings("unused")
+        private final Scale.Fraction xInGapMax_p1 = new Scale.Fraction(
+                0.4,
+                "Idem for profile 1");
 
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
-                0.275,
+                0.15,
                 "Maximum horizontal gap between stem & head");
 
-        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
-                0.35,
-                "Maximum manual horizontal gap between stem & head");
+        @SuppressWarnings("unused")
+        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(
+                0.25,
+                "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.8,
                 "Maximum vertical gap between stem & head");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+        @SuppressWarnings("unused")
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(
                 1.2,
-                "Maximum manual vertical gap between stem & head");
+                "Idem for profile 1");
 
         private final Constant.Ratio anchorHeightRatio = new Constant.Ratio(
-                0.25,
+                0.275,
                 "Vertical margin for stem anchor portion (as ratio of head height)");
 
         private final Scale.Fraction maxInvadingDx = new Scale.Fraction(

@@ -77,9 +77,6 @@ public class HeadSpotsBuilder
                 new Point(0, 0),
                 GlyphGroup.HEAD_SPOT);
 
-        // Dispose the runTable
-        sheet.getPicture().removeTable(Picture.TableKey.HEAD_SPOTS);
-
         // Dispatch spots per system(s)
         return dispatchSheetSpots(spots);
     }

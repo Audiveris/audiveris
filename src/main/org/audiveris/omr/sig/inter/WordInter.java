@@ -135,7 +135,7 @@ public class WordInter
         this(word.getGlyph(),
              word.getBounds(),
              shape,
-             1,
+             1.0,
              word.getValue(),
              word.getFontInfo(),
              PointUtil.rounded(word.getLocation()));
@@ -155,7 +155,7 @@ public class WordInter
     public WordInter (Glyph glyph,
                       Rectangle bounds,
                       Shape shape,
-                      double grade,
+                      Double grade,
                       String value,
                       FontInfo fontInfo,
                       Point location)
@@ -175,7 +175,7 @@ public class WordInter
      * @param grade inter grade
      */
     public WordInter (Shape shape,
-                      double grade)
+                      Double grade)
     {
         super(null, null, shape, grade);
 
@@ -188,7 +188,7 @@ public class WordInter
      */
     protected WordInter ()
     {
-        super(null, null, null, null);
+        super(null, null, null, (Double) null);
 
         this.fontInfo = null;
     }
@@ -363,7 +363,7 @@ public class WordInter
         final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
 
         // Wrap this word into a new sentence
-        SentenceInter sentence = new SentenceInter(TextRole.Direction, 1);
+        SentenceInter sentence = new SentenceInter(TextRole.Direction, 1.0);
         sentence.setManual(true);
         sentence.setStaff(staff);
 

@@ -158,7 +158,7 @@ public class ChordsBuilder
         List<Inter> rests = sig.inters(RestInter.class);
 
         for (Inter rest : rests) {
-            RestChordInter chord = new RestChordInter(-1);
+            RestChordInter chord = new RestChordInter(null);
             sig.addVertex(chord);
             chord.setStaff(system.getClosestStaff(rest.getCenter()));
             chord.addMember(rest);
@@ -311,7 +311,7 @@ public class ChordsBuilder
             } else {
                 // Create a brand-new stem-based chord
                 boolean isSmall = head.getShape().isSmall();
-                chord = isSmall ? new SmallChordInter(-1) : new HeadChordInter(-1);
+                chord = isSmall ? new SmallChordInter(null) : new HeadChordInter(null);
                 sig.addVertex(chord);
                 chord.setStem(stem);
                 chord.addMember(head);
@@ -349,7 +349,7 @@ public class ChordsBuilder
             }
 
             // Start a brand new stem-less chord (whole note)
-            chord = new HeadChordInter(-1);
+            chord = new HeadChordInter(null);
             sig.addVertex(chord);
             chord.setStaff(h1.getStaff());
             chord.addMember(h1);

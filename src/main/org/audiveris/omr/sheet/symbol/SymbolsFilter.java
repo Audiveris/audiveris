@@ -31,7 +31,6 @@ import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.image.ImageUtil;
-import org.audiveris.omr.image.ShapeDescriptor;
 import org.audiveris.omr.image.Template;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.RunTable;
@@ -408,21 +407,20 @@ public class SymbolsFilter
         @Override
         public void visit (HeadInter head)
         {
-            final ShapeDescriptor desc = head.getDescriptor();
-            final Template tpl = desc.getTemplate();
-            final Rectangle box = desc.getBounds(head.getBounds());
+            final Template tpl = head.getTemplate();
+            final Rectangle tplBox = tpl.getBounds(head.getBounds());
 
             // Use underlying glyph (enlarged only for strong inters)
-            final List<Point> fores = tpl.getForegroundPixels(box, buffer, systemWeaks == null);
+            final List<Point> fores = tpl.getForegroundPixels(tplBox, buffer, systemWeaks == null);
 
             // Erase foreground pixels
             for (final Point p : fores) {
-                g.fillRect(box.x + p.x, box.y + p.y, 1, 1);
+                g.fillRect(tplBox.x + p.x, tplBox.y + p.y, 1, 1);
             }
 
             // Save foreground pixels for optional (weak) glyphs
             if (systemWeaks != null) {
-                savePixels(box, fores);
+                savePixels(tplBox, fores);
             }
         }
 

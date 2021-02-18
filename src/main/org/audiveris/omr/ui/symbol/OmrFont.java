@@ -61,7 +61,7 @@ public abstract class OmrFont
     public static final Color defaultImageColor = Color.BLACK;
 
     /** Needed for font size computation. */
-    protected static final FontRenderContext frc = new FontRenderContext(null, true, true);
+    public static final FontRenderContext frc = new FontRenderContext(null, true, true);
 
     /** Cache for fonts. No style, no size. */
     private static final Map<String, Font> fontCache = new HashMap<>();

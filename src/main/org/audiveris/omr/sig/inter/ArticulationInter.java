@@ -65,7 +65,7 @@ public class ArticulationInter
      */
     public ArticulationInter (Glyph glyph,
                               Shape shape,
-                              double grade)
+                              Double grade)
     {
         super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
     }
@@ -145,10 +145,11 @@ public class ArticulationInter
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
     {
-        List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+        final List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
         Collections.sort(systemHeadChords, Inters.byAbscissa);
 
-        Link link = lookupLink(systemHeadChords);
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final Link link = lookupLink(systemHeadChords, profile);
 
         return (link == null) ? Collections.emptyList() : Collections.singleton(link);
     }
@@ -170,9 +171,11 @@ public class ArticulationInter
      * Try to detect a link between this articulation instance and a HeadChord nearby.
      *
      * @param systemHeadChords ordered collection of head chords in system
+     * @param profile          desired profile level
      * @return the link found or null
      */
-    private Link lookupLink (List<Inter> systemHeadChords)
+    private Link lookupLink (List<Inter> systemHeadChords,
+                             int profile)
     {
         if (systemHeadChords.isEmpty()) {
             return null;
@@ -180,9 +183,9 @@ public class ArticulationInter
 
         final SystemInfo system = systemHeadChords.get(0).getSig().getSystem();
         final Scale scale = system.getSheet().getScale();
-        final int maxDx = scale.toPixels(ChordArticulationRelation.getXOutGapMaximum(manual));
-        final int maxDy = scale.toPixels(ChordArticulationRelation.getYGapMaximum(manual));
-        final int minDy = scale.toPixels(ChordArticulationRelation.getYGapMinimum(manual));
+        final int maxDx = scale.toPixels(ChordArticulationRelation.getXOutGapMaximum(profile));
+        final int maxDy = scale.toPixels(ChordArticulationRelation.getYGapMaximum(profile));
+        final int minDy = scale.toPixels(ChordArticulationRelation.getYGapMinimum(profile));
         final Rectangle articBox = getBounds();
         final Point arcticCenter = getCenter();
         final Rectangle luBox = new Rectangle(arcticCenter);
@@ -223,7 +226,7 @@ public class ArticulationInter
 
             double absYGap = Math.abs(yGap);
             ChordArticulationRelation rel = new ChordArticulationRelation();
-            rel.setOutGaps(scale.pixelsToFrac(absXGap), scale.pixelsToFrac(absYGap), manual);
+            rel.setOutGaps(scale.pixelsToFrac(absXGap), scale.pixelsToFrac(absYGap), profile);
 
             if (rel.getGrade() >= rel.getMinGrade()) {
                 if ((bestRel == null) || (bestYGap > absYGap)) {
@@ -256,7 +259,7 @@ public class ArticulationInter
      */
     public static ArticulationInter createValidAdded (Glyph glyph,
                                                       Shape shape,
-                                                      double grade,
+                                                      Double grade,
                                                       SystemInfo system,
                                                       List<Inter> systemHeadChords)
     {
@@ -264,8 +267,8 @@ public class ArticulationInter
             logger.info("VIP ArticulationInter create {} as {}", glyph, shape);
         }
 
-        ArticulationInter artic = new ArticulationInter(glyph, shape, grade);
-        Link link = artic.lookupLink(systemHeadChords);
+        final ArticulationInter artic = new ArticulationInter(glyph, shape, grade);
+        final Link link = artic.lookupLink(systemHeadChords, system.getProfile());
 
         if (link != null) {
             system.getSig().addVertex(artic);

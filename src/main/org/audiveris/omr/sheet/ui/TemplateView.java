@@ -29,6 +29,7 @@ import org.audiveris.omr.image.ChamferDistance;
 import org.audiveris.omr.image.DistanceTable;
 import org.audiveris.omr.image.PixelDistance;
 import org.audiveris.omr.image.Template;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.selection.AnchoredTemplateEvent;
@@ -52,6 +53,8 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
+import java.awt.event.ActionEvent;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
 /**
@@ -70,15 +73,17 @@ import java.awt.image.BufferedImage;
 public class TemplateView
         extends ImageView
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TemplateView.class);
 
-    private static final AlphaComposite templateComposite = AlphaComposite.getInstance(
+    public static final AlphaComposite templateComposite = AlphaComposite.getInstance(
             AlphaComposite.SRC_OVER,
             0.25f);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     private final Sheet sheet;
 
     private final DistanceTable table;
@@ -89,6 +94,7 @@ public class TemplateView
     /** Template reference point. */
     private Point refPoint;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TemplateView} object.
      *
@@ -110,6 +116,7 @@ public class TemplateView
         templateService.subscribeStrongly(AnchoredTemplateEvent.class, this);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // contextSelected //
     //-----------------//
@@ -121,6 +128,26 @@ public class TemplateView
         refPoint = new Point(pt);
         setFocusLocation(new Rectangle(pt), movement, CONTEXT_INIT);
         repaint();
+    }
+
+    //--------------------//
+    // getTranslateAction //
+    //--------------------//
+    @Override
+    protected TranslateAction getTranslateAction (int dx,
+                                                  int dy)
+    {
+        return new TranslateAction(dx, dy)
+        {
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                // We redirect ALT arrow keys to move template reference point
+                refPoint.translate(dx, dy);
+                setFocusLocation(new Rectangle(refPoint), null, CONTEXT_INIT);
+                repaint();
+            }
+        };
     }
 
     //---------//
@@ -160,15 +187,22 @@ public class TemplateView
                 Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
                 g.draw(tplRect);
 
+                // Draw slim box
+                UIUtil.setAbsoluteStroke(g, 3f);
+                g.setColor(Color.RED);
+                Rectangle slimRect = template.getSlimBoundsAt(refPoint.x, refPoint.y, anchor);
+                g.draw(slimRect);
+                UIUtil.setAbsoluteStroke(g, 1f);
+
                 // Paint shape symbol
                 Composite oldComposite = g.getComposite();
                 g.setComposite(templateComposite);
 
                 ShapeSymbol symbol = Symbols.getSymbol(template.getShape());
-                Rectangle symRect = template.getSymbolBoundsAt(refPoint.x, refPoint.y, anchor);
                 Scale scale = sheet.getScale();
                 MusicFont musicFont = MusicFont.getHeadFont(scale, scale.getInterline());
-                symbol.paintSymbol(g, musicFont, symRect.getLocation(), Alignment.TOP_LEFT);
+                final Point2D center = GeoUtil.center2D(slimRect);
+                symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
                 g.setComposite(oldComposite);
 
                 // Draw template key points (only for high zoom values)
@@ -233,6 +267,7 @@ public class TemplateView
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

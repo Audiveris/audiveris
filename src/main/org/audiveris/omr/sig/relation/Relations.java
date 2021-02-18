@@ -53,7 +53,6 @@ import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
-import org.audiveris.omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +66,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Class {@code Relations} gathers utilities for Relation classes and instances.
@@ -213,7 +213,7 @@ public abstract class Relations
         List<Relation> found = new ArrayList<>();
 
         for (Relation relation : collection) {
-            if ((predicate == null) || predicate.check(relation)) {
+            if ((predicate == null) || predicate.test(relation)) {
                 found.add(relation);
             }
         }
@@ -373,7 +373,7 @@ public abstract class Relations
         }
 
         @Override
-        public boolean check (Relation relation)
+        public boolean test (Relation relation)
         {
             return classe.isInstance(relation);
         }

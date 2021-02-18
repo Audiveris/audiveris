@@ -66,25 +66,25 @@ public class ChordArticulationRelation
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
-    public static Scale.Fraction getXOutGapMaximum (boolean manual)
+    public static Scale.Fraction getXOutGapMaximum (int profile)
     {
-        return manual ? constants.xGapMaxManual : constants.xGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.xGapMax, profile);
     }
 
     //----------------//
     // getYGapMaximum //
     //----------------//
-    public static Scale.Fraction getYGapMaximum (boolean manual)
+    public static Scale.Fraction getYGapMaximum (int profile)
     {
-        return manual ? constants.yGapMaxManual : constants.yGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
     }
 
     //----------------//
     // getYGapMinimum //
     //----------------//
-    public static Scale.Fraction getYGapMinimum (boolean manual)
+    public static Scale.Fraction getYGapMinimum (int profile)
     {
-        return manual ? constants.yGapMinManual : constants.yGapMin;
+        return (Scale.Fraction) constants.getConstant(constants.yGapMin, profile);
     }
 
     //----------------//
@@ -143,18 +143,18 @@ public class ChordArticulationRelation
     // getXOutGapMax //
     //---------------//
     @Override
-    protected Scale.Fraction getXOutGapMax (boolean manual)
+    protected Scale.Fraction getXOutGapMax (int profile)
     {
-        return getXOutGapMaximum(manual);
+        return getXOutGapMaximum(profile);
     }
 
     //------------//
     // getYGapMax //
     //------------//
     @Override
-    protected Scale.Fraction getYGapMax (boolean manual)
+    protected Scale.Fraction getYGapMax (int profile)
     {
-        return getYGapMaximum(manual);
+        return getYGapMaximum(profile);
     }
 
     //-----------//
@@ -172,25 +172,28 @@ public class ChordArticulationRelation
                 0.75,
                 "Maximum horizontal gap between articulation center & chord");
 
-        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(
+        @SuppressWarnings("unused")
+        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(
                 1.0,
-                "Maximum manual horizontal gap between articulation center & chord");
+                "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 2.0,
                 "Maximum vertical gap between articulation center & chord");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+        @SuppressWarnings("unused")
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(
                 3.0,
-                "Maximum manual vertical gap between articulation center & chord");
+                "Idem for profile 1");
 
         private final Scale.Fraction yGapMin = new Scale.Fraction(
                 0.1,
                 "Minimum vertical gap between articulation center & chord");
 
-        private final Scale.Fraction yGapMinManual = new Scale.Fraction(
+        @SuppressWarnings("unused")
+        private final Scale.Fraction yGapMin_p1 = new Scale.Fraction(
                 0.05,
-                "Minimum manual vertical gap between articulation center & chord");
+                "Idem for profile 1");
 
         private final Constant.Ratio xWeight = new Constant.Ratio(
                 3,

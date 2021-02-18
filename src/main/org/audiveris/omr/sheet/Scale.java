@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.math.Range;
+import org.audiveris.omr.sheet.note.HeadSeedScale;
 import org.audiveris.omr.util.Jaxb;
 
 import org.slf4j.Logger;
@@ -91,9 +92,52 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "scale")
 public class Scale
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Scale.class);
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /**
+     * Scale information kind.
+     */
+    public static enum Item
+    {
+        line("Line thickness"),
+        interline("Interline"),
+        smallInterline("Small interline"),
+        beam("Beam thickness"),
+        stem("Stem thickness");
+
+        private final String description;
+
+        Item (String description)
+        {
+            this.description = description;
+        }
+
+        /**
+         * Report item description
+         *
+         * @return description
+         */
+        public String getDescription ()
+        {
+            return description;
+        }
+    }
+
+    /**
+     * Staff size kind.
+     */
+    public enum Size
+    {
+        /** Standard staff. */
+        LARGE,
+        /** Small staff. */
+        SMALL;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Interline scale. */
     @XmlElement(name = "interline")
     private InterlineScale interlineScale;
@@ -118,10 +162,16 @@ public class Scale
     @XmlElement(name = "music-font")
     private MusicFontScale musicFontScale;
 
+    /** Head-stem scale. */
+//    @XmlElement(name = "head-seed")
+//    @XmlJavaTypeAdapter(HeadSeedScale.Adapter.class)
+    private HeadSeedScale headSeedScale;
+
     /** Scale for small staves, if any. */
     @XmlElement(name = "small-staff")
     private Scale smallScale;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a Scale object, meant for a whole sheet.
      *
@@ -148,6 +198,7 @@ public class Scale
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getBeamScale //
     //--------------//
@@ -219,6 +270,22 @@ public class Scale
         }
 
         return lineScale.main;
+    }
+
+    //------------------//
+    // getHeadSeedScale //
+    //------------------//
+    public HeadSeedScale getHeadSeedScale ()
+    {
+        return headSeedScale;
+    }
+
+    //------------------//
+    // setHeadSeedScale //
+    //------------------//
+    public void setHeadSeedScale (HeadSeedScale headSeedScale)
+    {
+        this.headSeedScale = headSeedScale;
     }
 
     //--------------//
@@ -771,6 +838,10 @@ public class Scale
             if (musicFontScale != null) {
                 sb.append(" ").append(musicFontScale);
             }
+
+            if (headSeedScale != null) {
+                sb.append(" ").append(headSeedScale);
+            }
         }
 
         if (smallScale != null) {
@@ -796,46 +867,37 @@ public class Scale
         return interlineScale.main * val;
     }
 
+    //--------------------//
+    // getHeadSeedContent //
+    //--------------------//
     /**
-     * Scale information kind.
+     * Mean for JAXB marshalling only.
      */
-    public static enum Item
+    @SuppressWarnings("unused")
+    @XmlElement(name = "head-seeds")
+    private HeadSeedScale.Content getHeadSeedContent ()
     {
-        line("Line thickness"),
-        interline("Interline"),
-        smallInterline("Small interline"),
-        beam("Beam thickness"),
-        stem("Stem thickness");
-
-        private final String description;
-
-        Item (String description)
-        {
-            this.description = description;
+        if (headSeedScale == null) {
+            return null;
         }
 
-        /**
-         * Report item description
-         *
-         * @return description
-         */
-        public String getDescription ()
-        {
-            return description;
-        }
+        return headSeedScale.getContent();
     }
 
+    //--------------------//
+    // setHeadSeedContent //
+    //--------------------//
     /**
-     * Staff size kind.
+     * Meant for JAXB unmarshalling only.
      */
-    public enum Size
+    @SuppressWarnings("unused")
+    private void setHeadSeedContent (HeadSeedScale.Content content)
     {
-        /** Standard staff. */
-        LARGE,
-        /** Small staff. */
-        SMALL;
+        headSeedScale = new HeadSeedScale();
+        headSeedScale.setContent(content);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // AreaFraction //
     //--------------//

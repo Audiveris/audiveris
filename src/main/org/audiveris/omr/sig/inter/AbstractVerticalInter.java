@@ -59,6 +59,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class AbstractVerticalInter
         extends AbstractInter
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Item width. */
     @XmlAttribute
@@ -70,6 +71,7 @@ public abstract class AbstractVerticalInter
     @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
     protected Line2D median;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AbstractVerticalInter} object.
      *
@@ -87,8 +89,12 @@ public abstract class AbstractVerticalInter
     {
         super(glyph, null, shape, impacts);
 
-        this.median = (median == null) ? null : new Line2D.Double(median.getX1(), median.getY1(),
-                                                                  median.getX2(), median.getY2());
+        this.median = (median == null) ? null
+                : new Line2D.Double(
+                        median.getX1(),
+                        median.getY1(),
+                        median.getX2(),
+                        median.getY2());
         this.width = width;
 
         if ((median != null) && (width != null)) {
@@ -127,14 +133,18 @@ public abstract class AbstractVerticalInter
      */
     public AbstractVerticalInter (Glyph glyph,
                                   Shape shape,
-                                  double grade,
+                                  Double grade,
                                   Line2D median,
                                   Double width)
     {
         super(glyph, null, shape, grade);
 
-        this.median = (median == null) ? null : new Line2D.Double(median.getX1(), median.getY1(),
-                                                                  median.getX2(), median.getY2());
+        this.median = (median == null) ? null
+                : new Line2D.Double(
+                        median.getX1(),
+                        median.getY1(),
+                        median.getX2(),
+                        median.getY2());
         this.width = width;
 
         if ((median != null) && (width != null)) {
@@ -151,7 +161,7 @@ public abstract class AbstractVerticalInter
      */
     public AbstractVerticalInter (Glyph glyph,
                                   Shape shape,
-                                  double grade)
+                                  Double grade)
     {
         super(glyph, null, shape, grade);
 
@@ -163,6 +173,7 @@ public abstract class AbstractVerticalInter
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -221,8 +232,11 @@ public abstract class AbstractVerticalInter
         super.setBounds(bounds);
 
         if (bounds != null) {
-            median = new Line2D.Double(bounds.x + bounds.width / 2.0, bounds.y,
-                                       bounds.x + bounds.width / 2.0, bounds.y + bounds.height);
+            median = new Line2D.Double(
+                    bounds.x + (bounds.width / 2.0),
+                    bounds.y,
+                    bounds.x + (bounds.width / 2.0),
+                    bounds.y + bounds.height);
             width = Double.valueOf(bounds.width);
 
             computeArea();
@@ -342,6 +356,39 @@ public abstract class AbstractVerticalInter
         bounds = getArea().getBounds();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements InterUIModel
+    {
+
+        // Upper point of median line
+        public Point2D p1;
+
+        // Lower point of median line
+        public Point2D p2;
+
+        // Width
+        public double width;
+
+        public Model (Point2D p1,
+                      Point2D p2)
+        {
+            this.p1 = p1;
+            this.p2 = p2;
+        }
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(p1, dx, dy);
+            PointUtil.add(p2, dx, dy);
+        }
+    }
+
     //--------//
     // Editor //
     //--------//
@@ -381,7 +428,8 @@ public abstract class AbstractVerticalInter
 
             // Move top, only vertically
             if (full) {
-                handles.add(new Handle(model.p1)
+                handles.add(
+                        new Handle(model.p1)
                 {
                     @Override
                     public boolean move (Point vector)
@@ -401,7 +449,8 @@ public abstract class AbstractVerticalInter
             }
 
             // Global move, only horizontally
-            handles.add(selectedHandle = new Handle(middle)
+            handles.add(
+                    selectedHandle = new Handle(middle)
             {
                 @Override
                 public boolean move (Point vector)
@@ -425,7 +474,8 @@ public abstract class AbstractVerticalInter
 
             // Bottom move, only vertically
             if (full) {
-                handles.add(new Handle(model.p2)
+                handles.add(
+                        new Handle(model.p2)
                 {
                     @Override
                     public boolean move (Point vector)
@@ -470,38 +520,6 @@ public abstract class AbstractVerticalInter
         protected void updateChords ()
         {
             //void by default
-        }
-    }
-
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements InterUIModel
-    {
-
-        // Upper point of median line
-        public Point2D p1;
-
-        // Lower point of median line
-        public Point2D p2;
-
-        // Width
-        public double width;
-
-        public Model (Point2D p1,
-                      Point2D p2)
-        {
-            this.p1 = p1;
-            this.p2 = p2;
-        }
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            PointUtil.add(p1, dx, dy);
-            PointUtil.add(p2, dx, dy);
         }
     }
 }

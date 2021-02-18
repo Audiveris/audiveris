@@ -14,6 +14,7 @@ nbproject
 
 .gitignore
 .gradle/*
+.idea/*
 .nb-gradle/*
 .nb-gradle-properties
 *.exe

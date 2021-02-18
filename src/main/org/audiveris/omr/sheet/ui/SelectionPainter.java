@@ -103,8 +103,7 @@ public class SelectionPainter
         g.fill(new Ellipse2D.Double(twoCenter.getX() - r,
                                     twoCenter.getY() - r, 2 * r, 2 * r));
 
-        final Line2D line = new Line2D.Double(oneCenter.getX(), oneCenter.getY(),
-                                              twoCenter.getX(), twoCenter.getY());
+        final Line2D line = new Line2D.Double(oneCenter, twoCenter);
         g.draw(line);
 
         // Print support name at center of line?
@@ -113,7 +112,7 @@ public class SelectionPainter
             final double z = Math.max(std, zoom);
             final AffineTransform at = AffineTransform.getScaleInstance(std / z, std / z);
             final TextLayout layout = basicLayout(Relations.nameOf(supportClass), at);
-            paint(layout, GeoUtil.centerOf(line.getBounds()), AREA_CENTER);
+            paint(layout, GeoUtil.center2D(line.getBounds()), AREA_CENTER);
         }
     }
 

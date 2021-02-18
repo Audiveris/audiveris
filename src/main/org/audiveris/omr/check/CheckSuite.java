@@ -33,23 +33,28 @@ import java.util.List;
  * Class {@code CheckSuite} represents a suite of homogeneous checks, meaning that all
  * checks in the suite work on the same object type.
  * <p>
- * A check suite is typically applied on a candidate to evaluate the
- * <b>intrinsic</b> quality (grade) of this candidate that depends on the
- * candidate alone.
- * This intrinsic grade can be complemented by <b>contextual</b> grade that
- * takes into account potential supporting entities nearby.
- * To leave room for contextual increment, the intrinsic grade is applied a
- * standard reduction ratio.
+ * Every check in the suite is assigned a <b>weight</b>, to represent its relative importance in
+ * the computation of the final grade value.
  * <p>
- * Every check in the suite is assigned a <b>weight</b>, to represent its
- * relative importance in the computation of the final grade value.
- * A weight value of <b>zero</b> implements a pure <b>constraint</b> check that
- * has no role in the precise computation of the final grade value, except that
- * it can detect that a constraint is not matched and thus make the whole check
- * suite fail.
+ * There are 2 specific weight values:
+ * <ul>
+ * <li>A weight value of <b>0</b> implements a pure <b>constraint</b> check that has no role in
+ * the precise computation of the final grade value, except that it can detect that a constraint is
+ * not matched and thus make the whole check suite fail.
+ * <li>A weight value of <b>-1</b> tells that the check will be run, but with no impact at all on
+ * the final grade value.
+ * This is useful when running the check has side effects needed by some following checks.
+ * </ul>
+ * <p>
+ * A check suite is typically applied on a candidate to evaluate the <b>intrinsic</b> quality
+ * (grade) of this candidate that depends on the candidate alone.
+ * This intrinsic grade can be complemented by <b>contextual</b> grade that takes into account
+ * potential supporting entities nearby.
+ * To leave room for contextual increment, the intrinsic grade is applied a standard reduction ratio
+ * (0.8 as of this writing).
  *
- * @param <C> the subtype of Checkable objects used in the homogeneous collection of checks in this
- *            suite
+ * @param <C> the subtype of Checkable used in the homogeneous collection of checks in the suite.
+ *
  * @author Hervé Bitteur
  */
 public class CheckSuite<C>
@@ -73,7 +78,7 @@ public class CheckSuite<C>
     private final List<Double> weights = new ArrayList<>();
 
     /** Total checks weight. */
-    private double totalWeight = 0.0d;
+    private double totalWeight = 0.0;
 
     /**
      * Create a suite of checks with standard threshold values.
@@ -118,7 +123,10 @@ public class CheckSuite<C>
     {
         checks.add(check);
         weights.add(weight);
-        totalWeight += weight;
+
+        if (weight >= 0) {
+            totalWeight += weight;
+        }
     }
 
     //--------//
@@ -300,12 +308,12 @@ public class CheckSuite<C>
             }
 
             // Aggregate results
-            if (result.grade == 0) {
-                grade = 0;
-            } else {
-                double weight = weights.get(index);
+            final double weight = weights.get(index);
 
-                if (weight != 0) {
+            if (weight >= 0) {
+                if (result.grade == 0) {
+                    grade = 0;
+                } else if (weight != 0) {
                     grade *= Math.pow(result.grade, weight);
                 }
             }

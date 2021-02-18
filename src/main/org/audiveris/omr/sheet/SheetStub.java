@@ -592,6 +592,19 @@ public class SheetStub
         return switches;
     }
 
+    //------------//
+    // getProfile //
+    //------------//
+    /**
+     * Report the processing profile for this stub, based on poor switch.
+     *
+     * @return 1 (for poor), 0 (default)
+     */
+    public int getProfile ()
+    {
+        return getProcessingSwitches().getValue(ProcessingSwitches.Switch.poorInputMode) ? 1 : 0;
+    }
+
     //----------//
     // getSheet //
     //----------//

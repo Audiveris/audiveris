@@ -62,6 +62,29 @@ public abstract class AreaUtil
                                                 Point2D right,
                                                 double height)
     {
+        return new Area(horizontalParallelogramPath(left, right, height));
+    }
+
+    //-------------------------//
+    // horizontalParallelogram //
+    //-------------------------//
+    /**
+     * Create a parallelogram mostly horizontal, where left and right
+     * sides are short and vertical.
+     * This is most useful for beams and ledgers.
+     * <p>
+     * Nota: the defining points are meant to be the extrema points
+     * <b>on the borders of</b> the parallelogram.
+     *
+     * @param left   left point of median line
+     * @param right  right point of median line
+     * @param height total height
+     * @return the created path
+     */
+    public static Path2D horizontalParallelogramPath (Point2D left,
+                                                      Point2D right,
+                                                      double height)
+    {
         final double dy = height / 2; // Half height
         final Path2D path = new Path2D.Double();
         path.moveTo(left.getX(), left.getY() - dy); // Upper left
@@ -70,7 +93,7 @@ public abstract class AreaUtil
         path.lineTo(left.getX(), left.getY() + dy); // Lower left
         path.closePath();
 
-        return new Area(path);
+        return path;
     }
 
     //--------------//

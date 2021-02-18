@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.note;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.image.DistanceTable;
+import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.step.AbstractSystemStep;
@@ -33,20 +34,23 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Class {@code HeadsStep} implements <b>HEADS</b> step, which uses distance matching
- * technique to retrieve all possible interpretations of note heads (black and void) or
- * whole notes, but no rest notes.
+ * technique to retrieve all possible interpretations of note heads (black, void or
+ * whole) but no note rests.
  *
  * @author Hervé Bitteur
  */
 public class HeadsStep
         extends AbstractSystemStep<HeadsStep.Context>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(HeadsStep.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadsStep} object.
      */
@@ -54,6 +58,7 @@ public class HeadsStep
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -62,8 +67,11 @@ public class HeadsStep
                           Context context)
             throws StepException
     {
-        final List<Glyph> spots = context.sheetSpots.get(system);
-        new NoteHeadsBuilder(system, context.distanceTable, spots).buildHeads();
+        new NoteHeadsBuilder(system,
+                             context.distanceTable,
+                             context.sheetSpots.get(system),
+                             context.tallies.get(system))
+                .buildHeads();
     }
 
     //----------//
@@ -79,9 +87,32 @@ public class HeadsStep
         // Retrieve spots for (black) heads
         Map<SystemInfo, List<Glyph>> sheetSpots = new HeadSpotsBuilder(sheet).getSpots();
 
-        return new Context(distances, sheetSpots);
+        // Allocate the collectors for seed-head data
+        Map<SystemInfo, HeadSeedTally> tallies = new TreeMap<>();
+
+        for (SystemInfo system : sheet.getSystems()) {
+            tallies.put(system, new HeadSeedTally());
+        }
+
+        return new Context(distances, sheetSpots, tallies);
     }
 
+    //----------//
+    // doEpilog //
+    //----------//
+    @Override
+    protected void doEpilog (Sheet sheet,
+                             Context context)
+            throws StepException
+    {
+        // Remove HEAD_SPOTS image from disk
+        sheet.getPicture().discardImage(Picture.ImageKey.HEAD_SPOTS);
+
+        // Analyze seed-head data
+        HeadSeedTally.analyze(sheet, context.tallies.values());
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Context //
     //---------//
@@ -91,27 +122,29 @@ public class HeadsStep
     protected static class Context
     {
 
-        /**
-         * Table of distances.
-         */
+        /** Table of distances. */
         public final DistanceTable distanceTable;
 
-        /**
-         * Spots per system.
-         */
+        /** Spots per system. */
         public final Map<SystemInfo, List<Glyph>> sheetSpots;
+
+        /** Seed-head tally per system. */
+        public final Map<SystemInfo, HeadSeedTally> tallies;
 
         /**
          * Create a Context.
          *
          * @param distanceTable
          * @param sheetSpots
+         * @param tallies
          */
         Context (DistanceTable distanceTable,
-                 Map<SystemInfo, List<Glyph>> sheetSpots)
+                 Map<SystemInfo, List<Glyph>> sheetSpots,
+                 Map<SystemInfo, HeadSeedTally> tallies)
         {
             this.distanceTable = distanceTable;
             this.sheetSpots = sheetSpots;
+            this.tallies = tallies;
         }
     }
 }

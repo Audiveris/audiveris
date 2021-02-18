@@ -39,7 +39,7 @@ public class SmallChordInter
      *
      * @param grade the intrinsic grade
      */
-    public SmallChordInter (double grade)
+    public SmallChordInter (Double grade)
     {
         super(grade);
     }

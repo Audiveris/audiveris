@@ -146,7 +146,8 @@ public class LinksStep
                         LyricItemInter item = (LyricItemInter) inter;
 
                         if ((opKind != OpKind.UNDO) && task instanceof AdditionTask) {
-                            item.mapToChord();
+                            final int profile = Math.max(item.getProfile(), system.getProfile());
+                            item.mapToChord(profile);
                         }
                     } else if (inter instanceof SentenceInter) {
                         SentenceInter sentence = (SentenceInter) inter;

@@ -138,8 +138,8 @@ public class ClustersRetriever
         public int compare (StaffFilament f1,
                             StaffFilament f2)
         {
-            final Point2D dsk1 = sheet.getSkew().deskewed(f1.getCenter());
-            final Point2D dsk2 = sheet.getSkew().deskewed(f2.getCenter());
+            final Point2D dsk1 = sheet.getSkew().deskewed(f1.getCenter2D());
+            final Point2D dsk2 = sheet.getSkew().deskewed(f2.getCenter2D());
 
             return Double.compare(dsk1.getY(), dsk2.getY());
         }

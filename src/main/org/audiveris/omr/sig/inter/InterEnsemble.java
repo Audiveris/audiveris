@@ -32,6 +32,7 @@ import java.util.List;
  * <li>Sentence vs words (and LyricLine vs LyricItems)</li>
  * <li>TimePairInter vs num and den</li>
  * <li>KeyInter vs its alterations</li>
+ * <li>BeamGroupInter vs its beams</li>
  * <li>ChordInter vs its notes</li>
  * <li>FermataInter vs its arc and dot</li>
  * </ul>
