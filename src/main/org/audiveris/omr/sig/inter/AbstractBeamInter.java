@@ -39,11 +39,15 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterEditor.Handle;
 import org.audiveris.omr.sig.ui.InterUIModel;
+import org.audiveris.omr.sig.ui.UITask;
+import org.audiveris.omr.sig.ui.UnlinkTask;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.BeamSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -54,6 +58,7 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
+import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +70,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -560,6 +566,84 @@ public abstract class AbstractBeamInter
     public boolean isHook ()
     {
         return false;
+    }
+
+    //--------//
+    // preAdd //
+    //--------//
+    @Override
+    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    {
+        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
+
+        // Include the created beam into suitable beam group
+        BeamGroupInter group = BeamGroupInter.findBeamGroup(this, staff.getSystem());
+
+        if (group == null) {
+            group = new BeamGroupInter();
+            group.setManual(true);
+            group.setStaff(staff);
+        }
+
+        tasks.add(new AdditionTask(
+                staff.getSystem().getSig(),
+                group,
+                getBounds(),
+                Arrays.asList(new Link(this, new Containment(), true))));
+
+        return tasks;
+    }
+
+    //---------//
+    // preEdit //
+    //---------//
+    @Override
+    public List<? extends UITask> preEdit (InterEditor editor)
+    {
+        final List<UITask> tasks = new ArrayList<>(super.preEdit(editor));
+
+        // Keep same beam group?
+        final BeamGroupInter oldGroup = getGroup();
+
+        if (oldGroup != null) {
+            final List<Inter> members = oldGroup.getMembers();
+            boolean keep = false;
+
+            if (members.size() == 1) {
+                keep = true;
+            } else {
+                members.remove(this);
+                final Scale scale = sig.getSystem().getSheet().getScale();
+
+                for (Inter member : members) {
+                    if (BeamGroupInter.canBeNeighbors(this, (AbstractBeamInter) member, scale)) {
+                        keep = true;
+                    }
+                }
+            }
+
+            if (keep) {
+                return tasks;
+            } else {
+                // Unlink this beam from oldGroup
+                final Relation rel = sig.getRelation(oldGroup, this, Containment.class);
+                tasks.add(new UnlinkTask(sig, rel));
+            }
+        }
+
+        // Find a new beam group
+        BeamGroupInter group = BeamGroupInter.findBeamGroup(this, sig.getSystem());
+
+        if (group == null) {
+            group = new BeamGroupInter();
+            group.setManual(true);
+            group.setStaff(staff);
+        }
+
+        tasks.add(new AdditionTask(
+                sig, group, getBounds(), Arrays.asList(new Link(this, new Containment(), true))));
+
+        return tasks;
     }
 
     //--------//

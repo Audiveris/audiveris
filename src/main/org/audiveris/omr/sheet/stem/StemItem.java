@@ -268,6 +268,11 @@ public abstract class StemItem
     //----------------//
     // HalfLinkerItem //
     //----------------//
+    /**
+     * A LinkerItem pointing up or down.
+     * <p>
+     * Either a beam {@link VLinker} or a head {@link CLinker}
+     */
     public static class HalfLinkerItem
             extends LinkerItem
     {

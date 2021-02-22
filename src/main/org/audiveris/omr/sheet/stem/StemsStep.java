@@ -83,7 +83,9 @@ public class StemsStep
     // doProlog //
     //----------//
     /**
-     * Make sure that beams are gathered into BeamGroupInter instances.
+     * Make sure that beams are gathered into {@link BeamGroupInter} instances.
+     * <p>
+     * This is needed to stay compatible with .omr files built before 5.2 release
      *
      * @param sheet the sheet to check
      * @return null
