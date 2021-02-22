@@ -72,6 +72,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * This class replaces the (old)BeamGroup class that was not an inter and had to directly manage its
  * contained beams.
  *
+ * @since 5.2
+ *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
@@ -296,7 +298,7 @@ public class BeamGroupInter
      * This lookup mechanism depends on the potential existence of an explicit voice relation
      * between the rest and one of the stemmed chords of the beam group:
      * <ul>
-     * <li>If there is a {@link SameVoiceRelation} (white list)and if the rest center is located
+     * <li>If there is a {@link SameVoiceRelation} (white list) and if the rest center is located
      * with the beam group abscissa range, then the rest is considered as interleaved, even if
      * lookup failed.
      * <li>If there is a {@link SeparateVoiceRelation} (black list) then the rest is not considered
@@ -582,37 +584,6 @@ public class BeamGroupInter
         return (ch != null) ? ch.getVoice() : null;
     }
 
-    //-------------//
-    // includeBeam //
-    //-------------//
-    /**
-     * Manually include (or re-include) a beam into the measure BeamGroupInter structure.
-     *
-     * @param beam    beam to include
-     * @param measure containing measure
-     */
-    public static void includeBeam (AbstractBeamInter beam,
-                                    Measure measure)
-    {
-        // Look for a compatible group (via a common stem)
-        for (BeamGroupInter group : measure.getBeamGroups()) {
-            for (Inter bInter : group.getMembers()) {
-                final AbstractBeamInter b = (AbstractBeamInter) bInter;
-
-                if (beam.hasCommonStemWith(b)) {
-                    assignGroup(group, beam);
-
-                    return; // Found a hosting group
-                }
-            }
-        }
-
-        // Not found, create a new one
-        BeamGroupInter group = new BeamGroupInter();
-        group.setMeasure(measure);
-        assignGroup(group, beam);
-    }
-
     //-----------//
     // internals //
     //-----------//
@@ -675,6 +646,41 @@ public class BeamGroupInter
         this.voice = voice;
     }
 
+    //---------------//
+    // findBeamGroup //
+    //---------------//
+    /**
+     * Try to find a compatible group for the provided beam.
+     *
+     * @param beam   provided beam
+     * @param system containing system
+     * @return existing compatible group if any, null otherwise
+     */
+    public static BeamGroupInter findBeamGroup (AbstractBeamInter beam,
+                                                SystemInfo system)
+    {
+        final Scale scale = system.getSheet().getScale();
+        final double minXOverlap = scale.toPixels(constants.minXOverlap);
+        final double maxYDistance = scale.toPixels(constants.maxYDistance);
+        final double maxSlopeDiff = constants.maxSlopeDiff.getValue();
+        final SIGraph sig = system.getSig();
+        final List<Inter> groups = sig.inters(BeamGroupInter.class);
+
+        for (Inter inter : groups) {
+            final BeamGroupInter group = (BeamGroupInter) inter;
+
+            for (Inter member : group.getMembers()) {
+                final AbstractBeamInter b = (AbstractBeamInter) member;
+
+                if (canBeNeighbors(beam, b, minXOverlap, maxYDistance, maxSlopeDiff)) {
+                    return group;
+                }
+            }
+        }
+
+        return null;
+    }
+
     //-----------------//
     // populateMeasure //
     //-----------------//
@@ -690,43 +696,24 @@ public class BeamGroupInter
         measure.clearBeamGroups();
 
         // Retrieve beams in this measure
-        Set<AbstractBeamInter> beams = new LinkedHashSet<>();
-
+        final Set<AbstractBeamInter> beams = new LinkedHashSet<>();
         for (AbstractChordInter chord : measure.getHeadChords()) {
             beams.addAll(chord.getBeams());
         }
 
-        // Reset group info in each beam
+        // Retrieve beam groups for this measure
+        final Set<BeamGroupInter> groups = new LinkedHashSet<>();
         for (AbstractBeamInter beam : beams) {
+            if (beam.isRemoved()) {
+                continue;
+            }
+
             final BeamGroupInter group = beam.getGroup();
-
-            if (group != null) {
-                group.removeMember(beam);
-            }
+            groups.add(group);
         }
 
-        // Build beam groups for this measure stack
-        for (AbstractBeamInter beam : beams) {
-            if (!beam.isRemoved() && (beam.getEnsemble() == null)) {
-                BeamGroupInter group = new BeamGroupInter();
-                group.setMeasure(measure);
-                beam.getSig().addVertex(group);
-                assignGroup(group, beam);
-                logger.debug("{}", group);
-            }
-        }
-
-        if (checkGroupSplit) {
-            // In case something goes wrong, use an upper limit to loop
-            int loopNb = constants.maxSplitLoops.getValue();
-
-            while (checkBeamGroups(measure)) {
-                if (--loopNb < 0) {
-                    logger.warn("Loop detected in BeamGroup split in {}", measure);
-
-                    break;
-                }
-            }
+        for (BeamGroupInter group : groups) {
+            group.setMeasure(measure);
         }
 
         // Detect groups that are linked to more than one staff
@@ -809,6 +796,19 @@ public class BeamGroupInter
                 }
             }
         }
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    @Override
+    public void remove (boolean extensive)
+    {
+        if (measure != null) {
+            measure.removeInter(this);
+        }
+
+        super.remove(extensive);
     }
 
     //--------------//

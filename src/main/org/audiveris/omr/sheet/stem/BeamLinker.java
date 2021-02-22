@@ -1228,7 +1228,7 @@ public class BeamLinker
                         updateStemLine(ev.glyph, glyphs, stemLine);
 
                         // Could this head be a stopping head?
-                        if (hsRel.getHeadSide() == stoppingHeadSide) {
+                        if ((hsRel.getHeadSide() == stoppingHeadSide) && !glyphs.isEmpty()) {
                             final Glyph stemGlyph = (glyphs.size() > 1)
                                     ? GlyphFactory.buildGlyph(glyphs) : glyphs.iterator().next();
                             final Line2D line = stemGlyph.getCenterLine();
