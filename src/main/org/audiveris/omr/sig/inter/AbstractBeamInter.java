@@ -46,6 +46,8 @@ import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterEditor.Handle;
 import org.audiveris.omr.sig.ui.InterUIModel;
+import org.audiveris.omr.sig.ui.LinkTask;
+import org.audiveris.omr.sig.ui.RemovalTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UnlinkTask;
 import org.audiveris.omr.ui.symbol.Alignment;
@@ -577,19 +579,21 @@ public abstract class AbstractBeamInter
         final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
 
         // Include the created beam into suitable beam group
-        BeamGroupInter group = BeamGroupInter.findBeamGroup(this, staff.getSystem());
+        BeamGroupInter group = BeamGroupInter.findBeamGroup(this, staff.getSystem(), null);
 
-        if (group == null) {
+        if (group != null) {
+            tasks.add(new LinkTask(staff.getSystem().getSig(), group, this, new Containment()));
+        } else {
             group = new BeamGroupInter();
             group.setManual(true);
             group.setStaff(staff);
-        }
 
-        tasks.add(new AdditionTask(
-                staff.getSystem().getSig(),
-                group,
-                getBounds(),
-                Arrays.asList(new Link(this, new Containment(), true))));
+            tasks.add(new AdditionTask(
+                    staff.getSystem().getSig(),
+                    group,
+                    getBounds(),
+                    Arrays.asList(new Link(this, new Containment(), true))));
+        }
 
         return tasks;
     }
@@ -604,44 +608,61 @@ public abstract class AbstractBeamInter
 
         // Keep same beam group?
         final BeamGroupInter oldGroup = getGroup();
+        boolean oldStillOk = false;
 
         if (oldGroup != null) {
+            // Check if this (edited) beam can still be part of the oldGroup
             final List<Inter> members = oldGroup.getMembers();
-            boolean keep = false;
 
             if (members.size() == 1) {
-                keep = true;
+                oldStillOk = true;
             } else {
                 members.remove(this);
                 final Scale scale = sig.getSystem().getSheet().getScale();
 
                 for (Inter member : members) {
                     if (BeamGroupInter.canBeNeighbors(this, (AbstractBeamInter) member, scale)) {
-                        keep = true;
+                        oldStillOk = true;
                     }
                 }
             }
 
-            if (keep) {
-                return tasks;
-            } else {
+            if (!oldStillOk) {
                 // Unlink this beam from oldGroup
                 final Relation rel = sig.getRelation(oldGroup, this, Containment.class);
                 tasks.add(new UnlinkTask(sig, rel));
             }
         }
 
-        // Find a new beam group
-        BeamGroupInter group = BeamGroupInter.findBeamGroup(this, sig.getSystem());
+        // Check for another compatible beam group
+        final BeamGroupInter otherGroup = BeamGroupInter.findBeamGroup(
+                this, sig.getSystem(), oldGroup);
 
-        if (group == null) {
-            group = new BeamGroupInter();
-            group.setManual(true);
-            group.setStaff(staff);
+        if (otherGroup != null) {
+            if (oldGroup != null && oldStillOk) {
+                // Migrate all beams from oldGroup to otherGroup
+                for (Relation r : sig.outgoingEdgesOf(oldGroup)) {
+                    if (r instanceof Containment) {
+                        Inter b = sig.getEdgeTarget(r);
+                        tasks.add(new UnlinkTask(sig, r));
+                        tasks.add(new LinkTask(sig, otherGroup, b, new Containment()));
+                    }
+                }
+
+                // Then remove oldGroup
+                tasks.add(new RemovalTask(oldGroup));
+            } else {
+                // Link this beam to otherGroup
+                tasks.add(new LinkTask(sig, otherGroup, this, new Containment()));
+            }
+        } else {
+            // Create a brand new group with just this beam
+            final BeamGroupInter newGroup = new BeamGroupInter();
+            newGroup.setManual(true);
+            newGroup.setStaff(staff);
+            tasks.add(new AdditionTask(sig, newGroup, getBounds(),
+                                       Arrays.asList(new Link(this, new Containment(), true))));
         }
-
-        tasks.add(new AdditionTask(
-                sig, group, getBounds(), Arrays.asList(new Link(this, new Containment(), true))));
 
         return tasks;
     }

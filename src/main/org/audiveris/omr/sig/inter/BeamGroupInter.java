@@ -652,12 +652,14 @@ public class BeamGroupInter
     /**
      * Try to find a compatible group for the provided beam.
      *
-     * @param beam   provided beam
-     * @param system containing system
+     * @param beam          provided beam
+     * @param system        containing system
+     * @param excludedGroup excluded group or null
      * @return existing compatible group if any, null otherwise
      */
     public static BeamGroupInter findBeamGroup (AbstractBeamInter beam,
-                                                SystemInfo system)
+                                                SystemInfo system,
+                                                BeamGroupInter excludedGroup)
     {
         final Scale scale = system.getSheet().getScale();
         final double minXOverlap = scale.toPixels(constants.minXOverlap);
@@ -665,6 +667,10 @@ public class BeamGroupInter
         final double maxSlopeDiff = constants.maxSlopeDiff.getValue();
         final SIGraph sig = system.getSig();
         final List<Inter> groups = sig.inters(BeamGroupInter.class);
+
+        if (excludedGroup != null) {
+            groups.remove(excludedGroup);
+        }
 
         for (Inter inter : groups) {
             final BeamGroupInter group = (BeamGroupInter) inter;
