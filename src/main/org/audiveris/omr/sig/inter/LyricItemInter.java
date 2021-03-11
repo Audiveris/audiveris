@@ -116,7 +116,7 @@ public class LyricItemInter
      *
      * @param grade inter grade
      */
-    public LyricItemInter (double grade)
+    public LyricItemInter (Double grade)
     {
         super(Shape.LYRICS, grade);
     }
@@ -290,7 +290,8 @@ public class LyricItemInter
         if ((sig != null) && (itemKind != oldKind)) {
             if (itemKind == ItemKind.Syllable) {
                 // Try to set relation with chord
-                mapToChord();
+                final int profile = Math.max(getProfile(), sig.getSystem().getProfile());
+                mapToChord(profile);
             } else {
                 // Remove any chord relation
                 for (Relation rel : sig.getRelations(this, ChordSyllableRelation.class)) {
@@ -320,8 +321,10 @@ public class LyricItemInter
     //------------//
     /**
      * Set a ChordSyllableRelation between this lyric item and proper head chord.
+     *
+     * @param profile desired profile level
      */
-    public void mapToChord ()
+    public void mapToChord (int profile)
     {
         // We map only syllables
         if (!isSyllable()) {
@@ -333,7 +336,7 @@ public class LyricItemInter
             return;
         }
 
-        Link link = lookupLink(staff, null);
+        Link link = lookupLink(staff, null, profile);
 
         if (link == null) {
             return;
@@ -360,13 +363,13 @@ public class LyricItemInter
                     logger.debug("{} preferred to {} in chord-lyric link.", other, this);
 
                     // Find a 2nd choice for this syllable
-                    link = lookupLink(staff, Arrays.asList(headChord));
+                    link = lookupLink(staff, Arrays.asList(headChord), profile);
                 } else {
                     logger.debug("{} preferred to {} in chord-lyric link.", this, other);
                     sig.removeEdge(rel);
 
                     // Find a 2nd choice for other syllable
-                    Link otherLink = other.lookupLink(staff, Arrays.asList(headChord));
+                    Link otherLink = other.lookupLink(staff, Arrays.asList(headChord), profile);
 
                     if (otherLink != null) {
                         otherLink.applyTo(other);
@@ -396,7 +399,7 @@ public class LyricItemInter
 
         if (line == null) {
             // Create a new lyric line
-            line = new LyricLineInter(1);
+            line = new LyricLineInter(1.0);
             line.setManual(true);
             line.setStaff(staff);
             tasks.add(new AdditionTask(system.getSig(), line, getBounds(), Collections.emptySet()));
@@ -416,17 +419,21 @@ public class LyricItemInter
      *
      * @param theStaff  staff to be looked up
      * @param blackList head chords black-listed, perhaps null
+     * @param profile   desired profile level
      * @return the link found or null
      */
     public Link lookupLink (Staff theStaff,
-                            Collection<HeadChordInter> blackList)
+                            Collection<HeadChordInter> blackList,
+                            int profile)
     {
         final double refX = getReferenceAbscissa();
         final double refY = getLocation().getY();
         final boolean lookAbove = theStaff.pitchPositionOf(location) >= 0;
 
-        Part thePart = theStaff.getPart();
-        int maxDx = theStaff.getSystem().getSheet().getScale().toPixels(constants.maxItemDx);
+        final Part thePart = theStaff.getPart();
+        final Scale scale = theStaff.getSystem().getSheet().getScale();
+        final int maxDx = scale.toPixels(
+                (Scale.Fraction) constants.getConstant(constants.maxItemDx, profile));
 
         // A word can start in a measure and finish in the next measure
         // Look for head-chords in proper staff that are compatible abscissawise with syllable
@@ -507,7 +514,8 @@ public class LyricItemInter
             return Collections.emptyList();
         }
 
-        Link link = lookupLink(staff, null);
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final Link link = lookupLink(staff, null, profile);
 
         return (link == null) ? Collections.emptyList() : Collections.singleton(link);
     }

@@ -84,7 +84,7 @@ public abstract class AbstractFlagInter
      */
     protected AbstractFlagInter (Glyph glyph,
                                  Shape shape,
-                                 double grade)
+                                 Double grade)
     {
         super(glyph, null, shape, grade);
     }
@@ -169,10 +169,10 @@ public abstract class AbstractFlagInter
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
     {
-        List<Inter> systemStems = system.getSig().inters(StemInter.class);
+        final List<Inter> systemStems = system.getSig().inters(StemInter.class);
         Collections.sort(systemStems, Inters.byAbscissa);
-
-        Link link = lookupLink(systemStems);
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final Link link = lookupLink(systemStems, profile);
 
         return (link == null) ? Collections.emptyList() : Collections.singleton(link);
     }
@@ -226,9 +226,11 @@ public abstract class AbstractFlagInter
      * Try to detect a link between this Flag instance and a stem nearby.
      *
      * @param systemStems ordered collection of stems in system
+     * @param profile     desired profile level
      * @return the link found or null
      */
-    private Link lookupLink (List<Inter> systemStems)
+    private Link lookupLink (List<Inter> systemStems,
+                             int profile)
     {
         if (systemStems.isEmpty()) {
             return null;
@@ -236,7 +238,7 @@ public abstract class AbstractFlagInter
 
         final SystemInfo system = systemStems.get(0).getSig().getSystem();
         final Scale scale = system.getSheet().getScale();
-        final int maxStemFlagGapY = scale.toPixels(FlagStemRelation.getYGapMaximum(manual));
+        final int maxStemFlagGapY = scale.toPixels(FlagStemRelation.getYGapMaximum(profile));
 
         // Look for stems nearby, using the lowest (for up) or highest (for down) third of height
         final boolean isFlagUp = FlagsUp.contains(shape);
@@ -264,7 +266,7 @@ public abstract class AbstractFlagInter
             glyph.addAttachment("fs", luBox);
         }
 
-        List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
+        final List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
 
         for (Inter inter : stems) {
             StemInter stem = (StemInter) inter;
@@ -289,7 +291,7 @@ public abstract class AbstractFlagInter
             }
 
             FlagStemRelation fRel = new FlagStemRelation();
-            fRel.setInOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
+            fRel.setInOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), getProfile());
 
             if (fRel.getGrade() >= fRel.getMinGrade()) {
                 fRel.setExtensionPoint(
@@ -350,10 +352,9 @@ public abstract class AbstractFlagInter
                                                       SystemInfo system,
                                                       List<Inter> systemStems)
     {
-        AbstractFlagInter flag = SmallFlags.contains(shape)
+        final AbstractFlagInter flag = SmallFlags.contains(shape)
                 ? new SmallFlagInter(glyph, shape, grade) : new FlagInter(glyph, shape, grade);
-
-        Link link = flag.lookupLink(systemStems);
+        final Link link = flag.lookupLink(systemStems, system.getProfile());
 
         if (link != null) {
             system.getSig().addVertex(flag);

@@ -22,11 +22,13 @@
 package org.audiveris.omr.lag;
 
 import org.audiveris.omr.run.Orientation;
+import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -135,39 +137,49 @@ public class Sections
         return found;
     }
 
-    //----------//
-    // toString //
-    //----------//
+    //---------------------//
+    // intersectedSections //
+    //---------------------//
     /**
-     * Convenient method, to build a string with just the ids of the section collection,
-     * introduced by the provided label.
+     * Convenient method to look for sections that intersect the provided shape
      *
-     * @param label    the string that introduces the list of IDs
-     * @param sections the collection of sections
-     * @return the string built
+     * @param shape    provided shape
+     * @param sections the collection of sections to browse
+     * @return the set of intersecting sections
      */
-    public static String toString (String label,
-                                   Collection<? extends Section> sections)
+    public static Set<Section> intersectedSections (Shape shape,
+                                                    Collection<? extends Section> sections)
     {
-        if (sections == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(label).append("[");
+        Set<Section> found = new LinkedHashSet<>();
 
         for (Section section : sections) {
-            sb.append("#").append(section.isVertical() ? "V" : "H").append(section.getId());
+            if (section.intersects(shape)) {
+                found.add(section);
+            }
         }
 
-        sb.append("]");
-
-        return sb.toString();
+        return found;
     }
 
-    //----------//
-    // toString //
-    //----------//
+    //-----//
+    // ids //
+    //-----//
+    /**
+     * Delegates to {@link Entities#ids(java.lang.String, java.util.Collection)}.
+     *
+     * @param label    a string to introduce the list of IDs
+     * @param sections collection of sections
+     * @return string of IDs
+     */
+    public static String ids (String label,
+                              Collection<? extends Section> sections)
+    {
+        return Entities.ids(label, sections);
+    }
+
+    //-----//
+    // ids //
+    //-----//
     /**
      * Convenient method, to build a string with just the ids of the section collection,
      * introduced by the label "sections".
@@ -175,9 +187,9 @@ public class Sections
      * @param sections the collection of sections
      * @return the string built
      */
-    public static String toString (Collection<? extends Section> sections)
+    public static String ids (Collection<? extends Section> sections)
     {
-        return toString("sections", sections);
+        return Entities.ids("sections", sections);
     }
 }
 //

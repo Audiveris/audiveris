@@ -22,6 +22,7 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.GeoOrder;
@@ -32,17 +33,24 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.Versions;
-import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sheet.stem.BeamLinker;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.Containment;
+import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterEditor.Handle;
 import org.audiveris.omr.sig.ui.InterUIModel;
+import org.audiveris.omr.sig.ui.LinkTask;
+import org.audiveris.omr.sig.ui.RemovalTask;
+import org.audiveris.omr.sig.ui.UITask;
+import org.audiveris.omr.sig.ui.UnlinkTask;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.BeamSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -53,6 +61,7 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
+import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +73,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -93,9 +103,12 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class AbstractBeamInter
         extends AbstractInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractBeamInter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -112,9 +125,10 @@ public abstract class AbstractBeamInter
     // Transient data
     //---------------
     //
-    /** The containing beam group. */
-    private BeamGroup group;
+    /** Beam-Stem linker. */
+    private BeamLinker linker;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractBeamInter object.
      * Note there is no underlying glyph, cleaning will be based on beam area.
@@ -146,7 +160,7 @@ public abstract class AbstractBeamInter
      * @param grade the grade
      */
     protected AbstractBeamInter (Shape shape,
-                                 double grade)
+                                 Double grade)
     {
         super(null, null, shape, grade);
     }
@@ -160,6 +174,7 @@ public abstract class AbstractBeamInter
         visitor.visit(this);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // added //
     //-------//
@@ -174,10 +189,14 @@ public abstract class AbstractBeamInter
     //---------------//
     // checkAbnormal //
     //---------------//
+    /**
+     * Check if this beam is connected to stems on both ends.
+     *
+     * @return true if abnormal
+     */
     @Override
     public boolean checkAbnormal ()
     {
-        // Check if beam is connected to stems on both ends
         boolean left = false;
         boolean right = false;
 
@@ -218,6 +237,32 @@ public abstract class AbstractBeamInter
         }
 
         return area.contains(point);
+    }
+
+    //-----------//
+    // getLinker //
+    //-----------//
+    /**
+     * Report the dedicated beam-stem linker.
+     *
+     * @return the linker
+     */
+    public BeamLinker getLinker ()
+    {
+        return linker;
+    }
+
+    //-----------//
+    // setLinker //
+    //-----------//
+    /**
+     * Set the dedicated beam-stem linker.
+     *
+     * @param linker the beam-stem linker
+     */
+    public void setLinker (BeamLinker linker)
+    {
+        this.linker = linker;
     }
 
     //-----------//
@@ -286,19 +331,25 @@ public abstract class AbstractBeamInter
         return chords;
     }
 
-    //------------//
-    // getDetails //
-    //------------//
-    @Override
-    public String getDetails ()
+    //------------------//
+    // getCompetingHook //
+    //------------------//
+    /**
+     * Report the competing beam hook, if any, which shares the same glyph as this beam.
+     *
+     * @return the competing hook, or null if none
+     */
+    public BeamHookInter getCompetingHook ()
     {
-        StringBuilder sb = new StringBuilder(super.getDetails());
+        for (Relation rel : sig.getRelations(this, Exclusion.class)) {
+            final Inter opposite = sig.getOppositeInter(this, rel);
 
-        if (group != null) {
-            sb.append(" group:").append(group.getId());
+            if ((opposite.getShape() == Shape.BEAM_HOOK) && (opposite.getGlyph() == getGlyph())) {
+                return (BeamHookInter) opposite;
+            }
         }
 
-        return sb.toString();
+        return null;
     }
 
     //-----------//
@@ -318,22 +369,24 @@ public abstract class AbstractBeamInter
      *
      * @return the containing group, if already set, or null
      */
-    public BeamGroup getGroup ()
+    public BeamGroupInter getGroup ()
     {
-        return group;
+        return (BeamGroupInter) getEnsemble();
     }
 
     //----------//
     // setGroup //
     //----------//
     /**
-     * Assign the containing BeamGroup.
+     * Assign the containing BeamGroupInter.
      *
      * @param group containing group
      */
-    public void setGroup (BeamGroup group)
+    public void setGroup (BeamGroupInter group)
     {
-        this.group = group;
+        if (group != null) {
+            group.addMember(this);
+        }
     }
 
     //----------//
@@ -438,6 +491,8 @@ public abstract class AbstractBeamInter
     @Override
     public Voice getVoice ()
     {
+        final BeamGroupInter group = getGroup();
+
         if (group != null) {
             return group.getVoice();
         }
@@ -521,7 +576,7 @@ public abstract class AbstractBeamInter
     @Override
     public boolean isGood ()
     {
-        return grade >= 0.35; // TODO: revise this!
+        return getGrade() >= Grades.goodBeamGrade;
     }
 
     //--------//
@@ -538,15 +593,108 @@ public abstract class AbstractBeamInter
     }
 
     //--------//
+    // preAdd //
+    //--------//
+    @Override
+    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    {
+        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
+
+        // Include the created beam into suitable beam group
+        BeamGroupInter group = BeamGroupInter.findBeamGroup(this, staff.getSystem(), null);
+
+        if (group != null) {
+            tasks.add(new LinkTask(staff.getSystem().getSig(), group, this, new Containment()));
+        } else {
+            group = new BeamGroupInter();
+            group.setManual(true);
+            group.setStaff(staff);
+
+            tasks.add(new AdditionTask(
+                    staff.getSystem().getSig(),
+                    group,
+                    getBounds(),
+                    Arrays.asList(new Link(this, new Containment(), true))));
+        }
+
+        return tasks;
+    }
+
+    //---------//
+    // preEdit //
+    //---------//
+    @Override
+    public List<? extends UITask> preEdit (InterEditor editor)
+    {
+        final List<UITask> tasks = new ArrayList<>(super.preEdit(editor));
+
+        // Keep same beam group?
+        final BeamGroupInter oldGroup = getGroup();
+        boolean oldStillOk = false;
+
+        if (oldGroup != null) {
+            // Check if this (edited) beam can still be part of the oldGroup
+            final List<Inter> members = oldGroup.getMembers();
+
+            if (members.size() == 1) {
+                oldStillOk = true;
+            } else {
+                members.remove(this);
+                final Scale scale = sig.getSystem().getSheet().getScale();
+
+                for (Inter member : members) {
+                    if (BeamGroupInter.canBeNeighbors(this, (AbstractBeamInter) member, scale)) {
+                        oldStillOk = true;
+                    }
+                }
+            }
+
+            if (!oldStillOk) {
+                // Unlink this beam from oldGroup
+                final Relation rel = sig.getRelation(oldGroup, this, Containment.class);
+                tasks.add(new UnlinkTask(sig, rel));
+            }
+        }
+
+        // Check for another compatible beam group
+        final BeamGroupInter otherGroup = BeamGroupInter.findBeamGroup(
+                this, sig.getSystem(), oldGroup);
+
+        if (otherGroup != null) {
+            if (oldGroup != null && oldStillOk) {
+                // Migrate all beams from oldGroup to otherGroup
+                for (Relation r : sig.outgoingEdgesOf(oldGroup)) {
+                    if (r instanceof Containment) {
+                        Inter b = sig.getEdgeTarget(r);
+                        tasks.add(new UnlinkTask(sig, r));
+                        tasks.add(new LinkTask(sig, otherGroup, b, new Containment()));
+                    }
+                }
+
+                // Then remove oldGroup
+                tasks.add(new RemovalTask(oldGroup));
+            } else {
+                // Link this beam to otherGroup
+                tasks.add(new LinkTask(sig, otherGroup, this, new Containment()));
+            }
+        } else {
+            // Create a brand new group with just this beam
+            final BeamGroupInter newGroup = new BeamGroupInter();
+            newGroup.setManual(true);
+            newGroup.setStaff(staff);
+            tasks.add(new AdditionTask(sig, newGroup, getBounds(),
+                                       Arrays.asList(new Link(this, new Containment(), true))));
+        }
+
+        return tasks;
+    }
+
+    //--------//
     // remove //
     //--------//
     @Override
     public void remove (boolean extensive)
     {
-        if (group != null) {
-            group.removeBeam(this);
-        }
-
         for (AbstractChordInter chord : getChords()) {
             chord.invalidateCache();
         }
@@ -560,10 +708,11 @@ public abstract class AbstractBeamInter
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
     {
-        List<Inter> systemStems = system.getSig().inters(StemInter.class);
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final List<Inter> systemStems = system.getSig().inters(StemInter.class);
         Collections.sort(systemStems, Inters.byAbscissa);
 
-        return lookupLinks(systemStems, system);
+        return lookupLinks(systemStems, system, profile);
     }
 
     //---------------//
@@ -597,32 +746,30 @@ public abstract class AbstractBeamInter
     // switchToGroup //
     //---------------//
     /**
-     * Move this beam to a BeamGroup, by setting the link both ways between this beam
-     * and the containing group.
+     * Move this beam to a new BeamGroupInter.
      *
      * @param group the (new) containing beam group
      */
-    public void switchToGroup (BeamGroup group)
+    public void switchToGroup (BeamGroupInter group)
     {
-        logger.debug("Switching {} from {} to {}", this, this.group, group);
+        final BeamGroupInter oldGroup = getGroup();
+
+        logger.debug("Switching {} from {} to {}", this, oldGroup, group);
 
         // Trivial noop case
-        if (this.group == group) {
+        if (oldGroup == group) {
             return;
         }
 
         // Remove from current group if any
-        if (this.group != null) {
-            this.group.removeBeam(this);
+        if (oldGroup != null) {
+            oldGroup.removeMember(this);
         }
 
         // Assign to new group
         if (group != null) {
-            group.addBeam(this);
+            group.addMember(this);
         }
-
-        // Remember assignment
-        this.group = group;
     }
 
     //-----------------//
@@ -684,8 +831,8 @@ public abstract class AbstractBeamInter
     {
         final Line2D top = getBorder(TOP);
         final Line2D bottom = getBorder(BOTTOM);
-        final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum(manual));
-        final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum(manual));
+        final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum(getProfile()));
+        final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum(getProfile()));
 
         final Path2D lu = new Path2D.Double();
         double xMin = top.getX1() - xOut;
@@ -714,10 +861,12 @@ public abstract class AbstractBeamInter
      *
      * @param systemStems all stems in system, sorted by abscissa
      * @param system      containing system
+     * @param profile     desired profile level
      * @return the potential links
      */
     public Collection<Link> lookupLinks (List<Inter> systemStems,
-                                         SystemInfo system)
+                                         SystemInfo system,
+                                         int profile)
     {
         if (systemStems.isEmpty()) {
             return Collections.emptySet();
@@ -736,7 +885,8 @@ public abstract class AbstractBeamInter
             StemInter stem = (StemInter) inter;
             Point2D stemMiddle = PointUtil.middle(stem.getMedian());
             VerticalSide vSide = (median.relativeCCW(stemMiddle) > 0) ? TOP : BOTTOM;
-            Link link = BeamStemRelation.checkLink(this, stem, vSide, scale);
+            int prof = Math.max(profile, stem.getProfile());
+            Link link = BeamStemRelation.checkLink(this, stem, vSide, scale, prof);
 
             if (link != null) {
                 links.add(link);
@@ -755,11 +905,13 @@ public abstract class AbstractBeamInter
      * @param systemStems all stems in system, sorted by abscissa
      * @param system      containing system
      * @param side        the desired horizontal side
+     * @param profile     desired profile level
      * @return the best potential link if any, null otherwise
      */
     private Link lookupSideLink (List<Inter> systemStems,
                                  SystemInfo system,
-                                 HorizontalSide side)
+                                 HorizontalSide side,
+                                 int profile)
     {
         if (systemStems.isEmpty()) {
             return null;
@@ -772,9 +924,9 @@ public abstract class AbstractBeamInter
         final Line2D top = getBorder(VerticalSide.TOP);
         final Line2D bottom = getBorder(VerticalSide.BOTTOM);
         final Scale scale = system.getSheet().getScale();
-        final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum(manual));
-        final int xIn = scale.toPixels(BeamStemRelation.getXInGapMaximum(manual));
-        final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum(manual));
+        final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum(profile));
+        final int xIn = scale.toPixels(BeamStemRelation.getXInGapMaximum(profile));
+        final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum(profile));
 
         Link bestLink = null;
         double bestGrade = Double.MAX_VALUE;
@@ -802,10 +954,11 @@ public abstract class AbstractBeamInter
         List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.NONE, luBox);
 
         for (Inter inter : stems) {
-            StemInter stem = (StemInter) inter;
+            final StemInter stem = (StemInter) inter;
+            final int prof = Math.max(profile, stem.getProfile());
 
             for (VerticalSide vSide : VerticalSide.values()) {
-                Link link = BeamStemRelation.checkLink(this, stem, vSide, scale);
+                Link link = BeamStemRelation.checkLink(this, stem, vSide, scale, prof);
 
                 if (link != null) {
                     BeamStemRelation rel = (BeamStemRelation) link.relation;
@@ -848,7 +1001,8 @@ public abstract class AbstractBeamInter
             return null;
         }
 
-        final Link link = lookupSideLink(systemStems, system, side);
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final Link link = lookupSideLink(systemStems, system, side, profile);
 
         if (link != null) {
             final StemInter stem = (StemInter) link.partner;
@@ -859,6 +1013,7 @@ public abstract class AbstractBeamInter
         return null;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//

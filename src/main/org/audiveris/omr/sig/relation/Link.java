@@ -39,23 +39,15 @@ import java.util.List;
  */
 public class Link
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /**
      * For comparing Link instances by decreasing grade.
      */
-    public static final Comparator<Link> byReverseGrade = new Comparator<Link>()
-    {
-        @Override
-        public int compare (Link l1,
-                            Link l2)
-        {
-            Support s1 = (Support) l1.relation;
-            Support s2 = (Support) l2.relation;
+    public static final Comparator<Link> byReverseGrade = (l1, l2) -> Double.compare(
+            ((Support) l2.relation).getGrade(), ((Support) l1.relation).getGrade());
 
-            return Double.compare(s2.getGrade(), s1.getGrade());
-        }
-    };
-
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The other Inter instance, the one to be linked with. */
     public Inter partner;
 
@@ -65,6 +57,7 @@ public class Link
     /** True for Inter as source and Partner as target, false for the reverse. */
     public final boolean outgoing;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Link} object.
      *
@@ -81,6 +74,7 @@ public class Link
         this.outgoing = outgoing;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // applyTo //
     //---------//

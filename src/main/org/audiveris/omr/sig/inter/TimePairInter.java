@@ -65,7 +65,7 @@ public class TimePairInter
      * @param grade
      */
     private TimePairInter (TimeRational timeRational,
-                           double grade)
+                           Double grade)
     {
         super(null, null, timeRational, grade);
     }
@@ -75,7 +75,7 @@ public class TimePairInter
      */
     private TimePairInter ()
     {
-        super((Glyph) null, null, 0);
+        super((Glyph) null, null, 0.0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -253,6 +253,8 @@ public class TimePairInter
     {
         bounds = null;
         timeRational = null;
+
+        setGrade(EnsembleHelper.computeMeanContextualGrade(this));
     }
 
     //--------------//
@@ -274,7 +276,7 @@ public class TimePairInter
     @Override
     public TimePairInter replicate (Staff targetStaff)
     {
-        TimePairInter inter = new TimePairInter(getTimeRational(), 0);
+        TimePairInter inter = new TimePairInter(getTimeRational(), getGrade());
         inter.setStaff(targetStaff);
 
         return inter;
@@ -293,8 +295,7 @@ public class TimePairInter
     public static TimePairInter createAdded (TimeNumberInter num,
                                              TimeNumberInter den)
     {
-        double grade = 0.5 * (num.getGrade() + den.getGrade());
-        TimePairInter pair = new TimePairInter(null, grade);
+        TimePairInter pair = new TimePairInter(null, null);
         SIGraph sig = num.getSig();
         sig.addVertex(pair);
         pair.addMember(num);

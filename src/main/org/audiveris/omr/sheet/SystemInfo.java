@@ -992,6 +992,19 @@ public class SystemInfo
         return null;
     }
 
+    //------------//
+    // getProfile //
+    //------------//
+    /**
+     * Convenient method to report the sheet processing profile based on poor switch.
+     *
+     * @return sheet processing profile
+     */
+    public int getProfile ()
+    {
+        return getSheet().getStub().getProfile();
+    }
+
     //----------//
     // getRight //
     //----------//

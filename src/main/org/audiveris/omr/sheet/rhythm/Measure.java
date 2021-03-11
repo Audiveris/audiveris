@@ -27,7 +27,7 @@ import org.audiveris.omr.sheet.DurationFactor;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.beam.BeamGroup;
+import org.audiveris.omr.sheet.beam.OldBeamGroup;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.rhythm.Voice.Family;
 import org.audiveris.omr.sig.SIGraph;
@@ -35,6 +35,7 @@ import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
@@ -120,10 +121,17 @@ public class Measure
     @XmlElement(name = "right-barline")
     private PartBarline rightBarline;
 
-    /** Groups of beams in this measure. Populated by CHORDS step. */
+    /** <b>OLD</b> Groups of beams in this measure. */
+    @Deprecated
     @XmlElementRef
+    private LinkedHashSet<OldBeamGroup> oldBeamGroups;
+
+    /** Groups of beams in this measure. */
+    @XmlList
+    @XmlIDREF
+    @XmlElement(name = "beam-groups")
     @Trimmable.Collection
-    private final LinkedHashSet<BeamGroup> beamGroups = new LinkedHashSet<>();
+    private final LinkedHashSet<BeamGroupInter> beamGroups = new LinkedHashSet<>();
 
     /**
      * Possibly several Clefs per staff.
@@ -223,19 +231,6 @@ public class Measure
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // addBeamGroup //
-    //--------------//
-    /**
-     * Add a beam group to this measure.
-     *
-     * @param group a beam group to add
-     */
-    public void addBeamGroup (BeamGroup group)
-    {
-        beamGroups.add(group);
-    }
-
     //-------------------//
     // addDummyWholeRest //
     //-------------------//
@@ -274,7 +269,7 @@ public class Measure
 
             FakeRest (Staff staff)
             {
-                super(null, Shape.WHOLE_REST, 0, staff, -1.0);
+                super(null, Shape.WHOLE_REST, 0.0, staff, -1.0);
             }
 
             @Override
@@ -333,6 +328,8 @@ public class Measure
             } else if (chord instanceof RestChordInter) {
                 restChords.add((RestChordInter) chord);
             }
+        } else if (inter instanceof BeamGroupInter) {
+            beamGroups.add((BeamGroupInter) inter);
         } else if (inter instanceof FlagInter) {
             flags.add((FlagInter) inter);
         } else if (inter instanceof TupletInter) {
@@ -380,8 +377,21 @@ public class Measure
                 addInter(inter);
             }
 
+            // OLD BeamGroups
+            if (oldBeamGroups != null) {
+                for (OldBeamGroup oldBeamGroup : oldBeamGroups) {
+                    oldBeamGroup.afterReload(this, sig);
+                }
+
+                if (!oldBeamGroups.isEmpty()) {
+                    part.getSystem().getSheet().getStub().setUpgraded(true);
+                }
+
+                oldBeamGroups = null;
+            }
+
             // BeamGroups
-            for (BeamGroup beamGroup : beamGroups) {
+            for (BeamGroupInter beamGroup : beamGroups) {
                 beamGroup.afterReload(this);
             }
 
@@ -575,7 +585,7 @@ public class Measure
      *
      * @return the set of beam groups
      */
-    public Set<BeamGroup> getBeamGroups ()
+    public Set<BeamGroupInter> getBeamGroups ()
     {
         return beamGroups;
     }
@@ -1120,8 +1130,8 @@ public class Measure
      * @param staff staff for ordinate
      * @return mid point on desired side
      */
-    public Point getSidePoint (HorizontalSide side,
-                               Staff staff)
+    public Point2D getSidePoint (HorizontalSide side,
+                                 Staff staff)
     {
         switch (side) {
         case LEFT:
@@ -1228,7 +1238,7 @@ public class Measure
      */
     public Set<HeadChordInter> getStandardHeadChords ()
     {
-        final Set<HeadChordInter> standardHeadChords = getHeadChords();
+        final Set<HeadChordInter> standardHeadChords = new LinkedHashSet<>(getHeadChords());
 
         for (Iterator<HeadChordInter> it = standardHeadChords.iterator(); it.hasNext();) {
             final HeadChordInter headChord = it.next();
@@ -1293,8 +1303,8 @@ public class Measure
     {
         Set<Inter> set = new LinkedHashSet<>();
 
-        for (BeamGroup beamGroup : beamGroups) {
-            set.addAll(beamGroup.getBeams());
+        for (BeamGroupInter beamGroup : beamGroups) {
+            set.addAll(beamGroup.getMembers());
         }
 
         set.addAll(getHeadChords());
@@ -1621,19 +1631,6 @@ public class Measure
         // Voices: when removing a barline, rhythm is reprocessed, all voices recreated from scratch
     }
 
-    //-----------------//
-    // removeBeamGroup //
-    //-----------------//
-    /**
-     * Remove the provided beamGroup from this measure.
-     *
-     * @param beamGroup the beam group to remove
-     */
-    public void removeBeamGroup (BeamGroup beamGroup)
-    {
-        beamGroups.remove(beamGroup);
-    }
-
     //-------------//
     // removeInter //
     //-------------//
@@ -1652,6 +1649,8 @@ public class Measure
             clefs.remove((ClefInter) inter);
         } else if (inter instanceof KeyInter) {
             keys.remove((KeyInter) inter);
+        } else if (inter instanceof BeamGroupInter) {
+            beamGroups.remove((BeamGroupInter) inter);
         } else if (inter instanceof AbstractTimeInter) {
             timeSigs.remove((AbstractTimeInter) inter);
         } else if (inter instanceof HeadChordInter) {
@@ -1767,7 +1766,7 @@ public class Measure
         voices.clear();
 
         // Reset voice of every beam group
-        for (BeamGroup group : beamGroups) {
+        for (BeamGroupInter group : beamGroups) {
             group.resetTiming();
         }
 
@@ -1838,12 +1837,12 @@ public class Measure
         // right barline: assigned by caller
         //
         // Beam groups
-        for (Iterator<BeamGroup> it = beamGroups.iterator(); it.hasNext();) {
-            BeamGroup beamGroup = it.next();
+        for (Iterator<BeamGroupInter> it = beamGroups.iterator(); it.hasNext();) {
+            BeamGroupInter beamGroup = it.next();
             AbstractChordInter chord = beamGroup.getFirstChord();
 
             if (chord.getCenter().x <= xRefs.get(chord.getTopStaff())) {
-                leftMeasure.addBeamGroup(beamGroup);
+                leftMeasure.addInter(beamGroup);
                 it.remove();
             }
         }
@@ -1897,10 +1896,10 @@ public class Measure
 
         // Beam groups
         BeamGroupLoop:
-        for (BeamGroup bg : beamGroups) {
-            final Set<AbstractBeamInter> beams = bg.getBeams();
+        for (BeamGroupInter bg : beamGroups) {
+            for (Inter inter : bg.getMembers()) {
+                final AbstractBeamInter beam = (AbstractBeamInter) inter;
 
-            for (AbstractBeamInter beam : beams) {
                 // A beam may have no staff, with notes in upper staff and notes in lower staff
                 for (AbstractChordInter chord : beam.getChords()) {
                     final Staff staff = chord.getBottomStaff();
@@ -2167,15 +2166,9 @@ public class Measure
      */
     private void mergeWithOther (Measure other)
     {
-        // Beam groups
-        beamGroups.addAll(other.beamGroups);
-
-        for (BeamGroup bg : other.beamGroups) {
-            bg.setMeasure(this);
-        }
-
         // Keys: addressed by caller
         //
+        addOtherCollection(other.beamGroups);
         addOtherCollection(other.clefs);
         addOtherCollection(other.timeSigs);
         addOtherCollection(other.headChords);

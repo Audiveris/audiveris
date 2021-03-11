@@ -24,11 +24,11 @@ package org.audiveris.omr.sheet.note;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
@@ -153,7 +153,7 @@ public class ChordsStep
 
         if (measure != null) {
             logger.debug("CHORDS impact on {}", measure);
-            BeamGroup.populate(measure, false); // False for checkGroupSplit
+            BeamGroupInter.populateMeasure(measure, false); // False for checkGroupSplit
         }
     }
 

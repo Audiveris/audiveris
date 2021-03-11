@@ -36,14 +36,12 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.SwingUtilities;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -88,9 +86,6 @@ public class BasicIndex<E extends Entity>
     /** List of IDs for declared VIP entities. */
     private List<Integer> vipIds;
 
-    /** (debug) for easy inspection via browser. */
-    private Collection<E> values;
-
     /**
      * Creates a new {@code BasicIndex} object.
      *
@@ -107,7 +102,6 @@ public class BasicIndex<E extends Entity>
      */
     protected BasicIndex ()
     {
-        values = entities.values(); // Useful for debugging only
     }
 
     //----------------------//
@@ -470,20 +464,6 @@ public class BasicIndex<E extends Entity>
         return entity != null;
     }
 
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled for this object,
-     * but before this object is set to the parent object.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        values = entities.values();
-    }
-
     //------------------//
     // InterfaceAdapter //
     //------------------//
@@ -536,16 +516,7 @@ public class BasicIndex<E extends Entity>
         public ConcurrentSkipListMap<Integer, E> unmarshal (IndexValue<E> value)
                 throws Exception
         {
-            // TODO: is sorting needed?
-            Collections.sort(value.list, new Comparator<E>()
-                     {
-                         @Override
-                         public int compare (E e1,
-                                             E e2)
-                         {
-                             return Integer.compare(e1.getId(), e2.getId());
-                         }
-                     });
+            Collections.sort(value.list, (E e1, E e2) -> Integer.compare(e1.getId(), e2.getId()));
 
             ConcurrentSkipListMap<Integer, E> map = new ConcurrentSkipListMap<>();
 

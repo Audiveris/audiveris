@@ -67,7 +67,7 @@ public class OrnamentInter
      */
     public OrnamentInter (Glyph glyph,
                           Shape shape,
-                          double grade)
+                          Double grade)
     {
         super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
     }
@@ -136,10 +136,11 @@ public class OrnamentInter
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
     {
-        List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
         Collections.sort(systemHeadChords, Inters.byAbscissa);
 
-        Link link = lookupLink(systemHeadChords);
+        Link link = lookupLink(systemHeadChords, profile);
 
         return (link == null) ? Collections.emptyList() : Collections.singleton(link);
     }
@@ -161,9 +162,11 @@ public class OrnamentInter
      * Try to detect a link between this ornament instance and a HeadChord nearby.
      *
      * @param systemHeadChords ordered collection of head chords in system
+     * @param profile          desired profile level
      * @return the link found or null
      */
-    private Link lookupLink (List<Inter> systemHeadChords)
+    private Link lookupLink (List<Inter> systemHeadChords,
+                             int profile)
     {
         if (systemHeadChords.isEmpty()) {
             return null;
@@ -171,8 +174,8 @@ public class OrnamentInter
 
         final SystemInfo system = systemHeadChords.get(0).getSig().getSystem();
         final Scale scale = system.getSheet().getScale();
-        final int maxDx = scale.toPixels(ChordOrnamentRelation.getXOutGapMaximum(manual));
-        final int maxDy = scale.toPixels(ChordOrnamentRelation.getYGapMaximum(manual));
+        final int maxDx = scale.toPixels(ChordOrnamentRelation.getXOutGapMaximum(profile));
+        final int maxDy = scale.toPixels(ChordOrnamentRelation.getYGapMaximum(profile));
         final Rectangle ornamentBox = getBounds();
         final Point ornamentCenter = getCenter();
         final Rectangle luBox = new Rectangle(ornamentCenter);
@@ -206,7 +209,7 @@ public class OrnamentInter
             double xGap = Math.abs(center.x - ornamentCenter.x);
             double yGap = Math.abs(yRef - ornamentCenter.y);
             ChordOrnamentRelation rel = new ChordOrnamentRelation();
-            rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
+            rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
 
             if (rel.getGrade() >= rel.getMinGrade()) {
                 if ((bestRel == null) || (bestYGap > yGap)) {
@@ -250,7 +253,7 @@ public class OrnamentInter
         }
 
         OrnamentInter orn = new OrnamentInter(glyph, shape, grade);
-        Link link = orn.lookupLink(systemHeadChords);
+        Link link = orn.lookupLink(systemHeadChords, system.getProfile());
 
         if (link != null) {
             system.getSig().addVertex(orn);

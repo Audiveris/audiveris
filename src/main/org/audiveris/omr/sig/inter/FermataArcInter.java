@@ -26,7 +26,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 
-import java.awt.Point;
+import java.awt.geom.Point2D;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -52,7 +52,7 @@ public class FermataArcInter
      */
     private FermataArcInter (Glyph glyph,
                              Shape shape,
-                             double grade)
+                             Double grade)
     {
         super(glyph, glyph.getBounds(), shape, grade);
     }
@@ -91,7 +91,7 @@ public class FermataArcInter
                                           SystemInfo system)
     {
         // Look for proper staff
-        final Point center = glyph.getCenter();
+        final Point2D center = glyph.getCenter2D();
         final Staff staff = (shape == Shape.FERMATA_ARC) ? system.getStaffAtOrBelow(center)
                 : system.getStaffAtOrAbove(center);
 

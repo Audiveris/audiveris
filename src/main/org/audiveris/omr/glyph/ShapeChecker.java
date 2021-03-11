@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -275,7 +276,7 @@ public class ShapeChecker
                  * Whole is always stuck to an upper line, half is always stuck to a lower line.
                  * This can be translated as 2*p = 4*k+1 for wholes and 4*k-1 for halves
                  */
-                final double pp = system.estimatedPitch(glyph.getCenter());
+                final double pp = system.estimatedPitch(glyph.getCenter2D());
                 final int p2 = (int) Math.rint(2 * pp); // Pitch * 2
 
                 switch (p2) {
@@ -314,7 +315,7 @@ public class ShapeChecker
                                   Evaluation eval,
                                   Glyph glyph)
             {
-                final double pp = system.estimatedPitch(glyph.getCenter());
+                final double pp = system.estimatedPitch(glyph.getCenter2D());
                 final double pitchAbs = Math.abs(pp);
 
                 // Very strict for percussion
@@ -335,7 +336,7 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Must be outside staff height
-                final double pp = system.estimatedPitch(glyph.getCenter());
+                final double pp = system.estimatedPitch(glyph.getCenter2D());
 
                 return Math.abs(pp) > 4;
             }
@@ -349,7 +350,19 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Must be on right side of system header
-                return Math.abs(glyph.getCenter().x) > system.getFirstStaff().getHeaderStop();
+                return Math.abs(glyph.getCenter2D().getX()) > system.getFirstStaff().getHeaderStop();
+            }
+        };
+
+        new Checker("NotWithinHeader", PERCUSSION_CLEF)
+        {
+            @Override
+            public boolean check (SystemInfo system,
+                                  Evaluation eval,
+                                  Glyph glyph)
+            {
+                // Percussion clef must be within system header
+                return Math.abs(glyph.getCenter2D().getX()) < system.getFirstStaff().getHeaderStop();
             }
         };
 
@@ -407,7 +420,7 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Check reasonable height (Cannot be too tall when close to staff)
-                final double pp = system.estimatedPitch(glyph.getCenter());
+                final double pp = system.estimatedPitch(glyph.getCenter2D());
                 double maxHeight = (Math.abs(pp) >= constants.minTitlePitchPosition.getValue())
                         ? constants.maxTitleHeight.getValue()
                         : constants.maxLyricsHeight.getValue();
@@ -432,7 +445,7 @@ public class ShapeChecker
                                   Evaluation eval,
                                   Glyph glyph)
             {
-                final double pp = system.estimatedPitch(glyph.getCenter());
+                final double pp = system.estimatedPitch(glyph.getCenter2D());
                 double absPos = Math.abs(pp);
                 double maxDy = constants.maxTimePitchPositionMargin.getValue();
 
@@ -464,7 +477,7 @@ public class ShapeChecker
                                   Evaluation eval,
                                   Glyph glyph)
             {
-                final double pp = system.estimatedPitch(glyph.getCenter());
+                final double pp = system.estimatedPitch(glyph.getCenter2D());
                 double absPos = Math.abs(pp);
                 double maxDy = constants.maxTimePitchPositionMargin.getValue();
 
@@ -488,14 +501,13 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // A note / rest / dynamic cannot be too far from a staff
-                Point center = glyph.getCenter();
-                Staff staff = system.getClosestStaff(center);
+                Staff staff = system.getClosestStaff(glyph.getCenter2D());
 
                 if (staff == null) {
                     return false;
                 }
 
-                int gap = staff.gapTo(glyph.getBounds());
+                double gap = staff.gapTo(glyph.getBounds());
                 int maxGap = system.getSheet().getScale().toPixels(constants.maxGapToStaff);
 
                 return gap <= maxGap;
@@ -547,15 +559,17 @@ public class ShapeChecker
                                   Evaluation eval,
                                   Glyph glyph)
             {
+                final Point2D glyphCenter = glyph.getCenter2D();
+
                 // Pedal marks must be below the staff
-                final double pp = system.estimatedPitch(glyph.getCenter());
+                final double pp = system.estimatedPitch(glyphCenter);
 
                 if (pp <= 4) {
                     return false;
                 }
 
                 // Pedal marks cannot intersect the staff
-                Staff staff = system.getClosestStaff(glyph.getCenter());
+                Staff staff = system.getClosestStaff(glyphCenter);
 
                 return staff.gapTo(glyph.getBounds()) > 0;
             }
@@ -568,15 +582,17 @@ public class ShapeChecker
                                   Evaluation eval,
                                   Glyph glyph)
             {
+                final Point2D glyphCenter = glyph.getCenter2D();
+
                 // Markers must be above the staff
-                final double pp = system.estimatedPitch(glyph.getCenter());
+                final double pp = system.estimatedPitch(glyphCenter);
 
                 if (pp >= -4) {
                     return false;
                 }
 
                 // Markers cannot intersect the staff
-                Staff staff = system.getClosestStaff(glyph.getCenter());
+                Staff staff = system.getClosestStaff(glyphCenter);
 
                 return staff.gapTo(glyph.getBounds()) > 0;
             }
@@ -590,7 +606,7 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Tuplets cannot be too far from a staff
-                final double pp = system.estimatedPitch(glyph.getCenter());
+                final double pp = system.estimatedPitch(glyph.getCenter2D());
 
                 if (Math.abs(pp) > constants.maxTupletPitchPosition.getValue()) {
                     eval.failure = new Evaluation.Failure("pitch");
@@ -651,7 +667,7 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Must be centered on pitch position 0
-                final double pp = system.estimatedPitch(glyph.getCenter());
+                final double pp = system.estimatedPitch(glyph.getCenter2D());
 
                 if (Math.abs(pp) > 0.5) {
                     eval.failure = new Evaluation.Failure("pitch");
@@ -671,7 +687,7 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Must be centered on pitch position -1
-                final double pp = system.estimatedPitch(glyph.getCenter());
+                final double pp = system.estimatedPitch(glyph.getCenter2D());
 
                 if (Math.abs(pp + 1) > 0.5) {
                     eval.failure = new Evaluation.Failure("pitch");

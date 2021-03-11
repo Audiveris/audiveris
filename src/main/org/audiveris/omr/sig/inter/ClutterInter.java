@@ -38,7 +38,7 @@ public class ClutterInter
     //~ Constructors -------------------------------------------------------------------------------
 
     public ClutterInter (Glyph glyph,
-                         double grade)
+                         Double grade)
     {
         super(glyph, (glyph != null) ? glyph.getBounds() : null, Shape.CLUTTER, grade);
     }

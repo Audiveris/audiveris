@@ -36,6 +36,7 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.OptionDef;
+import org.kohsuke.args4j.ParserProperties;
 import org.kohsuke.args4j.spi.FieldSetter;
 import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Setter;
@@ -60,7 +61,6 @@ import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import org.kohsuke.args4j.ParserProperties;
 
 /**
  * Class {@code CLI} parses and holds the parameters of the command line interface.
@@ -76,8 +76,10 @@ import org.kohsuke.args4j.ParserProperties;
  */
 public class CLI
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CLI.class);
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Name of the program. */
     private final String toolName;
@@ -91,6 +93,7 @@ public class CLI
     /** CLI parser. */
     private final CmdLineParser parser;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new CLI object.
      *
@@ -119,6 +122,7 @@ public class CLI
         parser = new CmdLineParser(params, props);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getCliTasks //
     //-------------//
@@ -334,6 +338,7 @@ public class CLI
         }
     }
 
+    //~ Inner classes ------------------------------------------------------------------------------
     //----------//
     // BookTask //
     //----------//

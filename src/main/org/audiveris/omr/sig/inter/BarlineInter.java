@@ -97,7 +97,7 @@ public class BarlineInter
      */
     public BarlineInter (Glyph glyph,
                          Shape shape,
-                         double grade,
+                         Double grade,
                          Line2D median,
                          Double width)
     {
@@ -109,7 +109,7 @@ public class BarlineInter
      */
     private BarlineInter ()
     {
-        super(null, null, null, null, null);
+        super(null, null, (Double) null, null, null);
     }
 
     //--------//

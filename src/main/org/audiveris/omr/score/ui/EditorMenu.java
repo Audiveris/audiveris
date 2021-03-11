@@ -54,7 +54,6 @@ import org.audiveris.omr.util.HorizontalSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
@@ -120,7 +119,7 @@ public class EditorMenu
     //-------------------//
     // getCurrentMeasure //
     //-------------------//
-    private Measure getCurrentMeasure (Point point)
+    private Measure getCurrentMeasure (Point2D point)
     {
         List<SystemInfo> systems = sheet.getSystems();
 
@@ -134,7 +133,7 @@ public class EditorMenu
     //----------------//
     // getCurrentPage //
     //----------------//
-    private Page getCurrentPage (Point point)
+    private Page getCurrentPage (Point2D point)
     {
         List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(point);
 
@@ -155,7 +154,7 @@ public class EditorMenu
     //----------------//
     // getCurrentSlot //
     //----------------//
-    private Slot getCurrentSlot (Point point)
+    private Slot getCurrentSlot (Point2D point)
     {
         List<SystemInfo> systems = sheet.getSystems();
 
@@ -177,7 +176,7 @@ public class EditorMenu
      * @param point provided point
      * @return the selected system or null
      */
-    private SystemInfo getCurrentSystem (Point point)
+    private SystemInfo getCurrentSystem (Point2D point)
     {
         List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(point);
 
@@ -225,7 +224,7 @@ public class EditorMenu
         @Override
         public void updateUserLocation (Rectangle rect)
         {
-            Measure measure = getCurrentMeasure(GeoUtil.centerOf(rect));
+            Measure measure = getCurrentMeasure(GeoUtil.center2D(rect));
 
             if (measure != null) {
                 stack = measure.getStack();
@@ -357,7 +356,7 @@ public class EditorMenu
         @Override
         public void updateUserLocation (Rectangle rect)
         {
-            Page newPage = getCurrentPage(GeoUtil.centerOf(rect));
+            Page newPage = getCurrentPage(GeoUtil.center2D(rect));
 
             if (newPage != null) {
                 page = newPage;
@@ -428,7 +427,7 @@ public class EditorMenu
             List<SystemInfo> systems = sheet.getSystems();
 
             if (systems != null) {
-                slot = sheet.getSymbolsEditor().getStrictSlotAt(GeoUtil.centerOf(rect));
+                slot = sheet.getSymbolsEditor().getStrictSlotAt(GeoUtil.center2D(rect));
             } else {
                 slot = null;
             }
@@ -504,7 +503,7 @@ public class EditorMenu
         public void updateUserLocation (Rectangle rect)
         {
             StaffManager staffManager = sheet.getStaffManager();
-            staff = staffManager.getStrictStaffAt(GeoUtil.centerOf(rect));
+            staff = staffManager.getStrictStaffAt(GeoUtil.center2D(rect));
             setVisible(staff != null);
 
             if (staff != null) {
@@ -585,7 +584,7 @@ public class EditorMenu
         @Override
         public void updateUserLocation (Rectangle rect)
         {
-            SystemInfo newSystem = getCurrentSystem(GeoUtil.centerOf(rect));
+            SystemInfo newSystem = getCurrentSystem(GeoUtil.center2D(rect));
 
             if (newSystem != null) {
                 system = newSystem;
@@ -644,12 +643,12 @@ public class EditorMenu
                 for (int i = 0; i < stacks.size(); i++) {
                     MeasureStack stack = stacks.get(i);
                     Measure measure = stack.getMeasureAt(staff);
-                    Point right = measure.getSidePoint(HorizontalSide.RIGHT, staff);
+                    Point2D right = measure.getSidePoint(HorizontalSide.RIGHT, staff);
                     Point2D dsk = skew.deskewed(right);
 
                     MeasureStack stack2 = stacks2.get(i);
                     Measure measure2 = stack2.getMeasureAt(staff2);
-                    Point right2 = measure2.getSidePoint(HorizontalSide.RIGHT, staff2);
+                    Point2D right2 = measure2.getSidePoint(HorizontalSide.RIGHT, staff2);
                     Point2D dsk2 = skew.deskewed(right2);
 
                     double dx = Math.abs(dsk.getX() - dsk2.getX());

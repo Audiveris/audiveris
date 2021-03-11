@@ -66,14 +66,11 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import javax.media.jai.JAI;
-import javax.swing.SwingUtilities;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omr.OMR;
-import org.audiveris.omr.sheet.ui.SheetTab;
 
 /**
  * Class {@code Picture} starts from the original BufferedImage to provide all {@link
@@ -263,6 +260,23 @@ public class Picture
     {
         for (SourceKey key : SourceKey.values()) {
             logger.info(String.format("%15s ref:%s", key, getStrongRef(key)));
+        }
+    }
+
+    //--------------//
+    // discardImage //
+    //--------------//
+    /**
+     * Flag image to be discarded from disk when sheet is stored.
+     *
+     * @param key image key
+     */
+    public void discardImage (ImageKey key)
+    {
+        ImageHolder holder = images.get(key);
+
+        if (holder != null) {
+            holder.discard();
         }
     }
 
@@ -711,8 +725,9 @@ public class Picture
     //---------//
     /**
      * Call-back triggered when sheet location has been modified.
-     * Based on sheet location, we forward the GRAY pixel gray level to
-     * whoever is interested in it.
+     * <p>
+     * Only if image is available in memory, we read the GRAY pixel level value at sheet location
+     * and forward it to whoever is subscribed to this information.
      *
      * @param event the (sheet) location event
      */
@@ -721,7 +736,7 @@ public class Picture
     {
         final ImageHolder grayHolder = images.get(ImageKey.GRAY);
 
-        if (grayHolder == null || grayHolder.hasNoData()) {
+        if (grayHolder == null || !grayHolder.hasDataReady()) {
             return;
         }
 
@@ -754,6 +769,19 @@ public class Picture
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
+    }
+
+    //-------------//
+    // removeImage //
+    //-------------//
+    /**
+     * Remove an image.
+     *
+     * @param key image key
+     */
+    public void removeImage (ImageKey key)
+    {
+        images.remove(key);
     }
 
     //-------------//
@@ -824,25 +852,14 @@ public class Picture
     public void store (Path sheetFolder,
                        Path oldSheetFolder)
     {
-        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
-        final boolean keepGray = switches.getValue(ProcessingSwitches.Switch.keepGrayImages);
-
         // Each handled image
         for (Iterator<Entry<ImageKey, ImageHolder>> it = images.entrySet().iterator(); it.hasNext();) {
             final Entry<ImageKey, ImageHolder> entry = it.next();
             final ImageKey iKey = entry.getKey();
             final ImageHolder holder = entry.getValue();
 
-            if ((iKey == ImageKey.GRAY) && (!keepGray)) {
-                if (OMR.gui != null) {
-                    // Close view tab on GRAY, to avoid future continuous reloading.
-                    SwingUtilities.invokeLater(() -> {
-                        sheet.getStub().getAssembly().removeTab(SheetTab.GRAY_TAB);
-                    });
-                }
-
+            if (holder.isDiscarded()) {
                 holder.removeData(sheetFolder);
-                it.remove();
             } else {
                 boolean ok = holder.storeData(sheetFolder, oldSheetFolder);
 
@@ -909,7 +926,7 @@ public class Picture
      *
      * @throws ImageFormatException is the format is not supported
      */
-    private BufferedImage adjustImageFormat (BufferedImage img)
+    public static BufferedImage adjustImageFormat (BufferedImage img)
             throws ImageFormatException
     {
         ColorModel colorModel = img.getColorModel();

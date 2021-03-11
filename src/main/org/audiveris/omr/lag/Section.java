@@ -71,6 +71,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public interface Section
         extends Entity, Oriented
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** A section comparator, using section id. */
     public static final Comparator<Section> idComparator = new Comparator<Section>()
@@ -181,6 +182,7 @@ public interface Section
         }
     };
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Predicate to check whether the given absolute point is located
      * inside the section.
@@ -189,8 +191,8 @@ public interface Section
      * @param y absolute ordinate
      * @return true if absolute point(x,y) is contained in the section
      */
-    public boolean contains (int x,
-                             int y);
+    public boolean contains (double x,
+                             double y);
 
     /**
      * Cumulate in the provided absolute Barycenter the section pixels
@@ -258,7 +260,7 @@ public interface Section
     public double getAspect (Orientation orientation);
 
     /**
-     * Return a (COPY of) the absolute bounding box.
+     * Return (a COPY of) the absolute bounding box.
      *
      * @return the absolute bounding box
      */

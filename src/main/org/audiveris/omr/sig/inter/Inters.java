@@ -25,7 +25,8 @@ import org.audiveris.omr.math.GeoOrder;
 import static org.audiveris.omr.math.GeoOrder.BY_ABSCISSA;
 import static org.audiveris.omr.math.GeoOrder.BY_ORDINATE;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.util.Predicate;
+import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.util.Entities;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -35,6 +36,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Class {@code Inters} gathers utilities on inter instances.
@@ -43,132 +46,79 @@ import java.util.List;
  */
 public abstract class Inters
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /**
      * Comparator to put members first and ensembles last.
      */
-    public static final Comparator<Inter> membersFirst = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter o1,
-                            Inter o2)
-        {
-            if (o1 instanceof InterEnsemble) {
-                if (o2 instanceof InterEnsemble) {
-                    if (((InterEnsemble) o1).getMembers().contains(o2)) {
-                        return 1;
-                    }
-
-                    if (((InterEnsemble) o2).getMembers().contains(o1)) {
-                        return -1;
-                    }
-
-                    return 0;
+    public static final Comparator<Inter> membersFirst = (Inter o1, Inter o2) -> {
+        if (o1 instanceof InterEnsemble) {
+            if (o2 instanceof InterEnsemble) {
+                if (((InterEnsemble) o1).getMembers().contains(o2)) {
+                    return 1;
                 }
 
-                return 1;
-            } else {
-                if (o2 instanceof InterEnsemble) {
+                if (((InterEnsemble) o2).getMembers().contains(o1)) {
                     return -1;
                 }
 
                 return 0;
             }
+
+            return 1;
+        } else {
+            if (o2 instanceof InterEnsemble) {
+                return -1;
+            }
+
+            return 0;
         }
     };
 
     /**
      * For comparing interpretations by id.
      */
-    public static final Comparator<Inter> byId = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i1.getId(), i2.getId());
-        }
-    };
+    public static final Comparator<Inter> byId = (Inter i1, Inter i2)
+            -> Integer.compare(i1.getId(), i2.getId());
 
     /**
      * For comparing interpretations by left abscissa.
      */
-    public static final Comparator<Inter> byAbscissa = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i1.getBounds().x, i2.getBounds().x);
-        }
-    };
+    public static final Comparator<Inter> byAbscissa = (Inter i1, Inter i2)
+            -> Integer.compare(i1.getBounds().x, i2.getBounds().x);
 
     /**
      * For comparing interpretations by center abscissa.
      */
-    public static final Comparator<Inter> byCenterAbscissa = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i1.getCenter().x, i2.getCenter().x);
-        }
-    };
+    public static final Comparator<Inter> byCenterAbscissa = (Inter i1, Inter i2)
+            -> Integer.compare(i1.getCenter().x, i2.getCenter().x);
 
     /**
      * For comparing interpretations by reverse center abscissa.
      */
-    public static final Comparator<Inter> byReverseCenterAbscissa = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i2.getCenter().x, i1.getCenter().x);
-        }
-    };
+    public static final Comparator<Inter> byReverseCenterAbscissa = (Inter i1, Inter i2)
+            -> Integer.compare(i2.getCenter().x, i1.getCenter().x);
 
     /**
      * For comparing interpretations by center ordinate.
      */
-    public static final Comparator<Inter> byCenterOrdinate = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i1.getCenter().y, i2.getCenter().y);
-        }
-    };
+    public static final Comparator<Inter> byCenterOrdinate = (Inter i1, Inter i2)
+            -> Integer.compare(i1.getCenter().y, i2.getCenter().y);
 
     /**
      * For comparing interpretations by reverse center ordinate.
      */
-    public static final Comparator<Inter> byReverseCenterOrdinate = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i2.getCenter().y, i1.getCenter().y);
-        }
-    };
+    public static final Comparator<Inter> byReverseCenterOrdinate = (Inter i1, Inter i2)
+            -> Integer.compare(i2.getCenter().y, i1.getCenter().y);
 
     /**
      * For comparing interpretations by right abscissa.
      */
-    public static final Comparator<Inter> byRightAbscissa = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            Rectangle b1 = i1.getBounds();
-            Rectangle b2 = i2.getBounds();
+    public static final Comparator<Inter> byRightAbscissa = (Inter i1, Inter i2) -> {
+        Rectangle b1 = i1.getBounds();
+        Rectangle b2 = i2.getBounds();
 
-            return Integer.compare(b1.x + b1.width, b2.x + b2.width);
-        }
+        return Integer.compare(b1.x + b1.width, b2.x + b2.width);
     };
 
     /**
@@ -176,36 +126,30 @@ public abstract class Inters
      * interpretations are found equal.
      * This comparator can thus be used for a TreeSet.
      */
-    public static final Comparator<Inter> byFullAbscissa = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter o1,
-                            Inter o2)
-        {
-            if (o1 == o2) {
-                return 0;
-            }
-
-            Point loc1 = o1.getBounds().getLocation();
-            Point loc2 = o2.getBounds().getLocation();
-
-            // Are x values different?
-            int dx = loc1.x - loc2.x;
-
-            if (dx != 0) {
-                return dx;
-            }
-
-            // Vertically aligned, so use ordinates
-            int dy = loc1.y - loc2.y;
-
-            if (dy != 0) {
-                return dy;
-            }
-
-            // Finally, use id ...
-            return Integer.compare(o1.getId(), o2.getId());
+    public static final Comparator<Inter> byFullAbscissa = (Inter o1, Inter o2) -> {
+        if (o1 == o2) {
+            return 0;
         }
+
+        Point loc1 = o1.getBounds().getLocation();
+        Point loc2 = o2.getBounds().getLocation();
+
+        // Are x values different?
+        int dx = loc1.x - loc2.x;
+
+        if (dx != 0) {
+            return dx;
+        }
+
+        // Vertically aligned, so use ordinates
+        int dy = loc1.y - loc2.y;
+
+        if (dy != 0) {
+            return dy;
+        }
+
+        // Finally, use id ...
+        return Integer.compare(o1.getId(), o2.getId());
     };
 
     /**
@@ -213,136 +157,89 @@ public abstract class Inters
      * interpretations are found equal.
      * This comparator can thus be used for a TreeSet.
      */
-    public static final Comparator<Inter> byFullCenterAbscissa = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter o1,
-                            Inter o2)
-        {
-            if (o1 == o2) {
-                return 0;
-            }
-
-            Point loc1 = o1.getCenter();
-            Point loc2 = o2.getCenter();
-
-            // Are x values different?
-            int dx = loc1.x - loc2.x;
-
-            if (dx != 0) {
-                return dx;
-            }
-
-            // Vertically aligned, so use ordinates
-            int dy = loc1.y - loc2.y;
-
-            if (dy != 0) {
-                return dy;
-            }
-
-            // Finally, use id ...
-            return Integer.compare(o1.getId(), o2.getId());
+    public static final Comparator<Inter> byFullCenterAbscissa = (Inter o1, Inter o2) -> {
+        if (o1 == o2) {
+            return 0;
         }
+
+        Point loc1 = o1.getCenter();
+        Point loc2 = o2.getCenter();
+
+        // Are x values different?
+        int dx = loc1.x - loc2.x;
+
+        if (dx != 0) {
+            return dx;
+        }
+
+        // Vertically aligned, so use ordinates
+        int dy = loc1.y - loc2.y;
+
+        if (dy != 0) {
+            return dy;
+        }
+
+        // Finally, use id ...
+        return Integer.compare(o1.getId(), o2.getId());
     };
 
     /**
      * For comparing interpretations by ordinate.
      */
-    public static final Comparator<Inter> byOrdinate = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i1.getBounds().y, i2.getBounds().y);
-        }
-    };
+    public static final Comparator<Inter> byOrdinate = (Inter i1, Inter i2)
+            -> Integer.compare(i1.getBounds().y, i2.getBounds().y);
+
+    /**
+     * For comparing interpretations by reverse width.
+     */
+    public static final Comparator<Inter> byReverseWidth = (Inter i1, Inter i2)
+            -> Integer.compare(i2.getBounds().width, i1.getBounds().width);
 
     /**
      * For comparing interpretations by increasing grade.
      */
-    public static final Comparator<Inter> byGrade = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Double.compare(i1.getGrade(), i2.getGrade());
-        }
-    };
+    public static final Comparator<Inter> byGrade = (Inter i1, Inter i2)
+            -> Double.compare(i1.getGrade(), i2.getGrade());
 
     /**
      * For comparing interpretations by decreasing grade.
      */
-    public static final Comparator<Inter> byReverseGrade = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Double.compare(i2.getGrade(), i1.getGrade());
-        }
-    };
+    public static final Comparator<Inter> byReverseGrade = (Inter i1, Inter i2)
+            -> Double.compare(i2.getGrade(), i1.getGrade());
 
     /**
      * For comparing interpretations by best grade.
      */
-    public static final Comparator<Inter> byBestGrade = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Double.compare(i1.getBestGrade(), i2.getBestGrade());
-        }
-    };
+    public static final Comparator<Inter> byBestGrade = (Inter i1, Inter i2)
+            -> Double.compare(i1.getBestGrade(), i2.getBestGrade());
 
     /**
      * For comparing interpretations by decreasing best grade.
      */
-    public static final Comparator<Inter> byReverseBestGrade = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Double.compare(i2.getBestGrade(), i1.getBestGrade()); // Reverse order
-        }
-    };
+    public static final Comparator<Inter> byReverseBestGrade = (Inter i1, Inter i2)
+            -> Double.compare(i2.getBestGrade(), i1.getBestGrade());
 
     /**
      * For comparing inter instances by decreasing mean grade.
      */
-    public static final Comparator<Collection<Inter>> byReverseMeanGrade
-            = new Comparator<Collection<Inter>>()
-    {
-        @Override
-        public int compare (Collection<Inter> c1,
-                            Collection<Inter> c2)
-        {
-            return Double.compare(getMeanGrade(c2), getMeanGrade(c1));
-        }
-    };
+    public static final Comparator<Collection<? extends Inter>> byReverseMeanGrade
+            = (Collection<? extends Inter> c1, Collection<? extends Inter> c2)
+            -> Double.compare(getMeanGrade(c2), getMeanGrade(c1));
 
     /**
      * For comparing inter instances by decreasing mean contextual grade.
      */
-    public static final Comparator<Collection<Inter>> byReverseMeanContextualGrade
-            = new Comparator<Collection<Inter>>()
-    {
-        @Override
-        public int compare (Collection<Inter> c1,
-                            Collection<Inter> c2)
-        {
-            return Double.compare(getMeanBestGrade(c2), getMeanBestGrade(c1));
-        }
-    };
+    public static final Comparator<Collection<? extends Inter>> byReverseMeanContextualGrade
+            = (Collection<? extends Inter> c1, Collection<? extends Inter> c2)
+            -> Double.compare(getMeanBestGrade(c2), getMeanBestGrade(c1));
 
+    //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private Inters ()
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getBounds //
     //-----------//
@@ -371,7 +268,7 @@ public abstract class Inters
     // getClosestChord //
     //-----------------//
     /**
-     * From a provided Inter collection, report the one with the lowest euclidian
+     * From a provided Inter collection, report the one with the lowest euclidean
      * distance to the provided point.
      *
      * @param inters the collection of inters to browse
@@ -406,12 +303,12 @@ public abstract class Inters
      * Report the average of inters best grade value.
      *
      * @param col inters collection
-     * @return average best grade
+     * @return average best grade, null if collection is empty
      */
-    public static double getMeanBestGrade (Collection<Inter> col)
+    public static Double getMeanBestGrade (Collection<? extends Inter> col)
     {
         if (col.isEmpty()) {
-            throw new IllegalArgumentException("Provided collection is empty");
+            return null;
         }
 
         double sum = 0;
@@ -423,6 +320,36 @@ public abstract class Inters
         return sum / col.size();
     }
 
+    //----------------------------//
+    // computeMeanContextualGrade //
+    //----------------------------//
+    /**
+     * Compute contextual grade of each collection member, then report the mean value.
+     *
+     * @param col inters collection
+     * @return mean contextual grade, or null if no value could be computed
+     */
+    public static Double computeMeanContextualGrade (Collection<? extends Inter> col)
+    {
+        double sum = 0;
+        int count = 0;
+
+        for (Inter inter : col) {
+            final SIGraph sig = inter.getSig();
+
+            if ((sig != null) && sig.containsVertex(inter)) {
+                sum += sig.computeContextualGrade(inter);
+                count++;
+            }
+        }
+
+        if (count > 0) {
+            return sum / count;
+        } else {
+            return null;
+        }
+    }
+
     //--------------//
     // getMeanGrade //
     //--------------//
@@ -432,10 +359,10 @@ public abstract class Inters
      * @param col inters collection
      * @return average grade
      */
-    public static double getMeanGrade (Collection<Inter> col)
+    public static Double getMeanGrade (Collection<? extends Inter> col)
     {
         if (col.isEmpty()) {
-            throw new IllegalArgumentException("Provided collection is empty");
+            return null;
         }
 
         double sum = 0;
@@ -474,25 +401,28 @@ public abstract class Inters
     /**
      * Report a string of inter IDs.
      *
+     * @param label  a string to introduce the list of IDs
+     * @param inters collection of inters
+     * @return string of IDs
+     */
+    public static String ids (String label,
+                              Collection<? extends Inter> inters)
+    {
+        return Entities.ids(label, inters);
+    }
+
+    //-----//
+    // ids //
+    //-----//
+    /**
+     * Report a string of inter IDs.
+     *
      * @param inters collection of inters
      * @return string of IDs
      */
     public static String ids (Collection<? extends Inter> inters)
     {
-        if (inters == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-
-        for (Inter inter : inters) {
-            sb.append("#").append(inter.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
+        return Entities.ids(inters);
     }
 
     //--------//
@@ -509,15 +439,9 @@ public abstract class Inters
     public static List<Inter> inters (Collection<? extends Inter> collection,
                                       Predicate<Inter> predicate)
     {
-        List<Inter> found = new ArrayList<>();
-
-        for (Inter inter : collection) {
-            if ((predicate == null) || predicate.check(inter)) {
-                found.add(inter);
-            }
-        }
-
-        return found;
+        return collection.stream()
+                .filter(inter -> predicate == null || predicate.test(inter))
+                .collect(Collectors.toList());
     }
 
     //--------//
@@ -546,8 +470,8 @@ public abstract class Inters
      * @param inters the collection to filter
      * @return the list of interpretations, perhaps empty but not null
      */
-    public static List<Inter> inters (Staff staff,
-                                      Collection<? extends Inter> inters)
+    public static List<Inter> inters (Collection<? extends Inter> inters,
+                                      Staff staff)
     {
         List<Inter> filtered = new ArrayList<>();
 
@@ -564,29 +488,29 @@ public abstract class Inters
     // intersectedInters //
     //-------------------//
     /**
-     * Lookup the provided list of interpretations for those whose bounds
-     * intersect the given area.
+     * Look up the provided list of interpretations for those whose bounds intersect the
+     * given area.
      *
-     * @param inters the list of interpretations to search for
-     * @param order  if the list is already sorted by some order, this may speedup the search
+     * @param inters the list of interpretations to search
+     * @param order  if the list is already sorted by some order, this may speed up the search
      * @param area   the intersecting area
-     * @return the intersected interpretations found, perhaps empty but not null
+     * @return the list of intersected interpretations found, perhaps empty but not null
      */
     public static List<Inter> intersectedInters (List<Inter> inters,
                                                  GeoOrder order,
                                                  Area area)
     {
-        List<Inter> found = new ArrayList<>();
-        Rectangle bounds = area.getBounds();
-        double xMax = bounds.getMaxX();
-        double yMax = bounds.getMaxY();
+        final List<Inter> found = new ArrayList<>();
+        final Rectangle bounds = area.getBounds();
+        final double xMax = bounds.getMaxX();
+        final double yMax = bounds.getMaxY();
 
         for (Inter inter : inters) {
             if (inter.isRemoved()) {
                 continue;
             }
 
-            Rectangle iBox = inter.getBounds();
+            final Rectangle iBox = inter.getBounds();
 
             if (area.intersects(iBox)) {
                 found.add(inter);
@@ -655,6 +579,7 @@ public abstract class Inters
         return found;
     }
 
+    //~ Inner classes ------------------------------------------------------------------------------
     //----------------//
     // ClassPredicate //
     //----------------//
@@ -678,7 +603,7 @@ public abstract class Inters
         }
 
         @Override
-        public boolean check (Inter inter)
+        public boolean test (Inter inter)
         {
             return !inter.isRemoved() && (classe.isInstance(inter));
         }
@@ -707,7 +632,7 @@ public abstract class Inters
         }
 
         @Override
-        public boolean check (Inter inter)
+        public boolean test (Inter inter)
         {
             for (Class classe : classes) {
                 if (classe.isInstance(inter)) {

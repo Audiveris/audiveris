@@ -99,7 +99,7 @@ public class HeadChordInter
      *
      * @param grade the intrinsic grade
      */
-    public HeadChordInter (double grade)
+    public HeadChordInter (Double grade)
     {
         super(grade);
     }

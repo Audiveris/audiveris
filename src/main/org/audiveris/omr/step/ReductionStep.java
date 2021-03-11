@@ -21,8 +21,20 @@
 // </editor-fold>
 package org.audiveris.omr.step;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SigReducer;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.StemInter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Class {@code ReductionStep} implements <b>REDUCTION</b> step, which tries to reduce
@@ -34,6 +46,12 @@ public class ReductionStep
         extends AbstractSystemStep<Void>
 {
 
+    //~ Static fields/initializers -----------------------------------------------------------------
+    private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(ReductionStep.class);
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ReductionStep object.
      */
@@ -41,6 +59,7 @@ public class ReductionStep
     {
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -50,5 +69,71 @@ public class ReductionStep
             throws StepException
     {
         new SigReducer(system, true).reduceFoundations();
+
+        if (constants.refineStemHeadEnd.isSet()) {
+            // Refine precise stem head end, based on leading head
+            for (Inter s : system.getSig().inters(StemInter.class)) {
+                final StemInter stem = (StemInter) s;
+                stem.refineHeadEnd();
+            }
+        }
+
+        if (constants.refineStemTailEnd.isSet()) {
+            // Refine precise stem tail end, based on last beam if any
+            for (Inter s : system.getSig().inters(StemInter.class)) {
+                final StemInter stem = (StemInter) s;
+                stem.refineTailEnd();
+            }
+        }
+    }
+
+    //----------//
+    // doEpilog //
+    //----------//
+    @Override
+    protected void doEpilog (Sheet sheet,
+                             Void context)
+            throws StepException
+    {
+        // Measure typical length of stem free portion
+        final List<Integer> lengths = new ArrayList<>();
+
+        for (SystemInfo system : sheet.getSystems()) {
+            for (Inter s : system.getSig().inters(StemInter.class)) {
+                final StemInter stem = (StemInter) s;
+                final Integer lg = stem.getFreeLength();
+
+                if (lg != null) {
+                    lengths.add(lg);
+                }
+            }
+        }
+
+        if (!lengths.isEmpty()) {
+            Collections.sort(lengths);
+
+            final int medianValue = lengths.get(lengths.size() / 2);
+            final double medianFraction = sheet.getScale().pixelsToFrac(medianValue);
+
+            logger.info("Stems free length median value: {} pixels, {} fractions",
+                        medianValue, String.format("%.1f", medianFraction));
+        }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean refineStemHeadEnd = new Constant.Boolean(
+                true,
+                "Should we refine every stem head end at terminating head anchor?");
+
+        private final Constant.Boolean refineStemTailEnd = new Constant.Boolean(
+                true,
+                "Should we refine every stem tail end at last beam?");
     }
 }

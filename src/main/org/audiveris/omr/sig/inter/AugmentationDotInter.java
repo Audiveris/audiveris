@@ -70,7 +70,7 @@ public class AugmentationDotInter
      * @param grade evaluation value
      */
     public AugmentationDotInter (Glyph glyph,
-                                 double grade)
+                                 Double grade)
     {
         super(glyph, null, Shape.AUGMENTATION_DOT, grade);
     }
@@ -248,10 +248,12 @@ public class AugmentationDotInter
      *
      * @param systemDots collection of augmentation dots in system, ordered bottom up
      * @param system     containing system
+     * @param profile    desired profile level
      * @return list of possible links, perhaps empty
      */
     public List<Link> lookupDotLinks (List<Inter> systemDots,
-                                      SystemInfo system)
+                                      SystemInfo system,
+                                      int profile)
     {
         // Need getCenter()
         final List<Link> links = new ArrayList<>();
@@ -279,7 +281,7 @@ public class AugmentationDotInter
             }
         }
 
-        final int minDx = scale.toPixels(DoubleDotRelation.getXOutGapMinimum(manual));
+        final int minDx = scale.toPixels(DoubleDotRelation.getXOutGapMinimum(profile));
 
         for (Inter first : firsts) {
             Point refPt = first.getCenterRight();
@@ -288,7 +290,7 @@ public class AugmentationDotInter
             if (xGap >= minDx) {
                 double yGap = Math.abs(refPt.y - dotCenter.y);
                 DoubleDotRelation rel = new DoubleDotRelation();
-                rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
+                rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
                     links.add(new Link(first, rel, true));
@@ -311,10 +313,12 @@ public class AugmentationDotInter
      *
      * @param systemHeadChords system head chords, sorted by abscissa
      * @param system           containing system
+     * @param profile          desired profile level
      * @return a link or null
      */
     public Link lookupHeadLink (List<Inter> systemHeadChords,
-                                SystemInfo system)
+                                SystemInfo system,
+                                int profile)
     {
         // Need sig and getCenter()
         final List<Link> links = new ArrayList<>();
@@ -331,7 +335,7 @@ public class AugmentationDotInter
 
         final List<Inter> chords = dotStack.filter(
                 Inters.intersectedInters(systemHeadChords, GeoOrder.BY_ABSCISSA, luBox));
-        final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum(manual));
+        final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum(profile));
 
         for (Inter ic : chords) {
             HeadChordInter chord = (HeadChordInter) ic;
@@ -385,7 +389,7 @@ public class AugmentationDotInter
                     if (xGap > 0) {
                         double yGap = Math.abs(refPt.y - dotCenter.y);
                         AugmentationRelation rel = new AugmentationRelation();
-                        rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
+                        rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
 
                         if (rel.getGrade() >= rel.getMinGrade()) {
                             links.add(new Link(head, rel, true));
@@ -418,10 +422,12 @@ public class AugmentationDotInter
      *
      * @param systemRests system rests, sorted by abscissa
      * @param system      containing system
+     * @param profile     desired profile level
      * @return list of possible links, perhaps empty
      */
     public List<Link> lookupRestLinks (List<Inter> systemRests,
-                                       SystemInfo system)
+                                       SystemInfo system,
+                                       int profile)
     {
         // Need getCenter()
         final List<Link> links = new ArrayList<>();
@@ -439,7 +445,7 @@ public class AugmentationDotInter
         // Relevant rests?
         final List<Inter> rests = dotStack.filter(
                 Inters.intersectedInters(systemRests, GeoOrder.BY_ABSCISSA, luBox));
-        final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum(manual));
+        final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum(profile));
 
         for (Inter inter : rests) {
             RestInter rest = (RestInter) inter;
@@ -449,7 +455,7 @@ public class AugmentationDotInter
             if (xGap >= minDx) {
                 double yGap = Math.abs(refPt.y - dotCenter.y);
                 AugmentationRelation rel = new AugmentationRelation();
-                rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
+                rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
                     links.add(new Link(rest, rel, true));
@@ -504,7 +510,8 @@ public class AugmentationDotInter
         List<Inter> systemDots = system.getSig().inters(AugmentationDotInter.class);
         Collections.sort(systemDots, Inters.byAbscissa);
 
-        Link link = lookupLink(systemRests, systemHeadChords, systemDots, system);
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final Link link = lookupLink(systemRests, systemHeadChords, systemDots, system, profile);
 
         if (link == null) {
             return Collections.emptyList();
@@ -622,8 +629,8 @@ public class AugmentationDotInter
                                     SystemInfo system)
     {
         final Scale scale = system.getSheet().getScale();
-        final int maxDx = scale.toPixels(DoubleDotRelation.getXOutGapMaximum(manual));
-        final int maxDy = scale.toPixels(DoubleDotRelation.getYGapMaximum(manual));
+        final int maxDx = scale.toPixels(DoubleDotRelation.getXOutGapMaximum(getProfile()));
+        final int maxDy = scale.toPixels(DoubleDotRelation.getYGapMaximum(getProfile()));
 
         return getLuBox(dotCenter, maxDx, maxDy);
     }
@@ -642,8 +649,8 @@ public class AugmentationDotInter
                                      SystemInfo system)
     {
         final Scale scale = system.getSheet().getScale();
-        final int maxDx = scale.toPixels(AugmentationRelation.getXOutGapMaximum(manual));
-        final int maxDy = scale.toPixels(AugmentationRelation.getYGapMaximum(manual));
+        final int maxDx = scale.toPixels(AugmentationRelation.getXOutGapMaximum(getProfile()));
+        final int maxDy = scale.toPixels(AugmentationRelation.getYGapMaximum(getProfile()));
 
         return getLuBox(dotCenter, maxDx, maxDy);
     }
@@ -677,22 +684,24 @@ public class AugmentationDotInter
      * @param systemHeadChords ordered collection of head chords in system
      * @param systemDots       ordered collection of augmentation dots in system
      * @param system           containing system
+     * @param profile          desired profile level
      * @return the best link found or null
      */
     private Link lookupLink (List<Inter> systemRests,
                              List<Inter> systemHeadChords,
                              List<Inter> systemDots,
-                             SystemInfo system)
+                             SystemInfo system,
+                             int profile)
     {
         List<Link> links = new ArrayList<>();
-        Link headLink = lookupHeadLink(systemHeadChords, system);
+        Link headLink = lookupHeadLink(systemHeadChords, system, profile);
 
         if (headLink != null) {
             links.add(headLink);
         }
 
-        links.addAll(lookupRestLinks(systemRests, system));
-        links.addAll(lookupDotLinks(systemDots, system));
+        links.addAll(lookupRestLinks(systemRests, system, profile));
+        links.addAll(lookupDotLinks(systemDots, system, profile));
 
         return Link.bestOf(links);
     }

@@ -56,7 +56,7 @@ public class PedalInter
      */
     public PedalInter (Glyph glyph,
                        Shape shape,
-                       double grade)
+                       Double grade)
     {
         super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
     }
@@ -66,7 +66,7 @@ public class PedalInter
      */
     private PedalInter ()
     {
-        super(null, null, null, 0);
+        super(null, null, null, 0.0);
     }
 
     //--------//

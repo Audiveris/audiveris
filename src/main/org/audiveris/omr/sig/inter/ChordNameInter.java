@@ -447,7 +447,7 @@ public class ChordNameInter
         tasks.add(new AdditionTask(system.getSig(), this, getBounds(), searchLinks(system)));
 
         // Wrap this word within a sentence with chord name role
-        final SentenceInter sentence = new SentenceInter(TextRole.ChordName, -1);
+        final SentenceInter sentence = new SentenceInter(TextRole.ChordName, null);
         sentence.setManual(true);
         sentence.setStaff(staff);
 

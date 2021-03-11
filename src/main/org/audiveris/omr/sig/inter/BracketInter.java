@@ -90,7 +90,7 @@ public class BracketInter
      *
      * @param grade inter quality
      */
-    public BracketInter (double grade)
+    public BracketInter (Double grade)
     {
         super(null, Shape.BRACKET, grade, null, null);
         this.kind = BracketKind.BOTH;
@@ -101,7 +101,7 @@ public class BracketInter
      */
     private BracketInter ()
     {
-        super(null, null, null, null, null);
+        super(null, null, (Double) null, null, null);
         this.kind = null;
     }
 

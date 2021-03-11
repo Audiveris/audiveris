@@ -31,6 +31,7 @@ import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.BraceInter;
@@ -83,6 +84,7 @@ import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.BarGroupRelation;
+import org.audiveris.omr.sig.relation.BeamBeamRelation;
 import org.audiveris.omr.sig.relation.BeamHeadRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
@@ -165,6 +167,7 @@ public class SigValue
         @XmlElementRef(type = ArticulationInter.class),
         @XmlElementRef(type = BarConnectorInter.class),
         @XmlElementRef(type = BarlineInter.class),
+        @XmlElementRef(type = BeamGroupInter.class),
         @XmlElementRef(type = BeamHookInter.class),
         @XmlElementRef(type = BeamInter.class),
         @XmlElementRef(type = BraceInter.class),
@@ -359,6 +362,7 @@ public class SigValue
             @XmlElementRef(type = AugmentationRelation.class),
             @XmlElementRef(type = BarConnectionRelation.class),
             @XmlElementRef(type = BarGroupRelation.class),
+            @XmlElementRef(type = BeamBeamRelation.class),
             @XmlElementRef(type = BeamHeadRelation.class),
             @XmlElementRef(type = BeamStemRelation.class),
             @XmlElementRef(type = ChordArpeggiatoRelation.class),

@@ -58,6 +58,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -111,10 +112,10 @@ public final class StaffBarlineInter
      * @param grade quality
      */
     public StaffBarlineInter (Shape shape,
-                              double grade)
+                              Double grade)
     {
         this.shape = shape;
-        this.grade = grade;
+        setGrade(grade);
 
         if (shape != null) {
             style = toStyle(shape);
@@ -429,12 +430,12 @@ public final class StaffBarlineInter
      *
      * @return the reference point
      */
-    public Point getReferenceCenter ()
+    public Point2D getReferenceCenter ()
     {
         BarlineInter rightBar = getRightBar();
 
         if (rightBar != null) {
-            return rightBar.getCenter();
+            return rightBar.getCenter2D();
         }
 
         // No bar members, use shape and bounds
@@ -444,19 +445,19 @@ public final class StaffBarlineInter
             switch (shape) {
             case THIN_BARLINE:
             case THICK_BARLINE:
-                return GeoUtil.centerOf(bounds);
+                return GeoUtil.center2D(bounds);
 
             case DOUBLE_BARLINE:
             case REVERSE_FINAL_BARLINE:
-                return new Point(bounds.x + (int) Math.rint(0.9 * bounds.width), y);
+                return new Point2D.Double(bounds.x + 0.9 * bounds.width, y);
 
             case FINAL_BARLINE:
-                return new Point(bounds.x + (int) Math.rint(0.7 * bounds.width), y);
+                return new Point2D.Double(bounds.x + 0.7 * bounds.width, y);
 
             case LEFT_REPEAT_SIGN:
             case RIGHT_REPEAT_SIGN:
             case BACK_TO_BACK_REPEAT_SIGN:
-                return new Point(bounds.x + (int) Math.rint(0.5 * bounds.width), y);
+                return new Point2D.Double(bounds.x + 0.5 * bounds.width, y);
 
             default:
             }
@@ -688,23 +689,11 @@ public final class StaffBarlineInter
     @Override
     public void invalidateCache ()
     {
-        //        bounds = null;
-        //        style = null;
-        //
-        //        // Recompute ensemble grade
-        //        final List<Inter> bars = getMembers();
-        //
-        //        if (bars.isEmpty()) {
-        //            setGrade(0);
-        //        } else {
-        //            double g = 0;
-        //
-        //            for (Inter m : bars) {
-        //                g += m.getGrade();
-        //            }
-        //
-        //            setGrade(g / bars.size());
-        //        }
+        bounds = null;
+        style = null;
+
+        // Recompute ensemble grade
+        setGrade(EnsembleHelper.computeMeanContextualGrade(this));
     }
 
     //--------------//
@@ -845,7 +834,7 @@ public final class StaffBarlineInter
                 Rectangle box = new Rectangle((int) Math.rint(x), (int) Math.rint(y), 0, 0);
                 box.grow(bounds.width / 2, bounds.height / 2);
 
-                StaffBarlineInter b = new StaffBarlineInter(shape, 1);
+                StaffBarlineInter b = new StaffBarlineInter(shape, 1.0);
                 b.setManual(true);
                 b.setStaff(st);
                 b.setBounds(box);

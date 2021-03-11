@@ -26,10 +26,10 @@ import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.Mark;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.beam.BeamGroup;
 import static org.audiveris.omr.sheet.rhythm.SlotVoice.Status;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.Navigable;
@@ -176,12 +176,12 @@ public class Voice
             } else if (slots != null) {
                 for (SlotVoice info : slots.values()) {
                     if (info.status == Status.BEGIN) {
-                        info.chord.assignVoice(this);
+                        info.chord.justAssignVoice(this);
                         addChord(info.chord);
 
                         for (AbstractBeamInter beam : info.chord.getBeams()) {
                             if (beam.getGroup() != null) {
-                                beam.getGroup().assignVoice(this);
+                                beam.getGroup().justAssignVoice(this);
                             }
                         }
                     }
@@ -468,7 +468,7 @@ public class Voice
                                 continue;
                             }
 
-                            BeamGroup group = chord.getBeamGroup();
+                            BeamGroupInter group = chord.getBeamGroup();
 
                             if (group == null) {
                                 // Isolated chord

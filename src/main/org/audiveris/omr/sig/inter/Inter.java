@@ -150,11 +150,18 @@ public interface Inter
     double getBestGrade ();
 
     /**
-     * Report the inter center.
+     * Report the inter center point.
      *
-     * @return center
+     * @return center as Point
      */
     Point getCenter ();
+
+    /**
+     * Report the inter center point2D.
+     *
+     * @return center as Point2D
+     */
+    Point2D getCenter2D ();
 
     /**
      * Report the inter center left.
@@ -255,16 +262,16 @@ public interface Inter
     /**
      * Report the intrinsic grade (0..1 probability) assigned to interpretation
      *
-     * @return the intrinsic grade
+     * @return the intrinsic grade, null if unknown
      */
-    double getGrade ();
+    Double getGrade ();
 
     /**
      * Assign an intrinsic grade (0..1 probability) to interpretation
      *
      * @param grade the new value for intrinsic grade
      */
-    void setGrade (double grade);
+    void setGrade (Double grade);
 
     /**
      * Report details about the final grade
@@ -309,6 +316,13 @@ public interface Inter
      * @param part the part to set
      */
     void setPart (Part part);
+
+    /**
+     * Report the profile level for relations with this inter
+     *
+     * @return level based on being manual or not
+     */
+    int getProfile ();
 
     /**
      * Report the inter center for relation drawing.
@@ -448,7 +462,7 @@ public interface Inter
     /**
      * Report whether the interpretation has a good (intrinsic) grade.
      *
-     * @return true if grade is good
+     * @return true if grade is (intrinsically) good
      */
     boolean isGood ();
 
@@ -567,7 +581,7 @@ public interface Inter
      * NOTA: Since this method can be used with a not-yet-settled candidate, implementations cannot
      * assume that Inter instance already has a related staff or sig.
      * <p>
-     * Relationships that are searched for inters (which cannot survive without such link):
+     * Relationships that are searched for inters (plain inters cannot survive without such links):
      * <ul>
      * <li>For a flag: 1 stem
      * <li>For a head: 1 stem
@@ -582,6 +596,11 @@ public interface Inter
      * <li>For a fermata: 1 barline or 1 chord
      * </ul>
      * Manual inters survive but are displayed in red, to show they are not yet in normal status.
+     * <p>
+     * This method provides no 'profile' parameter.
+     * The profile level should be determined from inside the method implementation, using both the
+     * Inter instance itself (a manual inter has a specific profile level) and the profile level of
+     * the containing sheet.
      *
      * @param system containing system
      * @return the collection of links found, perhaps empty

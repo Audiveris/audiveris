@@ -283,6 +283,13 @@ public class Glyph
     }
 
     @Override
+    public Point2D getCenter2D ()
+    {
+        return new Point2D.Double(left + (runTable.getWidth() / 2.0),
+                                  top + (runTable.getHeight() / 2.0));
+    }
+
+    @Override
     public Point getCentroid ()
     {
         if (centroid == null) {
@@ -370,6 +377,7 @@ public class Glyph
         return new Line2D.Double(line.getX1(), line.getY1(), line.getX2(), line.getY2());
     }
 
+    @Override
     public Line2D getCenterLine ()
     {
         checkLine();
@@ -580,6 +588,16 @@ public class Glyph
 
         //TODO: we should accept different runTable orientations?
         return this.runTable.equals(that.runTable);
+    }
+
+    /**
+     * Report whether this glyph is a vertical seed.
+     *
+     * @return true if flagged as VERTICAL_SEED group
+     */
+    public boolean isVerticalSeed ()
+    {
+        return getGroups().contains(GlyphGroup.VERTICAL_SEED);
     }
 
     @Override

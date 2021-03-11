@@ -153,7 +153,8 @@ public class ChordSyllableRelation
                         }
                     }
 
-                    final Link link = it.lookupLink(chordStaff, null);
+                    final int profile = Math.max(it.getProfile(), sig.getSystem().getProfile());
+                    final Link link = it.lookupLink(chordStaff, null, profile);
 
                     if (link != null) {
                         tasks.add(new LinkTask(sig, link.partner, it, link.relation));

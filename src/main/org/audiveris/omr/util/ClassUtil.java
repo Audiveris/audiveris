@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.function.Predicate;
 
 /**
  * Class {@code ClassUtil} provides utilities related to Class handling.
@@ -123,7 +124,7 @@ public abstract class ClassUtil
                 StackTraceElement frame = stack[ix];
                 String cname = frame.getClassName();
 
-                if (!skipped.check(cname)) {
+                if (!skipped.test(cname)) {
                     return frame;
                 }
             }

@@ -215,7 +215,7 @@ public class BeamStructure
 
         for (Section section : getGlyphSections()) {
             Rectangle sctBox = section.getBounds();
-            Point sctCenter = GeoUtil.centerOf(sctBox);
+            Point sctCenter = GeoUtil.center(sctBox);
             int y = (int) Math.rint(LineUtil.yAtX(median, sctCenter.x));
 
             if (section.contains(sctCenter.x, y)) {
@@ -657,7 +657,7 @@ public class BeamStructure
 
         // Compute each section vertical offset WRT the refLine
         for (SectionBorder border : sectionBorders) {
-            double x = GeoUtil.centerOf(border.section.getBounds()).x;
+            double x = GeoUtil.center2D(border.section.getBounds()).getX();
             double y = border.line.yAtX(x);
             double dy = y - LineUtil.yAtX(center, globalSlope, x);
             border.setOffset(dy);
@@ -797,10 +797,10 @@ public class BeamStructure
         // Sections are ordered by starting abscissa
         for (Section section : getGlyphSections()) {
             Rectangle sctBox = section.getBounds();
-            Point sctCenter = GeoUtil.centerOf(sctBox);
-            int y = (int) Math.rint(LineUtil.yAtX(median, sctCenter.x));
+            Point2D sctCenter = GeoUtil.center2D(sctBox);
+            double y = LineUtil.yAtX(median, sctCenter.getX());
 
-            if (section.contains(sctCenter.x, y)) {
+            if (section.contains(sctCenter.getX(), y)) {
                 // Extend current item or start a new one?
                 if (stop != null) {
                     int dx = sctBox.x - stop;

@@ -391,7 +391,7 @@ public class InterController
                     if (sentence.getClass() != SentenceInter.class) {
                         // Create a basic SentenceInter
                         finalSentence = new SentenceInter(
-                                sentence.getBounds(), 1, sentence.getMeanFont(), newRole);
+                                sentence.getBounds(), 1.0, sentence.getMeanFont(), newRole);
                         finalSentence.setManual(true);
                         finalSentence.setStaff(staff);
                         seq.add(new AdditionTask(sig, finalSentence, finalSentence.getBounds(),
@@ -1302,7 +1302,7 @@ public class InterController
     {
         Staff staff = null;
         SystemInfo system;
-        final Point center = glyph.getCenter();
+        final Point2D center = glyph.getCenter2D();
         final List<Staff> staves = sheet.getStaffManager().getStavesOf(center);
 
         if (staves.isEmpty()) {

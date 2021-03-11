@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.2">
+  <help_text>//Uncomment the following line to change the fontsize:
+        //fontsize=14
+
+        //Welcome to UMLet!
+
+        // *Double-click on UML elements to add them to the diagram.
+        // *Edit element properties by modifying the text in this panel.
+        // *Edit the files in the 'palettes' directory to store your own element palettes.
+        // *Press Del or Backspace to remove elements from the diagram.
+        // *Hold down Ctrl key to select multiple elements.
+        // *Press c to copy the UML diagram to the system clipboard.
+        // * This text will be stored with each diagram. Feel free to use the area for notes.
+    </help_text>
+  <zoom_level>9</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>324</x>
+      <y>351</y>
+      <w>288</w>
+      <h>198</h>
+    </coordinates>
+    <panel_attributes>*Template*
+bg=#ffff55
+--
+shape: Shape
+pointSize: int
+width: int
+height: int
+slimBounds: Rectangle
+--
+*evaluate(x,y,anchor, distances): double*
+*evaluateHole(x,y,anchor, distances): double*
+--
+getBounds(slimBox): Rectangle
+getSlimBoundsAt(x,y,anchor): Rectangle
+getForegroundPixels(tplBox,image,dilated): Points
+buildDecoratedImage(img): BufferedImage</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>621</x>
+      <y>135</y>
+      <w>189</w>
+      <h>81</h>
+    </coordinates>
+    <panel_attributes>*TemplateSymbol*
+bg=#ffff55
+--
+shape: Shape
+isSmall: boolean
+--
+getFatBounds(font):Rectangle</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>621</x>
+      <y>18</y>
+      <w>189</w>
+      <h>81</h>
+    </coordinates>
+    <panel_attributes>*BasicSymbol*
+--
+codes: int[]
+isIcon: boolean
+--
+buildImage(font): SymbolImage</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>648</x>
+      <y>90</y>
+      <w>27</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>198</x>
+      <y>135</y>
+      <w>441</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>470.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>18</x>
+      <y>63</y>
+      <w>189</w>
+      <h>99</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;singleton&gt;&gt;
+*TemplateFactory*
+bg=#ffaa55
+--
+INSTANCE: TemplateFactory
+--
+getCatalog(pointSize): Catalog
+-buildTemplate(): Template</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>18</x>
+      <y>324</y>
+      <w>198</w>
+      <h>81</h>
+    </coordinates>
+    <panel_attributes>*TemplateFactory.Catalog*
+bg=#ffaa55
+--
+pointSize: int
+--
+getTemplate(shape): Template
+-buildAllTemplates()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>189</x>
+      <y>342</y>
+      <w>153</w>
+      <h>36</h>
+    </coordinates>
+    <panel_attributes>lt=[shape]-&gt;
+templates</panel_attributes>
+    <additional_attributes>30.0;20.0;150.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>99</x>
+      <y>153</y>
+      <w>81</w>
+      <h>189</h>
+    </coordinates>
+    <panel_attributes>lt=[size]-&gt;
+catalogs</panel_attributes>
+    <additional_attributes>20.0;10.0;20.0;190.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>729</x>
+      <y>441</y>
+      <w>99</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>*PixelDistance*
+bg=#ffff55
+--
+x: int
+y: int
+d: double</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>603</x>
+      <y>432</y>
+      <w>144</w>
+      <h>36</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;
+keyPoints</panel_attributes>
+    <additional_attributes>140.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>729</x>
+      <y>378</y>
+      <w>99</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>*Point2D*</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>585</x>
+      <y>369</y>
+      <w>162</w>
+      <h>36</h>
+    </coordinates>
+    <panel_attributes>lt=[anchor]-&gt;
+offsets</panel_attributes>
+    <additional_attributes>30.0;20.0;160.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>324</x>
+      <y>162</y>
+      <w>225</w>
+      <h>153</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+/*Anchored*/
+bg=#ffffaa
+{innerclass
+&lt;&lt;enum&gt;&gt;
+*Anchor*
+innerclass}
+--
+putOffset(anchor, dx, dy)
+getOffset(anchor):Point2D
+getBoundsAt(x,y,anchor):Rectangle2D
+getHeight():int
+getWidth():int</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>360</x>
+      <y>306</y>
+      <w>27</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+</diagram>

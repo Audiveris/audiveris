@@ -67,17 +67,17 @@ public class RepeatDotBarRelation
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
-    public static Scale.Fraction getXOutGapMaximum (boolean manual)
+    public static Scale.Fraction getXOutGapMaximum (int profile)
     {
-        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.xOutGapMax, profile);
     }
 
     //----------------//
     // getYGapMaximum //
     //----------------//
-    public static Scale.Fraction getYGapMaximum (boolean manual)
+    public static Scale.Fraction getYGapMaximum (int profile)
     {
-        return manual ? constants.yGapMaxManual : constants.yGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
     }
 
     //----------------//
@@ -123,18 +123,18 @@ public class RepeatDotBarRelation
     // getXOutGapMax //
     //---------------//
     @Override
-    protected Scale.Fraction getXOutGapMax (boolean manual)
+    protected Scale.Fraction getXOutGapMax (int profile)
     {
-        return getXOutGapMaximum(manual);
+        return getXOutGapMaximum(profile);
     }
 
     //------------//
     // getYGapMax //
     //------------//
     @Override
-    protected Scale.Fraction getYGapMax (boolean manual)
+    protected Scale.Fraction getYGapMax (int profile)
     {
-        return getYGapMaximum(manual);
+        return getYGapMaximum(profile);
     }
 
     //---------//
@@ -165,17 +165,19 @@ public class RepeatDotBarRelation
                 1.5,
                 "Maximum horizontal gap between dot center & barline reference point");
 
-        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
+        @SuppressWarnings("unused")
+        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(
                 2.2,
-                "Maximum manual horizontal gap between dot center & barline reference point");
+                "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.5,
                 "Maximum vertical gap between dot center & barline reference point");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+        @SuppressWarnings("unused")
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(
                 0.75,
-                "Maximum manual vertical gap between dot center & barline reference point");
+                "Idem for profile 1");
 
         private final Constant.Ratio xOutWeight = new Constant.Ratio(
                 3,

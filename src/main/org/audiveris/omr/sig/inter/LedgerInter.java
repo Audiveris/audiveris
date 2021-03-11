@@ -130,7 +130,7 @@ public class LedgerInter
      * @param grade quality
      */
     public LedgerInter (Glyph glyph,
-                        double grade)
+                        Double grade)
     {
         super(glyph, null, Shape.LEDGER, grade);
 
@@ -151,7 +151,7 @@ public class LedgerInter
      */
     public LedgerInter (Line2D median,
                         double thickness,
-                        double grade)
+                        Double grade)
     {
         super(null, null, Shape.LEDGER, grade);
 
@@ -167,7 +167,7 @@ public class LedgerInter
      */
     private LedgerInter ()
     {
-        super(null, null, null, null);
+        super(null, null, null, (Double) null);
     }
 
     //--------//

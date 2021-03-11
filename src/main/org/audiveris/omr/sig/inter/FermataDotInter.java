@@ -47,7 +47,7 @@ public class FermataDotInter
      * @param grade evaluation value
      */
     public FermataDotInter (Glyph glyph,
-                            double grade)
+                            Double grade)
     {
         super(glyph, null, Shape.FERMATA_DOT, grade);
     }

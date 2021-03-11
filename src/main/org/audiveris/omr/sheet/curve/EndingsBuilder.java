@@ -32,6 +32,7 @@ import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.Sections;
 import org.audiveris.omr.math.LineUtil;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
+import org.audiveris.omr.sheet.Profiles;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -495,7 +496,7 @@ public class EndingsBuilder
             legYMargin = scale.toPixels(constants.legYMargin);
             maxLegXGap = scale.toPixels(constants.maxLegXGap);
             maxLegYGap = scale.toPixels(constants.maxLegYGap);
-            maxBarShift = scale.toPixels(EndingBarRelation.getXGapMaximum(false));
+            maxBarShift = scale.toPixels(EndingBarRelation.getXGapMaximum(Profiles.STANDARD));
             maxSlope = constants.maxSlope.getValue();
 
             if (logger.isDebugEnabled()) {

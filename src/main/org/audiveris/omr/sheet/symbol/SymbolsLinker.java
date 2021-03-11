@@ -123,8 +123,9 @@ public class SymbolsLinker
             case Lyrics: {
                 // Map each syllable with proper chord, in assigned staff
                 for (Inter wInter : sentence.getMembers()) {
-                    LyricItemInter item = (LyricItemInter) wInter;
-                    item.mapToChord();
+                    final LyricItemInter item = (LyricItemInter) wInter;
+                    final int profile = Math.max(item.getProfile(), system.getProfile());
+                    item.mapToChord(profile);
                 }
             }
 
@@ -328,6 +329,8 @@ public class SymbolsLinker
      */
     private void linkFermatas ()
     {
+        final int profile = system.getProfile();
+
         // At this point a fermata arc exists only if it is related to a fermata dot
         List<Inter> arcs = sig.inters(FermataArcInter.class);
 
@@ -349,16 +352,15 @@ public class SymbolsLinker
                 }
 
                 FermataInter fermata = FermataInter.createAdded(arc, dot, system);
-                sig.addVertex(fermata);
 
                 if (fermata.isVip()) {
                     logger.info("VIP linkFermatas on {}", fermata);
                 }
 
                 // Look for a related barline
-                if (!fermata.linkWithBarline()) {
+                if (!fermata.linkWithBarline(profile)) {
                     // Look for a chord (head or rest) related to this fermata
-                    if (!fermata.linkWithChord()) {
+                    if (!fermata.linkWithChord(profile)) {
                         // No link to barline, no link to chord, discard it
                         fermata.remove(); // Which also removes arc and dot members
                     }

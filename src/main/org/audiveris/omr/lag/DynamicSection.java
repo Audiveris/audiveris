@@ -260,13 +260,6 @@ public class DynamicSection
 
         // Invalidate cached data
         invalidateCache();
-
-        logger.debug(
-                "Parameters of {} maxRunLength={} meanRunLength={}" + " weight={}",
-                this,
-                maxRunLength,
-                getMeanRunLength(),
-                weight);
     }
 
     //----------------//

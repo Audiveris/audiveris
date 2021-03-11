@@ -82,7 +82,7 @@ public class TupletInter
      */
     public TupletInter (Glyph glyph,
                         Shape shape,
-                        double grade)
+                        Double grade)
     {
         super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
     }
@@ -308,13 +308,13 @@ public class TupletInter
                                            SystemInfo system,
                                            List<Inter> systemChords)
     {
-        Rectangle luBox = glyph.getBounds();
-        Scale scale = system.getSheet().getScale();
-        luBox.grow(
-                scale.toPixels(constants.maxTupletChordDx),
-                scale.toPixels(constants.maxTupletChordDy));
+        final Rectangle luBox = glyph.getBounds();
+        final Scale scale = system.getSheet().getScale();
+        luBox.grow(scale.toPixels(constants.maxTupletChordDx),
+                   scale.toPixels(constants.maxTupletChordDy));
 
-        List<Inter> nearby = Inters.intersectedInters(systemChords, GeoOrder.BY_ABSCISSA, luBox);
+        final List<Inter> nearby = Inters.intersectedInters(systemChords, GeoOrder.BY_ABSCISSA,
+                                                            luBox);
 
         if (nearby.isEmpty()) {
             logger.debug("Discarding isolated tuplet candidate glyph#{}", glyph.getId());

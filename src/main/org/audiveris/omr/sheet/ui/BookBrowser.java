@@ -55,6 +55,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -356,8 +357,8 @@ public class BookBrowser
          * Report the list of children of the provided node that are
          * relevant for display in the tree hierarchy (left pane)
          *
-         * @param node the node to investigate
-         * @param sig  for a relation: the originating Inter
+         * @param node     the node to investigate
+         * @param orgInter for a relation, the originating Inter
          * @return the list of relevant children
          */
         private List<Object> getRelevantChildren (Object node,
@@ -365,7 +366,6 @@ public class BookBrowser
         {
             final List<Object> relevants;
 
-            // Not found, so let's build it
             logger.debug("Retrieving relevants of {} {}", node, node.getClass());
 
             // Case of Named Collection
@@ -409,20 +409,23 @@ public class BookBrowser
             } else if (node instanceof Relation) {
                 // Add relation source and target first
                 Relation rel = (Relation) node;
-                SIGraph sig = orgInter.getSig();
-                Inter source = sig.getEdgeSource(rel);
-                Inter target = sig.getEdgeTarget(rel);
 
-                if (source != orgInter) {
-                    relevants.add(new NamedData("source", source));
-                } else if (!constants.hideOriginatingInter.isSet()) {
-                    relevants.add(new NamedData("(src)", source));
-                }
+                if (orgInter != null) {
+                    SIGraph sig = orgInter.getSig();
+                    Inter source = sig.getEdgeSource(rel);
+                    Inter target = sig.getEdgeTarget(rel);
 
-                if (target != orgInter) {
-                    relevants.add(new NamedData("target", target));
-                } else if (!constants.hideOriginatingInter.isSet()) {
-                    relevants.add(new NamedData("(tgt)", target));
+                    if (source != orgInter) {
+                        relevants.add(new NamedData("source", source));
+                    } else if (!constants.hideOriginatingInter.isSet()) {
+                        relevants.add(new NamedData("(src)", source));
+                    }
+
+                    if (target != orgInter) {
+                        relevants.add(new NamedData("target", target));
+                    } else if (!constants.hideOriginatingInter.isSet()) {
+                        relevants.add(new NamedData("(tgt)", target));
+                    }
                 }
             }
 
@@ -470,10 +473,22 @@ public class BookBrowser
                             continue;
                         }
 
+                        // Special handling of Map
+                        if (object instanceof Map) {
+                            Map<?, ?> map = (Map<?, ?>) object;
+
+                            if (!map.isEmpty()) {
+                                relevants.add(new NamedCollection(field.getName(), map.values()));
+                            }
+
+                            continue;
+                        }
+
                         if (!filter.isClassRelevant(objClass)) {
                             continue;
                         }
 
+                        // Standard object
                         relevants.add(new NamedData(field.getName(), object));
                     } catch (IllegalAccessException |
                              IllegalArgumentException |

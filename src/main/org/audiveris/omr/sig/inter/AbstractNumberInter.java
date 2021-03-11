@@ -62,7 +62,7 @@ public abstract class AbstractNumberInter
      */
     public AbstractNumberInter (Glyph glyph,
                                 Shape shape,
-                                double grade)
+                                Double grade)
     {
         super(glyph, null, shape, grade);
         this.value = (shape != null) ? valueOf(shape) : null;
@@ -77,7 +77,7 @@ public abstract class AbstractNumberInter
      */
     public AbstractNumberInter (Rectangle bounds,
                                 Shape shape,
-                                double grade)
+                                Double grade)
     {
         super(null, bounds, shape, grade);
         this.value = (shape != null) ? valueOf(shape) : null;

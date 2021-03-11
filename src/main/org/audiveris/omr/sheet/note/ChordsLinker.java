@@ -25,12 +25,12 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.BeamInter;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.BeamPortion;
@@ -166,7 +166,7 @@ public class ChordsLinker
     {
         for (MeasureStack stack : system.getStacks()) {
             for (Measure measure : stack.getMeasures()) {
-                BeamGroup.populate(measure, true); // True for checkGroupSplit
+                BeamGroupInter.populateMeasure(measure, true); // True for checkGroupSplit
             }
         }
     }

@@ -64,14 +64,12 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.NamedDouble;
 import org.audiveris.omr.util.Navigable;
-import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -81,6 +79,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Class {@code LedgersBuilder} retrieves ledgers for a system.
@@ -337,7 +336,7 @@ public class LedgersBuilder
         List<Inter> beams = sig.inters(new Predicate<Inter>()
         {
             @Override
-            public boolean check (Inter inter)
+            public boolean test (Inter inter)
             {
                 return (inter instanceof AbstractBeamInter) && inter.isGood();
             }
@@ -388,7 +387,7 @@ public class LedgersBuilder
 
                 if (GeoUtil.xOverlap(stickBox, ledgerBox) > minAbscissaOverlap) {
                     // Use this previous ledger as ordinate reference
-                    double xMid = stick.getCenter().x;
+                    double xMid = stick.getCenter2D().getX();
                     Glyph ledgerGlyph = ledger.getGlyph();
                     previousWrapper.value = ledger;
 
@@ -413,7 +412,7 @@ public class LedgersBuilder
             // Use staff line as reference
             LineInfo staffLine = (index < 0) ? staff.getFirstLine() : staff.getLastLine();
 
-            return staffLine.yAt(stick.getCenter().getX());
+            return staffLine.yAt(stick.getCenter2D().getX());
         }
     }
 
@@ -1040,7 +1039,7 @@ public class LedgersBuilder
                     if ((fil != null) && (fil instanceof StraightFilament) && (Math.abs(
                             fil.getSlope()) <= constants.maxSlopeForCheck.getValue())) {
                         // Use the closest staff
-                        Point center = fil.getCenter();
+                        Point2D center = fil.getCenter2D();
                         StaffManager mgr = sheet.getStaffManager();
                         Staff staff = mgr.getClosestStaff(center);
                         LedgersBuilder builder = new LedgersBuilder(staff.getSystem());

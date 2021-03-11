@@ -38,7 +38,6 @@ import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
-import org.audiveris.omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +47,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Predicate;
 
 /**
  * This abstract class provides the basis for management of a system-level column
@@ -174,7 +174,7 @@ public abstract class TimeColumn
         final List<Inter> neighbors = sig.inters(new Predicate<Inter>()
         {
             @Override
-            public boolean check (Inter inter)
+            public boolean test (Inter inter)
             {
                 return inter.getBounds().intersects(columnBox)
                                && !(inter instanceof InterEnsemble);

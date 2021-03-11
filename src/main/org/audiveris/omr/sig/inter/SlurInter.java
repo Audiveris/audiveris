@@ -34,7 +34,6 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.Versions;
-import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.curve.GlyphSlurInfo;
 import org.audiveris.omr.sheet.curve.SlurHeadLink;
 import org.audiveris.omr.sheet.curve.SlurInfo;
@@ -57,7 +56,6 @@ import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Jaxb;
-import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.Version;
 
 import org.slf4j.Logger;
@@ -80,6 +78,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -121,7 +120,7 @@ public class SlurInter
     public static final Predicate<SlurInter> isOrphan = new Predicate<SlurInter>()
     {
         @Override
-        public boolean check (SlurInter slur)
+        public boolean test (SlurInter slur)
         {
             for (HorizontalSide side : HorizontalSide.values()) {
                 if (slur.getHead(side) == null) {
@@ -137,7 +136,7 @@ public class SlurInter
     public static final Predicate<SlurInter> isEndingOrphan = new Predicate<SlurInter>()
     {
         @Override
-        public boolean check (SlurInter slur)
+        public boolean test (SlurInter slur)
         {
             if ((slur.getHead(RIGHT) == null) && (slur.getExtension(RIGHT) == null)) {
                 // Check we are in last measure
@@ -165,7 +164,7 @@ public class SlurInter
     public static final Predicate<SlurInter> isBeginningOrphan = new Predicate<SlurInter>()
     {
         @Override
-        public boolean check (SlurInter slur)
+        public boolean test (SlurInter slur)
         {
             if ((slur.getHead(LEFT) == null) && (slur.getExtension(LEFT) == null)) {
                 // Check we are in first measure
@@ -254,7 +253,7 @@ public class SlurInter
      * @param grade inter grade
      */
     public SlurInter (boolean above,
-                      double grade)
+                      Double grade)
     {
         super(null, null, above ? Shape.SLUR_ABOVE : Shape.SLUR_BELOW, grade);
     }
@@ -719,8 +718,8 @@ public class SlurInter
         final AbstractChordInter leftChord = leftHead.getChord();
         final AbstractChordInter rightChord = rightHead.getChord();
 
-        final BeamGroup leftGroup = leftChord.getBeamGroup();
-        final BeamGroup rightGroup = rightChord.getBeamGroup();
+        final BeamGroupInter leftGroup = leftChord.getBeamGroup();
+        final BeamGroupInter rightGroup = rightChord.getBeamGroup();
 
         // Define a lookup box limited to heads and stems tail ends
         Rectangle box = leftHead.getCoreBounds();
@@ -748,7 +747,7 @@ public class SlurInter
             AbstractChordInter chord = (AbstractChordInter) it.next();
 
             // This intersected chord cannot be in the same beam group as left or right chords
-            final BeamGroup group = chord.getBeamGroup();
+            final BeamGroupInter group = chord.getBeamGroup();
 
             if ((group != null) && ((group == leftGroup) || (group == rightGroup))) {
                 logger.debug("Tie forbidden across beamed {}", chord);
@@ -841,10 +840,11 @@ public class SlurInter
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
     {
-        List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
+        final List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
         Collections.sort(systemHeads, Inters.byAbscissa);
+        final int profile = Math.max(getProfile(), system.getProfile());
 
-        return lookupLinks(systemHeads, system);
+        return lookupLinks(systemHeads, system, profile);
     }
 
     //---------------//
@@ -952,10 +952,12 @@ public class SlurInter
      *
      * @param systemHeads ordered collection of heads in system
      * @param system      the containing system
+     * @param profile     desired profile level (currently ineffective)
      * @return the collection of links found, perhaps null
      */
     private Collection<Link> lookupLinks (List<Inter> systemHeads,
-                                          SystemInfo system)
+                                          SystemInfo system,
+                                          int profile)
     {
         if (systemHeads.isEmpty()) {
             return Collections.emptySet();
@@ -981,16 +983,13 @@ public class SlurInter
 
         // Select the best link pair, if any
         Map<HorizontalSide, SlurHeadLink> linkPair = slurLinker.lookupLinkPair(
-                this,
-                sideAreas,
-                system,
-                chords);
+                this, sideAreas, system, chords);
 
         if (linkPair == null) {
             return Collections.emptySet();
         }
 
-        List<Link> links = new ArrayList<>();
+        final List<Link> links = new ArrayList<>();
 
         for (Link link : linkPair.values()) {
             if (link != null) {

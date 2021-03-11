@@ -49,6 +49,8 @@ public interface InterVisitor
 
     void visit (BarlineInter inter);
 
+    void visit (BeamGroupInter inter);
+
     void visit (BeamHookInter inter);
 
     void visit (BeamInter inter);

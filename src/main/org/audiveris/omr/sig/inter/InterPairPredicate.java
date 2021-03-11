@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        I n p u t M o d e                                       //
+//                               I n t e r P a i r P r e d i c a t e                              //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -19,23 +19,24 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sheet;
+package org.audiveris.omr.sig.inter;
 
 /**
- * Class {@code InputMode} is meant to specify processing mode based on input quality.
+ * Interface {@code InterPairPredicate}
  *
  * @author Hervé Bitteur
  */
-public enum InputMode
+public interface InterPairPredicate
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Standard quality. */
-    STANDARD,
+    /**
+     * Evaluates this predicate on the given pair of Inter instances.
+     *
+     * @param one en Inter argument
+     * @param two other Inter argument
+     * @return {@code true} if the input argument matches the predicate, otherwise {@code false}
+     */
+    boolean test (Inter one,
+                  Inter two);
 
-    /** Significant gaps in black pixels. */
-    POOR,
-
-    /** Almost no black pixels, meant for beam umbrella in poor mode. */
-    VERY_POOR;
 }

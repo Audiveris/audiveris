@@ -78,7 +78,7 @@ public class BeamHookInter
      *
      * @param grade quality grade
      */
-    public BeamHookInter (double grade)
+    public BeamHookInter (Double grade)
     {
         super(Shape.BEAM_HOOK, grade);
     }
@@ -103,10 +103,14 @@ public class BeamHookInter
     //---------------//
     // checkAbnormal //
     //---------------//
+    /**
+     * Check if this beam hook is connected to a stem.
+     *
+     * @return true if abnormal
+     */
     @Override
     public boolean checkAbnormal ()
     {
-        // Check if hook is connected to a stem
         setAbnormal(!sig.hasRelation(this, BeamStemRelation.class));
 
         return isAbnormal();
@@ -127,10 +131,11 @@ public class BeamHookInter
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
     {
-        List<Inter> systemStems = system.getSig().inters(StemInter.class);
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final List<Inter> systemStems = system.getSig().inters(StemInter.class);
         Collections.sort(systemStems, Inters.byAbscissa);
 
-        Link link = lookupLink(systemStems, system);
+        final Link link = lookupLink(systemStems, system, profile);
 
         return (link == null) ? Collections.emptyList() : Collections.singleton(link);
     }
@@ -176,15 +181,19 @@ public class BeamHookInter
      * either on left or on right side.
      *
      * @param systemStems ordered collection of stems in system
-     * @rapam system containing system
+     * @param system      containing system
+     * @param profile     desired profile level
      * @return the link found or null
      */
     private Link lookupLink (List<Inter> systemStems,
-                             SystemInfo system)
+                             SystemInfo system,
+                             int profile)
     {
         final Scale scale = system.getSheet().getScale();
-        final int xMargin = scale.toPixels(constants.xMargin);
-        final int yMargin = scale.toPixels(constants.yMargin);
+        final int xMargin = scale.toPixels(
+                (Scale.Fraction) constants.getConstant(constants.xMargin, profile));
+        final int yMargin = scale.toPixels(
+                (Scale.Fraction) constants.getConstant(constants.yMargin, profile));
         final Rectangle luBox = getBounds();
         luBox.grow(xMargin, yMargin);
 
@@ -231,6 +240,12 @@ public class BeamHookInter
 
         Scale.Fraction xMargin = new Scale.Fraction(0.5, "Width of lookup area for stem");
 
+        @SuppressWarnings("unused")
+        Scale.Fraction xMargin_p1 = new Scale.Fraction(0.75, "Idem for profile 1");
+
         Scale.Fraction yMargin = new Scale.Fraction(0.5, "Height of lookup area for stem");
+
+        @SuppressWarnings("unused")
+        Scale.Fraction yMargin_p1 = new Scale.Fraction(0.75, "Idem for profile 1");
     }
 }

@@ -507,9 +507,9 @@ public class MeasureStack
             }
 
             // Precise abscissa limits
-            if ((measure.getAbscissa(LEFT, staff) <= center.x) && (center.x <= measure.getAbscissa(
-                    RIGHT,
-                    staff))) {
+            if ((measure != null)
+                        && (measure.getAbscissa(LEFT, staff) <= center.x)
+                        && (center.x <= measure.getAbscissa(RIGHT, staff))) {
                 kept.add(inter);
             }
         }
@@ -1358,7 +1358,7 @@ public class MeasureStack
         // Extrapolate, using skew, from single staff
         final Skew skew = system.getSkew();
         final Measure measure = getMeasureAt(staff);
-        final Point left = measure.getSidePoint(HorizontalSide.LEFT, staff);
+        final Point2D left = measure.getSidePoint(HorizontalSide.LEFT, staff);
 
         return skew.deskewed(point).getX() - skew.deskewed(left).getX();
     }
@@ -1378,20 +1378,20 @@ public class MeasureStack
     {
         Staff staff1 = stavesAround.get(0);
         Measure measure1 = getMeasureAt(staff1);
-        Point left1 = measure1.getSidePoint(HorizontalSide.LEFT, staff1);
+        Point2D left1 = measure1.getSidePoint(HorizontalSide.LEFT, staff1);
 
         if (stavesAround.size() > 1) {
             // Interpolate between staff above & staff below
             LineInfo line1 = staff1.getLines().get(staff1.getLines().size() / 2);
             double y1 = line1.yAt(point.getX());
-            double offset1 = point.getX() - left1.x;
+            double offset1 = point.getX() - left1.getX();
 
             Staff staff2 = stavesAround.get(1);
             Measure measure2 = getMeasureAt(staff2);
-            Point left2 = measure2.getSidePoint(HorizontalSide.LEFT, staff2);
+            Point2D left2 = measure2.getSidePoint(HorizontalSide.LEFT, staff2);
             LineInfo line2 = staff2.getLines().get(staff2.getLines().size() / 2);
             double y2 = line2.yAt(point.getX());
-            double offset2 = point.getX() - left2.x;
+            double offset2 = point.getX() - left2.getX();
 
             return offset1 + (((offset2 - offset1) * (point.getY() - y1)) / (y2 - y1));
         } else {

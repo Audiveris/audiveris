@@ -49,8 +49,8 @@ import org.jgrapht.graph.SimpleGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -184,7 +184,7 @@ public class SymbolsBuilder
             logger.info("VIP evaluateGlyph on {}", glyph);
         }
 
-        final Point center = glyph.getCenter();
+        final Point2D center = glyph.getCenter2D();
         final Staff closestStaff = system.getClosestStaff(center); // Just an indication!
 
         if (closestStaff == null) {
@@ -400,7 +400,7 @@ public class SymbolsBuilder
             }
 
             // Check height (not limited if on left of system: braces / brackets)
-            if (GeoUtil.centerOf(symBox).x < system.getLeft()) {
+            if (GeoUtil.center2D(symBox).getX() < system.getLeft()) {
                 return false;
             } else {
                 return symBox.height > params.maxSymbolHeight;

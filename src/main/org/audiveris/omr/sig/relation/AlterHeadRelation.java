@@ -70,25 +70,25 @@ public class AlterHeadRelation
     //------------------//
     // getXInGapMaximum //
     //------------------//
-    public static Scale.Fraction getXInGapMaximum (boolean manual)
+    public static Scale.Fraction getXInGapMaximum (int profile)
     {
-        return manual ? constants.xInGapMaxManual : constants.xInGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.xInGapMax, profile);
     }
 
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
-    public static Scale.Fraction getXOutGapMaximum (boolean manual)
+    public static Scale.Fraction getXOutGapMaximum (int profile)
     {
-        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.xOutGapMax, profile);
     }
 
     //----------------//
     // getYGapMaximum //
     //----------------//
-    public static Scale.Fraction getYGapMaximum (boolean manual)
+    public static Scale.Fraction getYGapMaximum (int profile)
     {
-        return manual ? constants.yGapMaxManual : constants.yGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
     }
 
     //----------------//
@@ -155,21 +155,21 @@ public class AlterHeadRelation
     }
 
     @Override
-    protected Scale.Fraction getXInGapMax (boolean manual)
+    protected Scale.Fraction getXInGapMax (int profile)
     {
-        return getXInGapMaximum(manual);
+        return getXInGapMaximum(profile);
     }
 
     @Override
-    protected Scale.Fraction getXOutGapMax (boolean manual)
+    protected Scale.Fraction getXOutGapMax (int profile)
     {
-        return getXOutGapMaximum(manual);
+        return getXOutGapMaximum(profile);
     }
 
     @Override
-    protected Scale.Fraction getYGapMax (boolean manual)
+    protected Scale.Fraction getYGapMax (int profile)
     {
-        return getYGapMaximum(manual);
+        return getYGapMaximum(profile);
     }
 
     //-----------//
@@ -187,25 +187,28 @@ public class AlterHeadRelation
                 0.45,
                 "Maximum vertical gap between accid & note head");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+        @SuppressWarnings("unused")
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(
                 0.6,
-                "Maximum vertical gap between manual accid & note head");
+                "Idem for profile 1");
 
         private final Scale.Fraction xInGapMax = new Scale.Fraction(
                 0.2,
                 "Maximum horizontal overlap between accid & note head");
 
-        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(
+        @SuppressWarnings("unused")
+        private final Scale.Fraction xInGapMax_p1 = new Scale.Fraction(
                 0.3,
-                "Maximum horizontal overlap between manual accid & note head");
+                "Idem for profile 1");
 
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 2.0,
                 "Maximum horizontal gap between accid & note head");
 
-        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
+        @SuppressWarnings("unused")
+        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(
                 3.0,
-                "Maximum horizontal gap between manual accid & note head");
+                "Idem for profile 1");
 
         private final Constant.Ratio xInWeight = new Constant.Ratio(
                 1,

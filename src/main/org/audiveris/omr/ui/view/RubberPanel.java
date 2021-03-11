@@ -45,11 +45,11 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.geom.AffineTransform;
 import java.util.ConcurrentModificationException;
+
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
-
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -80,11 +80,13 @@ public class RubberPanel
         extends JPanel
         implements ChangeListener, MouseMonitor, EventSubscriber<UserEvent>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(RubberPanel.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Current display zoom, if any. */
     protected Zoom zoom;
 
@@ -97,6 +99,7 @@ public class RubberPanel
     /** Location Service if any (for Location event). */
     protected SelectionService locationService;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a bare RubberPanel, assuming zoom and rubber will be assigned later.
      */
@@ -121,10 +124,10 @@ public class RubberPanel
         setZoom(zoom);
         setRubber(rubber);
 
-        bindKeys();
         logger.debug("new RubberPanel zoom={} rubber={}", zoom, rubber);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // contextAdded //
     //--------------//
@@ -396,7 +399,8 @@ public class RubberPanel
             showFocusLocation(rect, true);
 
             // Then, adjust zoom ratio to fit the rectangle size
-            SwingUtilities.invokeLater(new Runnable()
+            SwingUtilities.invokeLater(
+                    new Runnable()
             {
                 @Override
                 public void run ()
@@ -505,17 +509,20 @@ public class RubberPanel
             // Check whether the rectangle is fully visible,
             // if not, scroll so as to make (most of) it visible
             Rectangle scaledRect = zoom.scaled(rect);
-            Point center = new Point(
-                    scaledRect.x + (scaledRect.width / 2),
-                    scaledRect.y + (scaledRect.height / 2));
 
             if (centered) {
-                Rectangle vr = getVisibleRect();
-                scaledRect = new Rectangle(
-                        center.x - (vr.width / 2),
-                        center.y - (vr.height / 2),
-                        vr.width,
-                        vr.height);
+                Rectangle visibleRect = getVisibleRect();
+
+                if ((visibleRect.width > 0) && (visibleRect.height > 0)) {
+                    final Point center = new Point(
+                            scaledRect.x + (scaledRect.width / 2),
+                            scaledRect.y + (scaledRect.height / 2));
+                    scaledRect = new Rectangle(
+                            center.x - (visibleRect.width / 2),
+                            center.y - (visibleRect.height / 2),
+                            visibleRect.width,
+                            visibleRect.height);
+                }
             } else {
                 int margin = constants.focusMargin.getValue();
 
@@ -640,16 +647,16 @@ public class RubberPanel
 
         // Slight translation
         inputMap.put(KeyStroke.getKeyStroke("alt UP"), "UpTranslateAction");
-        actionMap.put("UpTranslateAction", new TranslateAction(0, -1));
+        actionMap.put("UpTranslateAction", getTranslateAction(0, -1));
 
         inputMap.put(KeyStroke.getKeyStroke("alt DOWN"), "DownTranslateAction");
-        actionMap.put("DownTranslateAction", new TranslateAction(0, 1));
+        actionMap.put("DownTranslateAction", getTranslateAction(0, 1));
 
         inputMap.put(KeyStroke.getKeyStroke("alt LEFT"), "LeftTranslateAction");
-        actionMap.put("LeftTranslateAction", new TranslateAction(-1, 0));
+        actionMap.put("LeftTranslateAction", getTranslateAction(-1, 0));
 
         inputMap.put(KeyStroke.getKeyStroke("alt RIGHT"), "RightTranslateAction");
-        actionMap.put("RightTranslateAction", new TranslateAction(1, 0));
+        actionMap.put("RightTranslateAction", getTranslateAction(1, 0));
 
         // Zoom modifications
         inputMap.put(KeyStroke.getKeyStroke("ctrl ADD"), "ZoomInAction");
@@ -663,6 +670,15 @@ public class RubberPanel
         inputMap.put(KeyStroke.getKeyStroke("ctrl NUMPAD0"), "ZoomResetAction");
         inputMap.put(KeyStroke.getKeyStroke("ctrl 0"), "ZoomResetAction");
         actionMap.put("ZoomResetAction", new ZoomAction(0));
+    }
+
+    //--------------------//
+    // getTranslateAction //
+    //--------------------//
+    protected TranslateAction getTranslateAction (int dx,
+                                                  int dy)
+    {
+        return new TranslateAction(dx, dy);
     }
 
     //----------------//
@@ -795,6 +811,7 @@ public class RubberPanel
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------------//
     // TranslateAction //
     //-----------------//

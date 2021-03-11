@@ -59,6 +59,13 @@ public interface Entity
     Rectangle getBounds ();
 
     /**
+     * Report the full ID of this entity.
+     *
+     * @return the entity full ID
+     */
+    String getFullId ();
+
+    /**
      * Report the ID of this entity
      *
      * @return the entity ID

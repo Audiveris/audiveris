@@ -21,8 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 /**
  * Interface {@code Anchored} handles anchor positions relative to a rectangular area.
@@ -31,6 +31,7 @@ import java.awt.Rectangle;
  */
 public interface Anchored
 {
+    //~ Enumerations -------------------------------------------------------------------------------
 
     /** Specifies a reference relative location. */
     public enum Anchor
@@ -48,10 +49,6 @@ public interface Anchored
          */
         MIDDLE_RIGHT("MR"),
         /**
-         * X at symbol left stem, Y at high stem ordinate.
-         */
-        TOP_LEFT_STEM("TLS"),
-        /**
          * X at symbol left stem, Y at middle.
          */
         LEFT_STEM("LS"),
@@ -60,17 +57,13 @@ public interface Anchored
          */
         BOTTOM_LEFT_STEM("BLS"),
         /**
-         * X at symbol right stem, Y at high stem ordinate.
-         */
-        TOP_RIGHT_STEM("TRS"),
-        /**
          * X at symbol right stem, Y at middle.
          */
         RIGHT_STEM("RS"),
         /**
-         * X at symbol right stem, Y at low stem ordinate.
+         * X at symbol right stem, Y at high stem ordinate.
          */
-        BOTTOM_RIGHT_STEM("BRS");
+        TOP_RIGHT_STEM("TRS");
 
         final String abbreviation;
 
@@ -90,17 +83,7 @@ public interface Anchored
         }
     }
 
-    /**
-     * Assign a relative offset for an anchor type.
-     *
-     * @param anchor the anchor type
-     * @param dx     the abscissa offset from upper left corner in pixels
-     * @param dy     the ordinate offset from upper left corner in pixels
-     */
-    void addAnchor (Anchor anchor,
-                    int dx,
-                    int dy);
-
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the rectangular bounds when positioning anchor at location (x,y).
      *
@@ -109,9 +92,9 @@ public interface Anchored
      * @param anchor chosen anchor
      * @return the corresponding bounds
      */
-    Rectangle getBoundsAt (int x,
-                           int y,
-                           Anchor anchor);
+    Rectangle2D getBoundsAt (double x,
+                             double y,
+                             Anchor anchor);
 
     /**
      * Report the rectangle height
@@ -121,12 +104,12 @@ public interface Anchored
     int getHeight ();
 
     /**
-     * Report the offset from rectangle upper left corner to the provided anchor.
+     * Report the Point offset from rectangle upper left corner to the provided anchor.
      *
      * @param anchor the desired anchor
      * @return the corresponding offset (vector from upper-left to anchor)
      */
-    Point getOffset (Anchor anchor);
+    Point2D getOffset (Anchor anchor);
 
     /**
      * Report the template width
@@ -134,4 +117,15 @@ public interface Anchored
      * @return the rectangle width
      */
     int getWidth ();
+
+    /**
+     * Assign a relative offset for an anchor.
+     *
+     * @param anchor the specified anchor
+     * @param dx     the abscissa offset from upper left corner in pixels
+     * @param dy     the ordinate offset from upper left corner in pixels
+     */
+    void putOffset (Anchor anchor,
+                    double dx,
+                    double dy);
 }

@@ -52,7 +52,7 @@ public class PluckingInter
      */
     public PluckingInter (Glyph glyph,
                           Shape shape,
-                          double grade)
+                          Double grade)
     {
         super(glyph, null, shape, grade);
         this.letter = valueOf(shape);

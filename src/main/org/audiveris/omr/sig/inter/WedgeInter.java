@@ -123,7 +123,7 @@ public class WedgeInter
      */
     public WedgeInter (Glyph glyph,
                        Shape shape,
-                       double grade)
+                       Double grade)
     {
         super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
 
@@ -137,7 +137,7 @@ public class WedgeInter
      */
     private WedgeInter ()
     {
-        super(null, null, null, 0);
+        super(null, null, null, 0.0);
     }
 
     //--------//

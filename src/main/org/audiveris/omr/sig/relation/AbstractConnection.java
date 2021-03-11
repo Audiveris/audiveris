@@ -46,11 +46,13 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class AbstractConnection
         extends Support
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractConnection.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Horizontal gap at connection (specified in interline fraction).
      * Positive value for an 'out' distance (true gap).
@@ -68,6 +70,7 @@ public abstract class AbstractConnection
     @XmlJavaTypeAdapter(Jaxb.Double3Adapter.class)
     protected Double dy;
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the horizontal gap (positive or negative) in interline fraction
      *
@@ -93,27 +96,27 @@ public abstract class AbstractConnection
      * <p>
      * Beware, if dx is positive or null, it's an xOut gap, otherwise it's an xIn gap
      *
-     * @param dx     the horizontal distance (positive for gap and negative for overlap)
-     * @param dy     the vertical distance (absolute)
-     * @param manual true if computed for manual assignment
+     * @param dx      the horizontal distance (positive for gap and negative for overlap)
+     * @param dy      the vertical distance (absolute)
+     * @param profile desired profile level
      */
     public void setInOutGaps (double dx,
                               double dy,
-                              boolean manual)
+                              int profile)
     {
         this.dx = dx;
         this.dy = dy;
 
         // Infer impact data
-        double yMax = getYGapMax(manual).getValue();
+        double yMax = getYGapMax(profile).getValue();
         double yImpact = (yMax - dy) / yMax;
 
         if (dx >= 0) {
-            double xMax = getXOutGapMax(manual).getValue();
+            double xMax = getXOutGapMax(profile).getValue();
             double xImpact = (xMax - dx) / xMax;
             setImpacts(new OutImpacts(xImpact, yImpact, getOutWeights()));
         } else {
-            double xMax = getXInGapMax(manual).getValue();
+            double xMax = getXInGapMax(profile).getValue();
             double xImpact = (xMax + dx) / xMax;
             setImpacts(new InImpacts(xImpact, yImpact, getInWeights()));
         }
@@ -125,16 +128,45 @@ public abstract class AbstractConnection
     /**
      * Set the gaps for this connection, with no difference between xIn and xOut gaps.
      *
-     * @param dx     the horizontal distance (only its absolute value is considered)
-     * @param dy     the vertical distance (absolute)
-     * @param manual true if computed for manual assignment
+     * @param dx      the horizontal distance (only its absolute value is considered)
+     * @param dy      the vertical distance (absolute)
+     * @param profile desired profile level
      */
     public void setOutGaps (double dx,
                             double dy,
-                            boolean manual)
+                            int profile)
     {
-        setInOutGaps(Math.abs(dx), dy, manual);
+        setInOutGaps(Math.abs(dx), dy, profile);
     }
+
+    /**
+     * Report maximum acceptable abscissa overlap.
+     * <p>
+     * This method is disabled by default, to be overridden if overlap is possible
+     *
+     * @param profile desired profile level
+     * @return the maximum overlap acceptable
+     */
+    protected Scale.Fraction getXInGapMax (int profile)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Report the maximum acceptable for outer abscissa gap.
+     *
+     * @param profile desired profile level
+     * @return maximum x out gap
+     */
+    protected abstract Scale.Fraction getXOutGapMax (int profile);
+
+    /**
+     * Report the maximum acceptable ordinate gap.
+     *
+     * @param profile desired profile level
+     * @return max y gap
+     */
+    protected abstract Scale.Fraction getYGapMax (int profile);
 
     /**
      * Method to override to provide specific weights for xInGap and yGap.
@@ -156,35 +188,6 @@ public abstract class AbstractConnection
         return OutImpacts.WEIGHTS;
     }
 
-    /**
-     * Report the maximum acceptable for outer abscissa gap.
-     *
-     * @param manual true for user-driven action
-     * @return maximum x out gap
-     */
-    protected abstract Scale.Fraction getXOutGapMax (boolean manual);
-
-    /**
-     * Report the maximum acceptable ordinate gap.
-     *
-     * @param manual true for user-driven action
-     * @return max y gap
-     */
-    protected abstract Scale.Fraction getYGapMax (boolean manual);
-
-    /**
-     * Report maximum acceptable abscissa overlap.
-     * <p>
-     * This method is disabled by default, to be overridden if overlap is possible
-     *
-     * @param manual true for user-driven action
-     * @return the maximum overlap acceptable
-     */
-    protected Scale.Fraction getXInGapMax (boolean manual)
-    {
-        throw new UnsupportedOperationException();
-    }
-
     //-----------//
     // internals //
     //-----------//
@@ -194,13 +197,14 @@ public abstract class AbstractConnection
         StringBuilder sb = new StringBuilder(super.internals());
 
         if ((dx != null) && (dy != null)) {
-            sb.append("@(").append(String.format("%.2f", dx)).append(",").append(
-                    String.format("%.2f", dy)).append(")");
+            sb.append("@(").append(String.format("%.2f", dx)).append(",")
+                    .append(String.format("%.2f", dy)).append(")");
         }
 
         return sb.toString();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // InImpacts //
     //-----------//

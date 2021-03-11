@@ -38,11 +38,11 @@ import org.slf4j.LoggerFactory;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.util.ConcurrentModificationException;
 
 /**
@@ -175,7 +175,7 @@ public abstract class SheetPainter
      * @param alignment how: the way the symbol is aligned wrt the location
      */
     protected void paint (TextLayout layout,
-                          Point location,
+                          Point2D location,
                           Alignment alignment)
     {
         OmrFont.paint(g, layout, location, alignment);

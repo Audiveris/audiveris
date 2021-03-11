@@ -34,7 +34,6 @@ import org.audiveris.omr.moments.GeometricMoments;
 import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import org.audiveris.omr.util.ByteUtil;
 import org.audiveris.omr.util.Jaxb;
-import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.Table;
 
 import org.slf4j.Logger;
@@ -57,6 +56,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -1259,7 +1259,7 @@ public class RunTable
             for (Itr it = new Itr(i); it.hasNext();) {
                 Run run = it.next();
 
-                if (predicate.check(run)) {
+                if (predicate.test(run)) {
                     it.remove();
 
                     if (removed != null) {

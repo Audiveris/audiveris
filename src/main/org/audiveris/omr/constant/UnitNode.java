@@ -32,13 +32,15 @@ import org.slf4j.Logger;
 public class UnitNode
         extends Node
 {
+    //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The contained Constant set if any */
+    /** The contained Constant set if any. */
     private ConstantSet set;
 
-    /** The logger if any */
+    /** The logger if any. */
     private Logger logger;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new UnitNode.
      *
@@ -49,6 +51,7 @@ public class UnitNode
         super(name);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getConstantSet //
     //----------------//

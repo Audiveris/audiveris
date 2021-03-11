@@ -62,7 +62,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.font.FontRenderContext;
 import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -99,9 +98,6 @@ public class TextBuilder
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TextBuilder.class);
-
-    /** Needed for font size computation. */
-    protected static final FontRenderContext frc = new FontRenderContext(null, true, true);
 
     /** Related system. */
     @Navigable(false)
@@ -523,7 +519,7 @@ public class TextBuilder
         final List<TextLine> found = new ArrayList<>();
 
         for (TextLine line : lines) {
-            final Point center = line.getCenter();
+            final Point2D center = line.getCenter2D();
 
             if (gutter.contains(center)) {
                 found.add(line);
@@ -748,7 +744,7 @@ public class TextBuilder
                 continue;
             }
 
-            final Point center = line.getCenter();
+            final Point2D center = line.getCenter2D();
             Staff staff = null;
 
             final Staff staffAbove = system.getStaffAtOrAbove(center);
@@ -982,14 +978,14 @@ public class TextBuilder
 
         // Pick up only the lines located below upper staff and above lower staff
         for (TextLine line : lines) {
-            Point center = line.getCenter();
-            double y1 = staffLine1.yAt(center.x);
-            if (y1 > center.y) {
+            Point2D center = line.getCenter2D();
+            double y1 = staffLine1.yAt(center.getX());
+            if (y1 > center.getY()) {
                 continue;
             }
 
-            double y2 = staffLine2.yAt(center.x);
-            if (y2 < center.y) {
+            double y2 = staffLine2.yAt(center.getX());
+            if (y2 < center.getY()) {
                 continue;
             }
 

@@ -70,7 +70,7 @@ public class ArpeggiatoInter
      * @param grade the interpretation quality
      */
     public ArpeggiatoInter (Glyph glyph,
-                            double grade)
+                            Double grade)
     {
         super(glyph, Shape.ARPEGGIATO, grade);
     }
@@ -80,7 +80,7 @@ public class ArpeggiatoInter
      */
     private ArpeggiatoInter ()
     {
-        super(null, null, null);
+        super(null, null, (Double) null);
     }
 
     //--------//
@@ -170,7 +170,8 @@ public class ArpeggiatoInter
         List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
         Collections.sort(systemHeadChords, Inters.byAbscissa);
 
-        Link link = lookupLink(systemHeadChords, system);
+        final int profile = Math.max(getProfile(), system.getProfile());
+        Link link = lookupLink(systemHeadChords, system, profile);
 
         return (link == null) ? Collections.emptyList() : Collections.singleton(link);
     }
@@ -227,10 +228,13 @@ public class ArpeggiatoInter
      * Try to detect a link between this arpeggiato instance and a HeadChord nearby.
      *
      * @param systemHeadChords ordered collection of head chords in system
+     * @param system           underlying system
+     * @param profile          desired profile level
      * @return the link found or null
      */
     private Link lookupLink (List<Inter> systemHeadChords,
-                             SystemInfo system)
+                             SystemInfo system,
+                             int profile)
     {
         // Look for a head-chord on right side of this symbol
         // Use a lookup box (glyph height, predefined width)
@@ -238,7 +242,7 @@ public class ArpeggiatoInter
         final Scale scale = system.getSheet().getScale();
         final Rectangle luBox = getBounds();
         luBox.x += luBox.width;
-        luBox.width = scale.toPixels(ChordArpeggiatoRelation.getXGapMaximum(manual));
+        luBox.width = scale.toPixels(ChordArpeggiatoRelation.getXGapMaximum(profile));
 
         final List<Inter> chords = Inters.intersectedInters(
                 systemHeadChords,
@@ -295,7 +299,7 @@ public class ArpeggiatoInter
     {
         ArpeggiatoInter arpeggiato = new ArpeggiatoInter(glyph, grade);
 
-        Link link = arpeggiato.lookupLink(systemHeadChords, system);
+        Link link = arpeggiato.lookupLink(systemHeadChords, system, system.getProfile());
 
         if (link != null) {
             system.getSig().addVertex(arpeggiato);

@@ -80,25 +80,25 @@ public class AugmentationRelation
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
-    public static Scale.Fraction getXOutGapMaximum (boolean manual)
+    public static Scale.Fraction getXOutGapMaximum (int profile)
     {
-        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.xOutGapMax, profile);
     }
 
     //-------------------//
     // getXOutGapMinimum //
     //-------------------//
-    public static Scale.Fraction getXOutGapMinimum (boolean manual)
+    public static Scale.Fraction getXOutGapMinimum (int profile)
     {
-        return manual ? constants.xOutGapMinManual : constants.xOutGapMin;
+        return (Scale.Fraction) constants.getConstant(constants.xOutGapMin, profile);
     }
 
     //----------------//
     // getYGapMaximum //
     //----------------//
-    public static Scale.Fraction getYGapMaximum (boolean manual)
+    public static Scale.Fraction getYGapMaximum (int profile)
     {
-        return manual ? constants.yGapMaxManual : constants.yGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
     }
 
     //----------------//
@@ -160,15 +160,15 @@ public class AugmentationRelation
     }
 
     @Override
-    protected Scale.Fraction getXOutGapMax (boolean manual)
+    protected Scale.Fraction getXOutGapMax (int profile)
     {
-        return getXOutGapMaximum(manual);
+        return getXOutGapMaximum(profile);
     }
 
     @Override
-    protected Scale.Fraction getYGapMax (boolean manual)
+    protected Scale.Fraction getYGapMax (int profile)
     {
-        return getYGapMaximum(manual);
+        return getYGapMaximum(profile);
     }
 
     //---------------------//
@@ -210,25 +210,28 @@ public class AugmentationRelation
                 1.3,
                 "Maximum horizontal gap between dot center & note/rest reference point");
 
-        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
+        @SuppressWarnings("unused")
+        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(
                 2.0,
-                "Maximum manual horizontal gap between dot center & note/rest reference point");
+                "Idem for profile 1");
 
         private final Scale.Fraction xOutGapMin = new Scale.Fraction(
                 0.25,
                 "Minimum horizontal gap between dot center & note/rest reference point");
 
-        private final Scale.Fraction xOutGapMinManual = new Scale.Fraction(
+        @SuppressWarnings("unused")
+        private final Scale.Fraction xOutGapMin_p1 = new Scale.Fraction(
                 0.1,
-                "Minimum manual horizontal gap between dot center & note/rest reference point");
+                "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.8,
                 "Maximum vertical gap between dot center & note/rest reference point");
 
-        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+        @SuppressWarnings("unused")
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(
                 1.2,
-                "Maximum manual vertical gap between dot center & note/rest reference point");
+                "Idem for profile 1");
 
         private final Constant.Ratio xOutWeight = new Constant.Ratio(
                 0,

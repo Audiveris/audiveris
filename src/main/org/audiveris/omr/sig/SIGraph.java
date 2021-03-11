@@ -41,7 +41,6 @@ import org.audiveris.omr.sig.relation.Relations.RelationClassPredicate;
 import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.util.Navigable;
-import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.Version;
 
 import org.jgrapht.DirectedGraph;
@@ -68,6 +67,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -788,14 +788,18 @@ public class SIGraph
     public List<Relation> insertExclusions (Collection<? extends Inter> inters,
                                             Cause cause)
     {
-        List<Inter> list = new ArrayList<Inter>(new LinkedHashSet<>(inters));
-        List<Relation> exclusions = new ArrayList<>();
+        final List<Inter> list = new ArrayList<>(inters);
+        final List<Relation> exclusions = new ArrayList<>();
 
         for (int i = 0, iBreak = list.size(); i < iBreak; i++) {
-            Inter inter = list.get(i);
+            final Inter inter = list.get(i);
 
-            for (Inter other : list.subList(i + 1, inters.size())) {
-                exclusions.add(insertExclusion(inter, other, cause));
+            if (inter != null) {
+                for (Inter other : list.subList(i + 1, list.size())) {
+                    if ((other != null) && (other != inter)) {
+                        exclusions.add(insertExclusion(inter, other, cause));
+                    }
+                }
             }
         }
 
@@ -809,7 +813,7 @@ public class SIGraph
      * Insert a support between two provided inters, unless an exclusion exists or
      * unless such relation already exists between them.
      * <p>
-     * Nota: We always insert such support from lower id to higher id.
+     * NOTA: We always insert such support from lower id to higher id.
      *
      * @param inter1       provided inter #1
      * @param inter2       provided inter #2
@@ -885,7 +889,7 @@ public class SIGraph
      */
     public List<Inter> inters (Staff staff)
     {
-        return Inters.inters(staff, vertexSet());
+        return Inters.inters(vertexSet(), staff);
     }
 
     //--------//
@@ -1481,7 +1485,7 @@ public class SIGraph
         }
 
         @Override
-        public boolean check (Inter inter)
+        public boolean test (Inter inter)
         {
             return !inter.isRemoved() && (inter.getShape() == shape);
         }
@@ -1502,7 +1506,7 @@ public class SIGraph
         }
 
         @Override
-        public boolean check (Inter inter)
+        public boolean test (Inter inter)
         {
             return !inter.isRemoved() && shapes.contains(inter.getShape());
         }
@@ -1527,7 +1531,7 @@ public class SIGraph
         }
 
         @Override
-        public boolean check (Inter inter)
+        public boolean test (Inter inter)
         {
             return !inter.isRemoved() && (inter.getStaff() == staff)
                            && ((classe == null) || classe.isInstance(inter));

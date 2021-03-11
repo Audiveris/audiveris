@@ -132,7 +132,7 @@ public class SectionCompound
     {
         StringBuilder sb = new StringBuilder();
         sb.append(this);
-        sb.append(String.format("   %s%n", Sections.toString("sections=", members)));
+        sb.append(String.format("   %s%n", Sections.ids(members)));
 
         if (partOf != null) {
             sb.append(String.format("   partOf=%s%n", partOf));
@@ -193,7 +193,18 @@ public class SectionCompound
     {
         checkBounds();
 
-        return GeoUtil.centerOf(bounds);
+        return GeoUtil.center(bounds);
+    }
+
+    //-------------//
+    // getCenter2D //
+    //-------------//
+    @Override
+    public Point2D getCenter2D ()
+    {
+        checkBounds();
+
+        return GeoUtil.center2D(bounds);
     }
 
     //-------------//

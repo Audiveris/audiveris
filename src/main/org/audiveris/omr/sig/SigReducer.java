@@ -32,7 +32,6 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sheet.rhythm.Measure;
-import org.audiveris.omr.sheet.stem.StemsBuilder;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractFlagInter;
@@ -80,7 +79,6 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
-import org.audiveris.omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,6 +96,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.function.Predicate;
 
 /**
  * Class {@code SigReducer} deals with SIG reduction.
@@ -124,7 +123,7 @@ public class SigReducer
     private static final Predicate<Inter> overlapPredicate = new Predicate<Inter>()
     {
         @Override
-        public boolean check (Inter inter)
+        public boolean test (Inter inter)
         {
             final Class<?> interClass = inter.getClass();
 
@@ -367,7 +366,7 @@ public class SigReducer
                                             stem,
                                             HeadStemRelation.class);
                                     double grade = (bs.getGrade() + hs.getGrade()) / 2;
-                                    sig.addEdge(smallBeam, smallHead, new BeamHeadRelation(grade));
+                                    ///sig.addEdge(smallBeam, smallHead, new BeamHeadRelation(grade));
                                 }
                             }
                         }
@@ -398,7 +397,7 @@ public class SigReducer
                                             stem,
                                             HeadStemRelation.class);
                                     double grade = (bs.getGrade() + hs.getGrade()) / 2;
-                                    sig.addEdge(beam, head, new BeamHeadRelation(grade));
+                                    ///sig.addEdge(beam, head, new BeamHeadRelation(grade));
                                 }
                             }
                         }
@@ -989,7 +988,7 @@ public class SigReducer
         final List<Inter> slurs = sig.inters(new Predicate<Inter>()
         {
             @Override
-            public boolean check (Inter inter)
+            public boolean test (Inter inter)
             {
                 return !inter.isRemoved() && (inter instanceof SlurInter)
                                && (inter.getBounds().width <= maxSlurWidth);
@@ -999,7 +998,7 @@ public class SigReducer
         final List<Inter> tuplets = sig.inters(new Predicate<Inter>()
         {
             @Override
-            public boolean check (Inter inter)
+            public boolean test (Inter inter)
             {
                 return !inter.isRemoved() && !inter.isImplicit() && (inter instanceof TupletInter)
                                && (inter.isContextuallyGood());
@@ -1068,95 +1067,40 @@ public class SigReducer
      */
     private int checkStems ()
     {
-        logger.debug("S#{} checkStems (stemHasHeadAtEnd + stemHasSingleHeadEnd)", system.getId());
+        logger.debug("S#{} checkStems (stemHasHeads + stemHasSingleHeadEnd)", system.getId());
 
         int modifs = 0;
         final List<Inter> stems = sig.inters(Shape.STEM);
 
         for (Inter inter : stems) {
             final StemInter stem = (StemInter) inter;
+            if (stem.isVip()) {
+                logger.info("VIP checkStem {}", stem);
+            }
 
-            if (!stemHasHeadAtEnd(stem)) {
+            if (stem.getHeads().isEmpty()) {
                 if (stem.isVip()) {
-                    logger.info("VIP deleting stem lacking starting head {}", stem);
+                    logger.info("VIP deleting stem lacking heads {}", stem);
                 }
-
                 stem.remove();
                 modifs++;
 
                 continue;
             }
-
+//
+//            if (!stemHasHeadAtEnd(stem)) {
+//                if (stem.isVip()) {
+//                    logger.info("VIP deleting stem lacking starting head {}", stem);
+//                }
+//
+//                stem.remove();
+//                modifs++;
+//
+//                continue;
+//            }
+//
             if (!stemHasSingleHeadEnd(stem)) {
                 modifs++;
-            }
-        }
-
-        return modifs;
-    }
-
-    //-------------------//
-    // checkStemsLengths //
-    //-------------------//
-    /**
-     * Perform checks on stems length from tail to closest head anchor, unless stem is
-     * also linked to a beam.
-     *
-     * @return the count of modifications done
-     */
-    private int checkStemsLengths ()
-    {
-        logger.debug("S#{} checkStemsLengths", system.getId());
-
-        final int minStemExtension = scale.toPixels(StemsBuilder.getMinStemExtension());
-        final List<Inter> stems = sig.inters(Shape.STEM);
-        int modifs = 0;
-
-        for (Inter inter : stems) {
-            final StemInter stem = (StemInter) inter;
-
-            if (stem.isVip()) {
-                logger.info("VIP checkStemsLengths on {}", stem);
-            }
-
-            if (!stem.getBeams().isEmpty()) {
-                continue;
-            }
-
-            final Rectangle stemBox = stem.getBounds();
-            Rectangle headsBox = null;
-
-            for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
-                final HeadInter head = (HeadInter) sig.getOppositeInter(stem, rel);
-                final Rectangle headBox = head.getBounds();
-
-                if (headsBox == null) {
-                    headsBox = headBox;
-                } else {
-                    headsBox.add(headBox);
-                }
-            }
-
-            if (headsBox == null) {
-                if (stem.isVip()) {
-                    logger.info("VIP no headsBox for {}", stem);
-                }
-
-                stem.remove();
-                modifs++;
-            } else {
-                final int above = headsBox.y - stemBox.y;
-                final int below = (stemBox.y + stemBox.height) - (headsBox.y + headsBox.height);
-                final int extension = Math.max(above, below);
-
-                if (extension < minStemExtension) {
-                    if (stem.isVip()) {
-                        logger.info("VIP too small tail for {}", stem);
-                    }
-
-                    stem.remove();
-                    modifs++;
-                }
             }
         }
 
@@ -1221,13 +1165,13 @@ public class SigReducer
                 continue;
             }
 
-            List<Inter> staffTimes = Inters.inters(staff, systemTimes);
+            List<Inter> staffTimes = Inters.inters(systemTimes, staff);
 
             if (staffTimes.isEmpty()) {
                 continue;
             }
 
-            List<Inter> notes = Inters.inters(staff, systemNotes);
+            List<Inter> notes = Inters.inters(systemNotes, staff);
 
             for (Inter inter : staffTimes) {
                 AbstractTimeInter timeSig = (AbstractTimeInter) inter;
@@ -1839,40 +1783,41 @@ public class SigReducer
 
         return modifs;
     }
-
-    //------------------//
-    // stemHasHeadAtEnd //
-    //------------------//
-    /**
-     * Check if the stem has at least a head at some end.
-     *
-     * @param stem the stem inter
-     * @return true if OK
-     */
-    private boolean stemHasHeadAtEnd (StemInter stem)
-    {
-        if (stem.isVip()) {
-            logger.info("VIP stemHasHeadAtEnd for {}", stem);
-        }
-
-        final Line2D stemLine = stem.computeExtendedLine();
-
-        for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
-            // Check stem portion
-            HeadStemRelation hsRel = (HeadStemRelation) rel;
-            Inter head = sig.getOppositeInter(stem, rel);
-
-            if (hsRel.getStemPortion(head, stemLine, scale) != STEM_MIDDLE) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
+//
+//    //------------------//
+//    // stemHasHeadAtEnd //
+//    //------------------//
+//    /**
+//     * Check if the stem has at least a head at some end.
+//     *
+//     * @param stem the stem inter
+//     * @return true if OK
+//     */
+//    private boolean stemHasHeadAtEnd (StemInter stem)
+//    {
+//        if (stem.isVip()) {
+//            logger.info("VIP stemHasHeadAtEnd for {}", stem);
+//        }
+//
+//        final Line2D stemLine = stem.computeExtendedLine();
+//
+//        for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
+//            // Check stem portion
+//            HeadStemRelation hsRel = (HeadStemRelation) rel;
+//            Inter head = sig.getOppositeInter(stem, rel);
+//
+//            if (hsRel.getStemPortion(head, stemLine, scale) != STEM_MIDDLE) {
+//                return true;
+//            }
+//        }
+//
+//        return false;
+//    }
+//
     //----------------------//
     // stemHasSingleHeadEnd //
     //----------------------//
+
     /**
      * Check if the stem does not have heads at both ends.
      * <p>
@@ -2039,10 +1984,10 @@ public class SigReducer
             analyzeChords(); // Heads size compatibility & beams size compatibility
             reduced.addAll(sig.reduceExclusions());
             deleted.addAll(contextualizeAndPurge());
-
-            modifs += checkStemsLengths();
-            deleted.addAll(contextualizeAndPurge());
-
+//
+//            modifs += checkStemsLengths();
+//            deleted.addAll(contextualizeAndPurge());
+//
             return modifs;
         }
 
@@ -2051,18 +1996,8 @@ public class SigReducer
         {
             logger.debug("S#{} prolog", system.getId());
 
-            // Perform descent from best beams and stems
-            descendStems();
-
             ///analyzeHeadStems(); // Check there is at most one stem on each side of any head
             analyzeChords(); // Heads & beams compatibility
-        }
-
-        private void descendStems ()
-        {
-            // Use good beams with their side stems
-            // Use good stems
-            // Descend through their needed heads
         }
     }
 

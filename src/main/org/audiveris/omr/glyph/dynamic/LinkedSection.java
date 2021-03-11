@@ -121,8 +121,8 @@ public class LinkedSection
     }
 
     @Override
-    public boolean contains (int x,
-                             int y)
+    public boolean contains (double x,
+                             double y)
     {
         return section.contains(x, y);
     }
@@ -244,6 +244,12 @@ public class LinkedSection
     public Run getFirstRun ()
     {
         return section.getFirstRun();
+    }
+
+    @Override
+    public String getFullId ()
+    {
+        return section.getFullId();
     }
 
     @Override

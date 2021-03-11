@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.stem;
 
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.StepException;
 
@@ -56,8 +57,7 @@ public class StemsStep
                           Void context)
             throws StepException
     {
-        // -> Stems links to heads & beams
-        new StemsBuilder(system).linkStems();
+        new StemsRetriever(system).process();
     }
 
     //----------//
@@ -70,10 +70,33 @@ public class StemsStep
     {
         // Further beams processing
         for (SystemInfo system : sheet.getSystems()) {
-            new StemsBuilder(system).finalizeStems();
+            new StemsRetriever(system).finalizeBeams();
 
-            // Compute all contextual grades (for better UI)
+            // Compute all contextual grades (for better visual check)
             system.getSig().contextualize();
         }
+    }
+
+    //----------//
+    // doProlog //
+    //----------//
+    /**
+     * Make sure that beams are gathered into {@link BeamGroupInter} instances.
+     * <p>
+     * This is needed to stay compatible with .omr files built before 5.2 release
+     *
+     * @param sheet the sheet to check
+     * @return null
+     * @throws StepException
+     */
+    @Override
+    protected Void doProlog (Sheet sheet)
+            throws StepException
+    {
+        for (SystemInfo system : sheet.getSystems()) {
+            BeamGroupInter.checkSystemForOldBeamGroup(system);
+        }
+
+        return null;
     }
 }

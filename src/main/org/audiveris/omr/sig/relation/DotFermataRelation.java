@@ -113,15 +113,15 @@ public class DotFermataRelation
     }
 
     @Override
-    protected Scale.Fraction getXOutGapMax (boolean manual)
+    protected Scale.Fraction getXOutGapMax (int profile)
     {
-        return constants.xOutGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.xOutGapMax, profile);
     }
 
     @Override
-    protected Scale.Fraction getYGapMax (boolean manual)
+    protected Scale.Fraction getYGapMax (int profile)
     {
-        return constants.yGapMax;
+        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
     }
 
     //-----------//
@@ -143,9 +143,17 @@ public class DotFermataRelation
                 0.75,
                 "Maximum horizontal gap between dot center & fermata reference point");
 
+        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(
+                1.0,
+                "Idem for profile 1");
+
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.5,
                 "Maximum vertical gap between dot center & fermata reference point");
+
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(
+                0.75,
+                "Idem for profile 1");
 
         private final Constant.Ratio xOutWeight = new Constant.Ratio(
                 1,
