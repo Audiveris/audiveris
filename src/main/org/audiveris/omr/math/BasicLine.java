@@ -39,9 +39,11 @@ import java.util.Collection;
 public final class BasicLine
         implements Line
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BasicLine.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Flag to indicate that data needs to be recomputed. */
     private boolean dirty;
 
@@ -87,6 +89,7 @@ public final class BasicLine
     /** Maximum ordinate among all defining points. */
     private double yMax = Double.MIN_VALUE;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a line, with no data.
      * The line is no yet usable, except for including further defining points.
@@ -154,6 +157,7 @@ public final class BasicLine
         checkLineParameters();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------------//
     // checkLineParameters //
     //---------------------//
@@ -254,10 +258,8 @@ public final class BasicLine
 
         checkLineParameters();
 
-        double distSq = ((a * a * sx2) + (b * b * sy2) + (c * c * n) + (2 * a * b * sxy) + (2 * a
-                                                                                                    * c
-                                                                                            * sx)
-                                 + (2 * b * c * sy)) / n;
+        double distSq = ((a * a * sx2) + (b * b * sy2) + (c * c * n)
+                                 + (2 * a * b * sxy) + (2 * a * c * sx) + (2 * b * c * sy)) / n;
 
         if (distSq < 0) {
             distSq = 0;
@@ -409,6 +411,11 @@ public final class BasicLine
         that.sy2 = sx2;
         that.sxy = sxy;
 
+        that.xMin = yMin;
+        that.xMax = yMax;
+        that.yMin = xMin;
+        that.yMax = xMax;
+
         that.dirty = true;
 
         return that;
@@ -462,11 +469,9 @@ public final class BasicLine
             checkLineParameters();
 
             if (isRatherVertical) {
-                return new Line2D.Double(xAtY(yMin) + 0.5, yMin,
-                                         xAtY(yMax) + 0.5, yMax + 1);
+                return new Line2D.Double(xAtY(yMin) + 0.5, yMin, xAtY(yMax) + 0.5, yMax + 1);
             } else {
-                return new Line2D.Double(xMin, yAtX(xMin) + 0.5,
-                                         xMax + 1, yAtX(xMax) + 0.5);
+                return new Line2D.Double(xMin, yAtX(xMin) + 0.5, xMax + 1, yAtX(xMax) + 0.5);
             }
         } catch (UndefinedLineException ulex) {
             return null; // Not enough points
@@ -669,5 +674,4 @@ public final class BasicLine
 
         return c;
     }
-
 }

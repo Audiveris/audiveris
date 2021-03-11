@@ -183,12 +183,16 @@ public class StemBuilder
         final double grade = impacts.getGrade();
 
         if (grade >= StemInter.getMinGrade()) {
-            return new StemInter(stemGlyph, impacts);
+            StemInter stem = new StemInter(stemGlyph, impacts);
+            retriever.addStemInter(stem);
+            return stem;
         }
 
         if (profile == Profiles.BEAM_SIDE) {
             // There may be nearly no pixel for the stem, so let's create an artificial one
-            return new StemInter(stemGlyph, params.artificialStemGrade);
+            StemInter stem = new StemInter(stemGlyph, params.artificialStemGrade);
+            retriever.addStemInter(stem);
+            return stem;
         }
 
         return null;

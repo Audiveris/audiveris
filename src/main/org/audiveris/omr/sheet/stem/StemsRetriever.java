@@ -27,7 +27,6 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.Grades;
-import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.GeoOrder;
@@ -37,6 +36,10 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.SystemManager;
+import org.audiveris.omr.sheet.stem.BeamLinker.BLinker;
+import org.audiveris.omr.sheet.stem.BeamLinker.BLinker.VLinker;
+import org.audiveris.omr.sheet.stem.HeadLinker.SLinker;
+import org.audiveris.omr.sheet.stem.HeadLinker.SLinker.CLinker;
 import org.audiveris.omr.sig.GradeUtil;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
@@ -51,13 +54,9 @@ import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.BeamHeadRelation;
 import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
-import org.audiveris.omr.sig.relation.Exclusion.Cause;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
-import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Dumping;
-import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.VerticalSide;
@@ -65,7 +64,6 @@ import org.audiveris.omr.util.VerticalSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
@@ -86,83 +84,67 @@ import java.util.TreeMap;
  * heads and perhaps beams.
  * <p>
  * This class defines the main component in charge of retrieving all stems in a system.
- * It uses other companion classes:
+ * It uses companion classes:
  * <ul>
- * <li>{@link BeamLinker} handles all links from one beam,
- * <li>{@link HeadLinker} handles all links from one head,
- * <li>{@link StemBuilder} handles the building of one stem for BeamLinker or HeadLinker,
+ * <li>{@link BeamLinker} handles all links from one beam.<br>
+ * It is composed of one {@link BLinker} for each relevant location of the beam:
+ * One on each beam side and one on each detected stump.
+ * Depending on the configuration, a BLinker can have several {@link VLinker} dedicated to
+ * vertical directions (0 for an ANCHORD with no stump, 1 for a stump pointing out of beam, 2 for
+ * beam horizontal side with no stump).
+ * <li>{@link HeadLinker} handles all links from one head.<br>
+ * It is composed of one {@link SLinker} for each head horizontal side, each SLinker being composed
+ * of one {@link CLinker} for each vertical side.
+ * <li>{@link StemBuilder} handles the building of one stem for any vertical Linker
+ * (VLinker or CLinker).
  * <li>{@link StemChecker} handles stem checking for StemBuilder.
  * </ul>
- * This class used to be named {@code StemsBuilder}, it is now named {@code StemsRetriever} to
- * avoid any confusion with the new {@code StemBuilder} class.
- * <p>
- * At this point in the OMR pipeline, beams have been identified as well as void and black heads,
- * but no flags yet.
- * Stem seeds have been identified (a seed has a minimum length and no internal vertical gap).
- *
- * <h3>Seeds and stumps</h3>
- * <ol>
- * <li>For every head, look for one connectable stem seed at LEFT_STEM anchor and one connectable
- * stem seed at RIGHT_STEM anchor.
- * <li>When no seed can be connected on one head side, build a head stump there from suitable
- * section(s) near head anchor.
- * From now on, the seed or the stump will be considered by stem candidates as the head portion to
- * connect to.
- * <li>For every beam, look for connectable stem seeds and for stumps that point outside beam.
- * </ol>
- *
- * <h3>Stems</h3>
- * A stem is expected to be connected on the left or right anchor of at least one head.
- * Such connections are looked up in the 4 corners of every head.
- * <p>
- * In poor-quality scores, stems can lack many pixels, resulting in vertical gaps between stem parts
- * and between head and nearest stem part, so we must accept such potential gaps (even if we lower
- * the resulting interpretation grade).
- * However we can be much more strict for the horizontal gap of the connection.
- * <p>
- * A stem being built is incrementally expanded away from head, by aggregating several items: stem
- * seeds first, then chunks built from suitable sections found in the corner, all being separated by
- * vertical gaps.
- * Up to which point should we accept vertical gaps?
+ * At this point in the OMR pipeline:
  * <ul>
- * <li>If there is a beam in the corner, this provides a maximum limit.</li>
- * <li>If another head is encountered, temporarily stop at gap before the other head stump or seed.
- * This is meant to avoid undue early merging of chords.
- * <li>If a too large gap is encountered, temporarily stop there.</li>
- * </ul>
- * <p>
- * Every sequence of stem items built from the head is evaluated and potentially recorded as a
- * separate stem interpretation in the SIG.
- * <ul>
- * <li>Stem-head connection uses criteria based on xGap and yGap at reference point for a seed
- * connection.
- * For a stump, yGap is measured at stump connection.
- * <li>Stem-beam connection uses yGap (and xGap in the case of beam side connection).
- * As for head stump, for a beam stump, yGap is measured at stump connection.
+ * <li>Beams have been identified (in BEAMS step) as well as void and black heads (in HEADS step),
+ * but no flags yet (flags will be addressed later in the SYMBOLS step).
+ * <li>Some stem seeds have been identified (in STEM_SEEDS step). A stem seed has a minimum length
+ * and no internal vertical gap.
+ * <li>We got a measurement for main and max stem thickness in the sheet (in STEM_SEEDS step).
  * </ul>
  *
- * <h3>Second phase</h3>
- * Since phase 1 was driven by heads, this phase 2 aims at merging compatible stems.
- *
- * <h3>Third phase</h3>
- * This is driven from beams, to take advantage of beam "umbrella" that tends to connect heads
- * in its neighborhood.
- * <p>
- * This phase 3 is run when all systems in sheet have been processed by phases 1 and 2.
- * This is meant to focus on beam candidates that are really relevant for the system at hand.
- * <p>
- * Finally, precise stem head end could be later adjusted using ordinate of last head.
- *
- * <h3>Typical examples</h3>
+ * <h3>Phase #1: one system at a time</h3>
  * <ul>
- * <li>Stem expansion w/o beam:<br>
- * See D:\soft\cases\Issue-402\IMSLP02821.omr @(436,1426),@(1313,2139)
- * <li>Stem expansion w/ beam:<br>
- * See D:\soft\cases\Issue-402\IMSLP02821.omr @(1197,2159)
- * <li>Chord vertical merge:<br>
- * See 446 @(1208,2882)
- * <li>Chord vertical separation:<br>
- * See 446 @(1129,2710)
+ * <li>{@link #inspectStems()}
+ * <ul>
+ * <li>Gather stem seeds for the system at hand.
+ * <li>Allocate one BeamLinker for each beam.
+ * <li>Allocate one HeadLinker for each head.
+ * <li>For every beam, inspect every VLinker and populate its StemBuilder.
+ * <li>For every head, inspect every CLinker and populate its StemBuilder.
+ * </ul>
+ * <li>{@link #linkStems()}
+ * <ul>
+ * <li>First, for every beam, link each of its horizontal sides, then each of its non-side stumps.
+ * <li>Second, for every head not linked to a beam, try to link on both horizontal sides using
+ * {@link HeadLinker#linkSides} with increasing profile values.
+ * <li>Finally, for every still-not-linked head, try to connect to some existing stem.
+ * </ul>
+ * </ul>
+ * <h3>Phase #2: once all systems have been processed</h3>
+ * <ul>
+ * <li>{@link #finalizeStems()}
+ * <ul>
+ * <li>Purge orphan beams located between two systems: a beam with no link is discarded if its
+ * counterpart in the other system has links.
+ * <li>Boost beam sides: beside stems linked to a beam side, boost the related heads as well, so
+ * that they can survive and the beam with them.
+ * <li>Check head stems: make sure that any head exhibits at most 2 stem links (in bottom left and
+ * top right corners).
+ * <li>Check needed stems: heads with no stem link at all are discarded.
+ * </ul>
+ * </ul>
+ *
+ * <h3>Possible evolutions</h3>
+ * <ul>
+ * <li>For rather long stems, full stem expansion driven only from the initial head or beam may be
+ * difficult. In such cases, we could delegate stem expansion to some intermediate heads carefully
+ * chosen.
  * </ul>
  *
  * @author Hervé Bitteur
@@ -187,9 +169,6 @@ public class StemsRetriever
     /** Sheet scale. */
     @Navigable(false)
     private final Scale scale;
-
-    /** Dimension for black head symbol. */
-    private final Dimension headSymbolDim;
 
     /** Scale-dependent parameters. */
     private Parameters params;
@@ -221,6 +200,8 @@ public class StemsRetriever
     /** Maximum vertical gap, per profile level. */
     private final TreeMap<Integer, Integer> gapMap;
 
+    private StopWatch watch;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StemsBuilder object.
@@ -238,9 +219,6 @@ public class StemsRetriever
 
         gapMap = buildGapMap();
 
-        ShapeSymbol symbol = Shape.NOTEHEAD_BLACK.getSymbol();
-        headSymbolDim = symbol.getDimension(MusicFont.getHeadFont(scale, scale.getInterline()));
-
         noStemAreas = retrieveNoStemAreas();
 
         final SystemManager mgr = sheet.getSystemManager();
@@ -249,163 +227,119 @@ public class StemsRetriever
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // linkCueBeams //
-    //--------------//
+    //---------------//
+    // finalizeBeams //
+    //---------------//
     /**
-     * We reuse this class to connect a stem to potential cue beams.
-     * Logic is rather simple for cue configurations. To be refined with a stem reuse to support
-     * multiple cue heads on one stem.
-     *
-     * @param head  cue head
-     * @param hSide horizontal side for connection
-     * @param vSide vertical side for connection
-     * @param stem  cue stem
-     * @param beams cue beams candidates
+     * Only when all systems have been processed, we can finalize the processing.
      */
-    public void linkCueBeams (HeadInter head,
-                              HorizontalSide hSide,
-                              VerticalSide vSide,
-                              Inter stem,
-                              List<Inter> beams)
+    public void finalizeBeams ()
     {
         if (params == null) {
             params = new Parameters(system, scale);
         }
-
-        new HeadLinker(head, this).linkCue(hSide, vSide, beams, (StemInter) stem);
-    }
-
-    //-----------------//
-    // inspectThenLink //
-    //-----------------//
-    public void inspectThenLink ()
-    {
-        inspectStems(); // Gather information on every entity involved (head or beam)
-        linkStems(); // Use gathered information to actually link beams and heads to stems.
-    }
-
-    //--------------//
-    // inspectStems //
-    //--------------//
-    /**
-     * Inspect stems to suitable heads and beams in the system.
-     * <p>
-     * No link is performed, we just gather information about heads, beams, glyphs, vertical gaps.
-     */
-    private void inspectStems ()
-    {
-        if (params == null) {
-            params = new Parameters(system, scale);
-        }
-
-        logger.debug("\n{} inspectStems", system);
-        stemChecker = new StemChecker(system.getSheet());
-        final StopWatch watch = new StopWatch("StemsRetriever.inspectStems S#" + system.getId());
 
         // The abscissa-sorted stem seeds for this system
-        watch.start("Seeds");
         systemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED);
         purgeNoStemSeeds(systemSeeds);
 
-        // The abscissa-sorted beam (and beam hook) interpretations for this system
-        watch.start("Beams linkers");
-        systemBeams = sig.inters(AbstractBeamInter.class);
-        Collections.sort(systemBeams, Inters.byAbscissa);
+        new Finalizer().process();
+    }
 
-        for (Inter b : systemBeams) {
-            AbstractBeamInter beam = (AbstractBeamInter) b;
+    //---------//
+    // process //
+    //---------//
+    public void process ()
+    {
+        watch = new StopWatch("StemsRetriever.process S#" + system.getId());
 
-            if (beam.getLinker() == null) {
-                beam.setLinker(new BeamLinker(beam, this));
-            }
+        if (params == null) {
+            params = new Parameters(system, scale);
         }
 
-        // The abscissa-sorted head interpretations for this system
-        watch.start("Heads linkers");
-        systemHeads = sig.inters(ShapeSet.getStemTemplateNotes(system.getSheet()));
-        Collections.sort(systemHeads, Inters.byAbscissa);
-
-        for (Inter h : systemHeads) {
-            HeadInter head = (HeadInter) h;
-            head.setLinker(new HeadLinker(head, this)); // -> 1 SLinker/hSide (-> 1 CLinker/vSide)
-        }
-
-        // Inspect each beam stump or side to reachable heads (and other beams w/i group)
-        watch.start("Beams inspection");
-        for (Inter b : systemBeams) {
-            AbstractBeamInter beam = (AbstractBeamInter) b;
-            beam.getLinker().inspectVLinkers(); // -> 1 VLinker/beam hit if needed (+ heads)
-        }
-
-        // Inspect each head to other heads and beam
-        watch.start("Heads inspection");
-        for (Inter h : systemHeads) {
-            HeadInter head = (HeadInter) h;
-            head.getLinker().inspectCLinkers(); // -> 1 VLinker if beam hit (+ other heads)
-        }
+        inspectStems();
+        linkStems();
+        finalizeStems();
 
         if (constants.printWatch.isSet()) {
             watch.print();
         }
     }
 
-    //-----------//
-    // linkStems //
-    //-----------//
-    /**
-     * Try to actually link from beams and from heads.
-     */
-    private void linkStems ()
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
     {
-        if (params == null) {
-            params = new Parameters(system, scale);
+        return new StringBuilder(getClass().getSimpleName())
+                .append("{S#").append(system.getId()).append('}').toString();
+    }
+
+    //-------------//
+    // getTargetPt //
+    //-------------//
+    /**
+     * Compute the point where the (skewed) vertical from reference point crosses the
+     * provided limit.
+     *
+     * @param refPt reference point for stem connection
+     * @param limit the end of the white space (a rather horizontal line)
+     * @param slope global sheet slope
+     * @return the limit crossing point with skewed vertical at reference point
+     */
+    public static Point2D getTargetPt (Point2D refPt,
+                                       Line2D limit,
+                                       double slope)
+    {
+        final Point2D p2 = new Point2D.Double(refPt.getX() - (100 * slope), refPt.getY() + 100);
+
+        return LineUtil.intersection(refPt, p2, limit.getP1(), limit.getP2());
+    }
+
+    //------------------//
+    // sortBeamsFromRef //
+    //------------------//
+    /**
+     * Sort the provided beams vertically from the reference point.
+     *
+     * @param refPt starting reference point
+     * @param yDir  vertical direction from reference point
+     * @param beams the beams to sort
+     */
+    public static void sortBeamsFromRef (Point2D refPt,
+                                         int yDir,
+                                         List<Inter> beams)
+    {
+        if (beams.isEmpty()) {
+            return;
         }
 
-        logger.debug("\n{} linkStems", system);
+        final double slope = beams.get(0).getSig().getSystem().getSheet().getSkew().getSlope();
 
-        stemChecker = new StemChecker(system.getSheet());
+        Comparator<Inter> fromRef = (i1, i2) -> {
+            final AbstractBeamInter b1 = (AbstractBeamInter) i1;
+            final AbstractBeamInter b2 = (AbstractBeamInter) i2;
+            return Double.compare(
+                    yDir * (getTargetPt(refPt, getLimit(b1, yDir), slope).getY() - refPt.getY()),
+                    yDir * (getTargetPt(refPt, getLimit(b2, yDir), slope).getY() - refPt.getY()));
+        };
 
-        final StopWatch watch = new StopWatch("StemsRetriever.linkStems S#" + system.getId());
+        Collections.sort(beams, fromRef);
+    }
 
-        // Beams first
-        watch.start("Beams linking");
-        systemBeams = sig.inters(AbstractBeamInter.class);
-        Collections.sort(systemBeams, Inters.byReverseWidth); // Link longest beams first
-
-        for (Iterator<Inter> it = systemBeams.iterator(); it.hasNext();) {
-            final AbstractBeamInter beam = (AbstractBeamInter) it.next();
-
-            boolean ok = beam.getLinker().linkSides(system.getProfile());
-            if (!ok) {
-                logger.debug("Cannot link both sides of {}", beam);
-                it.remove();
-                continue;
-            }
-
-            beam.getLinker().linkStumps(system.getProfile());
-        }
-
-        // Heads second
-        watch.start("Heads linking phase 1");
-        systemHeads = sig.inters(ShapeSet.getStemTemplateNotes(system.getSheet()));
-        Collections.sort(systemHeads, Inters.byReverseGrade);
-        final List<HeadInter> unlinkedHeads = new ArrayList<>();
-
-        for (Inter h : systemHeads) {
-            final HeadInter head = (HeadInter) h;
-            if (!head.getLinker().linkSides(Profiles.STANDARD, system.getProfile(), false)) {
-                unlinkedHeads.add(head);
-            }
-        }
-
-        watch.start("Heads linking phase 2");
-        for (HeadInter head : unlinkedHeads) {
-            head.getLinker().linkSides(Profiles.STANDARD, system.getProfile(), true);
-        }
-
-        if (constants.printWatch.isSet()) {
-            watch.print();
+    //--------------//
+    // addStemInter //
+    //--------------//
+    /**
+     * Record the provided stem into the system glyph-stem map.
+     *
+     * @param stem the provided stem
+     */
+    void addStemInter (StemInter stem)
+    {
+        if (stem.getGlyph() != null) {
+            systemStems.put(stem.getGlyph(), stem);
         }
     }
 
@@ -417,7 +351,7 @@ public class StemsRetriever
      *
      * @return the gapMap
      */
-    public TreeMap<Integer, Integer> getGapMap ()
+    TreeMap<Integer, Integer> getGapMap ()
     {
         return gapMap;
     }
@@ -433,8 +367,8 @@ public class StemsRetriever
      * @param hsRel relation that would stand between head and stem
      * @return head contextual grade (based only on support from a perfect stem)
      */
-    public double getMaxHeadContextualGrade (HeadInter head,
-                                             HeadStemRelation hsRel)
+    double getMaxHeadContextualGrade (HeadInter head,
+                                      HeadStemRelation hsRel)
     {
         final double maxStemGrade = Grades.intrinsicRatio;
         final double maxStemContrib = maxStemGrade * hsRel.getTargetRatio() - 1.0;
@@ -443,37 +377,9 @@ public class StemsRetriever
         return maxCg;
     }
 
-    //---------------//
-    // finalizeStems //
-    //---------------//
-    /**
-     * Only when all systems have been processed, we can finalize the processing.
-     */
-    public void finalizeStems ()
-    {
-        if (params == null) {
-            params = new Parameters(system, scale);
-        }
-
-        // The abscissa-sorted stem seeds for this system
-        systemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED);
-        purgeNoStemSeeds(systemSeeds);
-
-        new Finalizer().process();
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append("{S#").append(system.getId());
-
-        return sb.append('}').toString();
-    }
-
+    //----------------//
+    // getNoStemAreas //
+    //----------------//
     /**
      * @return the noStemAreas
      */
@@ -482,6 +388,9 @@ public class StemsRetriever
         return noStemAreas;
     }
 
+    //-----------//
+    // getParams //
+    //-----------//
     /**
      * Give access to the whole set of parameters used by for stem retrieval.
      *
@@ -534,20 +443,6 @@ public class StemsRetriever
         return Glyphs.intersectedGlyphs(systemSeeds, fatBox);
     }
 
-    //--------------//
-    // getStemInter //
-    //--------------//
-    /**
-     * Report the stem interpretation if any for the glyph at hand.
-     *
-     * @param glyph the underlying glyph
-     * @return the existing stem interpretation if any, or null
-     */
-    public StemInter getStemInter (Glyph glyph)
-    {
-        return systemStems.get(glyph);
-    }
-
     /**
      * @return the system
      */
@@ -580,20 +475,18 @@ public class StemsRetriever
         return stemChecker;
     }
 
-    //----------//
-    // getLimit //
-    //----------//
+    //--------------//
+    // getStemInter //
+    //--------------//
     /**
-     * Report closer beam limit, according to corner vertical direction.
+     * Report the stem interpretation if any for the glyph at hand.
      *
-     * @param beam the beam or hook of interest
-     * @param yDir vertical direction from reference point
-     * @return the top or bottom beam limit, according to dir
+     * @param glyph the underlying glyph
+     * @return the existing stem interpretation if any, or null
      */
-    private static Line2D getLimit (AbstractBeamInter beam,
-                                    int yDir)
+    StemInter getStemInter (Glyph glyph)
     {
-        return beam.getBorder(VerticalSide.of(yDir));
+        return systemStems.get(glyph);
     }
 
     //-------------//
@@ -603,16 +496,14 @@ public class StemsRetriever
      * Compute the point where the (skewed) vertical from reference point crosses the
      * provided limit.
      *
+     * @param refPt reference point for stem connection
      * @param limit the end of the white space (a rather horizontal line)
      * @return the limit crossing point with skewed vertical at reference point
      */
     Point2D getTargetPt (Point2D refPt,
                          Line2D limit)
     {
-        final double slope = system.getSheet().getSkew().getSlope();
-        final Point2D p2 = new Point2D.Double(refPt.getX() - (100 * slope), refPt.getY() + 100);
-
-        return LineUtil.intersection(refPt, p2, limit.getP1(), limit.getP2());
+        return getTargetPt(refPt, limit, system.getSheet().getSkew().getSlope());
     }
 
     //--------------------//
@@ -634,29 +525,49 @@ public class StemsRetriever
         return new Line2D.Double(refPt, sysPt);
     }
 
-    //------------------//
-    // sortBeamsFromRef //
-    //------------------//
+    //----------------//
+    // checkHeadStems //
+    //----------------//
     /**
-     * Sort the provided beams vertically from the reference point.
+     * A head can have links to two stems (non mutually exclusive) only when these
+     * stems are compatible (head is on stem ends with one stem on bottom left and
+     * one stem on top right).
+     * <p>
+     * Otherwise, we must clean up the configuration:
+     * <ol>
+     * <li>If there is a link with zero yGap, it has priority over non-zero yGap that are
+     * generally due to stem extension. So cut the non-zero links.
+     * <li>If there are two zero yGaps, if they are opposed on normal sides, it's OK.
+     * <li>If not, cut the link to the one not on normal side.
+     * <li>If there are two non-zero yGaps, cut the one with larger yGap.
+     * </ol>
      *
-     * @param refPt starting reference point
-     * @param yDir  vertical direction from reference point
-     * @param beams the beams to sort
+     * @param head the note head to check
      */
-    void sortBeamsFromRef (Point2D refPt,
-                           int yDir,
-                           List<Inter> beams)
+    private void checkHeadStems (HeadInter head)
     {
-        Comparator<Inter> fromRef = (Inter i1, Inter i2) -> {
-            final AbstractBeamInter b1 = (AbstractBeamInter) i1;
-            final AbstractBeamInter b2 = (AbstractBeamInter) i2;
-            return Double.compare(
-                    yDir * (getTargetPt(refPt, getLimit(b1, yDir)).getY() - refPt.getY()),
-                    yDir * (getTargetPt(refPt, getLimit(b2, yDir)).getY() - refPt.getY()));
-        };
+        // Retrieve all stems connected to this head
+        List<Inter> allStems = new ArrayList<>();
 
-        Collections.sort(beams, fromRef);
+        for (Relation rel : sig.getRelations(head, HeadStemRelation.class)) {
+            allStems.add(sig.getEdgeTarget(rel));
+        }
+
+        // List of non-conflicting stems ensembles
+        List<List<Inter>> partners = sig.getPartitions(null, allStems);
+        HeadStemsCleaner checker = null;
+
+        for (List<Inter> ensemble : partners) {
+            if (ensemble.size() <= 1) {
+                continue;
+            }
+
+            if (checker == null) {
+                checker = new HeadStemsCleaner(head);
+            }
+
+            checker.check(ensemble);
+        }
     }
 
     //------------------//
@@ -678,48 +589,6 @@ public class StemsRetriever
         }
     }
 
-    //-------------------------//
-    // performMutualExclusions //
-    //-------------------------//
-    /**
-     * Browse the system interpretations to insert mutual exclusions wherever possible.
-     * This is done for stems.
-     */
-    private void performMutualExclusions ()
-    {
-        final List<Inter> stems = sig.inters(Shape.STEM);
-        final int size = stems.size();
-        int count = 0;
-
-        try {
-            if (size < 2) {
-                return;
-            }
-
-            Collections.sort(stems, Inters.byAbscissa);
-
-            for (int i = 0; i < (size - 1); i++) {
-                final Inter one = stems.get(i);
-                final Rectangle oneBox = one.getGlyph().getBounds();
-                final int xBreak = oneBox.x + oneBox.width;
-
-                for (Inter two : stems.subList(i + 1, size)) {
-                    Rectangle twoBox = two.getGlyph().getBounds();
-
-                    // Is there an overlap between stems one & two?
-                    if (oneBox.intersects(twoBox)) {
-                        sig.insertExclusion(one, two, Cause.OVERLAP);
-                        count++;
-                    } else if (twoBox.x >= xBreak) {
-                        break;
-                    }
-                }
-            }
-        } finally {
-            logger.debug("S#{} stems: {} exclusions: {}", system.getId(), size, count);
-        }
-    }
-
     //-------------//
     // buildGapMap //
     //-------------//
@@ -735,6 +604,145 @@ public class StemsRetriever
         logger.debug("gapMap:{}", map);
 
         return map;
+    }
+
+    //----------//
+    // getLimit //
+    //----------//
+    /**
+     * Report closer beam limit, according to corner vertical direction.
+     *
+     * @param beam the beam or hook of interest
+     * @param yDir vertical direction from reference point
+     * @return the top or bottom beam limit, according to dir
+     */
+    private static Line2D getLimit (AbstractBeamInter beam,
+                                    int yDir)
+    {
+        return beam.getBorder(VerticalSide.of(yDir));
+    }
+
+    //---------------//
+    // finalizeStems //
+    //---------------//
+    /**
+     * Final stems processing.
+     */
+    private void finalizeStems ()
+    {
+        // Check carefully multiple stem links on same head
+        watch.start("checkHeadStems");
+        for (Inter head : systemHeads) {
+            checkHeadStems((HeadInter) head);
+        }
+
+        // Flag heads with no stem link as abnormal
+        watch.start("checkNeededStems");
+        checkNeededStems(systemHeads);
+    }
+
+    //--------------//
+    // inspectStems //
+    //--------------//
+    /**
+     * Inspect stems to suitable heads and beams in the system.
+     * <p>
+     * No link is performed, we just gather information about heads, beams, glyphs, vertical gaps.
+     */
+    private void inspectStems ()
+    {
+        logger.debug("\n{} inspectStems", system);
+        stemChecker = new StemChecker(system.getSheet());
+
+        // The abscissa-sorted stem seeds for this system
+        watch.start("Seeds");
+        systemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED);
+        purgeNoStemSeeds(systemSeeds);
+
+        // The abscissa-sorted beam (and beam hook) interpretations for this system
+        watch.start("Beams linkers");
+        systemBeams = sig.inters(AbstractBeamInter.class);
+        Collections.sort(systemBeams, Inters.byAbscissa);
+
+        for (Inter b : systemBeams) {
+            AbstractBeamInter beam = (AbstractBeamInter) b;
+
+            if (beam.getLinker() == null) {
+                beam.setLinker(new BeamLinker(beam, this));
+            }
+        }
+
+        // The abscissa-sorted head interpretations for this system
+        watch.start("Heads linkers");
+        systemHeads = sig.inters(ShapeSet.getStemTemplateNotes(system.getSheet()));
+        Collections.sort(systemHeads, Inters.byAbscissa);
+
+        for (Inter h : systemHeads) {
+            HeadInter head = (HeadInter) h;
+            head.setLinker(new HeadLinker(head, this)); // -> 1 SLinker/hSide (-> 1 CLinker/vSide)
+        }
+
+        // Inspect each beam stump or side to reachable heads (and other beams w/i group)
+        watch.start("Beams inspection");
+        for (Inter b : systemBeams) {
+            AbstractBeamInter beam = (AbstractBeamInter) b;
+            beam.getLinker().inspectVLinkers(); // -> 1 VLinker/beam hit if needed (+ heads)
+        }
+
+        // Inspect each head to other heads and beam
+        watch.start("Heads inspection");
+        for (Inter h : systemHeads) {
+            HeadInter head = (HeadInter) h;
+            head.getLinker().inspectCLinkers(); // -> 1 VLinker if beam hit (+ other heads)
+        }
+    }
+
+    //-----------//
+    // linkStems //
+    //-----------//
+    /**
+     * Try to actually link from beams and from heads.
+     */
+    private void linkStems ()
+    {
+        logger.debug("\n{} linkStems", system);
+        stemChecker = new StemChecker(system.getSheet());
+
+        // Beams first
+        watch.start("Beams linking");
+        systemBeams = sig.inters(AbstractBeamInter.class);
+        Collections.sort(systemBeams, Inters.byReverseWidth); // Link longest beams first
+
+        for (Iterator<Inter> it = systemBeams.iterator(); it.hasNext();) {
+            final AbstractBeamInter beam = (AbstractBeamInter) it.next();
+
+            boolean ok = beam.getLinker().linkSides(system.getProfile());
+            if (!ok) {
+                logger.debug("Cannot link both sides of {}", beam);
+                it.remove();
+                continue;
+            }
+
+            beam.getLinker().linkStumps(system.getProfile());
+        }
+
+        // Heads second
+        watch.start("Heads linking phase 1");
+        systemHeads = sig.inters(ShapeSet.getStemTemplateNotes(system.getSheet()));
+        Collections.sort(systemHeads, Inters.byReverseGrade);
+        final List<HeadInter> unlinkedHeads = new ArrayList<>();
+
+        for (Inter h : systemHeads) {
+            final HeadInter head = (HeadInter) h;
+            if (!head.getLinker().linkSides(Profiles.STANDARD, system.getProfile(), false)) {
+                unlinkedHeads.add(head);
+            }
+        }
+
+        watch.start("Heads linking phase 2");
+        for (HeadInter head : unlinkedHeads) {
+            head.getLinker().linkSides(Profiles.STANDARD, system.getProfile(), true);
+        }
     }
 
     //------------------//
@@ -828,11 +836,8 @@ public class StemsRetriever
     // Finalizer //
     //-----------//
     /**
-     * This class is to be run after a pass of {@link #inspectStems} on all systems,
-     * and is meant to improve results on poor-quality images.
-     * <p>
-     * In first version, we focus on every good standard beam and make sure it has connected heads
-     * on both left and right sides.
+     * This class is to be run after a pass of {@link #inspectStems} and
+     * {@link #linkStems} on all systems.
      */
     private class Finalizer
     {
@@ -863,6 +868,7 @@ public class StemsRetriever
         public void process ()
         {
             // Purge cross-system orphan beams
+            watch.start("beam purge");
             purgeOrphanBeams();
 
             // Boost beam sides
@@ -870,16 +876,6 @@ public class StemsRetriever
             for (AbstractBeamInter beam : beams) {
                 boostBeamSides(beam);
             }
-
-            // Check carefully multiple stem links on same head
-            watch.start("checkHeadStems");
-            for (Inter head : systemHeads) {
-                checkHeadStems((HeadInter) head);
-            }
-
-            // Flag heads with no stem link as abnormal
-            watch.start("checkNeededStems");
-            checkNeededStems(systemHeads);
 
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -912,55 +908,13 @@ public class StemsRetriever
                     for (Relation rr : sig.getRelations(stem, HeadStemRelation.class)) {
                         final HeadStemRelation hsRel = (HeadStemRelation) rr;
                         final HeadInter head = (HeadInter) sig.getEdgeSource(hsRel);
-                        final double grade = 0.5 * (bsRel.getGrade() + hsRel.getGrade());
-                        sig.addEdge(beam, head, new BeamHeadRelation(grade, true));
+
+                        if (!head.getShape().isSmall()) {
+                            final double grade = 0.5 * (bsRel.getGrade() + hsRel.getGrade());
+                            sig.addEdge(beam, head, new BeamHeadRelation(grade, true));
+                        }
                     }
                 }
-            }
-        }
-
-        //----------------//
-        // checkHeadStems //
-        //----------------//
-        /**
-         * A head can have links to two stems (non mutually exclusive) only when these
-         * stems are compatible (head is on stem ends with one stem on bottom left and
-         * one stem on top right).
-         * <p>
-         * Otherwise, we must clean up the configuration:
-         * <ol>
-         * <li>If there is a link with zero yGap, it has priority over non-zero yGap that are
-         * generally due to stem extension. So cut the non-zero links.
-         * <li>If there are two zero yGaps, if they are opposed on normal sides, it's OK.
-         * <li>If not, cut the link to the one not on normal side.
-         * <li>If there are two non-zero yGaps, cut the one with larger yGap.
-         * </ol>
-         *
-         * @param head the note head to check
-         */
-        private void checkHeadStems (HeadInter head)
-        {
-            // Retrieve all stems connected to this head
-            List<Inter> allStems = new ArrayList<>();
-
-            for (Relation rel : sig.getRelations(head, HeadStemRelation.class)) {
-                allStems.add(sig.getEdgeTarget(rel));
-            }
-
-            // List of non-conflicting stems ensembles
-            List<List<Inter>> partners = sig.getPartitions(null, allStems);
-            HeadStemsCleaner checker = null;
-
-            for (List<Inter> ensemble : partners) {
-                if (ensemble.size() <= 1) {
-                    continue;
-                }
-
-                if (checker == null) {
-                    checker = new HeadStemsCleaner(head);
-                }
-
-                checker.check(ensemble);
             }
         }
 
@@ -1383,3 +1337,45 @@ public class StemsRetriever
 //            return medianValue;
 //        }
 //
+//
+//    //-------------------------//
+//    // performMutualExclusions //
+//    //-------------------------//
+//    /**
+//     * Browse the system interpretations to insert mutual exclusions wherever possible.
+//     * This is done for stems.
+//     */
+//    private void performMutualExclusions ()
+//    {
+//        final List<Inter> stems = sig.inters(Shape.STEM);
+//        final int size = stems.size();
+//        int count = 0;
+//
+//        try {
+//            if (size < 2) {
+//                return;
+//            }
+//
+//            Collections.sort(stems, Inters.byAbscissa);
+//
+//            for (int i = 0; i < (size - 1); i++) {
+//                final Inter one = stems.get(i);
+//                final Rectangle oneBox = one.getGlyph().getBounds();
+//                final int xBreak = oneBox.x + oneBox.width;
+//
+//                for (Inter two : stems.subList(i + 1, size)) {
+//                    Rectangle twoBox = two.getGlyph().getBounds();
+//
+//                    // Is there an overlap between stems one & two?
+//                    if (oneBox.intersects(twoBox)) {
+//                        sig.insertExclusion(one, two, Cause.OVERLAP);
+//                        count++;
+//                    } else if (twoBox.x >= xBreak) {
+//                        break;
+//                    }
+//                }
+//            }
+//        } finally {
+//            logger.debug("S#{} stems: {} exclusions: {}", system.getId(), size, count);
+//        }
+//    }

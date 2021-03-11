@@ -33,6 +33,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.relation.BeamBeamRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.NoExclusion;
@@ -53,7 +54,6 @@ import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -66,6 +66,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code BeamGroupInter} represents a group of related beams.
+ * <p>
+ * Beams within the same group support each other.
  * <p>
  * NOTA: Beams in a BeamGroupInter are in no particular order.
  * <p>
@@ -139,6 +141,13 @@ public class BeamGroupInter
         }
 
         EnsembleHelper.addMember(this, member);
+
+        // Mutual beam support within group
+        for (Inter beam : getMembers()) {
+            if (beam != member) {
+                sig.insertSupport(member, beam, BeamBeamRelation.class);
+            }
+        }
     }
 
     //-------------//
@@ -584,6 +593,27 @@ public class BeamGroupInter
         return (ch != null) ? ch.getVoice() : null;
     }
 
+    //-------------//
+    // hasLongBeam //
+    //-------------//
+    /**
+     * Report whether the beam group contains one beam with a width equal or larger than
+     * the provided minimum width.
+     *
+     * @param minWidth minimum width (in pixels)
+     * @return true if so
+     */
+    public boolean hasLongBeam (int minWidth)
+    {
+        for (Inter member : getMembers()) {
+            if (member.getBounds().width >= minWidth) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //-----------//
     // internals //
     //-----------//
@@ -729,6 +759,27 @@ public class BeamGroupInter
         }
     }
 
+    //----------------------//
+    // populateCueAggregate //
+    //----------------------//
+    /**
+     * Group the (cue) beams of a CueAggregate.
+     *
+     * @param beams (cue) beams found in CueAggregate
+     */
+    public static void populateCueAggregate (List<Inter> beams)
+    {
+        if (beams.isEmpty()) {
+            return;
+        }
+
+        final Scale scale = beams.get(0).getSig().getSystem().getSheet().getScale();
+        groupBeams(beams,
+                   scale.toPixels(constants.cueMinXOverlap),
+                   scale.toPixels(constants.cueMaxYDistance),
+                   constants.cueMaxSlopeDiff.getValue());
+    }
+
     //----------------//
     // populateSystem //
     //----------------//
@@ -740,14 +791,34 @@ public class BeamGroupInter
      */
     public static void populateSystem (SystemInfo system)
     {
-        // Scaled parameters
         final Scale scale = system.getSheet().getScale();
-        final double minXOverlap = scale.toPixels(constants.minXOverlap);
-        final double maxYDistance = scale.toPixels(constants.maxYDistance);
-        final double maxSlopeDiff = constants.maxSlopeDiff.getValue();
+        groupBeams(system.getSig().inters(AbstractBeamInter.class),
+                   scale.toPixels(constants.minXOverlap),
+                   scale.toPixels(constants.maxYDistance),
+                   constants.maxSlopeDiff.getValue());
+    }
 
-        final SIGraph sig = system.getSig();
-        final List<Inter> beams = sig.inters(AbstractBeamInter.class);
+    //------------//
+    // groupBeams //
+    //------------//
+    /**
+     * Organize the provided beams into groups.
+     *
+     * @param beams        the beams to be grouped
+     * @param minXOverlap  minimum abscissa overlap to be neighbors
+     * @param maxYDistance maximum vertical distance to be neighbors
+     * @param maxSlopeDiff maximum difference in slope to be neighbors
+     */
+    private static void groupBeams (List<Inter> beams,
+                                    double minXOverlap,
+                                    double maxYDistance,
+                                    double maxSlopeDiff)
+    {
+        if (beams.isEmpty()) {
+            return;
+        }
+
+        final SIGraph sig = beams.get(0).getSig();
         Collections.sort(beams, Inters.byOrdinate);
 
         for (int i = 0; i < beams.size(); i++) {
@@ -1006,33 +1077,12 @@ public class BeamGroupInter
 
             // Sort these questionable beams vertically, at chord stem abscissa,
             // according to distance from chord tail.
-            Comparator<AbstractBeamInter> fromTail = new Comparator<AbstractBeamInter>()
-            {
-                @Override
-                public int compare (AbstractBeamInter b1,
-                                    AbstractBeamInter b2)
-                {
-                    final double y1 = LineUtil.yAtX(b1.getMedian(), tail.x);
-                    double tailDy1 = Math.abs(y1 - tail.y);
-                    final double y2 = LineUtil.yAtX(b2.getMedian(), tail.x);
-                    double tailDy2 = Math.abs(y2 - tail.y);
-
-                    return Double.compare(tailDy1, tailDy2);
-                }
-            };
-            Collections.sort(questionableBeams, new Comparator<AbstractBeamInter>()
-                     {
-                         @Override
-                         public int compare (AbstractBeamInter b1,
-                                             AbstractBeamInter b2)
-                         {
-                             final double y1 = LineUtil.yAtX(b1.getMedian(), tail.x);
-                             double tailDy1 = Math.abs(y1 - tail.y);
-                             final double y2 = LineUtil.yAtX(b2.getMedian(), tail.x);
-                             double tailDy2 = Math.abs(y2 - tail.y);
-
-                             return Double.compare(tailDy1, tailDy2);
-                         }
+            Collections.sort(questionableBeams, (b1, b2) -> {
+                         final double y1 = LineUtil.yAtX(b1.getMedian(), tail.x);
+                         final double tailDy1 = Math.abs(y1 - tail.y);
+                         final double y2 = LineUtil.yAtX(b2.getMedian(), tail.x);
+                         final double tailDy2 = Math.abs(y2 - tail.y);
+                         return Double.compare(tailDy1, tailDy2);
                      });
 
             AbstractBeamInter nearestBeam = questionableBeams.get(0);
@@ -1497,14 +1547,27 @@ public class BeamGroupInter
                 0.7,
                 "Minimum horizontal overlap between subsequent beams of a group");
 
+        private final Scale.Fraction cueMinXOverlap = new Scale.Fraction(
+                0.7,
+                "(Cue) Minimum horizontal overlap between subsequent beams of a group");
+
         private final Scale.Fraction maxYDistance = new Scale.Fraction(
                 1.5,
                 "Maximum vertical distance between subsequent beams of a group");
+
+        private final Scale.Fraction cueMaxYDistance = new Scale.Fraction(
+                1.5,
+                "(Cue) Maximum vertical distance between subsequent beams of a group");
 
         private final Constant.Double maxSlopeDiff = new Constant.Double(
                 "tangent",
                 0.07,
                 "Maximum slope difference between beams of a group");
+
+        private final Constant.Double cueMaxSlopeDiff = new Constant.Double(
+                "tangent",
+                0.2,
+                "(Cue) Maximum slope difference between beams of a group");
 
     }
 }

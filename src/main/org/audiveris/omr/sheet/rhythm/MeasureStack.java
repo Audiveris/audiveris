@@ -507,9 +507,9 @@ public class MeasureStack
             }
 
             // Precise abscissa limits
-            if ((measure.getAbscissa(LEFT, staff) <= center.x) && (center.x <= measure.getAbscissa(
-                    RIGHT,
-                    staff))) {
+            if ((measure != null)
+                        && (measure.getAbscissa(LEFT, staff) <= center.x)
+                        && (center.x <= measure.getAbscissa(RIGHT, staff))) {
                 kept.add(inter);
             }
         }

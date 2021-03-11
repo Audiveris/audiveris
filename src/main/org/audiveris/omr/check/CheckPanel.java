@@ -45,6 +45,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import org.audiveris.omr.glyph.Grades;
 
 /**
  * Class {@code CheckPanel} handles a panel to display the results of a check suite,
@@ -289,7 +290,7 @@ public class CheckPanel<C>
         // Last row for global result
         r += 2;
 
-        JLabel globalLabel = new JLabel("Grade [0 .. 1]");
+        JLabel globalLabel = new JLabel("Grade [0 .. " + Grades.intrinsicRatio + "]");
         globalLabel.setToolTipText("Global check result");
         b.add(globalLabel, c.xyw(5, r, 3));
         b.add(globalField, c.xy(9, r));
