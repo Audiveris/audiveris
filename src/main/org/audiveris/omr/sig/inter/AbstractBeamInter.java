@@ -85,6 +85,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.sig.relation.Exclusion;
 
 /**
  * Abstract class {@code AbstractBeamInter} is the basis for {@link BeamInter},
@@ -328,6 +329,27 @@ public abstract class AbstractBeamInter
         Collections.sort(chords, Inters.byCenterAbscissa);
 
         return chords;
+    }
+
+    //------------------//
+    // getCompetingHook //
+    //------------------//
+    /**
+     * Report the competing beam hook, if any, which shares the same glyph as this beam.
+     *
+     * @return the competing hook, or null if none
+     */
+    public BeamHookInter getCompetingHook ()
+    {
+        for (Relation rel : sig.getRelations(this, Exclusion.class)) {
+            final Inter opposite = sig.getOppositeInter(this, rel);
+
+            if ((opposite.getShape() == Shape.BEAM_HOOK) && (opposite.getGlyph() == getGlyph())) {
+                return (BeamHookInter) opposite;
+            }
+        }
+
+        return null;
     }
 
     //-----------//

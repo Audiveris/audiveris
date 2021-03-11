@@ -507,6 +507,10 @@ public class StemChecker
         @Override
         protected double getValue (StickContext context)
         {
+            if (context.stick.isVip()) {
+                logger.info("VIP LengthCheck for {}", context.stick);
+            }
+
             final Line2D line = context.stick.getLine();
             return scale.pixelsToFrac(line.getY2() - line.getY1());
         }

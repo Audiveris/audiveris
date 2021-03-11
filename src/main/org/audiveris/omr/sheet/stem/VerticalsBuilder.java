@@ -166,11 +166,11 @@ public class VerticalsBuilder
             }
 
             // Run the stem checks
+            final Glyph glyph = glyphIndex.registerOriginal(stick.toGlyph(null));
             GradeImpacts impacts = stemChecker.checkStem(stick);
             double res = impacts.getGrade();
 
             if (res >= minThreshold) {
-                final Glyph glyph = glyphIndex.registerOriginal(stick.toGlyph(null));
                 glyph.addGroup(GlyphGroup.VERTICAL_SEED); // Needed
                 system.addFreeGlyph(glyph);
                 seedNb++;

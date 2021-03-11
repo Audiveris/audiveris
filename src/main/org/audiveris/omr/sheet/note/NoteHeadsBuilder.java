@@ -86,6 +86,8 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.audiveris.omr.sig.inter.AbstractBeamInter;
+import org.audiveris.omr.sig.relation.Exclusion;
 
 /**
  * Class {@code NoteHeadsBuilder} retrieves the void note heads, the black note heads,
@@ -282,15 +284,15 @@ public class NoteHeadsBuilder
             // Remove duplicates for current staff
             Collections.sort(ch, Inters.byFullAbscissa);
             watch.start("Staff #" + staff.getId() + " duplicates");
-            final int duplicates = purge(ch, "duplicate", (h1, h2) -> h1.isSameAs(h2));
+            final int duplicates = purge(ch, "duplicate", (h1, h2) -> h1.isSameAs(h2), true);
 
             if (duplicates > 0) {
                 logger.debug("Staff#{} {} duplicates", staff.getId(), duplicates);
             }
 
-            // Solve overlaps for current staff
+            // Overlaps for current staff are formalized as exclusions
             watch.start("Staff #" + staff.getId() + " overlaps");
-            final int overlaps = purge(ch, "overlap", (h1, h2) -> h1.overlaps(h2));
+            final int overlaps = purge(ch, "overlap", (h1, h2) -> h1.overlaps(h2), false);
 
             if (overlaps > 0) {
                 logger.debug("Staff#{} {} overlaps", staff.getId(), overlaps);
@@ -312,10 +314,7 @@ public class NoteHeadsBuilder
 
         // Purge small beams defeated by good heads
         watch.start("Purging beams");
-        final int purged = purgeSmallBeams();
-        if (purged > 0) {
-            logger.info("S#{} {} beams purged", system.getId(), purged);
-        }
+        purgeSmallBeams();
 
         if (constants.printWatch.isSet()) {
             watch.print();
@@ -599,9 +598,7 @@ public class NoteHeadsBuilder
     private List<Inter> getSystemCompetitors ()
     {
         final List<Inter> comps = sig.inters(inter -> {
-            final Shape shape = inter.getShape();
-
-            if (!inter.isGood() || !COMPETING_SHAPES.contains(shape)) {
+            if (!inter.isGood() || !COMPETING_SHAPES.contains(inter.getShape())) {
                 return false;
             }
 
@@ -614,11 +611,10 @@ public class NoteHeadsBuilder
                 if (width <= scale.getMaxStem()) {
                     return false;
                 }
-            } else if ((shape == Shape.BEAM) || (shape == Shape.BEAM_HOOK)) {
-                // Check beam width
-                if (inter.getBounds().width < params.minBeamWidth) {
-                    return false;
-                }
+            } else if (inter instanceof AbstractBeamInter) {
+                // Keep any beam if part of a beam group with at least one long beam
+                AbstractBeamInter beam = (AbstractBeamInter) inter;
+                return beam.getGroup().hasLongBeam(params.minBeamWidth);
             }
 
             return true;
@@ -796,14 +792,16 @@ public class NoteHeadsBuilder
     /**
      * Purge a list of inters using a predicate on Inter pairs.
      *
-     * @param heads the heads to purge, ordered by abscissa
-     * @param op    predicate name (for VIP logging only)
-     * @param ipp   the Inter pair predicate to apply
+     * @param heads    the heads to purge, ordered by abscissa
+     * @param op       predicate name (for VIP logging only)
+     * @param ipp      the Inter pair predicate to apply
+     * @param doRemove if true do remove weaker, if false simply insert exclusion
      * @return the count of inters purged
      */
     private int purge (List<HeadInter> heads,
                        String op,
-                       InterPairPredicate ipp)
+                       InterPairPredicate ipp,
+                       boolean doRemove)
     {
         final List<Inter> removed = new ArrayList<>();
 
@@ -844,13 +842,19 @@ public class NoteHeadsBuilder
                             logger.info("VIP purged {} {} {}", purged, op, kept);
                         }
 
-                        purged.remove();
                         removed.add(purged);
 
-                        if (purged == left) {
-                            continue LeftLoop;
-                        }
+                        if (doRemove) {
+                            // Do remove
+                            purged.remove();
 
+                            if (purged == left) {
+                                continue LeftLoop;
+                            }
+                        } else {
+                            // Use exclusion
+                            sig.insertExclusion(purged, kept, Exclusion.Cause.OVERLAP);
+                        }
                     }
                 } else if (rightBox.x > xMax) {
                     break;
@@ -858,7 +862,9 @@ public class NoteHeadsBuilder
             }
         }
 
-        heads.removeAll(removed);
+        if (doRemove) {
+            heads.removeAll(removed);
+        }
 
         return removed.size();
     }
@@ -921,35 +927,40 @@ public class NoteHeadsBuilder
      * purged.
      * <p>
      * Note that the areas of non-small beams were protected against creation of heads.
-     *
-     * @return the number of beams purged
      */
-    private int purgeSmallBeams ()
+    private void purgeSmallBeams ()
     {
+        final List<Inter> purgedBeams = new ArrayList<>();
+        final List<Inter> purgedHeads = new ArrayList<>();
         final List<Inter> heads = sig.inters(HeadInter.class);
         Collections.sort(heads, Inters.byOrdinate);
 
         final List<Inter> smallBeams = sig.inters(inter
                 -> ShapeSet.Beams.contains(inter.getShape())
                            && inter.getBounds().width < params.minBeamWidth);
-        int purged = 0;
 
-        for (Iterator<Inter> it = smallBeams.iterator(); it.hasNext();) {
-            final Inter iBeam = it.next();
+        for (Iterator<Inter> itb = smallBeams.iterator(); itb.hasNext();) {
+            final Inter iBeam = itb.next();
+            sig.computeContextualGrade(iBeam);
             final Area beamArea = iBeam.getArea();
-            final double beamGrade = iBeam.getGrade();
+            final double beamGrade = iBeam.getContextualGrade();
             final Rectangle beamBox = iBeam.getBounds();
             final int beamBottom = beamBox.y + beamBox.height - 1;
 
-            for (Inter iHead : heads) {
+            for (Iterator<Inter> ith = heads.iterator(); ith.hasNext();) {
+                Inter iHead = ith.next();
                 final Rectangle headBox = iHead.getBounds();
 
                 if (beamArea.intersects(headBox)) {
                     if (iHead.getGrade() > beamGrade) {
                         iBeam.remove();
-                        it.remove();
-                        purged++;
+                        itb.remove();
+                        purgedBeams.add(iBeam);
                         break;
+                    } else {
+                        iHead.remove();
+                        ith.remove();
+                        purgedHeads.add(iHead);
                     }
                 } else if (headBox.y > beamBottom) {
                     break;
@@ -957,7 +968,13 @@ public class NoteHeadsBuilder
             }
         }
 
-        return purged;
+        if (!purgedBeams.isEmpty()) {
+            logger.info("S#{} {} beams purged", system.getId(), purgedBeams.size());
+        }
+
+        if (!purgedHeads.isEmpty()) {
+            logger.info("S#{} {} heads purged", system.getId(), purgedHeads.size());
+        }
     }
 
     //~ Inner classes ------------------------------------------------------------------------------

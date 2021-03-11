@@ -44,14 +44,12 @@ import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.stem.StemsRetriever;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractBeamInter.Impacts;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
-import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
@@ -80,6 +78,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.audiveris.omr.sheet.stem.HeadLinker;
+import org.audiveris.omr.sheet.stem.StemsRetriever;
+import org.audiveris.omr.sig.inter.HeadInter;
+import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.Link;
 
 /**
  * Class {@code BeamsBuilder} is in charge, at system level, of retrieving the possible
@@ -1616,8 +1620,99 @@ public class BeamsBuilder
                 }
             }
 
-            new StemsRetriever(system).linkCueBeams(
-                    (HeadInter) head, hSide, VerticalSide.of(globalDir), stem, beams);
+            final Point2D refPt = ((HeadInter) head).getStemReferencePoint(hSide);
+            final List<BeamGroupInter> beamGroups = HeadLinker.lookupBeamGroups(
+                    beams, refPt, globalDir, params.cueMinBeamHeadDy);
+            linkStemToCueBeams((StemInter) stem, beamGroups, refPt, globalDir);
+        }
+
+        //--------------------//
+        // linkStemToCueBeams //
+        //--------------------//
+        /**
+         * Try to build links between the stem and the provided cue beam groups.
+         *
+         * @param stem       stem candidate
+         * @param beamGroups candidate groups of cue beams
+         */
+        private void linkStemToCueBeams (StemInter stem,
+                                         List<BeamGroupInter> beamGroups,
+                                         Point2D refPt,
+                                         int yDir)
+        {
+            final VerticalSide vSide = VerticalSide.of(yDir);
+
+            for (BeamGroupInter group : beamGroups) {
+                final List<Inter> groupBeams = group.getMembers();
+
+                if (groupBeams.isEmpty()) {
+                    continue; // group is empty (and has been removed from sig)
+                }
+
+                StemsRetriever.sortBeamsFromRef(refPt, yDir, groupBeams);
+                AbstractBeamInter firstBeam = (AbstractBeamInter) groupBeams.get(0);
+
+                // Try to connect first beam & stem
+                BeamStemRelation rel = connectCueBeamStem(firstBeam, stem, vSide);
+
+                // Extend stem connection till end of current beam group, if relevant
+                if ((rel != null) && firstBeam.isGood() && (groupBeams.size() > 1)) {
+                    for (Inter next : groupBeams.subList(1, groupBeams.size())) {
+                        if (sig.getRelation(next, stem, BeamStemRelation.class) == null) {
+                            final AbstractBeamInter nextBeam = (AbstractBeamInter) next;
+                            final BeamStemRelation r = new BeamStemRelation();
+                            final Line2D extBorder = nextBeam.getBorder(vSide);
+                            final Point2D extPt = LineUtil.intersection(stem.getMedian(), extBorder);
+                            r.setExtensionPoint(extPt);
+
+                            // Portion depends on x location of stem WRT beam
+                            r.setBeamPortion(BeamStemRelation.computeBeamPortion(
+                                    nextBeam, extPt.getX(), sheet.getScale()));
+
+                            r.setGrade(rel.getGrade());
+                            sig.addEdge(next, stem, r);
+                        }
+                    }
+                }
+            }
+        }
+
+        //--------------------//
+        // connectCueBeamStem //
+        //--------------------//
+        /**
+         * (Try to) connect cue beam and stem.
+         *
+         * @param beam  the cue beam interpretation
+         * @param stem  the stem interpretation
+         * @param vSide vertical side from head to beam
+         * @return the beam stem relation if successful, null otherwise
+         */
+        private BeamStemRelation connectCueBeamStem (AbstractBeamInter beam,
+                                                     StemInter stem,
+                                                     VerticalSide vSide)
+        {
+            if (beam.isVip() && stem.isVip()) {
+                logger.info("VIP connectCueBeamStem? {} & {}", beam, stem);
+            }
+
+            // Relation beam -> stem (if not yet present)
+            BeamStemRelation bRel = (BeamStemRelation) sig.getRelation(beam, stem,
+                                                                       BeamStemRelation.class);
+
+            if (bRel == null) {
+                final int profile = Math.max(Math.max(beam.getProfile(), stem.getProfile()),
+                                             system.getProfile());
+                final Scale scale = sheet.getScale();
+                final Link link = BeamStemRelation.checkLink(beam, stem, vSide, scale, profile);
+
+                if (link != null) {
+                    link.applyTo(beam);
+                    bRel = (BeamStemRelation) link.relation;
+                }
+            }
+
+            return bRel;
         }
 
         /**
@@ -1728,6 +1823,9 @@ public class BeamsBuilder
                     beams.addAll(glyphBeams);
                 }
             }
+
+            // Group beams
+            BeamGroupInter.populateCueAggregate(beams);
 
             // Link stems & beams as possible
             if (!beams.isEmpty()) {
@@ -1919,6 +2017,10 @@ public class BeamsBuilder
                 0.6,
                 "Minimum ratio of black pixels inside beam extension");
 
+        private final Scale.Fraction cueMinBeamHeadDy = new Scale.Fraction(
+                1.0,
+                "Minimum vertical distance between cue beam and head");
+
         private final Scale.Fraction cueXMargin = new Scale.Fraction(
                 2.0,
                 "Abscissa margin to aggregate cues");
@@ -1995,6 +2097,8 @@ public class BeamsBuilder
 
         final double cueBeamRatio;
 
+        final int cueMinBeamHeadDy;
+
         /**
          * Creates a new Parameters object.
          *
@@ -2025,6 +2129,7 @@ public class BeamsBuilder
             cueBoxDx = scale.toPixels(constants.cueBoxDx);
             cueBoxDy = scale.toPixels(constants.cueBoxDy);
             cueBeamRatio = constants.cueBeamRatio.getValue();
+            cueMinBeamHeadDy = scale.toPixels(constants.cueMinBeamHeadDy);
 
             if (logger.isDebugEnabled()) {
                 new Dumping().dump(this);

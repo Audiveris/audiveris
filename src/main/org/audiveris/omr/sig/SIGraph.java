@@ -813,7 +813,7 @@ public class SIGraph
      * Insert a support between two provided inters, unless an exclusion exists or
      * unless such relation already exists between them.
      * <p>
-     * Nota: We always insert such support from lower id to higher id.
+     * NOTA: We always insert such support from lower id to higher id.
      *
      * @param inter1       provided inter #1
      * @param inter2       provided inter #2

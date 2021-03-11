@@ -55,7 +55,6 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
-import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -89,14 +88,18 @@ import java.util.Set;
  * processing the four corners around head.
  * <p>
  * We have to handle the case where stem pixels between a head and a compatible beam are reduced
- * to almost nothing because of poor image quality:
- * <ul>
- * <li>In this case, we may have no concrete stem inter candidate available, and thus have to
+ * to almost nothing because of poor image quality.
+ * In this case, we may have no concrete stem inter candidate available, and thus have to
  * directly inspect the rather vertical segment area between head reference point and potential
  * beam, looking for a few pixels there.
- * <li>While we can significantly relax the criteria on presence of black pixels, we can stay
- * strict on stem straightness and verticality.
- * </ul>
+ * <ol>
+ * <li>For every head, we look for one connectable stem seed at LEFT_STEM anchor and one connectable
+ * stem seed at RIGHT_STEM anchor.
+ * <li>When no <b>seed</b> can be connected on one head side, we build a head <b>stump</b> there
+ * from suitable section(s) near head anchor.
+ * <li>From now on, the seed or the stump will be considered by stem candidates as the head portion
+ * to connect to.
+ * </ol>
  *
  * @author Hervé Bitteur
  */
@@ -119,9 +122,6 @@ public class HeadLinker
 
     /** All stems seeds in head vicinity. */
     private final Set<Glyph> neighborSeeds;
-
-    /** All stems interpretations in head vicinity. */
-    private List<Inter> neighborStems;
 
     /** Side linkers. */
     private final Map<HorizontalSide, SLinker> sLinkers = new EnumMap<>(HorizontalSide.class);
@@ -156,11 +156,11 @@ public class HeadLinker
         this.retriever = retriever;
 
         headBox = head.getBounds();
-
         sig = head.getSig();
         system = sig.getSystem();
         scale = system.getSheet().getScale();
         params = retriever.getParams();
+
         neighborBeams = retriever.getNeighboringInters(retriever.getSystemBeams(), headBox);
         neighborSeeds = retriever.getNeighboringSeeds(headBox);
 
@@ -213,43 +213,26 @@ public class HeadLinker
         }
     }
 
-    //---------//
-    // linkCue //
-    //---------//
-    public void linkCue (HorizontalSide hSide,
-                         VerticalSide vSide,
-                         List<Inter> beams,
-                         StemInter stem)
-    {
-        sLinkers.get(hSide).cLinkers.get(vSide).linkCue(beams, stem);
-    }
-
     //-----------//
     // linkSides //
     //-----------//
     /**
      * Try to link head on its both horizontal sides.
      * <p>
-     * When this method is called, beams linking to related (stems and) heads has already been done.
+     * When this method is called, linking from beams to related (stems and) heads has already been
+     * done.
      * What is left is the linking of:
      * <ul>
-     * <li>Heads <b>related to beam</b> for which there was no beam stump and the head was not
+     * <li>Heads <b>related to beam</b> but for which there was no beam stump and the head was not
      * located on beam side, hence there has been no attempt to link head starting from the beam.
-     * For these heads, the beam is a hard target.
+     * Starting from such heads, the beam is a hard target.
      * <li>Heads <b>not related to beam</b>.
      * For these heads, we'll try to reach the typical stem length as a soft target.
      * </ul>
-     * This is the last chance to link heads, so we can use more and more aggressive strategies.
-     * <p>
-     * Strengthened cases, retried with higher profile:
-     * <ul>
-     * <li>A <b>rather good</b> head should have at least one corner connection.
-     * <li>
-     * A <b>void</b> head linked (to a stem) to a <b>beam</b> should have a connection on the other
-     * corner.
-     * </ul>
+     *
      * This method is called on each and every head not yet linked from a beam.
-     * On left and right head sides, we check top and bottom CLinker's.
+     * Using higher and higher profiles, on left and right head sides, we check both top and bottom
+     * CLinker's:
      * <ol>
      * <li>If no significant length is found on either top or bottom, we consider no link can be
      * found on this horizontal side of head.
@@ -260,6 +243,14 @@ public class HeadLinker
      * No link is searched for this head, we expect that either the starting or the terminating head
      * of the column will fall in the case 2 above.
      * </ol>
+     *
+     * Policies:
+     * <ul>
+     * <li>A <b>rather good</b> head should have at least one corner connection.
+     * <li>
+     * A <b>void</b> head linked (to a stem) to a <b>beam</b> should have a connection on the
+     * opposite corner.
+     * </ul>
      *
      * @param stemProfile desired profile level for stem
      * @param linkProfile global profile for links
@@ -310,7 +301,6 @@ public class HeadLinker
                     // Here, there seems to be potential connections on both vertical sides
                     // So, stop processing this head immediately for both horizontal sides
                     // But stay open to a link coming later (from above or below)
-                    return false;
                 }
             } else if (botOk) {
                 if (clBot.link(stemProfile, linkProfile, append)) {
@@ -336,7 +326,7 @@ public class HeadLinker
                 return false;
             }
         } else {
-            // Close all SLinker's, except for this starting head
+            // Close linked SLinker, except for this starting head
             for (SLinker sLinker : sLinkers.values()) {
                 if (sLinker.isLinked()) {
                     for (Relation rel : sig.getRelations(head, HeadStemRelation.class)) {
@@ -367,6 +357,66 @@ public class HeadLinker
     {
         return new StringBuilder(getClass().getSimpleName())
                 .append("{head#").append(head.getId()).append('}').toString();
+    }
+
+    //------------------//
+    // lookupBeamGroups //
+    //------------------//
+    /**
+     * Look for (groups of) beam interpretations.
+     *
+     * @param beams         provided collection of candidate beams
+     * @param refPt         starting reference point
+     * @param yDir          vertical direction from reference point
+     * @param minBeamHeadDy minimum vertical distance between head and beam
+     * @return the list of groups, ordered by distance from head
+     */
+    public static List<BeamGroupInter> lookupBeamGroups (List<Inter> beams,
+                                                         Point2D refPt,
+                                                         int yDir,
+                                                         int minBeamHeadDy)
+    {
+        if (beams.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final double slope = beams.get(0).getSig().getSystem().getSheet().getSkew().getSlope();
+
+        // Reject beam candidates which are not in corner direction
+        // (this can happen because of beam bounding rectangle)
+        for (Iterator<Inter> it = beams.iterator(); it.hasNext();) {
+            final AbstractBeamInter b = (AbstractBeamInter) it.next();
+            final Line2D limit = b.getBorder(VerticalSide.of(-yDir));
+
+            if ((yDir * (StemsRetriever.getTargetPt(refPt, limit, slope).getY() - refPt.getY()))
+                        <= 0) {
+                it.remove();
+            }
+        }
+
+        StemsRetriever.sortBeamsFromRef(refPt, yDir, beams);
+
+        // Build the (ordered) list of beam groups
+        Set<BeamGroupInter> groups = new LinkedHashSet<>();
+
+        for (Inter inter : beams) {
+            AbstractBeamInter beam = (AbstractBeamInter) inter;
+
+            if (groups.isEmpty()) {
+                // Check if beam is far enough from head
+                final Line2D limit = beam.getBorder(VerticalSide.of(-yDir));
+                final Point2D beamPt = StemsRetriever.getTargetPt(refPt, limit, slope);
+                final double distToBeam = yDir * (beamPt.getY() - refPt.getY());
+
+                if (distToBeam < minBeamHeadDy) {
+                    continue;
+                }
+            }
+
+            groups.add(beam.getGroup());
+        }
+
+        return new ArrayList<>(groups);
     }
 
     //--------------//
@@ -405,10 +455,10 @@ public class HeadLinker
         private final Point2D refPt;
 
         /** Max outside point. */
-        final Point2D outPt;
+        private final Point2D outPt;
 
         /** Max inside point. */
-        final Point2D inPt;
+        private final Point2D inPt;
 
         /** The stump or seed on this head side, if any. */
         private final Glyph stump;
@@ -431,11 +481,11 @@ public class HeadLinker
         public SLinker (HorizontalSide hSide)
         {
             this.hSide = hSide;
+
             xDir = hSide.direction();
             refPt = head.getStemReferencePoint(hSide);
             outPt = getOutPoint();
             inPt = getInPoint();
-
             stump = retrieveStump();
 
             for (VerticalSide vSide : VerticalSide.values()) {
@@ -836,7 +886,6 @@ public class HeadLinker
             {
                 this.vSide = vSide;
                 yDir = vSide.direction();
-                luArea = buildLuArea(null);
 
                 final Rectangle systemBox = system.getBounds();
                 final int sysY = (yDir > 0) ? (systemBox.y + systemBox.height) : systemBox.y;
@@ -845,6 +894,7 @@ public class HeadLinker
                 head.addAttachment("t" + getId(), theoLine);
 
                 // Look for beams and beam hooks in the corner
+                luArea = buildLuArea(null);
                 List<Inter> beamCandidates = Inters.intersectedInters(
                         neighborBeams, GeoOrder.BY_ABSCISSA, luArea);
 
@@ -919,6 +969,15 @@ public class HeadLinker
                 }
 
                 return true;
+            }
+
+            //-------------------//
+            // checkStemRelation //
+            //-------------------//
+            public HeadStemRelation checkStemRelation (Line2D stemLine,
+                                                       int profile)
+            {
+                return HeadStemRelation.checkRelation(head, stemLine, stump, vSide, scale, profile);
             }
 
             //-------------------//
@@ -1172,21 +1231,6 @@ public class HeadLinker
                 return true;
             }
 
-            //---------//
-            // linkCue //
-            //---------//
-            /**
-             * Specific link for cue (head & beam).
-             * TODO: update this method!!!!!!!
-             */
-            public void linkCue (List<Inter> candidates,
-                                 StemInter stem)
-            {
-                // Look for beams in the corner
-                List<BeamGroupInter> beamGroups = lookupBeamGroups(candidates);
-                linkStemToBeamGroups(stem, beamGroups);
-            }
-
             //----------//
             // isClosed //
             //----------//
@@ -1280,15 +1324,6 @@ public class HeadLinker
                 return new Area(lu);
             }
 
-            //-------------------//
-            // checkStemRelation //
-            //-------------------//
-            public HeadStemRelation checkStemRelation (Line2D stemLine,
-                                                       int profile)
-            {
-                return HeadStemRelation.checkRelation(head, stemLine, stump, vSide, scale, profile);
-            }
-
             //--------------------//
             // computeTargetPoint //
             //--------------------//
@@ -1316,62 +1351,35 @@ public class HeadLinker
 
                             // TODO: perhaps intersecting theoLine is too strict?
                             if (median.intersectsLine(theoLine)) {
-                                // Select farthest beam in group
-                                targetBeam = (AbstractBeamInter) beams.get(beams.size() - 1);
-                                final Line2D border = targetBeam.getBorder(vSide);
+                                if (head.getShape().isSmall()) {
+                                    // Exclude beam, stop just before group
+                                    AbstractBeamInter b = (AbstractBeamInter) beams.get(0);
+                                    final Line2D border = b.getBorder(vSide.opposite());
+                                    luArea = buildLuArea(border);
 
-                                // Redefine lookup area
-                                final double margin = targetBeam.getHeight(); // Should be enough
-                                final Line2D limit = new Line2D.Double(
-                                        border.getX1(),
-                                        border.getY1() + yDir * margin,
-                                        border.getX2(),
-                                        border.getY2() + yDir * margin);
-                                luArea = buildLuArea(limit);
+                                    return getTargetPt(border);
+                                } else {
+                                    // Select farthest beam in group
+                                    targetBeam = (AbstractBeamInter) beams.get(beams.size() - 1);
+                                    final Line2D border = targetBeam.getBorder(vSide);
 
-                                return getTargetPt(border);
+                                    // Redefine lookup area
+                                    final double margin = targetBeam.getHeight(); // Should be enough
+                                    final Line2D limit = new Line2D.Double(
+                                            border.getX1(),
+                                            border.getY1() + yDir * margin,
+                                            border.getX2(),
+                                            border.getY2() + yDir * margin);
+                                    luArea = buildLuArea(limit);
+
+                                    return getTargetPt(border);
+                                }
                             }
                         }
                     }
                 }
 
                 return theoLine.getP2();
-            }
-
-            //-----------------//
-            // connectBeamStem //
-            //-----------------//
-            /**
-             * (Try to) connect beam and stem.
-             *
-             * @param beam the beam or hook interpretation
-             * @param stem the stem interpretation
-             * @return the beam stem relation if successful, null otherwise
-             */
-            private BeamStemRelation connectBeamStem (AbstractBeamInter beam,
-                                                      StemInter stem)
-            {
-                if (beam.isVip() && stem.isVip()) {
-                    logger.info("VIP connectBeamStem? {} & {}", beam, stem);
-                }
-
-                // Relation beam -> stem (if not yet present)
-                BeamStemRelation bRel = (BeamStemRelation) sig.getRelation(beam, stem,
-                                                                           BeamStemRelation.class);
-
-                if (bRel == null) {
-                    final int profile = Math.max(Math.max(beam.getProfile(), stem.getProfile()),
-                                                 system.getProfile());
-                    final Link link = BeamStemRelation.checkLink(
-                            beam, stem, vSide, scale, profile);
-
-                    if (link != null) {
-                        link.applyTo(beam);
-                        bRel = (BeamStemRelation) link.relation;
-                    }
-                }
-
-                return bRel;
             }
 
             //----------//
@@ -1608,12 +1616,8 @@ public class HeadLinker
              */
             private Point2D getTargetPt (Line2D limit)
             {
-                final double slope = system.getSheet().getSkew().getSlope();
-                final Point2D refPt2 = new Point2D.Double(
-                        refPt.getX() - (100 * slope),
-                        refPt.getY() + 100);
-
-                return LineUtil.intersection(refPt, refPt2, limit.getP1(), limit.getP2());
+                return StemsRetriever.getTargetPt(
+                        refPt, limit, system.getSheet().getSkew().getSlope());
             }
 
             //-----------//
@@ -1634,54 +1638,6 @@ public class HeadLinker
                         (int) Math.rint(Math.abs(yLimit - refPt.getY())));
             }
 
-            //----------------------//
-            // linkStemToBeamGroups //
-            //----------------------//
-            /**
-             * Try to build links between the provided beams and the provided stems.
-             *
-             * @param stem       stem candidate
-             * @param beamGroups candidate groups of beams
-             */
-            private void linkStemToBeamGroups (StemInter stem,
-                                               List<BeamGroupInter> beamGroups)
-            {
-                for (BeamGroupInter group : beamGroups) {
-                    final List<Inter> groupBeams = group.getMembers();
-
-                    if (groupBeams.isEmpty()) {
-                        continue; // group is empty (and has been removed from sig)
-                    }
-
-                    retriever.sortBeamsFromRef(refPt, yDir, groupBeams);
-                    AbstractBeamInter firstBeam = (AbstractBeamInter) groupBeams.get(0);
-
-                    // Try to connect first beam & stem
-                    BeamStemRelation rel = connectBeamStem(firstBeam, stem);
-
-                    // Extend stem connection till end of current beam group, if relevant
-                    if ((rel != null) && firstBeam.isGood() && (groupBeams.size() > 1)) {
-                        for (Inter next : groupBeams.subList(1, groupBeams.size())) {
-                            if (sig.getRelation(next, stem, BeamStemRelation.class) == null) {
-                                final AbstractBeamInter nextBeam = (AbstractBeamInter) next;
-                                final BeamStemRelation r = new BeamStemRelation();
-                                final Point2D crossPt = crossing(stem, nextBeam);
-                                r.setExtensionPoint(new Point2D.Double(
-                                        crossPt.getX(),
-                                        crossPt.getY() + (yDir * (nextBeam.getHeight() - 1))));
-
-                                // Portion depends on x location of stem WRT beam
-                                r.setBeamPortion(BeamStemRelation.computeBeamPortion(
-                                        nextBeam, crossPt.getX(), scale));
-
-                                r.setGrade(rel.getGrade());
-                                sig.addEdge(next, stem, r);
-                            }
-                        }
-                    }
-                }
-            }
-
             //------------------//
             // lookupBeamGroups //
             //------------------//
@@ -1693,38 +1649,7 @@ public class HeadLinker
              */
             private List<BeamGroupInter> lookupBeamGroups (List<Inter> beams)
             {
-                // Reject beam candidates which are not in corner direction
-                // (this can happen because of beam bounding rectangle)
-                for (Iterator<Inter> it = beams.iterator(); it.hasNext();) {
-                    AbstractBeamInter b = (AbstractBeamInter) it.next();
-
-                    if ((yDir * (getTargetPt(getLimit(b)).getY() - refPt.getY())) <= 0) {
-                        it.remove();
-                    }
-                }
-
-                retriever.sortBeamsFromRef(refPt, yDir, beams);
-
-                // Build the (ordered) list of beam groups
-                Set<BeamGroupInter> groups = new LinkedHashSet<>();
-
-                for (Inter inter : beams) {
-                    AbstractBeamInter beam = (AbstractBeamInter) inter;
-
-                    if (groups.isEmpty()) {
-                        // Check if beam is far enough from head
-                        final Point2D beamPt = getTargetPt(getLimit(beam));
-                        final double distToBeam = yDir * (beamPt.getY() - refPt.getY());
-
-                        if (distToBeam < params.minBeamHeadDy) {
-                            continue;
-                        }
-                    }
-
-                    groups.add(beam.getGroup());
-                }
-
-                return new ArrayList<>(groups);
+                return HeadLinker.lookupBeamGroups(beams, refPt, yDir, params.minBeamHeadDy);
             }
 
             //------------------//

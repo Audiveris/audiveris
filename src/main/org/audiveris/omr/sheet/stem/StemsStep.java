@@ -57,9 +57,7 @@ public class StemsStep
                           Void context)
             throws StepException
     {
-        // Inspect stems possibilities between heads & beams
-        // Then link
-        new StemsRetriever(system).inspectThenLink();
+        new StemsRetriever(system).process();
     }
 
     //----------//
@@ -72,7 +70,7 @@ public class StemsStep
     {
         // Further beams processing
         for (SystemInfo system : sheet.getSystems()) {
-            new StemsRetriever(system).finalizeStems();
+            new StemsRetriever(system).finalizeBeams();
 
             // Compute all contextual grades (for better visual check)
             system.getSig().contextualize();

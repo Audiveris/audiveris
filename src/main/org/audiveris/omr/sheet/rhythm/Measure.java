@@ -1238,7 +1238,7 @@ public class Measure
      */
     public Set<HeadChordInter> getStandardHeadChords ()
     {
-        final Set<HeadChordInter> standardHeadChords = getHeadChords();
+        final Set<HeadChordInter> standardHeadChords = new LinkedHashSet<>(getHeadChords());
 
         for (Iterator<HeadChordInter> it = standardHeadChords.iterator(); it.hasNext();) {
             final HeadChordInter headChord = it.next();

@@ -22,6 +22,7 @@
 package org.audiveris.omr.sheet.stem;
 
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Shape;
@@ -53,7 +54,6 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
-import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.StemPortion;
@@ -87,11 +87,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import org.audiveris.omr.glyph.GlyphFactory;
 
 /**
  * Class {@code BeamLinker} handles the connections from a beam to the nearby
  * stems and heads.
+ * <p>
+ * For every beam, we look for connectable stem seeds and for stumps that point outside beam.
  *
  * @author Hervé Bitteur
  */
@@ -362,6 +363,7 @@ public class BeamLinker
             logger.info("VIP {} linkSides", this);
         }
 
+        final BeamHookInter oppoHook = beam.getCompetingHook();
         final EnumSet<HorizontalSide> linkedSides = EnumSet.noneOf(HorizontalSide.class);
 
         for (HorizontalSide hSide : HorizontalSide.values()) {
@@ -370,7 +372,10 @@ public class BeamLinker
             if (bLinker.isLinked()) {
                 linkedSides.add(hSide);
             } else {
-                final boolean ok = bLinker.link(Profiles.BEAM_SIDE, linkProfile);
+                final int stemProfile = (beam.isHook() || (oppoHook != null))
+                        ? linkProfile
+                        : Profiles.BEAM_SIDE;
+                final boolean ok = bLinker.link(stemProfile, linkProfile);
 
                 if (ok) {
                     linkedSides.add(hSide);
@@ -386,18 +391,12 @@ public class BeamLinker
 
         if (!beam.isHook() && (linkedSides.size() == 2)) {
             // Discard the competing hook if any
-            final SIGraph sig = system.getSig();
-
-            for (Relation r : sig.getRelations(beam, Exclusion.class)) {
-                final Inter oppo = sig.getOppositeInter(beam, r);
-
-                if ((oppo.getShape() == Shape.BEAM_HOOK) && (oppo.getGlyph() == beam.getGlyph())) {
-                    if (oppo.isVip()) {
-                        logger.info("VIP {} remove competing {}", this, oppo);
-                    }
-
-                    oppo.remove();
+            if (oppoHook != null) {
+                if (oppoHook.isVip()) {
+                    logger.info("VIP {} remove competing {}", this, oppoHook);
                 }
+
+                oppoHook.remove();
             }
         }
 
@@ -409,6 +408,9 @@ public class BeamLinker
     //------------//
     public void linkStumps (int profile)
     {
+        if (beam.isVip()) {
+            logger.info("VIP {} linkStumps", this);
+        }
         for (VLinker vLinker : stumpLinkers) {
             final Glyph stump = vLinker.getStump();
 
@@ -1318,6 +1320,10 @@ public class BeamLinker
 
                 for (Inter hInter : headCandidates) {
                     final HeadInter head = (HeadInter) hInter;
+                    // Today, standard beams can't link small heads
+                    if (head.getShape().isSmall()) {
+                        continue;
+                    }
 
                     // Check head is far enough from beam group end
                     final double dy = yDir * (head.getCenter().y - yLastBorder);

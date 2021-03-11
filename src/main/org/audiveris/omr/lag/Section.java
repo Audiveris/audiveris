@@ -260,7 +260,7 @@ public interface Section
     public double getAspect (Orientation orientation);
 
     /**
-     * Return a (COPY of) the absolute bounding box.
+     * Return (a COPY of) the absolute bounding box.
      *
      * @return the absolute bounding box
      */
