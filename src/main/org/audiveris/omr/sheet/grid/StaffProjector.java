@@ -1273,7 +1273,7 @@ public class StaffProjector
                           int dir)
     {
         // Beginning of range, close to peak side
-        final int x1 = x0 + dir * (1 + params.chunkOffset);
+        final int x1 = x0 + dir;
 
         // End of range, far from peak side
         final int x2 = x1 + dir * (params.chunkWidth - 1);
@@ -1451,14 +1451,8 @@ public class StaffProjector
                 0.3,
                 "Maximum length between right ending bar and actual lines right end");
 
-        private final Constant.Integer chunkOffset = new Constant.Integer(
-                "pixels",
-                1,
-                "Abscissa offset (>=0) on bar peak side, before checking for chunk");
-
-        private final Constant.Integer chunkWidth = new Constant.Integer(
-                "pixels",
-                2,
+        private final Scale.Fraction chunkWidth = new Scale.Fraction(
+                0.15,
                 "Abscissa with (>=1) on bar peak side where chunk is measured");
     }
 
@@ -1537,8 +1531,6 @@ public class StaffProjector
     private static class Parameters
     {
 
-        final int chunkOffset;
-
         final int chunkWidth;
 
         final int staffAbscissaMargin;
@@ -1576,9 +1568,6 @@ public class StaffProjector
         Parameters (Sheet sheet,
                     int staffSpecific)
         {
-            chunkOffset = Math.max(0, constants.chunkOffset.getValue());
-            chunkWidth = Math.max(1, constants.chunkWidth.getValue());
-
             final Scale scale = sheet.getScale();
 
             {
@@ -1593,6 +1582,7 @@ public class StaffProjector
                 maxBarWidth = large.toPixels(constants.maxBarWidth);
                 maxLeftExtremum = large.toPixels(constants.maxLeftExtremum);
                 maxRightExtremum = large.toPixels(constants.maxRightExtremum);
+                chunkWidth = large.toPixels(constants.chunkWidth);
             }
 
             {
