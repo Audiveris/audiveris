@@ -59,5 +59,8 @@ Thumb.db
 .project
 .settings
 
+# IDEA added files
+.idea
+
 # Gradle added files (temporary fix)
 gradle.properties

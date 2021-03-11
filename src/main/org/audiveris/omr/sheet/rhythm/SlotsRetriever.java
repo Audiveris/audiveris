@@ -235,14 +235,8 @@ public class SlotsRetriever
         }
 
         // No adjacency if explicitly separated
-        final AbstractChordInter src = (ch1.getId() < ch2.getId()) ? ch1 : ch2;
-        final AbstractChordInter tgt = (ch1.getId() < ch2.getId()) ? ch2 : ch1;
-        final SIGraph sig = src.getSig();
-
-        for (Relation rel : sig.getAllEdges(src, tgt)) {
-            if (rel instanceof SeparateTimeRelation) {
-                return false;
-            }
+        if (areExplicitlySeparate(ch1, ch2)) {
+            return false;
         }
 
         final Rectangle box1 = ch1.getBoundsWithDots();
@@ -319,6 +313,36 @@ public class SlotsRetriever
         return Math.abs(ch1.getHeadLocation().x - ch2.getHeadLocation().x) <= params.maxSlotDxLow;
     }
 
+    //-----------------------//
+    // areExplicitlySeparate //
+    //-----------------------//
+    /**
+     * Check whether the two provided chords have been declared as using separate slots.
+     *
+     * @param ch1 one chord
+     * @param ch2 another chord
+     * @return true if explicitly separate
+     */
+    private boolean areExplicitlySeparate (AbstractChordInter ch1,
+                                           AbstractChordInter ch2)
+    {
+        if (ch1.isVip() && ch2.isVip()) {
+            logger.info("VIP areExplicitlySeparate? {} {}", ch1, ch2);
+        }
+
+        final AbstractChordInter src = (ch1.getId() < ch2.getId()) ? ch1 : ch2;
+        final AbstractChordInter tgt = (ch1.getId() < ch2.getId()) ? ch2 : ch1;
+        final SIGraph sig = src.getSig();
+
+        for (Relation rel : sig.getAllEdges(src, tgt)) {
+            if (rel instanceof SeparateTimeRelation) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //-------------------------//
     // buildChordRelationships //
     //-------------------------//
@@ -335,7 +359,7 @@ public class SlotsRetriever
         Graphs.addAllVertices(graph, stdChords);
 
         // Explicit time join
-        inspectTimeJoins();
+        inspectTimeJoins(null);
 
         // BeamGroup-based relationships
         inspectBeams();
@@ -345,6 +369,9 @@ public class SlotsRetriever
 
         // RootStem-based relationships
         inspectRootStems();
+
+        // Extend explicit time join to intermediate chords if any
+        inspectTimeJoins(stdChords);
 
         // Finally, default location-based relationships
         inspectLocations(stdChords);
@@ -643,7 +670,7 @@ public class SlotsRetriever
                     // Boxes do not overlap vertically
                     final double dx = Math.abs(x1 - x2);
 
-                    if (dx <= maxSlotDx) {
+                    if ((dx <= maxSlotDx) && !areExplicitlySeparate(ch1, ch2)) {
                         setRel(ch1, ch2, CLOSE);
                         setRel(ch2, ch1, CLOSE);
                     } else if (x1 < x2) {
@@ -771,8 +798,10 @@ public class SlotsRetriever
      * Right now, a ChordTimeJoinRelation is effective only if both source and target chords
      * belong to the same measure (and thus the same part).
      * TODO: Should we support time alignment across parts?
+     *
+     * @param stdChords standard chords, sorted by abscissa
      */
-    private void inspectTimeJoins ()
+    private void inspectTimeJoins (List<AbstractChordInter> stdChords)
     {
         final SIGraph sig = measure.getStack().getSystem().getSig();
 
@@ -781,8 +810,33 @@ public class SlotsRetriever
             final AbstractChordInter ch2 = (AbstractChordInter) sig.getEdgeTarget(same);
 
             if ((ch1.getMeasure() == measure) && (ch2.getMeasure() == measure)) {
-                setRel(ch1, ch2, EQUAL);
-                setRel(ch2, ch1, EQUAL);
+                if (stdChords == null) {
+                    // First pass: just set equal rel to the chords explicitly chosen
+                    setRel(ch1, ch2, EQUAL);
+                    setRel(ch2, ch1, EQUAL);
+                } else {
+                    // Second pass: forward equal rel to all chords included abscissawise
+                    // if they still have no rel assigned.
+                    final int j1 = stdChords.indexOf(ch1);
+                    final int j2 = stdChords.indexOf(ch2);
+                    final int iMin = Math.min(j1, j2);
+                    final int iMax = Math.max(j1, j2);
+
+                    for (int i1 = iMin; i1 < iMax; i1++) {
+                        AbstractChordInter c1 = stdChords.get(i1);
+                        for (int i2 = i1 + 1; i2 <= iMax; i2++) {
+                            AbstractChordInter c2 = stdChords.get(i2);
+
+                            if (getRel(c1, c2) == null) {
+                                setRel(c1, c2, EQUAL);
+                            }
+
+                            if (getRel(c2, c1) == null) {
+                                setRel(c2, c1, EQUAL);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
