@@ -42,9 +42,8 @@ import javax.swing.event.MenuListener;
  * a typical use is a history of file names.
  * <p>
  * Actually, rather than a set, it is a list where the most recently used
- * are kept at the head of the list. There is no duplicate in the set (tests are
- * case-insensitive).
- * </p>
+ * are kept at the head of the list.
+ * There are no equivalent names left in the set.
  * <p>
  * The NameSet can additionally be used to dynamically generate and handle a menu.
  * </p>
@@ -55,7 +54,7 @@ import javax.swing.event.MenuListener;
 public class NameSet
 {
 
-    /** Separator */
+    /** Separator. */
     private static final String SEPARATOR = ";";
 
     /** Global name for this set. */
@@ -70,20 +69,26 @@ public class NameSet
     /** Max number of names in this set. */
     private final int maxNameCount;
 
+    /** To check names equivalence. */
+    private final PairPredicate<String> predicate;
+
     /**
      * Creates a new set of names, with some customizing parameters.
      *
      * @param setName      global name for this set
      * @param constant     the backing constant string
      * @param maxNameCount maximum number of elements in this name set
+     * @param predicate    predicate to test names equivalence
      */
     public NameSet (String setName,
                     Constant.String constant,
-                    int maxNameCount)
+                    int maxNameCount,
+                    PairPredicate<String> predicate)
     {
         this.setName = setName;
         this.constant = constant;
         this.maxNameCount = maxNameCount;
+        this.predicate = predicate;
 
         // Retrieve the list of names already in the set
         String[] vals = constant.getValue().split(SEPARATOR);
@@ -108,7 +113,7 @@ public class NameSet
             return;
         }
 
-        // Remove duplicate if any
+        // Remove duplicate or equivalent if any
         remove(name);
 
         // Insert the name at the beginning of the list
@@ -204,11 +209,11 @@ public class NameSet
      */
     public synchronized boolean remove (String name)
     {
-        // If the ref exists in the list, it is removed
+        // If the ref (or an equivalent ref) exists in the list, it is removed
         for (Iterator<String> it = names.iterator(); it.hasNext();) {
-            String f = it.next();
+            final String f = it.next();
 
-            if (f.equalsIgnoreCase(name)) {
+            if (predicate.test(name, f)) {
                 it.remove();
                 updateConstant();
 

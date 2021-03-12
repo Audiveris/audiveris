@@ -21,19 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
-import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
-import org.audiveris.omr.ui.view.HistoryMenu;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.awt.event.ActionListener;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import javax.swing.JMenu;
-import javax.swing.SwingUtilities;
 
 /**
  * Class {@code PathHistory} handles a history of paths, as used for latest input or
@@ -42,20 +33,8 @@ import javax.swing.SwingUtilities;
  * @author Hervé Bitteur
  */
 public class PathHistory
+        extends AbstractHistory<Path>
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Logger logger = LoggerFactory.getLogger(PathHistory.class);
-
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** Underlying list of names. */
-    private final NameSet nameSet;
-
-    /** Name of last folder used, if any. */
-    private final Constant.String folderConstant;
-
-    /** Related UI menu, if any. Null when no UI is used */
-    private HistoryMenu menu;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -71,111 +50,37 @@ public class PathHistory
                         Constant.String folderConstant,
                         int maxSize)
     {
-        nameSet = new NameSet(name, constant, maxSize);
-        this.folderConstant = folderConstant;
+        super(name, constant, folderConstant, maxSize, (s1, s2) -> areEquivalent(s1, s2));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----//
-    // add //
-    //-----//
-    /**
-     * Add a path to history
-     *
-     * @param path the path to include
-     */
-    public void add (Path path)
+    @Override
+    protected Path getParent (Path path)
     {
-        nameSet.add(path.toAbsolutePath().toString());
-
-        Path parent = path.toAbsolutePath().getParent();
-
-        if (folderConstant != null) {
-            folderConstant.setStringValue(parent.toAbsolutePath().toString());
-        }
-
-        if (OMR.gui != null) {
-            // Enable input history menu
-            SwingUtilities.invokeLater(
-                    new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    menu.setEnabled(true);
-                }
-            });
-        }
+        return path.toAbsolutePath().getParent();
     }
 
-    //----------//
-    // feedMenu //
-    //----------//
-    /**
-     * Populate a menu with path history.
-     *
-     * @param menu         menu to populate, if null it is allocated
-     * @param itemListener listener for each menu item
-     * @return the populated menu
-     */
-    public JMenu feedMenu (JMenu menu,
-                           final ActionListener itemListener)
+    @Override
+    protected String encode (Path path)
     {
-        return nameSet.feedMenu(menu, itemListener);
+        return path.toAbsolutePath().toString();
     }
 
-    //----------//
-    // getFirst //
-    //----------//
-    /**
-     * Report the first path in history.
-     *
-     * @return first path, null if none
-     */
-    public Path getFirst ()
+    @Override
+    protected Path decode (String str)
     {
-        final String first = nameSet.first();
-
-        return (first != null) ? Paths.get(first) : null;
+        return Paths.get(str);
     }
 
-    //---------//
-    // isEmpty //
-    //---------//
-    /**
-     * Tell whether history is empty.
-     *
-     * @return true if so
-     */
-    public boolean isEmpty ()
+    //---------------//
+    // areEquivalent //
+    //---------------//
+    private static boolean areEquivalent (String s1,
+                                          String s2)
     {
-        return nameSet.isEmpty();
-    }
+        final Path p1 = Paths.get(s1);
+        final Path p2 = Paths.get(s2);
 
-    //--------//
-    // remove //
-    //--------//
-    /**
-     * Remove a path from history
-     *
-     * @param path to be removed
-     * @return true if actually removed
-     */
-    public boolean remove (Path path)
-    {
-        return nameSet.remove(path.toAbsolutePath().toString());
-    }
-
-    //---------//
-    // setMenu //
-    //---------//
-    /**
-     * Set the related UI menu
-     *
-     * @param menu the related menu
-     */
-    public void setMenu (HistoryMenu menu)
-    {
-        this.menu = menu;
+        return p1.compareTo(p2) == 0;
     }
 }

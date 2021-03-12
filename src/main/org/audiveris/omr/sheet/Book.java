@@ -48,7 +48,6 @@ import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.ProcessingCancellationException;
 import org.audiveris.omr.step.Step;
-import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.text.Language;
 import org.audiveris.omr.util.FileUtil;
@@ -432,33 +431,30 @@ public class Book
     //-------//
     /**
      * Delete this book instance, as well as its related resources.
+     *
+     * @param sheetNumber current sheet number in book, if any
      */
-    public void close ()
+    public void close (Integer sheetNumber)
     {
         setClosing(true);
 
         // Close contained stubs/sheets
         if (OMR.gui != null) {
-            SwingUtilities.invokeLater(new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    try {
-                        LogUtil.start(Book.this);
+            SwingUtilities.invokeLater(() -> {
+                try {
+                    LogUtil.start(Book.this);
 
-                        for (SheetStub stub : new ArrayList<>(stubs)) {
-                            LogUtil.start(stub);
+                    for (SheetStub stub : new ArrayList<>(stubs)) {
+                        LogUtil.start(stub);
 
-                            // Close stub UI, if any
-                            if (stub.getAssembly() != null) {
-                                StubsController.getInstance().deleteAssembly(stub);
-                                stub.getAssembly().close();
-                            }
+                        // Close stub UI, if any
+                        if (stub.getAssembly() != null) {
+                            StubsController.getInstance().deleteAssembly(stub);
+                            stub.getAssembly().close();
                         }
-                    } finally {
-                        LogUtil.stopBook();
                     }
+                } finally {
+                    LogUtil.stopBook();
                 }
             });
         }
@@ -469,7 +465,7 @@ public class Book
         }
 
         // Remove from OMR instances
-        OMR.engine.removeBook(this);
+        OMR.engine.removeBook(this, sheetNumber);
 
         // Time for some cleanup...
         Memory.gc();
@@ -504,85 +500,77 @@ public class Book
     //-----------------//
     /**
      * Insert stubs assemblies in UI tabbed pane.
+     * <p>
      * GUI will focus on first valid stub, unless a stub number is provided.
      *
      * @param focus the stub number to focus upon, or null
      */
     public void createStubsTabs (final Integer focus)
     {
-        Runnable doRun = new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                try {
-                    LogUtil.start(Book.this);
+        try {
+            SwingUtilities.invokeAndWait(() -> {
+                LogUtil.start(Book.this);
 
-                    final StubsController controller = StubsController.getInstance();
+                final StubsController controller = StubsController.getInstance();
 
-                    // Determine which stub should get the focus
-                    SheetStub focusStub = null;
+                // Determine which stub should get the focus
+                SheetStub focusStub = null;
 
-                    if (focus != null) {
-                        for (SheetStub stub : stubs) {
-                            if (stub.getNumber() == focus) {
-                                focusStub = stub;
-                                break;
-                            }
-                        }
-
-                        if (focusStub == null) {
-                            logger.warn("Could not find sheet id: {}", focus);
+                if (focus != null) {
+                    for (SheetStub stub : stubs) {
+                        if (stub.getNumber() == focus) {
+                            focusStub = stub;
+                            break;
                         }
                     }
 
                     if (focusStub == null) {
-                        focusStub = getFirstValidStub(); // Focus on first valid stub, if any
-
-                        if (focusStub == null) {
-                            logger.info("No valid sheet in {}", this);
-                        }
+                        logger.warn("Could not find sheet id: {}", focus);
                     }
-
-                    // Allocate one tab per stub, beginning by focusStub if any
-                    Integer focusIndex = null;
-
-                    if (focusStub != null) {
-                        // This triggers the display of focusStub sheet...
-                        controller.addAssembly(focusStub.getAssembly(), null);
-                        focusIndex = controller.getIndex(focusStub);
-
-                        if (focusIndex == -1) {
-                            focusIndex = null; // Safer
-                        }
-                    }
-
-                    for (SheetStub stub : stubs) {
-                        if (focusIndex == null) {
-                            controller.addAssembly(stub.getAssembly(), null);
-                        } else if (stub != focusStub) {
-                            if (stub.getNumber() < focusStub.getNumber()) {
-                                controller.addAssembly(
-                                        stub.getAssembly(),
-                                        controller.getLastIndex());
-                            } else {
-                                controller.addAssembly(stub.getAssembly(), null);
-                            }
-                        }
-                    }
-
-                    controller.adjustStubTabs(Book.this);
-                } finally {
-                    LogUtil.stopBook();
                 }
-            }
-        };
 
-        try {
-            SwingUtilities.invokeAndWait(doRun);
+                if (focusStub == null) {
+                    focusStub = getFirstValidStub(); // Focus on first valid stub, if any
+
+                    if (focusStub == null) {
+                        logger.info("No valid sheet in {}", this);
+                    }
+                }
+
+                // Allocate one tab per stub, beginning by focusStub if any
+                Integer focusIndex = null;
+
+                if (focusStub != null) {
+                    // This triggers the display of focusStub sheet...
+                    controller.addAssembly(focusStub.getAssembly(), null);
+                    focusIndex = controller.getIndex(focusStub);
+
+                    if (focusIndex == -1) {
+                        focusIndex = null; // Safer
+                    }
+                }
+
+                for (SheetStub stub : stubs) {
+                    if (focusIndex == null) {
+                        controller.addAssembly(stub.getAssembly(), null);
+                    } else if (stub != focusStub) {
+                        if (stub.getNumber() < focusStub.getNumber()) {
+                            controller.addAssembly(
+                                    stub.getAssembly(),
+                                    controller.getLastIndex());
+                        } else {
+                            controller.addAssembly(stub.getAssembly(), null);
+                        }
+                    }
+                }
+
+                controller.adjustStubTabs(Book.this);
+            });
         } catch (InterruptedException |
                  InvocationTargetException ex) {
             logger.warn("Error in createStubsTabs, {}", ex, ex);
+        } finally {
+            LogUtil.stopBook();
         }
     }
 
@@ -1098,17 +1086,12 @@ public class Book
      */
     public void hideInvalidStubs ()
     {
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                final StubsController controller = StubsController.getInstance();
+        SwingUtilities.invokeLater(() -> {
+            final StubsController controller = StubsController.getInstance();
 
-                for (SheetStub stub : stubs) {
-                    if (!stub.isValid()) {
-                        controller.removeAssembly(stub);
-                    }
+            for (SheetStub stub : stubs) {
+                if (!stub.isValid()) {
+                    controller.removeAssembly(stub);
                 }
             }
         });
@@ -1219,17 +1202,12 @@ public class Book
         this.modified = modified;
 
         if (OMR.gui != null) {
-            SwingUtilities.invokeLater(new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    final StubsController controller = StubsController.getInstance();
-                    final SheetStub stub = controller.getSelectedStub();
+            SwingUtilities.invokeLater(() -> {
+                final StubsController controller = StubsController.getInstance();
+                final SheetStub stub = controller.getSelectedStub();
 
-                    if ((stub != null) && (stub.getBook() == Book.this) && stub.hasSheet()) {
-                        controller.refresh();
-                    }
+                if ((stub != null) && (stub.getBook() == Book.this) && stub.hasSheet()) {
+                    controller.refresh();
                 }
             });
         }
@@ -1411,25 +1389,19 @@ public class Book
                     List<Callable<Boolean>> tasks = new ArrayList<>();
 
                     for (final SheetStub stub : concernedStubs) {
-                        tasks.add(new Callable<Boolean>()
-                        {
-                            @Override
-                            public Boolean call ()
-                                    throws StepException
-                            {
-                                LogUtil.start(stub);
+                        tasks.add(() -> {
+                            LogUtil.start(stub);
 
-                                try {
-                                    boolean ok = stub.reachStep(target, force);
+                            try {
+                                boolean ok = stub.reachStep(target, force);
 
-                                    if (ok && (OMR.gui == null)) {
-                                        stub.swapSheet(); // Save sheet & global book info to disk
-                                    }
-
-                                    return ok;
-                                } finally {
-                                    LogUtil.stopStub();
+                                if (ok && (OMR.gui == null)) {
+                                    stub.swapSheet(); // Save sheet & global book info to disk
                                 }
+
+                                return ok;
+                            } finally {
+                                LogUtil.stopStub();
                             }
                         });
                     }
@@ -2116,14 +2088,8 @@ public class Book
 
             if (OMR.gui != null) {
                 // Update UI first sheet tab
-                SwingUtilities.invokeLater(new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        StubsController.getInstance().updateFirstStubTitle(Book.this);
-                    }
-                });
+                SwingUtilities.invokeLater(
+                        () -> StubsController.getInstance().updateFirstStubTitle(Book.this));
             }
         }
     }

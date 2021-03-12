@@ -30,6 +30,8 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.PathHistory;
+import org.audiveris.omr.util.SheetPath;
+import org.audiveris.omr.util.SheetPathHistory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,7 +129,7 @@ public class BookManager
     private PathHistory imageHistory;
 
     /** Book file history. (filled only when books are successfully loaded or saved) */
-    private PathHistory bookHistory;
+    private SheetPathHistory bookHistory;
 
     /**
      * Private constructor for a singleton.
@@ -170,7 +172,7 @@ public class BookManager
         if (book != null) {
             addBook(book);
 
-            getBookHistory().remove(bookPath);
+            getBookHistory().remove(new SheetPath(bookPath));
         }
 
         return book;
@@ -210,18 +212,20 @@ public class BookManager
     /**
      * Remove the provided book from the collection of Book instances.
      *
-     * @param book the book to remove
+     * @param book        the book to remove
+     * @param sheetNumber the current sheet number in book, if any, null otherwise
      * @return true if actually removed
      */
     @Override
-    public synchronized boolean removeBook (Book book)
+    public synchronized boolean removeBook (Book book,
+                                            Integer sheetNumber)
     {
         logger.debug("removeBook {}", book);
 
         final Path bookPath = book.getBookPath();
 
         if (bookPath != null) {
-            getBookHistory().add(bookPath); // Insert in history
+            getBookHistory().add(new SheetPath(bookPath, sheetNumber)); // Insert in history
         }
 
         return books.remove(book);
@@ -235,10 +239,10 @@ public class BookManager
      *
      * @return the history set of book files
      */
-    public PathHistory getBookHistory ()
+    public SheetPathHistory getBookHistory ()
     {
         if (bookHistory == null) {
-            bookHistory = new PathHistory(
+            bookHistory = new SheetPathHistory(
                     "Book History",
                     constants.bookHistory,
                     null,

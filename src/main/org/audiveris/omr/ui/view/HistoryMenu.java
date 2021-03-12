@@ -21,9 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.ui.view;
 
+import org.audiveris.omr.sheet.ui.BookActions.LoadBookTask;
 import org.audiveris.omr.ui.OmrGui;
-import org.audiveris.omr.util.PathHistory;
+import org.audiveris.omr.util.AbstractHistory;
 import org.audiveris.omr.util.PathTask;
+import org.audiveris.omr.util.SheetPath;
 
 import org.jdesktop.application.ResourceMap;
 
@@ -31,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.nio.file.Paths;
 
 import javax.swing.JMenu;
@@ -47,7 +48,7 @@ public class HistoryMenu
     private static final Logger logger = LoggerFactory.getLogger(HistoryMenu.class);
 
     /** Underlying path history. */
-    protected final PathHistory history;
+    protected final AbstractHistory history;
 
     /** Task class launched on selected path. */
     protected final Class<? extends PathTask> pathTaskClass;
@@ -61,7 +62,7 @@ public class HistoryMenu
      * @param history       the underlying path history
      * @param pathTaskClass the task launched to process the selected path
      */
-    public HistoryMenu (PathHistory history,
+    public HistoryMenu (AbstractHistory history,
                         Class<? extends PathTask> pathTaskClass)
     {
         this.history = history;
@@ -81,23 +82,24 @@ public class HistoryMenu
     public void populate (JMenu menu,
                           Class<?> resourceClass)
     {
-        history.feedMenu(menu, new ActionListener()
-                 {
-                     @Override
-                     public void actionPerformed (ActionEvent e)
-                     {
-                         try {
-                             final String name = e.getActionCommand().trim();
+        history.feedMenu(menu, (ActionEvent e) -> {
+                     try {
+                         final String str = e.getActionCommand().trim();
 
-                             if (!name.isEmpty()) {
-                                 PathTask pathTask = pathTaskClass.newInstance();
-                                 pathTask.setPath(Paths.get(name));
-                                 pathTask.execute();
+                         if (!str.isEmpty()) {
+                             final PathTask task = pathTaskClass.newInstance();
+
+                             if (pathTaskClass.isAssignableFrom(LoadBookTask.class)) {
+                                 ((LoadBookTask) task).setPath(SheetPath.decode(str));
+                             } else {
+                                 task.setPath(Paths.get(str));
                              }
-                         } catch (IllegalAccessException |
-                                  InstantiationException ex) {
-                             logger.warn("Error in HistoryMenu " + ex, ex);
+
+                             task.execute();
                          }
+                     } catch (IllegalAccessException |
+                              InstantiationException ex) {
+                         logger.warn("Error in HistoryMenu " + ex, ex);
                      }
                  });
 

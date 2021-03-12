@@ -301,7 +301,7 @@ public class SheetStub
             if (!book.getStubs().isEmpty()) {
                 logger.info("Sheet closed");
             } else {
-                book.close();
+                book.close(null);
             }
         }
     }
@@ -1038,6 +1038,7 @@ public class SheetStub
     //---------//
     private void display ()
     {
+        logger.info("BINGO SheetStub.display {}", this);
         if (OMR.gui != null) {
             try {
                 Runnable runnable = new Runnable()
