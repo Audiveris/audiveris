@@ -70,8 +70,10 @@ public interface OmrEngine
     /**
      * Remove the provided book from OMR service.
      *
-     * @param book the book to remove
+     * @param book        the book to remove
+     * @param sheetNumber the current sheet number in book, if any, null otherwise
      * @return true if book is actually removed
      */
-    boolean removeBook (Book book);
+    boolean removeBook (Book book,
+                        Integer sheetNumber);
 }

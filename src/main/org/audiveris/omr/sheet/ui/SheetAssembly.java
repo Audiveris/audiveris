@@ -153,13 +153,8 @@ public class SheetAssembly
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        addBoard(tab, board);
-                    }
+                SwingUtilities.invokeAndWait(() -> {
+                    addBoard(tab, board);
                 });
             } catch (InterruptedException |
                      InvocationTargetException ex) {

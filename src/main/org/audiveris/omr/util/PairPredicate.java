@@ -1,11 +1,11 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                               I n t e r P a i r P r e d i c a t e                              //
+//                                    P a i r P r e d i c a t e                                   //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2019. All rights reserved.
+//  Copyright © Audiveris 2021. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -19,24 +19,25 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sig.inter;
+package org.audiveris.omr.util;
 
 /**
- * Interface {@code InterPairPredicate}
+ * Interface {@code PairPredicate}
  *
  * @author Hervé Bitteur
+ *
+ * @param <E> type of entity
  */
-public interface InterPairPredicate
+public interface PairPredicate<E>
 {
 
     /**
      * Evaluates this predicate on the given pair of Inter instances.
      *
-     * @param one an Inter argument
-     * @param two other Inter argument
+     * @param one an entity
+     * @param two another entity
      * @return {@code true} if the input argument matches the predicate, otherwise {@code false}
      */
-    boolean test (Inter one,
-                  Inter two);
-
+    boolean test (E one,
+                  E two);
 }

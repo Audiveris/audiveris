@@ -50,7 +50,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -391,14 +390,7 @@ public class StubsController
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        markTab(stub, color);
-                    }
-                });
+                SwingUtilities.invokeAndWait(() -> markTab(stub, color));
             } catch (InterruptedException |
                      InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
@@ -508,7 +500,7 @@ public class StubsController
         }
 
         // Make sure the assembly is part of the tabbed pane
-        int tabIndex = stubsPane.indexOfComponent(stub.getAssembly().getComponent());
+        final int tabIndex = stubsPane.indexOfComponent(stub.getAssembly().getComponent());
 
         if (tabIndex != -1) {
             stubsPane.setSelectedIndex(tabIndex);
@@ -529,56 +521,42 @@ public class StubsController
     public void display (final SheetStub stub,
                          final boolean early)
     {
-        Callable<Void> task = new Callable<Void>()
-        {
-            @Override
-            public Void call ()
-                    throws Exception
-            {
-                try {
-                    LogUtil.start(stub);
-
-                    // Check whether we should run early steps on the sheet
-                    checkStubStatus(stub, early);
-
-                    SwingUtilities.invokeAndWait(new Runnable()
-                    {
-                        @Override
-                        public void run ()
-                        {
-                            // Race condition: let's check we are working on the selected stub
-                            SheetStub selected = getSelectedStub();
-
-                            if (stub == selected) {
-                                // Tell the selected assembly that it now has the focus
-                                // (to display stub related boards and error pane)
-                                stub.getAssembly().assemblySelected();
-
-                                // Stub status
-                                BookActions.getInstance().updateProperties(stub.getSheet());
-
-                                // GUI: Perform sheets upgrade?
-                                final Book book = stub.getBook();
-
-                                if (!book.promptedForUpgrade()
-                                            && !book.getStubsToUpgrade().isEmpty()) {
-                                    promptForUpgrades(stub, book.getStubsToUpgrade());
-                                }
-                            } else {
-                                logger.debug("Too late for {}", stub);
-                            }
-                        }
-                    });
-
-                    return null;
-                } finally {
-                    LogUtil.stopStub();
-                }
-            }
-        };
-
         // Since we are on Swing EDT, use asynchronous processing
-        OmrExecutors.getCachedLowExecutor().submit(task);
+        OmrExecutors.getCachedLowExecutor().submit(() -> {
+            try {
+                LogUtil.start(stub);
+
+                // Check whether we should run early steps on the sheet
+                checkStubStatus(stub, early);
+
+                SwingUtilities.invokeAndWait(() -> {
+                    // Race condition: let's check we are working on the selected stub
+                    SheetStub selected = getSelectedStub();
+
+                    if (stub == selected) {
+                        // Tell the selected assembly that it now has the focus
+                        // (to display stub related boards and error pane)
+                        stub.getAssembly().assemblySelected();
+
+                        // Stub status
+                        BookActions.getInstance().updateProperties(stub.getSheet());
+
+                        // GUI: Perform sheets upgrade?
+                        final Book book = stub.getBook();
+
+                        if (!book.promptedForUpgrade() && !book.getStubsToUpgrade().isEmpty()) {
+                            promptForUpgrades(stub, book.getStubsToUpgrade());
+                        }
+                    } else {
+                        logger.debug("Too late for {}", stub);
+                    }
+                });
+
+                return null;
+            } finally {
+                LogUtil.stopStub();
+            }
+        });
     }
 
     //-----------------//
@@ -594,14 +572,7 @@ public class StubsController
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        selectOtherBook(currentBook);
-                    }
-                });
+                SwingUtilities.invokeAndWait(() -> selectOtherBook(currentBook));
             } catch (InterruptedException |
                      InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
@@ -829,39 +800,34 @@ public class StubsController
         // Dialog message
         final String question = "Should we upgrade and store the whole book in background?";
 
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                if (OMR.gui.displayConfirmation(question, title)) {
-                    new SwingWorker<Void, Void>()
+        SwingUtilities.invokeLater(() -> {
+            if (OMR.gui.displayConfirmation(question, title)) {
+                new SwingWorker<Void, Void>()
+                {
+                    @Override
+                    protected Void doInBackground ()
+                            throws Exception
                     {
-                        @Override
-                        protected Void doInBackground ()
-                                throws Exception
-                        {
-                            try {
-                                LogUtil.start(book);
+                        try {
+                            LogUtil.start(book);
 
-                                book.upgradeStubs();
-                                return null;
-                            } finally {
-                                LogUtil.stopBook();
-                            }
+                            book.upgradeStubs();
+                            return null;
+                        } finally {
+                            LogUtil.stopBook();
                         }
+                    }
 
-                        @Override
-                        protected void done ()
-                        {
-                            logger.info("Upgrade completed for book " + book.getRadix());
-                            BookActions.getInstance().setBookUpgradable(false);
-                        }
-                    }.execute();
-                }
-
-                book.setPromptedForUpgrade();
+                    @Override
+                    protected void done ()
+                    {
+                        logger.info("Upgrade completed for book " + book.getRadix());
+                        BookActions.getInstance().setBookUpgradable(false);
+                    }
+                }.execute();
             }
+
+            book.setPromptedForUpgrade();
         });
     }
 
@@ -1039,14 +1005,7 @@ public class StubsController
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        invokeSelect(stub);
-                    }
-                });
+                SwingUtilities.invokeAndWait(() -> invokeSelect(stub));
             } catch (InterruptedException |
                      InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
@@ -1064,6 +1023,10 @@ public class StubsController
     {
 
         static final StubsController INSTANCE = new StubsController();
+
+        private LazySingleton ()
+        {
+        }
     }
 
     //---------------//

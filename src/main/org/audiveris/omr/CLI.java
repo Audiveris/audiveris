@@ -520,7 +520,7 @@ public class CLI
                         book.store(BookManager.getDefaultSavePath(book), false);
                     }
 
-                    book.close();
+                    book.close(null);
                 }
 
                 LogUtil.stopBook();

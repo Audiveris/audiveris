@@ -652,12 +652,24 @@ public class MainGui
             // Close all books
             int count = 0;
 
+            final SheetStub currentStub = StubsController.getCurrentStub();
+            final Book currentBook = (currentStub != null) ? currentStub.getBook() : null;
+
             // NB: Use a COPY of instances, to avoid concurrent modification
             final List<Book> allBooks = new ArrayList<>(OMR.engine.getAllBooks());
             Collections.reverse(allBooks);
 
+            if (currentBook != null) {
+                allBooks.remove(currentBook);
+            }
+
             for (Book book : allBooks) {
-                book.close();
+                book.close(null);
+                count++;
+            }
+
+            if (currentBook != null) {
+                currentBook.close(currentStub.getNumber());
                 count++;
             }
 

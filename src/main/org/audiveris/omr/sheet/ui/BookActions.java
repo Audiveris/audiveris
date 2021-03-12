@@ -56,6 +56,7 @@ import org.audiveris.omr.ui.view.HistoryMenu;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.PathTask;
+import org.audiveris.omr.util.SheetPath;
 import org.audiveris.omr.util.VoidTask;
 import org.audiveris.omr.util.WrappedBoolean;
 import org.audiveris.omr.util.param.Param;
@@ -244,14 +245,18 @@ public class BookActions
     @Action(enabledProperty = STUB_AVAILABLE)
     public Task<Void, Void> closeBook (ActionEvent e)
     {
-        Book book = StubsController.getCurrentBook();
+        final SheetStub stub = StubsController.getCurrentStub();
 
-        if ((book != null) && checkStored(book)) {
-            // Pre-select the suitable "next" book tab, if any.
-            StubsController.getInstance().selectOtherBook(book);
+        if (stub != null) {
+            final Book book = stub.getBook();
 
-            // Now close the book (+ related tab)
-            return new CloseBookTask(book);
+            if (checkStored(book)) {
+                // Pre-select the suitable "next" book tab, if any.
+                StubsController.getInstance().selectOtherBook(book);
+
+                // Now close the book (+ related tab)
+                return new CloseBookTask(stub);
+            }
         }
 
         return null;
@@ -736,11 +741,13 @@ public class BookActions
     @Action
     public LoadBookTask openRecentBook (ActionEvent e)
     {
-        final Path path = BookManager.getInstance().getBookHistory().getFirst();
+        final SheetPath sheetPath = BookManager.getInstance().getBookHistory().getFirst();
 
-        if (path != null) {
+        if (sheetPath != null) {
+            final Path path = sheetPath.getBookPath();
+
             if (Files.exists(path)) {
-                return new LoadBookTask(path);
+                return new LoadBookTask(sheetPath);
             } else {
                 logger.warn(format(resources.getString("fileNotFound.pattern"), path));
             }
@@ -1734,6 +1741,15 @@ public class BookActions
             extends PathTask
     {
 
+        /** Desired sheet number, if any. */
+        protected Integer sheetNumber;
+
+        public LoadBookTask (SheetPath sheetPath)
+        {
+            super(sheetPath.getBookPath());
+            sheetNumber = sheetPath.getSheetNumber();
+        }
+
         public LoadBookTask (Path path)
         {
             super(path);
@@ -1743,6 +1759,17 @@ public class BookActions
         {
         }
 
+        /**
+         * Set the sheet path value.
+         *
+         * @param sheetPath the sheet path used by the task
+         */
+        public void setPath (SheetPath sheetPath)
+        {
+            setPath(sheetPath.getBookPath());
+            sheetNumber = sheetPath.getSheetNumber();
+        }
+
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
@@ -1750,17 +1777,22 @@ public class BookActions
             if (Files.exists(path)) {
                 try {
                     // Actually open the book
-                    Book book = OMR.engine.loadBook(path);
+                    final Book book = OMR.engine.loadBook(path);
 
                     if (book != null) {
                         LogUtil.start(book);
-                        book.createStubsTabs(null); // Tabs are now accessible
+                        book.createStubsTabs(sheetNumber); // Tabs are now accessible
 
-                        // Focus on first valid stub in book, if any
-                        SheetStub firstValid = book.getFirstValidStub();
+                        if (sheetNumber != null) {
+                            // Focus on desired stub
+                            StubsController.invokeSelect(book.getStub(sheetNumber));
+                        } else {
+                            // Focus on first valid stub in book, if any
+                            SheetStub firstValid = book.getFirstValidStub();
 
-                        if (firstValid != null) {
-                            StubsController.invokeSelect(firstValid);
+                            if (firstValid != null) {
+                                StubsController.invokeSelect(firstValid);
+                            }
                         }
                     }
                 } catch (Throwable ex) {
@@ -1931,29 +1963,30 @@ public class BookActions
             extends VoidTask
     {
 
-        final Book book;
+        final SheetStub stub;
 
         /**
          * Create an asynchronous task to close the book.
          *
-         * @param book the book to close
+         * @param stub the current stub of the book to close
          */
-        CloseBookTask (Book book)
+        CloseBookTask (SheetStub stub)
         {
-            this.book = book;
+            this.stub = stub;
         }
 
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
         {
+            final Book book = stub.getBook();
+
             try {
                 LogUtil.start(book);
-                book.close();
+                book.close(stub.getNumber());
             } catch (Throwable ex) {
                 logger.warn("Error in CloseBookTask {}", ex.toString(), ex);
             } finally {
-                BookManager.getInstance().getBookHistory().add(book.getBookPath());
                 LogUtil.stopBook();
             }
 
