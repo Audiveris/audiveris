@@ -606,13 +606,16 @@ public class InterFactory
 
         for (Inter inter : systemTimes) {
             final MeasureStack stack = system.getStackAt(inter.getCenter());
-            Set<Inter> stackSet = timeMap.get(stack);
 
-            if (stackSet == null) {
-                timeMap.put(stack, stackSet = new LinkedHashSet<>());
+            if (stack != null) {
+                Set<Inter> stackSet = timeMap.get(stack);
+
+                if (stackSet == null) {
+                    timeMap.put(stack, stackSet = new LinkedHashSet<>());
+                }
+
+                stackSet.add(inter);
             }
-
-            stackSet.add(inter);
         }
 
         // Finally, scan each stack populated with some time sig(s)
