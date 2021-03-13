@@ -1222,7 +1222,7 @@ public class BeamLinker
                         final HeadStemRelation hsRel = cl.checkStemRelation(stemLine, linkProfile);
 
                         if (hsRel == null) {
-                            logger.info("No relation for {} from {}", cl, this);
+                            logger.debug("No relation for {} from {}", cl, this);
                             continue;
                         }
 

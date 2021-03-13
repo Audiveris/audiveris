@@ -140,7 +140,8 @@ public class BookParameters
             book = null;
         }
 
-        component.setName("ScoreParametersPane");
+        // component.setName("ScoreParametersPane"); <== NO!
+        // NOTA: no name is set to component to avoid SAF to store/restore tab selection
         component.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
 
         // Allocate all required panels (default / book? / sheets??)
@@ -214,8 +215,9 @@ public class BookParameters
                         sheetPanes.add(new SwitchPane(key, getPane(bookPanel, key), bp));
                     }
 
-                    ScopedPanel panel = new ScopedPanel(resources.getString("sheetTab.toolTipText"),
-                                                        sheetPanes);
+                    ScopedPanel panel = new ScopedPanel(
+                            resources.getString("sheetTab.toolTipText") + s.getNum(),
+                            sheetPanes);
                     String initial = resources.getString("sheetInitialChar");
                     String label = initial + "#" + s.getNumber();
 
@@ -265,8 +267,10 @@ public class BookParameters
                     stub.setModified(true);
                 }
             }
+
+            logger.info("Book parameters committed");
         } catch (Exception ex) {
-            logger.warn("Could not commit score parameters", ex);
+            logger.warn("Could not commit book parameters {}", ex.toString(), ex);
 
             return false;
         }
