@@ -92,7 +92,6 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -100,7 +99,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.function.Predicate;
 
 /**
  * Class {@code InterFactory} generates the inter instances corresponding to
@@ -113,9 +111,11 @@ import java.util.function.Predicate;
  */
 public class InterFactory
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterFactory.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -147,6 +147,7 @@ public class InterFactory
     /** Processing switches. */
     private final ProcessingSwitches switches;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new InterFactory object.
      *
@@ -172,6 +173,7 @@ public class InterFactory
         switches = system.getSheet().getStub().getProcessingSwitches();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // create //
     //--------//
@@ -417,11 +419,8 @@ public class InterFactory
         case STACCATISSIMO:
         case STRONG_ACCENT:
             return switches.getValue(Switch.articulations) ? ArticulationInter.createValidAdded(
-                    glyph,
-                    shape,
-                    grade,
-                    system,
-                    systemHeadChords) : null;
+                    glyph, shape, grade, system, systemHeadChords)
+                    : null;
 
         // Markers
         case CODA:
@@ -536,8 +535,10 @@ public class InterFactory
     {
         // All dynamics in system
         final List<Inter> dynamics = sig.inters(DynamicsInter.class);
+
         // Complex dynamics in system, sorted by decreasing length
         final List<DynamicsInter> complexes = new ArrayList<>();
+
         for (Inter inter : dynamics) {
             DynamicsInter dyn = (DynamicsInter) inter;
 
@@ -545,18 +546,12 @@ public class InterFactory
                 complexes.add(dyn);
             }
         }
-        Collections.sort(complexes, new Comparator<DynamicsInter>()
-                 {
-                     @Override
-                     public int compare (DynamicsInter d1,
-                                         DynamicsInter d2)
-                     {
-                         // Sort by decreasing length
-                         return Integer.compare(
-                                 d2.getSymbolString().length(),
-                                 d1.getSymbolString().length());
-                     }
-                 });
+
+        Collections.sort(complexes, (d1, d2) -> Integer.compare(
+                d2.getSymbolString().length(),
+                d1.getSymbolString().length()) // Sort by decreasing length
+        );
+
         for (DynamicsInter complex : complexes) {
             complex.swallowShorterDynamics(dynamics);
         }
@@ -574,12 +569,13 @@ public class InterFactory
     private void handleTimes ()
     {
         // Retrieve all time inters (outside staff headers)
-        final List<Inter> systemTimes = sig.inters(new Class[]{
-            TimeWholeInter.class, // Whole symbol like C or predefined 6/8
-            TimeCustomInter.class, // User modifiable combo 6/8
-            TimeNumberInter.class}); // Partial symbol like 6 or 8
+        final List<Inter> systemTimes = sig.inters(
+                new Class[]{TimeWholeInter.class, // Whole symbol like C or predefined 6/8
+                            TimeCustomInter.class, // User modifiable combo 6/8
+                            TimeNumberInter.class}); // Partial symbol like 6 or 8
 
         final List<Inter> headerTimes = new ArrayList<>();
+
         for (Inter inter : systemTimes) {
             Staff staff = inter.getStaff();
 
@@ -587,6 +583,7 @@ public class InterFactory
                 headerTimes.add(inter);
             }
         }
+
         systemTimes.removeAll(headerTimes);
 
         if (systemTimes.isEmpty()) {
@@ -594,15 +591,8 @@ public class InterFactory
         }
 
         // Dispatch these time inters into their containing stack
-        final Map<MeasureStack, Set<Inter>> timeMap = new TreeMap<>(new Comparator<MeasureStack>()
-        {
-            @Override
-            public int compare (MeasureStack s1,
-                                MeasureStack s2)
-            {
-                return Integer.compare(s1.getIdValue(), s2.getIdValue());
-            }
-        });
+        final Map<MeasureStack, Set<Inter>> timeMap = new TreeMap<>(
+                (s1, s2) -> Integer.compare(s1.getIdValue(), s2.getIdValue()));
 
         for (Inter inter : systemTimes) {
             final MeasureStack stack = system.getStackAt(inter.getCenter());
@@ -628,15 +618,9 @@ public class InterFactory
             if (res != -1) {
                 final Collection<AbstractTimeInter> times = column.getTimeInters().values();
                 final Rectangle columnBox = Inters.getBounds(times);
-                final List<Inter> neighbors = sig.inters(new Predicate<Inter>()
-                {
-                    @Override
-                    public boolean test (Inter inter)
-                    {
-                        return inter.getBounds().intersects(columnBox)
-                                       && !(inter instanceof InterEnsemble);
-                    }
-                });
+                final List<Inter> neighbors = sig.inters(
+                        (inter) -> inter.getBounds().intersects(columnBox)
+                                   && !(inter instanceof InterEnsemble));
 
                 neighbors.removeAll(times);
 
@@ -728,6 +712,7 @@ public class InterFactory
         switch (shape) {
         case CLUTTER:
             return new ClutterInter(null, GRADE);
+
         //
         // Ottava TODO ???
         //        case OTTAVA_ALTA:
@@ -737,6 +722,7 @@ public class InterFactory
         // Brace, bracket
         case BRACE:
             return new BraceInter(GRADE);
+
         case BRACKET:
             return new BracketInter(GRADE);
 
@@ -1017,6 +1003,7 @@ public class InterFactory
         // Others
         default:
             logger.warn("No ghost instance for {}", shape);
+
             return null;
         }
     }

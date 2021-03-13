@@ -223,6 +223,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "book")
 public class Book
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -234,6 +235,8 @@ public class Book
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -326,6 +329,7 @@ public class Book
     /** Set of stubs that need to be upgraded. */
     private Set<SheetStub> stubsToUpgrade;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a Book with a path to an input images file.
      *
@@ -367,6 +371,7 @@ public class Book
         subBooks = null;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // annotate //
     //----------//
@@ -2632,6 +2637,7 @@ public class Book
         return jaxbContext;
     }
 
+    //~ Inner classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

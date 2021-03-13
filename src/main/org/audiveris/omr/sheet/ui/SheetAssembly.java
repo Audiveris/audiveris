@@ -153,9 +153,7 @@ public class SheetAssembly
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(() -> {
-                    addBoard(tab, board);
-                });
+                SwingUtilities.invokeAndWait(() -> addBoard(tab, board));
             } catch (InterruptedException |
                      InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
@@ -202,14 +200,7 @@ public class SheetAssembly
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        addViewTab(label, scrollView, boardsPane);
-                    }
-                });
+                SwingUtilities.invokeAndWait(() -> addViewTab(label, scrollView, boardsPane));
             } catch (InterruptedException |
                      InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
@@ -541,14 +532,7 @@ public class SheetAssembly
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        reset();
-                    }
-                });
+                SwingUtilities.invokeAndWait(() -> reset());
             } catch (InterruptedException |
                      InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);

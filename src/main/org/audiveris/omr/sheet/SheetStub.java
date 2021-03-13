@@ -1038,7 +1038,6 @@ public class SheetStub
     //---------//
     private void display ()
     {
-        logger.info("BINGO SheetStub.display {}", this);
         if (OMR.gui != null) {
             try {
                 Runnable runnable = new Runnable()

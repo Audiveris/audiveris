@@ -106,6 +106,7 @@ import javax.swing.SwingUtilities;
 public class BookActions
         extends StubDependent
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -119,6 +120,15 @@ public class BookActions
     /** Default parameter. */
     public static final Param<Boolean> defaultPrompt = new Default();
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    private static enum Opt
+    {
+        OK,
+        Apply,
+        Cancel
+    };
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Flag to allow automatic book rebuild on every user edition action. */
     private boolean rebuildAllowed = true;
 
@@ -131,6 +141,7 @@ public class BookActions
     /** The action that toggles repetitive input mode. */
     private final ApplicationAction repetitiveInputAction;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BookActions object.
      */
@@ -144,6 +155,7 @@ public class BookActions
         repetitiveInputAction = (ApplicationAction) actionMap.get("toggleRepetitiveInput");
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // annotateBook //
     //--------------//
@@ -630,21 +642,20 @@ public class BookActions
     // applyUserSettings //
     //-------------------//
     /**
-     * Prompts the user for interactive confirmation or modification of
-     * book/page parameters
+     * Prompt the user for interactive confirmation or modification of book/sheet
+     * parameters.
      *
      * @param stub the current sheet stub, or null
-     * @return true if parameters are applied, false otherwise
      */
-    public static boolean applyUserSettings (final SheetStub stub)
+    public static void applyUserSettings (final SheetStub stub)
     {
         try {
-            final WrappedBoolean apply = new WrappedBoolean(false);
             final BookParameters scoreParams = new BookParameters(stub);
+            final Object[] options = {Opt.OK, Opt.Apply, Opt.Cancel};
             final JOptionPane optionPane = new JOptionPane(
                     scoreParams.getComponent(),
                     JOptionPane.QUESTION_MESSAGE,
-                    JOptionPane.OK_CANCEL_OPTION);
+                    JOptionPane.DEFAULT_OPTION, null, options);
             final String frameTitle = scoreParams.getTitle();
             final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, false); // Non modal
             dialog.setContentPane(optionPane);
@@ -655,25 +666,29 @@ public class BookActions
                 @Override
                 public void propertyChange (PropertyChangeEvent e)
                 {
-                    String prop = e.getPropertyName();
+                    final String prop = e.getPropertyName();
 
                     if (dialog.isVisible() && (e.getSource() == optionPane)
                                 && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
-                        Object obj = optionPane.getValue();
-                        int value = (Integer) obj;
-                        apply.set(value == JOptionPane.OK_OPTION);
+                        final Object choice = optionPane.getValue();
+                        final boolean exit;
 
-                        // Exit only if user gives up or enters correct data
-                        if (!apply.isSet() || scoreParams.commit(stub)) {
+                        if (choice == Opt.Cancel) {
+                            exit = true;
+                        } else if (choice == Opt.Apply) {
+                            scoreParams.commit(stub);
+                            exit = false;
+                        } else if (choice == Opt.OK) {
+                            exit = scoreParams.commit(stub);
+                        } else {
+                            exit = false;
+                        }
+
+                        if (exit) {
                             dialog.setVisible(false);
                             dialog.dispose();
                         } else {
-                            // Incorrect data, so don't exit yet
-                            try {
-                                // TODO: Is there a more civilized way?
-                                optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
-                            } catch (Exception ignored) {
-                            }
+                            optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
                         }
                     }
                 }
@@ -681,12 +696,8 @@ public class BookActions
 
             dialog.pack();
             OmrGui.getApplication().show(dialog);
-
-            return apply.value;
         } catch (Exception ex) {
-            logger.warn("Error in ScoreParameters", ex);
-
-            return false;
+            logger.warn("Error in BookParameters {}", ex.toString(), ex);
         }
     }
 
@@ -1630,6 +1641,7 @@ public class BookActions
         return LazySingleton.INSTANCE;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // LazySingleton //
     //---------------//
