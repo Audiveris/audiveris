@@ -26,6 +26,7 @@ import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.util.VoidTask;
@@ -52,9 +53,11 @@ import javax.swing.TransferHandler.TransferSupport;
 public class FileDropHandler
         extends TransferHandler
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(FileDropHandler.class);
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // canImport //
     //-----------//
@@ -129,6 +132,7 @@ public class FileDropHandler
         return true;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // DropBookTask //
     //--------------//
@@ -223,6 +227,7 @@ public class FileDropHandler
 
             if (firstValid != null) {
                 StubsController.getInstance().selectAssembly(firstValid);
+                BookActions.applyUserSettings(firstValid);
             }
         }
     }

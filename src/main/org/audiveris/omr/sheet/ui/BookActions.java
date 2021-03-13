@@ -626,6 +626,70 @@ public class BookActions
         return new ExportSheetTask(stub.getSheet(), sheetPath);
     }
 
+    //-------------------//
+    // applyUserSettings //
+    //-------------------//
+    /**
+     * Prompts the user for interactive confirmation or modification of
+     * book/page parameters
+     *
+     * @param stub the current sheet stub, or null
+     * @return true if parameters are applied, false otherwise
+     */
+    public static boolean applyUserSettings (final SheetStub stub)
+    {
+        try {
+            final WrappedBoolean apply = new WrappedBoolean(false);
+            final BookParameters scoreParams = new BookParameters(stub);
+            final JOptionPane optionPane = new JOptionPane(
+                    scoreParams.getComponent(),
+                    JOptionPane.QUESTION_MESSAGE,
+                    JOptionPane.OK_CANCEL_OPTION);
+            final String frameTitle = scoreParams.getTitle();
+            final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, false); // Non modal
+            dialog.setContentPane(optionPane);
+            dialog.setName("ScoreParamsDialog");  // For SAF life cycle
+
+            optionPane.addPropertyChangeListener(new PropertyChangeListener()
+            {
+                @Override
+                public void propertyChange (PropertyChangeEvent e)
+                {
+                    String prop = e.getPropertyName();
+
+                    if (dialog.isVisible() && (e.getSource() == optionPane)
+                                && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
+                        Object obj = optionPane.getValue();
+                        int value = (Integer) obj;
+                        apply.set(value == JOptionPane.OK_OPTION);
+
+                        // Exit only if user gives up or enters correct data
+                        if (!apply.isSet() || scoreParams.commit(stub)) {
+                            dialog.setVisible(false);
+                            dialog.dispose();
+                        } else {
+                            // Incorrect data, so don't exit yet
+                            try {
+                                // TODO: Is there a more civilized way?
+                                optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
+                            } catch (Exception ignored) {
+                            }
+                        }
+                    }
+                }
+            });
+
+            dialog.pack();
+            OmrGui.getApplication().show(dialog);
+
+            return apply.value;
+        } catch (Exception ex) {
+            logger.warn("Error in ScoreParameters", ex);
+
+            return false;
+        }
+    }
+
     //--------------------//
     // getBookHistoryMenu //
     //--------------------//
@@ -1575,70 +1639,6 @@ public class BookActions
         static final BookActions INSTANCE = new BookActions();
     }
 
-    //-------------------//
-    // applyUserSettings //
-    //-------------------//
-    /**
-     * Prompts the user for interactive confirmation or modification of
-     * book/page parameters
-     *
-     * @param stub the current sheet stub, or null
-     * @return true if parameters are applied, false otherwise
-     */
-    private static boolean applyUserSettings (final SheetStub stub)
-    {
-        try {
-            final WrappedBoolean apply = new WrappedBoolean(false);
-            final BookParameters scoreParams = new BookParameters(stub);
-            final JOptionPane optionPane = new JOptionPane(
-                    scoreParams.getComponent(),
-                    JOptionPane.QUESTION_MESSAGE,
-                    JOptionPane.OK_CANCEL_OPTION);
-            final String frameTitle = scoreParams.getTitle();
-            final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, true); // Modal flag
-            dialog.setContentPane(optionPane);
-            dialog.setName("ScoreParamsDialog");  // For SAF life cycle
-
-            optionPane.addPropertyChangeListener(new PropertyChangeListener()
-            {
-                @Override
-                public void propertyChange (PropertyChangeEvent e)
-                {
-                    String prop = e.getPropertyName();
-
-                    if (dialog.isVisible() && (e.getSource() == optionPane)
-                                && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
-                        Object obj = optionPane.getValue();
-                        int value = (Integer) obj;
-                        apply.set(value == JOptionPane.OK_OPTION);
-
-                        // Exit only if user gives up or enters correct data
-                        if (!apply.isSet() || scoreParams.commit(stub)) {
-                            dialog.setVisible(false);
-                            dialog.dispose();
-                        } else {
-                            // Incorrect data, so don't exit yet
-                            try {
-                                // TODO: Is there a more civilized way?
-                                optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
-                            } catch (Exception ignored) {
-                            }
-                        }
-                    }
-                }
-            });
-
-            dialog.pack();
-            OmrGui.getApplication().show(dialog);
-
-            return apply.value;
-        } catch (Exception ex) {
-            logger.warn("Error in ScoreParameters", ex);
-
-            return false;
-        }
-    }
-
     //-----------//
     // confirmed //
     //-----------//
@@ -1843,6 +1843,7 @@ public class BookActions
 
                 if (firstValid != null) {
                     StubsController.invokeSelect(firstValid);
+                    BookActions.applyUserSettings(firstValid);
                 }
             } catch (Exception ex) {
                 logger.warn("Error opening path " + path + " " + ex, ex);
