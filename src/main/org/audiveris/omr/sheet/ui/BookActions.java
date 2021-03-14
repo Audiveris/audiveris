@@ -74,6 +74,8 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.nio.file.Files;
@@ -651,49 +653,57 @@ public class BookActions
     {
         try {
             final BookParameters scoreParams = new BookParameters(stub);
-            final Object[] options = {Opt.OK, Opt.Apply, Opt.Cancel};
+            final String frameTitle = scoreParams.getTitle();
+            final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, false); // Non modal
+
+            // For SAF life cycle (to save dialog size and location across application runs)
+            dialog.setName("ScoreParamsDialog");
+
+            // To avoid memory leak when user closes window via the upper right cross
+            dialog.addWindowListener(new WindowAdapter()
+            {
+                @Override
+                public void windowClosing (WindowEvent we)
+                {
+                    dialog.dispose();
+                }
+            });
+
+            // User actions on buttons OK, Apply, Cancel
             final JOptionPane optionPane = new JOptionPane(
                     scoreParams.getComponent(),
                     JOptionPane.QUESTION_MESSAGE,
-                    JOptionPane.DEFAULT_OPTION, null, options);
-            final String frameTitle = scoreParams.getTitle();
-            final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, false); // Non modal
-            dialog.setContentPane(optionPane);
-            dialog.setName("ScoreParamsDialog");  // For SAF life cycle
+                    JOptionPane.DEFAULT_OPTION,
+                    null,
+                    new Object[]{Opt.OK, Opt.Apply, Opt.Cancel});
+            optionPane.addPropertyChangeListener(e -> {
+                if (dialog.isVisible()
+                            && (e.getSource() == optionPane)
+                            && (e.getPropertyName().equals(JOptionPane.VALUE_PROPERTY))) {
+                    final Object choice = optionPane.getValue();
+                    final boolean exit;
 
-            optionPane.addPropertyChangeListener(new PropertyChangeListener()
-            {
-                @Override
-                public void propertyChange (PropertyChangeEvent e)
-                {
-                    final String prop = e.getPropertyName();
+                    if (choice == Opt.Cancel) {
+                        exit = true;
+                    } else if (choice == Opt.Apply) {
+                        scoreParams.commit(stub);
+                        exit = false;
+                    } else if (choice == Opt.OK) {
+                        exit = scoreParams.commit(stub);
+                    } else {
+                        exit = false;
+                    }
 
-                    if (dialog.isVisible() && (e.getSource() == optionPane)
-                                && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
-                        final Object choice = optionPane.getValue();
-                        final boolean exit;
-
-                        if (choice == Opt.Cancel) {
-                            exit = true;
-                        } else if (choice == Opt.Apply) {
-                            scoreParams.commit(stub);
-                            exit = false;
-                        } else if (choice == Opt.OK) {
-                            exit = scoreParams.commit(stub);
-                        } else {
-                            exit = false;
-                        }
-
-                        if (exit) {
-                            dialog.setVisible(false);
-                            dialog.dispose();
-                        } else {
-                            optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
-                        }
+                    if (exit) {
+                        dialog.setVisible(false);
+                        dialog.dispose();
+                    } else {
+                        optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
                     }
                 }
             });
 
+            dialog.setContentPane(optionPane);
             dialog.pack();
             OmrGui.getApplication().show(dialog);
         } catch (Exception ex) {
