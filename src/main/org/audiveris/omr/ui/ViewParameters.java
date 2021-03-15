@@ -58,6 +58,9 @@ public class ViewParameters
     /** Should the annotations be painted. */
     public static final String ANNOTATION_PAINTING = "annotationPainting";
 
+    /** Should the chord IDs be painted. */
+    public static final String CHORD_IDS_PAINTING = "chordIdsPainting";
+
     /** Should the marks be painted. */
     public static final String MARK_PAINTING = "markPainting";
 
@@ -108,6 +111,9 @@ public class ViewParameters
 
     /** Action for switching entity selection. (Must be lazily computed) */
     private ApplicationAction selectionAction;
+
+    /** Chord Ids painting is chosen to be not persistent. */
+    private boolean chordIdsPainting = false;
 
     /** Voice painting is chosen to be not persistent. */
     private boolean voicePainting = false;
@@ -413,6 +419,24 @@ public class ViewParameters
         firePropertyChange(TRANSLUCENT_PAINTING, oldValue, value);
     }
 
+    //--------------------//
+    // isChordIdsPainting //
+    //--------------------//
+    public boolean isChordIdsPainting ()
+    {
+        return chordIdsPainting;
+    }
+
+    //---------------------//
+    // setChordIdsPainting //
+    //---------------------//
+    public void setChordIdsPainting (boolean value)
+    {
+        boolean oldValue = chordIdsPainting;
+        chordIdsPainting = value;
+        firePropertyChange(CHORD_IDS_PAINTING, oldValue, value);
+    }
+
     //-----------------//
     // isVoicePainting //
     //-----------------//
@@ -514,6 +538,19 @@ public class ViewParameters
      */
     @Action(selectedProperty = ATTACHMENT_PAINTING)
     public void toggleAttachments (ActionEvent e)
+    {
+    }
+
+    //----------------//
+    // toggleChordIds //
+    //----------------//
+    /**
+     * Action that toggles the display of chord ids
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = CHORD_IDS_PAINTING)
+    public void toggleChordIds (ActionEvent e)
     {
     }
 

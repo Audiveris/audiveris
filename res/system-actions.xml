@@ -72,6 +72,7 @@
     <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"     method="switchLayers"                                               button="javax.swing.JButton"/>
     <action domain="VIEW" section="40" class="org.audiveris.omr.ui.ViewParameters"     method="toggleSlots"                                 item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="40" class="org.audiveris.omr.ui.ViewParameters"     method="toggleAnnotations"                           item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="40" class="org.audiveris.omr.ui.ViewParameters"     method="toggleChordIds"                              item="javax.swing.JCheckBoxMenuItem"/>
 <!--    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleMarks"         topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>-->
     <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleStaffLines"    topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>
 <!--    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleStaffPeaks"    topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>-->

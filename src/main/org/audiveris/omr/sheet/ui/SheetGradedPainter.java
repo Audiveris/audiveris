@@ -21,11 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
-import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.ui.SigPainter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,13 +40,16 @@ import java.awt.Graphics;
 public class SheetGradedPainter
         extends SheetPainter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SheetGradedPainter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     private final boolean withVoices;
 
     private final boolean withTranslucency;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SheetGradedPainter} object.
      *
@@ -68,27 +69,23 @@ public class SheetGradedPainter
         this.withTranslucency = withTranslucency;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getSigPainter //
     //---------------//
     @Override
     protected SigPainter getSigPainter ()
     {
-        return new GradedSigPainter(g, sheet.getScale());
+        return new GradedSigPainter();
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------//
     // GradedSigPainter //
     //------------------//
     private class GradedSigPainter
             extends SigPainter
     {
-
-        public GradedSigPainter (Graphics g,
-                                 Scale scale)
-        {
-            super(g, scale);
-        }
 
         //----------//
         // setColor //
