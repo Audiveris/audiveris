@@ -61,6 +61,8 @@ import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.sheet.ui.BookActions;
 
 /**
  * Class {@code CLI} parses and holds the parameters of the command line interface.
@@ -393,6 +395,14 @@ public class CLI
         {
             return OMR.engine.loadInput(path);
         }
+
+        @Override
+        protected void openBookDialog (SheetStub stub)
+        {
+            if (OMR.gui != null) {
+                BookActions.applyUserSettings(stub);
+            }
+        }
     }
 
     //----------------//
@@ -408,6 +418,16 @@ public class CLI
         ProcessingTask (Path path)
         {
             super(path);
+        }
+
+        /**
+         * Opening book parameters dialog.
+         *
+         * @param stub the stub with focus
+         */
+        protected void openBookDialog (SheetStub stub)
+        {
+            // Void by default
         }
 
         @Override
@@ -442,6 +462,7 @@ public class CLI
                 if (OMR.gui != null) {
                     Integer focus = (sheetIds != null) ? sheetIds.first() : null;
                     book.createStubsTabs(focus); // Tabs are now accessible
+                    openBookDialog((focus != null) ? book.getStub(focus) : book.getFirstValidStub());
                 } else {
                     // Batch: Perform sheets upgrade?
                     if (Book.batchUpgradeBooks() || params.upgrade) {
