@@ -24,15 +24,14 @@ package org.audiveris.omr.sheet.ui;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
-import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Relations;
-import org.audiveris.omr.sig.ui.SigPainter;
-import org.audiveris.omr.ui.util.UIUtil;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +44,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import org.audiveris.omr.sig.inter.WordInter;
 
 /**
  * Class {@code SelectionPainter} is meant to paint just selected items.
@@ -55,11 +53,13 @@ import org.audiveris.omr.sig.inter.WordInter;
 public class SelectionPainter
         extends SheetPainter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SelectionPainter.class);
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SelectionPainter} object.
      *
@@ -71,9 +71,10 @@ public class SelectionPainter
     {
         super(sheet, g);
 
-        sigPainter = new SelectionSigPainter(g, sheet.getScale());
+        sigPainter = new SelectionSigPainter();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // drawSupport //
     //-------------//
@@ -96,12 +97,10 @@ public class SelectionPainter
 
         final double r = 2 / zoom; // Radius
         final Point2D oneCenter = one.getRelationCenter();
-        g.fill(new Ellipse2D.Double(oneCenter.getX() - r,
-                                    oneCenter.getY() - r, 2 * r, 2 * r));
+        g.fill(new Ellipse2D.Double(oneCenter.getX() - r, oneCenter.getY() - r, 2 * r, 2 * r));
 
         final Point2D twoCenter = two.getRelationCenter();
-        g.fill(new Ellipse2D.Double(twoCenter.getX() - r,
-                                    twoCenter.getY() - r, 2 * r, 2 * r));
+        g.fill(new Ellipse2D.Double(twoCenter.getX() - r, twoCenter.getY() - r, 2 * r, 2 * r));
 
         final Line2D line = new Line2D.Double(oneCenter, twoCenter);
         g.draw(line);
@@ -135,9 +134,10 @@ public class SelectionPainter
     @Override
     protected SigPainter getSigPainter ()
     {
-        return new SelectionSigPainter(g, sheet.getScale());
+        return sigPainter;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -153,15 +153,9 @@ public class SelectionPainter
     //---------------------//
     // SelectionSigPainter //
     //---------------------//
-    private static class SelectionSigPainter
+    private class SelectionSigPainter
             extends SigPainter
     {
-
-        SelectionSigPainter (Graphics g,
-                             Scale scale)
-        {
-            super(g, scale);
-        }
 
         @Override
         protected void setColor (Inter inter)
