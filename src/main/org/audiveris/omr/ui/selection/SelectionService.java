@@ -39,8 +39,6 @@ import java.util.List;
  * Because the same service can be used to convey different sub-classes of UserEvent, we cannot
  * parameterize the SelectionService class.
  *
- * @param <E> type of served data
- *
  * @author Hervé Bitteur
  */
 @SuppressWarnings("unchecked")

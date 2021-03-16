@@ -258,10 +258,7 @@ public class UnitTreeTable
     // adjustColumns //
     //---------------//
     /**
-     * Allows to adjust the related columnModel, for each and every
-     * column
-     *
-     * @param cModel the proper table column model
+     * Allows to adjust the related columnModel, for each and every column.
      */
     private void adjustColumns ()
     {

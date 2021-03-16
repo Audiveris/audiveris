@@ -43,9 +43,6 @@ public class MyPoint
 
     /**
      * Creates a new MyPoint object.
-     *
-     * @param x DOCUMENT ME!
-     * @param y DOCUMENT ME!
      */
     public MyPoint (Point p)
     {

@@ -89,8 +89,6 @@ public class PluginsManager
     /**
      * Generates the menu to be inserted in the plugin menu hierarchy,
      * based on the plugins file discovered in Audiveris user config folder.
-     *
-     * @param menu the hosting menu, or null
      */
     private PluginsManager ()
     {

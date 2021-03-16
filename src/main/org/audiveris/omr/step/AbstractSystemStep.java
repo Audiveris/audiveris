@@ -159,10 +159,10 @@ public abstract class AbstractSystemStep<C>
     // doitPerSystem //
     //---------------//
     /**
-     * Launch the system processing (perhaps in parallel, one task per system)
+     * Launch the system processing (perhaps in parallel, one task per system).
      *
-     * @param systems the systems to process
      * @param sheet   the containing sheet
+     * @param context the sheet context for this processing step
      */
     private void doitPerSystem (final Sheet sheet,
                                 final C context)
