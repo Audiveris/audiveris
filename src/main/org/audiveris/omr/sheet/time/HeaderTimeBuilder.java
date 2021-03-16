@@ -240,8 +240,7 @@ public class HeaderTimeBuilder
     /**
      * Define the region of interest to browse for time signature.
      *
-     * @param start left abscissa
-     * @return the roi rectangle
+     * @return the Region Of Interest rectangle
      */
     private Rectangle getRoi ()
     {

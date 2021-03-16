@@ -832,7 +832,6 @@ public abstract class CurvesBuilder
      *
      * @param curve        curve to extend
      * @param arcView      candidate arc
-     * @param hiddenInters relevant hidden inters
      * @return true for acceptable, false otherwise
      */
     private boolean isGapAcceptable (Curve curve,

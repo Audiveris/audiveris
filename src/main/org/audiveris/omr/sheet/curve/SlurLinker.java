@@ -472,7 +472,7 @@ public class SlurLinker
     /**
      * Compute bisector vector.
      *
-     * @param above is the slur above (or below)
+     * @param slur is the slur above (or below)
      * @return the unit bisector
      */
     private Point2D getBisUnit (SlurInter slur)

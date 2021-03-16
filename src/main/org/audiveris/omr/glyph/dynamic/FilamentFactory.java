@@ -959,7 +959,7 @@ public class FilamentFactory<F extends Filament>
      * target line.
      *
      * @param source the input sections
-     * @param lines  the imposed skeleton lines
+     * @param line  the imposed skeleton line
      */
     private F populateLine (Collection<Section> source,
                             Line line)
