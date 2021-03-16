@@ -358,6 +358,11 @@ public abstract class DataHolder<T>
             sb.append(pathString);
         }
 
+        sb.append(" discarded:").append(discarded);
+        sb.append(" hasNoData:").append(hasNoData);
+        sb.append(" modified:").append(modified);
+        sb.append(" data:").append(data);
+
         sb.append('}');
 
         return sb.toString();

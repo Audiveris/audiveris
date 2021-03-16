@@ -78,7 +78,7 @@ public abstract class ImageUtil
      */
     public static BufferedImage maxRgbToGray (BufferedImage image)
     {
-        logger.info("Converting max RGB to gray ...");
+        logger.info("Converting max RGB to gray");
 
         // We use the max value among the RGB channels
         int width = image.getWidth();
