@@ -102,11 +102,68 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Picture
         implements EventSubscriber<LocationEvent>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(Picture.class);
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /**
+     * The set of handled images ({@link BufferedImage} instances).
+     */
+    public static enum ImageKey
+    {
+        /** The initial gray-level source. */
+        GRAY,
+        /** The binarized (black and white) source. */
+        BINARY,
+        /** Temporary image of head spots. */
+        HEAD_SPOTS;
+
+        public TableKey toTableKey ()
+        {
+            if (this == GRAY) {
+                return null;
+            }
+
+            return TableKey.valueOf(name());
+        }
+    }
+
+    /**
+     * The set of handled sources ({@link ByteProcessor} instances).
+     */
+    public static enum SourceKey
+    {
+        /** The initial gray-level source. */
+        GRAY,
+        /** The binarized (black and white) source. */
+        BINARY,
+        /** The Gaussian-filtered source. */
+        GAUSSIAN,
+        /** The Median-filtered source. */
+        MEDIAN,
+        /** The source with staff lines removed. */
+        NO_STAFF;
+    }
+
+    /**
+     * The set of handled tables ({@link RunTable} instances).
+     */
+    public static enum TableKey
+    {
+        BINARY,
+        HEAD_SPOTS;
+
+        public ImageKey toImageKey ()
+        {
+            return ImageKey.valueOf(name());
+        }
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
     // Persistent data
     //----------------
     //
@@ -142,6 +199,7 @@ public class Picture
     @Navigable(false)
     private Sheet sheet;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Build a picture instance from a binary table.
      *
@@ -201,6 +259,7 @@ public class Picture
         logger.debug("Picture unmarshalled by JAXB");
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // buildNoStaffTable //
     //-------------------//
@@ -469,9 +528,16 @@ public class Picture
         BufferedImage gray = getImage(ImageKey.GRAY);
 
         if (gray == null) {
-            // Try to reload image from book input path
-            SheetStub stub = sheet.getStub();
-            gray = stub.getBook().loadSheetImage(stub.getNumber());
+            try {
+                // Try to reload image from book input path
+                SheetStub stub = sheet.getStub();
+                gray = stub.getBook().loadSheetImage(stub.getNumber());
+                gray = adjustImageFormat(gray);
+                setImage(ImageKey.GRAY, gray, false);
+            } catch (ImageFormatException ex) {
+                logger.warn("ImageFormatException thrown in getGrayImage", ex);
+                return null;
+            }
         }
 
         return gray;
@@ -489,7 +555,7 @@ public class Picture
     {
         final ImageHolder holder = images.get(ImageKey.GRAY);
 
-        return (holder == null || holder.hasNoData);
+        return ((holder == null) || holder.hasNoData);
     }
 
     //-----------------//
@@ -596,6 +662,7 @@ public class Picture
                 src = buildNoStaffBuffer();
 
                 break;
+
             default:
                 logger.error("Source " + key + " is not yet supported");
             }
@@ -627,10 +694,12 @@ public class Picture
             switch (key) {
             case BINARY:
                 tbl = tableOf(ImageKey.BINARY);
+
                 break;
 
             case HEAD_SPOTS:
                 tbl = tableOf(ImageKey.HEAD_SPOTS);
+
                 break;
             }
 
@@ -736,7 +805,7 @@ public class Picture
     {
         final ImageHolder grayHolder = images.get(ImageKey.GRAY);
 
-        if (grayHolder == null || !grayHolder.hasDataReady()) {
+        if ((grayHolder == null) || !grayHolder.hasDataReady()) {
             return;
         }
 
@@ -853,7 +922,8 @@ public class Picture
                        Path oldSheetFolder)
     {
         // Each handled image
-        for (Iterator<Entry<ImageKey, ImageHolder>> it = images.entrySet().iterator(); it.hasNext();) {
+        for (Iterator<Entry<ImageKey, ImageHolder>> it = images.entrySet().iterator();
+                it.hasNext();) {
             final Entry<ImageKey, ImageHolder> entry = it.next();
             final ImageKey iKey = entry.getKey();
             final ImageHolder holder = entry.getValue();
@@ -869,6 +939,7 @@ public class Picture
 
                     if (tKey != null) {
                         final Path tablePath = sheetFolder.resolve(tKey + ".xml");
+
                         try {
                             if (Files.deleteIfExists(tablePath)) {
                                 logger.info("Washed {}", tablePath);
@@ -895,12 +966,13 @@ public class Picture
     {
         final ImageHolder imageHolder = images.get(key);
 
-        if (imageHolder != null && !imageHolder.hasNoData()) {
+        if ((imageHolder != null) && !imageHolder.hasNoData()) {
             BufferedImage image = imageHolder.getData(sheet.getStub());
 
             if (image != null) {
                 ByteProcessor buffer = new ByteProcessor(image);
                 RunTableFactory runFactory = new RunTableFactory(VERTICAL);
+
                 return runFactory.createTable(buffer);
             }
         }
@@ -1094,59 +1166,7 @@ public class Picture
         convertOldTables();
     }
 
-    /**
-     * The set of handled images.
-     */
-    public static enum ImageKey
-    {
-        /** The initial gray-level source. */
-        GRAY,
-        /** The binarized (black and white) source. */
-        BINARY,
-        /** Temporary image of head spots. */
-        HEAD_SPOTS;
-
-        public TableKey toTableKey ()
-        {
-            if (this == GRAY) {
-                return null;
-            }
-
-            return TableKey.valueOf(name());
-        }
-    }
-
-    /**
-     * The set of handled sources.
-     */
-    public static enum SourceKey
-    {
-        /** The initial gray-level source. */
-        GRAY,
-        /** The binarized (black and white) source. */
-        BINARY,
-        /** The Gaussian-filtered source. */
-        GAUSSIAN,
-        /** The Median-filtered source. */
-        MEDIAN,
-        /** The source with staff lines removed. */
-        NO_STAFF;
-    }
-
-    /**
-     * The set of handled tables.
-     */
-    public static enum TableKey
-    {
-        BINARY,
-        HEAD_SPOTS;
-
-        public ImageKey toImageKey ()
-        {
-            return ImageKey.valueOf(name());
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
